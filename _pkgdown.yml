@@ -1,0 +1,7 @@
+template:
+  params:
+    bootswatch: cosmo
+
+authors:
+  Dimitris Rizopoulos:
+    href: http://www.drizopoulos.com/

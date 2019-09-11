@@ -1,0 +1,26 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
+language: r
+cache: packages
+sudo: required
+warnings_are_errors: false
+
+r_check_args: '--as-cran --ignore-vignettes --no-examples'
+
+os:
+  - linux
+
+r:
+  - release
+  - devel
+ 
+cran: http://cran.rstudio.com
+repos:
+  CRAN: http://cran.rstudio.com
+
+r_packages:
+  - knitr
+  - rmarkdown
+  - pkgdown
+  - geepack
+  - lattice
