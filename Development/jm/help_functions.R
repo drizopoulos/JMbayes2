@@ -33,3 +33,9 @@ fix_NAs_random <- function (z, NAs_random, NAs_fixed) {
         } else z
     }
 }
+
+exclude_NAs <- function (NAs_FE, NAs_RE, id) {
+    all_NAs <- union(NAs_FE, NAs_RE)
+    if (!is.null(all_NAs)) id[-all_NAs] else id
+}
+

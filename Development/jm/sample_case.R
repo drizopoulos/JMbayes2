@@ -28,7 +28,6 @@ CoxFit <- coxph(Surv(years, status2) ~ ns(age, 3) + sex, data = pbc2.id, model =
 
 # the arguments of the jm() function
 
-
 Cox_object = CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 
@@ -46,6 +45,18 @@ if (!all(sapply(datas[-1L], all.equal, datas[[1L]]))) {
 }
 data <- datas[[1L]]
 rm(datas)
+
+# extract id variable (again we assume a single grouping variable)
+id_names <- sapply(Mixed_objects, function (object)
+    names(if (inherits(object, "MixMod")) object$id[1L] else object$groups[1L]))
+if (!all(id_names == id_names[1L])) {
+    stop("it seems that different grouping variables have been used in the mixed models.")
+}
+idVar <- id_names[1L]
+id <- data[[idVar]]
+
+# order data by id
+data <- data[order(data[[idVar]]), ]
 
 # extract terms from mixed models
 # (function extract_terms() is defined in help_functions)
@@ -70,6 +81,14 @@ y <- lapply(mf_FE_data, model.response)
 # exctract families
 families <- lapply(Mixed_objects, "[[", "family")
 families[sapply(families, is.null)] <- rep(list(gaussian()), sum(sapply(families, is.null)))
+
+# create the id per outcome
+# IMPORTANT: some ids may be missing when some subjects have no data for a particular outcome
+# This needs to be taken into account when using id for indexing.
+unq_id <- unique(id)
+id <- mapply(exclude_NAs, NAs_FE_data, NAs_RE_data,
+             MoreArgs = list(id = id), SIMPLIFY = FALSE)
+id <- lapply(id, match, table = unq_id)
 
 # create design matrices for mixed models
 X <- mapply(model.matrix.default, terms_FE, mf_FE_data)
