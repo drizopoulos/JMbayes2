@@ -1,4 +1,4 @@
-extract_terms <- function (object, which = c("fixed", "random")) {
+extract_terms <- function (object, which = c("fixed", "random"), data) {
     which <- match.arg(which)
     if (inherits(object, "MixMod")) {
         if (which == "fixed") object$Terms$termsX else object$Terms$termsZ[[1L]]
@@ -39,3 +39,33 @@ exclude_NAs <- function (NAs_FE, NAs_RE, id) {
     if (!is.null(all_NAs)) id[-all_NAs] else id
 }
 
+bdiag <- function (...) {
+    mlist <- list(...)
+    if (length(mlist) == 1)
+        mlist <- unlist(mlist, recursive = FALSE)
+    csdim <- rbind(c(0, 0), apply(sapply(mlist, dim), 1, cumsum))
+    ret <- array(0, dim = csdim[length(mlist) + 1, ])
+    add1 <- matrix(rep(1:0, 2), ncol = 2)
+    for (i in seq_along(mlist)) {
+        indx <- apply(csdim[i:(i + 1), ] + add1, 2, function(x) x[1]:x[2])
+        if (is.null(dim(indx))) {
+            ret[indx[[1]], indx[[2]]] <- mlist[[i]]
+        }
+        else {
+            ret[indx[, 1], indx[, 2]] <- mlist[[i]]
+        }
+    }
+    colnames(ret) <- unlist(lapply(mlist, colnames))
+    ret
+}
+
+right_rows <- function (data, times, ids, Q_points) {
+    fids <- factor(ids, levels = unique(ids))
+    if (!is.list(Q_points))
+        Q_points <- split(Q_points, row(Q_points))
+    ind <- mapply(findInterval, Q_points, split(times, fids))
+    ind[ind < 1] <- 1
+    rownams_id <- split(row.names(data), fids)
+    ind <- mapply(`[`, rownams_id, split(ind, col(ind)))
+    data[c(ind), ]
+}

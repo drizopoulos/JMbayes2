@@ -30,6 +30,7 @@ CoxFit <- coxph(Surv(years, status2) ~ ns(age, 3) + sex, data = pbc2.id, model =
 
 Cox_object = CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
+data_Surv = NULL
 
 
 ##########################################################################################
@@ -43,7 +44,7 @@ if (!all(sapply(datas[-1L], all.equal, datas[[1L]]))) {
          "of the dataset. Use the same exact dataset in the calls to lme() ",
          " and mixed_model().")
 }
-data <- datas[[1L]]
+dataL <- datas[[1L]]
 rm(datas)
 
 # extract id variable (again we assume a single grouping variable)
@@ -53,49 +54,70 @@ if (!all(id_names == id_names[1L])) {
     stop("it seems that different grouping variables have been used in the mixed models.")
 }
 idVar <- id_names[1L]
-id <- data[[idVar]]
+id <- dataL[[idVar]]
 
 # order data by id
-data <- data[order(data[[idVar]]), ]
+dataL <- dataL[order(dataL[[idVar]]), ]
 
 # extract terms from mixed models
 # (function extract_terms() is defined in help_functions)
-terms_FE <- lapply(Mixed_objects, extract_terms, which = "fixed")
-terms_RE <- lapply(Mixed_objects, extract_terms, which = "random")
+terms_FE <- lapply(Mixed_objects, extract_terms, which = "fixed", data = dataL)
+terms_RE <- lapply(Mixed_objects, extract_terms, which = "random", data = dataL)
 
 # create model frames
-mf_FE_data <- lapply(terms_FE, model.frame.default, data = data)
-mf_RE_data <- lapply(terms_RE, model.frame.default, data = data)
+mf_FE_dataL <- lapply(terms_FE, model.frame.default, data = dataL)
+mf_RE_dataL <- lapply(terms_RE, model.frame.default, data = dataL)
 
 # we need to account for missing data in the fixed and random effects model frames,
 # in parallel across outcomes (i.e., we will allow that some subjects may have no data
 # for some outcomes)
-NAs_FE_data <- lapply(mf_FE_data, attr, "na.action")
-NAs_RE_data <- lapply(mf_RE_data, attr, "na.action")
-mf_FE_data <- mapply(fix_NAs_fixed, mf_FE_data, NAs_FE_data, NAs_RE_data)
-mf_RE_data <- mapply(fix_NAs_random, mf_RE_data, NAs_RE_data, NAs_FE_data)
+NAs_FE_dataL <- lapply(mf_FE_dataL, attr, "na.action")
+NAs_RE_dataL <- lapply(mf_RE_dataL, attr, "na.action")
+mf_FE_dataL <- mapply(fix_NAs_fixed, mf_FE_dataL, NAs_FE_dataL, NAs_RE_dataL)
+mf_RE_dataL <- mapply(fix_NAs_random, mf_RE_dataL, NAs_RE_dataL, NAs_FE_dataL)
 
 # create response vectors
-y <- lapply(mf_FE_data, model.response)
+y <- lapply(mf_FE_dataL, model.response)
 
 # exctract families
 families <- lapply(Mixed_objects, "[[", "family")
-families[sapply(families, is.null)] <- rep(list(gaussian()), sum(sapply(families, is.null)))
+families[sapply(families, is.null)] <- rep(list(gaussian()),
+                                           sum(sapply(families, is.null)))
 
 # create the id per outcome
 # IMPORTANT: some ids may be missing when some subjects have no data for a particular outcome
-# This needs to be taken into account when using id for indexing.
+# This needs to be taken into account when using id for indexing. Namely, a new id variable
+# will need to be created in jm_fit()
 unq_id <- unique(id)
-id <- mapply(exclude_NAs, NAs_FE_data, NAs_RE_data,
+id <- mapply(exclude_NAs, NAs_FE_dataL, NAs_RE_dataL,
              MoreArgs = list(id = id), SIMPLIFY = FALSE)
 id <- lapply(id, match, table = unq_id)
+sample_size_Long <- sapply(id, function (x) length(unique(x)))
 
 # create design matrices for mixed models
-X <- mapply(model.matrix.default, terms_FE, mf_FE_data)
-Z <- mapply(model.matrix.default, terms_RE, mf_RE_data)
+X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL)
+Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL)
 
+# try to recover survival dataset
+if (is.null(data_Surv))
+    try(dataS <- eval(Cox_object$call$data, envir = parent.frame()),
+        silent = TRUE)
+if (inherits(dataS, "try-error")) {
+    stop("could not recover the dataset used to fit the Cox model; please provide this ",
+         "dataset in the 'data_Surv' argument of jm().")
+}
 
+# terms for survival model
+terms_Surv <- Cox_object$terms
 
+# covariates design matrix Cox model
+mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
+W <- model.matrix.default(terms_Surv, mf_surv_dataS)
+
+# check if the max(sample_size_Long) == sample size surv
+
+# extract initial values
+betas <- lapply(Mixed_objects, fixef)
 
 
 
