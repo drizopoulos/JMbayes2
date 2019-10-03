@@ -22,7 +22,8 @@ fm3 <- mixed_model(hepatomegaly ~ year + age, data = pbc2,
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 
-CoxFit <- coxph(Surv(years, status2) ~ ns(age, 3) + sex, data = pbc2.id, model = TRUE)
+CoxFit <- coxph(Surv(years, status2) ~ ns(age, 3) + sex + cluster(id),
+                data = pbc2.id, model = TRUE)
 
 ##########################################################################################
 
@@ -31,7 +32,7 @@ CoxFit <- coxph(Surv(years, status2) ~ ns(age, 3) + sex, data = pbc2.id, model =
 Cox_object = CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 data_Surv = NULL
-
+timeVar = "year"
 
 ##########################################################################################
 
@@ -54,10 +55,10 @@ if (!all(id_names == id_names[1L])) {
     stop("it seems that different grouping variables have been used in the mixed models.")
 }
 idVar <- id_names[1L]
-id <- dataL[[idVar]]
+idL <- dataL[[idVar]]
 
-# order data by id
-dataL <- dataL[order(dataL[[idVar]]), ]
+# order data by idL
+dataL <- dataL[order(idL), ]
 
 # extract terms from mixed models
 # (function extract_terms() is defined in help_functions)
@@ -84,19 +85,32 @@ families <- lapply(Mixed_objects, "[[", "family")
 families[sapply(families, is.null)] <- rep(list(gaussian()),
                                            sum(sapply(families, is.null)))
 
-# create the id per outcome
+# create the idL per outcome
 # IMPORTANT: some ids may be missing when some subjects have no data for a particular outcome
-# This needs to be taken into account when using id for indexing. Namely, a new id variable
+# This needs to be taken into account when using idL for indexing. Namely, a new id variable
 # will need to be created in jm_fit()
-unq_id <- unique(id)
-id <- mapply(exclude_NAs, NAs_FE_dataL, NAs_RE_dataL,
-             MoreArgs = list(id = id), SIMPLIFY = FALSE)
-id <- lapply(id, match, table = unq_id)
-sample_size_Long <- sapply(id, function (x) length(unique(x)))
+unq_id <- unique(idL)
+idL <- mapply(exclude_NAs, NAs_FE_dataL, NAs_RE_dataL,
+             MoreArgs = list(id = idL), SIMPLIFY = FALSE)
+idL <- lapply(idL, match, table = unq_id)
+sample_size_Long <- sapply(idL, function (x) length(unique(x)))
 
 # create design matrices for mixed models
 X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL)
 Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL)
+
+
+########################################################
+
+# We require users to include the id variable as cluster, even in the case of simple
+# right censoring. The estimated coefficients are in either case the same. This will
+# give us the id variable to match with the longitudinal data
+if (is.null(Cox_object$model$cluster)) {
+    stop("you need to refit the Cox and include in the right hand side of the ",
+         "formula the 'cluster()' function using as its argument the subjects' ",
+         "id indicator. These ids need to be the same as the ones used to fit ",
+         "the mixed effects model.\n")
+}
 
 # try to recover survival dataset
 if (is.null(data_Surv))
@@ -109,10 +123,15 @@ if (inherits(dataS, "try-error")) {
 
 # terms for survival model
 terms_Surv <- Cox_object$terms
+mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
+
+# survival times
+Surv_Response <- model.response(mf_surv_dataS)
+type_censoring <- attr(Surv_Response, "type")
+
 
 # covariates design matrix Cox model
-mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
-W <- model.matrix.default(terms_Surv, mf_surv_dataS)
+W <- model.matrix.default(terms_Surv, mf_surv_dataS)[, -1, drop = FALSE]
 
 # check if the max(sample_size_Long) == sample size surv
 
