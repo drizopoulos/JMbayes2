@@ -15,7 +15,7 @@ source(file.path(getwd(), "Development/jm/help_functions.R"))
 
 fm1 <- lme(log(serBilir) ~ ns(year, 3, B = c(0, 11)) * sex + age, data = pbc2,
            random = ~ ns(year, 2, B = c(0, 11)) | id)
-fm2 <- lme(log(serChol) ~ year + sex + age, data = pbc2, random = ~ year | id,
+fm2 <- lme(serChol ~ year + sex + age, data = pbc2, random = ~ year | id,
            na.action = na.exclude)
 fm3 <- mixed_model(hepatomegaly ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
@@ -33,6 +33,9 @@ Cox_object = CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 data_Surv = NULL
 timeVar = "year"
+functional_form = ~ value(log(serBilir)) + value(serChol) +
+    logit(value(hepatomegaly)) + value(ascites) + slope(log(serBilir)) +
+    area(ascites) + value(serChol):sex
 
 ##########################################################################################
 
