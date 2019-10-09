@@ -8,9 +8,29 @@ library("survival")
 library("nlme")
 library("GLMMadaptive")
 library("splines")
+library("Formula")
 data("pbc2", package = "JM")
 data("pbc2.id", package = "JM")
 source(file.path(getwd(), "Development/jm/help_functions.R"))
+
+####################
+
+# create artificial interval censored data
+pbc2$status2 <- as.numeric(pbc2$status != "alive")
+pbc2.id$status2 <- as.numeric(pbc2.id$status != "alive")
+pbc2$status3 <- as.character(pbc2$status)
+ff <- function (x) {
+    out <- if (x[1L] %in% c('dead', 'transplanted')) 'dead' else
+        switch(sample(1:3, 1), '1' = "alive", '2' = "left", '3' = "interval")
+    rep(out, length(x))
+}
+pbc2$status3 <- unlist(with(pbc2, lapply(split(status3, id), ff)), use.names = FALSE)
+pbc2$status3 <- unname(with(pbc2, sapply(status3, function (x)
+    switch(x, 'dead' = 1, 'alive' = 0, 'left' = 2, 'interval' = 3))))
+pbc2$yearsU <- as.numeric(NA)
+pbc2$yearsU[pbc2$status3 == 3] <- pbc2$years[pbc2$status3 == 3] +
+    runif(sum(pbc2$status3 == 3), 0, 4)
+pbc2.id <- pbc2[!duplicated(pbc2$id), ]
 
 
 fm1 <- lme(log(serBilir) ~ ns(year, 3, B = c(0, 11)) * sex + age, data = pbc2,
@@ -25,17 +45,28 @@ fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
 CoxFit <- coxph(Surv(years, status2) ~ ns(age, 3) + sex + cluster(id),
                 data = pbc2.id, model = TRUE)
 
+survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ drug + age + cluster(id),
+                   data = pbc2.id, model = TRUE)
+
 ##########################################################################################
 
 # the arguments of the jm() function
 
-Cox_object = CoxFit
+Surv_object = CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 data_Surv = NULL
 timeVar = "year"
-functional_form = ~ value(log(serBilir)) + value(serChol) +
-    logit(value(hepatomegaly)) + value(ascites) + slope(log(serBilir)) +
-    area(ascites) + value(serChol):sex
+
+# default function_form
+functional_form = Formula(~ value(log(serBilir)) + slope(log(serBilir)) +
+                              value(log(serBilir)):sex | value(serChol) | value(hepatomegaly)
+                          | value(ascites))
+
+# complex example function_form
+functional_form = Formula(~ value(log(serBilir)) + slope(log(serBilir)) |
+                              value(serChol) + value(serChol):sex |
+                              logit(value(hepatomegaly)) |
+                              value(ascites) + area(ascites))
 
 ##########################################################################################
 
@@ -87,7 +118,6 @@ y <- lapply(mf_FE_dataL, model.response)
 families <- lapply(Mixed_objects, "[[", "family")
 families[sapply(families, is.null)] <- rep(list(gaussian()),
                                            sum(sapply(families, is.null)))
-
 # create the idL per outcome
 # IMPORTANT: some ids may be missing when some subjects have no data for a particular outcome
 # This needs to be taken into account when using idL for indexing. Namely, a new id variable
@@ -108,8 +138,8 @@ Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL)
 # We require users to include the id variable as cluster, even in the case of simple
 # right censoring. The estimated coefficients are in either case the same. This will
 # give us the id variable to match with the longitudinal data
-if (is.null(Cox_object$model$cluster)) {
-    stop("you need to refit the Cox and include in the right hand side of the ",
+if (is.null(Surv_object$model$cluster)) {
+    stop("you need to refit the Cox or AFT model and include in the right hand side of the ",
          "formula the 'cluster()' function using as its argument the subjects' ",
          "id indicator. These ids need to be the same as the ones used to fit ",
          "the mixed effects model.\n")
@@ -117,7 +147,7 @@ if (is.null(Cox_object$model$cluster)) {
 
 # try to recover survival dataset
 if (is.null(data_Surv))
-    try(dataS <- eval(Cox_object$call$data, envir = parent.frame()),
+    try(dataS <- eval(Surv_object$call$data, envir = parent.frame()),
         silent = TRUE)
 if (inherits(dataS, "try-error")) {
     stop("could not recover the dataset used to fit the Cox model; please provide this ",
@@ -125,16 +155,73 @@ if (inherits(dataS, "try-error")) {
 }
 
 # terms for survival model
-terms_Surv <- Cox_object$terms
+terms_Surv <- Surv_object$terms
+terms_Surv <- drop.terms(terms_Surv, attr(terms_Surv,"specials")$cluster - 1,
+                         keep.response = TRUE)
 mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
 
 # survival times
 Surv_Response <- model.response(mf_surv_dataS)
 type_censoring <- attr(Surv_Response, "type")
-
+idT <- Surv_object$model$cluster
+idT <- factor(idT, levels = unique(idT))
+nT <- length(unique(idT))
+if (type_censoring == "right") {
+    Time <- Surv_Response[, "time"]
+    event <- Surv_Response[, "status"]
+    Time_left <- rep(0.0, nT)
+} else if (type_censoring == "counting") {
+    Time_start <- Surv_Response[, "start"]
+    Time_stop <- Surv_Response[, "stop"]
+    event <- Surv_Response[, "status"]
+    Time <- tapply(Time_stop, idT, tail, n = 1) # time of event
+    Time_left <- tapply(Time_start, idT, head, n = 1) # possible left truncation time
+    event <- tapply(event, idT, head, n = 1) # event indicator at Time
+} else if (type_censoring == "interval") {
+    # copy-paste from mvJointModelBayes() need to adapt it.
+    Time1 <- Surv_Response[, "time1"]
+    Time2 <- Surv_Response[, "time2"]
+    Time <- Time1
+    Time[Time2 != 1] <- Time2[Time2 != 1]
+    TimeL <- Time1
+    TimeL[Time2 == 1] <- 0.0
+    event <- Surv_Response[, "status"]
+    TimeLl <- rep(0.0, length(Time))
+}
 
 # covariates design matrix Cox model
 W <- model.matrix.default(terms_Surv, mf_surv_dataS)[, -1, drop = FALSE]
+
+
+#############################################################
+
+if (length(functional_form)[2L] != length(Mixed_objects)) {
+    stop("it seems that you have not specified any functional form for some of the ",
+         "longitudinal outcomes.")
+}
+
+long_resp_vars <- sapply(Mixed_objects,
+                         function (obj) as.character(formula(terms(obj)))[2L])
+
+Form <- formula(functional_form, rhs = 1)
+long_resp_var_in_functional_form <- sapply(seq_along(Mixed_objects),
+       function (i) as.character(formula(functional_form, rhs = i))[2L])
+ordering_of_outcomes <- sapply(long_resp_vars, grep, x = long_resp_var_in_functional_form,
+                               fixed = TRUE)
+
+functional_forms_per_outcome <- lapply(ordering_of_outcomes,
+                                       extract_functional_forms_per_outcome)
+collapsed_functional_forms <- lapply(functional_forms_per_outcome,
+                                     function (x) names(x[sapply(x, length) > 0]))
+
+
+
+
+
+#############################################################
+
+
+
 
 # check if the max(sample_size_Long) == sample size surv
 

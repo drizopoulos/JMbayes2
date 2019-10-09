@@ -69,3 +69,13 @@ right_rows <- function (data, times, ids, Q_points) {
     ind <- mapply(`[`, rownams_id, split(ind, col(ind)))
     data[c(ind), ]
 }
+
+extract_functional_forms_per_outcome <- function (i) {
+    Form <- formula(functional_form, rhs = i)
+    term_labels <- attr(terms(Form), "term.labels")
+    possible_forms <- c("value", "slope", "area")
+    sapply(possible_forms, grep, x = term_labels, fixed = TRUE)
+}
+
+
+
