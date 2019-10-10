@@ -77,5 +77,34 @@ extract_functional_forms_per_outcome <- function (i) {
     sapply(possible_forms, grep, x = term_labels, fixed = TRUE)
 }
 
+right_rows <- function (data, times, ids, time_points) {
+    # data = dataL
+    # times = dataL[[timeVar]]
+    # ids = dataL[[idVar]]
+    # time_points = Time
 
 
+    unq_ids <- unique(ids)
+    fids <- factor(ids, levels = unq_ids)
+    if (!is.matrix(time_points)) {
+        time_points <- as.matrix(time_points)
+    }
+    if (nrow(time_points) != length(unq_ids)) {
+        stop("the length of unique 'ids' does not match the number of rows ",
+             "of 'time_points'.")
+    }
+    time_points <- split(time_points, row(time_points))
+    ind <- mapply(findInterval, time_points, split(times, fids))
+    ind[ind < 1] <- 1
+    if (!is.matrix(ind)) {
+        ind <- rbind(ind)
+    }
+    rownams_id <- split(row.names(data), fids)
+    ind <- mapply(`[`, rownams_id, split(ind, col(ind)))
+    data[c(ind), ]
+}
+
+last_rows <- function (data, ids) {
+    fidVar <- factor(ids, levels = unique(ids))
+    data[tapply(row.names(data), fidVar, tail, n = 1L), ]
+}

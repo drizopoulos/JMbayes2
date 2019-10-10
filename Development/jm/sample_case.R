@@ -70,6 +70,9 @@ functional_form = Formula(~ value(log(serBilir)) + slope(log(serBilir)) |
 
 ##########################################################################################
 
+con <- list("slope_eps" = 0.001)
+
+
 # extract the data from each of the mixed models
 # and check whether the same data have been used;
 # otherwise an error
@@ -165,6 +168,23 @@ Surv_Response <- model.response(mf_surv_dataS)
 type_censoring <- attr(Surv_Response, "type")
 idT <- Surv_object$model$cluster
 idT <- factor(idT, levels = unique(idT))
+if (!all(idT %in% dataL[[idVar]])) {
+    stop("it seems that some of the levels of the 'cluster()' variable in the survival ",
+         "object can be found in the dataset of the Mixed_objects. Please check that ",
+         "the same subjects / groups are used in the datasets used to fit the mixed ",
+         "and survival models.")
+}
+# we need to check that the ordering of the subjects in the same in dataL and dataS.
+# If not, then a warning and do it internally
+if (!all(order(unique(idT)) == order(unique(dataL[[idVar]])))) {
+    warning("It seems that the ordering of the subjects in dataset used to fit the ",
+            "mixed models and the dataset used for the survival model is not the same. ",
+            "We set internally the datasets in the same order, but it would be best ",
+            "that you do it beforehand on your own.")
+    dataS <- dataS[order(idT), ]
+    mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
+    Surv_Response <- model.response(mf_surv_dataS)
+}
 nT <- length(unique(idT))
 if (type_censoring == "right") {
     Time <- Surv_Response[, "time"]
@@ -214,9 +234,15 @@ functional_forms_per_outcome <- lapply(ordering_of_outcomes,
 collapsed_functional_forms <- lapply(functional_forms_per_outcome,
                                      function (x) names(x[sapply(x, length) > 0]))
 
+# extract the last row per subject, and set the timeVar equal to Time
+dataL_at_Time <- last_rows(dataL, dataL[[idVar]])
+dataL_at_Time[[timeVar]] <- Time
+dataL_at_Time_eps1 <- dataL_at_Time_eps2 <- dataL_at_Time
+
+xxx <- right_rows(dataL, dataL[[timeVar]], dataL[[idVar]], Time)
 
 
-
+all.equal(xxx, dataL_at_Time)
 
 #############################################################
 
