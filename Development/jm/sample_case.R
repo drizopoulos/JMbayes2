@@ -235,12 +235,17 @@ collapsed_functional_forms <- lapply(functional_forms_per_outcome,
                                      function (x) names(x[sapply(x, length) > 0]))
 
 # extract the last row per subject, and set the timeVar equal to Time
-dataL_at_Time <- last_rows(dataL, dataL[[idVar]])
-dataL_at_Time[[timeVar]] <- Time
-dataL_at_Time_eps1 <- dataL_at_Time_eps2 <- dataL_at_Time
+dataL_at_Time <- LongData_HazardModel(Time,
+                                      dataL, dataL[[timeVar]], dataL[[idVar]], timeVar)
+dataL_at_Time_plus_eps <- LongData_HazardModel(Time + con$slope_eps,
+                                               dataL, dataL[[timeVar]], dataL[[idVar]],
+                                               timeVar)
+dataL_at_Time_min_eps <- LongData_HazardModel(Time - con$slope_eps,
+                                               dataL, dataL[[timeVar]], dataL[[idVar]],
+                                               timeVar)
 
-xxx <- right_rows(dataL, dataL[[timeVar]], dataL[[idVar]], Time)
-
+xxx <- LongData_HazardModel(Time, dataL, dataL[[timeVar]], dataL[[idVar]],
+                            timeVar)
 
 all.equal(xxx, dataL_at_Time)
 

@@ -77,13 +77,7 @@ extract_functional_forms_per_outcome <- function (i) {
     sapply(possible_forms, grep, x = term_labels, fixed = TRUE)
 }
 
-right_rows <- function (data, times, ids, time_points) {
-    # data = dataL
-    # times = dataL[[timeVar]]
-    # ids = dataL[[idVar]]
-    # time_points = Time
-
-
+LongData_HazardModel <- function (time_points, data, times, ids, timeVar) {
     unq_ids <- unique(ids)
     fids <- factor(ids, levels = unq_ids)
     if (!is.matrix(time_points)) {
@@ -93,15 +87,18 @@ right_rows <- function (data, times, ids, time_points) {
         stop("the length of unique 'ids' does not match the number of rows ",
              "of 'time_points'.")
     }
-    time_points <- split(time_points, row(time_points))
-    ind <- mapply(findInterval, time_points, split(times, fids))
+    tt <- split(time_points, row(time_points))
+    ind <- mapply(findInterval, tt, split(times, fids))
     ind[ind < 1] <- 1
     if (!is.matrix(ind)) {
         ind <- rbind(ind)
     }
     rownams_id <- split(row.names(data), fids)
     ind <- mapply(`[`, rownams_id, split(ind, col(ind)))
-    data[c(ind), ]
+    data <- data[c(ind), ]
+    data[[timeVar]] <- c(t(time_points))
+    row.names(data) <- seq_len(nrow(data))
+    data
 }
 
 last_rows <- function (data, ids) {
