@@ -52,7 +52,7 @@ survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ drug + age 
 
 # the arguments of the jm() function
 
-Surv_object = CoxFit
+Surv_object = survFit#CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 data_Surv = NULL
 timeVar = "year"
@@ -186,27 +186,35 @@ if (!all(order(unique(idT)) == order(unique(dataL[[idVar]])))) {
     Surv_Response <- model.response(mf_surv_dataS)
 }
 nT <- length(unique(idT))
+# Notation:
+#  - Time_right: event or right censoring time
+#  - Time_left: left censoring time
+#  - trunc_Time: truncation time
+#  - delta: 0 of right censored, 1 for event, 2 for left censored,
+#           3 for interval censored
 if (type_censoring == "right") {
-    Time <- Surv_Response[, "time"]
-    event <- Surv_Response[, "status"]
-    Time_left <- rep(0.0, nT)
+    Time_right <- Surv_Response[, "time"]
+    Time_left <- rep(as.numeric(NA), nT)
+    trunc_Time <- rep(0.0, nT)
+    delta <- Surv_Response[, "status"]
 } else if (type_censoring == "counting") {
     Time_start <- Surv_Response[, "start"]
     Time_stop <- Surv_Response[, "stop"]
     event <- Surv_Response[, "status"]
-    Time <- tapply(Time_stop, idT, tail, n = 1) # time of event
-    Time_left <- tapply(Time_start, idT, head, n = 1) # possible left truncation time
-    event <- tapply(event, idT, head, n = 1) # event indicator at Time
+    Time_right <- tapply(Time_stop, idT, tail, n = 1) # time of event
+    trunc_Time <- tapply(Time_start, idT, head, n = 1) # possible left truncation time
+    Time_left <- rep(as.numeric(NA), nT)
+    event <- tapply(event, idT, tail, n = 1) # event indicator at Time_right
 } else if (type_censoring == "interval") {
-    # copy-paste from mvJointModelBayes() need to adapt it.
     Time1 <- Surv_Response[, "time1"]
     Time2 <- Surv_Response[, "time2"]
-    Time <- Time1
-    Time[Time2 != 1] <- Time2[Time2 != 1]
-    TimeL <- Time1
-    TimeL[Time2 == 1] <- 0.0
+    trunc_Time <- rep(0.0, nT)
     event <- Surv_Response[, "status"]
-    TimeLl <- rep(0.0, length(Time))
+    Time_right <- Time1
+    Time_right[event == 3] <- Time2[event == 3]
+    Time_right[event == 2] <- as.numeric(NA)
+    Time_left <- Time1
+    Time_left[event %in% c(0, 1)] <- as.numeric(NA)
 }
 
 # covariates design matrix Cox model
