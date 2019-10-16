@@ -52,7 +52,7 @@ survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ drug + age 
 
 # the arguments of the jm() function
 
-Surv_object = survFit#CoxFit
+Surv_object = CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 data_Surv = NULL
 timeVar = "year"
@@ -70,7 +70,7 @@ functional_form = Formula(~ value(log(serBilir)) + slope(log(serBilir)) |
 
 ##########################################################################################
 
-con <- list("slope_eps" = 0.001)
+con <- list("slope_eps" = 0.001, GK_k = 15L)
 
 
 # extract the data from each of the mixed models
@@ -100,6 +100,7 @@ dataL <- dataL[order(idL), ]
 # extract terms from mixed models
 # (function extract_terms() is defined in help_functions)
 terms_FE <- lapply(Mixed_objects, extract_terms, which = "fixed", data = dataL)
+terms_FE_noResp <- lapply(terms_FE, delete.response)
 terms_RE <- lapply(Mixed_objects, extract_terms, which = "random", data = dataL)
 
 # create model frames
@@ -243,8 +244,52 @@ collapsed_functional_forms <- lapply(functional_forms_per_outcome,
                                      function (x) names(x[sapply(x, length) > 0]))
 
 # extract the last row per subject, and set the timeVar equal to Time
-dataL_at_Time <- LongData_HazardModel(Time,
-                                      dataL, dataL[[timeVar]], dataL[[idVar]], timeVar)
+
+desing_matrices_functional_forms <- function (time, dataL, timeVar, idVar,
+                                              terms_FE_noResp, terms_RE) {
+    desgn_matr <- function (time, terms) {
+        D <- LongData_HazardModel(time, dataL, dataL[[timeVar]],
+                                  dataL[[idVar]], timeVar)
+        mf <- lapply(terms, model.frame.default, data = D)
+        mapply(model.matrix.default, terms, mf)
+    }
+    degn_matr_slp <- function (time, terms) {
+        M1 <- desgn_matr(time + 0.001, terms)
+        M2 <- desgn_matr(time - 0.001, terms)
+        mapply(function (x1, x2) (x1 - x2) / 0.002, M1, M2)
+    }
+    degn_matr_area <- function (time, terms) {
+        GK <- gaussKronrod(15)
+        wk <- GK$wk
+        sk <- GK$sk
+        P <- time / 2
+        st <- outer(P, sk + 1)
+        out <- vector("list", 15L)
+        for (i in seq_len(15)) {
+            M <- desgn_matr(st[, i], terms)
+            out[[i]] <- lapply(M, "*", wk[i])
+        }
+        out <- P * Reduce("+", out)  # <------------------ FIX not correct
+    }
+    ################
+    X_value <- desgn_matr(time, terms_FE_noResp)
+    Z_value <- desgn_matr(time, terms_RE)
+    ################
+    X_slope <- degn_matr_slp(time, terms_FE_noResp)
+    Z_slope <- degn_matr_slp(time, terms_RE)
+    ################
+    X_area <- degn_matr_area(time, terms_FE_noResp)
+    Z_area <- degn_matr_area(time, terms_RE)
+}
+
+dataL_Time_right <- LongData_HazardModel(Time_right, dataL, dataL[[timeVar]],
+                                         dataL[[idVar]], timeVar)
+mf_FE_dataXX <- lapply(terms_FE_noResp, model.frame.default, data = dataXX)
+X_h <- mapply(model.matrix.default, terms_FE_noResp, mf_FE_dataXX)
+
+
+
+
 dataL_at_Time_plus_eps <- LongData_HazardModel(Time + con$slope_eps,
                                                dataL, dataL[[timeVar]], dataL[[idVar]],
                                                timeVar)
@@ -260,8 +305,6 @@ all.equal(xxx, dataL_at_Time)
 #############################################################
 
 
-
-
 # check if the max(sample_size_Long) == sample size surv
 
 # extract initial values
@@ -269,10 +312,27 @@ betas <- lapply(Mixed_objects, fixef)
 
 
 
+################################################################################
 
+GQsurv <- gaussKronrod(con$GK_k)
+wk <- GQsurv$wk
+sk <- GQsurv$sk
+K <- length(sk)
+P <- (Time_right - trunc_Time) / 2
+GK_times <- outer(P, sk) + c(Time_right + trunc_Time) / 2
+GK_weights <- rep(P, each = con$GK_k) * rep(wk, nT)
 
+dataXX <- LongData_HazardModel(GK_times, dataL, dataL[[timeVar]],
+                                dataL[[idVar]], timeVar)
 
+terms_FE_noResp <- lapply(terms_FE, delete.response)
+mf_FE_dataXX <- lapply(terms_FE_noResp, model.frame.default, data = dataXX)
+XX <- mapply(model.matrix.default, terms_FE_noResp, mf_FE_dataXX)
 
+xxx <- c(XX[[1]] %*% betas[[1]])
+sum(GK_weights * exp(xxx))
 
+idGK <- rep(1:nT, each = 15)
+sum(exp(rowsum(log(GK_weights) + XX[[1]], idGK) %*% betas[[1]]))
 
 
