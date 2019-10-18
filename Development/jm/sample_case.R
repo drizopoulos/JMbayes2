@@ -243,10 +243,11 @@ functional_forms_per_outcome <- lapply(ordering_of_outcomes,
 collapsed_functional_forms <- lapply(functional_forms_per_outcome,
                                      function (x) names(x[sapply(x, length) > 0]))
 
-# design matrices functional forms at Time_right
-X_h <- desing_matrices_functional_forms(Time_right, terms_FE_noResp, dataL, timeVar, idVar)
-Z_h <- desing_matrices_functional_forms(Time_right, terms_RE, dataL, timeVar, idVar)
-
+# design matrices per outcome and for the user selected functional forms at Time_right
+X_h <- desing_matrices_functional_forms(Time_right, terms_FE_noResp,
+                                        dataL, timeVar, idVar, collapsed_functional_forms)
+Z_h <- desing_matrices_functional_forms(Time_right, terms_RE,
+                                        dataL, timeVar, idVar, collapsed_functional_forms)
 
 
 #############################################################
@@ -256,30 +257,9 @@ Z_h <- desing_matrices_functional_forms(Time_right, terms_RE, dataL, timeVar, id
 
 # extract initial values
 betas <- lapply(Mixed_objects, fixef)
-
+D <- bdiag(lapply(Mixed_objects, extract_D))
+b <- lapply(Mixed_objects, ranef)
+gammas <- coef(Surv_object)
 
 
 ################################################################################
-
-GQsurv <- gaussKronrod(con$GK_k)
-wk <- GQsurv$wk
-sk <- GQsurv$sk
-K <- length(sk)
-P <- (Time_right - trunc_Time) / 2
-GK_times <- outer(P, sk) + c(Time_right + trunc_Time) / 2
-GK_weights <- rep(P, each = con$GK_k) * rep(wk, nT)
-
-dataXX <- LongData_HazardModel(GK_times, dataL, dataL[[timeVar]],
-                                dataL[[idVar]], timeVar)
-
-terms_FE_noResp <- lapply(terms_FE, delete.response)
-mf_FE_dataXX <- lapply(terms_FE_noResp, model.frame.default, data = dataXX)
-XX <- mapply(model.matrix.default, terms_FE_noResp, mf_FE_dataXX)
-
-xxx <- c(XX[[1]] %*% betas[[1]])
-sum(GK_weights * exp(xxx))
-
-idGK <- rep(1:nT, each = 15)
-sum(exp(rowsum(log(GK_weights) + XX[[1]], idGK) %*% betas[[1]]))
-
-

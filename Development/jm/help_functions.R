@@ -157,5 +157,16 @@ desing_matrices_functional_forms <- function (time, terms, dataL, timeVar, idVar
     out <- list("value" = desgn_matr(time, terms),
                 "slope" = degn_matr_slp(time, terms),
                 "area" = degn_matr_area(time, terms))
+    out <- lapply(seq_along(Fun_Forms), function (i) lapply(out[Fun_Forms[[i]]], "[[", i))
+    names(out) <- names(Fun_Forms)
     out
+}
+
+extract_D <- function (object) {
+    if (inherits(object, "lme")) {
+        lapply(pdMatrix(object$modelStruct$reStruct), "*",
+               object$sigma^2)[[1]]
+    } else {
+        object$D
+    }
 }
