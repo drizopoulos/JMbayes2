@@ -127,3 +127,35 @@ gaussKronrod <- function (k = 15L) {
     }
 }
 
+desing_matrices_functional_forms <- function (time, terms, dataL, timeVar, idVar,
+                                              Fun_Forms) {
+    desgn_matr <- function (time, terms) {
+        D <- LongData_HazardModel(time, dataL, dataL[[timeVar]],
+                                  dataL[[idVar]], timeVar)
+        mf <- lapply(terms, model.frame.default, data = D)
+        mapply(model.matrix.default, terms, mf)
+    }
+    degn_matr_slp <- function (time, terms) {
+        M1 <- desgn_matr(time + 0.001, terms)
+        M2 <- desgn_matr(time - 0.001, terms)
+        mapply(function (x1, x2) (x1 - x2) / 0.002, M1, M2)
+    }
+    degn_matr_area <- function (time, terms) {
+        GK <- gaussKronrod(15L)
+        wk <- GK$wk
+        sk <- GK$sk
+        P <- unname(time / 2)
+        st <- outer(P, sk + 1)
+        out <- vector("list", 15L)
+        for (i in seq_len(15L)) {
+            M <- desgn_matr(st[, i], terms)
+            out[[i]] <- lapply(M, "*", P * wk[i])
+        }
+        lapply(seq_along(M), function (i) Reduce("+", lapply(out, "[[", i)))
+    }
+    ################
+    out <- list("value" = desgn_matr(time, terms),
+                "slope" = degn_matr_slp(time, terms),
+                "area" = degn_matr_area(time, terms))
+    out
+}

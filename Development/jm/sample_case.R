@@ -243,64 +243,11 @@ functional_forms_per_outcome <- lapply(ordering_of_outcomes,
 collapsed_functional_forms <- lapply(functional_forms_per_outcome,
                                      function (x) names(x[sapply(x, length) > 0]))
 
-# extract the last row per subject, and set the timeVar equal to Time
-
-desing_matrices_functional_forms <- function (time, dataL, timeVar, idVar,
-                                              terms_FE_noResp, terms_RE) {
-    desgn_matr <- function (time, terms) {
-        D <- LongData_HazardModel(time, dataL, dataL[[timeVar]],
-                                  dataL[[idVar]], timeVar)
-        mf <- lapply(terms, model.frame.default, data = D)
-        mapply(model.matrix.default, terms, mf)
-    }
-    degn_matr_slp <- function (time, terms) {
-        M1 <- desgn_matr(time + 0.001, terms)
-        M2 <- desgn_matr(time - 0.001, terms)
-        mapply(function (x1, x2) (x1 - x2) / 0.002, M1, M2)
-    }
-    degn_matr_area <- function (time, terms) {
-        GK <- gaussKronrod(15)
-        wk <- GK$wk
-        sk <- GK$sk
-        P <- time / 2
-        st <- outer(P, sk + 1)
-        out <- vector("list", 15L)
-        for (i in seq_len(15)) {
-            M <- desgn_matr(st[, i], terms)
-            out[[i]] <- lapply(M, "*", wk[i])
-        }
-        out <- P * Reduce("+", out)  # <------------------ FIX not correct
-    }
-    ################
-    X_value <- desgn_matr(time, terms_FE_noResp)
-    Z_value <- desgn_matr(time, terms_RE)
-    ################
-    X_slope <- degn_matr_slp(time, terms_FE_noResp)
-    Z_slope <- degn_matr_slp(time, terms_RE)
-    ################
-    X_area <- degn_matr_area(time, terms_FE_noResp)
-    Z_area <- degn_matr_area(time, terms_RE)
-}
-
-dataL_Time_right <- LongData_HazardModel(Time_right, dataL, dataL[[timeVar]],
-                                         dataL[[idVar]], timeVar)
-mf_FE_dataXX <- lapply(terms_FE_noResp, model.frame.default, data = dataXX)
-X_h <- mapply(model.matrix.default, terms_FE_noResp, mf_FE_dataXX)
+# design matrices functional forms at Time_right
+X_h <- desing_matrices_functional_forms(Time_right, terms_FE_noResp, dataL, timeVar, idVar)
+Z_h <- desing_matrices_functional_forms(Time_right, terms_RE, dataL, timeVar, idVar)
 
 
-
-
-dataL_at_Time_plus_eps <- LongData_HazardModel(Time + con$slope_eps,
-                                               dataL, dataL[[timeVar]], dataL[[idVar]],
-                                               timeVar)
-dataL_at_Time_min_eps <- LongData_HazardModel(Time - con$slope_eps,
-                                               dataL, dataL[[timeVar]], dataL[[idVar]],
-                                               timeVar)
-
-xxx <- LongData_HazardModel(Time, dataL, dataL[[timeVar]], dataL[[idVar]],
-                            timeVar)
-
-all.equal(xxx, dataL_at_Time)
 
 #############################################################
 
