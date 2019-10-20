@@ -52,7 +52,7 @@ survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ drug + age 
 
 # the arguments of the jm() function
 
-Surv_object = CoxFit
+Surv_object = survFit#CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 data_Surv = NULL
 timeVar = "year"
@@ -70,7 +70,7 @@ functional_form = Formula(~ value(log(serBilir)) + slope(log(serBilir)) |
 
 ##########################################################################################
 
-con <- list("slope_eps" = 0.001, GK_k = 15L)
+con <- list(GK_k = 15L, Bsplines_degree = 2, base_hazard_segments = 10)
 
 
 # extract the data from each of the mixed models
@@ -136,7 +136,6 @@ sample_size_Long <- sapply(idL, function (x) length(unique(x)))
 X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL)
 Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL)
 
-
 ########################################################
 
 # We require users to include the id variable as cluster, even in the case of simple
@@ -162,6 +161,7 @@ if (inherits(dataS, "try-error")) {
 terms_Surv <- Surv_object$terms
 terms_Surv <- drop.terms(terms_Surv, attr(terms_Surv,"specials")$cluster - 1,
                          keep.response = TRUE)
+terms_Surv_noResp <- delete.response(terms_Surv)
 mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
 
 # survival times
@@ -194,66 +194,124 @@ nT <- length(unique(idT))
 #  - delta: 0 of right censored, 1 for event, 2 for left censored,
 #           3 for interval censored
 if (type_censoring == "right") {
-    Time_right <- Surv_Response[, "time"]
-    Time_left <- rep(as.numeric(NA), nT)
+    Time_right <- unname(Surv_Response[, "time"])
+    Time_left <- rep(0.0, nT)
     trunc_Time <- rep(0.0, nT)
-    delta <- Surv_Response[, "status"]
+    delta <-  unname(Surv_Response[, "status"])
 } else if (type_censoring == "counting") {
-    Time_start <- Surv_Response[, "start"]
-    Time_stop <- Surv_Response[, "stop"]
-    event <- Surv_Response[, "status"]
+    Time_start <-  unname(Surv_Response[, "start"])
+    Time_stop <-  unname(Surv_Response[, "stop"])
+    delta <-  unname(Surv_Response[, "status"])
     Time_right <- tapply(Time_stop, idT, tail, n = 1) # time of event
     trunc_Time <- tapply(Time_start, idT, head, n = 1) # possible left truncation time
-    Time_left <- rep(as.numeric(NA), nT)
-    event <- tapply(event, idT, tail, n = 1) # event indicator at Time_right
+    Time_left <- rep(0.0, nT)
+    delta <- tapply(event, idT, tail, n = 1) # event indicator at Time_right
 } else if (type_censoring == "interval") {
-    Time1 <- Surv_Response[, "time1"]
-    Time2 <- Surv_Response[, "time2"]
+    Time1 <-  unname(Surv_Response[, "time1"])
+    Time2 <-  unname(Surv_Response[, "time2"])
     trunc_Time <- rep(0.0, nT)
-    event <- Surv_Response[, "status"]
+    delta <-  unname(Surv_Response[, "status"])
     Time_right <- Time1
-    Time_right[event == 3] <- Time2[event == 3]
-    Time_right[event == 2] <- as.numeric(NA)
+    Time_right[delta == 3] <- Time2[delta == 3]
+    Time_right[delta == 2] <- 0.0
     Time_left <- Time1
-    Time_left[event %in% c(0, 1)] <- as.numeric(NA)
+    Time_left[delta <= 1] <- 0.0
+}
+which_event <- which(delta == 1)
+which_right <- which(delta == 0)
+which_left <- which(delta == 2)
+which_interval <- which(delta == 3)
+
+# 'Time_integration' is the upper limit of the integral in likelihood
+# of the survival model. For subjects with event (delta = 1), for subjects with
+# right censoring and for subjects with interval censoring we need to integrate
+# up to 'Time_right'. For subjects with left censoring we need to integrate up to
+# 'Time_left'; hence we set for them 'Time_integration = Time_left'. For subjects
+# with interval censoring we need also 'Time_integration2' which is equal to
+# 'Time_left'
+Time_integration <- Time_right
+Time_integration[which_left] <- Time_left[which_left]
+Time_integration2 <- rep(0.0, nT)
+if (length(which_interval)) {
+    Time_integration2[which_interval] <- Time_left[which_interval]
 }
 
-# covariates design matrix Cox model
-W <- model.matrix.default(terms_Surv, mf_surv_dataS)[, -1, drop = FALSE]
+# create Gauss Kronrod points and weights
+GK <- gaussKronrod(15)
+wk <- GK$wk
+sk <- GK$sk
+P <- c(Time_integration - trunc_Time) / 2
+st <- outer(P, sk) + (c(Time_integration + trunc_Time) / 2)
+if (length(which_interval)) {
+    P2 <- c(Time_integration2 - trunc_Time) / 2
+    st2 <- outer(P2, sk) + (c(Time_integration2 + trunc_Time) / 2)
+} else {
+    P2 <- st2 <- NULL
+}
 
+# knots for the log baseline hazard function
+rr <- knots(0, floor(max(Time_integration)) + 1,
+            con$base_hazard_segments, con$Bsplines_degree)
 
-#############################################################
-
+# Extract functional forms per longitudinal outcome
 if (length(functional_form)[2L] != length(Mixed_objects)) {
     stop("it seems that you have not specified any functional form for some of the ",
          "longitudinal outcomes.")
 }
-
 long_resp_vars <- sapply(Mixed_objects,
                          function (obj) as.character(formula(terms(obj)))[2L])
-
-Form <- formula(functional_form, rhs = 1)
 long_resp_var_in_functional_form <- sapply(seq_along(Mixed_objects),
-       function (i) as.character(formula(functional_form, rhs = i))[2L])
+        function (i) as.character(formula(functional_form, rhs = i))[2L])
 ordering_of_outcomes <- sapply(long_resp_vars, grep, x = long_resp_var_in_functional_form,
                                fixed = TRUE)
-
 functional_forms_per_outcome <- lapply(ordering_of_outcomes,
                                        extract_functional_forms_per_outcome)
 collapsed_functional_forms <- lapply(functional_forms_per_outcome,
                                      function (x) names(x[sapply(x, length) > 0]))
 
-# design matrices per outcome and for the user selected functional forms at Time_right
-X_h <- desing_matrices_functional_forms(Time_right, terms_FE_noResp,
-                                        dataL, timeVar, idVar, collapsed_functional_forms)
-Z_h <- desing_matrices_functional_forms(Time_right, terms_RE,
-                                        dataL, timeVar, idVar, collapsed_functional_forms)
-
+# design matrices for the survival submodel:
+#  - W0 is the design matrix for the log baseline hazard
+#  - W is the design matrix for the covariates in the Surv_object
+#    (including time-varying covariates)
+#  - X is the design matrix for the fixed effects, per outcome and functional form
+#  - Z is the design matrix for the random effects, per outcome and functional form
+# in the above design matrices we put the "_h" to denote calculation at the event time
+# 'Time_right', we put "_H" to denote calculation at the 'Time_integration', and
+# "_H2" to denote calculation at the 'Time_integration2'.
+if (length(which_event)) {
+    W0_h <- splineDesign(rr, Time_right, ord = con$Bsplines_degree + 1)
+    W_h <- model.matrix.default(terms_Surv_noResp, mf_surv_dataS)[, -1, drop = FALSE]
+    X_h <- desing_matrices_functional_forms(Time_right, terms_FE_noResp,
+                                            dataL, timeVar, idVar,
+                                            collapsed_functional_forms)
+    Z_h <- desing_matrices_functional_forms(Time_right, terms_RE,
+                                            dataL, timeVar, idVar,
+                                            collapsed_functional_forms)
+}
+W0_H <- splineDesign(rr, c(t(st)), ord = con$Bsplines_degree + 1)
+dataS_int <- SurvData_HazardModel(st, dataS, times, idT)
+mf <- model.frame.default(terms_Surv_noResp, data = dataS_int)
+W_H <- model.matrix.default(terms_Surv, mf)[, -1, drop = FALSE]
+X_H <- desing_matrices_functional_forms(st, terms_FE_noResp,
+                                        dataL, timeVar, idVar,
+                                        collapsed_functional_forms)
+Z_H <- desing_matrices_functional_forms(st, terms_RE,
+                                        dataL, timeVar, idVar,
+                                        collapsed_functional_forms)
+if (length(which_interval)) {
+    W0_H2 <- splineDesign(rr, c(t(st2)), ord = con$Bsplines_degree + 1)
+    dataS_int <- SurvData_HazardModel(st2, dataS, times, idT)
+    mf <- model.frame.default(terms_Surv, data = dataS_int2)
+    W_H2 <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
+    X_H2 <- desing_matrices_functional_forms(st, terms_FE_noResp,
+                                             dataL, timeVar, idVar,
+                                             collapsed_functional_forms)
+    Z_H2 <- desing_matrices_functional_forms(st, terms_RE,
+                                             dataL, timeVar, idVar,
+                                             collapsed_functional_forms)
+}
 
 #############################################################
-
-
-# check if the max(sample_size_Long) == sample size surv
 
 # extract initial values
 betas <- lapply(Mixed_objects, fixef)
@@ -261,5 +319,6 @@ D <- bdiag(lapply(Mixed_objects, extract_D))
 b <- lapply(Mixed_objects, ranef)
 gammas <- coef(Surv_object)
 
-
 ################################################################################
+
+

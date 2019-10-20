@@ -127,11 +127,11 @@ gaussKronrod <- function (k = 15L) {
     }
 }
 
-desing_matrices_functional_forms <- function (time, terms, dataL, timeVar, idVar,
+desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                                               Fun_Forms) {
     desgn_matr <- function (time, terms) {
-        D <- LongData_HazardModel(time, dataL, dataL[[timeVar]],
-                                  dataL[[idVar]], timeVar)
+        D <- LongData_HazardModel(time, data, data[[timeVar]],
+                                  data[[idVar]], timeVar)
         mf <- lapply(terms, model.frame.default, data = D)
         mapply(model.matrix.default, terms, mf)
     }
@@ -141,6 +141,9 @@ desing_matrices_functional_forms <- function (time, terms, dataL, timeVar, idVar
         mapply(function (x1, x2) (x1 - x2) / 0.002, M1, M2)
     }
     degn_matr_area <- function (time, terms) {
+        if (is.matrix(time)) {
+            time <- c(t(time))
+        }
         GK <- gaussKronrod(15L)
         wk <- GK$wk
         sk <- GK$sk
@@ -148,7 +151,12 @@ desing_matrices_functional_forms <- function (time, terms, dataL, timeVar, idVar
         st <- outer(P, sk + 1)
         out <- vector("list", 15L)
         for (i in seq_len(15L)) {
-            M <- desgn_matr(st[, i], terms)
+            ss <- if (nrow(st) == length(unique(data[[idVar]]))) {
+                st[, i]
+            } else {
+                matrix(st[, i], ncol = 15, byrow = TRUE)
+            }
+            M <- desgn_matr(ss, terms)
             out[[i]] <- lapply(M, "*", P * wk[i])
         }
         lapply(seq_along(M), function (i) Reduce("+", lapply(out, "[[", i)))
@@ -169,4 +177,10 @@ extract_D <- function (object) {
     } else {
         object$D
     }
+}
+
+knots <- function (xl, xr, ndx, deg) {
+    # From Paul Eilers
+    dx <- (xr - xl) / ndx
+    seq(xl - deg * dx, xr + deg * dx, by = dx)
 }
