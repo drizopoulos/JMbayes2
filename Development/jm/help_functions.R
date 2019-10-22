@@ -184,3 +184,35 @@ knots <- function (xl, xr, ndx, deg) {
     dx <- (xr - xl) / ndx
     seq(xl - deg * dx, xr + deg * dx, by = dx)
 }
+
+SurvData_HazardModel <- function (time_points, data, times, ids) {
+    if (any(duplicated(ids))) {
+        if (!is.matrix(time_points)) {
+            time_points <- as.matrix(time_points)
+        }
+        if (nrow(time_points) != length(unq_ids)) {
+            stop("the length of unique 'ids' does not match the number of rows ",
+                 "of 'time_points'.")
+        }
+        tt <- split(time_points, row(time_points))
+        ind <- mapply(findInterval, tt, split(times, fids))
+        ind[ind < 1] <- 1
+        if (!is.matrix(ind)) {
+            ind <- rbind(ind)
+        }
+        rownams_id <- split(row.names(data), fids)
+        ind <- mapply(`[`, rownams_id, split(ind, col(ind)))
+        data <- data[c(ind), ]
+    } else {
+        data
+    }
+}
+
+extract_b <- function (object, id, n) {
+    b <- data.matrix(ranef(object))
+    mat <- matrix(0.0, n, ncol(b))
+    colnames(mat) <- colnames(b)
+    mat[id, ] <- b
+    mat
+}
+

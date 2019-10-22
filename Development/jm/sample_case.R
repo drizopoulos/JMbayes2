@@ -93,6 +93,7 @@ if (!all(id_names == id_names[1L])) {
 }
 idVar <- id_names[1L]
 idL <- dataL[[idVar]]
+nY <- length(unique(idL))
 
 # order data by idL
 dataL <- dataL[order(idL), ]
@@ -130,6 +131,8 @@ unq_id <- unique(idL)
 idL <- mapply(exclude_NAs, NAs_FE_dataL, NAs_RE_dataL,
              MoreArgs = list(id = idL), SIMPLIFY = FALSE)
 idL <- lapply(idL, match, table = unq_id)
+idL_lp <- lapply(idL, function (x) match(x, unique(x)))
+unq_idL <- lapply(idL, unique)
 sample_size_Long <- sapply(idL, function (x) length(unique(x)))
 
 # create design matrices for mixed models
@@ -187,6 +190,10 @@ if (!all(order(unique(idT)) == order(unique(dataL[[idVar]])))) {
     Surv_Response <- model.response(mf_surv_dataS)
 }
 nT <- length(unique(idT))
+if (nY != nT) {
+    stop("the number of groups/subjects in the longitudinal and survival datasets ",
+         "do not seem to match.")
+}
 # Notation:
 #  - Time_right: event or right censoring time
 #  - Time_left: left censoring time
@@ -250,8 +257,10 @@ if (length(which_interval)) {
 }
 
 # knots for the log baseline hazard function
-rr <- knots(0, floor(max(Time_integration)) + 1,
-            con$base_hazard_segments, con$Bsplines_degree)
+if (is.null(con$knots)) {
+    con$knots <- knots(0, floor(max(Time_integration)) + 1,
+                       con$base_hazard_segments, con$Bsplines_degree)
+}
 
 # Extract functional forms per longitudinal outcome
 if (length(functional_form)[2L] != length(Mixed_objects)) {
@@ -279,7 +288,7 @@ collapsed_functional_forms <- lapply(functional_forms_per_outcome,
 # 'Time_right', we put "_H" to denote calculation at the 'Time_integration', and
 # "_H2" to denote calculation at the 'Time_integration2'.
 if (length(which_event)) {
-    W0_h <- splineDesign(rr, Time_right, ord = con$Bsplines_degree + 1)
+    W0_h <- splineDesign(con$knots, Time_right, ord = con$Bsplines_degree + 1)
     W_h <- model.matrix.default(terms_Surv_noResp, mf_surv_dataS)[, -1, drop = FALSE]
     X_h <- desing_matrices_functional_forms(Time_right, terms_FE_noResp,
                                             dataL, timeVar, idVar,
@@ -288,10 +297,10 @@ if (length(which_event)) {
                                             dataL, timeVar, idVar,
                                             collapsed_functional_forms)
 }
-W0_H <- splineDesign(rr, c(t(st)), ord = con$Bsplines_degree + 1)
-dataS_int <- SurvData_HazardModel(st, dataS, times, idT)
+W0_H <- splineDesign(con$knots, c(t(st)), ord = con$Bsplines_degree + 1)
+dataS_int <- SurvData_HazardModel(st, dataS, Time_start, idT) # <- check that it works with start stop Surv
 mf <- model.frame.default(terms_Surv_noResp, data = dataS_int)
-W_H <- model.matrix.default(terms_Surv, mf)[, -1, drop = FALSE]
+W_H <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
 X_H <- desing_matrices_functional_forms(st, terms_FE_noResp,
                                         dataL, timeVar, idVar,
                                         collapsed_functional_forms)
@@ -299,10 +308,10 @@ Z_H <- desing_matrices_functional_forms(st, terms_RE,
                                         dataL, timeVar, idVar,
                                         collapsed_functional_forms)
 if (length(which_interval)) {
-    W0_H2 <- splineDesign(rr, c(t(st2)), ord = con$Bsplines_degree + 1)
-    dataS_int <- SurvData_HazardModel(st2, dataS, times, idT)
-    mf <- model.frame.default(terms_Surv, data = dataS_int2)
-    W_H2 <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
+    W0_H2 <- splineDesign(con$knots, c(t(st2)), ord = con$Bsplines_degree + 1)
+    dataS_int2 <- SurvData_HazardModel(st2, dataS, Time_start, idT)
+    mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_int2)
+    W_H2 <- model.matrix.default(terms_Surv_noResp, mf2)[, -1, drop = FALSE]
     X_H2 <- desing_matrices_functional_forms(st, terms_FE_noResp,
                                              dataL, timeVar, idVar,
                                              collapsed_functional_forms)
@@ -316,9 +325,55 @@ if (length(which_interval)) {
 # extract initial values
 betas <- lapply(Mixed_objects, fixef)
 D <- bdiag(lapply(Mixed_objects, extract_D))
-b <- lapply(Mixed_objects, ranef)
+b <- mapply(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY),
+            SIMPLIFY = FALSE)
 gammas <- coef(Surv_object)
 
 ################################################################################
+
+linpred_mixed <- function (X, betas, Z, b, id) {
+    n_outcomes <- length(X)
+    out <- vector("list", n_outcomes)
+    for (i in seq_len(n_outcomes)) {
+        X_i <- X[[i]]
+        betas_i <- betas[[i]]
+        Z_i <- Z[[i]]
+        b_i <- b[[i]]
+        id_i <- id[[i]]
+        out[[i]] <- X_i %*% betas_i + rowSums(Z_i * b_i[id_i, ])
+    }
+    out
+}
+
+xxx <- linpred_mixed(X, betas, Z, b, idL_lp)
+
+log_dens_Funs <- function (family) {
+    gaussian_log_dens <- function (y, eta, mu_fun = NULL, phis, eta_zi = NULL) {
+        dnorm(y, eta, exp(phis), log = TRUE)
+    }
+    switch(family$family,
+           "gaussian" = gaussian_log_dens,
+           "binomial" = GLMMadaptive:::binomial_log_dens,
+           "poisson" = GLMMadaptive:::poisson_log_dens)
+}
+
+lapply(families, log_dens_Funs)
+
+log_density_mixed <- function (y, linear_predictor, sigmas, Funs, n, id) {
+    n_outcomes <- length(y)
+    out <- numeric(n)
+    for (i in seq_len(n_outcomes)) {
+        y_i <- y[[i]]
+        eta_i <- linear_predictor[[i]]
+        sigma_i <- sigmas[[i]]
+        id_i <- id[[i]]
+        log_dens_i <- Funs[[i]]
+        out[id_i] <- out[id_i] + rowsum(log_dens_i(y_i, eta_i, sigma_i), id_i) # <- fix the second id
+    }
+    out
+}
+
+
+
 
 
