@@ -70,8 +70,11 @@ functional_form = Formula(~ value(log(serBilir)) + slope(log(serBilir)) |
 
 ##########################################################################################
 
+# control argument:
+# - GK_k: number of quadrature points for the Gauss Kronrod rule; options 15 and 7
+# - Bsplines_degree: the degree of the splines in each basis; default quadratic splines
+# - base_hazard_segments: number of segments to split the follow-up period; default 10
 con <- list(GK_k = 15L, Bsplines_degree = 2, base_hazard_segments = 10)
-
 
 # extract the data from each of the mixed models
 # and check whether the same data have been used;
@@ -95,11 +98,10 @@ idVar <- id_names[1L]
 idL <- dataL[[idVar]]
 nY <- length(unique(idL))
 
-# order data by idL
-dataL <- dataL[order(idL), ]
+# order data by idL and timeVar
+dataL <- dataL[order(idL, dataL[[timeVar]]), ]
 
 # extract terms from mixed models
-# (function extract_terms() is defined in help_functions)
 terms_FE <- lapply(Mixed_objects, extract_terms, which = "fixed", data = dataL)
 terms_FE_noResp <- lapply(terms_FE, delete.response)
 terms_RE <- lapply(Mixed_objects, extract_terms, which = "random", data = dataL)
@@ -118,6 +120,9 @@ mf_RE_dataL <- mapply(fix_NAs_random, mf_RE_dataL, NAs_RE_dataL, NAs_FE_dataL)
 
 # create response vectors
 y <- lapply(mf_FE_dataL, model.response)
+y <- lapply(y, function (yy) {
+    if (is.factor(yy)) as.numeric(yy != levels(yy)[1L]) else yy
+})
 
 # exctract families
 families <- lapply(Mixed_objects, "[[", "family")
@@ -131,15 +136,25 @@ unq_id <- unique(idL)
 idL <- mapply(exclude_NAs, NAs_FE_dataL, NAs_RE_dataL,
              MoreArgs = list(id = idL), SIMPLIFY = FALSE)
 idL <- lapply(idL, match, table = unq_id)
+# the index variable idL_lp is to be used to subset the random effects of each outcome
+# such that to calculate the Zb part of the model as rowSums(Z * b[idL_lp, ]). This
+# means that for outcomes that miss some subjects, we recode the id variable from 1
+# until n', where n' is the number of subjects available for the respective outcome
 idL_lp <- lapply(idL, function (x) match(x, unique(x)))
+# the unique values of idL is to be used in specifying which subjects have which outcomes
+# this is relevant in the calculation of the log density / probability mass function
+# for the longitudinal outcomes
 unq_idL <- lapply(idL, unique)
-sample_size_Long <- sapply(idL, function (x) length(unique(x)))
 
 # create design matrices for mixed models
 X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL)
 Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL)
 
 ########################################################
+
+####################
+# Survival outcome #
+####################
 
 # We require users to include the id variable as cluster, even in the case of simple
 # right censoring. The estimated coefficients are in either case the same. This will
@@ -156,8 +171,8 @@ if (is.null(data_Surv))
     try(dataS <- eval(Surv_object$call$data, envir = parent.frame()),
         silent = TRUE)
 if (inherits(dataS, "try-error")) {
-    stop("could not recover the dataset used to fit the Cox model; please provide this ",
-         "dataset in the 'data_Surv' argument of jm().")
+    stop("could not recover the dataset used to fit the Cox/AFT model; please provide ",
+         " this dataset in the 'data_Surv' argument of jm().")
 }
 
 # terms for survival model
@@ -324,6 +339,7 @@ if (length(which_interval)) {
 
 # extract initial values
 betas <- lapply(Mixed_objects, fixef)
+log_sigmas <- lapply(Mixed_objects, extract_log_sigmas)
 D <- bdiag(lapply(Mixed_objects, extract_D))
 b <- mapply(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY),
             SIMPLIFY = FALSE)
@@ -357,22 +373,28 @@ log_dens_Funs <- function (family) {
            "poisson" = GLMMadaptive:::poisson_log_dens)
 }
 
-lapply(families, log_dens_Funs)
+Funs <- lapply(families, log_dens_Funs)
+mu_funs <- lapply(families, "[[", 'linkinv')
 
-log_density_mixed <- function (y, linear_predictor, sigmas, Funs, n, id) {
+log_density_mixed <- function (y, linear_predictor, log_sigmas, Funs, mu_funs,
+                               nY, unq_idL, idL_lp) {
     n_outcomes <- length(y)
-    out <- numeric(n)
+    out <- matrix(0.0, nY, 1)
     for (i in seq_len(n_outcomes)) {
         y_i <- y[[i]]
         eta_i <- linear_predictor[[i]]
-        sigma_i <- sigmas[[i]]
-        id_i <- id[[i]]
+        log_sigma_i <- log_sigmas[[i]]
+        id_i <- unq_idL[[i]]
+        id_lp_i <- idL_lp[[i]]
         log_dens_i <- Funs[[i]]
-        out[id_i] <- out[id_i] + rowsum(log_dens_i(y_i, eta_i, sigma_i), id_i) # <- fix the second id
+        mu_fun_i <- mu_funs[[i]]
+        out[id_i, ] <- out[id_i, ] + rowsum(log_dens_i(y_i, eta_i, mu_fun_i, log_sigma_i),
+                                            id_lp_i, reorder = FALSE)
     }
-    out
+    unname(out)
 }
 
+log_density_mixed(y, xxx, log_sigmas, Funs, mu_funs, nY, unq_idL, idL_lp)
 
 
 

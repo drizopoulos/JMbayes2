@@ -216,3 +216,11 @@ extract_b <- function (object, id, n) {
     mat
 }
 
+extract_log_sigmas <- function (object) {
+    if (inherits(object, "lme")) {
+        # we extract the log of sigma to be consisten with GLMMadaptive
+        log(object$sigma)
+    } else {
+        object$phis
+    }
+}
