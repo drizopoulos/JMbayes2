@@ -186,26 +186,24 @@ knots <- function (xl, xr, ndx, deg) {
 }
 
 SurvData_HazardModel <- function (time_points, data, times, ids) {
-    if (any(duplicated(ids))) {
-        if (!is.matrix(time_points)) {
-            time_points <- as.matrix(time_points)
-        }
-        if (nrow(time_points) != length(unq_ids)) {
-            stop("the length of unique 'ids' does not match the number of rows ",
-                 "of 'time_points'.")
-        }
-        tt <- split(time_points, row(time_points))
-        ind <- mapply(findInterval, tt, split(times, fids))
-        ind[ind < 1] <- 1
-        if (!is.matrix(ind)) {
-            ind <- rbind(ind)
-        }
-        rownams_id <- split(row.names(data), fids)
-        ind <- mapply(`[`, rownams_id, split(ind, col(ind)))
-        data <- data[c(ind), ]
-    } else {
-        data
+    unq_ids <- unique(ids)
+    fids <- factor(ids, levels = unq_ids)
+    if (!is.matrix(time_points)) {
+        time_points <- as.matrix(time_points)
     }
+    if (nrow(time_points) != length(unq_ids)) {
+        stop("the length of unique 'ids' does not match the number of rows ",
+             "of 'time_points'.")
+    }
+    tt <- split(time_points, row(time_points))
+    ind <- mapply(findInterval, tt, split(times, fids))
+    ind[ind < 1] <- 1
+    if (!is.matrix(ind)) {
+        ind <- rbind(ind)
+    }
+    rownams_id <- split(row.names(data), fids)
+    ind <- mapply(`[`, rownams_id, split(ind, col(ind)))
+    data <- data[c(ind), ]
 }
 
 extract_b <- function (object, id, n) {
@@ -224,3 +222,7 @@ extract_log_sigmas <- function (object) {
         object$phis
     }
 }
+
+value <- slope <- area <- function (x) rep(1, length(x))
+
+

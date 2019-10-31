@@ -63,10 +63,17 @@ functional_form = Formula(~ value(log(serBilir)) + slope(log(serBilir)) +
                           | value(ascites))
 
 # complex example function_form
-functional_form = Formula(~ value(log(serBilir)) + slope(log(serBilir)) |
-                              value(serChol) + value(serChol):sex |
-                              logit(value(hepatomegaly)) |
+expit <- plogis
+functional_form = Formula(~ value(log(serBilir)) + slope(log(serBilir)) + value(log(serBilir)):sex |
+                              value(serChol) + value(serChol):sex + slope(serChol) +
+                              value(serChol):slope(serChol) |
+                              value(hepatomegaly) |
                               value(ascites) + area(ascites))
+
+functional_form2 = ~ value(log(serBilir)) + slope(log(serBilir)) |
+                              value(serChol) + value(serChol):sex |
+                              expit(value(hepatomegaly)) |
+                              value(ascites) + area(ascites)
 
 ##########################################################################################
 
@@ -103,6 +110,7 @@ dataL <- dataL[order(idL, dataL[[timeVar]]), ]
 
 # extract terms from mixed models
 terms_FE <- lapply(Mixed_objects, extract_terms, which = "fixed", data = dataL)
+respVars <- sapply(terms_FE, function (tt) all.vars(tt)[1L])
 terms_FE_noResp <- lapply(terms_FE, delete.response)
 terms_RE <- lapply(Mixed_objects, extract_terms, which = "random", data = dataL)
 
@@ -175,9 +183,16 @@ if (inherits(dataS, "try-error")) {
          " this dataset in the 'data_Surv' argument of jm().")
 }
 
+# if the longitudinal outcomes are not in dataS, we set a random value for
+# them. This is needed for the calculation of the matrix of interaction terms
+# between the longitudinal outcomes and other variables.
+for (i in seq_along(respVars)) {
+    if (is.null(dataS[[respVars[i]]])) dataS[[respVars[i]]] <- rnorm(nrow(dataS))
+}
+
 # terms for survival model
 terms_Surv <- Surv_object$terms
-terms_Surv <- drop.terms(terms_Surv, attr(terms_Surv,"specials")$cluster - 1,
+terms_Surv <- drop.terms(terms_Surv, attr(terms_Surv, "specials")$cluster - 1,
                          keep.response = TRUE)
 terms_Surv_noResp <- delete.response(terms_Surv)
 mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
@@ -217,12 +232,11 @@ if (nY != nT) {
 #           3 for interval censored
 if (type_censoring == "right") {
     Time_right <- unname(Surv_Response[, "time"])
-    Time_left <- rep(0.0, nT)
-    trunc_Time <- rep(0.0, nT)
+    Time_left <- Time_start <- trunc_Time <- rep(0.0, nT)
     delta <-  unname(Surv_Response[, "status"])
 } else if (type_censoring == "counting") {
-    Time_start <-  unname(Surv_Response[, "start"])
-    Time_stop <-  unname(Surv_Response[, "stop"])
+    Time_start <- unname(Surv_Response[, "start"])
+    Time_stop <- unname(Surv_Response[, "stop"])
     delta <-  unname(Surv_Response[, "status"])
     Time_right <- tapply(Time_stop, idT, tail, n = 1) # time of event
     trunc_Time <- tapply(Time_start, idT, head, n = 1) # possible left truncation time
@@ -231,7 +245,7 @@ if (type_censoring == "right") {
 } else if (type_censoring == "interval") {
     Time1 <-  unname(Surv_Response[, "time1"])
     Time2 <-  unname(Surv_Response[, "time2"])
-    trunc_Time <- rep(0.0, nT)
+    trunc_Time <- Time_start <- rep(0.0, nT)
     delta <-  unname(Surv_Response[, "status"])
     Time_right <- Time1
     Time_right[delta == 3] <- Time2[delta == 3]
@@ -293,28 +307,41 @@ functional_forms_per_outcome <- lapply(ordering_of_outcomes,
 collapsed_functional_forms <- lapply(functional_forms_per_outcome,
                                      function (x) names(x[sapply(x, length) > 0]))
 
+####################################################
+
+
+
+#####################################################
+
 # design matrices for the survival submodel:
 #  - W0 is the design matrix for the log baseline hazard
 #  - W is the design matrix for the covariates in the Surv_object
 #    (including time-varying covariates)
 #  - X is the design matrix for the fixed effects, per outcome and functional form
 #  - Z is the design matrix for the random effects, per outcome and functional form
+#  - U is the design matrix for possible interaction terms
 # in the above design matrices we put the "_h" to denote calculation at the event time
 # 'Time_right', we put "_H" to denote calculation at the 'Time_integration', and
 # "_H2" to denote calculation at the 'Time_integration2'.
 if (length(which_event)) {
     W0_h <- splineDesign(con$knots, Time_right, ord = con$Bsplines_degree + 1)
-    W_h <- model.matrix.default(terms_Surv_noResp, mf_surv_dataS)[, -1, drop = FALSE]
+    dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start, idT)
+    mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
+    W_h <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
     X_h <- desing_matrices_functional_forms(Time_right, terms_FE_noResp,
                                             dataL, timeVar, idVar,
                                             collapsed_functional_forms)
     Z_h <- desing_matrices_functional_forms(Time_right, terms_RE,
                                             dataL, timeVar, idVar,
                                             collapsed_functional_forms)
+    U_h <- lapply(seq_along(Mixed_objects), function (i) {
+        tt <- terms(formula(functional_form, rhs = i))
+        model.matrix(tt, model.frame(tt, data = dataS_h))[, -1, drop = FALSE]
+    })
 }
 W0_H <- splineDesign(con$knots, c(t(st)), ord = con$Bsplines_degree + 1)
-dataS_int <- SurvData_HazardModel(st, dataS, Time_start, idT) # <- check that it works with start stop Surv
-mf <- model.frame.default(terms_Surv_noResp, data = dataS_int)
+dataS_H <- SurvData_HazardModel(st, dataS, Time_start, idT)
+mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
 W_H <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
 X_H <- desing_matrices_functional_forms(st, terms_FE_noResp,
                                         dataL, timeVar, idVar,
@@ -322,10 +349,15 @@ X_H <- desing_matrices_functional_forms(st, terms_FE_noResp,
 Z_H <- desing_matrices_functional_forms(st, terms_RE,
                                         dataL, timeVar, idVar,
                                         collapsed_functional_forms)
+U_H <- lapply(seq_along(Mixed_objects), function (i) {
+    tt <- terms(formula(functional_form, rhs = i))
+    model.matrix(tt, model.frame(tt, data = dataS_H))[, -1, drop = FALSE]
+})
+
 if (length(which_interval)) {
     W0_H2 <- splineDesign(con$knots, c(t(st2)), ord = con$Bsplines_degree + 1)
-    dataS_int2 <- SurvData_HazardModel(st2, dataS, Time_start, idT)
-    mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_int2)
+    dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start, idT)
+    mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
     W_H2 <- model.matrix.default(terms_Surv_noResp, mf2)[, -1, drop = FALSE]
     X_H2 <- desing_matrices_functional_forms(st, terms_FE_noResp,
                                              dataL, timeVar, idVar,
@@ -333,6 +365,10 @@ if (length(which_interval)) {
     Z_H2 <- desing_matrices_functional_forms(st, terms_RE,
                                              dataL, timeVar, idVar,
                                              collapsed_functional_forms)
+    U_H2 <- lapply(seq_along(Mixed_objects), function (i) {
+        tt <- terms(formula(functional_form, rhs = i))
+        model.matrix(tt, model.frame(tt, data = dataS_H2))[, -1, drop = FALSE]
+    })
 }
 
 #############################################################
@@ -361,7 +397,7 @@ linpred_mixed <- function (X, betas, Z, b, id) {
     out
 }
 
-xxx <- linpred_mixed(X, betas, Z, b, idL_lp)
+eta <- linpred_mixed(X, betas, Z, b, idL_lp)
 
 log_dens_Funs <- function (family) {
     gaussian_log_dens <- function (y, eta, mu_fun = NULL, phis, eta_zi = NULL) {
@@ -370,7 +406,8 @@ log_dens_Funs <- function (family) {
     switch(family$family,
            "gaussian" = gaussian_log_dens,
            "binomial" = GLMMadaptive:::binomial_log_dens,
-           "poisson" = GLMMadaptive:::poisson_log_dens)
+           "poisson" = GLMMadaptive:::poisson_log_dens,
+           "negative.binomial" = GLMMadaptive:::negative.binomial_log_dens)
 }
 
 Funs <- lapply(families, log_dens_Funs)
@@ -386,15 +423,21 @@ log_density_mixed <- function (y, linear_predictor, log_sigmas, Funs, mu_funs,
         log_sigma_i <- log_sigmas[[i]]
         id_i <- unq_idL[[i]]
         id_lp_i <- idL_lp[[i]]
-        log_dens_i <- Funs[[i]]
-        mu_fun_i <- mu_funs[[i]]
+        # Consideration for C++ implementation: The above can be transformed from a
+        # list in R to a field of RcppArmadillo. However, this cannot be done for
+        # functions, i.e., you cannot have a field of functions. Logically, it will be
+        # costly to extract each time the R function from the list in C++. Perhaps then
+        # all these functions, i.e., the log densities for each family and the inverse
+        # link functions will need to be implemented in C++.
+        log_dens_i <- Funs[[i]] # <--------
+        mu_fun_i <- mu_funs[[i]] # <---------
         out[id_i, ] <- out[id_i, ] + rowsum(log_dens_i(y_i, eta_i, mu_fun_i, log_sigma_i),
                                             id_lp_i, reorder = FALSE)
     }
     unname(out)
 }
 
-log_density_mixed(y, xxx, log_sigmas, Funs, mu_funs, nY, unq_idL, idL_lp)
+log_density_mixed(y, eta, log_sigmas, Funs, mu_funs, nY, unq_idL, idL_lp)
 
 
 
