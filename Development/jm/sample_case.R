@@ -111,6 +111,7 @@ dataL <- dataL[order(idL, dataL[[timeVar]]), ]
 # extract terms from mixed models
 terms_FE <- lapply(Mixed_objects, extract_terms, which = "fixed", data = dataL)
 respVars <- sapply(terms_FE, function (tt) all.vars(tt)[1L])
+namesOutcomes <- sapply(terms_FE, function (t) as.character(formula(t))[2L])
 terms_FE_noResp <- lapply(terms_FE, delete.response)
 terms_RE <- lapply(Mixed_objects, extract_terms, which = "random", data = dataL)
 
@@ -380,6 +381,9 @@ D <- bdiag(lapply(Mixed_objects, extract_D))
 b <- mapply(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY),
             SIMPLIFY = FALSE)
 gammas <- coef(Surv_object)
+gammas <- gammas[names(gammas) != "(Intercept)"]
+bs_gammas <- rnorm(ncol(W0_H), sd = 0.1)
+alphas <- rnorm(sum(sapply(U_H, ncol)), sd = 0.1)
 
 ################################################################################
 
@@ -438,6 +442,59 @@ log_density_mixed <- function (y, linear_predictor, log_sigmas, Funs, mu_funs,
 }
 
 log_density_mixed(y, eta, log_sigmas, Funs, mu_funs, nY, unq_idL, idL_lp)
+
+
+##########################################################################################
+
+ee <- W0_h %*% bs_gammas + W_h %*% gammas
+
+
+linpred_surv <- function (X, betas, Z, b, id) {
+    out <- vector("list", length(X))
+    for (i in seq_along(X)) {
+        X_i <- X[[i]]
+        Z_i <- Z[[i]]
+        betas_i <- betas[[i]]
+        b_i <- b[[i]]
+        id_i <- id[[i]]
+        out[[i]] <- matrix(0.0, nrow = nrow(X_i[[1]]), ncol = length(X_i))
+        for (j in seq_along(X_i)) {
+            X_ij <- X_i[[j]]
+            Z_ij <- Z_i[[j]]
+            out[[i]][, j] <- X_ij %*% betas_i + rowSums(Z_ij * b_i[id_i, ])
+        }
+    }
+    out
+}
+
+id_h <- lapply(X_h, function (x) seq_len(nrow(x[[1]])))
+id_H <- lapply(X_H, function (i, n) rep(seq_len(n), each = con$GK_k), n = nY)
+
+eta_h <- linpred_surv(X_h, betas, Z_h, b, id_h)
+eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
+
+
+U_i <- U_h[[1]]
+FF <- function(u, nam) {
+    nams_forms <- c("value", "slope", "area")
+    lapply(nams_forms, function (x) {
+        grep(paste0(x, "(", nam, ")"), colnames(u),
+             fixed = TRUE)
+    })
+}
+order_Fun_Forms <- mapply(FF, U_h, namesOutcomes, SIMPLIFY = FALSE)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
