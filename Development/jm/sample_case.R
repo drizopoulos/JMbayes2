@@ -305,8 +305,9 @@ ordering_of_outcomes <- sapply(long_resp_vars, grep, x = long_resp_var_in_functi
                                fixed = TRUE)
 functional_forms_per_outcome <- lapply(ordering_of_outcomes,
                                        extract_functional_forms_per_outcome)
-collapsed_functional_forms <- lapply(functional_forms_per_outcome,
-                                     function (x) names(x[sapply(x, length) > 0]))
+functional_forms_per_outcome <- lapply(functional_forms_per_outcome,
+                                       function (x) x[sapply(x, length) > 0])
+collapsed_functional_forms <- lapply(functional_forms_per_outcome, names)
 
 ####################################################
 
@@ -321,6 +322,8 @@ collapsed_functional_forms <- lapply(functional_forms_per_outcome,
 #  - X is the design matrix for the fixed effects, per outcome and functional form
 #  - Z is the design matrix for the random effects, per outcome and functional form
 #  - U is the design matrix for possible interaction terms
+#  - Wlong is the design matrix for longitudinal outcomes in the survival submodel that
+#    is already multiplied with the interaction terms matrix U
 # in the above design matrices we put the "_h" to denote calculation at the event time
 # 'Time_right', we put "_H" to denote calculation at the 'Time_integration', and
 # "_H2" to denote calculation at the 'Time_integration2'.
@@ -383,7 +386,7 @@ b <- mapply(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY),
 gammas <- coef(Surv_object)
 gammas <- gammas[names(gammas) != "(Intercept)"]
 bs_gammas <- rnorm(ncol(W0_H), sd = 0.1)
-alphas <- rnorm(sum(sapply(U_H, ncol)), sd = 0.1)
+alphas <- lapply(U_H, function (x) rnorm(ncol(x), sd = 0.1))
 
 ################################################################################
 
@@ -446,9 +449,6 @@ log_density_mixed(y, eta, log_sigmas, Funs, mu_funs, nY, unq_idL, idL_lp)
 
 ##########################################################################################
 
-ee <- W0_h %*% bs_gammas + W_h %*% gammas
-
-
 linpred_surv <- function (X, betas, Z, b, id) {
     out <- vector("list", length(X))
     for (i in seq_along(X)) {
@@ -473,29 +473,12 @@ id_H <- lapply(X_H, function (i, n) rep(seq_len(n), each = con$GK_k), n = nY)
 eta_h <- linpred_surv(X_h, betas, Z_h, b, id_h)
 eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
 
+Wlong_h <- create_Wlong(eta_h, functional_forms_per_outcome, U_h)
+Wlong_H <- create_Wlong(eta_H, functional_forms_per_outcome, U_H)
 
-U_i <- U_h[[1]]
-FF <- function(u, nam) {
-    nams_forms <- c("value", "slope", "area")
-    lapply(nams_forms, function (x) {
-        grep(paste0(x, "(", nam, ")"), colnames(u),
-             fixed = TRUE)
-    })
+ee <- W0_h %*% bs_gammas + W_h %*% gammas
+for (i in seq_along(Wlong_h)) {
+    ee <- ee + Wlong_h[[i]] %*% alphas[[i]]
 }
-order_Fun_Forms <- mapply(FF, U_h, namesOutcomes, SIMPLIFY = FALSE)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
