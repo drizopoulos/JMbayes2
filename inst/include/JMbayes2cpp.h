@@ -26,25 +26,31 @@ arma::vec rowsum_by_group_fast (const vec& x, const uvec& group) {
 // recursive version
 arma::vec rowlogsumexp_recursive_by_group (const vec& x, const uvec& group) {
   // initiate out vector
-  vec out = x.elem(group);
+  arma::vec out = x.elem(group);
   // number of unique groups 
   unsigned int k = group.n_elem;
-  // create new vector for indexing in the loop
-  vec group_index = group.insert_rows(0, 1);
+  // create index version of group with one zero at start
+  arma::uvec group_index = uvec(group.n_elem + 1).fill(0);
+  // add correct elements to group index
+  group_index.subvec(1, group_index.n_elem - 1) = group.subvec(0, group.n_elem - 1);
+  // initiate field of vecs: one vec for each subject
+  // and other variables for loop outside due to scoping
+  arma::field<vec> X_i(k);
+  arma::vec n_i(k);
+  arma::vec Lk_i(k);
+  arma::vec logsumexp_i(k);
+  unsigned int i;
   // initiate loop over each group to apply recursive LSE 
-  for (int i = 1; i < k; ++i) {
-    vec x_i = x.rows(group_index.elem(i - 1), group_index.elem(i));
-    int n_i = x_i.n_elem;
-    vec x_i_sorted = sort(x_i, 'descend');
-    double Lk = x_i_sorted(0);
-    for (int j = 0; j < n_i - 1; ++i) {
-      double maxelem = xi_sorted(j + 1).insert_rows(1, Lk).max();
-      double logelem = log1p(exp(-abs(xi_sorted(j + 1) - Lk)));
-      double logsumexp_i = maxelem + logelem;
+  for (unsigned int i = 1; i <= k; ++i) {
+    X_i(i - 1) = sort(x.rows(group_index(i - 1), group_index(i)), "descend");
+    n_i(i - 1) = X_i(i - 1).n_elem;
+    Lk_i(i - 1) = X_i(i - 1).at(0);
+    for (unsigned int j = 0; j < n_i(i - 1) - 1; ++j) {
+      logsumexp_i(i - 1) = std::max(X_i(i - 1)(j + 1), Lk_i(i - 1)) + log1p(exp(-abs(X_i(i - 1)(j + 1) - Lk_i(i - 1))));
     }
-    out(i - 1) = logsumexp_i;
+    out(i - 1) = logsumexp_i(i - 1);
   }
-  return(out);
+  return(out);  
 }
 
 #endif
