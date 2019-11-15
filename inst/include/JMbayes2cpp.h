@@ -38,7 +38,6 @@ arma::vec rowlogsumexp_recursive_by_group (const arma::vec& x, const arma::uvec&
   arma::field<vec> X_i(k);
   arma::vec n_i(k);
   arma::vec Lk_i(k);
-  arma::vec logsumexp_i(k);
   unsigned int i;
   // initiate loop over each group to apply recursive LSE 
   // create field with loop
@@ -47,9 +46,9 @@ arma::vec rowlogsumexp_recursive_by_group (const arma::vec& x, const arma::uvec&
     n_i(i - 1) = X_i(i - 1).n_elem;
     Lk_i(i - 1) = X_i(i - 1).at(0);
     for (unsigned int j = 0; j < n_i(i - 1) - 1; ++j) {
-      logsumexp_i(i - 1) = std::max(X_i(i - 1)(j + 1), Lk_i(i - 1)) + log1p(exp(-abs(X_i(i - 1)(j + 1) - Lk_i(i - 1))));
+      Lk_i(i - 1) = std::max(X_i(i - 1)(j + 1), Lk_i(i - 1)) + log1p(exp(-std::abs(X_i(i - 1)(j + 1) - Lk_i(i - 1))));
     }
-    out(i - 1) = logsumexp_i(i - 1);
+    out(i - 1) = Lk_i(i - 1);
   }
   return(out);  
 }
