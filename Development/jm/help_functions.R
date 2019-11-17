@@ -225,18 +225,3 @@ extract_log_sigmas <- function (object) {
 
 value <- slope <- area <- function (x) rep(1, length(x))
 
-create_Wlong <- function (eta, functional_forms_per_outcome, U) {
-    Wlong <- vector("list", length(eta))
-    for (i in seq_along(functional_forms_per_outcome)) {
-        FF_i <- functional_forms_per_outcome[[i]]
-        eta_i <- eta[[i]]
-        U_i <- U[[i]]
-        Wlong_i <- matrix(1.0, nrow(eta_i), max(unlist(FF_i)))
-        for (j in seq_along(FF_i)) {
-            ind <- FF_i[[j]]
-            Wlong_i[, ind] <- Wlong_i[, ind] * eta_i[, j]
-        }
-        Wlong[[i]] <- U_i * Wlong_i
-    }
-    Wlong
-}

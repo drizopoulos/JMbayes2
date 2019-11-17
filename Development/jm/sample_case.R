@@ -309,10 +309,6 @@ functional_forms_per_outcome <- lapply(functional_forms_per_outcome,
                                        function (x) x[sapply(x, length) > 0])
 collapsed_functional_forms <- lapply(functional_forms_per_outcome, names)
 
-####################################################
-
-
-
 #####################################################
 
 # design matrices for the survival submodel:
@@ -327,6 +323,27 @@ collapsed_functional_forms <- lapply(functional_forms_per_outcome, names)
 # in the above design matrices we put the "_h" to denote calculation at the event time
 # 'Time_right', we put "_H" to denote calculation at the 'Time_integration', and
 # "_H2" to denote calculation at the 'Time_integration2'.
+
+#################################################################################
+# What if there are no covariates in the Cox model and we only want to include  #
+# the longitudinal outcomes. The W will be then empty                           #
+#################################################################################
+
+W0_H <- splineDesign(con$knots, c(t(st)), ord = con$Bsplines_degree + 1)
+dataS_H <- SurvData_HazardModel(st, dataS, Time_start, idT)
+mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
+W_H <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
+X_H <- desing_matrices_functional_forms(st, terms_FE_noResp,
+                                        dataL, timeVar, idVar,
+                                        collapsed_functional_forms)
+Z_H <- desing_matrices_functional_forms(st, terms_RE,
+                                        dataL, timeVar, idVar,
+                                        collapsed_functional_forms)
+U_H <- lapply(seq_along(Mixed_objects), function (i) {
+    tt <- terms(formula(functional_form, rhs = i))
+    model.matrix(tt, model.frame(tt, data = dataS_H))[, -1, drop = FALSE]
+})
+
 if (length(which_event)) {
     W0_h <- splineDesign(con$knots, Time_right, ord = con$Bsplines_degree + 1)
     dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start, idT)
@@ -343,20 +360,6 @@ if (length(which_event)) {
         model.matrix(tt, model.frame(tt, data = dataS_h))[, -1, drop = FALSE]
     })
 }
-W0_H <- splineDesign(con$knots, c(t(st)), ord = con$Bsplines_degree + 1)
-dataS_H <- SurvData_HazardModel(st, dataS, Time_start, idT)
-mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
-W_H <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
-X_H <- desing_matrices_functional_forms(st, terms_FE_noResp,
-                                        dataL, timeVar, idVar,
-                                        collapsed_functional_forms)
-Z_H <- desing_matrices_functional_forms(st, terms_RE,
-                                        dataL, timeVar, idVar,
-                                        collapsed_functional_forms)
-U_H <- lapply(seq_along(Mixed_objects), function (i) {
-    tt <- terms(formula(functional_form, rhs = i))
-    model.matrix(tt, model.frame(tt, data = dataS_H))[, -1, drop = FALSE]
-})
 
 if (length(which_interval)) {
     W0_H2 <- splineDesign(con$knots, c(t(st2)), ord = con$Bsplines_degree + 1)
@@ -390,95 +393,67 @@ alphas <- lapply(U_H, function (x) rnorm(ncol(x), sd = 0.1))
 
 ################################################################################
 
-linpred_mixed <- function (X, betas, Z, b, id) {
-    n_outcomes <- length(X)
-    out <- vector("list", n_outcomes)
-    for (i in seq_len(n_outcomes)) {
-        X_i <- X[[i]]
-        betas_i <- betas[[i]]
-        Z_i <- Z[[i]]
-        b_i <- b[[i]]
-        id_i <- id[[i]]
-        out[[i]] <- X_i %*% betas_i + rowSums(Z_i * b_i[id_i, ])
-    }
-    out
-}
-
-eta <- linpred_mixed(X, betas, Z, b, idL_lp)
-
-log_dens_Funs <- function (family) {
-    gaussian_log_dens <- function (y, eta, mu_fun = NULL, phis, eta_zi = NULL) {
-        dnorm(y, eta, exp(phis), log = TRUE)
-    }
-    switch(family$family,
-           "gaussian" = gaussian_log_dens,
-           "binomial" = GLMMadaptive:::binomial_log_dens,
-           "poisson" = GLMMadaptive:::poisson_log_dens,
-           "negative.binomial" = GLMMadaptive:::negative.binomial_log_dens)
-}
-
+# the families and inverse link functions per longitudinal outcome
 Funs <- lapply(families, log_dens_Funs)
 mu_funs <- lapply(families, "[[", 'linkinv')
 
-log_density_mixed <- function (y, linear_predictor, log_sigmas, Funs, mu_funs,
-                               nY, unq_idL, idL_lp) {
-    n_outcomes <- length(y)
-    out <- matrix(0.0, nY, 1)
-    for (i in seq_len(n_outcomes)) {
-        y_i <- y[[i]]
-        eta_i <- linear_predictor[[i]]
-        log_sigma_i <- log_sigmas[[i]]
-        id_i <- unq_idL[[i]]
-        id_lp_i <- idL_lp[[i]]
-        # Consideration for C++ implementation: The above can be transformed from a
-        # list in R to a field of RcppArmadillo. However, this cannot be done for
-        # functions, i.e., you cannot have a field of functions. Logically, it will be
-        # costly to extract each time the R function from the list in C++. Perhaps then
-        # all these functions, i.e., the log densities for each family and the inverse
-        # link functions will need to be implemented in C++.
-        log_dens_i <- Funs[[i]] # <--------
-        mu_fun_i <- mu_funs[[i]] # <---------
-        out[id_i, ] <- out[id_i, ] + rowsum(log_dens_i(y_i, eta_i, mu_fun_i, log_sigma_i),
-                                            id_lp_i, reorder = FALSE)
-    }
-    unname(out)
-}
+# this is the linear predictors for the longitudinal submodels
+eta <- linpred_mixed(X, betas, Z, b, idL_lp)
 
+# the log density for all longitudinal outcomes
 log_density_mixed(y, eta, log_sigmas, Funs, mu_funs, nY, unq_idL, idL_lp)
-
 
 ##########################################################################################
 
-linpred_surv <- function (X, betas, Z, b, id) {
-    out <- vector("list", length(X))
-    for (i in seq_along(X)) {
-        X_i <- X[[i]]
-        Z_i <- Z[[i]]
-        betas_i <- betas[[i]]
-        b_i <- b[[i]]
-        id_i <- id[[i]]
-        out[[i]] <- matrix(0.0, nrow = nrow(X_i[[1]]), ncol = length(X_i))
-        for (j in seq_along(X_i)) {
-            X_ij <- X_i[[j]]
-            Z_ij <- Z_i[[j]]
-            out[[i]][, j] <- X_ij %*% betas_i + rowSums(Z_ij * b_i[id_i, ])
-        }
-    }
-    out
-}
-
-id_h <- lapply(X_h, function (x) seq_len(nrow(x[[1]])))
+# id_H is used to repeat the random effects of each subject GK_k times
 id_H <- lapply(X_H, function (i, n) rep(seq_len(n), each = con$GK_k), n = nY)
-
-eta_h <- linpred_surv(X_h, betas, Z_h, b, id_h)
+# this is the linear predictor for the longitudinal outcomes evaluated at the
+# Gauss-Kronrod quadrature points
 eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
-
-Wlong_h <- create_Wlong(eta_h, functional_forms_per_outcome, U_h)
+# Wlong is the design matrix of all longitudinal outcomes according to the specified
+# functional forms per outcome already multiplied with the interaction terms matrix U
 Wlong_H <- create_Wlong(eta_H, functional_forms_per_outcome, U_H)
 
-ee <- W0_h %*% bs_gammas + W_h %*% gammas
-for (i in seq_along(Wlong_h)) {
-    ee <- ee + Wlong_h[[i]] %*% alphas[[i]]
+if (length(which_event)) {
+    id_h <- lapply(X_h, function (x) seq_len(nrow(x[[1]])))
+    eta_h <- linpred_surv(X_h, betas, Z_h, b, id_h)
+    Wlong_h <- create_Wlong(eta_h, functional_forms_per_outcome, U_h)
 }
+
+if (length(which_interval)) {
+    id_H2 <- lapply(X_H2, function (i, n) rep(seq_len(n), each = con$GK_k), n = nY)
+    eta_H2 <- linpred_surv(X_H2, betas, Z_H, b, id_H2)
+    Wlong_H2 <- create_Wlong(eta_H2, functional_forms_per_outcome, U_H2)
+}
+
+# this is the linear predictor of the survival submodel for the component to
+# be integrated
+lambda_H <- W0_H %*% bs_gammas + W_H %*% gammas
+for (i in seq_along(Wlong_H)) {
+    lambda_H <- lambda_H + Wlong_H[[i]] %*% alphas[[i]]
+}
+
+# the linear predictor for the hazard function is only needed for the subjects
+# with event
+lambda_h <- matrix(0.0, nT, 1)
+lambda_h[which_event, ] <- W0_h[which_event, ] %*% bs_gammas +
+    W_h[which_event, ] %*% gammas
+for (i in seq_along(Wlong_h)) {
+    W_h_i <- Wlong_h[[i]]
+    lambda_h[which_event, ] <- lambda_h[which_event, ] +
+        W_h_i[which_event, , drop = FALSE] %*% alphas[[i]]
+}
+
+# the linear predictor for second component to integrate for the subjects who
+# were interval censored
+lambda_H2 <- matrix(0.0, nrow(Wlong_H2[[1]]), 1)
+lambda_H2[which_interval, ] <- W0_H2[which_interval, ] %*% bs_gammas +
+    W_H2[which_interval, ] %*% gammas
+for (i in seq_along(Wlong_H2)) {
+    W_H2_i <- Wlong_H2[[i]]
+    lambda_H2[which_interval, ] <- lambda_H2[which_interval, ] +
+        W_H2_i[which_interval, , drop = FALSE] %*% alphas[[i]]
+}
+
 
 
