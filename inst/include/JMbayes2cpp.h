@@ -52,4 +52,21 @@ arma::vec rowlogsumexp_recursive_by_group (const arma::vec& x, const arma::uvec&
   }
   return(out);  
 }
+
+arma::field<arma::vec> linpred_mixed(const arma::field<arma::mat>& X, const arma::field<arma::vec>& betas, 
+                                     const arma::field<arma::mat>& Z, const arma::field<arma::mat>& b, 
+                                     const arma::field<arma::uvec>& id) {
+  int n_outcomes = X.n_elem;
+  arma::field<arma::vec> out;
+  for (int i = 0; i < n_outcomes; i++) {
+    arma::mat X_i = X(i);
+    arma::vec betas_i = betas(i);
+    arma::mat Z_i = Z(i);
+    arma::mat b_i = b(i);
+    arma::uvec id_i = id(i);
+    out(i) = X_i * betas_i + arma::sum(Z_i % b_i.rows(id_i), 1); 
+  }
+  return(out);
+}
+
 #endif
