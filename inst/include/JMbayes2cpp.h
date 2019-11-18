@@ -22,7 +22,10 @@ arma::vec rowsum_by_group_fast (const vec& x, const uvec& group) {
   return(out);
 }
 
+////////////////////////////////
 // logsumexp versions of rowsum
+////////////////////////////////
+
 // recursive version
 arma::vec rowlogsumexp_recursive_by_group (const arma::vec& x, const arma::uvec& group) {
   // initiate out vector
@@ -53,6 +56,13 @@ arma::vec rowlogsumexp_recursive_by_group (const arma::vec& x, const arma::uvec&
   return(out);  
 }
 
+////////////////////////////////////////////////////////////////////
+
+////////////////
+// R to cpp
+////////////////
+
+// linpred_mixed
 arma::field<arma::vec> linpred_mixed(const arma::field<arma::mat>& X, const arma::field<arma::vec>& betas, 
                                      const arma::field<arma::mat>& Z, const arma::field<arma::mat>& b, 
                                      const arma::field<arma::uvec>& id) {
@@ -68,5 +78,14 @@ arma::field<arma::vec> linpred_mixed(const arma::field<arma::mat>& X, const arma
   }
   return(out);
 }
+
+// family_map
+// maps strings to integers for use of switch
+std::map<std::string, int> family_map;
+family_map.insert(std::make_pair('gaussian', 1));
+family_map.insert(std::make_pair('binomial', 2));
+family_map.insert(std::make_pair('poisson', 3));
+family_map.insert(std::make_pair('negative.binomial', 4));
+
 
 #endif
