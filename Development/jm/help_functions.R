@@ -170,6 +170,53 @@ desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
     out
 }
 
+##########################################################################################
+# GP: ADDED ALTERNATIVE VERSION OF desing_matrices_functional_forms() THAT RETURNS ARRAY #
+# INSTEAD OF LIST ########################################################################
+
+desing_matrices_functional_forms_array <- function (time, terms, data, timeVar, idVar, 
+                                                    Fun_Forms) { 
+    desgn_matr <- function (time, terms) { 
+        D <- LongData_HazardModel(time, data, data[[timeVar]], 
+                                  data[[idVar]], timeVar) 
+        mf <- lapply(terms, model.frame.default, data = D) 
+        mapply(model.matrix.default, terms, mf) 
+        } 
+    degn_matr_slp <- function (time, terms) { 
+        M1 <- desgn_matr(time + 0.001, terms) 
+        M2 <- desgn_matr(time - 0.001, terms) 
+        mapply(function (x1, x2) (x1 - x2) / 0.002, M1, M2) 
+        } 
+    degn_matr_area <- function (time, terms) {
+        if (is.matrix(time)) {
+            time <- c(t(time))
+        }
+        GK <- gaussKronrod(15L)
+        wk <- GK$wk
+        sk <- GK$sk
+        P <- unname(time / 2)
+        st <- outer(P, sk + 1)
+        out <- vector("list", 15L)
+        for (i in seq_len(15L)) {
+            ss <- if (nrow(st) == length(unique(data[[idVar]]))) {
+                st[, i]
+            } else {
+                matrix(st[, i], ncol = 15, byrow = TRUE)
+            }
+            M <- desgn_matr(ss, terms)
+            out[[i]] <- lapply(M, "*", P * wk[i])
+        }
+        lapply(seq_along(M), function (i) Reduce("+", lapply(out, "[[", i)))
+    }
+    ################
+    out <- array(c("value" = desgn_matr(time, terms),
+                "slope" = degn_matr_slp(time, terms),
+                "area" = degn_matr_area(time, terms)))
+    out <- lapply(seq_along(Fun_Forms), function (i) lapply(out[Fun_Forms[[i]]], "[[", i))
+    names(out) <- names(Fun_Forms)
+    lapply(out, function (x) array(unlist(x), dim = c(nrow(x[[1]]), ncol(x[[1]]), length(x))))
+}
+
 extract_D <- function (object) {
     if (inherits(object, "lme")) {
         lapply(pdMatrix(object$modelStruct$reStruct), "*",
