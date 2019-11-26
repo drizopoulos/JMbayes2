@@ -209,9 +209,9 @@ desing_matrices_functional_forms_array <- function (time, terms, data, timeVar, 
         lapply(seq_along(M), function (i) Reduce("+", lapply(out, "[[", i)))
     }
     ################
-    out <- array(c("value" = desgn_matr(time, terms),
+    out <- list("value" = desgn_matr(time, terms),
                 "slope" = degn_matr_slp(time, terms),
-                "area" = degn_matr_area(time, terms)))
+                "area" = degn_matr_area(time, terms))
     out <- lapply(seq_along(Fun_Forms), function (i) lapply(out[Fun_Forms[[i]]], "[[", i))
     names(out) <- names(Fun_Forms)
     lapply(out, function (x) array(unlist(x), dim = c(nrow(x[[1]]), ncol(x[[1]]), length(x))))
