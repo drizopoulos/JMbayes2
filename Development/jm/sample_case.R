@@ -12,6 +12,7 @@ library("Formula")
 data("pbc2", package = "JM")
 data("pbc2.id", package = "JM")
 source(file.path(getwd(), "Development/jm/help_functions.R"))
+source(file.path(getwd(), "Development/jm/R_to_Cpp.R"))
 
 ####################
 
@@ -42,17 +43,17 @@ fm3 <- mixed_model(hepatomegaly ~ year + age, data = pbc2,
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 
-CoxFit <- coxph(Surv(years, status2) ~ ns(age, 3) + sex + cluster(id),
+CoxFit <- coxph(Surv(years, status2) ~ 1 + cluster(id),
                 data = pbc2.id, model = TRUE)
 
-survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ drug + age + cluster(id),
+survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ 1 + cluster(id),
                    data = pbc2.id, model = TRUE)
 
 ##########################################################################################
 
 # the arguments of the jm() function
 
-Surv_object = survFit#CoxFit
+Surv_object = CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 data_Surv = NULL
 timeVar = "year"
@@ -275,15 +276,17 @@ if (length(which_interval)) {
 
 # create Gauss Kronrod points and weights
 GK <- gaussKronrod(15)
-wk <- GK$wk
 sk <- GK$sk
 P <- c(Time_integration - trunc_Time) / 2
 st <- outer(P, sk) + (c(Time_integration + trunc_Time) / 2)
+log_Pwk <- rep(log(P), each = length(sk)) + rep_len(log(GK$wk), length.out = length(st))
 if (length(which_interval)) {
     P2 <- c(Time_integration2 - trunc_Time) / 2
     st2 <- outer(P2, sk) + (c(Time_integration2 + trunc_Time) / 2)
+    log_Pwk2 <- rep(log(P2), each = length(sk)) +
+        rep_len(log(GK$wk), length.out = length(st2))
 } else {
-    P2 <- st2 <- NULL
+    P2 <- st2 <- log_Pwk2 <- NULL
 }
 
 # knots for the log baseline hazard function
@@ -454,6 +457,20 @@ for (i in seq_along(Wlong_H2)) {
     lambda_H2[which_interval, ] <- lambda_H2[which_interval, ] +
         W_H2_i[which_interval, , drop = FALSE] %*% alphas[[i]]
 }
+
+# Computations of
+which_right_event <- c(which_right, which_event)
+H <- rowsum(exp(log_Pwk + lambda_H), group = id_H[[1]], reorder = FALSE)
+H2 <- rowsum(exp(log_Pwk2 + lambda_H2), group = id_H2[[1]], reorder = FALSE)
+log_Lik_surv <- numeric(nT)
+log_Lik_surv[which_right_event] <- - H[which_right_event]
+log_Lik_surv[which_event] <- log_Lik_surv[which_event] + lambda_h[which_event]
+log_Lik_surv[which_left] <- log1p(- exp(- H[which_left]))
+log_Lik_surv[which_interval] <- log(exp(- H[which_interval]) - exp(-H2[which_interval]))
+
+
+str(matrix(0, 4, 3))
+
 
 
 
