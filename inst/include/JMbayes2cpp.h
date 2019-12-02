@@ -79,6 +79,9 @@ arma::field<arma::vec> linpred_mixed(const arma::field<arma::mat>& X, const arma
   return(out);
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// Does not work. Needs to be within function scope
+// OR find a way tyo export as global variables 
 // family_map
 // maps strings to integers for use of switch
 std::map<std::string, int> family_map;
@@ -86,6 +89,6 @@ family_map.insert(std::make_pair('gaussian', 1));
 family_map.insert(std::make_pair('binomial', 2));
 family_map.insert(std::make_pair('poisson', 3));
 family_map.insert(std::make_pair('negative.binomial', 4));
-
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #endif
