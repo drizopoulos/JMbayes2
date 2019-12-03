@@ -79,6 +79,33 @@ arma::field<arma::vec> linpred_mixed(const arma::field<arma::mat>& X, const arma
   return(out);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// linpred_surv
+// NOTES: 
+// cURRENTLY WORKS WITH X_H & Z_H as list of arrays, where we have one array per outcome one slice per functional form
+// NOTE THAT FOR IT TO WORK WE NEED TO ALSO CORRECT INDEXING VIA ID_H e.g lapply(id_H, FUN = function(x) x - 1)
+arma::field<arma::mat> linpred_surv_array(const arma::field<arma::cube>& X, const arma::field<arma::vec>& betas, 
+                                          const arma::field<arma::cube>& Z, const arma::field<arma::mat>& b, 
+                                          const arma::field<arma::uvec>& id) {
+  int n_outcomes = X.n_elem;
+  arma::field<arma::mat> out(n_outcomes);
+  for (int i = 0; i < n_outcomes; i++) {
+    arma::cube X_i = X(i);
+    arma::vec betas_i = betas(i);
+    arma::cube Z_i = Z(i);
+    arma::mat b_i = b(i);
+    arma::uvec id_i = id(i);
+    int n_forms = X_i.n_slices;
+    arma::mat out_i(X_i.n_rows, n_forms);
+    out(i) = out_i;
+    for (int j = 0; j < n_forms; j++) {
+      out(i).col(j) = X_i.slice(j) * betas_i + arma::sum(Z_i.slice(j) % b_i.rows(id_i), 1);
+    }
+  }
+  return(out);
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Does not work. Needs to be within function scope
 // OR find a way tyo export as global variables 
