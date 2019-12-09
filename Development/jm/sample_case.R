@@ -206,6 +206,8 @@ mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
 Surv_Response <- model.response(mf_surv_dataS)
 type_censoring <- attr(Surv_Response, "type")
 idT <- Surv_object$model$cluster
+if (is.null(idT))
+    idT <- seq_len(nY)
 idT <- factor(idT, levels = unique(idT))
 if (!all(idT %in% dataL[[idVar]])) {
     stop("it seems that some of the levels of the 'cluster()' variable in the survival ",
@@ -406,6 +408,7 @@ mu_funs <- lapply(families, "[[", 'linkinv')
 # this is the linear predictors for the longitudinal submodels
 eta <- linpred_mixed(X, betas, Z, b, idL_lp)
 
+
 # the log density for all longitudinal outcomes
 log_density_mixed(y, eta, log_sigmas, Funs, mu_funs, nY, unq_idL, idL_lp)
 
@@ -434,7 +437,10 @@ if (length(which_interval)) {
 
 # this is the linear predictor of the survival submodel for the component to
 # be integrated
-lambda_H <- W0_H %*% bs_gammas + W_H %*% gammas
+lambda_H <- W0_H %*% bs_gammas
+if (ncol(W_H)) {
+    lambda_H <- lambda_H + W_H %*% gammas
+}
 for (i in seq_along(Wlong_H)) {
     lambda_H <- lambda_H + Wlong_H[[i]] %*% alphas[[i]]
 }
@@ -442,8 +448,10 @@ for (i in seq_along(Wlong_H)) {
 # the linear predictor for the hazard function is only needed for the subjects
 # with event
 lambda_h <- matrix(0.0, nT, 1)
-lambda_h[which_event, ] <- W0_h[which_event, ] %*% bs_gammas +
-    W_h[which_event, ] %*% gammas
+lambda_h[which_event, ] <- W0_h[which_event, ] %*% bs_gammas
+if (ncol(W_h)) {
+    lambda_h[which_event, ] <- lambda_h[which_event, ] + W_h[which_event, ] %*% gammas
+}
 for (i in seq_along(Wlong_h)) {
     W_h_i <- Wlong_h[[i]]
     lambda_h[which_event, ] <- lambda_h[which_event, ] +
@@ -453,8 +461,11 @@ for (i in seq_along(Wlong_h)) {
 # the linear predictor for second component to integrate for the subjects who
 # were interval censored
 lambda_H2 <- matrix(0.0, nrow(Wlong_H2[[1]]), 1)
-lambda_H2[which_interval, ] <- W0_H2[which_interval, ] %*% bs_gammas +
-    W_H2[which_interval, ] %*% gammas
+lambda_H2[which_interval, ] <- W0_H2[which_interval, ] %*% bs_gammas
+if (ncol(W_h)) {
+    lambda_H2[which_interval, ] <- lambda_H2[which_interval, ] +
+        W_H2[which_interval, ] %*% gammas
+}
 for (i in seq_along(Wlong_H2)) {
     W_H2_i <- Wlong_H2[[i]]
     lambda_H2[which_interval, ] <- lambda_H2[which_interval, ] +
