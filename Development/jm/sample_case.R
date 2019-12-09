@@ -169,7 +169,8 @@ Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL)
 # We require users to include the id variable as cluster, even in the case of simple
 # right censoring. The estimated coefficients are in either case the same. This will
 # give us the id variable to match with the longitudinal data
-if (is.null(Surv_object$model$cluster)) {
+lngth_termlabs <- length(attr(Surv_object$terms, "term.labels"))
+if (lngth_termlabs && is.null(Surv_object$model$cluster)) {
     stop("you need to refit the Cox or AFT model and include in the right hand side of the ",
          "formula the 'cluster()' function using as its argument the subjects' ",
          "id indicator. These ids need to be the same as the ones used to fit ",
@@ -194,8 +195,10 @@ for (i in seq_along(respVars)) {
 
 # terms for survival model
 terms_Surv <- Surv_object$terms
-terms_Surv <- drop.terms(terms_Surv, attr(terms_Surv, "specials")$cluster - 1,
-                         keep.response = TRUE)
+if (lngth_termlabs) {
+    terms_Surv <- drop.terms(terms_Surv, attr(terms_Surv, "specials")$cluster - 1,
+                             keep.response = TRUE)
+}
 terms_Surv_noResp <- delete.response(terms_Surv)
 mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
 
