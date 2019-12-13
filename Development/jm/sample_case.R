@@ -133,6 +133,9 @@ y <- lapply(mf_FE_dataL, model.response)
 y <- lapply(y, function (yy) {
     if (is.factor(yy)) as.numeric(yy != levels(yy)[1L]) else yy
 })
+if (any(sapply(y, function (x) any(!is.finite(x))))) {
+    stop("infite value detected in some longitudinal outcomes. These are not allowed.\n")
+}
 
 # exctract families
 families <- lapply(Mixed_objects, "[[", "family")
@@ -159,6 +162,8 @@ unq_idL <- lapply(idL, unique)
 # create design matrices for mixed models
 X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL)
 Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL)
+Xhc <- mapply(create_HC_X, terms_FE, terms_RE, X, Z, idL,
+              MoreArgs = list(data = dataL), SIMPLIFY = FALSE)
 
 ########################################################
 
@@ -407,6 +412,9 @@ mu_funs <- lapply(families, "[[", 'linkinv')
 
 # this is the linear predictors for the longitudinal submodels
 eta <- linpred_mixed(X, betas, Z, b, idL_lp)
+
+
+# <------------------------ Include hierarchical centering
 
 
 # the log density for all longitudinal outcomes

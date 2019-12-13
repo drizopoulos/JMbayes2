@@ -799,3 +799,48 @@ extract_log_sigmas <- function (object) {
 
 value <- slope <- area <- function (x) rep(1, length(x))
 
+create_HC_X <- function (TermsX, TermsZ, x, z, id, data) {
+    # function that creates the hierarchical centering version of the
+    # design matrix for the fixed effects
+    find_positions <- function (nams1, nams2) {
+        nams1 <- gsub("^", "\\^", nams1, fixed = TRUE)
+        vals <- c(glob2rx(nams1), glob2rx(paste0(nams1, ":*")),
+                  glob2rx(paste0("*:", nams1)))
+        out <- sort(unique(unlist(lapply(vals, grep, x = nams2))))
+        out
+    }
+    check_td <- function (x, id) {
+        !all(sapply(split(x, id), function (z) all(z - z[1L] < .Machine$double.eps^0.5)))
+    }
+    has_interceptX <- attr(TermsX, "intercept")
+    has_interceptZ <- attr(TermsZ, "intercept")
+    performHC <- has_interceptX && (has_interceptX == has_interceptZ)
+    if (performHC) {
+        terms.labs_X <- attr(TermsX, "term.labels")
+        terms.labs_Z <- attr(TermsZ, "term.labels")
+        # check for time-varying covariates
+        timeTerms <- if (length(terms.labs_Z)) {
+            unlist(lapply(terms.labs_Z,
+                          FUN = function(x) grep(x, colnames(X), fixed = TRUE)))
+        }
+        which_td <- unname(which(apply(x, 2, check_td, id = id)))
+        all_TDterms <- unique(c(timeTerms, which_td))
+        baseline <- seq_len(ncol(x))[-all_TDterms]
+        ind_colmns <- c(list(baseline), lapply(colnames(z)[-1L], find_positions,
+                                               nams2 = colnames(x)))
+        ind_colmns2 <- seq_len(ncol(x))
+        ind_colmns2 <- ind_colmns2[!ind_colmns2 %in% unlist(ind_colmns)]
+        data.id <- data[!duplicated(id), ]
+        if (length(terms.labs_Z)) {
+            mfHC <- model.frame(TermsX, data = data.id)
+            which.timevar <- unique(unlist(lapply(terms.labs_Z,
+                                                  FUN = function (x) grep(x, names(mfHC), fixed = TRUE))))
+            mfHC[which.timevar] <- lapply(mfHC[which.timevar],
+                                          function (x) { x[] <- 1; x })
+            model.matrix(TermsX, mfHC)
+        } else {
+            model.matrix(TermsX, model.frame(TermsX, data = data.id))
+        }
+    }
+}
+
