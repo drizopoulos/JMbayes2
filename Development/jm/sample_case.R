@@ -46,14 +46,14 @@ fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
 CoxFit <- coxph(Surv(years, status2) ~ 1 + cluster(id),
                 data = pbc2.id, model = TRUE)
 
-survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ 1 + cluster(id),
+survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ age + cluster(id),
                    data = pbc2.id, model = TRUE)
 
 ##########################################################################################
 
 # the arguments of the jm() function
 
-Surv_object = CoxFit
+Surv_object = survFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 data_Surv = NULL
 timeVar = "year"
