@@ -316,6 +316,12 @@ long_resp_var_in_functional_form <- sapply(seq_along(Mixed_objects),
         function (i) as.character(formula(functional_form, rhs = i))[2L])
 ordering_of_outcomes <- sapply(long_resp_vars, grep, x = long_resp_var_in_functional_form,
                                fixed = TRUE)
+
+###################################################################
+
+# List of lists
+# One list component per association structure per ouctome
+# List components vectors of integers corresponding to the term each association structure corresponds to 
 functional_forms_per_outcome <- lapply(ordering_of_outcomes,
                                        extract_functional_forms_per_outcome)
 functional_forms_per_outcome <- lapply(functional_forms_per_outcome,
