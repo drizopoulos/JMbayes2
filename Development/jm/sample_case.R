@@ -328,6 +328,9 @@ functional_forms_per_outcome <- lapply(ordering_of_outcomes,
 functional_forms_per_outcome <- lapply(functional_forms_per_outcome,
                                        function (x) x[sapply(x, length) > 0])
 collapsed_functional_forms <- lapply(functional_forms_per_outcome, names)
+# NEW INPUT OBJECTS FOR create_Wlong.cpp
+ns_functional_forms_per_outcome <- sapply(functional_forms_per_outcome, length)
+maxs_functional_forms_per_outcome <- sapply(lapply(functional_forms_per_outcome, unlist), max)
 
 #####################################################
 
