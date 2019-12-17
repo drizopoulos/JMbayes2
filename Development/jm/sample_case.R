@@ -46,7 +46,7 @@ fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
 CoxFit <- coxph(Surv(years, status2) ~ 1 + cluster(id),
                 data = pbc2.id, model = TRUE)
 
-survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ age + cluster(id),
+survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ 1 + cluster(id),
                    data = pbc2.id, model = TRUE)
 
 ##########################################################################################
@@ -321,7 +321,8 @@ ordering_of_outcomes <- sapply(long_resp_vars, grep, x = long_resp_var_in_functi
 
 # List of lists
 # One list component per association structure per ouctome
-# List components vectors of integers corresponding to the term each association structure corresponds to 
+# List components vectors of integers corresponding to the term
+# each association structure corresponds to
 functional_forms_per_outcome <- lapply(ordering_of_outcomes,
                                        extract_functional_forms_per_outcome)
 functional_forms_per_outcome <- lapply(functional_forms_per_outcome,
@@ -496,8 +497,6 @@ log_Lik_surv[which_event] <- log_Lik_surv[which_event] + lambda_h[which_event]
 log_Lik_surv[which_left] <- log1p(- exp(- H[which_left]))
 log_Lik_surv[which_interval] <- log(exp(- H[which_interval]) - exp(-H2[which_interval]))
 
-
-str(matrix(0, 4, 3))
 
 
 
