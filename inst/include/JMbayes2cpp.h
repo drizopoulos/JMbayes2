@@ -106,6 +106,37 @@ arma::field<arma::mat> linpred_surv_array(const arma::field<arma::cube>& X, cons
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+// create_Wlong
+// NOTES: 
+// cURRENTLY WORKS WITH arma::uvec ns_functional_forms_per_outcome and arma::uvec maxs_functional_forms_per_outcome
+arma::field<arma::mat> create_Wlong(arma::field<arma::mat> eta, 
+                                    SEXP functional_forms_per_outcome, 
+                                    arma::uvec ns_functional_forms_per_outcome, 
+                                    arma::uvec maxs_functional_forms_per_outcome, 
+                                    arma::field<arma::mat> U) { 
+  int n_etas = eta.n_elem;
+  List ffpo(functional_forms_per_outcome);
+  List inner_ffpo(n_etas);
+  arma::field<arma::mat> Wlong(n_etas);
+  arma::mat eta_i;
+  arma::mat U_i;
+  arma::mat Wlong_i;
+  arma::uvec ind;
+  for (int i = 0; i < n_etas; i++) {
+    eta_i = eta(i);
+    U_i = U(i);
+    Wlong_i = arma::ones<arma::mat>(eta_i.n_rows, maxs_functional_forms_per_outcome(i));
+    for (int j = 0; j < ns_functional_forms_per_outcome(i); j++) {
+      ind = as<arma::uvec>(as<List>(ffpo[i])[j]) - 1;
+      Wlong_i.cols(ind) = Wlong_i.cols(ind) % repelem(eta_i.col(j), 1, ind.n_elem);
+    }
+    Wlong(i) = U_i % Wlong_i;
+  }
+  return(Wlong);
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Does not work. Needs to be within function scope
 // OR find a way tyo export as global variables 
