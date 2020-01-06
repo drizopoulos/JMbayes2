@@ -46,7 +46,7 @@ fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
 CoxFit <- coxph(Surv(years, status2) ~ 1 + cluster(id),
                 data = pbc2.id, model = TRUE)
 
-survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ 1 + cluster(id),
+survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ age + cluster(id),
                    data = pbc2.id, model = TRUE)
 
 ##########################################################################################
@@ -200,7 +200,7 @@ for (i in seq_along(respVars)) {
 
 # terms for survival model
 terms_Surv <- Surv_object$terms
-if (lngth_termlabs) {
+if (lngth_termlabs > 1) {
     terms_Surv <- drop.terms(terms_Surv, attr(terms_Surv, "specials")$cluster - 1,
                              keep.response = TRUE)
 }
