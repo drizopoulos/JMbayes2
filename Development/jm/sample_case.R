@@ -43,7 +43,7 @@ fm3 <- mixed_model(hepatomegaly ~ year + age, data = pbc2,
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 
-CoxFit <- coxph(Surv(years, status2) ~ 1 + cluster(id),
+CoxFit <- coxph(Surv(years, status2) ~ age + cluster(id),
                 data = pbc2.id, model = TRUE)
 
 survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ age + cluster(id),
@@ -53,7 +53,7 @@ survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ age + clust
 
 # the arguments of the jm() function
 
-Surv_object = survFit
+Surv_object = CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 data_Surv = NULL
 timeVar = "year"
