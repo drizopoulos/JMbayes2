@@ -43,10 +43,10 @@ fm3 <- mixed_model(hepatomegaly ~ year + age, data = pbc2,
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 
-CoxFit <- coxph(Surv(years, status2) ~ age + cluster(id),
+CoxFit <- coxph(Surv(years, status2) ~ age,
                 data = pbc2.id, model = TRUE)
 
-survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ age + cluster(id),
+survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ age,
                    data = pbc2.id, model = TRUE)
 
 ##########################################################################################
@@ -56,6 +56,7 @@ survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ age + clust
 Surv_object = CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 data_Surv = NULL
+id_var = NULL
 timeVar = "year"
 
 # default function_form
@@ -171,11 +172,11 @@ Xhc <- mapply(create_HC_X, terms_FE, terms_RE, X, Z, idL,
 # Survival outcome #
 ####################
 
-# We require users to include the id variable as cluster, even in the case of simple
-# right censoring. The estimated coefficients are in either case the same. This will
-# give us the id variable to match with the longitudinal data
+# We need to the id variable to match with the longitudinal data. First, we
+# try to extract it from the data used in the survival model. If not successful, we
+# ask users to specify the 'id_var' argument.
 lngth_termlabs <- length(attr(Surv_object$terms, "term.labels"))
-if (lngth_termlabs && is.null(Surv_object$model$cluster)) {
+if (lngth_termlabs && is.null(Surv_object$model$`(cluster)`)) {
     stop("you need to refit the Cox or AFT model and include in the right hand side of the ",
          "formula the 'cluster()' function using as its argument the subjects' ",
          "id indicator. These ids need to be the same as the ones used to fit ",
