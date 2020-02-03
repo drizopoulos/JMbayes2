@@ -43,17 +43,17 @@ fm3 <- mixed_model(hepatomegaly ~ year + age, data = pbc2,
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 
-CoxFit <- coxph(Surv(years, status2) ~ age,
+CoxFit <- coxph(Surv(years, status2) ~ 1,
                 data = pbc2.id, model = TRUE)
 
-survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ age,
+survFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ 1,
                    data = pbc2.id, model = TRUE)
 
 ##########################################################################################
 
 # the arguments of the jm() function
 
-Surv_object = CoxFit
+Surv_object = survFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 data_Surv = NULL
 id_var = NULL
@@ -172,17 +172,6 @@ Xhc <- mapply(create_HC_X, terms_FE, terms_RE, X, Z, idL,
 # Survival outcome #
 ####################
 
-# We need to the id variable to match with the longitudinal data. First, we
-# try to extract it from the data used in the survival model. If not successful, we
-# ask users to specify the 'id_var' argument.
-lngth_termlabs <- length(attr(Surv_object$terms, "term.labels"))
-if (lngth_termlabs && is.null(Surv_object$model$`(cluster)`)) {
-    stop("you need to refit the Cox or AFT model and include in the right hand side of the ",
-         "formula the 'cluster()' function using as its argument the subjects' ",
-         "id indicator. These ids need to be the same as the ones used to fit ",
-         "the mixed effects model.\n")
-}
-
 # try to recover survival dataset
 if (is.null(data_Surv))
     try(dataS <- eval(Surv_object$call$data, envir = parent.frame()),
@@ -201,23 +190,35 @@ for (i in seq_along(respVars)) {
 
 # terms for survival model
 terms_Surv <- Surv_object$terms
-if (lngth_termlabs > 1) {
-    terms_Surv <- drop.terms(terms_Surv, attr(terms_Surv, "specials")$cluster - 1,
-                             keep.response = TRUE)
-}
 terms_Surv_noResp <- delete.response(terms_Surv)
 mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
 
 # survival times
 Surv_Response <- model.response(mf_surv_dataS)
 type_censoring <- attr(Surv_Response, "type")
-idT <- Surv_object$model$cluster
-if (is.null(idT))
-    idT <- seq_len(nY)
+if (is.null(dataS[[idVar]])) {
+    if (is.null(id_var)) {
+        stop("cannot extract the subject id variable from the dataset used to fit the ",
+             "survival model. Please specify the 'id_var' argument.\n")
+    } else {
+        idT <- dataS[[id_var]]
+    }
+} else {
+    idT <- dataS[[idVar]]
+}
+if (!is.null(NAs_surv <- attr(mf_surv_dataS, "na.action"))) {
+    idT <- idT[-NAs_surv]
+}
 idT <- factor(idT, levels = unique(idT))
+
+nT <- length(unique(idT))
+if (nY != nT) {
+    stop("the number of groups/subjects in the longitudinal and survival datasets ",
+         "do not seem to match.")
+}
 if (!all(idT %in% dataL[[idVar]])) {
     stop("it seems that some of the levels of the 'cluster()' variable in the survival ",
-         "object can be found in the dataset of the Mixed_objects. Please check that ",
+         "object cannot be found in the dataset of the Mixed_objects. Please check that ",
          "the same subjects / groups are used in the datasets used to fit the mixed ",
          "and survival models.")
 }
@@ -231,11 +232,6 @@ if (!all(order(unique(idT)) == order(unique(dataL[[idVar]])))) {
     dataS <- dataS[order(idT), ]
     mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
     Surv_Response <- model.response(mf_surv_dataS)
-}
-nT <- length(unique(idT))
-if (nY != nT) {
-    stop("the number of groups/subjects in the longitudinal and survival datasets ",
-         "do not seem to match.")
 }
 # Notation:
 #  - Time_right: event or right censoring time
