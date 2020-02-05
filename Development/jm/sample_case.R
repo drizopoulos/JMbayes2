@@ -163,8 +163,11 @@ unq_idL <- lapply(idL, unique)
 # create design matrices for mixed models
 X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL)
 Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL)
-Xhc <- mapply(create_HC_X, terms_FE, terms_RE, X, Z, idL,
-              MoreArgs = list(data = dataL), SIMPLIFY = FALSE)
+componentsHC <- mapply(create_HC_X, terms_FE, terms_RE, X, Z, idL,
+                       MoreArgs = list(data = dataL), SIMPLIFY = FALSE)
+Xhc <- lapply(componentsHC, "[[", "Xhc")
+columns_HC <- lapply(componentsHC, "[[", "columns_HC")
+columns_nHC <- lapply(componentsHC, "[[", "columns_nHC")
 
 ########################################################
 
