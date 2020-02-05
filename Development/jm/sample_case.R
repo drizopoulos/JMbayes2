@@ -34,8 +34,8 @@ pbc2$yearsU[pbc2$status3 == 3] <- pbc2$years[pbc2$status3 == 3] +
 pbc2.id <- pbc2[!duplicated(pbc2$id), ]
 
 
-fm1 <- lme(log(serBilir) ~ ns(year, 3, B = c(0, 11)) * sex + age, data = pbc2,
-           random = ~ ns(year, 2, B = c(0, 11)) | id)
+fm1 <- lme(log(serBilir) ~ ns(year, 3, B = c(0, 11)) * sex + age + prothrombin,
+           data = pbc2, random = ~ ns(year, 2, B = c(0, 11)) | id)
 fm2 <- lme(serChol ~ year + sex + age, data = pbc2, random = ~ year | id,
            na.action = na.exclude)
 fm3 <- mixed_model(hepatomegaly ~ year + age, data = pbc2,
