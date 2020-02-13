@@ -309,6 +309,10 @@ create_HC_X <- function (TermsX, TermsZ, x, z, id, data) {
     } else {
         model.matrix(TermsX, model.frame(TermsX, data = data.id))
     }
-    list(Xhc = Xhc, columns_HC = ind_colmns, columns_nHC = ind_colmns2)
+    index <- numeric(ncol(Xhc))
+    for (i in seq_along(ind_colmns)) {
+        index[ind_colmns[[i]]] <- i
+    }
+    list(Xhc = Xhc, columns_HC = index, columns_nHC = ind_colmns2)
 }
 

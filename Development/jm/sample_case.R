@@ -34,8 +34,8 @@ pbc2$yearsU[pbc2$status3 == 3] <- pbc2$years[pbc2$status3 == 3] +
 pbc2.id <- pbc2[!duplicated(pbc2$id), ]
 
 
-fm1 <- lme(log(serBilir) ~ ns(year, 3, B = c(0, 11)) * sex + age + prothrombin,
-           data = pbc2, random = ~ ns(year, 2, B = c(0, 11)) | id)
+fm1 <- lme(log(serBilir) ~ year * sex + I(year^2) + age + prothrombin,
+           data = pbc2, random = ~ year | id)
 fm2 <- lme(serChol ~ year + sex + age, data = pbc2, random = ~ year | id,
            na.action = na.exclude)
 fm3 <- mixed_model(hepatomegaly ~ year + age, data = pbc2,
@@ -423,8 +423,25 @@ mu_funs <- lapply(families, "[[", 'linkinv')
 # this is the linear predictors for the longitudinal submodels
 eta <- linpred_mixed(X, betas, Z, b, idL_lp)
 
+calculate_mean_RE <- function (Xhc_k, columns_HC_k, betas_k, b_k) {
+    Xhc_k = Xhc[[3]]
+    columns_HC_k = columns_HC[[3]]
+    betas_k = betas[[3]]
+    b_k = b[[3]]
+    mean_b_k <- b_k * 0
+    for (j in seq_len(ncol(b_k))) {
+        mean_b_k[, j] <- c(Xhc_k[, columns_HC_k == j, drop = FALSE] %*% betas_k[columns_HC_k == j])
+    }
+    mean_b_k
+}
 
-# <------------------------ Include hierarchical centering
+mean_RE <- mapply(calculate_mean_RE, Xhc, columns_HC, betas, b, SIMPLIFY = FALSE)
+
+calculate_mean_RE(Xhc[[3]], columns_HC[[3]], betas[[3]], b[[3]])
+
+# To fix: (1) correct create Xhc, number of rows,
+# (2) use idL to see where you need to put the means otherwise the mean should be zero
+#
 
 
 # the log density for all longitudinal outcomes
