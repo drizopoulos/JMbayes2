@@ -425,15 +425,9 @@ mu_funs <- lapply(families, "[[", 'linkinv')
 # this is the linear predictors for the longitudinal submodels
 eta <- linpred_mixed(X, betas, Z, b, idL_lp)
 
-mean_RE <- mapply(calculate_mean_RE, Xhc, columns_HC, betas, b, unq_idL,
-                  SIMPLIFY = FALSE)
 
-u <- mapply("+", b, mean_RE)
-
-# To fix: (1) correct create Xhc, number of rows,
-# (2) use idL to see where you need to put the means otherwise the mean should be zero
-#
-
+# u are the centered random effects, i.e., u = b + fixed_effects_part
+u <- calculate_u(Xhc, columns_HC, betas, b, unq_idL)
 
 # the log density for all longitudinal outcomes
 log_density_mixed(y, eta, log_sigmas, Funs, mu_funs, nY, unq_idL, idL_lp)

@@ -83,13 +83,22 @@ create_Wlong <- function (eta, functional_forms_per_outcome, U) {
     Wlong
 }
 
-calculate_mean_RE <- function (Xhc_k, columns_HC_k, betas_k, b_k, unq_idL_k) {
-    mean_b_k <- b_k * 0
-    for (j in seq_len(ncol(b_k))) {
-        index <- columns_HC_k == j
-        mean_b_k[unq_idL_k, j] <- c(Xhc_k[, index, drop = FALSE] %*% betas_k[index])
+calculate_u <- function (Xhc, columns_HC, betas, b, unq_idL) {
+    u <- b
+    for (i in seq_along(Xhc)) {
+        Xhc_i <- Xhc[[i]]
+        columns_HC_i <- columns_HC[[i]]
+        betas_i <- betas[[i]]
+        b_i <- b[[i]]
+        unq_idL_i <- unq_idL[[i]]
+        mean_b_i <- b_i * 0
+        for (j in seq_len(ncol(b_i))) {
+            index <- columns_HC_i == j
+            mean_b_i[unq_idL_i, j] <- c(Xhc_i[, index, drop = FALSE] %*% betas_i[index])
+        }
+        u[[i]] <- b_i + mean_b_i
     }
-    mean_b_k
+    u
 }
 
 
