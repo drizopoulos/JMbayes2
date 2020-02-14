@@ -272,7 +272,7 @@ extract_log_sigmas <- function (object) {
 
 value <- slope <- area <- function (x) rep(1, length(x))
 
-create_HC_X <- function (TermsX, TermsZ, x, z, id, data) {
+create_HC_X <- function (TermsX, TermsZ, x, z, id, mfHC) {
     # function that creates the hierarchical centering version of the
     # design matrix for the fixed effects
     find_positions <- function (nams1, nams2) {
@@ -290,7 +290,7 @@ create_HC_X <- function (TermsX, TermsZ, x, z, id, data) {
     terms.labs_Z <- attr(TermsZ, "term.labels")
     # check for time-varying covariates
     timeTerms <- if (length(terms.labs_Z)) {
-        unlist(lapply(terms.labs_Z, grep2, nams = colnames(X)))
+        unlist(lapply(terms.labs_Z, grep2, nams = colnames(x)))
     }
     which_td <- unname(which(apply(x, 2, check_td, id = id)))
     all_TDterms <- unique(c(timeTerms, which_td))
@@ -299,15 +299,14 @@ create_HC_X <- function (TermsX, TermsZ, x, z, id, data) {
                                            nams2 = colnames(x)))
     ind_colmns2 <- seq_len(ncol(x))
     ind_colmns2 <- ind_colmns2[!ind_colmns2 %in% unlist(ind_colmns)]
-    data.id <- data[!duplicated(id), ]
+    mfHC <- mfHC[!duplicated(id), ]
     Xhc <- if (length(terms.labs_Z)) {
-        mfHC <- model.frame(TermsX, data = data.id)
         which.timevar <- unique(unlist(lapply(terms.labs_Z, grep2, nams = names(mfHC))))
         mfHC[which.timevar] <- lapply(mfHC[which.timevar],
                                       function (x) { x[] <- 1; x })
         model.matrix(TermsX, mfHC)
     } else {
-        model.matrix(TermsX, model.frame(TermsX, data = data.id))
+        model.matrix(TermsX, mfHC)
     }
     index <- numeric(ncol(Xhc))
     for (i in seq_along(ind_colmns)) {
