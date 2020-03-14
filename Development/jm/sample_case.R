@@ -79,6 +79,17 @@ functional_form2 = ~ value(log(serBilir)) + slope(log(serBilir)) |
                               expit(value(hepatomegaly)) |
                               value(ascites) + area(ascites)
 
+
+
+
+functional_forms = list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
+                           value(log(serBilir)):sex,
+                       "serChol" = ~ value(serChol) + slope(serChol),
+                        "hepatomegaly" = ~ value(hepatomegaly),
+                       "ascites" = ~ value(ascites) + area(ascites))
+
+
+
 ##########################################################################################
 
 # control argument:
