@@ -120,7 +120,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     for (i in seq_along(respVars)) {
         if (is.null(dataS[[respVars[i]]])) dataS[[respVars[i]]] <- rnorm(nrow(dataS))
     }
-
     # terms for survival model
     terms_Surv <- Surv_object$terms
     terms_Surv_noResp <- delete.response(terms_Surv)
@@ -199,7 +198,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     which_right <- which(delta == 0)
     which_left <- which(delta == 2)
     which_interval <- which(delta == 3)
-
     # 'Time_integration' is the upper limit of the integral in likelihood
     # of the survival model. For subjects with event (delta = 1), for subjects with
     # right censoring and for subjects with interval censoring we need to integrate
@@ -251,9 +249,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     }
     functional_forms <-  functional_forms[order(match(names(functional_forms),
                                                       respVars_form))]
-
     ###################################################################
-
     # List of lists
     # One list component per association structure per ouctome
     # List components vectors of integers corresponding to the term
@@ -282,15 +278,13 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # 'Time_right', we put "_H" to denote calculation at the 'Time_integration', and
     # "_H2" to denote calculation at the 'Time_integration2'.
 
-    #################################################################################
-    # What if there are no covariates in the Cox model and we only want to include  #
-    # the longitudinal outcomes. The W will be then empty                           #
-    #################################################################################
-
     W0_H <- splineDesign(con$knots, c(t(st)), ord = con$Bsplines_degree + 1)
     dataS_H <- SurvData_HazardModel(st, dataS, Time_start, idT)
     mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
     W_H <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
+    if (!ncol(W_H)) {
+        W_H <- cbind(W_H, rep(0, nrow(W_H)))
+    }
     X_H <- desing_matrices_functional_forms(st, terms_FE_noResp,
                                             dataL, time_var, idVar,
                                             collapsed_functional_forms)
@@ -306,6 +300,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start, idT)
         mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
         W_h <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
+        if (!ncol(W_h)) {
+            W_h <- cbind(W_h, rep(0, nrow(W_h)))
+        }
         X_h <- desing_matrices_functional_forms(Time_right, terms_FE_noResp,
                                                 dataL, time_var, idVar,
                                                 collapsed_functional_forms)
@@ -325,6 +322,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start, idT)
         mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
         W_H2 <- model.matrix.default(terms_Surv_noResp, mf2)[, -1, drop = FALSE]
+        if (!ncol(W_H2)) {
+            W_H2 <- cbind(W_H2, rep(0, nrow(W_H2)))
+        }
         X_H2 <- desing_matrices_functional_forms(st, terms_FE_noResp,
                                                  dataL, time_var, idVar,
                                                  collapsed_functional_forms)
@@ -353,4 +353,16 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                  W0_h = W0_h, W_h = W_h, X_h = X_h, Z_h = Z_h, U_h = U_h,
                  W0_H2 = W0_H2, W_H2 = W_H2, X_H2 = X_H2, Z_H2 = Z_H2, U_H2 = U_H2,
                  log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2)
+    # drop names and other attributes from model matrices
+    Data[] <- lapply(Data, drop_names)
+    ######################################################################################
+    ######################################################################################
+    # variance covariance matrices for proposal distributions in
+    # the Metropolis-Hastings algorithm
+    #  - betas the fixed effects that in the hierarchical centering part
+    #  - tilde_betas the fixed effects that are not in the hierarchical centering part
+    vcov_betas <- mapply(get_vcov_FE, Mixed_objects, columns_nHC,
+                         MoreArgs = list(which = "betas"), SIMPLIFY = FALSE)
+    vcov_tilde_betas <- mapply(get_vcov_FE, Mixed_objects, columns_nHC,
+                               MoreArgs = list(which = "tilde_betas"), SIMPLIFY = FALSE)
 }

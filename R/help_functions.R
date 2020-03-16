@@ -314,3 +314,29 @@ create_HC_X <- function (TermsX, TermsZ, x, z, id, mfHC) {
     list(Xhc = Xhc, columns_HC = index, columns_nHC = ind_colmns2)
 }
 
+drop_names <- function (x) {
+    unname2 <- function (x) {
+        if (!is.null(attr(x, "assign"))) {
+            attr(x, "assign") <- NULL
+        }
+        if (!is.null(attr(x, "contrasts"))) {
+            attr(x, "contrasts") <- NULL
+        }
+        unname(x)
+    }
+    drp <- function (z) if (is.list(z)) lapply(z, unname2) else unname2(z)
+    if (is.list(x)) lapply(x, drp) else unname2(x)
+}
+
+vcov2 <- function (model) {
+    if (inherits(model, "MixMod")) vcov(model, "fixed-effects") else vcov(model)
+}
+
+get_vcov_FE <- function (model, cc, which = c("betas", "tilde_betas")) {
+    ind <- cc
+    if (which == "betas") {
+        return(if (length(ind)) vcov2(model)[-ind, -ind, drop = FALSE] else vcov2(model))
+    }
+    if (which == "tilde_betas" && length(ind)) vcov2(model)[ind, ind, drop = FALSE] else NULL
+}
+
