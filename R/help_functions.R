@@ -59,6 +59,26 @@ bdiag <- function (...) {
     ret
 }
 
+.bdiag <- function (mlist) {
+    mlist <- mlist[sapply(mlist, length) > 0]
+    if (length(mlist) == 1)
+        mlist <- unlist(mlist, recursive = FALSE)
+    csdim <- rbind(c(0, 0), apply(sapply(mlist, dim), 1, cumsum))
+    ret <- array(0, dim = csdim[length(mlist) + 1, ])
+    add1 <- matrix(rep(1:0, 2), ncol = 2)
+    for (i in seq_along(mlist)) {
+        indx <- apply(csdim[i:(i + 1), ] + add1, 2, function(x) x[1]:x[2])
+        if (is.null(dim(indx))) {
+            ret[indx[[1]], indx[[2]]] <- mlist[[i]]
+        }
+        else {
+            ret[indx[, 1], indx[, 2]] <- mlist[[i]]
+        }
+    }
+    colnames(ret) <- unlist(lapply(mlist, colnames))
+    ret
+}
+
 right_rows <- function (data, times, ids, Q_points) {
     fids <- factor(ids, levels = unique(ids))
     if (!is.list(Q_points))
@@ -293,7 +313,7 @@ create_HC_X <- function (TermsX, TermsZ, x, z, id, mfHC) {
     }
     which_td <- unname(which(apply(x, 2, check_td, id = id)))
     all_TDterms <- unique(c(timeTerms, which_td))
-    baseline <- seq_len(ncol(x))[-all_TDterms]
+    baseline <- if (length(all_TDterms)) seq_len(ncol(x))[-all_TDterms] else seq_len(ncol(x))
     ind_colmns <- c(list(baseline), lapply(colnames(z)[-1L], find_positions,
                                            nams2 = colnames(x)))
     ind_colmns2 <- seq_len(ncol(x))
@@ -338,5 +358,27 @@ get_vcov_FE <- function (model, cc, which = c("betas", "tilde_betas")) {
         return(if (length(ind)) vcov2(model)[-ind, -ind, drop = FALSE] else vcov2(model))
     }
     if (which == "tilde_betas" && length(ind)) vcov2(model)[ind, ind, drop = FALSE] else NULL
+}
+
+extract_vcov_prop_RE <- function (object, Z_k, id_k) {
+    if (inherits(object, "lme")) {
+        D <- lapply(pdMatrix(object$modelStruct$reStruct), "*",
+                    object$sigma^2)[[1]]
+        invD <- solve(D)
+        sigma <- object$sigma
+        sigma2 <- sigma * sigma
+        n <- length(unique(id_k))
+        cov_postRE <- vector("list", n)
+        names(cov_postRE) <- unique(id_k)
+        for (i in seq_len(n)) {
+            Z_k_i <- Z_k[id_k == i, , drop = FALSE]
+            cov_postRE[[i]] <- solve.default(crossprod(Z_k_i) / sigma2 + invD)
+        }
+        cov_postRE
+    } else if (inherits(object, "MixMod")) {
+        out <- object$post_vars
+        names(out) <- unique(id_k)
+        out
+    }
 }
 

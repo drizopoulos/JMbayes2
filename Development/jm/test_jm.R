@@ -22,7 +22,7 @@ fm1 <- lme(log(serBilir) ~ year * sex + I(year^2) + age + prothrombin,
            data = pbc2, random = ~ year | id)
 fm2 <- lme(serChol ~ ns(year, 3) + sex + age, data = pbc2, random = ~ year | id,
            na.action = na.exclude)
-fm3 <- mixed_model(hepatomegaly ~ year + age, data = pbc2,
+fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())

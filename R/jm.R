@@ -101,10 +101,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     Xhc <- lapply(componentsHC, "[[", "Xhc")
     columns_HC <- lapply(componentsHC, "[[", "columns_HC")
     columns_nHC <- lapply(componentsHC, "[[", "columns_nHC")
-
     ########################################################
     ########################################################
-
     # try to recover survival dataset
     if (is.null(data_Surv))
         try(dataS <- eval(Surv_object$call$data, envir = parent.frame()),
@@ -361,8 +359,16 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # the Metropolis-Hastings algorithm
     #  - betas the fixed effects that in the hierarchical centering part
     #  - tilde_betas the fixed effects that are not in the hierarchical centering part
-    vcov_betas <- mapply(get_vcov_FE, Mixed_objects, columns_nHC,
-                         MoreArgs = list(which = "betas"), SIMPLIFY = FALSE)
-    vcov_tilde_betas <- mapply(get_vcov_FE, Mixed_objects, columns_nHC,
-                               MoreArgs = list(which = "tilde_betas"), SIMPLIFY = FALSE)
+    vcov_prop_betas <- mapply(get_vcov_FE, Mixed_objects, columns_nHC,
+                              MoreArgs = list(which = "betas"), SIMPLIFY = FALSE)
+    vcov_prop_tilde_betas <- mapply(get_vcov_FE, Mixed_objects, columns_nHC,
+                                    MoreArgs = list(which = "tilde_betas"),
+                                    SIMPLIFY = FALSE)
+    r <- mapply(extract_vcov_prop_RE, Mixed_objects, Z, idL, SIMPLIFY = FALSE)
+    vcov_prop_RE <- vector("list", nY)
+    for (i in seq_len(nY)) {
+        vcov_prop_RE[[i]] <- .bdiag(lapply(r,
+                                           function (m, i) m[[as.character(i)]], i = i))
+    }
+
 }
