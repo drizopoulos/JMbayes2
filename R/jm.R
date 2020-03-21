@@ -355,6 +355,20 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     Data[] <- lapply(Data, drop_names)
     ######################################################################################
     ######################################################################################
+    # initial values
+    betas <- lapply(Mixed_objects, fixef)
+    log_sigmas <- lapply(Mixed_objects, extract_log_sigmas)
+    D_lis <- lapply(Mixed_objects, extract_D)
+    D <- bdiag(D_lis)
+    b <- mapply(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY),
+                SIMPLIFY = FALSE)
+    gammas <- coef(Surv_object)
+    gammas <- gammas[names(gammas) != "(Intercept)"]
+    bs_gammas <- rnorm(ncol(W0_H), sd = 0.1)
+    alphas <- lapply(U_H, function (x) rnorm(ncol(x), sd = 0.1))
+
+    ######################################################################################
+    ######################################################################################
     # variance covariance matrices for proposal distributions in
     # the Metropolis-Hastings algorithm
     #  - betas the fixed effects that in the hierarchical centering part
@@ -367,8 +381,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     r <- mapply(extract_vcov_prop_RE, Mixed_objects, Z, idL, SIMPLIFY = FALSE)
     vcov_prop_RE <- vector("list", nY)
     for (i in seq_len(nY)) {
-        vcov_prop_RE[[i]] <- .bdiag(lapply(r,
-                                           function (m, i) m[[as.character(i)]], i = i))
+        rr <- lapply(r, function (m, i) m[[as.character(i)]], i = i)
+        if (any(ind <- sapply(rr, is.null))) rr[ind] <- D_lis[ind]
+        vcov_prop_RE[[i]] <- .bdiag(rr)
     }
 
 }
