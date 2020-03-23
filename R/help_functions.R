@@ -99,23 +99,36 @@ extract_functional_forms_per_outcome <- function (Form) {
 LongData_HazardModel <- function (time_points, data, times, ids, timeVar) {
     unq_ids <- unique(ids)
     fids <- factor(ids, levels = unq_ids)
-    if (!is.matrix(time_points)) {
-        time_points <- as.matrix(time_points)
+    tt <- if (is.list(time_points)) {
+        time_points
+    } else {
+        if (!is.matrix(time_points)) {
+            time_points <- as.matrix(time_points)
+        }
+        split(time_points, row(time_points))
     }
-    if (nrow(time_points) != length(unq_ids)) {
+    if (length(tt) != length(unq_ids)) {
         stop("the length of unique 'ids' does not match the number of rows ",
              "of 'time_points'.")
     }
-    tt <- split(time_points, row(time_points))
     ind <- mapply(findInterval, tt, split(times, fids))
-    ind[ind < 1] <- 1
-    if (!is.matrix(ind)) {
-        ind <- rbind(ind)
-    }
     rownams_id <- split(row.names(data), fids)
-    ind <- mapply(`[`, rownams_id, split(ind, col(ind)))
-    data <- data[c(ind), ]
-    data[[timeVar]] <- c(t(time_points))
+    if (!is.list(ind)) {
+        ind[ind < 1] <- 1
+        if (!is.matrix(ind)) {
+            ind <- rbind(ind)
+        }
+        ind <- mapply(`[`, rownams_id, split(ind, col(ind)), SIMPLIFY = FALSE)
+    } else {
+        ind <- lapply(ind, function (x) {x[x < 1] <- 1; x})
+        ind <- mapply(`[`, rownams_id, ind, SIMPLIFY = FALSE)
+    }
+    data <- data[unlist(ind, use.names = FALSE), ]
+    data[[timeVar]] <- if (is.matrix(time_points)) {
+        c(t(time_points))
+    } else {
+        unlist(time_points, use.names = FALSE)
+    }
     row.names(data) <- seq_len(nrow(data))
     data
 }
@@ -146,6 +159,17 @@ gaussKronrod <- function (k = 15L) {
     }
 }
 
+time = times_long
+terms = terms_FE_noResp
+data = dataL
+timeVar = time_var
+idVar = idVar
+Fun_Forms = collapsed_functional_forms
+
+xxx <- desgn_matr(time, terms)
+yyy <- degn_matr_slp(time, terms)
+zzz <- degn_matr_area(time, terms)
+
 desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                                               Fun_Forms) {
     desgn_matr <- function (time, terms) {
@@ -155,8 +179,15 @@ desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         mapply(model.matrix.default, terms, mf)
     }
     degn_matr_slp <- function (time, terms) {
-        M1 <- desgn_matr(time + 0.001, terms)
-        M2 <- desgn_matr(time - 0.001, terms)
+        if (is.list(time)) {
+            t1 <- lapply(time, function (t) t + 0.001)
+            t2 <- lapply(time, function (t) t - 0.001)
+            M1 <- desgn_matr(t1, terms)
+            M2 <- desgn_matr(t2, terms)
+        } else {
+            M1 <- desgn_matr(time + 0.001, terms)
+            M2 <- desgn_matr(time - 0.001, terms)
+        }
         mapply(function (x1, x2) (x1 - x2) / 0.002, M1, M2)
     }
     degn_matr_area <- function (time, terms) {
@@ -254,22 +285,31 @@ knots <- function (xl, xr, ndx, deg) {
 SurvData_HazardModel <- function (time_points, data, times, ids) {
     unq_ids <- unique(ids)
     fids <- factor(ids, levels = unq_ids)
-    if (!is.matrix(time_points)) {
-        time_points <- as.matrix(time_points)
+    tt <- if (is.list(time_points)) {
+        time_points
+    } else {
+        if (!is.matrix(time_points)) {
+            time_points <- as.matrix(time_points)
+        }
+        split(time_points, row(time_points))
     }
-    if (nrow(time_points) != length(unq_ids)) {
+    if (length(tt) != length(unq_ids)) {
         stop("the length of unique 'ids' does not match the number of rows ",
              "of 'time_points'.")
     }
-    tt <- split(time_points, row(time_points))
     ind <- mapply(findInterval, tt, split(times, fids))
-    ind[ind < 1] <- 1
-    if (!is.matrix(ind)) {
-        ind <- rbind(ind)
-    }
     rownams_id <- split(row.names(data), fids)
-    ind <- mapply(`[`, rownams_id, split(ind, col(ind)))
-    data <- data[c(ind), ]
+    if (!is.list(ind)) {
+        ind[ind < 1] <- 1
+        if (!is.matrix(ind)) {
+            ind <- rbind(ind)
+        }
+        ind <- mapply(`[`, rownams_id, split(ind, col(ind)), SIMPLIFY = FALSE)
+    } else {
+        ind <- lapply(ind, function (x) {x[x < 1] <- 1; x})
+        ind <- mapply(`[`, rownams_id, ind, SIMPLIFY = FALSE)
+    }
+    data <- data[unlist(ind, use.names = FALSE), ]
 }
 
 extract_b <- function (object, id, n) {

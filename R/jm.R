@@ -362,6 +362,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     D <- bdiag(D_lis)
     b <- mapply(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY),
                 SIMPLIFY = FALSE)
+
     gammas <- coef(Surv_object)
     gammas <- gammas[names(gammas) != "(Intercept)"]
     bs_gammas <- rnorm(ncol(W0_H), sd = 0.1)
