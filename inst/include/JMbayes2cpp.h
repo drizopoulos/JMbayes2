@@ -136,6 +136,43 @@ arma::field<arma::mat> create_Wlong(arma::field<arma::mat> eta,
   return(Wlong);
 }
 
+//////////////////////////////////////////////////////////
+// calculate_u
+//////////////////////////////////////////////////////////
+arma::field<arma::mat> calculate_u(arma::field<arma::mat> Xhc, 
+                                   arma::field<arma::uvec> columns_HC, 
+                                   arma::field<arma::vec> betas, 
+                                   arma::field<arma::mat> b, 
+                                   arma::field<arma::uvec> unq_idL) {
+  arma::field<arma::mat>u(b);
+  int n = Xhc.n_elem;
+  arma::mat Xhc_i;
+  arma::uvec columns_HC_i;
+  arma::vec betas_i;
+  arma::mat b_i;
+  arma::uvec unq_idL_i;
+  arma::mat mean_b_i;
+  int ncol_b_i;
+  arma::uvec index;
+  arma::uvec cindex;
+  for (int i = 0; i < n; i++) {
+    Xhc_i = Xhc(i);
+    columns_HC_i = columns_HC(i);
+    betas_i = betas(i);
+    b_i = b(i);
+    unq_idL_i = unq_idL(i);
+    mean_b_i = b_i * 0;
+    ncol_b_i = b_i.n_cols;
+    for (int j = 0; j < ncol_b_i; j++) {
+      index = find(columns_HC_i == j + 1);
+      cindex = j;
+      mean_b_i(unq_idL_i - 1, cindex) = Xhc_i.cols(index) * betas_i(index);
+    }
+    u(i) = b_i + mean_b_i;
+  }
+  return(u);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Does not work. Needs to be within function scope

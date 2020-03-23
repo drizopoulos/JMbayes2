@@ -1,0 +1,55 @@
+---
+title: "JMbayes2 Development Documentation"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+load(file = file.path("../../Development/Function_Inputs_R_to_Cpp/calculate_u/calculate_u.RData"))
+```
+
+## C++ Functions
+
+### calculate_u()
+
+Function that calculates centered random-effects. 
+
+<b>INPUT</b>:
+
+-    `Xhc`; class is `r class(Xhc)` of `r class(Xhc[[1]])`; each outer component corresponds to one longituidnal outcome, each inner component corresponds to a data frame with rows equal to the number of subjects (without missing data) and columns equal to the number of predictors in the respective mixed-effects model:
+
+```{r, echo = FALSE} 
+str(Xhc)
+```
+
+-    `columns_HC`; class is `r class(columns_HC)` of `r class(columns_HC[[1]])`; each outer component corresponds to one longituidnal outcome, each inner component corresponds to a vector of integers which are indexes indicating to which random-effect each `beta` from the mixed-effects model corresponds with respect to Hierarchical centering.
+
+As an example consider the following:
+
+```{r, echo = TRUE}
+rbind(colnames(Xhc[[1]]), columns_HC[[1]])
+```
+
+This means that term `(Intercept)` is part of the `X` matrix for the mean of the random-intercept (columns_HC = 1) for the HC specification, term `year` is part of the `X` matrix for the mean of the random-slope (columns_HC = 2) for the HC specification while term `I(year^2)` is not part of any of the `X` matrices for the mean specification of the random-effects under HC (`columns_HC = 0`)
+
+-    `betas`; class is `r class(betas)` of `r class(betas[[1]])`; each outer component corresponds to one longituidnal outcome, each inner component corresponds to a vector of doubles which are the fixed-effects estimates from each mixed-effects model.
+
+```{r, echo = FALSE}
+betas
+```
+
+-    `b`; class is `r class(b)` of `r class(b[[1]])`; each outer component corresponds to one longituidnal outcome, each inner component corresponds to a matrix (matrix of dim number of subjects x number of random effects) which are the random-effects estimates from each mixed-effects model.
+
+```{r, echo = FALSE}
+str(b)
+```
+
+-    `unq_idL`; class is `r class(unq_idL)` of `r class(unq_idL)`; each outer component corresponds to one longituidnal outcome, each inner component corresponds to a vector of integers indicating which subjects are involved (e.g. no missing values) in each mixed-effects model.
+
+```{r, echo = FALSE}
+str(unq_idL)
+```
+
+<b>Output</b>:
+
+Output sould be a `r class (u)` of `r class(u[[1]])` similar to the dimensions of `b` with `u = b + fixed_effect_part`.
