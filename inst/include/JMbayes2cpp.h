@@ -186,4 +186,41 @@ family_map.insert(std::make_pair('poisson', 3));
 family_map.insert(std::make_pair('negative.binomial', 4));
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////// List 2 Field
+//////////////////////////////////////////////////////////////////////////////////////////////////
+arma::field<arma::vec> List2Field_vec (const List & Vecs) {
+  int n_list = Vecs.size();
+  arma::field<arma::vec> res(n_list);
+  for (int i = 0; i < n_list; ++i) {
+    res.at(i) = as<arma::vec>(Vecs[i]);
+  }
+  return(res);
+}
+
+arma::field<arma::uvec> List2Field_uvec (const List & uVecs, bool substract1 = true) {
+  int n_list = uVecs.size();
+  arma::field<arma::uvec> res(n_list);
+  for (int i = 0; i < n_list; ++i) {
+    if (substract1) {
+      res.at(i) = as<arma::uvec>(uVecs[i]) - 1;
+    } else {
+      res.at(i) = as<arma::uvec>(uVecs[i]);
+    }
+  }
+  return(res);
+}
+
+arma::field<arma::mat> List2Field_mat (const List & Mats) {
+  int n_list = Mats.size();
+  arma::field<arma::mat> res(n_list);
+  for (int i = 0; i < n_list; ++i) {
+    res.at(i) = as<arma::mat>(Mats[i]);
+  }
+  return(res);
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #endif
