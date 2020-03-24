@@ -1,6 +1,5 @@
-#include "../inst/include/JMbayes2cpp.h"
-#include <Rcpp.h>
 #include <RcppArmadillo.h>
+#include "../inst/include/JMbayes2cpp.h"
 // [[Rcpp::depends("RcppArmadillo")]]
 
 using namespace Rcpp;
@@ -12,7 +11,7 @@ int mcmc_jm2 (List initials, List Data, List priors, List scales, List Covs,
   
   // Extract Data
   List idL = as<List>(Data["idL"]);
-  field<uvec> idLF = List2Field_vec(idL);
+  field<uvec> idLF = List2Field_uvec(idL);
   
   
   
