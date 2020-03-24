@@ -159,17 +159,6 @@ gaussKronrod <- function (k = 15L) {
     }
 }
 
-time = times_long
-terms = terms_FE_noResp
-data = dataL
-timeVar = time_var
-idVar = idVar
-Fun_Forms = collapsed_functional_forms
-
-xxx <- desgn_matr(time, terms)
-yyy <- degn_matr_slp(time, terms)
-zzz <- degn_matr_area(time, terms)
-
 desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                                               Fun_Forms) {
     desgn_matr <- function (time, terms) {
@@ -191,25 +180,29 @@ desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         mapply(function (x1, x2) (x1 - x2) / 0.002, M1, M2)
     }
     degn_matr_area <- function (time, terms) {
-        if (is.matrix(time)) {
-            time <- c(t(time))
+        if (!is.list(time)) {
+            time <- if (is.matrix(time)) split(time, row(time))
+            else split(time, seq_along(time))
         }
         GK <- gaussKronrod(15L)
         wk <- GK$wk
         sk <- GK$sk
-        P <- unname(time / 2)
-        st <- outer(P, sk + 1)
-        out <- vector("list", 15L)
-        for (i in seq_len(15L)) {
-            ss <- if (nrow(st) == length(unique(data[[idVar]]))) {
-                st[, i]
-            } else {
-                matrix(st[, i], ncol = 15, byrow = TRUE)
-            }
-            M <- desgn_matr(ss, terms)
-            out[[i]] <- lapply(M, "*", P * wk[i])
+        quadrature_points <- function (x) {
+            P <- unname(x / 2)
+            sk <- outer(P, sk + 1)
+            list(P = c(t(outer(P, wk))), sk = sk)
         }
-        lapply(seq_along(M), function (i) Reduce("+", lapply(out, "[[", i)))
+        qp <- lapply(time, quadrature_points)
+        ss <- lapply(qp, function (x) c(t(x[['sk']])))
+        Pwk <- unlist(lapply(qp, '[[', 'P'), use.names = FALSE)
+        M <- desgn_matr(ss, terms)
+        M <- lapply(M, "*", Pwk)
+        sum_qp <- function (m) {
+            n <- nrow(m)
+            grp <- rep(seq_len(round(n / 15)), each = 15L)
+            rowsum(m, grp, reorder = FALSE)
+        }
+        lapply(M, sum_qp)
     }
     ################
     out <- list("value" = desgn_matr(time, terms),
