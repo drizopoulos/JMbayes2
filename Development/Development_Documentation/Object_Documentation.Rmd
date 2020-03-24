@@ -7,4 +7,24 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-### `Xhc`
+```{r loads, echo = FALSE}
+load(file = file.path("../../Development/Function_Inputs_R_to_Cpp/Objects_doc_Data.RData"))
+```
+
+## `Data` List input to mcmc_jm2 
+
+### `idL`
+
+class is `r class(idL)`
+
+inner objects are `r class(idL[[1]])`
+
+contains vectors of ids per longitudinal outcome in long format
+
+created in `jm()`
+
+exported to `mcmc_jm2`
+
+```{r, echo = FALSE}
+str(idL)
+```
