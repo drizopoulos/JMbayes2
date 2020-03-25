@@ -185,7 +185,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         Time1 <-  unname(Surv_Response[, "time1"])
         Time2 <-  unname(Surv_Response[, "time2"])
         trunc_Time <- Time_start <- rep(0.0, nT)
-        delta <-  unname(Surv_Response[, "status"])
+        delta <- unname(Surv_Response[, "status"])
         Time_right <- Time1
         Time_right[delta == 3] <- Time2[delta == 3]
         Time_right[delta == 2] <- 0.0
@@ -281,7 +281,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
     W_H <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
     if (!ncol(W_H)) {
-        W_H <- cbind(W_H, rep(0, nrow(W_H)))
+        W_H <- matrix(0.0, nrow = nrow(W_H), ncol = 1L)
     }
     X_H <- desing_matrices_functional_forms(st, terms_FE_noResp,
                                             dataL, time_var, idVar,
@@ -299,7 +299,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
         W_h <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
         if (!ncol(W_h)) {
-            W_h <- cbind(W_h, rep(0, nrow(W_h)))
+            W_h <- matrix(0.0, nrow = nrow(W_h), ncol = 1L)
         }
         X_h <- desing_matrices_functional_forms(Time_right, terms_FE_noResp,
                                                 dataL, time_var, idVar,
@@ -321,7 +321,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
         W_H2 <- model.matrix.default(terms_Surv_noResp, mf2)[, -1, drop = FALSE]
         if (!ncol(W_H2)) {
-            W_H2 <- cbind(W_H2, rep(0, nrow(W_H2)))
+            W_H2 <- matrix(0.0, nrow = nrow(W_H2), ncol = 1L)
         }
         X_H2 <- desing_matrices_functional_forms(st, terms_FE_noResp,
                                                  dataL, time_var, idVar,
