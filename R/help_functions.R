@@ -1,3 +1,33 @@
+cd <- function (x, f, ..., eps = 0.001) {
+    n <- length(x)
+    res <- numeric(n)
+    ex <- pmax(abs(x), 1)
+    for (i in seq_len(n)) {
+        x1 <- x2 <- x
+        x1[i] <- x[i] + eps * ex[i]
+        x2[i] <- x[i] - eps * ex[i]
+        diff.f <- c(f(x1, ...) - f(x2, ...))
+        diff.x <- x1[i] - x2[i]
+        res[i] <- diff.f/diff.x
+    }
+    res
+}
+
+cd_vec <- function (x, f, ..., eps = 0.001) {
+    n <- length(x)
+    res <- matrix(0, n, n)
+    ex <- pmax(abs(x), 1)
+    for (i in seq_len(n)) {
+        x1 <- x2 <- x
+        x1[i] <- x[i] + eps * ex[i]
+        x2[i] <- x[i] - eps * ex[i]
+        diff.f <- c(f(x1, ...) - f(x2, ...))
+        diff.x <- x1[i] - x2[i]
+        res[, i] <- diff.f/diff.x
+    }
+    0.5 * (res + t(res))
+}
+
 extract_terms <- function (object, which = c("fixed", "random"), data) {
     which <- match.arg(which)
     if (inherits(object, "MixMod")) {
