@@ -445,3 +445,103 @@ extract_vcov_prop_RE <- function (object, Z_k, id_k) {
     }
 }
 
+init_vals_surv <- function(Data, model_info, data, betas, b) {
+    Time_start <- Data$Time_start
+    Time_right <- Data$Time_right
+    delta <- Data$delta
+    which_event <- Data$which_event
+    which_interval <- Data$which_interval
+    n <- model_info$n
+    ###
+    dataL <- data$dataL
+    dataS <- data$dataS
+    ###
+    idVar <- model_info$var_names$idVar
+    time_var <- model_info$var_names$time_var
+    idT <- model_info$ids$idT
+    terms_FE_noResp <- model_info$terms$terms_FE_noResp
+    terms_RE <- model_info$terms$terms_RE
+    terms_RE <- model_info$terms$terms_RE
+    terms_Surv_noResp <- model_info$terms$terms_Surv_noResp
+    ###
+    X_H <- Data$X_H; Z_H <- Data$Z_H; U_H <- Data$U_H
+    X_h <- Data$X_h; Z_h <- Data$Z_h; U_h <- Data$U_h
+    X_H2 <- Data$X_H2; Z_H2 <- Data$Z_H2; U_H2 <- Data$U_H2
+    ######################################################################################
+    ######################################################################################
+    times_long <- split(dataL[[time_var]], dataL[[idVar]])
+    dataS_init <- SurvData_HazardModel(times_long, dataS, Time_start, idT)
+    mf <- model.frame.default(terms_Surv_noResp, data = dataS_init)
+    W_init <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
+    if (!ncol(W_init)) {
+        W_init <- cbind(W_init, rep(0, nrow(W_init)))
+    }
+    X_init <- desing_matrices_functional_forms(times_long, terms_FE_noResp,
+                                               dataL, time_var, idVar,
+                                               collapsed_functional_forms)
+    Z_init <- desing_matrices_functional_forms(times_long, terms_RE,
+                                               dataL, time_var, idVar,
+                                               collapsed_functional_forms)
+    U_init <- lapply(seq_along(Mixed_objects), function (i) {
+        tt <- terms(functional_forms[[i]])
+        model.matrix(tt, model.frame(tt, data = dataS_init))[, -1, drop = FALSE]
+    })
+    ##############
+    id_init <- rep(list(dataL[[idVar]]), length.out = length(X_init))
+    eta_init <- linpred_surv(X_init, betas, Z_init, b, id_init)
+    Wlong_init <- create_Wlong(eta_init, functional_forms_per_outcome, U_init)
+    Wlong_init <- do.call("cbind", Wlong_init)
+    ######################################################################################
+    ######################################################################################
+    start <- dataL[[time_var]]
+    fid <- dataL[[idVar]]
+    fid <- factor(fid, levels = unique(fid))
+    stop <- unlist(mapply(`c`, tapply(start, fid, tail, n = -1), split(Time_right, idT),
+                          SIMPLIFY = FALSE), use.names = FALSE)
+    create_event <- function (ni, delta) {
+        if (ni == 1) delta else c(rep(0, ni - 1), delta)
+    }
+    event <- unlist(mapply(create_event, ni = tapply(fid, fid, length), delta,
+                           SIMPLIFY = FALSE), use.names = FALSE)
+    any_gammas <- !(ncol(W_init) == 1 && all(W_init[, 1] == 0))
+    WW <- if (any_gammas) cbind(W_init, Wlong_init) else Wlong_init
+    ####
+    fm <- coxph(Surv(start, stop, event) ~ WW)
+    coefs <- coef(fm)
+    gammas <- if (any_gammas) head(coefs, ncol(W_init)) else 0.0
+    alphas <- tail(coefs, ncol(Wlong_init))
+    alphas <- split(alphas, rep(seq_along(U_H), sapply(U_H, ncol)))
+    V <- vcov(fm)
+    if (any_gammas) {
+        vcov_prop_gammas <- V[1:ncol(W_init), 1:ncol(W_init)]
+        vcov_prop_alphas <- V[-(1:ncol(W_init)), -(1:ncol(W_init))]
+    } else {
+        vcov_prop_gammas <- matrix(0.0, 1, 1)
+        vcov_prop_alphas <- V
+    }
+    out <- list(gammas = gammas, alphas = alphas,
+                vcov_prop_gammas = vcov_prop_gammas, vcov_prop_alphas = vcov_prop_alphas)
+    ######################################################################################
+    ######################################################################################
+
+    id_H <- lapply(X_H, function (i, n) rep(seq_len(n), each = con$GK_k), n = nY)
+    eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
+    Wlong_H <- create_Wlong(eta_H, functional_forms_per_outcome, U_H)
+    if (length(which_event)) {
+        id_h <- lapply(X_h, function (x) seq_len(nrow(x[[1]])))
+        eta_h <- linpred_surv(X_h, betas, Z_h, b, id_h)
+        Wlong_h <- create_Wlong(eta_h, functional_forms_per_outcome, U_h)
+    } else {
+        Wlong_h <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
+    }
+    if (length(which_interval)) {
+        id_H2 <- lapply(X_H2, function (i, n) rep(seq_len(n), each = con$GK_k), n = nY)
+        eta_H2 <- linpred_surv(X_H2, betas, Z_H, b, id_H2)
+        Wlong_H2 <- create_Wlong(eta_H2, functional_forms_per_outcome, U_H2)
+    } else {
+        Wlong_H2 <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
+    }
+
+    out
+
+}

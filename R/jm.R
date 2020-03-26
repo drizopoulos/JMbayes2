@@ -46,7 +46,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     terms_FE <- lapply(Mixed_objects, extract_terms, which = "fixed", data = dataL)
     respVars <- sapply(terms_FE, function (tt) all.vars(tt)[1L])
     respVars_form <- sapply(terms_FE, function (tt) as.character(attr(tt, "variables"))[2L])
-    namesOutcomes <- sapply(terms_FE, function (t) as.character(formula(t))[2L])
     terms_FE_noResp <- lapply(terms_FE, delete.response)
     terms_RE <- lapply(Mixed_objects, extract_terms, which = "random", data = dataL)
 
@@ -144,13 +143,16 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     nT <- length(unique(idT))
     if (nY != nT) {
         stop("the number of groups/subjects in the longitudinal and survival datasets ",
-             "do not seem to match.")
+             "do not seem to match. A potential reason why this may be happening is ",
+             "missing data in some covariates used in the individual models.")
     }
     if (!all(idT %in% dataL[[idVar]])) {
         stop("it seems that some of the levels of the id variable in the survival dataset",
              "cannot be found in the dataset of the Mixed_objects. Please check that ",
-             "the same subjects / groups are used in the datasets used to fit the mixed ",
-             "and survival models.")
+             "the same subjects/groups are used in the datasets used to fit the mixed ",
+             "and survival models. Also, the name of the subjects/groups variable ",
+             "in the different datasets used to fit the individual models ",
+             "needs to be the same in all of the datasets.")
     }
     # we need to check that the ordering of the subjects in the same in dataL and dataS.
     # If not, then a warning and do it internally
@@ -266,12 +268,12 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # design matrices for the survival submodel:
     #  - W0 is the design matrix for the log baseline hazard
     #  - W is the design matrix for the covariates in the Surv_object
-    #    (including time-varying covariates)
+    #    (including exogenous time-varying covariates)
     #  - X is the design matrix for the fixed effects, per outcome and functional form
     #  - Z is the design matrix for the random effects, per outcome and functional form
-    #  - U is the design matrix for possible interaction terms
-    #  - Wlong is the design matrix for longitudinal outcomes in the survival submodel that
-    #    is already multiplied with the interaction terms matrix U
+    #  - U is the design matrix for possible interaction terms in functional forms
+    #  - Wlong is the design matrix for the longitudinal outcomes in the survival submodel
+    #    that is already multiplied with the interaction terms matrix U
     # in the above design matrices we put the "_h" to denote calculation at the event time
     # 'Time_right', we put "_H" to denote calculation at the 'Time_integration', and
     # "_H2" to denote calculation at the 'Time_integration2'.
@@ -344,8 +346,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                  columns_HC = columns_HC, columns_nHC = columns_nHC,
                  #####
                  idT = idT,
-                 Time_right = Time_right, Time_left = Time_left, delta = delta,
-                 which_event = which_event, which_right = which_right,
+                 Time_right = Time_right, Time_left = Time_left, Time_start = Time_start,
+                 delta = delta, which_event = which_event, which_right = which_right,
                  which_left = which_left, which_interval = which_interval,
                  W0_H = W0_H, W_H = W_H, X_H = X_H, Z_H = Z_H, U_H = U_H,
                  W0_h = W0_h, W_h = W_h, X_h = X_h, Z_h = Z_h, U_h = U_h,
@@ -355,6 +357,26 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     Data[] <- lapply(Data, drop_names)
     ######################################################################################
     ######################################################################################
+    # objects to export
+    data <- list(dataL = dataL, dataS = dataS)
+    model_info <- list(
+        terms = list(terms_FE = terms_FE, terms_FE_noResp = terms_FE_noResp,
+                     terms_RE = terms_RE, terms_Surv,
+                     terms_Surv_noResp = terms_Surv_noResp),
+        var_names = list(respVars = respVars, respVars_form = respVars_form,
+                         idVar = idVar, time_var = time_var),
+        families = families,
+        ids = list(idL = idL, idL_lp = idL_lp, unq_idL = unq_idL, idT = idT),
+        n = nY,
+        HC = list(columns_HC = columns_HC, columns_nHC = columns_nHC),
+        type_censoring = type_censoring,
+        functional_forms = list(functional_forms = functional_forms,
+                                functional_forms_per_outcome = functional_forms_per_outcome,
+                                collapsed_functional_forms = collapsed_functional_forms)
+    )
+
+    ######################################################################################
+    ######################################################################################
     # initial values
     betas <- lapply(Mixed_objects, fixef)
     log_sigmas <- lapply(Mixed_objects, extract_log_sigmas)
@@ -362,12 +384,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     D <- bdiag(D_lis)
     b <- mapply(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY),
                 SIMPLIFY = FALSE)
-
-    gammas <- coef(Surv_object)
-    gammas <- gammas[names(gammas) != "(Intercept)"]
-    bs_gammas <- rnorm(ncol(W0_H), sd = 0.1)
-    alphas <- lapply(U_H, function (x) rnorm(ncol(x), sd = 0.1))
-
+    init_surv <- init_vals_surv(Data, model_info, data, betas, b)
+    bs_gammas <- init_surv$bs_gammas
+    gammas <- init_surv$gammas
+    alphas <- init_surv$alphas
     ######################################################################################
     ######################################################################################
     # variance covariance matrices for proposal distributions in
@@ -380,11 +400,19 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                                     MoreArgs = list(which = "tilde_betas"),
                                     SIMPLIFY = FALSE)
     r <- mapply(extract_vcov_prop_RE, Mixed_objects, Z, idL, SIMPLIFY = FALSE)
-    vcov_prop_RE <- vector("list", nY)
+    vcov_prop_RE <- array(0.0, c(dim(D), nY))
     for (i in seq_len(nY)) {
         rr <- lapply(r, function (m, i) m[[as.character(i)]], i = i)
         if (any(ind <- sapply(rr, is.null))) rr[ind] <- D_lis[ind]
-        vcov_prop_RE[[i]] <- .bdiag(rr)
+        vcov_prop_RE[, , i] <- .bdiag(rr)
     }
-
+    vcov_prop_bs_gammas <- init_surv$vcov_prop_bs_gammas
+    vcov_prop_gammas <- init_surv$vcov_prop_gammas
+    vcov_prop_alphas <- init_surv$vcov_prop_alphas
+    vcov_prop <- list(vcov_prop_betas = vcov_prop_betas,
+                      vcov_prop_tilde_betas = vcov_prop_tilde_betas,
+                      vcov_prop_RE = vcov_prop_RE,
+                      vcov_prop_bs_gammas = vcov_prop_bs_gammas,
+                      vcov_prop_gammas = vcov_prop_gammas,
+                      vcov_prop_alphas = vcov_prop_alphas)
 }

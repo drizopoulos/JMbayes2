@@ -27,8 +27,6 @@ fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 
-pbc2.id$age[c(3, 23, 58)] <- as.numeric(NA)
-
 CoxFit <- coxph(Surv(years, status2) ~ age,
                 data = pbc2.id, model = TRUE)
 
