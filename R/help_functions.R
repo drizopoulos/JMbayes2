@@ -445,11 +445,13 @@ extract_vcov_prop_RE <- function (object, Z_k, id_k) {
     }
 }
 
-init_vals_surv <- function(Data, model_info, data, betas, b) {
+init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     Time_start <- Data$Time_start
     Time_right <- Data$Time_right
     delta <- Data$delta
     which_event <- Data$which_event
+    which_right <- Data$which_right
+    which_left <- Data$which_left
     which_interval <- Data$which_interval
     n <- model_info$n
     ###
@@ -464,9 +466,16 @@ init_vals_surv <- function(Data, model_info, data, betas, b) {
     terms_RE <- model_info$terms$terms_RE
     terms_Surv_noResp <- model_info$terms$terms_Surv_noResp
     ###
-    X_H <- Data$X_H; Z_H <- Data$Z_H; U_H <- Data$U_H
-    X_h <- Data$X_h; Z_h <- Data$Z_h; U_h <- Data$U_h
-    X_H2 <- Data$X_H2; Z_H2 <- Data$Z_H2; U_H2 <- Data$U_H2
+    functional_forms <- model_info$fun_forms$functional_forms
+    functional_forms_per_outcome <- model_info$fun_forms$functional_forms_per_outcome
+    collapsed_functional_forms <- model_info$fun_forms$collapsed_functional_forms
+    ###
+    X_H <- Data$X_H; Z_H <- Data$Z_H; U_H <- Data$U_H; W0_H <- Data$W0_H; W_H <- Data$W_H
+    X_h <- Data$X_h; Z_h <- Data$Z_h; U_h <- Data$U_h; W0_h <- Data$W0_h; W_h <- Data$W_h
+    X_H2 <- Data$X_H2; Z_H2 <- Data$Z_H2; U_H2 <- Data$U_H2; W0_H2 <- Data$W0_H2; W_H2 <- Data$W_H2
+    ###
+    log_Pwk <- Data[["log_Pwk"]]
+    log_Pwk2 <- Data[["log_Pwk2"]]
     ######################################################################################
     ######################################################################################
     times_long <- split(dataL[[time_var]], dataL[[idVar]])
@@ -482,7 +491,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b) {
     Z_init <- desing_matrices_functional_forms(times_long, terms_RE,
                                                dataL, time_var, idVar,
                                                collapsed_functional_forms)
-    U_init <- lapply(seq_along(Mixed_objects), function (i) {
+    U_init <- lapply(seq_along(X_init), function (i) {
         tt <- terms(functional_forms[[i]])
         model.matrix(tt, model.frame(tt, data = dataS_init))[, -1, drop = FALSE]
     })
@@ -523,8 +532,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b) {
                 vcov_prop_gammas = vcov_prop_gammas, vcov_prop_alphas = vcov_prop_alphas)
     ######################################################################################
     ######################################################################################
-
-    id_H <- lapply(X_H, function (i, n) rep(seq_len(n), each = con$GK_k), n = nY)
+    id_H <- lapply(X_H, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
     eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
     Wlong_H <- create_Wlong(eta_H, functional_forms_per_outcome, U_H)
     if (length(which_event)) {
@@ -542,6 +550,47 @@ init_vals_surv <- function(Data, model_info, data, betas, b) {
         Wlong_H2 <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
     }
 
-    out
-
+    log_dens_surv <- function (bs_gammas) {
+        lambda_H <- W0_H %*% bs_gammas + W_H %*% gammas
+        for (i in seq_along(Wlong_H)) {
+            lambda_H <- lambda_H + Wlong_H[[i]] %*% alphas[[i]]
+        }
+        lambda_h <- matrix(0.0, n, 1)
+        if (length(which_event)) {
+            lambda_h <- W0_h %*% bs_gammas + W_h %*% gammas
+            for (i in seq_along(Wlong_h)) {
+                W_h_i <- Wlong_h[[i]]
+                lambda_h <- lambda_h + W_h_i %*% alphas[[i]]
+            }
+        }
+        lambda_H2 <- matrix(0.0, nrow(Wlong_H2[[1]]), 1)
+        if (length(which_interval)) {
+            lambda_H2 <- W0_H2 %*% bs_gammas + W_H2 %*% gammas
+            for (i in seq_along(Wlong_H2)) {
+                W_H2_i <- Wlong_H2[[i]]
+                lambda_H2 <- lambda_H2 + W_H2_i %*% alphas[[i]]
+            }
+        }
+        H <- rowsum(exp(log_Pwk + lambda_H), group = id_H[[1]], reorder = FALSE)
+        log_Lik_surv <- numeric(n)
+        which_right_event <- c(which_right, which_event)
+        if (length(which_right_event)) {
+            log_Lik_surv[which_right_event] <- - H[which_right_event]
+        }
+        if (length(which_event)) {
+            log_Lik_surv[which_event] <- log_Lik_surv[which_event] + lambda_h[which_event]
+        }
+        if (length(which_left)) {
+            log_Lik_surv[which_left] <- log1p(- exp(- H[which_left]))
+        }
+        if (length(which_interval)) {
+            H2 <- rowsum(exp(log_Pwk2 + lambda_H2), group = id_H2[[1]], reorder = FALSE)
+            log_Lik_surv[which_interval] <- log(exp(- H[which_interval]) -
+                                                    exp(-H2[which_interval]))
+        }
+        - sum(log_Lik_surv, na.rm = TRUE)
+    }
+    opt <- optim(rep(0.01, ncol(W0_H)), log_dens_surv, method = "BFGS",
+                 hessian = TRUE)
+    c(out, list(bs_gammas = opt$par, vcov_prop_bs_gammas = solve(opt$hessian)))
 }

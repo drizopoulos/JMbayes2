@@ -1,7 +1,7 @@
 jm <- function (Surv_object, Mixed_objects, time_var,
                 functional_forms = NULL, data_Surv = NULL, id_var = NULL,
                 priors = NULL, control = NULL, ...) {
-#    call <- match.call()
+    call <- match.call()
     # control argument:
     # - GK_k: number of quadrature points for the Gauss Kronrod rule; options 15 and 7
     # - Bsplines_degree: the degree of the splines in each basis; default quadratic splines
@@ -370,9 +370,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         n = nY,
         HC = list(columns_HC = columns_HC, columns_nHC = columns_nHC),
         type_censoring = type_censoring,
-        functional_forms = list(functional_forms = functional_forms,
-                                functional_forms_per_outcome = functional_forms_per_outcome,
-                                collapsed_functional_forms = collapsed_functional_forms)
+        fun_forms = list(functional_forms = functional_forms,
+                         functional_forms_per_outcome = functional_forms_per_outcome,
+                         collapsed_functional_forms = collapsed_functional_forms)
     )
 
     ######################################################################################
@@ -384,7 +384,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     D <- bdiag(D_lis)
     b <- mapply(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY),
                 SIMPLIFY = FALSE)
-    init_surv <- init_vals_surv(Data, model_info, data, betas, b)
+    init_surv <- init_vals_surv(Data, model_info, data, betas, b, con)
     bs_gammas <- init_surv$bs_gammas
     gammas <- init_surv$gammas
     alphas <- init_surv$alphas
@@ -415,4 +415,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                       vcov_prop_bs_gammas = vcov_prop_bs_gammas,
                       vcov_prop_gammas = vcov_prop_gammas,
                       vcov_prop_alphas = vcov_prop_alphas)
+    list(betas = betas, D = D, log_sigmas = log_sigmas,
+         bs_gammas = bs_gammas, gammas = gammas, alphas = alphas,
+         vcov_prop = vcov_prop)
 }
