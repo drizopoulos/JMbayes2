@@ -374,7 +374,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                          functional_forms_per_outcome = functional_forms_per_outcome,
                          collapsed_functional_forms = collapsed_functional_forms)
     )
-
     ######################################################################################
     ######################################################################################
     # initial values
@@ -388,6 +387,11 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     bs_gammas <- init_surv$bs_gammas
     gammas <- init_surv$gammas
     alphas <- init_surv$alphas
+    # we are going to have multiple chains; hence, we need to randomly permute these
+    # initial values
+    initial_values <- list(betas = betas, log_sigma = log_sigma, D = D,
+                           b = b, bs_gammas = bs_gammas, gammas = gammas,
+                           alphas = alphas)
     ######################################################################################
     ######################################################################################
     # variance covariance matrices for proposal distributions in

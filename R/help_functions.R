@@ -1,4 +1,5 @@
 cd <- function (x, f, ..., eps = 0.001) {
+    # numerical derivative: central difference approximation for scalar functions
     n <- length(x)
     res <- numeric(n)
     ex <- pmax(abs(x), 1)
@@ -14,6 +15,7 @@ cd <- function (x, f, ..., eps = 0.001) {
 }
 
 cd_vec <- function (x, f, ..., eps = 0.001) {
+    # numerical derivative: central difference approximation for vector functions
     n <- length(x)
     res <- matrix(0, n, n)
     ex <- pmax(abs(x), 1)
@@ -70,6 +72,7 @@ exclude_NAs <- function (NAs_FE, NAs_RE, id) {
 }
 
 bdiag <- function (...) {
+    # constructs a block-diagonal matrix
     mlist <- list(...)
     if (length(mlist) == 1)
         mlist <- unlist(mlist, recursive = FALSE)
@@ -90,6 +93,7 @@ bdiag <- function (...) {
 }
 
 .bdiag <- function (mlist) {
+    # constructs a block-diagonal matrix
     mlist <- mlist[sapply(mlist, length) > 0]
     if (length(mlist) == 1)
         mlist <- unlist(mlist, recursive = FALSE)
@@ -110,6 +114,9 @@ bdiag <- function (...) {
 }
 
 right_rows <- function (data, times, ids, Q_points) {
+    # find the right row to use from a data.frame. This is used to find which
+    # specific rows from the longitudinal or survival datasets need to be used in
+    # the specification of the design matrices for the survival model.
     fids <- factor(ids, levels = unique(ids))
     if (!is.list(Q_points))
         Q_points <- split(Q_points, row(Q_points))
@@ -345,7 +352,7 @@ extract_b <- function (object, id, n) {
 
 extract_log_sigmas <- function (object) {
     if (inherits(object, "lme")) {
-        # we extract the log of sigma to be consisten with GLMMadaptive
+        # we extract the log of sigma to be consistent with GLMMadaptive
         log(object$sigma)
     } else {
         object$phis
@@ -424,6 +431,8 @@ get_vcov_FE <- function (model, cc, which = c("betas", "tilde_betas")) {
 }
 
 extract_vcov_prop_RE <- function (object, Z_k, id_k) {
+    # variance-covariance matrix for the proposal distributions for the random effects
+    # (one proposal distribution per subject/cluster)
     if (inherits(object, "lme")) {
         D <- lapply(pdMatrix(object$modelStruct$reStruct), "*",
                     object$sigma^2)[[1]]
@@ -446,6 +455,17 @@ extract_vcov_prop_RE <- function (object, Z_k, id_k) {
 }
 
 init_vals_surv <- function(Data, model_info, data, betas, b, control) {
+    # initial values and variance-covariance matrix for the proposal distributions
+    # for the coefficients in the survival model. The function does the following two
+    # things: (1) Fits a time-varying Cox model using the baseline covariates from
+    # 'Surv_object' and the longitudinal outcomes from 'Mixed_objects', taking also into
+    # account the functional forms. From this first step we get initial values the
+    # variance-covariance matrix for the proposals in the MCMC for the 'gammas' and
+    # 'alphas' coefficients. Then we go in step (2): We specify a function that calculates
+    # the log likelihood for 'bs_gammas' (i.e., the log density of the survival submodel).
+    # In this step, and contrary to the previous step we do account for left or interval
+    # censoring. We get the initial values for 'bs_gammas' and the corresponding vcov
+    # matrix for the proposal in the MCMC using optim().
     Time_start <- Data$Time_start
     Time_right <- Data$Time_right
     delta <- Data$delta
