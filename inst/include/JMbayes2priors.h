@@ -8,16 +8,6 @@
 using namespace Rcpp;
 using namespace arma;
 
-arma::vec dlkj(arma::mat Omega, arma::vec eta = 1, bool logscale = true) {
-  arma::vec out;
-  if (logscale = true) {
-    out = pow(det(Omega), eta - 1);
-  } else {
-    out = exp(pow(det(Omega), eta - 1);)
-  }
-  return(out);
-}
-
 arma::mat rwishart(int df, const arma::mat& S) {
   int m = S.n_rows;
   mat Z(m, m);
