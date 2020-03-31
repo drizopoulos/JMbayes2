@@ -119,16 +119,17 @@ D <- cor2cov(R, trace * simplex)
 b <- MASS::mvrnorm(1000, rep(0, p), D)
 
 target_log_dist <- function (trace, simplex) {
+    D <- cor2cov(R, trace * simplex)
     log_p_b <- sum(dmvnorm(b, rep(0, p), D, log = TRUE))
     log_p_trace <- dgamma(trace, 1, 1, log = TRUE)
     log_p_simplex <- log(ddirichlet(simplex, rep(1, p)))
     log_p_b + log_p_trace + log_p_simplex
 }
 
-M <- 100
+M <- 5000
 acceptance_trace <- traces <- numeric(M)
 current_trace <- trace
-scale_trace <- 0.1
+scale_trace <- 0.01
 for (m in seq_len(M)) {
     log_mu <- log(current_trace) - 0.5 * scale_trace^2
     proposed_trace <- rlnorm(1, log_mu, scale_trace)
@@ -137,16 +138,16 @@ for (m in seq_len(M)) {
     denominator <- target_log_dist(current_trace, simplex) +
         dlnorm(proposed_trace, log_mu, scale_trace, log = TRUE)
     log_ratio <- numerator - denominator
-    if (log_ratio < log(runif(1))) {
+    if (log_ratio > log(runif(1))) {
         current_trace <- proposed_trace
         acceptance_trace[m] <- 1
     }
     traces[m] <- current_trace
 }
 
-mean(acceptance_trace)
+mean(acceptance_trace[-seq(500)])
 
-plot(traces, type = "l")
+plot(traces[-seq(500)], type = "l")
 
 
 
