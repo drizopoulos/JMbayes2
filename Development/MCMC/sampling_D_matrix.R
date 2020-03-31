@@ -81,7 +81,7 @@ cor2cov <- function (R, vars) {
     sds * R * rep(sds, each = p)
 }
 
-ddirichlet <- function (x, alpha) {
+ddirichlet <- function (x, alpha, log = FALSE) {
     dirichlet1 <- function(x, alpha) {
         logD <- sum(lgamma(alpha)) - lgamma(sum(alpha))
         s <- sum((alpha - 1) * log(x))
@@ -101,9 +101,15 @@ ddirichlet <- function (x, alpha) {
                                                                ])
         pd[apply(x, 1, function(z) any(z < 0 | z > 1))] <- 0
         pd[apply(x, 1, function(z) all.equal(sum(z), 1) != TRUE)] <- 0
-        return(pd)
+        if (log) return(log(pd)) else return(pd)
 }
 
+rdirichlet <- function (n, alpha) {
+    l <- length(alpha)
+    x <- matrix(rgamma(l * n, alpha), ncol = l, byrow = TRUE)
+    x / rowSums(x)
+    #exp(log(x) - log(rowSums(x)))
+}
 
 ##########################################################################################
 ##########################################################################################
@@ -111,43 +117,65 @@ ddirichlet <- function (x, alpha) {
 p <- ncol(D)
 R <- cov2cor(D)
 vars <- diag(D)
-trace <- sum(vars)
-simplex <- vars / trace
+tau <- sum(vars) / p # the trace is p * tau
+simplex <- vars / sum(vars)
 
-D <- cor2cov(R, trace * simplex)
+D <- cor2cov(R, p * tau * simplex)
 
 b <- MASS::mvrnorm(1000, rep(0, p), D)
 
-target_log_dist <- function (trace, simplex) {
-    D <- cor2cov(R, trace * simplex)
+target_log_dist <- function (tau, simplex) {
+    p <- length(simplex)
+    D <- cor2cov(R, p * tau * simplex)
     log_p_b <- sum(dmvnorm(b, rep(0, p), D, log = TRUE))
-    log_p_trace <- dgamma(trace, 1, 1, log = TRUE)
-    log_p_simplex <- log(ddirichlet(simplex, rep(1, p)))
-    log_p_b + log_p_trace + log_p_simplex
+    log_p_tau <- dgamma(tau, 1, 1, log = TRUE)
+    log_p_simplex <- ddirichlet(simplex, rep(1, p), log = TRUE)
+    log_p_b + log_p_tau + log_p_simplex
 }
 
 M <- 5000
-acceptance_trace <- traces <- numeric(M)
-current_trace <- trace
-scale_trace <- 0.01
+acceptance_tau <- taus <- numeric(M)
+acceptance_simplex <- numeric(M)
+simplexes <- matrix(0.0, M, p)
+current_tau <- tau
+current_simplex <- simplex
+scale_tau <- 0.03
+scale_simplex <- 1
 for (m in seq_len(M)) {
-    log_mu <- log(current_trace) - 0.5 * scale_trace^2
-    proposed_trace <- rlnorm(1, log_mu, scale_trace)
-    numerator <- target_log_dist(proposed_trace, simplex) +
-        dlnorm(current_trace, log_mu, scale_trace, log = TRUE)
-    denominator <- target_log_dist(current_trace, simplex) +
-        dlnorm(proposed_trace, log_mu, scale_trace, log = TRUE)
+    log_mu <- log(current_tau) - 0.5 * scale_tau^2
+    proposed_tau <- rlnorm(1, log_mu, scale_tau)
+    numerator <- target_log_dist(proposed_tau, current_simplex) +
+        dlnorm(current_tau, log_mu, scale_tau, log = TRUE)
+    denominator <- target_log_dist(current_tau, current_simplex) +
+        dlnorm(proposed_tau, log_mu, scale_tau, log = TRUE)
     log_ratio <- numerator - denominator
     if (log_ratio > log(runif(1))) {
-        current_trace <- proposed_trace
-        acceptance_trace[m] <- 1
+        current_tau <- proposed_tau
+        acceptance_tau[m] <- 1
     }
-    traces[m] <- current_trace
+    taus[m] <- current_tau
+    #######
+    if (FALSE) {
+        proposed_simplex <- c(rdirichlet(1, current_simplex))
+
+        numerator <- target_log_dist(current_trace, proposed_simplex) +
+            ddirichlet(current_simplex, current_simplex, log = TRUE)
+
+        denominator <- target_log_dist(current_trace, current_simplex) +
+            ddirichlet(proposed_simplex, current_simplex, log = TRUE)
+
+        log_ratio <- numerator - denominator
+        if (log_ratio > log(runif(1))) {
+            current_simplex <- proposed_simplex
+            acceptance_simplex[m] <- 1
+        }
+        simplexes[m, ] <- current_simplex
+    }
 }
 
-mean(acceptance_trace[-seq(500)])
+mean(acceptance_tau[-seq(500)])
 
-plot(traces[-seq(500)], type = "l")
+plot(taus[-seq(500)], type = "l")
 
 
 
