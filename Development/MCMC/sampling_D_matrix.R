@@ -133,14 +133,14 @@ target_log_dist <- function (tau, simplex) {
     log_p_b + log_p_tau + log_p_simplex
 }
 
-M <- 5000
+M <- 2000
 acceptance_tau <- taus <- numeric(M)
 acceptance_simplex <- numeric(M)
 simplexes <- matrix(0.0, M, p)
 current_tau <- tau
 current_simplex <- simplex
 scale_tau <- 0.03
-scale_simplex <- 1
+scale_simplex <- 1e7
 for (m in seq_len(M)) {
     log_mu <- log(current_tau) - 0.5 * scale_tau^2
     proposed_tau <- rlnorm(1, log_mu, scale_tau)
@@ -155,13 +155,13 @@ for (m in seq_len(M)) {
     }
     taus[m] <- current_tau
     #######
-    if (FALSE) {
-        proposed_simplex <- c(rdirichlet(1, current_simplex))
+    #if (FALSE) {
+        proposed_simplex <- c(rdirichlet(1, scale_simplex * current_simplex))
 
-        numerator <- target_log_dist(current_trace, proposed_simplex) +
+        numerator <- target_log_dist(current_tau, proposed_simplex) +
             ddirichlet(current_simplex, current_simplex, log = TRUE)
 
-        denominator <- target_log_dist(current_trace, current_simplex) +
+        denominator <- target_log_dist(current_tau, current_simplex) +
             ddirichlet(proposed_simplex, current_simplex, log = TRUE)
 
         log_ratio <- numerator - denominator
@@ -170,15 +170,23 @@ for (m in seq_len(M)) {
             acceptance_simplex[m] <- 1
         }
         simplexes[m, ] <- current_simplex
-    }
+    #}
 }
 
-mean(acceptance_tau[-seq(500)])
+mean(acceptance_tau[-seq_len(500L)])
+mean(acceptance_simplex[-seq_len(500L)])
 
-plot(taus[-seq(500)], type = "l")
+####
 
+plot(taus[-seq_len(500L)], type = "l")
 
-
+simplexes <- simplexes[-seq_len(500L), ]
+plot(simplexes[, 1], type = "l")
+plot(simplexes[, 2], type = "l")
+plot(simplexes[, 3], type = "l")
+plot(simplexes[, 4], type = "l")
+plot(simplexes[, 5], type = "l")
+plot(simplexes[, 6], type = "l")
 
 
 
