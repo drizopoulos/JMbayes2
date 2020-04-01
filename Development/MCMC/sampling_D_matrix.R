@@ -2,7 +2,6 @@ library("survival")
 library("nlme")
 library("GLMMadaptive")
 library("splines")
-#library("Formula")
 data("pbc2", package = "JM")
 data("pbc2.id", package = "JM")
 source(file.path(getwd(), "R/jm.R"))
@@ -108,7 +107,12 @@ rdirichlet <- function (n, alpha) {
     l <- length(alpha)
     x <- matrix(rgamma(l * n, alpha), ncol = l, byrow = TRUE)
     x / rowSums(x)
-    #exp(log(x) - log(rowSums(x)))
+}
+
+update_scale <- function (scale, rate, target_acc, it, c1 = 0.8, c0 = 1) {
+    g1 <- (it + 1)^(1 - c1)
+    g2 <- c0 * g1
+    exp(log(scale) + g2 * (rate - target_acc))
 }
 
 ##########################################################################################
@@ -127,7 +131,7 @@ b <- MASS::mvrnorm(1000, rep(0, p), D)
 target_log_dist <- function (tau, simplex) {
     p <- length(simplex)
     D <- cor2cov(R, p * tau * simplex)
-    log_p_b <- sum(dmvnorm(b, rep(0, p), D, log = TRUE))
+    log_p_b <- sum(dmvnorm(b, rep(0, p), D, log = TRUE, prop = FALSE))
     log_p_tau <- dgamma(tau, 1, 1, log = TRUE)
     log_p_simplex <- ddirichlet(simplex, rep(1, p), log = TRUE)
     log_p_b + log_p_tau + log_p_simplex
@@ -139,8 +143,10 @@ acceptance_simplex <- numeric(M)
 simplexes <- matrix(0.0, M, p)
 current_tau <- tau
 current_simplex <- simplex
-scale_tau <- 0.18
-scale_simplex <- 1e2
+scale_tau <- 0.04
+scale_simplex <- 2e4
+#scale_tau <- 0.1
+#scale_simplex <- 1e3
 for (m in seq_len(M)) {
     log_mu <- log(current_tau) - 0.5 * scale_tau^2
     proposed_tau <- rlnorm(1, log_mu, scale_tau)
@@ -155,22 +161,25 @@ for (m in seq_len(M)) {
     }
     taus[m] <- current_tau
     #######
-    #if (FALSE) {
-        proposed_simplex <- c(rdirichlet(1, scale_simplex * current_simplex))
+    proposed_simplex <- c(rdirichlet(1, scale_simplex * current_simplex))
 
-        numerator <- target_log_dist(current_tau, proposed_simplex) +
-            ddirichlet(current_simplex, current_simplex, log = TRUE)
+    numerator <- target_log_dist(current_tau, proposed_simplex) +
+        ddirichlet(current_simplex, current_simplex, log = TRUE)
 
-        denominator <- target_log_dist(current_tau, current_simplex) +
-            ddirichlet(proposed_simplex, current_simplex, log = TRUE)
+    denominator <- target_log_dist(current_tau, current_simplex) +
+        ddirichlet(proposed_simplex, current_simplex, log = TRUE)
 
-        log_ratio <- numerator - denominator
-        if (log_ratio > log(runif(1))) {
-            current_simplex <- proposed_simplex
-            acceptance_simplex[m] <- 1
-        }
-        simplexes[m, ] <- current_simplex
-    #}
+    log_ratio <- numerator - denominator
+    if (log_ratio > log(runif(1))) {
+        current_simplex <- proposed_simplex
+        acceptance_simplex[m] <- 1
+    }
+    simplexes[m, ] <- current_simplex
+    ####
+    #scale_tau <- update_scale(scale_tau, mean(acceptance_tau), target_acc = 0.55, it = 3)
+    #scale_simplex <- update_scale(scale_simplex, mean(acceptance_simplex),
+    #                              target_acc = 0.33, it = 3, c1 = 0.8, c0 = -1)
+    #print(c(scale_tau = scale_tau, scale_simplex = scale_simplex))
 }
 
 mean(acceptance_tau[-seq_len(500L)])
@@ -187,6 +196,14 @@ plot(simplexes[, 3], type = "l")
 plot(simplexes[, 4], type = "l")
 plot(simplexes[, 5], type = "l")
 plot(simplexes[, 6], type = "l")
+
+####
+
+mean_tau <- mean(taus[-seq_len(500L)])
+mean_simplex <- colMeans(simplexes)
+
+cor2cov(R, p * mean_tau * mean_simplex)
+D
 
 
 
