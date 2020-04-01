@@ -18,7 +18,7 @@ fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
-Mixed_objects <- list(fm1, fm2, fm3, fm4)
+Mixed_objects <- list(fm1, fm3, fm4)
 
 D_lis <- lapply(Mixed_objects, extract_D)
 D <- bdiag(D_lis)
@@ -133,14 +133,14 @@ target_log_dist <- function (tau, simplex) {
     log_p_b + log_p_tau + log_p_simplex
 }
 
-M <- 2000
+M <- 3000
 acceptance_tau <- taus <- numeric(M)
 acceptance_simplex <- numeric(M)
 simplexes <- matrix(0.0, M, p)
 current_tau <- tau
 current_simplex <- simplex
-scale_tau <- 0.03
-scale_simplex <- 1e7
+scale_tau <- 0.18
+scale_simplex <- 1e2
 for (m in seq_len(M)) {
     log_mu <- log(current_tau) - 0.5 * scale_tau^2
     proposed_tau <- rlnorm(1, log_mu, scale_tau)
