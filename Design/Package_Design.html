@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
@@ -331,6 +330,7 @@ summary {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -369,15 +369,64 @@ summary {
 </div>
 
 
-<div id="objects" class="section level1">
-<h1>Objects</h1>
+<div id="section" class="section level1 tabset tabset-fade tabset-pills">
+<h1></h1>
+<div id="objects" class="section level2">
+<h2>Objects</h2>
 <ul>
-<li><code>y</code>
+<li><a name="y"><code>y</code></a>
 <ul>
 <li>a <code>list</code> with the elements numeric vectors denoting the outcomes; each outcomes can have different dimensions.</li>
 <li>a <code>field</code></li>
 </ul></li>
+<li><a name="idL"><code>idL</code></a>
+<ul>
+<li>a <code>list</code> of length equal to the number of longitudinal outcomes; each component is a vector of integers; each component might have different length.</li>
+<li>a <code>field&lt;uvec&gt;</code></li>
+<li>created in <code>jm()</code></li>
+</ul></li>
+<li><a name="Xhc"><code>Xhc</code></a>
+<ul>
+<li>a <code>list</code> of matrices. Each outer component corresponds to one longituidnal outcome, each inner component corresponds to a data frame with rows equal to the number of subjects (without missing data) and columns equal to the number of predictors in the respective mixed-effects model.</li>
+<li>a <code>field&lt;mat&gt;</code></li>
+<li>created in <code>jm()</code></li>
+</ul></li>
+<li><a name="columns_HC"><code>columns_HC</code></a>
+<ul>
+<li>a <code>list</code> of length equal to the number of longitudinal outcomes; each component is a vector of integers; each component might have different length. Each outer component corresponds to one longituidnal outcome, each inner component corresponds to a vector of integers which are indexes indicating to which random-effect each <code>beta</code> from the mixed-effects model corresponds with respect to Hierarchical centering.</li>
+<li>a <code>field&lt;uvec&gt;</code></li>
+<li>created in <code>jm()</code></li>
+</ul></li>
+<li><a name="betas"><code>betas</code></a>
+<ul>
+<li>a <code>list</code> of numeric vectors. each outer component corresponds to one longituidnal outcome, each inner component corresponds to a vector of doubles which are the fixed-effects estimates from each mixed-effects model.</li>
+<li>a <code>field&lt;vec&gt;</code></li>
+<li>created in <code>jm()</code></li>
+</ul></li>
+<li><a name="b"><code>b</code></a>
+<ul>
+<li>a <code>list</code> of matrices. each outer component corresponds to one longituidnal outcome, each inner component corresponds to a matrix (matrix of dim number of subjects x number of random effects) which are the random-effects estimates from each mixed-effects model.</li>
+<li>a <code>field&lt;mat&gt;</code></li>
+<li>created in <code>jm()</code></li>
+</ul></li>
+<li><a name="unq_idL"><code>unq_idL</code></a>
+<ul>
+<li>a <code>list</code> of length equal to the number of longitudinal outcomes; each component is a vector of integers; each component might have different length. each outer component corresponds to one longituidnal outcome, each inner component corresponds to a vector of integers indicating which subjects are involved (e.g. no missing values) in each mixed-effects model.</li>
+<li>a <code>field&lt;uvec&gt;</code></li>
+<li>created in <code>jm()</code></li>
+</ul></li>
 </ul>
+</div>
+<div id="functions" class="section level2">
+<h2>Functions</h2>
+<ul>
+<li><code>calculate_u()</code>
+<ul>
+<li>Function that calculates centered random-effects.</li>
+<li><b>INPUT:</b> <a href="#Xhc" target="_blank">Xhc</a>; <a href="#columns_HC" target="_blank">columns_HC</a>; <a href="#betas" target="_blank">betas</a>; <a href="#b" target="_blank">b</a>; <a href="#unq_idL" target="_blank">unq_idL</a></li>
+</ul></li>
+</ul>
+</div>
 </div>
 
 
