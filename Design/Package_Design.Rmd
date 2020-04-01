@@ -8,11 +8,52 @@ output: html_document
 ```{r setup, include=FALSE}
 library("knitr")
 knitr::opts_chunk$set(echo = TRUE)
+load(file = file.path("../Development/Function_Inputs_R_to_Cpp/Objects_doc_Data.RData"))
 ```
 
-# Objects
+# {.tabset .tabset-fade .tabset-pills}
 
-- `y` 
+## Objects 
+
+- <a name = 'y'>`y`</a> 
     + a `list` with the elements numeric vectors denoting the outcomes; each outcomes can have different dimensions.
     + a `field`
+
+- <a name = 'idL'>`idL`</a>
+    + a `list` of length equal to the number of longitudinal outcomes; each component is a vector of integers; each component might have different length.
+    + a `field<uvec>`
+    + created in `jm()`
+    
+- <a name = 'Xhc'>`Xhc`</a> 
+    + a `list` of matrices. Each outer component corresponds to one longituidnal outcome, each inner component corresponds to a data frame with rows equal to the number of subjects (without missing data) and columns equal to the number of predictors in the respective mixed-effects model.
+    + a `field<mat>`
+    + created in `jm()`
+    
+- <a name = 'columns_HC'>`columns_HC`</a>
+    + a `list` of length equal to the number of longitudinal outcomes; each component is a vector of integers; each component might have different length. Each outer component corresponds to one longituidnal outcome, each inner component corresponds to a vector of integers which are indexes indicating to which random-effect each `beta` from the mixed-effects model corresponds with respect to Hierarchical centering.
+    + a `field<uvec>`
+    + created in `jm()`
+    
+- <a name = 'betas'>`betas`</a> 
+    + a `list` of numeric vectors. each outer component corresponds to one longituidnal outcome, each inner component corresponds to a vector of doubles which are the fixed-effects estimates from each mixed-effects model.
+    + a `field<vec>`
+    + created in `jm()`
+    
+- <a name = 'b'>`b`</a> 
+    + a `list` of matrices. each outer component corresponds to one longituidnal outcome, each inner component corresponds to a matrix (matrix of dim number of subjects x number of random effects) which are the random-effects estimates from each mixed-effects model.
+    + a `field<mat>`
+    + created in `jm()`
+    
+- <a name = 'unq_idL'>`unq_idL`</a>
+    + a `list` of length equal to the number of longitudinal outcomes; each component is a vector of integers; each component might have different length. each outer component corresponds to one longituidnal outcome, each inner component corresponds to a vector of integers indicating which subjects are involved (e.g. no missing values) in each mixed-effects model.
+    + a `field<uvec>`
+    + created in `jm()`
+
+
+## Functions
+
+- `calculate_u()`
+    + Function that calculates centered random-effects. 
+    + <b>INPUT:</b> <a href = "#Xhc" target = "_blank">Xhc</a>; <a href = "#columns_HC" target = "_blank">columns_HC</a>; <a href = "#betas" target = "_blank">betas</a>; <a href = "#b" target = "_blank">b</a>; <a href = "#unq_idL" target = "_blank">unq_idL</a>
+        
 
