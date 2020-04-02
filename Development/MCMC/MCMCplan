@@ -1,0 +1,28 @@
+- Sampling Fixed Effects
+  + per outcome
+  + center/standardize X matrices
+  + hierarchical centering
+  + optimal scaling covariance matrix proposal [1]
+
+- Sampling Scale Parameters
+  + per outcome
+
+- Sampling Random Effects
+  + all outcomes together, and for all subjects in one step
+  + optimal scaling covariance matrix proposal (block-diagonal)
+
+- Sampling Covariance Matrix Random Effects
+  + split to variances and correlation matrix
+  + sample variances using rstanarm trace-simplex representation
+  + sample correlation matrix using LKJ prior
+
+- Sampling Coefficients Survival Model
+  + try all together
+  + or separately
+  + center/standardize W0, W, W_long matrices
+  + optimal scaling proposal distribution(s)
+
+References
+
+[1] https://www.tandfonline.com/doi/full/10.1080/03610926.2014.936562
+
