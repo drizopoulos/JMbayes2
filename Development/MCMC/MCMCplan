@@ -2,7 +2,7 @@
   + per outcome
   + center/standardize X matrices
   + hierarchical centering
-  + optimal scaling covariance matrix proposal
+  + optimal scaling covariance matrix proposal [1]
 
 - Sampling Scale Parameters
   + per outcome
@@ -21,3 +21,8 @@
   + or separately
   + center/standardize W0, W, W_long matrices
   + optimal scaling proposal distribution(s)
+
+References
+
+[1] https://www.tandfonline.com/doi/full/10.1080/03610926.2014.936562
+
