@@ -235,12 +235,13 @@ target_log_dist <- function (sds) {
     log_p_b + log_p_tau
 }
 
-M <- 3000
+M <- 4000
 acceptance_sds <- res_sds <- matrix(0.0, M, p)
 current_sds <- sds
 scale_sds <- rep(0.05, p)
 if (p > 4)
-    scale_sds[3:4] <- c(0.015)
+    scale_sds[3:4] <- c(0.011)
+#scale_sds <- 0.1 / sds
 for (m in seq_len(M)) {
     for (i in seq_len(p)) {
         current_sds_i <- current_sds[i]
@@ -262,11 +263,11 @@ for (m in seq_len(M)) {
     }
 }
 
-colMeans(acceptance_sds[-seq_len(500L), ])
+colMeans(acceptance_sds[-seq_len(1000L), ])
 
 ####
 
-res_sds <- res_sds[-seq_len(500L), ]
+res_sds <- res_sds[-seq_len(1000L), ]
 plot(res_sds[, 1], type = "l")
 plot(res_sds[, 2], type = "l")
 plot(res_sds[, 3], type = "l")
