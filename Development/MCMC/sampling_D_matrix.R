@@ -115,6 +115,33 @@ update_scale <- function (scale, rate, target_acc, it, c1 = 0.8, c0 = 1) {
     exp(log(scale) + g2 * (rate - target_acc))
 }
 
+dhalf_t <- function(x, scale = 10, df = 1, logscale = FALSE) {
+    if (any(scale < 0, df < 0))
+        stop("Scale and df must be positive")
+    out <- numeric(length(x))
+    out[x <= 0] <- 0
+    constant.num <- 2*gamma((df + 1)/2)
+    constant.den <- gamma(df/2)*sqrt(df*pi*(scale^2))
+    kernel <- (1 + (1 / df) * (x/scale)^2)^(-(df + 1) / 2)
+    out[x > 0] <- (constant.num / constant.den) * kernel
+    if (logscale == TRUE) {
+        return(log(out))
+    } else {
+        return(out)
+    }
+}
+
+dgt <- function (x, mu = 0, sigma = 10, df = 1,
+          log = FALSE) {
+    if (log)
+        dt((x - mu)/sigma, df = df, log = TRUE) - log(sigma)
+    else dt((x - mu)/sigma, df = df)/sigma
+}
+
+
+dgt(3.1)
+dhalf_t(3.1)
+
 ##########################################################################################
 ##########################################################################################
 
