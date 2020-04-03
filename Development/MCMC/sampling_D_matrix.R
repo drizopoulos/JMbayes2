@@ -17,7 +17,7 @@ fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
-Mixed_objects <- list(fm1, fm3, fm4)
+Mixed_objects <- list(fm1, fm2, fm3, fm4)
 
 D_lis <- lapply(Mixed_objects, extract_D)
 D <- bdiag(D_lis)
@@ -71,12 +71,9 @@ dmvnorm <- function (x, mu, Sigma = NULL, invSigma = NULL, log = TRUE,
     }
 }
 
-cor2cov <- function (R, vars) {
+cor2cov <- function (R, vars, sds = NULL) {
     p <- nrow(R)
-    if (length(vars) != p) {
-        stop("incorrect length of 'vars' argument.")
-    }
-    sds <- sqrt(vars)
+    if (is.null(sds)) sds <- sqrt(vars)
     sds * R * rep(sds, each = p)
 }
 
@@ -127,6 +124,8 @@ dht <- function (x, sigma = 10, df = 1, log = FALSE) {
 
 ##########################################################################################
 ##########################################################################################
+
+# sampling using the global variance, simplex weights approach
 
 p <- ncol(D)
 R <- cov2cor(D)
@@ -215,7 +214,72 @@ mean_simplex <- colMeans(simplexes)
 cor2cov(R, p * mean_tau * mean_simplex)
 D
 
+##########################################################################################
+##########################################################################################
 
+# sampling using the half-t approach
+
+p <- ncol(D)
+R <- cov2cor(D)
+sds <- sqrt(diag(D))
+
+D <- cor2cov(R, sds = sds)
+
+b <- MASS::mvrnorm(1000, rep(0, p), D)
+
+target_log_dist <- function (sds) {
+    p <- length(sds)
+    D <- cor2cov(R, sds^2)
+    log_p_b <- sum(dmvnorm(b, rep(0, p), D, log = TRUE, prop = FALSE))
+    log_p_tau <- sum(dht(sds, sigma = 15, df = 3, log = TRUE))
+    log_p_b + log_p_tau
+}
+
+M <- 3000
+acceptance_sds <- res_sds <- matrix(0.0, M, p)
+current_sds <- sds
+scale_sds <- rep(0.05, p)
+if (p > 4)
+    scale_sds[3:4] <- c(0.015)
+for (m in seq_len(M)) {
+    for (i in seq_len(p)) {
+        current_sds_i <- current_sds[i]
+        scale_sds_i <- scale_sds[i]
+        log_mu_i <- log(current_sds_i) - 0.5 * scale_sds_i^2
+        proposed_sds_i <- rlnorm(1L, log_mu_i, scale_sds_i)
+        pr <- current_sds
+        pr[i] <- proposed_sds_i
+        numerator_i <- target_log_dist(pr) +
+            dlnorm(current_sds_i, log_mu_i, scale_sds_i, log = TRUE)
+        denominator_i <- target_log_dist(current_sds) +
+            dlnorm(proposed_sds_i, log_mu_i, scale_sds_i, log = TRUE)
+        log_ratio_i <- numerator_i - denominator_i
+        if (log_ratio_i > log(runif(1))) {
+            current_sds <- pr
+            acceptance_sds[m, i] <- 1
+        }
+        res_sds[m, i] <- current_sds[i]
+    }
+}
+
+colMeans(acceptance_sds[-seq_len(500L), ])
+
+####
+
+res_sds <- res_sds[-seq_len(500L), ]
+plot(res_sds[, 1], type = "l")
+plot(res_sds[, 2], type = "l")
+plot(res_sds[, 3], type = "l")
+plot(res_sds[, 4], type = "l")
+plot(res_sds[, 5], type = "l")
+plot(res_sds[, 6], type = "l")
+
+####
+
+mean_sds <- colMeans(res_sds)
+
+cor2cov(R, sds = mean_sds)
+D
 
 
 
