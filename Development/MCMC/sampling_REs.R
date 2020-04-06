@@ -17,6 +17,9 @@ load(file = file.path(getwd(), "/Dev_Local/sample_case_env_02042020.RData"))
 #---------------------------------------------------------------
 #                        FUNCTIONS
 #---------------------------------------------------------------
+# compund assignment operator += similar to c++
+`%+=%` <- function(x1, x2) eval.parent(substitute(x1 <- x1 + x2))
+
 # sample random values from multivariate normal distribution
 mvrnorm_gp <- function(n, S) {
   A <- chol(S)
@@ -25,15 +28,45 @@ mvrnorm_gp <- function(n, S) {
   Y
 }
 
+log_long_density <- function(y, eta, families, links, sigmas, id, n) {
+  n_outcomes <- length(y)
+  out <- numeric(length = n)
+  for (i in 1:n_outcomes) {
+    id_i <- id[[i]]
+    y_i <- y[[i]]
+    eta_i <- eta[[i]]
+    if (families[[i]]$family == "gaussian") {
+      sigma_i <- sigmas[[i]]
+      log_dens = -0.5 %*% ((y_i - eta_i) / sigma_i)^2
+      out %+=% rowsum(log_dens, id_i)
+    } else if (families[[i]]$family == "binomial") {
+      if (families[[i]]$link == 'logit') {
+        pr = exp(eta_i) / (1 + exp(eta_i))
+        log_dens = y_i * log(pr) + (1 - y_i) * log(1 - pr)
+        out %+=% rowsum(log_dens, id_i)
+      }
+    }
+  }
+  out
+}
+
+target_log_dist <- function(y, families) {
+  
+}
+  
+
+
 # sample random values from t distribution
 
 # MCMC
 M <- 3000
-bs <- list(NULL)
 b.rows <- max(do.call(c, lapply(b, nrow)))
 b.cols <- do.call(c, lapply(b, ncol))
+bs <- array(0.0, dim = c(length(idL[[1]]), sum(b.cols), M))
+
 
 for (m in seq_len(M)) {
   accept_b <- matrix(0.0, nrow = b.rows, ncol = M)
+  
   
 }
