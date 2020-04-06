@@ -37,7 +37,7 @@ log_long_density <- function(y, eta, families, links, sigmas, id, n) {
     eta_i <- eta[[i]]
     if (families[[i]]$family == "gaussian") {
       sigma_i <- sigmas[[i]]
-      log_dens = -0.5 %*% ((y_i - eta_i) / sigma_i)^2
+      log_dens = -0.5 * ((y_i - eta_i) / sigma_i)^2
       out %+=% rowsum(log_dens, id_i)
     } else if (families[[i]]$family == "binomial") {
       if (families[[i]]$link == 'logit') {
