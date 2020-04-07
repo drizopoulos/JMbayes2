@@ -28,30 +28,49 @@ mvrnorm_gp <- function(n, S) {
   Y
 }
 
-log_long_density <- function(y, eta, families, links, sigmas, id, n) {
-  n_outcomes <- length(y)
-  out <- numeric(length = n)
-  for (i in 1:n_outcomes) {
-    id_i <- id[[i]]
-    y_i <- y[[i]]
-    eta_i <- eta[[i]]
-    if (families[[i]]$family == "gaussian") {
-      sigma_i <- sigmas[[i]]
-      log_dens = -0.5 * ((y_i - eta_i) / sigma_i)^2
-      out %+=% rowsum(log_dens, id_i)
-    } else if (families[[i]]$family == "binomial") {
-      if (families[[i]]$link == 'logit') {
-        pr = exp(eta_i) / (1 + exp(eta_i))
-        log_dens = y_i * log(pr) + (1 - y_i) * log(1 - pr)
-        out %+=% rowsum(log_dens, id_i)
-      }
-    }
-  }
-  out
-}
+#log_long_density <- function(y, eta, families, sigmas, id, n) {
+#  n_outcomes <- length(y)
+#  out <- numeric(length = n)
+#  for (i in 1:n_outcomes) {
+#    id_i <- id[[i]]
+#    y_i <- y[[i]]
+#    eta_i <- eta[[i]]
+#    if (families[[i]]$family == "gaussian") {
+#      sigma_i <- sigmas[[i]]
+#      log_dens = -0.5 * ((y_i - eta_i) / sigma_i)^2
+#      out %+=% rowsum(log_dens, id_i)
+#    } else if (families[[i]]$family == "binomial") {
+#      if (families[[i]]$link == 'logit') {
+#        pr = exp(eta_i) / (1 + exp(eta_i))
+#        log_dens = y_i * log(pr) + (1 - y_i) * log(1 - pr)
+#        out %+=% rowsum(log_dens, id_i)
+#      }
+#    }
+#  }
+#  out
+#}
 
-target_log_dist <- function(y, families) {
-  
+
+target_log_dist <- function(X, betas, Z, b, id, 
+                            y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
+                            D, 
+                            Wlong_h, Wlong_H, 
+                            alphas, 
+                            W0_h, W0_H, W_h, delta, 
+                            log_Lik_surv) {
+  b_mat <- do.call(cbind, b)
+  linear_predictor <- linpred_mixed(X, betas, Z, b, id)
+  log_pyb <- log_density_mixed(y, linear_predictor, log_sigmas, Funs, mu_funs, nY, unq_idL, idL)
+  log_pb <- JMbayes:::dmvnorm2(b_mat, mean = rep(0, ncol(b_mat)), sigma = D, logd = TRUE)
+  #log_pb <- JMbayes:::dmvnorm(x = b_mat, mu = rep(0, ncol(b_mat)), Sigma = D, log = TRUE, prop = FALSE)
+  #Wlong_h_mat <- do.call(cbind, Wlong_h)
+  #Wlong_H_mat <- do.call(cbind, Wlong_H)
+  #alphas_vec <- do.call(c, alphas)
+  #log_h <- W0_h %*% bs_gammas + W_h %*% gammas + Wlong_h_mat * alphas_vec
+  #H <- rowSums(P * exp(W0_H %*% bs_gammas + Wlong_H_mat %*% alphas_vec))
+  #delta[delta > 1] <- 1
+  log_ptb <- log_Lik_surv
+  log_pyb + log_ptb + log_pb
 }
   
 
