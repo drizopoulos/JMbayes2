@@ -231,7 +231,9 @@ D
 
 p <- ncol(D)
 R <- cov2cor(D)
+inv_R <- solve(R)
 sds <- sqrt(diag(D))
+init_sds <- sds
 
 D <- cor2cov(R, sds = sds)
 
@@ -239,19 +241,17 @@ b <- MASS::mvrnorm(500, rep(0, p), D)
 
 target_log_dist <- function (sds) {
     p <- length(sds)
-    D <- cor2cov(R, sds^2)
-    log_p_b <- sum(dmvnorm(b, rep(0, p), D, log = TRUE, prop = FALSE))
-    log_p_tau <- sum(dht(sds, sigma = 15, df = 3, log = TRUE))
+    inv_D <- cor2cov(inv_R, sds = 1 / sds)
+    log_p_b <- sum(dmvnorm(b, rep(0, p), invSigma = inv_D, log = TRUE, prop = FALSE))
+    log_p_tau <- sum(dht(sds, sigma = 10 * init_sds, df = 3, log = TRUE))
     log_p_b + log_p_tau
 }
 
-M <- 4000
+M <- 3000L
 acceptance_sds <- res_sds <- matrix(0.0, M, p)
 current_sds <- sds
 scale_sds <- rep(0.1, p)
-#scale_sds <- rep(0.05, p)
-#if (p > 4)
-#    scale_sds[3:4] <- c(0.011)
+system.time({
 for (m in seq_len(M)) {
     for (i in seq_len(p)) {
         current_sds_i <- current_sds[i]
@@ -270,13 +270,14 @@ for (m in seq_len(M)) {
             acceptance_sds[m, i] <- 1
         }
         res_sds[m, i] <- current_sds[i]
-        if (m > 10) {
+        if (m > 20) {
             scale_sds[i] <- robbins_monro_univ(scale = scale_sds_i,
                                                acceptance_it = acceptance_sds[m, i],
                                                it = m)
         }
     }
 }
+})
 
 colMeans(acceptance_sds[-seq_len(1000L), ])
 
