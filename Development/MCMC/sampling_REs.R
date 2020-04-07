@@ -53,13 +53,24 @@ mvrnorm_gp <- function(n, S) {
 
 target_log_dist <- function(X, betas, Z, b, id, 
                             y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
-                            D) {
+                            D, 
+                            Wlong_h, Wlong_H, 
+                            alphas, 
+                            W0_h, W0_H, W_h, delta, 
+                            log_Lik_surv) {
   b_mat <- do.call(cbind, b)
   linear_predictor <- linpred_mixed(X, betas, Z, b, id)
   log_pyb <- log_density_mixed(y, linear_predictor, log_sigmas, Funs, mu_funs, nY, unq_idL, idL)
   log_pb <- JMbayes:::dmvnorm2(b_mat, mean = rep(0, ncol(b_mat)), sigma = D, logd = TRUE)
   #log_pb <- JMbayes:::dmvnorm(x = b_mat, mu = rep(0, ncol(b_mat)), Sigma = D, log = TRUE, prop = FALSE)
-
+  #Wlong_h_mat <- do.call(cbind, Wlong_h)
+  #Wlong_H_mat <- do.call(cbind, Wlong_H)
+  #alphas_vec <- do.call(c, alphas)
+  #log_h <- W0_h %*% bs_gammas + W_h %*% gammas + Wlong_h_mat * alphas_vec
+  #H <- rowSums(P * exp(W0_H %*% bs_gammas + Wlong_H_mat %*% alphas_vec))
+  #delta[delta > 1] <- 1
+  log_ptb <- log_Lik_surv
+  log_pyb + log_ptb + log_pb
 }
   
 
