@@ -1,3 +1,10 @@
+library("survival")
+library("nlme")
+library("GLMMadaptive")
+library("splines")
+data("pbc2", package = "JM")
+data("pbc2.id", package = "JM")
+
 # Source Functions
 source(file.path(getwd(), "R/jm.R"))
 source(file.path(getwd(), "R/help_functions.R"))
@@ -6,6 +13,8 @@ source(file.path(getwd(), "Development/jm/PBC_data.R"))
 
 # load data
 load(file = file.path(getwd(), "/Dev_Local/sample_case_env_02042020.RData"))
+load(file = file.path(getwd(), "/Dev_Local/sample_case_env_testjm_08042020.RData"))
+
 
 # note that for missing subjects for a long outcome the vector of random-effects
 # equals zero
@@ -89,28 +98,7 @@ mvrnorm_gp_array <- function (n, S, sigmas) {
   }
 }
 
-#log_long_density <- function(y, eta, families, sigmas, id, n) {
-#  n_outcomes <- length(y)
-#  out <- numeric(length = n)
-#  for (i in 1:n_outcomes) {
-#    id_i <- id[[i]]
-#    y_i <- y[[i]]
-#    eta_i <- eta[[i]]
-#    if (families[[i]]$family == "gaussian") {
-#      sigma_i <- sigmas[[i]]
-#      log_dens = -0.5 * ((y_i - eta_i) / sigma_i)^2
-#      out %+=% rowsum(log_dens, id_i)
-#    } else if (families[[i]]$family == "binomial") {
-#      if (families[[i]]$link == 'logit') {
-#        pr = exp(eta_i) / (1 + exp(eta_i))
-#        log_dens = y_i * log(pr) + (1 - y_i) * log(1 - pr)
-#        out %+=% rowsum(log_dens, id_i)
-#      }
-#    }
-#  }
-#  out
-#}
-
+vcov_prop_RE <- test$vcov_prop$vcov_prop_RE
 
 target_log_dist <- function(X, betas, Z, b, id, 
                             y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
