@@ -389,7 +389,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     alphas <- init_surv$alphas
     # we are going to have multiple chains; hence, we need to randomly permute these
     # initial values
-    initial_values <- list(betas = betas, log_sigma = log_sigma, D = D,
+    initial_values <- list(betas = betas, log_sigmas = log_sigmas, D = D,
                            b = b, bs_gammas = bs_gammas, gammas = gammas,
                            alphas = alphas)
     ######################################################################################

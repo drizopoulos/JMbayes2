@@ -38,6 +38,8 @@ fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
 test <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
            functional_forms = fForms)
 
+str(test$vcov_prop$vcov_prop_RE)
+
 ##########################################################################################
 ##########################################################################################
 
