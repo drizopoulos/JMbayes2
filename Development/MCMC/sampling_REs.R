@@ -139,6 +139,7 @@ acceptance_b <- numeric(M)
 sigmas <- rep(5.76 / b.cols, b.rows)
 vcov_prop_RE <- test$vcov_prop$vcov_prop_RE
 proposed_b <- mvrnorm_gp_array(1, vcov_prop_RE, sigmas)
+log_us_RE <- matrix(runif(b.rows * M), nrow = b.rows, ncol = M)
 
 
 for (m in seq_len(M)) {
