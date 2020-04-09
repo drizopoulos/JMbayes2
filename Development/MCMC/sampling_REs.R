@@ -125,14 +125,57 @@ target_log_dist_2 <- function(b, log_pyb) {
   log_pyb + log_pb
 }
 
-target_log_dist(X, betas, Z, b, id, 
+log_dens_surv <- function (bs_gammas) {
+  lambda_H <- W0_H %*% bs_gammas + W_H %*% gammas
+  for (i in seq_along(Wlong_H)) {
+    lambda_H <- lambda_H + Wlong_H[[i]] %*% alphas[[i]]
+  }
+  lambda_h <- matrix(0.0, n, 1)
+  if (length(which_event)) {
+    lambda_h <- W0_h %*% bs_gammas + W_h %*% gammas
+    for (i in seq_along(Wlong_h)) {
+      W_h_i <- Wlong_h[[i]]
+      lambda_h <- lambda_h + W_h_i %*% alphas[[i]]
+    }
+  }
+  lambda_H2 <- matrix(0.0, nrow(Wlong_H2[[1]]), 1)
+  if (length(which_interval)) {
+    lambda_H2 <- W0_H2 %*% bs_gammas + W_H2 %*% gammas
+    for (i in seq_along(Wlong_H2)) {
+      W_H2_i <- Wlong_H2[[i]]
+      lambda_H2 <- lambda_H2 + W_H2_i %*% alphas[[i]]
+    }
+  }
+  H <- rowsum(exp(log_Pwk + lambda_H), group = id_H[[1]], reorder = FALSE)
+  log_Lik_surv <- numeric(n)
+  which_right_event <- c(which_right, which_event)
+  if (length(which_right_event)) {
+    log_Lik_surv[which_right_event] <- - H[which_right_event]
+  }
+  if (length(which_event)) {
+    log_Lik_surv[which_event] <- log_Lik_surv[which_event] + lambda_h[which_event]
+  }
+  if (length(which_left)) {
+    log_Lik_surv[which_left] <- log1p(- exp(- H[which_left]))
+  }
+  if (length(which_interval)) {
+    H2 <- rowsum(exp(log_Pwk2 + lambda_H2), group = id_H2[[1]], reorder = FALSE)
+    log_Lik_surv[which_interval] <- log(exp(- H[which_interval]) -
+                                          exp(-H2[which_interval]))
+  }
+  - sum(log_Lik_surv, na.rm = TRUE)
+}
+
+target_log_dist <- function(X, betas, Z, b, id, 
                 y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
-                D) {
+                D, 
+                bs_gammas) {
   b_lst <- list(b[, 1:2, ], b[, 3:4, ], matrix(b[, 5, ], ncol = 1), matrix(b[, 6, ], ncol = 1))
   linear_predictor <- linpred_mixed(X, betas, Z, b_lst, id)
   log_pyb <- log_density_mixed(y, linear_predictor, log_sigmas, Funs, mu_funs, nY, unq_idL, idL)
   log_pb <- dmvnorm(b, mu = rep(0, ncol(b)), Sigma = D, log = TRUE, prop = FALSE)
-  
+  log_ptb <- log_dens_surv(rep(0, length(bs_gammas)))
+  log_pyb + log_pb + log_ptb
 }
   
 
