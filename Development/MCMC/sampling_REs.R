@@ -94,11 +94,10 @@ mvrnorm_gp_array <- function (n, S, sigmas) {
   for(i in 1:dim(S)[3]) {
     A <- chol(S[, ,i])
     z <- matrix(rnorm(n * ncol(S[, ,i])), nrow = n, ncol = ncol(S[, ,i]))
-    out[, ,i] <- sqrt(sigmas[i]) %*% z %*% t(A)
+    out[, ,i] <- sqrt(sigmas[i]) * z %*% t(A)
   }
+  out
 }
-
-vcov_prop_RE <- test$vcov_prop$vcov_prop_RE
 
 target_log_dist <- function(X, betas, Z, b, id, 
                             y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
@@ -137,9 +136,12 @@ b.cols <- do.call(c, lapply(b, ncol))
 bs <- array(0.0, dim = c(length(unq_idL[[1]]), sum(b.cols), M))
 current_b <- do.call(cbind, b)
 acceptance_b <- numeric(M)
+sigmas <- rep(5.76 / b.cols, b.rows)
+vcov_prop_RE <- test$vcov_prop$vcov_prop_RE
+proposed_b <- mvrnorm_gp_array(1, vcov_prop_RE, sigmas)
+
 
 for (m in seq_len(M)) {
-  proposed_b <- mvrnorm_gp(b.rows, D, 1e-10)
   numerator <- target_log_dist(X, betas, Z, proposed_b, idL, 
                                y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
                                D, log_Lik_surv)
