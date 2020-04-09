@@ -124,10 +124,17 @@ target_log_dist_2 <- function(b, log_pyb) {
   log_pb <- sum(dmvnorm(b, mu = rep(0, ncol(b)), Sigma = D, log = TRUE, prop = FALSE))
   log_pyb + log_pb
 }
+
+target_log_dist(X, betas, Z, b, id, 
+                y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
+                D) {
+  b_lst <- list(b[, 1:2, ], b[, 3:4, ], matrix(b[, 5, ], ncol = 1), matrix(b[, 6, ], ncol = 1))
+  linear_predictor <- linpred_mixed(X, betas, Z, b_lst, id)
+  log_pyb <- log_density_mixed(y, linear_predictor, log_sigmas, Funs, mu_funs, nY, unq_idL, idL)
+  log_pb <- dmvnorm(b, mu = rep(0, ncol(b)), Sigma = D, log = TRUE, prop = FALSE)
   
-
-
-# sample random values from t distribution
+}
+  
 
 # MCMC
 M <- 3000
@@ -135,14 +142,15 @@ b.rows <- max(do.call(c, lapply(b, nrow)))
 b.cols <- do.call(c, lapply(b, ncol))
 bs <- array(0.0, dim = c(length(unq_idL[[1]]), sum(b.cols), M))
 current_b <- do.call(cbind, b)
-acceptance_b <- numeric(M)
+acceptance_b <- matrix(b.rows, M)
 sigmas <- rep(5.76 / b.cols, b.rows)
 vcov_prop_RE <- test$vcov_prop$vcov_prop_RE
-proposed_b <- mvrnorm_gp_array(1, vcov_prop_RE, sigmas)
+#proposed_b <- mvrnorm_gp_array(1, vcov_prop_RE, sigmas)
 log_us_RE <- matrix(runif(b.rows * M), nrow = b.rows, ncol = M)
 
 
 for (m in seq_len(M)) {
+  proposed_b <- mvrnorm_gp_array(1, vcov_prop_RE, sigmas)
   numerator <- target_log_dist(X, betas, Z, proposed_b, idL, 
                                y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
                                D, log_Lik_surv)
