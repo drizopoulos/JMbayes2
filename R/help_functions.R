@@ -468,11 +468,20 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     # matrix for the proposal in the MCMC using optim().
     Time_start <- Data$Time_start
     Time_right <- Data$Time_right
+    Time_left <- Data$Time_left
     delta <- Data$delta
     which_event <- Data$which_event
     which_right <- Data$which_right
     which_left <- Data$which_left
     which_interval <- Data$which_interval
+    if (length(which_interval)) {
+        Time_right[which_interval] <- 0.5 * (Time_right[which_interval] +
+                                                 Time_left[which_interval])
+        delta <- as.numeric(delta == 1 | delta == 3)
+    }
+    if (length(which_left)) {
+        Time_right[which_left] <- Time_left[which_left]
+    }
     n <- model_info$n
     ###
     dataL <- data$dataL
@@ -535,7 +544,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     any_gammas <- !(ncol(W_init) == 1 && all(W_init[, 1] == 0))
     WW <- if (any_gammas) cbind(W_init, Wlong_init) else Wlong_init
     ####
-    fm <- coxph(Surv(start, stop, event > 0) ~ WW)
+    fm <- coxph(Surv(start, stop, event) ~ WW)
     coefs <- coef(fm)
     gammas <- if (any_gammas) head(coefs, ncol(W_init)) else 0.0
     alphas <- tail(coefs, ncol(Wlong_init))
@@ -563,7 +572,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
         Wlong_h <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
     }
     if (length(which_interval)) {
-        id_H2 <- lapply(X_H2, function (i, n) rep(seq_len(n), each = con$GK_k), n = nY)
+        id_H2 <- lapply(X_H2, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
         eta_H2 <- linpred_surv(X_H2, betas, Z_H, b, id_H2)
         Wlong_H2 <- create_Wlong(eta_H2, functional_forms_per_outcome, U_H2)
     } else {
@@ -606,7 +615,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
         if (length(which_interval)) {
             H2 <- rowsum(exp(log_Pwk2 + lambda_H2), group = id_H2[[1]], reorder = FALSE)
             log_Lik_surv[which_interval] <- log(exp(- H[which_interval]) -
-                                                    exp(-H2[which_interval]))
+                                                    exp(- (H2[which_interval] + H[which_interval])))
         }
         - sum(log_Lik_surv, na.rm = TRUE)
     }

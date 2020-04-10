@@ -202,14 +202,22 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # of the survival model. For subjects with event (delta = 1), for subjects with
     # right censoring and for subjects with interval censoring we need to integrate
     # up to 'Time_right'. For subjects with left censoring we need to integrate up to
-    # 'Time_left'; hence we set for them 'Time_integration = Time_left'. For subjects
-    # with interval censoring we need also 'Time_integration2' which is equal to
+    # 'Time_left'; hence we set for them 'Time_integration = Time_left'.
+    # For subjects with interval censoring we need two integrals from 0 to 'Time_right'
+    # and also from 0 to 'Time_left'. However, in the Gauss-Kronrod approximation it
+    # can happen that the first integral has a lower value than the second one, which is
+    # not correct. To overcome this issue, for interval censored data we first approximate
+    # the integral from 0 to 'Time_left'. And then the integral from 0 to 'Time_right' is
+    # set equal to first integral plus the integral from 'Time_left' to 'Time_right'. For
+    # this second integral we introduce the variable 'Time_integration2' which is equal to
+    # 'Time_right', i.e., for interval censored data 'Time_integration' is set equal to
     # 'Time_left'
     Time_integration <- Time_right
     Time_integration[which_left] <- Time_left[which_left]
+    Time_integration[which_interval] <- Time_left[which_interval]
     Time_integration2 <- rep(0.0, nT)
     if (length(which_interval)) {
-        Time_integration2[which_interval] <- Time_left[which_interval]
+        Time_integration2[which_interval] <- Time_right[which_interval]
     }
 
     # create Gauss Kronrod points and weights
@@ -219,8 +227,11 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     st <- outer(P, sk) + (c(Time_integration + trunc_Time) / 2)
     log_Pwk <- rep(log(P), each = length(sk)) + rep_len(log(GK$wk), length.out = length(st))
     if (length(which_interval)) {
-        P2 <- c(Time_integration2 - trunc_Time) / 2
-        st2 <- outer(P2, sk) + (c(Time_integration2 + trunc_Time) / 2)
+        # we take the absolute value because for the subjects for whom we do not have
+        # interval censoring P2 will be negative and this will produce a NA when we take
+        # the log in 'log_Pwk2'
+        P2 <- abs(Time_integration2 - Time_integration) / 2
+        st2 <- outer(P2, sk) + (c(Time_integration2 + Time_integration) / 2)
         log_Pwk2 <- rep(log(P2), each = length(sk)) +
             rep_len(log(GK$wk), length.out = length(st2))
     } else {
@@ -229,7 +240,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
 
     # knots for the log baseline hazard function
     if (is.null(con$knots)) {
-        con$knots <- knots(0, floor(max(Time_integration)) + 1,
+        con$knots <- knots(0, floor(max(Time_integration, Time_integration2)) + 1,
                            con$base_hazard_segments, con$Bsplines_degree)
     }
 
