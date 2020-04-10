@@ -15,7 +15,7 @@ load(file = file.path(getwd(), "/Development/Function_Inputs_R_to_Cpp/init_surv.
 
 # load data
 if (length(grep('gpapageorgiou', getwd())) == 1) {
-  #load(file = file.path(getwd(), "/Dev_Local/sample_case_env_02042020.RData"))
+  load(file = file.path(getwd(), "/Dev_Local/sample_case_env_02042020.RData"))
   load(file = file.path(getwd(), "/Dev_Local/sample_case_env_testjm_08042020.RData"))
 } else {
   source(file.path(getwd(), "Development/jm/sample_case.R"))
@@ -106,17 +106,17 @@ mvrnorm_gp_array <- function (n, S, sigmas) {
   out
 }
 
-log_dens_surv <- function (bs_gammas, n, Data, Wlong_h, Wlong_H, Wlong_H2, gammas, alphas, id_H, id_H2) {
+log_dens_surv <- function (bs_gammas, n, Data, Wlong_h, Wlong_H, gammas, alphas, id_H) {
   W0_h <- Data$W0_h
   W0_H <- Data$W0_H
-  W0_H2 <- Data$W0_H2
+  #W0_H2 <- Data$W0_H2
   W_h <- Data$W_h
   W_H <- Data$W_H
-  W_H2 <- Data$W_H2
+  #W_H2 <- Data$W_H2
   log_Pwk <- Data$log_Pwk
   log_Pwk2 <- Data$log_Pwk2
   which_event <- Data$which_event
-  which_interval <- Data$which_interval
+  #which_interval <- Data$which_interval
   which_left <- Data$which_left
   which_right <- Data$which_right
   lambda_H <- W0_H %*% bs_gammas + W_H %*% gammas
@@ -131,14 +131,14 @@ log_dens_surv <- function (bs_gammas, n, Data, Wlong_h, Wlong_H, Wlong_H2, gamma
       lambda_h <- lambda_h + W_h_i %*% alphas[[i]]
     }
   }
-  lambda_H2 <- matrix(0.0, nrow(Wlong_H2[[1]]), 1)
-  if (length(which_interval)) {
-    lambda_H2 <- W0_H2 %*% bs_gammas + W_H2 %*% gammas
-    for (i in seq_along(Wlong_H2)) {
-      W_H2_i <- Wlong_H2[[i]]
-      lambda_H2 <- lambda_H2 + W_H2_i %*% alphas[[i]]
-    }
-  }
+  #lambda_H2 <- matrix(0.0, nrow(Wlong_H2[[1]]), 1)
+  #if (length(which_interval)) {
+  #  lambda_H2 <- W0_H2 %*% bs_gammas + W_H2 %*% gammas
+  #  for (i in seq_along(Wlong_H2)) {
+  #    W_H2_i <- Wlong_H2[[i]]
+  #    lambda_H2 <- lambda_H2 + W_H2_i %*% alphas[[i]]
+  #  }
+  #}
   H <- rowsum(exp(log_Pwk + lambda_H), group = id_H[[1]], reorder = FALSE)
   log_Lik_surv <- numeric(n)
   which_right_event <- c(which_right, which_event)
@@ -151,11 +151,11 @@ log_dens_surv <- function (bs_gammas, n, Data, Wlong_h, Wlong_H, Wlong_H2, gamma
   if (length(which_left)) {
     log_Lik_surv[which_left] <- log1p(- exp(- H[which_left]))
   }
-  if (length(which_interval)) {
-    H2 <- rowsum(exp(log_Pwk2 + lambda_H2), group = id_H2[[1]], reorder = FALSE)
-    log_Lik_surv[which_interval] <- log(exp(- H[which_interval]) -
-                                          exp(-H2[which_interval]))
-  }
+  #if (length(which_interval)) {
+  #  H2 <- rowsum(exp(log_Pwk2 + lambda_H2), group = id_H2[[1]], reorder = FALSE)
+  #  log_Lik_surv[which_interval] <- log(exp(- H[which_interval]) -
+  #                                        exp(-H2[which_interval]))
+  #}
   - sum(log_Lik_surv, na.rm = TRUE)
 }
 
@@ -163,16 +163,17 @@ target_log_dist <- function(X, betas, Z, b, id,
                             y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
                             D, 
                             Data, 
-                            Wlong_h, Wlong_H, Wlong_H2,
+                            Wlong_h, Wlong_H,
                             bs_gammas, gammas, 
                             alphas, 
-                            id_H, id_H2, 
+                            id_H, 
                             n) {
   b_lst <- list(t(b[, 1:2, ]), t(b[, 3:4, ]), matrix(b[, 5, ], ncol = 1), matrix(b[, 6, ], ncol = 1))
   linear_predictor <- linpred_mixed(X, betas, Z, b_lst, id)
   log_pyb <- log_density_mixed(y, linear_predictor, log_sigmas, Funs, mu_funs, nY, unq_idL, idL)
   log_pb <- dmvnorm(t(b[1, , ]), mu = rep(0, ncol(b)), Sigma = D, log = TRUE, prop = FALSE)
-  log_ptb <- log_dens_surv(bs_gammas, n = n, Data = Data, Wlong_h, Wlong_H, Wlong_H2, gammas, alphas, id_H, id_H2)
+  log_ptb <- log_dens_surv(bs_gammas = bs_gammas, n = n, Data = Data, Wlong_h = Wlong_h, Wlong_H = Wlong_H, 
+                           gammas = gammas, alphas = alphas, id_H = id_H)
   log_pyb + log_pb + log_ptb
 }
 
@@ -210,17 +211,7 @@ for (m in seq_len(M)) {
   bs[, ,m] <- current_b
 }
 
-for (m in seq_len(M)) {
-  proposed_b <- mvrnorm_gp(b.rows, D, 1e-3)
-  numerator <- target_log_dist_2(proposed_b, log_pyb)
-  denominator <- target_log_dist_2(current_b, log_pyb)
-  log_ratio <- numerator - denominator
-  if (log_ratio > log(runif(1))) {
-    current_b <- proposed_b
-    acceptance_b[m] <- 1
-  }
-  bs[, ,m] <- current_b
-}
+
 
 
 mean(acceptance_b[-seq_len(500L)])

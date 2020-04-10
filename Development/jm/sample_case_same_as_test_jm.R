@@ -66,8 +66,8 @@ timeVar = "year"
 
 # default function_form
 functional_form = Formula(~ value(log(serBilir)) + slope(log(serBilir)) +
-                            value(log(serBilir)):sex | value(serChol) | value(hepatomegaly)
-                          | value(ascites))
+                            value(log(serBilir)):sex | value(serChol) + slope(serChol) | value(hepatomegaly)
+                          | value(ascites) + area(ascites))
 
 # complex example function_form
 expit <- plogis
