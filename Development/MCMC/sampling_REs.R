@@ -12,8 +12,13 @@ source(file.path(getwd(), "Development/jm/R_to_Cpp.R"))
 source(file.path(getwd(), "Development/jm/PBC_data.R"))
 
 # load data
-load(file = file.path(getwd(), "/Dev_Local/sample_case_env_02042020.RData"))
-load(file = file.path(getwd(), "/Dev_Local/sample_case_env_testjm_08042020.RData"))
+if (length(grep('gpapageorgiou', getwd())) == 1) {
+  load(file = file.path(getwd(), "/Dev_Local/sample_case_env_02042020.RData"))
+  load(file = file.path(getwd(), "/Dev_Local/sample_case_env_testjm_08042020.RData"))
+} else {
+  source(file.path(getwd(), "Development/jm/sample_case.R"))
+  source(file.oath(getwd(), "Development/jm/test_jm.R"))
+}
 
 
 # note that for missing subjects for a long outcome the vector of random-effects
