@@ -535,7 +535,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     any_gammas <- !(ncol(W_init) == 1 && all(W_init[, 1] == 0))
     WW <- if (any_gammas) cbind(W_init, Wlong_init) else Wlong_init
     ####
-    fm <- coxph(Surv(start, stop, event) ~ WW)
+    fm <- coxph(Surv(start, stop, event > 0) ~ WW)
     coefs <- coef(fm)
     gammas <- if (any_gammas) head(coefs, ncol(W_init)) else 0.0
     alphas <- tail(coefs, ncol(Wlong_init))
