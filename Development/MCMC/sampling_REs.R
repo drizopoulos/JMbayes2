@@ -10,10 +10,12 @@ source(file.path(getwd(), "R/jm.R"))
 source(file.path(getwd(), "R/help_functions.R"))
 source(file.path(getwd(), "Development/jm/R_to_Cpp.R"))
 source(file.path(getwd(), "Development/jm/PBC_data.R"))
+load(file = file.path(getwd(), "/Development/Function_Inputs_R_to_Cpp/init_vals_surv.RData"))
+load(file = file.path(getwd(), "/Development/Function_Inputs_R_to_Cpp/init_surv.RData"))
 
 # load data
 if (length(grep('gpapageorgiou', getwd())) == 1) {
-  load(file = file.path(getwd(), "/Dev_Local/sample_case_env_02042020.RData"))
+  #load(file = file.path(getwd(), "/Dev_Local/sample_case_env_02042020.RData"))
   load(file = file.path(getwd(), "/Dev_Local/sample_case_env_testjm_08042020.RData"))
 } else {
   source(file.path(getwd(), "Development/jm/sample_case.R"))
@@ -104,33 +106,19 @@ mvrnorm_gp_array <- function (n, S, sigmas) {
   out
 }
 
-target_log_dist <- function(X, betas, Z, b, id, 
-                            y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
-                            D,  
-                            log_Lik_surv) {
-  #b_mat <- do.call(cbind, b)
-  b_mat <- b
-  b <- list(b[, 1:2], b[, 3:4], matrix(b[, 5], ncol = 1), matrix(b[, 6], ncol = 1))
-  linear_predictor <- linpred_mixed(X, betas, Z, b, idL)
-  log_pyb <- sum(log_density_mixed(y, linear_predictor, log_sigmas, Funs, mu_funs, nY, unq_idL, idL))
-  log_pb <- sum(dmvnorm(b_mat, mu = rep(0, ncol(b_mat)), Sigma = D, log = TRUE, prop = FALSE))
-  #Wlong_h_mat <- do.call(cbind, Wlong_h)
-  #Wlong_H_mat <- do.call(cbind, Wlong_H)
-  #alphas_vec <- do.call(c, alphas)
-  #log_h <- W0_h %*% bs_gammas + W_h %*% gammas + Wlong_h_mat * alphas_vec
-  #H <- rowSums(P * exp(W0_H %*% bs_gammas + Wlong_H_mat %*% alphas_vec))
-  #delta[delta > 1] <- 1
-  #log_ptb <- sum(log_Lik_surv[!is.na(log_Lik_surv) & log_Lik_surv != -Inf])
-  log_pyb + log_ptb + log_pb
-  log_pyb + log_pb
-}
-
-target_log_dist_2 <- function(b, log_pyb) {
-  log_pb <- sum(dmvnorm(b, mu = rep(0, ncol(b)), Sigma = D, log = TRUE, prop = FALSE))
-  log_pyb + log_pb
-}
-
-log_dens_surv <- function (bs_gammas) {
+log_dens_surv <- function (bs_gammas, n, Data, Wlong_h, Wlong_H, Wlong_H2, gammas, alphas, id_H, id_H2) {
+  W0_h <- Data$W0_h
+  W0_H <- Data$W0_H
+  W0_H2 <- Data$W0_H2
+  W_h <- Data$W_h
+  W_H <- Data$W_H
+  W_H2 <- Data$W_H2
+  log_Pwk <- Data$log_Pwk
+  log_Pwk2 <- Data$log_Pwk2
+  which_event <- Data$which_event
+  which_interval <- Data$which_interval
+  which_left <- Data$which_left
+  which_right <- Data$which_right
   lambda_H <- W0_H %*% bs_gammas + W_H %*% gammas
   for (i in seq_along(Wlong_H)) {
     lambda_H <- lambda_H + Wlong_H[[i]] %*% alphas[[i]]
@@ -172,17 +160,25 @@ log_dens_surv <- function (bs_gammas) {
 }
 
 target_log_dist <- function(X, betas, Z, b, id, 
-                y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
-                D, 
-                bs_gammas) {
-  b_lst <- list(b[, 1:2, ], b[, 3:4, ], matrix(b[, 5, ], ncol = 1), matrix(b[, 6, ], ncol = 1))
+                            y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
+                            D, 
+                            Data, 
+                            Wlong_h, Wlong_H, Wlong_H2,
+                            bs_gammas, gammas, 
+                            alphas, 
+                            id_H, id_H2, 
+                            n) {
+  b_lst <- list(t(b[, 1:2, ]), t(b[, 3:4, ]), matrix(b[, 5, ], ncol = 1), matrix(b[, 6, ], ncol = 1))
   linear_predictor <- linpred_mixed(X, betas, Z, b_lst, id)
   log_pyb <- log_density_mixed(y, linear_predictor, log_sigmas, Funs, mu_funs, nY, unq_idL, idL)
-  log_pb <- dmvnorm(b, mu = rep(0, ncol(b)), Sigma = D, log = TRUE, prop = FALSE)
-  log_ptb <- log_dens_surv(rep(0, length(bs_gammas)))
+  log_pb <- dmvnorm(t(b[1, , ]), mu = rep(0, ncol(b)), Sigma = D, log = TRUE, prop = FALSE)
+  log_ptb <- log_dens_surv(bs_gammas, n = n, Data = Data, Wlong_h, Wlong_H, Wlong_H2, gammas, alphas, id_H, id_H2)
   log_pyb + log_pb + log_ptb
 }
-  
+
+#
+
+unq_idL <- lapply(idL, unique)
 
 # MCMC
 M <- 3000
@@ -195,6 +191,7 @@ sigmas <- rep(5.76 / b.cols, b.rows)
 vcov_prop_RE <- test$vcov_prop$vcov_prop_RE
 #proposed_b <- mvrnorm_gp_array(1, vcov_prop_RE, sigmas)
 log_us_RE <- matrix(runif(b.rows * M), nrow = b.rows, ncol = M)
+
 
 
 for (m in seq_len(M)) {
