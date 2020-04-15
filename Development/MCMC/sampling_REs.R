@@ -201,7 +201,7 @@ for (i in 1:sum(b.cols)) {
   current_b[, i, ] <- b_mat[, i]
 }
 acceptance_b <- matrix(0.0, nrow = b.rows, ncol = M)
-sigmas <- rep(1e-10 / sum(b.cols), b.rows)
+sigmas <- rep(6 / sum(b.cols), b.rows)
 vcov_prop_RE <- test$vcov_prop$vcov_prop_RE
 #proposed_b <- mvrnorm_gp_array(1, vcov_prop_RE, sigmas)
 log_us_RE <- matrix(log(runif(b.rows * M)), nrow = b.rows, ncol = M)
@@ -237,13 +237,13 @@ for (m in seq_len(M)) {
     if (m > 20) {
       sigmas[i] <- robbins_monro_univ(scale = sigmas[i],
                                          acceptance_it = acceptance_b[i, m],
-                                         it = m)
+                                         it = m, target_acceptance = 0.3)
     }
   }
 }
 
 
 #mean(acceptance_b[312, ][-seq_len(500L)])
-plot(bs[3, 1, ], type = 'l')
+plot(bs[311, 1, ], type = 'l')
 apply(acceptance_b, MARGIN = 1, mean)
 
