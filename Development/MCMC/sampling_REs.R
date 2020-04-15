@@ -171,7 +171,7 @@ target_log_dist <- function(X, betas, Z, b, id,
   b_lst <- list(t(b[, 1:2, ]), t(b[, 3:4, ]), matrix(b[, 5, ], ncol = 1), matrix(b[, 6, ], ncol = 1))
   linear_predictor <- linpred_mixed(X, betas, Z, b_lst, id)
   log_pyb <- log_density_mixed(y, linear_predictor, log_sigmas, Funs, mu_funs, nY, unq_idL, idL)
-  log_pb <- dmvnorm(t(b[1, , ]), mu = rep(0, ncol(b)), Sigma = D, log = TRUE, prop = FALSE)
+  log_pb <- dmvnorm(t(b[1, , ]), mu = rep(0, ncol(b)), invSigma = D, log = TRUE, prop = FALSE)
   log_ptb <- log_dens_surv(bs_gammas = bs_gammas, n = n, Data = Data, Wlong_h = Wlong_h, Wlong_H = Wlong_H, 
                            gammas = gammas, alphas = alphas, id_H = id_H)
   log_pyb + log_pb + log_ptb
@@ -194,7 +194,7 @@ unq_idL <- lapply(idL, unique)
 M <- 3000
 b.rows <- max(do.call(c, lapply(b, nrow)))
 b.cols <- do.call(c, lapply(b, ncol))
-bs <- array(0.0, dim = c(length(unq_idL[[1]]), sum(b.cols), M))
+bs <- array(0.0, dim = c(M, sum(b.cols), length(unq_idL[[1]])))
 b_mat <- do.call(cbind, b)
 current_b <- array(0.0, dim = c(1, sum(b.cols), length(unq_idL[[1]])))
 for (i in 1:sum(b.cols)) {
@@ -205,13 +205,14 @@ sigmas <- rep(6 / sum(b.cols), b.rows)
 vcov_prop_RE <- test$vcov_prop$vcov_prop_RE
 #proposed_b <- mvrnorm_gp_array(1, vcov_prop_RE, sigmas)
 log_us_RE <- matrix(log(runif(b.rows * M)), nrow = b.rows, ncol = M)
+invD <- solve(D)
 
 
 for (m in seq_len(M)) {
   proposed_b <- mvrnorm_gp_array(1, vcov_prop_RE, sigmas)
   numerator <- target_log_dist(X = X, betas = betas, Z = Z, b = proposed_b, id = idL_lp, 
                                y = y, log_sigmas = log_sigmas, Funs = Funs, mu_funs = mu_funs, nY = nY, unq_idL = unq_idL, idL = idL, 
-                               D = D,
+                               D = invD,
                                Data = Data,
                                Wlong_h = Wlong_h, Wlong_H = Wlong_H, 
                                bs_gammas = init_surv$bs_gammas, gammas = test$gammas, 
@@ -220,7 +221,7 @@ for (m in seq_len(M)) {
                                n = b.rows)
   denominator <- target_log_dist(X = X, betas = betas, Z = Z, b = current_b, id = idL_lp, 
                                  y = y, log_sigmas = log_sigmas, Funs = Funs, mu_funs = mu_funs, nY = nY, unq_idL = unq_idL, idL = idL, 
-                                 D = D,
+                                 D = invD,
                                  Data = Data,
                                  Wlong_h = Wlong_h, Wlong_H = Wlong_H, 
                                  bs_gammas = init_surv$bs_gammas, gammas = test$gammas, 
@@ -232,7 +233,7 @@ for (m in seq_len(M)) {
     if (log_us_RE[i, m] < log_ratio[i]) {
       acceptance_b[i, m] <- 1.0
       current_b[, ,i] <- proposed_b[, ,i]
-      bs[i, ,m] <- current_b[, ,i]
+      bs[m, ,i] <- current_b[, ,i]
     }
     if (m > 20) {
       sigmas[i] <- robbins_monro_univ(scale = sigmas[i],
@@ -244,6 +245,15 @@ for (m in seq_len(M)) {
 
 
 #mean(acceptance_b[312, ][-seq_len(500L)])
-plot(bs[311, 1, ], type = 'l')
+plot(bs[, 4, 1], type = 'l')
 apply(acceptance_b, MARGIN = 1, mean)
 
+sigmas[1]
+sigmas[3]
+sigmas[4]
+sigmas[5]
+
+bs[1, , 4]
+b_mat[c(1, 2, 5:10), ]
+b_mat[c(3, 4), ]
+acceptance_b[310, ]
