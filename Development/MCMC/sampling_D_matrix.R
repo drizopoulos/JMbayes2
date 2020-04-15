@@ -71,6 +71,31 @@ dmvnorm <- function (x, mu, Sigma = NULL, invSigma = NULL, log = TRUE,
     }
 }
 
+dmvnorm_chol <- function (x, mu, chol_Sigma = NULL, inv_chol_Sigma = NULL, log = FALSE) {
+    if (!is.matrix(x))
+        x <- rbind(x)
+    if (is.matrix(mu)) {
+        if (nrow(mu) != nrow(x))
+            stop("incorrect dimensions for 'mu'.")
+        p <- ncol(mu)
+    } else {
+        p <- length(mu)
+        mu <- rep(mu, each = nrow(x))
+    }
+    if (is.null(chol_Sigma) && is.null(inv_chol_Sigma))
+        stop("'chol_Sigma' or 'inv_chol_Sigma' must be given.")
+    invSigma <- if (!is.null(chol_Sigma)) tcrossprod(solve(chol_Sigma)) else tcrossprod(inv_chol_Sigma)
+    logdetSigma <- if (!is.null(chol_Sigma)) {
+        2 * determinant(chol_Sigma)$modulus
+    } else {
+        - 2 * determinant(inv_chol_Sigma)$modulus
+    }
+    ss <- x - mu
+    quad <- 0.5 * rowSums((ss %*% invSigma) * ss)
+    fact <- -0.5 * (p * log(2 * pi) + logdetSigma)
+    if (log) as.vector(fact - quad) else as.vector(exp(fact - quad))
+}
+
 cor2cov <- function (R, vars, sds = NULL) {
     p <- nrow(R)
     if (is.null(sds)) sds <- sqrt(vars)
@@ -130,6 +155,143 @@ dht <- function (x, sigma = 10, df = 1, log = FALSE) {
     out[ind] <- log_const + log_kernel
     if (log) out else exp(out)
 }
+
+##########################################################################################
+##########################################################################################
+
+# sampling using the half-t approach
+# including robbins_monro adaptive scaling
+
+p <- ncol(D)
+R <- cov2cor(D)
+inv_R <- solve(R)
+sds <- sqrt(diag(D))
+init_sds <- sds
+
+D <- cor2cov(R, sds = sds)
+
+b <- MASS::mvrnorm(500, rep(0, p), D)
+
+target_log_dist <- function (sds) {
+    p <- length(sds)
+    inv_D <- cor2cov(inv_R, sds = 1 / sds)
+    log_p_b <- sum(dmvnorm(b, rep(0, p), invSigma = inv_D, log = TRUE, prop = FALSE))
+    log_p_tau <- sum(dht(sds, sigma = 10 * init_sds, df = 3, log = TRUE))
+    log_p_b + log_p_tau
+}
+
+M <- 3000L
+acceptance_sds <- res_sds <- matrix(0.0, M, p)
+current_sds <- sds
+scale_sds <- rep(0.1, p)
+system.time({
+for (m in seq_len(M)) {
+    for (i in seq_len(p)) {
+        current_sds_i <- current_sds[i]
+        scale_sds_i <- scale_sds[i]
+        log_mu_i <- log(current_sds_i) - 0.5 * scale_sds_i^2
+        proposed_sds_i <- rlnorm(1L, log_mu_i, scale_sds_i)
+        pr <- current_sds
+        pr[i] <- proposed_sds_i
+        numerator_i <- target_log_dist(pr) +
+            dlnorm(current_sds_i, log_mu_i, scale_sds_i, log = TRUE)
+        denominator_i <- target_log_dist(current_sds) +
+            dlnorm(proposed_sds_i, log_mu_i, scale_sds_i, log = TRUE)
+        log_ratio_i <- numerator_i - denominator_i
+        if (log_ratio_i > log(runif(1))) {
+            current_sds <- pr
+            acceptance_sds[m, i] <- 1
+        }
+        res_sds[m, i] <- current_sds[i]
+        if (m > 20) {
+            scale_sds[i] <- robbins_monro_univ(scale = scale_sds_i,
+                                               acceptance_it = acceptance_sds[m, i],
+                                               it = m)
+        }
+    }
+}
+})
+
+colMeans(acceptance_sds[-seq_len(1000L), ])
+
+####
+
+res_sds <- res_sds[-seq_len(1000L), ]
+plot(res_sds[, 1], type = "l")
+plot(res_sds[, 2], type = "l")
+plot(res_sds[, 3], type = "l")
+plot(res_sds[, 4], type = "l")
+plot(res_sds[, 5], type = "l")
+plot(res_sds[, 6], type = "l")
+
+####
+
+mean_sds <- colMeans(res_sds)
+
+cor2cov(R, sds = mean_sds)
+D
+
+##########################################################################################
+##########################################################################################
+
+# sampling correlation matrices
+
+p <- ncol(D)
+sds <- sqrt(diag(D))
+R <- cov2cor(D)
+lambda_min <- min(eigen(R, symmetric = TRUE, only.values = TRUE)$values)
+eps <- lambda_min / 2
+K <- p
+
+
+b <- MASS::mvrnorm(500, rep(0, p), D)
+
+target_log_dist <- function (R) {
+    D <- cor2cov(R, sds = sds)
+    log_p_b <- sum(dmvnorm(b, rep(0, p), Sigma = D, log = TRUE, prop = FALSE))
+    log_p_R <- 0.1 * as.vector(determinant(R)$modulus)
+    log_p_b + log_p_R
+}
+
+M <- 3000L
+acceptance_R <- numeric(M)
+res_R <- matrix(0.0, M, p * (p - 1) / 2)
+current_R <- R
+system.time({
+    for (m in seq_len(M)) {
+        U <- matrix(rnorm(K * p), K, p)
+        U <- U / rep(sqrt(colSums(U^2)), each = K)
+        E <- crossprod(U); diag(E) <- 0.0
+        proposed_R <- R + eps * E
+
+        numerator <- target_log_dist(proposed_R) #+
+            #dlnorm(current_R, log = TRUE)
+        denominator <- target_log_dist(current_R) #+
+            #dlnorm(proposed_R, log = TRUE)
+        log_ratio <- numerator - denominator
+
+        if (log_ratio > log(runif(1))) {
+            current_R <- proposed_R
+            acceptance_R[m] <- 1
+        }
+        res_R[m, ] <- current_R[lower.tri(current_R)]
+        if (m > 20) {
+            eps <- robbins_monro_univ(scale = eps, acceptance_it = acceptance_R[m],
+                                      it = m)
+        }
+    }
+})
+
+mean(acceptance_R[-seq_len(1000L)])
+
+res_R <- res_R[-seq_len(1000L), ]
+plot(res_R[, 1], type = "l")
+plot(res_R[, 2], type = "l")
+plot(res_R[, 3], type = "l")
+plot(res_R[, 4], type = "l")
+plot(res_R[, 5], type = "l")
+plot(res_R[, 6], type = "l")
+
 
 ##########################################################################################
 ##########################################################################################
@@ -221,81 +383,6 @@ mean_tau <- mean(taus[-seq_len(500L)])
 mean_simplex <- colMeans(simplexes)
 
 cor2cov(R, p * mean_tau * mean_simplex)
-D
-
-##########################################################################################
-##########################################################################################
-
-# sampling using the half-t approach
-# including robbins_monro adaptive scaling
-
-p <- ncol(D)
-R <- cov2cor(D)
-inv_R <- solve(R)
-sds <- sqrt(diag(D))
-init_sds <- sds
-
-D <- cor2cov(R, sds = sds)
-
-b <- MASS::mvrnorm(500, rep(0, p), D)
-
-target_log_dist <- function (sds) {
-    p <- length(sds)
-    inv_D <- cor2cov(inv_R, sds = 1 / sds)
-    log_p_b <- sum(dmvnorm(b, rep(0, p), invSigma = inv_D, log = TRUE, prop = FALSE))
-    log_p_tau <- sum(dht(sds, sigma = 10 * init_sds, df = 3, log = TRUE))
-    log_p_b + log_p_tau
-}
-
-M <- 3000L
-acceptance_sds <- res_sds <- matrix(0.0, M, p)
-current_sds <- sds
-scale_sds <- rep(0.1, p)
-system.time({
-for (m in seq_len(M)) {
-    for (i in seq_len(p)) {
-        current_sds_i <- current_sds[i]
-        scale_sds_i <- scale_sds[i]
-        log_mu_i <- log(current_sds_i) - 0.5 * scale_sds_i^2
-        proposed_sds_i <- rlnorm(1L, log_mu_i, scale_sds_i)
-        pr <- current_sds
-        pr[i] <- proposed_sds_i
-        numerator_i <- target_log_dist(pr) +
-            dlnorm(current_sds_i, log_mu_i, scale_sds_i, log = TRUE)
-        denominator_i <- target_log_dist(current_sds) +
-            dlnorm(proposed_sds_i, log_mu_i, scale_sds_i, log = TRUE)
-        log_ratio_i <- numerator_i - denominator_i
-        if (log_ratio_i > log(runif(1))) {
-            current_sds <- pr
-            acceptance_sds[m, i] <- 1
-        }
-        res_sds[m, i] <- current_sds[i]
-        if (m > 20) {
-            scale_sds[i] <- robbins_monro_univ(scale = scale_sds_i,
-                                               acceptance_it = acceptance_sds[m, i],
-                                               it = m)
-        }
-    }
-}
-})
-
-colMeans(acceptance_sds[-seq_len(1000L), ])
-
-####
-
-res_sds <- res_sds[-seq_len(1000L), ]
-plot(res_sds[, 1], type = "l")
-plot(res_sds[, 2], type = "l")
-plot(res_sds[, 3], type = "l")
-plot(res_sds[, 4], type = "l")
-plot(res_sds[, 5], type = "l")
-plot(res_sds[, 6], type = "l")
-
-####
-
-mean_sds <- colMeans(res_sds)
-
-cor2cov(R, sds = mean_sds)
 D
 
 
