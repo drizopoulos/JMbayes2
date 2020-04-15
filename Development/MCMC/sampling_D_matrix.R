@@ -244,7 +244,7 @@ eps <- lambda_min / 2
 K <- p
 
 
-b <- MASS::mvrnorm(500, rep(0, p), D)
+b <- MASS::mvrnorm(1000, rep(0, p), D)
 
 target_log_dist <- function (R) {
     D <- cor2cov(R, sds = sds)
@@ -277,7 +277,7 @@ system.time({
         res_R[m, ] <- current_R[lower.tri(current_R)]
         if (m > 20) {
             eps <- robbins_monro_univ(scale = eps, acceptance_it = acceptance_R[m],
-                                      it = m)
+                                      it = m, target_acceptance = 0.3)
         }
     }
 })
