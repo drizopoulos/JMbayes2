@@ -241,7 +241,7 @@ sds <- sqrt(diag(D))
 R <- cov2cor(D)
 lambda_min <- min(eigen(R, symmetric = TRUE, only.values = TRUE)$values)
 eps <- lambda_min / 2
-K <- round(p / 2)
+K <- p
 
 
 b <- MASS::mvrnorm(500, rep(0, p), D)
@@ -257,11 +257,10 @@ M <- 3000L
 acceptance_R <- numeric(M)
 res_R <- matrix(0.0, M, p * (p - 1) / 2)
 current_R <- R
-scale_R <- 0.1
 system.time({
     for (m in seq_len(M)) {
-        U <- matrix(rnorm(p * p, sd = scale_R), p, p)
-        U <- U / rep(sqrt(colSums(U^2)), each = p)
+        U <- matrix(rnorm(K * p), K, p)
+        U <- U / rep(sqrt(colSums(U^2)), each = K)
         E <- crossprod(U); diag(E) <- 0.0
         proposed_R <- R + eps * E
 
@@ -275,23 +274,23 @@ system.time({
             current_R <- proposed_R
             acceptance_R[m] <- 1
         }
-        res_R[m, ] <- R[lower.tri(R)]
+        res_R[m, ] <- current_R[lower.tri(current_R)]
         if (m > 20) {
-            scale_R <- robbins_monro_univ(scale = scale_R,
-                                          acceptance_it = acceptance_R[m], it = m)
+            eps <- robbins_monro_univ(scale = eps, acceptance_it = acceptance_R[m],
+                                      it = m)
         }
     }
 })
 
 mean(acceptance_R[-seq_len(1000L)])
+
+res_R <- res_R[-seq_len(1000L), ]
 plot(res_R[, 1], type = "l")
 plot(res_R[, 2], type = "l")
 plot(res_R[, 3], type = "l")
 plot(res_R[, 4], type = "l")
 plot(res_R[, 5], type = "l")
 plot(res_R[, 6], type = "l")
-
-
 
 
 ##########################################################################################
