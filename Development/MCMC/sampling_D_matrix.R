@@ -17,7 +17,7 @@ fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
-Mixed_objects <- list(fm1, fm2, fm3, fm4)
+Mixed_objects <- list(fm1, fm3, fm4)
 
 D_lis <- lapply(Mixed_objects, extract_D)
 D <- bdiag(D_lis)
@@ -244,30 +244,29 @@ eps <- lambda_min / 2
 K <- p
 
 
-b <- MASS::mvrnorm(1000, rep(0, p), D)
+b <- MASS::mvrnorm(500, rep(0, p), D)
 
 target_log_dist <- function (R) {
     D <- cor2cov(R, sds = sds)
     log_p_b <- sum(dmvnorm(b, rep(0, p), Sigma = D, log = TRUE, prop = FALSE))
-    log_p_R <- 0.1 * as.vector(determinant(R)$modulus)
+    log_p_R <- as.vector(determinant(R)$modulus)
     log_p_b + log_p_R
 }
 
-M <- 3000L
+M <- 5000L
 acceptance_R <- numeric(M)
-res_R <- matrix(0.0, M, p * (p - 1) / 2)
+res_R <- keep <- matrix(0.0, M, p * (p - 1) / 2)
 current_R <- R
 system.time({
     for (m in seq_len(M)) {
         U <- matrix(rnorm(K * p), K, p)
         U <- U / rep(sqrt(colSums(U^2)), each = K)
         E <- crossprod(U); diag(E) <- 0.0
-        proposed_R <- R + eps * E
+        keep[m, ] <- E[lower.tri(E)]
+        proposed_R <- current_R + eps * E
 
-        numerator <- target_log_dist(proposed_R) #+
-            #dlnorm(current_R, log = TRUE)
-        denominator <- target_log_dist(current_R) #+
-            #dlnorm(proposed_R, log = TRUE)
+        numerator <- target_log_dist(proposed_R)
+        denominator <- target_log_dist(current_R)
         log_ratio <- numerator - denominator
 
         if (log_ratio > log(runif(1))) {
@@ -277,7 +276,7 @@ system.time({
         res_R[m, ] <- current_R[lower.tri(current_R)]
         if (m > 20) {
             eps <- robbins_monro_univ(scale = eps, acceptance_it = acceptance_R[m],
-                                      it = m, target_acceptance = 0.3)
+                                      it = m, target_acceptance = 0.23)
         }
     }
 })
@@ -291,6 +290,24 @@ plot(res_R[, 3], type = "l")
 plot(res_R[, 4], type = "l")
 plot(res_R[, 5], type = "l")
 plot(res_R[, 6], type = "l")
+plot(res_R[, 7], type = "l")
+plot(res_R[, 8], type = "l")
+plot(res_R[, 9], type = "l")
+plot(res_R[, 10], type = "l")
+plot(res_R[, 11], type = "l")
+plot(res_R[, 12], type = "l")
+plot(res_R[, 13], type = "l")
+plot(res_R[, 14], type = "l")
+plot(res_R[, 15], type = "l")
+
+
+
+mean_R <- R * 0.0
+mean_R[lower.tri(R)] <- colMeans(res_R)
+mean_R <- mean_R + t(mean_R); diag(mean_R) <- 1
+
+round(mean_R, 4)
+round(cov2cor(D), 4)
 
 
 ##########################################################################################
