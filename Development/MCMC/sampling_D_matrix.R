@@ -11,13 +11,18 @@ source(file.path(getwd(), "Development/jm/PBC_data.R"))
 
 fm1 <- lme(log(serBilir) ~ year * sex + I(year^2) + age + prothrombin,
            data = pbc2, random = ~ year | id)
-fm2 <- lme(serChol ~ ns(year, 3) + sex + age, data = pbc2, random = ~ year | id,
-           na.action = na.exclude)
+fm2 <- lme(serChol ~ ns(year, 3, B = c(0, 10)) + sex + age, data = pbc2,
+           random = ~ year | id, na.action = na.exclude)
+fm2. <- lme(I(serChol / 150) ~ ns(year, 3, B = c(0, 10)) + sex + age, data = pbc2,
+           random = ~ year | id, na.action = na.exclude)
 fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
-Mixed_objects <- list(fm1, fm3, fm4)
+fm5 <- lme(prothrombin ~ ns(year, 3, B = c(0, 10)) * drug, data = pbc2,
+           random = list (id = pdDiag(form = ~ ns(year, 3, B = c(0, 10)))),
+           control = lmeControl(opt = "optim"))
+Mixed_objects <- list(fm1, fm2., fm3, fm4, fm5)
 
 D_lis <- lapply(Mixed_objects, extract_D)
 D <- bdiag(D_lis)
@@ -25,6 +30,7 @@ invD <- solve(D)
 
 ##########################################################################################
 ##########################################################################################
+
 dmvnorm <- function (x, mu, Sigma = NULL, invSigma = NULL, log = TRUE,
           prop = TRUE) {
     if (!is.matrix(x))
@@ -180,7 +186,7 @@ target_log_dist <- function (sds) {
     log_p_b + log_p_tau
 }
 
-M <- 3000L
+M <- 6000L
 acceptance_sds <- res_sds <- matrix(0.0, M, p)
 current_sds <- sds
 scale_sds <- rep(0.1, p)
@@ -223,13 +229,17 @@ plot(res_sds[, 3], type = "l")
 plot(res_sds[, 4], type = "l")
 plot(res_sds[, 5], type = "l")
 plot(res_sds[, 6], type = "l")
+plot(res_sds[, 7], type = "l")
+plot(res_sds[, 8], type = "l")
+plot(res_sds[, 9], type = "l")
+plot(res_sds[, 10], type = "l")
+
 
 ####
 
 mean_sds <- colMeans(res_sds)
 
-cor2cov(R, sds = mean_sds)
-D
+cbind(mean_sds, sds)
 
 ##########################################################################################
 ##########################################################################################
@@ -253,7 +263,7 @@ target_log_dist <- function (R) {
     log_p_b + log_p_R
 }
 
-M <- 5000L
+M <- 6000L
 acceptance_R <- numeric(M)
 res_R <- keep <- matrix(0.0, M, p * (p - 1) / 2)
 current_R <- R
@@ -276,7 +286,7 @@ system.time({
         res_R[m, ] <- current_R[lower.tri(current_R)]
         if (m > 20) {
             eps <- robbins_monro_univ(scale = eps, acceptance_it = acceptance_R[m],
-                                      it = m, target_acceptance = 0.23)
+                                      it = m, target_acceptance = 0.25)
         }
     }
 })
@@ -299,15 +309,15 @@ plot(res_R[, 12], type = "l")
 plot(res_R[, 13], type = "l")
 plot(res_R[, 14], type = "l")
 plot(res_R[, 15], type = "l")
+plot(res_R[, 16], type = "l")
+plot(res_R[, 17], type = "l")
+plot(res_R[, 18], type = "l")
+plot(res_R[, 19], type = "l")
+plot(res_R[, 20], type = "l")
 
 
+cbind(colMeans(res_R), R[lower.tri(R)])
 
-mean_R <- R * 0.0
-mean_R[lower.tri(R)] <- colMeans(res_R)
-mean_R <- mean_R + t(mean_R); diag(mean_R) <- 1
-
-round(mean_R, 4)
-round(cov2cor(D), 4)
 
 
 ##########################################################################################
