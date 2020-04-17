@@ -13,8 +13,8 @@ fm1 <- lme(log(serBilir) ~ year * sex + I(year^2) + age + prothrombin,
            data = pbc2, random = ~ year | id)
 fm2 <- lme(serChol ~ ns(year, 3, B = c(0, 10)) + sex + age, data = pbc2,
            random = ~ year | id, na.action = na.exclude)
-fm2. <- lme(I(serChol / 150) ~ ns(year, 3, B = c(0, 10)) + sex + age, data = pbc2,
-           random = ~ year | id, na.action = na.exclude)
+fm2. <- lme(I(serChol / 150) ~ ns(year, 2, B = c(0, 10)) + sex + age, data = pbc2,
+           random = ~ ns(year, 2, B = c(0, 10)) | id, na.action = na.exclude)
 fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
@@ -26,7 +26,6 @@ Mixed_objects <- list(fm1, fm2., fm3, fm4, fm5)
 
 D_lis <- lapply(Mixed_objects, extract_D)
 D <- bdiag(D_lis)
-invD <- solve(D)
 
 ##########################################################################################
 ##########################################################################################
@@ -176,7 +175,7 @@ init_sds <- sds
 
 D <- cor2cov(R, sds = sds)
 
-b <- MASS::mvrnorm(500, rep(0, p), D)
+b <- MASS::mvrnorm(3000, rep(0, p), D)
 
 target_log_dist <- function (sds) {
     p <- length(sds)
@@ -186,7 +185,7 @@ target_log_dist <- function (sds) {
     log_p_b + log_p_tau
 }
 
-M <- 6000L
+M <- 4000L
 acceptance_sds <- res_sds <- matrix(0.0, M, p)
 current_sds <- sds
 scale_sds <- rep(0.1, p)
