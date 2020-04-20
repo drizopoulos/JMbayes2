@@ -89,7 +89,11 @@ dmvnorm_chol <- function (x, mu, chol_Sigma = NULL, inv_chol_Sigma = NULL, log =
     }
     if (is.null(chol_Sigma) && is.null(inv_chol_Sigma))
         stop("'chol_Sigma' or 'inv_chol_Sigma' must be given.")
-    invSigma <- if (!is.null(chol_Sigma)) tcrossprod(solve(chol_Sigma)) else tcrossprod(inv_chol_Sigma)
+    invSigma <- if (!is.null(chol_Sigma)) {
+        tcrossprod(backsolve(r = chol_Sigma, x = diag(p)))
+    } else {
+        tcrossprod(inv_chol_Sigma)
+    }
     logdetSigma <- if (!is.null(chol_Sigma)) {
         2 * determinant(chol_Sigma)$modulus
     } else {
@@ -239,6 +243,23 @@ plot(res_sds[, 10], type = "l")
 mean_sds <- colMeans(res_sds)
 
 cbind(mean_sds, sds)
+
+##########################################################################################
+##########################################################################################
+
+
+p <- ncol(D)
+sds <- sqrt(diag(D))
+R <- cov2cor(D); dimnames(R) <- NULL
+L <- chol(R)
+Lt <- t(L)
+
+diags <- cbind(2:p, 2:p)
+L[diags]
+
+sapply(split(L[upper.tri(L)], rep(1:(p-1), 1:(p-1))), function (x) sqrt(1 - sum(x^2)))
+
+
 
 ##########################################################################################
 ##########################################################################################
