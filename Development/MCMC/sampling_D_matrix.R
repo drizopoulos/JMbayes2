@@ -275,8 +275,8 @@ b <- MASS::mvrnorm(500, rep(0, p), D)
 target_log_dist <- function (L) {
     #D <- cor2cov(crossprod(L), sds = sds)
     log_p_b <- sum(dmvnorm_chol(b, rep(0, p), chol_Sigma = L, log = TRUE))
-    log_p_R <- as.vector(determinant(R)$modulus)
-    log_p_b + log_p_R
+    log_p_L <- sum(dunif(L[1, -1], -1, 1, log = TRUE))
+    log_p_b + log_p_L
 }
 
 M <- 2000L
