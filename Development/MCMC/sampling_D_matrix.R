@@ -250,6 +250,9 @@ cbind(mean_sds, sds)
 
 p <- ncol(D)
 sds <- sqrt(diag(D))
+
+D <- var(matrix(rnorm(1000 * p), 1000, p))
+
 R <- cov2cor(D); dimnames(R) <- NULL
 L <- chol(R)
 Lt <- t(L)
@@ -259,6 +262,66 @@ L[diags]
 
 sapply(split(L[upper.tri(L)], rep(1:(p-1), 1:(p-1))), function (x) sqrt(1 - sum(x^2)))
 
+spl <- split(L[upper.tri(L)], rep(1:(p-1), 1:(p-1)))
+
+
+p <- ncol(D)
+sds <- sqrt(diag(D))
+R <- cov2cor(D)
+L <- chol(R)
+
+b <- MASS::mvrnorm(500, rep(0, p), D)
+
+target_log_dist <- function (L) {
+    #D <- cor2cov(crossprod(L), sds = sds)
+    log_p_b <- sum(dmvnorm_chol(b, rep(0, p), chol_Sigma = L, log = TRUE))
+    log_p_R <- as.vector(determinant(R)$modulus)
+    log_p_b + log_p_R
+}
+
+M <- 2000L
+res_L <- acceptance_L <- matrix(0.0, M, p - 1)
+scale_L_1 <- rep(0.1, p - 1)
+current_L <- L
+system.time({
+    for (m in seq_len(M)) {
+        for (i in seq_len(p - 1)) {
+            current_L_1i <- current_L[1, i + 1]
+            scale_L_1i <- scale_L_1[i]
+            proposed_L_1i <- runif(1L, min = current_L_1i - 0.5 * scale_L_1i * sqrt(12),
+                                   max = current_L_1i + 0.5 * scale_L_1i * sqrt(12))
+            pr <- current_L
+            pr[1, i + 1] <- proposed_L_1i
+            numerator_i <- target_log_dist(pr)
+            denominator_i <- target_log_dist(current_L)
+            log_ratio_i <- numerator_i - denominator_i
+            if (log_ratio_i > log(runif(1))) {
+                current_L <- pr
+                acceptance_L[m, i] <- 1
+            }
+            res_L[m, i] <- current_L[1, i + 1]
+            if (m > 20) {
+                scale_L_1[i] <- robbins_monro_univ(scale = scale_L_1i,
+                                                   acceptance_it = acceptance_L[m, i],
+                                                   it = m)
+            }
+        }
+    }
+})
+
+colMeans(acceptance_L[-seq_len(1000L), ])
+
+res_L <- res_L[-seq_len(1000L), ]
+plot(res_L[, 1], type = "l")
+plot(res_L[, 2], type = "l")
+plot(res_L[, 3], type = "l")
+plot(res_L[, 4], type = "l")
+plot(res_L[, 5], type = "l")
+plot(res_L[, 6], type = "l")
+plot(res_L[, 7], type = "l")
+plot(res_L[, 8], type = "l")
+plot(res_L[, 9], type = "l")
+plot(res_L[, 10], type = "l")
 
 
 ##########################################################################################
