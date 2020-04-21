@@ -275,16 +275,17 @@ b <- MASS::mvrnorm(500, rep(0, p), D)
 target_log_dist <- function (L) {
     #D <- cor2cov(crossprod(L), sds = sds)
     log_p_b <- sum(dmvnorm_chol(b, rep(0, p), chol_Sigma = L, log = TRUE))
-    log_p_L <- sum(dunif(L[1, -1], -1, 1, log = TRUE))
-    log_p_b + log_p_L
+    log_p_L1 <- sum(dunif(L[1, -1], -1, 1, log = TRUE))
+    log_p_b + log_p_L1
 }
 
-M <- 2000L
+M <- 3000L
 res_L <- acceptance_L <- matrix(0.0, M, p - 1)
 scale_L_1 <- rep(0.1, p - 1)
 current_L <- L
 system.time({
     for (m in seq_len(M)) {
+        #cat("\niteration:", m)
         for (i in seq_len(p - 1)) {
             current_L_1i <- current_L[1, i + 1]
             scale_L_1i <- scale_L_1[i]
@@ -293,10 +294,16 @@ system.time({
             pr <- current_L
             pr[1, i + 1] <- proposed_L_1i
             numerator_i <- target_log_dist(pr)
-            denominator_i <- target_log_dist(current_L)
+            if (m == 1 && i == 1) denominator_i <- target_log_dist(current_L)
+
+            #cat("\n  element:", i,
+            #    "\n    numerator:", round(numerator_i, 4),
+            #    "\n    denominator:", round(denominator_i, 4))
+
             log_ratio_i <- numerator_i - denominator_i
             if (log_ratio_i > log(runif(1))) {
                 current_L <- pr
+                denominator_i <- numerator_i
                 acceptance_L[m, i] <- 1
             }
             res_L[m, i] <- current_L[1, i + 1]
@@ -306,6 +313,7 @@ system.time({
                                                    it = m)
             }
         }
+        #cat("\n")
     }
 })
 
