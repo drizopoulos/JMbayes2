@@ -249,88 +249,80 @@ cbind(mean_sds, sds)
 
 
 p <- ncol(D)
+#D[D == 0] <- 1e-06
 sds <- sqrt(diag(D))
-
-D <- var(matrix(rnorm(1000 * p), 1000, p))
-
 R <- cov2cor(D); dimnames(R) <- NULL
 L <- chol(R)
-Lt <- t(L)
-
+upper_tri_ind <- upper.tri(L)
+upper_tri_spl <- rep(1:(p-1), 1:(p-1))
 diags <- cbind(2:p, 2:p)
-L[diags]
 
-sapply(split(L[upper.tri(L)], rep(1:(p-1), 1:(p-1))), function (x) sqrt(1 - sum(x^2)))
-
-spl <- split(L[upper.tri(L)], rep(1:(p-1), 1:(p-1)))
-
-
-p <- ncol(D)
-sds <- sqrt(diag(D))
-R <- cov2cor(D)
-L <- chol(R)
-
-b <- MASS::mvrnorm(500, rep(0, p), D)
+b <- MASS::mvrnorm(1000, rep(0, p), D)
 
 target_log_dist <- function (L) {
-    #D <- cor2cov(crossprod(L), sds = sds)
-    log_p_b <- sum(dmvnorm_chol(b, rep(0, p), chol_Sigma = L, log = TRUE))
+    log_p_b <- sum(dmvnorm_chol(b, rep(0, p), chol_Sigma = L * rep(sds, each = p),
+                                log = TRUE))
     log_p_L1 <- sum(dunif(L[1, -1], -1, 1, log = TRUE))
-    log_p_b + log_p_L1
+    spl <- split(L[upper_tri_ind], upper_tri_spl)[-1]
+    f <- function (l) sqrt(1 - cumsum(l^2))
+    limits_upp <- lapply(lapply(spl, head, n = -1), f)
+    limits_low <- lapply(limits_upp, function (l) -l)
+    log_p_L2 <- mapply(dunif, x = lapply(spl, tail, n = -1),
+                       min = limits_low, max = limits_upp,
+                       MoreArgs = list(log = TRUE))
+    log_p_L2 <- sum(unlist(log_p_L2, use.names = FALSE))
+    log_p_b + log_p_L1 + log_p_L2
 }
 
 M <- 3000L
-res_L <- acceptance_L <- matrix(0.0, M, p - 1)
-scale_L_1 <- rep(0.1, p - 1)
+K <- as.integer(round(p * (p - 1) / 2))
+res_L <- acceptance_L <- matrix(0.0, M, K)
+res_R <- vector("list", M)
+scale_L <- rep(0.1, K)
 current_L <- L
 system.time({
     for (m in seq_len(M)) {
-        #cat("\niteration:", m)
-        for (i in seq_len(p - 1)) {
-            current_L_1i <- current_L[1, i + 1]
-            scale_L_1i <- scale_L_1[i]
-            proposed_L_1i <- runif(1L, min = current_L_1i - 0.5 * scale_L_1i * sqrt(12),
-                                   max = current_L_1i + 0.5 * scale_L_1i * sqrt(12))
+        for (i in seq_len(K)) {
+            current_L_i <- current_L[upper_tri_ind][i]
+            scale_L_i <- scale_L[i]
+            proposed_L_i <- runif(1L, min = current_L_i - 0.5 * scale_L_i * sqrt(12),
+                                   max = current_L_i + 0.5 * scale_L_i * sqrt(12))
             pr <- current_L
-            pr[1, i + 1] <- proposed_L_1i
+            pr[upper_tri_ind][i] <- proposed_L_i
             numerator_i <- target_log_dist(pr)
-            if (m == 1 && i == 1) denominator_i <- target_log_dist(current_L)
-
-            #cat("\n  element:", i,
-            #    "\n    numerator:", round(numerator_i, 4),
-            #    "\n    denominator:", round(denominator_i, 4))
-
+            if (i == 1) denominator_i <- target_log_dist(current_L)
             log_ratio_i <- numerator_i - denominator_i
-            if (log_ratio_i > log(runif(1))) {
+            if (is.finite(log_ratio_i) && log_ratio_i > log(runif(1))) {
                 current_L <- pr
                 denominator_i <- numerator_i
                 acceptance_L[m, i] <- 1
             }
-            res_L[m, i] <- current_L[1, i + 1]
-            if (m > 20) {
-                scale_L_1[i] <- robbins_monro_univ(scale = scale_L_1i,
+            res_L[m, i] <- current_L[upper_tri_ind][i]
+            if (m > 50) {
+                scale_L[i] <- robbins_monro_univ(scale = scale_L_i,
                                                    acceptance_it = acceptance_L[m, i],
                                                    it = m)
             }
         }
-        #cat("\n")
+        current_L[diags] <- sapply(split(current_L[upper_tri_ind], upper_tri_spl),
+                                   function (x) sqrt(1 - sum(x^2)))
+        res_R[[m]] <- crossprod(current_L)
     }
 })
 
-colMeans(acceptance_L[-seq_len(1000L), ])
+ar <- colMeans(acceptance_L[-seq_len(1000L), ])
+ar
 
 res_L <- res_L[-seq_len(1000L), ]
-plot(res_L[, 1], type = "l")
-plot(res_L[, 2], type = "l")
-plot(res_L[, 3], type = "l")
-plot(res_L[, 4], type = "l")
-plot(res_L[, 5], type = "l")
-plot(res_L[, 6], type = "l")
-plot(res_L[, 7], type = "l")
-plot(res_L[, 8], type = "l")
-plot(res_L[, 9], type = "l")
-plot(res_L[, 10], type = "l")
+for (k in seq_len(K)) {
+    plot(res_L[, k], type = "l", ylab = paste("Element:", k),
+         main = ar[k])
+}
 
+cbind(round(colMeans(res_L), 3), round(L[upper_tri_ind], 3))
+
+round(Reduce("+", res_R) / M, 3)
+round(R, 3)
 
 ##########################################################################################
 ##########################################################################################
