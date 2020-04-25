@@ -19,10 +19,11 @@ fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
-fm5 <- lme(prothrombin ~ ns(year, 3, B = c(0, 10)) * drug, data = pbc2,
-           random = list (id = pdDiag(form = ~ ns(year, 3, B = c(0, 10)))),
+fm5 <- lme(prothrombin ~ ns(year, 2, B = c(0, 10)) * drug, data = pbc2,
+           random = ~ ns(year, 2, B = c(0, 10)) | id,
            control = lmeControl(opt = "optim"))
-Mixed_objects <- list(fm1, fm2., fm3, fm4, fm5)
+
+Mixed_objects <- list(fm1, fm2., fm3, fm4, fm5, fm1)
 
 D_lis <- lapply(Mixed_objects, extract_D)
 D <- bdiag(D_lis)
@@ -76,7 +77,7 @@ dmvnorm <- function (x, mu, Sigma = NULL, invSigma = NULL, log = TRUE,
     }
 }
 
-dmvnorm_chol <- function (x, mu, chol_Sigma = NULL, inv_chol_Sigma = NULL, log = FALSE) {
+dmvnorm_chol <- function (x, mu, chol_Sigma = NULL, chol_inv_Sigma = NULL, log = FALSE) {
     if (!is.matrix(x))
         x <- rbind(x)
     if (is.matrix(mu)) {
@@ -87,17 +88,17 @@ dmvnorm_chol <- function (x, mu, chol_Sigma = NULL, inv_chol_Sigma = NULL, log =
         p <- length(mu)
         mu <- rep(mu, each = nrow(x))
     }
-    if (is.null(chol_Sigma) && is.null(inv_chol_Sigma))
-        stop("'chol_Sigma' or 'inv_chol_Sigma' must be given.")
+    if (is.null(chol_Sigma) && is.null(chol_inv_Sigma))
+        stop("'chol_Sigma' or 'chol_inv_Sigma' must be given.")
     invSigma <- if (!is.null(chol_Sigma)) {
         tcrossprod(backsolve(r = chol_Sigma, x = diag(p)))
     } else {
-        tcrossprod(inv_chol_Sigma)
+        crossprod(chol_inv_Sigma)
     }
     logdetSigma <- if (!is.null(chol_Sigma)) {
         2 * determinant(chol_Sigma)$modulus
     } else {
-        - 2 * determinant(inv_chol_Sigma)$modulus
+        - 2 * determinant(chol_inv_Sigma)$modulus
     }
     ss <- x - mu
     quad <- 0.5 * rowSums((ss %*% invSigma) * ss)
@@ -249,15 +250,17 @@ cbind(mean_sds, sds)
 
 
 p <- ncol(D)
+K <- as.integer(round(p * (p - 1) / 2))
 #D[D == 0] <- 1e-06
 sds <- sqrt(diag(D))
-R <- cov2cor(D); dimnames(R) <- NULL
+R <- cov2cor(D); dimnames(R) <- dimnames(D) <- NULL
+inv_R <- solve(R)
 L <- chol(R)
 upper_tri_ind <- upper.tri(L)
 upper_tri_spl <- rep(1:(p-1), 1:(p-1))
 diags <- cbind(2:p, 2:p)
 
-b <- MASS::mvrnorm(1000, rep(0, p), D)
+b <- MASS::mvrnorm(K * 15, rep(0, p), D)
 
 target_log_dist <- function (L) {
     log_p_b <- sum(dmvnorm_chol(b, rep(0, p), chol_Sigma = L * rep(sds, each = p),
@@ -274,8 +277,20 @@ target_log_dist <- function (L) {
     log_p_b + log_p_L1 + log_p_L2
 }
 
+target_log_dist <- function (L, eta = 2) {
+    diags <- diag(L)
+    if (any(is.na(diags))) return(-Inf)
+    test_PD_1 <- all(diags > 0)
+    test_PD_2 <- all(abs(sqrt(colSums(L^2)) - 1) < sqrt(.Machine$double.eps))
+    if (!test_PD_1 || !test_PD_2) return(-Inf)
+    log_p_b <- sum(dmvnorm_chol(b, rep(0, p), chol_Sigma = L * rep(sds, each = p),
+                                log = TRUE))
+    log_p_L <- sum((p - 2:p + 2 * eta - 2) * log(diags[-1]))
+    log_p_b + log_p_L
+}
+
+
 M <- 3000L
-K <- as.integer(round(p * (p - 1) / 2))
 res_L <- acceptance_L <- matrix(0.0, M, K)
 res_R <- vector("list", M)
 scale_L <- rep(0.1, K)
@@ -286,11 +301,13 @@ system.time({
             current_L_i <- current_L[upper_tri_ind][i]
             scale_L_i <- scale_L[i]
             proposed_L_i <- runif(1L, min = current_L_i - 0.5 * scale_L_i * sqrt(12),
-                                   max = current_L_i + 0.5 * scale_L_i * sqrt(12))
+                                  max = current_L_i + 0.5 * scale_L_i * sqrt(12))
             pr <- current_L
             pr[upper_tri_ind][i] <- proposed_L_i
+            pr[diags] <- sapply(split(pr[upper_tri_ind], upper_tri_spl),
+                                       function (x) sqrt(1 - sum(x^2)))
             numerator_i <- target_log_dist(pr)
-            if (i == 1) denominator_i <- target_log_dist(current_L)
+            if (m == 1 && i == 1) denominator_i <- target_log_dist(current_L)
             log_ratio_i <- numerator_i - denominator_i
             if (is.finite(log_ratio_i) && log_ratio_i > log(runif(1))) {
                 current_L <- pr
@@ -298,15 +315,14 @@ system.time({
                 acceptance_L[m, i] <- 1
             }
             res_L[m, i] <- current_L[upper_tri_ind][i]
-            if (m > 50) {
+            if (m > 51) {
                 scale_L[i] <- robbins_monro_univ(scale = scale_L_i,
-                                                   acceptance_it = acceptance_L[m, i],
-                                                   it = m)
+                                                 acceptance_it = acceptance_L[m, i],
+                                                 it = m - 50)
             }
         }
-        current_L[diags] <- sapply(split(current_L[upper_tri_ind], upper_tri_spl),
-                                   function (x) sqrt(1 - sum(x^2)))
-        res_R[[m]] <- crossprod(current_L)
+        #current_L[diags] <- sapply(split(current_L[upper_tri_ind], upper_tri_spl),
+        #                           function (x) sqrt(1 - sum(x^2)))
     }
 })
 
