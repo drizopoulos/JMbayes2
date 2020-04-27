@@ -18,7 +18,7 @@ fm2. <- lme(I(serChol / 150) ~ ns(year, 2, B = c(0, 10)) + sex + age, data = pbc
 fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
-                   random = ~ 1 | id, family = binomial())
+                   random = ~ year | id, family = binomial())
 fm5 <- lme(prothrombin ~ ns(year, 2, B = c(0, 10)) * drug, data = pbc2,
            random = ~ ns(year, 2, B = c(0, 10)) | id,
            control = lmeControl(opt = "optim"))
