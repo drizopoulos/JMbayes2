@@ -77,5 +77,11 @@ logPC_D_L <- function (L, sds, eta_LKJ = 2) {
     log_p_b + log_p_L
 }
 
+reconstr_D <- function (L, sds) {
+    p <- length(sds)
+    LL <- matrix(0.0, p, p)
+    LL[upper.tri(LL, TRUE)] <- L
+    cor2cov(crossprod(LL), sds = sds)
+}
 
 
