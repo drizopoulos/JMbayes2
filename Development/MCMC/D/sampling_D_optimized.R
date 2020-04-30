@@ -2,6 +2,9 @@ library("survival")
 library("nlme")
 library("GLMMadaptive")
 library("splines")
+library("rstan")
+options(mc.cores = 4)
+rstan_options(auto_write = TRUE)
 data("pbc2", package = "JM")
 data("pbc2.id", package = "JM")
 source(file.path(getwd(), "R/jm.R"))
@@ -15,7 +18,7 @@ source(file.path(getwd(), "Development/MCMC/D/D_examples.R"))
 ##########################################################################################
 
 # Select D matrix from the D_examples
-D <- D4
+D <- D3
 
 p <- ncol(D)
 K <- as.integer(round(p * (p - 1) / 2))
@@ -32,7 +35,7 @@ diags2 <- cbind(2:p, 2:p)
 
 b <- MASS::mvrnorm(K * 20, rep(0, p), D)
 
-M <- 3000L
+M <- 4000L
 acceptance_sds <- res_sds <- matrix(0.0, M, p)
 scale_sds <- rep(0.1, p)
 acceptance_L <- matrix(0.0, M, K)
@@ -137,4 +140,15 @@ mean_D <- Reduce("+", mean_D) / length(mean_D)
 
 # check posterior mean
 round(cbind(mean_D[upper.tri(mean_D, TRUE)], D[upper.tri(D, TRUE)]), 3)
+
+################################################################################
+
+# Sample with STAN
+
+Data <- list(n = nrow(b), p = p, b = b, lkj_shape = 2, scale_diag_D = 10,
+             mu_b = 0 * b)
+out <- rstan::stan(file = file.path(getwd(), "Development/MCMC/D/sample_D.stan"),
+                   data = Data, pars = "D")
+
+stan_trace(out, pars = "D[3, 7]")
 

@@ -1,14 +1,9 @@
-dmvnorm_chol <- function (x, mu, chol_Sigma = NULL, chol_inv_Sigma = NULL, log = FALSE) {
+dmvnorm_chol <- function (x, chol_Sigma = NULL, chol_inv_Sigma = NULL, log = FALSE) {
+    # this is a stripped down version of the multivariate normal density with mean zero
+    # based on the Cholesky factor of the variance-covariance matrix Sigma
     if (!is.matrix(x))
         x <- rbind(x)
-    if (is.matrix(mu)) {
-        if (nrow(mu) != nrow(x))
-            stop("incorrect dimensions for 'mu'.")
-        p <- ncol(mu)
-    } else {
-        p <- length(mu)
-        mu <- rep(mu, each = nrow(x))
-    }
+    p <- ncol(x)
     if (is.null(chol_Sigma) && is.null(chol_inv_Sigma))
         stop("'chol_Sigma' or 'chol_inv_Sigma' must be given.")
     invSigma <- if (!is.null(chol_Sigma)) {
@@ -21,8 +16,7 @@ dmvnorm_chol <- function (x, mu, chol_Sigma = NULL, chol_inv_Sigma = NULL, log =
     } else {
         - 2 * determinant(chol_inv_Sigma)$modulus
     }
-    ss <- x - mu
-    quad <- 0.5 * rowSums((ss %*% invSigma) * ss)
+    quad <- 0.5 * rowSums((x %*% invSigma) * x)
     fact <- -0.5 * (p * log(2 * pi) + logdetSigma)
     if (log) as.vector(fact - quad) else as.vector(exp(fact - quad))
 }
@@ -54,8 +48,7 @@ robbins_monro_univ <- function (scale, acceptance_it, it, target_acceptance = 0.
 
 logPC_D_sds <- function (sds, t_inv_L, half_t_df = 3, half_t_mean) {
     # log posterior conditional for sds
-    log_p_b <- sum(dmvnorm_chol(b, rep(0, p),
-                                chol_inv_Sigma = t_inv_L * rep(1 / sds, each = p),
+    log_p_b <- sum(dmvnorm_chol(b, chol_inv_Sigma = t_inv_L * rep(1 / sds, each = p),
                                 log = TRUE))
     # prior is a half Student's-t
     log_p_sds <- sum(dht(sds, sigma = half_t_mean, df = half_t_df,
@@ -64,15 +57,12 @@ logPC_D_sds <- function (sds, t_inv_L, half_t_df = 3, half_t_mean) {
 }
 
 logPC_D_L <- function (L, sds, eta_LKJ = 2) {
+    p <- length(sds)
     # log posterior conditional for the L matrix
-    diags <- L[diags]
-    if (any(is.na(diags))) return(-Inf)
-    test_PD_1 <- all(diags > 0)
-    test_PD_2 <- all(abs(sqrt(colSums(L^2)) - 1) < sqrt(.Machine$double.eps))
-    if (!test_PD_1 || !test_PD_2) return(-Inf)
-    log_p_b <- sum(dmvnorm_chol(b, rep(0, p), chol_Sigma = L * rep(sds, each = p),
+    log_p_b <- sum(dmvnorm_chol(b, chol_Sigma = L * rep(sds, each = p),
                                 log = TRUE))
-    # LKJ prior on the Cholesky factor
+    # LKJ prior on the Cholesky factor; check the following link for more info:
+    # https://mc-stan.org/docs/2_18/functions-reference/cholesky-lkj-correlation-distribution.html
     log_p_L <- sum((p - 2:p + 2 * eta_LKJ - 2) * log(diags[-1L]))
     log_p_b + log_p_L
 }
