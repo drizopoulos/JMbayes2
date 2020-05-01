@@ -63,7 +63,7 @@ logPC_D_L <- function (L, sds, eta_LKJ = 2) {
                                 log = TRUE))
     # LKJ prior on the Cholesky factor; check the following link for more info:
     # https://mc-stan.org/docs/2_18/functions-reference/cholesky-lkj-correlation-distribution.html
-    log_p_L <- sum((p - 2:p + 2 * eta_LKJ - 2) * log(diags[-1L]))
+    log_p_L <- sum((p - 2:p + 2 * eta_LKJ - 2) * log(L[diags2]))
     log_p_b + log_p_L
 }
 
@@ -74,4 +74,18 @@ reconstr_D <- function (L, sds) {
     cor2cov(crossprod(LL), sds = sds)
 }
 
-
+deriv_L <- function (L, i, sds, eps = 1e-03) {
+    L_eps1 <- L_eps2 <- L
+    ##
+    L_eps1[upper_tri_ind][i] <- L_eps1[upper_tri_ind][i] + eps
+    ll1 <- L_eps1[seq(1, colmn_ind[i] - 1), colmn_ind[i]]
+    ss1 <- sum(ll1 * ll1)
+    L_eps1[colmn_ind[i], colmn_ind[i]] <- sqrt(1 - ss1)
+    ##
+    L_eps2[upper_tri_ind][i] <- L_eps2[upper_tri_ind][i] - eps
+    ll2 <- L_eps2[seq(1, colmn_ind[i] - 1), colmn_ind[i]]
+    ss2 <- sum(ll2 * ll2)
+    L_eps2[colmn_ind[i], colmn_ind[i]] <- sqrt(1 - ss2)
+    ####
+    (logPC_D_L(L_eps1, sds) - logPC_D_L(L_eps2, sds)) / (2 * eps)
+}

@@ -35,7 +35,7 @@ diags2 <- cbind(2:p, 2:p)
 
 b <- MASS::mvrnorm(K * 20, rep(0, p), D)
 
-M <- 4000L
+M <- 2000L
 acceptance_sds <- res_sds <- matrix(0.0, M, p)
 scale_sds <- rep(0.1, p)
 acceptance_L <- matrix(0.0, M, K)
@@ -44,6 +44,8 @@ scale_L <- rep(0.1, K)
 #
 current_sds <- sds
 current_L <- L
+#
+MALA <- TRUE
 
 system.time({
     for (m in seq_len(M)) {
@@ -57,32 +59,37 @@ system.time({
             pr_sds <- current_sds
             pr_sds[i] <- proposed_sds_i
             numerator_sds_i <- logPC_D_sds(pr_sds, t_inv_current_L,
-                                           half_t_mean = 10 * sds) +
-                dlnorm(current_sds_i, log_mu_i, scale_sds_i, log = TRUE)
+                                           half_t_mean = 10 * sds)
             if (i == 1) {
                 denominator_sds_i <- logPC_D_sds(current_sds, t_inv_current_L,
-                                                 half_t_mean = 10 * sds) +
-                    dlnorm(proposed_sds_i, log_mu_i, scale_sds_i, log = TRUE)
+                                                 half_t_mean = 10 * sds)
             }
-            log_ratio_i <- numerator_sds_i - denominator_sds_i
+            log_ratio_i <- numerator_sds_i - denominator_sds_i +
+                dlnorm(current_sds_i, log_mu_i, scale_sds_i, log = TRUE) -
+                dlnorm(proposed_sds_i, log_mu_i, scale_sds_i, log = TRUE)
             if (log_ratio_i > log(runif(1))) {
                 current_sds <- pr_sds
                 denominator_sds_i <- numerator_sds_i
                 acceptance_sds[m, i] <- 1
             }
             res_sds[m, i] <- current_sds[i]
-            if (m > 31) {
+            if (m > 20) {
                 scale_sds[i] <- robbins_monro_univ(scale = scale_sds_i,
                                                    acceptance_it = acceptance_sds[m, i],
-                                                   it = m - 30)
+                                                   it = m)
             }
         }
         # update the off-diagonal elements of the L matrix
         for (i in seq_len(K)) {
             current_L_i <- current_L[upper_tri_ind][i]
             scale_L_i <- scale_L[i]
-            proposed_L_i <- runif(1L, min = current_L_i - 0.5 * scale_L_i * sqrt(12),
-                                  max = current_L_i + 0.5 * scale_L_i * sqrt(12))
+            if (MALA) {
+                mm <- current_L_i + 0.5 * scale_L_i * deriv_L(current_L, i, current_sds)
+                proposed_L_i <- rnorm(1L, mm, sqrt(scale_L_i))
+            } else {
+                proposed_L_i <- runif(1L, min = current_L_i - 0.5 * scale_L_i * sqrt(12),
+                                      max = current_L_i + 0.5 * scale_L_i * sqrt(12))
+            }
             pr_L <- current_L
             pr_L[upper_tri_ind][i] <- proposed_L_i
             # to ensure that L is the Cholesky factor of the correlation matrix R
@@ -101,16 +108,23 @@ system.time({
                 numerator_L_i <- logPC_D_L(pr_L, current_sds)
             }
             if (i == 1) denominator_L_i <- logPC_D_L(current_L, current_sds)
-            log_ratio_i <- numerator_L_i - denominator_L_i
+            log_ratio_i <- if (MALA) {
+                numerator_L_i - denominator_L_i +
+                    dnorm(current_L_i, mm, sqrt(scale_L_i), log = TRUE) -
+                    dnorm(proposed_L_i, mm, sqrt(scale_L_i), log = TRUE)
+            } else {
+                numerator_L_i - denominator_L_i
+            }
             if (is.finite(log_ratio_i) && log_ratio_i > log(runif(1))) {
                 current_L <- pr_L
                 denominator_L_i <- numerator_L_i
                 acceptance_L[m, i] <- 1
             }
-            if (m > 31) {
+            if (m > 20) {
                 scale_L[i] <- robbins_monro_univ(scale = scale_L_i,
                                                  acceptance_it = acceptance_L[m, i],
-                                                 it = m - 30)
+                                                 it = m,
+                                                 target_acceptance = if (MALA) 0.6 else 0.45)
             }
         }
         res_L[m, ] <- current_L[upper_tri_ind2]
@@ -122,7 +136,7 @@ ar_sds
 res_sds <- res_sds[-seq_len(1000L), ]
 for (k in seq_len(p)) {
     plot(res_sds[, k], type = "l", ylab = paste("SDS:", k),
-         main = ar_sds[k])
+         main = round(ar_sds[k], 3))
 }
 
 ar_L <- colMeans(acceptance_L[-seq_len(1000L), ])
@@ -131,7 +145,7 @@ ar_L
 res_L <- res_L[-seq_len(1000L), ]
 for (k in seq_len(K + p)[-1L]) {
     plot(res_L[, k], type = "l", ylab = paste("Element:", k),
-         main = ar_L[k])
+         main = round(ar_L[k], 3))
 }
 
 mean_D <- mapply(reconstr_D, L = split(res_L, row(res_L)),
