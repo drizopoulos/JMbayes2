@@ -17,8 +17,8 @@ source(file.path(getwd(), "Development/MCMC/D/D_examples.R"))
 
 ##########################################################################################
 
-# Select D matrix from the D_examples
-D <- D3
+# Select D matrix from D_examples.R
+D <- D4
 
 p <- ncol(D)
 K <- as.integer(round(p * (p - 1) / 2))
@@ -33,9 +33,9 @@ colmn_ind <- col(upper_tri_ind)[upper_tri_ind]
 diags <- cbind(1:p, 1:p)
 diags2 <- cbind(2:p, 2:p)
 
-b <- MASS::mvrnorm(K * 20, rep(0, p), D)
+b <- MASS::mvrnorm(K * 10, rep(0, p), D)
 
-M <- 2000L
+M <- 3000L
 acceptance_sds <- res_sds <- matrix(0.0, M, p)
 scale_sds <- rep(0.1, p)
 acceptance_L <- matrix(0.0, M, K)
@@ -84,7 +84,8 @@ system.time({
             current_L_i <- current_L[upper_tri_ind][i]
             scale_L_i <- scale_L[i]
             if (MALA) {
-                mm <- current_L_i + 0.5 * scale_L_i * deriv_L(current_L, i, current_sds)
+                mm <- current_L_i + 0.5 * scale_L_i *
+                    deriv_L(current_L, i, current_sds, denominator_L_i)
                 proposed_L_i <- rnorm(1L, mm, sqrt(scale_L_i))
             } else {
                 proposed_L_i <- runif(1L, min = current_L_i - 0.5 * scale_L_i * sqrt(12),
@@ -124,7 +125,7 @@ system.time({
                 scale_L[i] <- robbins_monro_univ(scale = scale_L_i,
                                                  acceptance_it = acceptance_L[m, i],
                                                  it = m,
-                                                 target_acceptance = if (MALA) 0.6 else 0.45)
+                                                 target_acceptance = 0.57)
             }
         }
         res_L[m, ] <- current_L[upper_tri_ind2]

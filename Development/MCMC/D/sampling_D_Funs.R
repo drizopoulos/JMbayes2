@@ -74,7 +74,7 @@ reconstr_D <- function (L, sds) {
     cor2cov(crossprod(LL), sds = sds)
 }
 
-deriv_L <- function (L, i, sds, eps = 1e-03) {
+deriv_L <- function (L, i, sds, log_target, eps = 1e-06) {
     L_eps1 <- L_eps2 <- L
     ##
     L_eps1[upper_tri_ind][i] <- L_eps1[upper_tri_ind][i] + eps
@@ -82,10 +82,5 @@ deriv_L <- function (L, i, sds, eps = 1e-03) {
     ss1 <- sum(ll1 * ll1)
     L_eps1[colmn_ind[i], colmn_ind[i]] <- sqrt(1 - ss1)
     ##
-    L_eps2[upper_tri_ind][i] <- L_eps2[upper_tri_ind][i] - eps
-    ll2 <- L_eps2[seq(1, colmn_ind[i] - 1), colmn_ind[i]]
-    ss2 <- sum(ll2 * ll2)
-    L_eps2[colmn_ind[i], colmn_ind[i]] <- sqrt(1 - ss2)
-    ####
-    (logPC_D_L(L_eps1, sds) - logPC_D_L(L_eps2, sds)) / (2 * eps)
+    (logPC_D_L(L_eps1, sds) - log_target) / eps
 }
