@@ -18,7 +18,7 @@ source(file.path(getwd(), "Development/MCMC/D/D_examples.R"))
 ##########################################################################################
 
 # Select D matrix from D_examples.R
-D <- D4
+D <- D3
 
 p <- ncol(D)
 K <- as.integer(round(p * (p - 1) / 2))
@@ -54,8 +54,8 @@ system.time({
         for (i in seq_len(p)) {
             current_sds_i <- current_sds[i]
             scale_sds_i <- scale_sds[i]
-            log_mu_i <- log(current_sds_i) - 0.5 * scale_sds_i^2
-            proposed_sds_i <- rlnorm(1L, log_mu_i, scale_sds_i)
+            log_mu_current_i <- log(current_sds_i) - 0.5 * scale_sds_i^2
+            proposed_sds_i <- rlnorm(1L, log_mu_current_i, scale_sds_i)
             pr_sds <- current_sds
             pr_sds[i] <- proposed_sds_i
             numerator_sds_i <- logPC_D_sds(pr_sds, t_inv_current_L,
@@ -64,9 +64,10 @@ system.time({
                 denominator_sds_i <- logPC_D_sds(current_sds, t_inv_current_L,
                                                  half_t_mean = 10 * sds)
             }
+            log_mu_proposed_i <- log(proposed_sds_i) - 0.5 * scale_sds_i^2
             log_ratio_i <- numerator_sds_i - denominator_sds_i +
-                dlnorm(current_sds_i, log_mu_i, scale_sds_i, log = TRUE) -
-                dlnorm(proposed_sds_i, log_mu_i, scale_sds_i, log = TRUE)
+                dlnorm(current_sds_i, log_mu_proposed_i, scale_sds_i, log = TRUE) -
+                dlnorm(proposed_sds_i, log_mu_current_i, scale_sds_i, log = TRUE)
             if (log_ratio_i > log(runif(1))) {
                 current_sds <- pr_sds
                 denominator_sds_i <- numerator_sds_i
@@ -84,9 +85,9 @@ system.time({
             current_L_i <- current_L[upper_tri_ind][i]
             scale_L_i <- scale_L[i]
             if (MALA) {
-                mm <- current_L_i + 0.5 * scale_L_i *
+                mm_current_i <- current_L_i + 0.5 * scale_L_i *
                     deriv_L(current_L, i, current_sds, denominator_L_i)
-                proposed_L_i <- rnorm(1L, mm, sqrt(scale_L_i))
+                proposed_L_i <- rnorm(1L, mm_current_i, sqrt(scale_L_i))
             } else {
                 proposed_L_i <- runif(1L, min = current_L_i - 0.5 * scale_L_i * sqrt(12),
                                       max = current_L_i + 0.5 * scale_L_i * sqrt(12))
@@ -110,9 +111,11 @@ system.time({
             }
             if (i == 1) denominator_L_i <- logPC_D_L(current_L, current_sds)
             log_ratio_i <- if (MALA) {
+                mm_proposed_i <- proposed_L_i + 0.5 * scale_L_i *
+                    deriv_L(pr_L, i, current_sds, numerator_L_i)
                 numerator_L_i - denominator_L_i +
-                    dnorm(current_L_i, mm, sqrt(scale_L_i), log = TRUE) -
-                    dnorm(proposed_L_i, mm, sqrt(scale_L_i), log = TRUE)
+                    dnorm(current_L_i, mm_proposed_i, sqrt(scale_L_i), log = TRUE) -
+                    dnorm(proposed_L_i, mm_current_i, sqrt(scale_L_i), log = TRUE)
             } else {
                 numerator_L_i - denominator_L_i
             }
@@ -125,7 +128,7 @@ system.time({
                 scale_L[i] <- robbins_monro_univ(scale = scale_L_i,
                                                  acceptance_it = acceptance_L[m, i],
                                                  it = m,
-                                                 target_acceptance = 0.57)
+                                                 target_acceptance = if (MALA) 0.57 else 0.45)
             }
         }
         res_L[m, ] <- current_L[upper_tri_ind2]
