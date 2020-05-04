@@ -82,6 +82,7 @@ system.time({
         }
         # update the off-diagonal elements of the L matrix
         for (i in seq_len(K)) {
+            if (i == 1) denominator_L_i <- logPC_D_L(current_L, current_sds)
             current_L_i <- current_L[upper_tri_ind][i]
             scale_L_i <- scale_L[i]
             if (MALA) {
@@ -109,7 +110,6 @@ system.time({
                 pr_L[colmn_ind[i], colmn_ind[i]] <- sqrt(1 - ss)
                 numerator_L_i <- logPC_D_L(pr_L, current_sds)
             }
-            if (i == 1) denominator_L_i <- logPC_D_L(current_L, current_sds)
             log_ratio_i <- if (MALA) {
                 mm_proposed_i <- proposed_L_i + 0.5 * scale_L_i *
                     deriv_L(pr_L, i, current_sds, numerator_L_i)
