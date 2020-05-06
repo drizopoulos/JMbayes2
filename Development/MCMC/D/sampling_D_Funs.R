@@ -80,7 +80,7 @@ deriv_L <- function (L, i, sds, log_target, eps = 1e-06,
     if (direction == "forward") {
         L_eps1 <- L
         ##
-        L_eps1[upper_tri_ind][i] <- L_eps1[upper_tri_ind][i] + eps
+        L_eps1[upper_tri_ind][i] <- L_eps1[upper_tri_ind][i] * (1 + eps)
         ll1 <- L_eps1[seq(1, colmn_ind[i] - 1), colmn_ind[i]]
         ss1 <- sum(ll1 * ll1)
         L_eps1[colmn_ind[i], colmn_ind[i]] <- sqrt(1 - ss1)
@@ -89,7 +89,7 @@ deriv_L <- function (L, i, sds, log_target, eps = 1e-06,
     } else {
         L_eps2 <- L
         ##
-        L_eps2[upper_tri_ind][i] <- L_eps2[upper_tri_ind][i] - eps
+        L_eps2[upper_tri_ind][i] <- L_eps2[upper_tri_ind][i] * (1 - eps)
         ll2 <- L_eps2[seq(1, colmn_ind[i] - 1), colmn_ind[i]]
         ss2 <- sum(ll2 * ll2)
         L_eps2[colmn_ind[i], colmn_ind[i]] <- sqrt(1 - ss2)
