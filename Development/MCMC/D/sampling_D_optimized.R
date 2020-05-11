@@ -18,7 +18,7 @@ source(file.path(getwd(), "Development/MCMC/D/D_examples.R"))
 ##########################################################################################
 
 # Select D matrix from D_examples.R
-D <- D3
+D <- D4
 
 p <- ncol(D)
 K <- as.integer(round(p * (p - 1) / 2))
@@ -33,9 +33,9 @@ colmn_ind <- col(upper_tri_ind)[upper_tri_ind]
 diags <- cbind(1:p, 1:p)
 diags2 <- cbind(2:p, 2:p)
 
-b <- MASS::mvrnorm(K * 10, rep(0, p), D)
+b <- MASS::mvrnorm(if (K == 1) 100 else K * 10, rep(0, p), D)
 
-M <- 3000L
+M <- 5000L
 acceptance_sds <- res_sds <- matrix(0.0, M, p)
 scale_sds <- rep(0.1, p)
 acceptance_L <- matrix(0.0, M, K)
@@ -137,26 +137,23 @@ system.time({
 
 ar_sds <- colMeans(acceptance_sds[-seq_len(1000L), ])
 ar_sds
-res_sds <- res_sds[-seq_len(1000L), ]
-for (k in seq_len(p)) {
-    plot(res_sds[, k], type = "l", ylab = paste("SDS:", k),
-         main = round(ar_sds[k], 3))
-}
-
-ar_L <- colMeans(acceptance_L[-seq_len(1000L), ])
+ar_L <- colMeans(acceptance_L[-seq_len(1000L), , drop = FALSE])
 ar_L
 
-res_L <- res_L[-seq_len(1000L), ]
-for (k in seq_len(K + p)[-1L]) {
-    plot(res_L[, k], type = "l", ylab = paste("Element:", k),
-         main = round(ar_L[k], 3))
+res_sds <- res_sds[-seq_len(1000L), ]
+res_L <- res_L[-seq_len(1000L), , drop = FALSE]
+res_D <- mapply(reconstr_D, L = split(res_L, row(res_L)),
+                 sds = split(res_sds, row(res_sds)), SIMPLIFY = FALSE)
+for (k in seq_len(K + p)) {
+    v <- sapply(res_D, function (m) m[upper_tri_ind2][k])
+    plot(v, type = "l",
+         ylab = paste0("D[", paste(which(upper_tri_ind2, arr.ind = TRUE)[k, ],
+                                   collapse = ", "), "]"))
 }
 
-mean_D <- mapply(reconstr_D, L = split(res_L, row(res_L)),
-                 sds = split(res_sds, row(res_sds)), SIMPLIFY = FALSE)
-mean_D <- Reduce("+", mean_D) / length(mean_D)
 
 # check posterior mean
+mean_D <- Reduce("+", res_D) / length(res_D)
 round(cbind(mean_D[upper.tri(mean_D, TRUE)], D[upper.tri(D, TRUE)]), 3)
 
 ################################################################################
@@ -166,7 +163,7 @@ round(cbind(mean_D[upper.tri(mean_D, TRUE)], D[upper.tri(D, TRUE)]), 3)
 Data <- list(n = nrow(b), p = p, b = b, lkj_shape = 2, scale_diag_D = 10,
              mu_b = 0 * b)
 out <- rstan::stan(file = file.path(getwd(), "Development/MCMC/D/sample_D.stan"),
-                   data = Data, pars = "D")
+                   data = Data, pars = "D", save_dso = FALSE)
 
 stan_trace(out, pars = "D[3, 7]")
 
