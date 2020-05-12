@@ -45,7 +45,7 @@ scale_L <- rep(0.1, K)
 current_sds <- sds
 current_L <- L
 #
-MALA <- TRUE
+MALA <- FALSE
 
 system.time({
     for (m in seq_len(M)) {
@@ -68,7 +68,7 @@ system.time({
             log_ratio_i <- numerator_sds_i - denominator_sds_i +
                 dlnorm(current_sds_i, log_mu_proposed_i, scale_sds_i, log = TRUE) -
                 dlnorm(proposed_sds_i, log_mu_current_i, scale_sds_i, log = TRUE)
-            if (log_ratio_i > log(runif(1))) {
+            if (min(1, exp(log_ratio_i)) > runif(1)) {
                 current_sds <- pr_sds
                 denominator_sds_i <- numerator_sds_i
                 acceptance_sds[m, i] <- 1
@@ -119,7 +119,7 @@ system.time({
             } else {
                 numerator_L_i - denominator_L_i
             }
-            if (is.finite(log_ratio_i) && log_ratio_i > log(runif(1))) {
+            if (is.finite(log_ratio_i) && min(1, exp(log_ratio_i)) > runif(1)) {
                 current_L <- pr_L
                 denominator_L_i <- numerator_L_i
                 acceptance_L[m, i] <- 1
