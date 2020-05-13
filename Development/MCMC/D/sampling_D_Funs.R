@@ -92,6 +92,7 @@ deriv_L <- function (L, i, sds, log_target, eps = 1e-06,
         L_eps2[upper_tri_ind][i] <- L_eps2[upper_tri_ind][i] * (1 - eps)
         ll2 <- L_eps2[seq(1, colmn_ind[i] - 1), colmn_ind[i]]
         ss2 <- sum(ll2 * ll2)
+        if (ss2 > 1) return(as.numeric(NA))
         L_eps2[colmn_ind[i], colmn_ind[i]] <- sqrt(1 - ss2)
         ##
         (log_target - logPC_D_L(L_eps2, sds)) / eps

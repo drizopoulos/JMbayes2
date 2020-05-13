@@ -18,7 +18,7 @@ source(file.path(getwd(), "Development/MCMC/D/D_examples.R"))
 ##########################################################################################
 
 # Select D matrix from D_examples.R
-D <- D4
+D <- D3
 
 p <- ncol(D)
 K <- as.integer(round(p * (p - 1) / 2))
@@ -45,7 +45,7 @@ scale_L <- rep(0.1, K)
 current_sds <- sds
 current_L <- L
 #
-MALA <- FALSE
+MALA <- TRUE
 
 system.time({
     for (m in seq_len(M)) {
