@@ -59,10 +59,10 @@ system.time({
             pr_sds <- current_sds
             pr_sds[i] <- proposed_sds_i
             numerator_sds_i <- logPC_D_sds(pr_sds, t_inv_current_L,
-                                           half_t_mean = 10 * sds)
+                                           half_t_sigma = 10 * sds)
             if (i == 1) {
                 denominator_sds_i <- logPC_D_sds(current_sds, t_inv_current_L,
-                                                 half_t_mean = 10 * sds)
+                                                 half_t_sigma = 10 * sds)
             }
             log_mu_proposed_i <- log(proposed_sds_i) - 0.5 * scale_sds_i^2
             log_ratio_i <- numerator_sds_i - denominator_sds_i +

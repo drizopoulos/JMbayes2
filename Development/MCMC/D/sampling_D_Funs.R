@@ -46,12 +46,12 @@ robbins_monro_univ <- function (scale, acceptance_it, it, target_acceptance = 0.
     }
 }
 
-logPC_D_sds <- function (sds, t_inv_L, half_t_df = 3, half_t_mean) {
+logPC_D_sds <- function (sds, t_inv_L, half_t_df = 3, half_t_sigma) {
     # log posterior conditional for sds
     log_p_b <- sum(dmvnorm_chol(b, chol_inv_Sigma = t_inv_L * rep(1 / sds, each = p),
                                 log = TRUE))
     # prior is a half Student's-t
-    log_p_sds <- sum(dht(sds, sigma = half_t_mean, df = half_t_df,
+    log_p_sds <- sum(dht(sds, sigma = half_t_sigma, df = half_t_df,
                          log = TRUE))
     log_p_b + log_p_sds
 }
