@@ -42,3 +42,9 @@ fm_s29_pbc <- gls(log(serBilir) ~ year + year:drug + year * sex + age, data = pb
 
 D4 <- getVarCov(fm_s29_pbc, individual = 271)
 class(D4) <- "matrix"
+
+D5 <- getVarCov(fm_s29_pbc, individual = 32)
+class(D5) <- "matrix"
+
+#########################
+
