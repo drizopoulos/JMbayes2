@@ -192,7 +192,7 @@ robbins_monro_univ <- function (scale, acceptance_it, it, target_acceptance = 0.
 unq_idL <- lapply(idL, unique)
 
 # MCMC
-M <- 3000
+M <- 1000
 b.rows <- max(do.call(c, lapply(b, nrow)))
 b.cols <- do.call(c, lapply(b, ncol))
 bs <- array(0.0, dim = c(M, sum(b.cols), length(unq_idL[[1]])))
@@ -203,7 +203,7 @@ for (i in 1:sum(b.cols)) {
 }
 #init_b <- current_b
 acceptance_b <- matrix(0.0, nrow = b.rows, ncol = M)
-sigmas <- rep(0.0006 / sum(b.cols), b.rows)
+sigmas <- rep(6 / sum(b.cols), b.rows)
 vcov_prop_RE <- test$vcov_prop$vcov_prop_RE
 #proposed_b <- mvrnorm_gp_array(1, vcov_prop_RE, sigmas)
 log_us_RE <- matrix(log(runif(b.rows * M)), nrow = b.rows, ncol = M)
@@ -247,6 +247,5 @@ for (m in seq_len(M)) {
 
 
 #mean(acceptance_b[312, ][-seq_len(500L)])
-plot(bs[, 4, 1], type = 'l')
+plot(bs[, 2, 3], type = 'l')
 apply(acceptance_b, MARGIN = 1, mean)
-
