@@ -192,7 +192,7 @@ robbins_monro_univ <- function (scale, acceptance_it, it, target_acceptance = 0.
 unq_idL <- lapply(idL, unique)
 
 # MCMC
-M <- 1000
+M <- 100000
 b.rows <- max(do.call(c, lapply(b, nrow)))
 b.cols <- do.call(c, lapply(b, ncol))
 bs <- array(0.0, dim = c(M, sum(b.cols), length(unq_idL[[1]])))
@@ -240,12 +240,12 @@ for (m in seq_len(M)) {
     if (m > 20) {
       sigmas[i] <- robbins_monro_univ(scale = sigmas[i],
                                          acceptance_it = acceptance_b[i, m],
-                                         it = m, target_acceptance = 0.3)
+                                         it = m, target_acceptance = 0.4)
     }
   }
 }
 
 
 #mean(acceptance_b[312, ][-seq_len(500L)])
-plot(bs[, 2, 3], type = 'l')
+plot(bs[, 5, 1], type = 'l')
 apply(acceptance_b, MARGIN = 1, mean)
