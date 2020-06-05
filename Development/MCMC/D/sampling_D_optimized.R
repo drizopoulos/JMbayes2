@@ -44,7 +44,7 @@ scale_L <- rep(0.1, K)
 current_sds <- sds
 current_L <- L
 #
-MALA <- TRUE
+MALA <- FALSE
 
 system.time({
     for (m in seq_len(M)) {
@@ -99,7 +99,7 @@ system.time({
             # have a unit Euclidean length. That is, if x are the elements of one
             # column, then sqrt(sum(x * x)) should be 1. Below we define the diagonal
             # elements as such. But it can happen that the proposed_L_i does not satisfy
-            # this contraint, i.e., that sum(x * x) > 1. In this case, we should not
+            # this constraint, i.e., that sum(x * x) > 1. In this case, we should not
             # accept this L matrix
             ll <- pr_L[seq(1, colmn_ind[i] - 1), colmn_ind[i]]
             ss <- sum(ll * ll)
