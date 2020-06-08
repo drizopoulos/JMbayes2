@@ -430,7 +430,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                       vcov_prop_bs_gammas = vcov_prop_bs_gammas,
                       vcov_prop_gammas = vcov_prop_gammas,
                       vcov_prop_alphas = vcov_prop_alphas)
-    list(betas = betas, D = D, log_sigmas = log_sigmas,
+    list(betas = betas, D = D, log_sigmas = log_sigmas, b = b,
          bs_gammas = bs_gammas, gammas = gammas, alphas = alphas,
          vcov_prop = vcov_prop)
 }
