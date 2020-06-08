@@ -36,3 +36,43 @@ fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
 
 test <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
            functional_forms = fForms)
+
+
+# parameter values
+betas <- test$initial_values$betas
+b <- test$initial_values$b
+gammas <- test$initial_values$gammas
+bs_gammas <- test$initial_values$bs_gammas
+alphas <- test$initial_values$alphas
+
+# outcome vectors and design matrices
+idT <- test$model_data$idT
+Time_right <- test$model_data$Time_right
+Time_left <- test$model_data$Time_left
+Time_start <- test$model_data$Time_start
+delta <- test$model_data$delta
+which_event <- test$model_data$which_event
+which_right <- test$model_data$which_right
+which_left <- test$model_data$which_left
+which_interval <- test$model_data$which_interval
+W0_H <- test$model_data$W0_H
+W_H <- test$model_data$W_H
+X_H <- test$model_data$X_H
+Z_H <- test$model_data$Z_H
+U_H <- test$model_data$U_H
+W0_h <- test$model_data$W0_h
+W_h <- test$model_data$W_h
+X_h <- test$model_data$X_h
+Z_h <- test$model_data$Z_h
+U_h <- test$model_data$U_h
+W0_H2 <- test$model_data$W0_H2
+W_H2 <- test$model_data$W_H2
+X_H2 <- test$model_data$X_H2
+Z_H2 <- test$model_data$Z_H2
+U_H2 <- test$model_data$U_H2
+log_Pwk <- test$model_data$log_Pwk
+log_Pwk2 <- test$model_data$log_Pwk2
+
+
+
+
