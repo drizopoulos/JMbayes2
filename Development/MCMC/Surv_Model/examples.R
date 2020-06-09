@@ -46,6 +46,7 @@ bs_gammas <- test$initial_values$bs_gammas
 alphas <- test$initial_values$alphas
 
 # outcome vectors and design matrices
+n <- test$model_data$n
 idT <- test$model_data$idT
 Time_right <- test$model_data$Time_right
 Time_left <- test$model_data$Time_left
@@ -73,6 +74,6 @@ U_H2 <- test$model_data$U_H2
 log_Pwk <- test$model_data$log_Pwk
 log_Pwk2 <- test$model_data$log_Pwk2
 
-
-
+control <- test$control
+functional_forms_per_outcome <- test$model_info$fun_forms$functional_forms_per_outcome
 

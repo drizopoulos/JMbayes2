@@ -12,7 +12,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # - n_iter: the number of iterations per chain. These will be the iterations after
     #           n_adapt
     con <- list(GK_k = 15L, Bsplines_degree = 2, base_hazard_segments = 10,
-                n_chains = 3L, n_adapt = 500L, n_iter = 1000L)
+                diff = 2L, n_chains = 3L, n_adapt = 500L, n_iter = 1000L)
     control <- c(control, list(...))
     namC <- names(con)
     con[(namc <- names(control))] <- control
@@ -293,7 +293,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     dataS_H <- SurvData_HazardModel(st, dataS, Time_start, idT)
     mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
     W_H <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
-    if (!ncol(W_H)) {
+    any_gammas <- as.logical(ncol(W_H))
+    if (!any_gammas) {
         W_H <- matrix(0.0, nrow = nrow(W_H), ncol = 1L)
     }
     X_H <- desing_matrices_functional_forms(st, terms_FE_noResp,
@@ -311,7 +312,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start, idT)
         mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
         W_h <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
-        if (!ncol(W_h)) {
+        if (!any_gammas) {
             W_h <- matrix(0.0, nrow = nrow(W_h), ncol = 1L)
         }
         X_h <- desing_matrices_functional_forms(Time_right, terms_FE_noResp,
@@ -333,7 +334,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start, idT)
         mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
         W_H2 <- model.matrix.default(terms_Surv_noResp, mf2)[, -1, drop = FALSE]
-        if (!ncol(W_H2)) {
+        if (!any_gammas) {
             W_H2 <- matrix(0.0, nrow = nrow(W_H2), ncol = 1L)
         }
         X_H2 <- desing_matrices_functional_forms(st, terms_FE_noResp,
@@ -352,7 +353,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     }
     ######################################################################################
     ######################################################################################
-    Data <- list(idL = idL, idL_lp = idL_lp, unq_idL = unq_idL,
+    Data <- list(n = nY, idL = idL, idL_lp = idL_lp, unq_idL = unq_idL,
                  y = y, X = X, Z = Z, Xhc = Xhc,
                  columns_HC = columns_HC, columns_nHC = columns_nHC,
                  #####
@@ -430,6 +431,19 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                       vcov_prop_bs_gammas = vcov_prop_bs_gammas,
                       vcov_prop_gammas = vcov_prop_gammas,
                       vcov_prop_alphas = vcov_prop_alphas)
+    ######################################################################################
+    ######################################################################################
+    # Priors
+    DD <- diag(ncol(W0_H))
+    Tau_bs_gammas <- crossprod(diff(DD, differences = con$diff)) + 1e-06 * DD
+    priors <- list(mean_betas = lapply(betas, "*", 0.0),
+                   Tau_betas = lapply(betas, function (b) 0.01 * diag(length(b))),
+                   mean_gammas = gammas * 0.0,
+                   Tau_gammas = 0.01 * diag(length(gammas)),
+                   mean_bs_gammas = bs_gammas * 0.0,
+                   Tau_bs_gammas = Tau_bs_gammas)
+
     list(initial_values = initial_values, vcov_prop = vcov_prop,
-         model_info = model_info, data = data, model_data = Data)
+         priors = priors, model_info = model_info, data = data,
+         model_data = Data, control = con)
 }
