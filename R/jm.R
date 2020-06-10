@@ -441,7 +441,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                    mean_gammas = gammas * 0.0,
                    Tau_gammas = 0.01 * diag(length(gammas)),
                    mean_bs_gammas = bs_gammas * 0.0,
-                   Tau_bs_gammas = Tau_bs_gammas)
+                   Tau_bs_gammas = Tau_bs_gammas,
+                   A_tau_bs_gammas = 1, B_tau_bs_gammas = 0.01,
+                   rank_Tau_bs_gammas = qr(Tau_bs_gammas)$rank)
 
     list(initial_values = initial_values, vcov_prop = vcov_prop,
          priors = priors, model_info = model_info, data = data,

@@ -81,4 +81,18 @@ logPrior <- function (theta, mean_theta, Tau_theta, tau_theta) {
     -0.5 * tau_theta * c(crossprod(z, Tau_theta) %*% z)
 }
 
+logPC_surv <- function (bs_gammas, gammas, alphas, tau_bs_gammas) {
+    log_density_surv(bs_gammas, gammas, alphas) +
+        logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas,
+                 tau_bs_gammas)
+}
+
+robbins_monro_univ <- function (scale, acceptance_it, it, target_acceptance = 0.45) {
+    step_length <- scale / (target_acceptance * (1 - target_acceptance))
+    if (acceptance_it) {
+        scale + step_length * (1 - target_acceptance) / it
+    } else {
+        scale - step_length * target_acceptance / it
+    }
+}
 
