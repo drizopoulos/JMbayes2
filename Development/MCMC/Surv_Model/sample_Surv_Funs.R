@@ -15,6 +15,8 @@ if (length(which_interval)) {
     id_H2 <- lapply(X_H2, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
     eta_H2 <- linpred_surv(X_H2, betas, Z_H, b, id_H2)
     Wlong_H2 <- create_Wlong(eta_H2, functional_forms_per_outcome, U_H2)
+} else {
+    Wlong_H2 <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
 }
 
 log_density_surv <- function (bs_gammas, gammas, alphas) {
@@ -55,7 +57,7 @@ log_density_surv <- function (bs_gammas, gammas, alphas) {
         log_Lik_surv[which_interval] <- log(exp(- H[which_interval]) -
                                                 exp(- (H2[which_interval] + H[which_interval])))
     }
-    - sum(log_Lik_surv, na.rm = TRUE)
+    sum(log_Lik_surv, na.rm = TRUE)
 }
 
 rmvnorm <- function (n, mu = NULL, Sigma) {

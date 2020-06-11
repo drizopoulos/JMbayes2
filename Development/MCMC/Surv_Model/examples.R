@@ -25,8 +25,8 @@ fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
 CoxFit <- coxph(Surv(years, status2) ~ age,
                 data = pbc2.id, model = TRUE)
 
-CoxFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ 1,
-                  data = pbc2.id, model = TRUE)
+#CoxFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ 1,
+#                  data = pbc2.id, model = TRUE)
 
 fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
                    value(log(serBilir)):sex,
