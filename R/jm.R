@@ -357,7 +357,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                  y = y, X = X, Z = Z, Xhc = Xhc,
                  columns_HC = columns_HC, columns_nHC = columns_nHC,
                  #####
-                 idT = idT,
+                 idT = idT, any_gammas = any_gammas,
                  Time_right = Time_right, Time_left = Time_left, Time_start = Time_start,
                  delta = delta, which_event = which_event, which_right = which_right,
                  which_left = which_left, which_interval = which_interval,
@@ -435,14 +435,14 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ######################################################################################
     # Priors
     DD <- diag(ncol(W0_H))
-    Tau_bs_gammas <- crossprod(diff(DD, differences = con$diff)) + 1e-06 * DD
+    Tau_bs_gammas <- crossprod(diff(DD, differences = con$diff)) #+ 1e-06 * DD
     priors <- list(mean_betas = lapply(betas, "*", 0.0),
                    Tau_betas = lapply(betas, function (b) 0.01 * diag(length(b))),
                    mean_gammas = gammas * 0.0,
                    Tau_gammas = 0.01 * diag(length(gammas)),
                    mean_bs_gammas = bs_gammas * 0.0,
                    Tau_bs_gammas = Tau_bs_gammas,
-                   A_tau_bs_gammas = 1, B_tau_bs_gammas = 0.01,
+                   A_tau_bs_gammas = 1, B_tau_bs_gammas = 0.1,
                    rank_Tau_bs_gammas = qr(Tau_bs_gammas)$rank)
 
     list(initial_values = initial_values, vcov_prop = vcov_prop,
