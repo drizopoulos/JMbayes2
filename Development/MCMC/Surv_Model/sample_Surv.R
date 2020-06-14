@@ -17,6 +17,12 @@ res_gammas <- acceptance_gammas <- matrix(0.0, M, length(gammas))
 vcov_prop_gammas <- test$vcov_prop$vcov_prop_gammas
 scale_gammas <- rep(0.1, length(gammas))
 prior_mean_gammas <- test$priors$mean_gammas
+#
+res_alphas <- acceptance_alphas <- lapply(alphas,
+                                          function (a) matrix(0, M, length(a)))
+vcov_prop_alphas <- test$vcov_prop$vcov_prop_alphas
+scale_alphas <- lapply(alphas, function (a) a * 0 + 0.1)
+prior_mean_alphas <- unlist(test$priors$mean_alphas, use.names = FALSE)
 ####
 tau_bs_gammas <- 2
 current_bs_gammas <- jitter(bs_gammas, 80)
@@ -26,7 +32,6 @@ current_alphas <- alphas
 W_h <- scale(W_h, scale = FALSE)
 W_H <- scale(W_H, scale = FALSE)
 W_H2 <- scale(W_H2, scale = FALSE)
-
 
 system.time({
     for (m in seq_len(M)) {
@@ -76,6 +81,30 @@ system.time({
                                            acceptance_it = acceptance_gammas[m, i],
                                            it = m, target_acceptance = 0.45)
                 }
+            }
+        }
+        ###
+        # updates alphas
+        for (i in seq_along(current_alphas)) {
+            for (j in seq_along(current_alphas[[i]])) {
+                proposed_alphas <- current_alphas
+                proposed_alphas[[i]][j] <- rnorm(1L, current_alphas[[i]][j],
+                                                 scale_alphas[[i]][j])
+                numerator_surv <- logPC_surv(current_bs_gammas, current_gammas,
+                                             proposed_alphas, tau_bs_gammas)
+                log_ratio <- numerator_surv - denominator_surv
+                if (is.finite(log_ratio) && min(1, exp(log_ratio)) > runif(1)) {
+                    current_alphas <- proposed_alphas
+                    denominator_surv <- numerator_surv
+                    acceptance_alphas[[i]][m, j] <- 1
+                }
+                if (m > 20) {
+                    scale_alphas[i] <-
+                        robbins_monro_univ(scale = scale_alphas[[i]][j],
+                                           acceptance_it = acceptance_alphas[[i]][m, j],
+                                           it = m, target_acceptance = 0.45)
+                }
+                res_alphas[[i]][m, j] <- current_alphas[[i]][j]
             }
         }
         ###

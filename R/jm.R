@@ -442,6 +442,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                    Tau_gammas = 0.01 * diag(length(gammas)),
                    mean_bs_gammas = bs_gammas * 0.0,
                    Tau_bs_gammas = Tau_bs_gammas,
+                   mean_alphas = lapply(alphas, "*", 0.0),
+                   Tau_alphas = lapply(alphas, function (a) 0.01 * diag(length(a))),
                    A_tau_bs_gammas = 1, B_tau_bs_gammas = 0.1,
                    rank_Tau_bs_gammas = qr(Tau_bs_gammas)$rank)
 
