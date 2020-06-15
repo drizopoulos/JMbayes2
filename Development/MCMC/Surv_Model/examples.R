@@ -2,13 +2,13 @@ library("survival")
 library("nlme")
 library("GLMMadaptive")
 library("splines")
-#library("Formula")
 data("pbc2", package = "JM")
 data("pbc2.id", package = "JM")
 source(file.path(getwd(), "R/jm.R"))
 source(file.path(getwd(), "R/help_functions.R"))
 source(file.path(getwd(), "Development/jm/R_to_Cpp.R"))
 source(file.path(getwd(), "Development/jm/PBC_data.R"))
+source(file.path(getwd(), "Development/MCMC/Surv_Model/simulate.R"))
 
 ##########################################################################################
 ##########################################################################################
@@ -36,6 +36,19 @@ fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
 
 test <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
            functional_forms = fForms)
+
+###########################################################
+
+DDD <- simulateJoint(alpha = 0.5)
+
+lmeFit <- lme(y ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)), data = DDD$DF,
+              random = list(id = pdDiag(form = ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)))),
+              control = lmeControl(opt = "optim", niterEM = 45))
+coxFit <- coxph(Surv(Time, event) ~ group, data = DDD$DF.id)
+
+test <- jm(coxFit, list(lmeFit), time_var = "time")
+
+###########################################################
 
 
 # parameter values

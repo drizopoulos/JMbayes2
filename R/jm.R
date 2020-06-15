@@ -58,8 +58,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # for some outcomes)
     NAs_FE_dataL <- lapply(mf_FE_dataL, attr, "na.action")
     NAs_RE_dataL <- lapply(mf_RE_dataL, attr, "na.action")
-    mf_FE_dataL <- mapply(fix_NAs_fixed, mf_FE_dataL, NAs_FE_dataL, NAs_RE_dataL)
-    mf_RE_dataL <- mapply(fix_NAs_random, mf_RE_dataL, NAs_RE_dataL, NAs_FE_dataL)
+    mf_FE_dataL <- mapply(fix_NAs_fixed, mf_FE_dataL, NAs_FE_dataL, NAs_RE_dataL,
+                          SIMPLIFY = FALSE)
+    mf_RE_dataL <- mapply(fix_NAs_random, mf_RE_dataL, NAs_RE_dataL, NAs_FE_dataL,
+                          SIMPLIFY = FALSE)
 
     # create response vectors
     y <- lapply(mf_FE_dataL, model.response)
@@ -93,8 +95,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     unq_idL <- lapply(idL, unique)
 
     # create design matrices for mixed models
-    X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL)
-    Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL)
+    X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL, SIMPLIFY = FALSE)
+    Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL, SIMPLIFY = FALSE)
     componentsHC <- mapply(create_HC_X, terms_FE, terms_RE, X, Z, idL, mf_FE_dataL,
                            SIMPLIFY = FALSE)
     Xhc <- lapply(componentsHC, "[[", "Xhc")
@@ -128,7 +130,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     if (is.null(dataS[[idVar]])) {
         if (is.null(id_var)) {
             stop("cannot extract the subject id variable from the dataset used to fit the ",
-                 "survival model. Please specify the 'id_var' argument.\n")
+                 "survival model. Please include this variable in the dataset ",
+                 "and/or specify the 'id_var' argument.\n")
         } else {
             idT <- dataS[[id_var]]
         }

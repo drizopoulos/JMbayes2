@@ -95,8 +95,8 @@ bdiag <- function (...) {
 .bdiag <- function (mlist) {
     # constructs a block-diagonal matrix
     mlist <- mlist[sapply(mlist, length) > 0]
-    if (length(mlist) == 1)
-        mlist <- unlist(mlist, recursive = FALSE)
+    #if (length(mlist) == 1)
+    #    mlist <- unlist(mlist, recursive = FALSE)
     csdim <- rbind(c(0, 0), apply(sapply(mlist, dim), 1, cumsum))
     ret <- array(0, dim = csdim[length(mlist) + 1, ])
     add1 <- matrix(rep(1:0, 2), ncol = 2)
@@ -202,7 +202,7 @@ desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         D <- LongData_HazardModel(time, data, data[[timeVar]],
                                   data[[idVar]], timeVar)
         mf <- lapply(terms, model.frame.default, data = D)
-        mapply(model.matrix.default, terms, mf)
+        mapply(model.matrix.default, terms, mf, SIMPLIFY = FALSE)
     }
     degn_matr_slp <- function (time, terms) {
         if (is.list(time)) {
@@ -214,7 +214,7 @@ desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
             M1 <- desgn_matr(time + 0.001, terms)
             M2 <- desgn_matr(time - 0.001, terms)
         }
-        mapply(function (x1, x2) (x1 - x2) / 0.002, M1, M2)
+        mapply(function (x1, x2) (x1 - x2) / 0.002, M1, M2, SIMPLIFY = FALSE)
     }
     degn_matr_area <- function (time, terms) {
         if (!is.list(time)) {
@@ -578,7 +578,6 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     } else {
         Wlong_H2 <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
     }
-
     log_dens_surv <- function (bs_gammas) {
         lambda_H <- W0_H %*% bs_gammas + W_H %*% gammas
         for (i in seq_along(Wlong_H)) {
@@ -620,6 +619,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
         - sum(log_Lik_surv, na.rm = TRUE)
     }
     opt <- optim(rep(0.01, ncol(W0_H)), log_dens_surv, method = "BFGS",
-                 hessian = TRUE)
+                 hessian = TRUE,
+                 control = list(parscale = rep(0.01, ncol(W0_H))))
     c(out, list(bs_gammas = opt$par, vcov_prop_bs_gammas = solve(opt$hessian)))
 }
