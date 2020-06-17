@@ -34,21 +34,12 @@ fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
                #"hepatomegaly" = ~ value(hepatomegaly),
                "ascites" = ~ value(ascites) + area(ascites))
 
-test <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
+JM1 <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
            functional_forms = fForms)
 
 ###########################################################
 
-DDD <- simulateJoint(alpha = 0.5)
-
-lmeFit <- lme(y ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)), data = DDD$DF,
-              random = list(id = pdDiag(form = ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)))),
-              control = lmeControl(opt = "optim", niterEM = 45))
-coxFit <- coxph(Surv(Time, event) ~ group, data = DDD$DF.id)
-
-test <- jm(coxFit, list(lmeFit), time_var = "time")
-
-###########################################################
+test <- JM1
 
 
 # parameter values
@@ -90,3 +81,22 @@ log_Pwk2 <- test$model_data$log_Pwk2
 control <- test$control
 functional_forms_per_outcome <- test$model_info$fun_forms$functional_forms_per_outcome
 
+################################################################################
+
+source(file.path(getwd(), "Development/MCMC/Surv_Model/sample_Surv_Funs.R"))
+
+M <- 5000L
+res_bs_gammas <- acceptance_bs_gammas <- matrix(0.0, M, length(bs_gammas))
+vcov_prop_bs_gammas <- test$vcov_prop$vcov_prop_bs_gammas
+scale_bs_gammas <- rep(0.1, length(bs_gammas))
+prior_mean_bs_gammas <- test$priors$mean_bs_gammas
+prior_Tau_bs_gammas <- test$priors$Tau_bs_gammas
+post_A_tau_bs_gammas <- test$priors$A_tau_bs_gammas +
+    0.5 * test$priors$rank_Tau_bs_gammas
+prior_B_tau_bs_gammas <- test$priors$B_tau_bs_gammas
+res_tau_bs_gammas <- numeric(M)
+
+tau_bs_gammas <- 2
+current_bs_gammas <- jitter(bs_gammas, 80)
+current_gammas <- gammas
+current_alphas <- alphas

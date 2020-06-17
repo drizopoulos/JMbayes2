@@ -1,5 +1,6 @@
-simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500) {
-    n = 500
+simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
+                           mean.Cens = 7) {
+    # if alpha = 0, mean.Cens = 35
     library("splines")
     library("MASS")
     K <- 15  # number of planned repeated measurements per subject, per outcome
@@ -113,12 +114,11 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500) {
                          event = event, group = W[, 2])
     dat$group <- dat.id$group[id]
 
-    #summary(tapply(id, id, length))
-    #table(event)
-    #n
-    #mean(event)
-    #summary(dat.id$Time)
-    #summary(dat$time)
+    summary(tapply(id, id, length))
+    n
+    mean(event)
+    summary(dat.id$Time)
+    summary(dat$time)
 
     # true values for parameters and random effects
     trueValues <- list(betas = betas, tau = 1/sigma.y^2, gammas = gammas,
@@ -128,3 +128,95 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500) {
     # return list
     list(DF = dat, DF.id = dat.id, trueValues = trueValues)
 }
+
+fit_hazard <- function (Data) {
+    lmeFit <- lme(y ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)), data = Data$DF,
+                  random = list(id = pdDiag(form = ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)))),
+                  control = lmeControl(opt = "optim", niterEM = 45))
+    coxFit <- coxph(Surv(Time, event) ~ group, data = Data$DF.id)
+
+    JM2 <- jm(coxFit, list(lmeFit), time_var = "time")
+
+    ###########################################################
+
+    test <- JM2
+
+
+    # parameter values
+    betas <- test$initial_values$betas
+    b <- test$initial_values$b
+    gammas <- test$initial_values$gammas
+    bs_gammas <- test$initial_values$bs_gammas
+    alphas <- test$initial_values$alphas
+
+    # outcome vectors and design matrices
+    n <- test$model_data$n
+    idT <- test$model_data$idT
+    Time_right <- test$model_data$Time_right
+    Time_left <- test$model_data$Time_left
+    Time_start <- test$model_data$Time_start
+    delta <- test$model_data$delta
+    which_event <- test$model_data$which_event
+    which_right <- test$model_data$which_right
+    which_left <- test$model_data$which_left
+    which_interval <- test$model_data$which_interval
+    W0_H <- test$model_data$W0_H
+    W_H <- test$model_data$W_H
+    X_H <- test$model_data$X_H
+    Z_H <- test$model_data$Z_H
+    U_H <- test$model_data$U_H
+    W0_h <- test$model_data$W0_h
+    W_h <- test$model_data$W_h
+    X_h <- test$model_data$X_h
+    Z_h <- test$model_data$Z_h
+    U_h <- test$model_data$U_h
+    W0_H2 <- test$model_data$W0_H2
+    W_H2 <- test$model_data$W_H2
+    X_H2 <- test$model_data$X_H2
+    Z_H2 <- test$model_data$Z_H2
+    U_H2 <- test$model_data$U_H2
+    log_Pwk <- test$model_data$log_Pwk
+    log_Pwk2 <- test$model_data$log_Pwk2
+
+    control <- test$control
+    functional_forms_per_outcome <- test$model_info$fun_forms$functional_forms_per_outcome
+
+    system.time({
+        for (m in seq_len(M)) {
+            if (m == 1) denominator_surv <- logPC_surv(current_bs_gammas, current_gammas,
+                                                       current_alphas, tau_bs_gammas)
+            # Update bs_gammas
+            for (i in seq_along(current_bs_gammas)) {
+                proposed_bs_gammas <- current_bs_gammas
+                proposed_bs_gammas[i] <- rnorm(1L, current_bs_gammas[i],
+                                               scale_bs_gammas[i])
+                numerator_surv <- logPC_surv(proposed_bs_gammas, current_gammas,
+                                             current_alphas, tau_bs_gammas)
+                log_ratio <- numerator_surv - denominator_surv
+                if (is.finite(log_ratio) && min(1, exp(log_ratio)) > runif(1)) {
+                    current_bs_gammas <- proposed_bs_gammas
+                    denominator_surv <- numerator_surv
+                    acceptance_bs_gammas[m, i] <- 1
+                }
+                if (m > 20) {
+                    scale_bs_gammas[i] <-
+                        robbins_monro_univ(scale = scale_bs_gammas[i],
+                                           acceptance_it = acceptance_bs_gammas[m, i],
+                                           it = m, target_acceptance = 0.45)
+                }
+            }
+            post_B_tau_bs_gammas <- prior_B_tau_bs_gammas +
+                0.5 * c(crossprod(current_bs_gammas, prior_Tau_bs_gammas) %*%
+                            current_bs_gammas)
+            tau_bs_gammas <- rgamma(1L, post_A_tau_bs_gammas, post_B_tau_bs_gammas)
+            ###
+            res_bs_gammas[m, ] <- current_bs_gammas
+            res_tau_bs_gammas[m] <- tau_bs_gammas
+            res_gammas[m, ] <- current_gammas
+            ###
+        }
+    })
+    ###########################
+    res_bs_gammas[-seq_len(1000L), ]
+}
+

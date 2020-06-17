@@ -62,49 +62,51 @@ system.time({
                         current_bs_gammas)
         tau_bs_gammas <- rgamma(1L, post_A_tau_bs_gammas, post_B_tau_bs_gammas)
         # Update gammas
-        if (any_gammas) {
-            for (i in seq_along(current_gammas)) {
-                proposed_gammas <- current_gammas
-                proposed_gammas[i] <- rnorm(1L, current_gammas[i],
-                                               scale_gammas[i])
-                numerator_surv <- logPC_surv(current_bs_gammas, proposed_gammas,
-                                             current_alphas, tau_bs_gammas)
-                log_ratio <- numerator_surv - denominator_surv
-                if (is.finite(log_ratio) && min(1, exp(log_ratio)) > runif(1)) {
-                    current_gammas <- proposed_gammas
-                    denominator_surv <- numerator_surv
-                    acceptance_gammas[m, i] <- 1
-                }
-                if (m > 20) {
-                    scale_gammas[i] <-
-                        robbins_monro_univ(scale = scale_gammas[i],
-                                           acceptance_it = acceptance_gammas[m, i],
-                                           it = m, target_acceptance = 0.45)
+        if (FALSE) {
+            if (any_gammas) {
+                for (i in seq_along(current_gammas)) {
+                    proposed_gammas <- current_gammas
+                    proposed_gammas[i] <- rnorm(1L, current_gammas[i],
+                                                scale_gammas[i])
+                    numerator_surv <- logPC_surv(current_bs_gammas, proposed_gammas,
+                                                 current_alphas, tau_bs_gammas)
+                    log_ratio <- numerator_surv - denominator_surv
+                    if (is.finite(log_ratio) && min(1, exp(log_ratio)) > runif(1)) {
+                        current_gammas <- proposed_gammas
+                        denominator_surv <- numerator_surv
+                        acceptance_gammas[m, i] <- 1
+                    }
+                    if (m > 20) {
+                        scale_gammas[i] <-
+                            robbins_monro_univ(scale = scale_gammas[i],
+                                               acceptance_it = acceptance_gammas[m, i],
+                                               it = m, target_acceptance = 0.45)
+                    }
                 }
             }
-        }
-        ###
-        # updates alphas
-        for (i in seq_along(current_alphas)) {
-            for (j in seq_along(current_alphas[[i]])) {
-                proposed_alphas <- current_alphas
-                proposed_alphas[[i]][j] <- rnorm(1L, current_alphas[[i]][j],
-                                                 scale_alphas[[i]][j])
-                numerator_surv <- logPC_surv(current_bs_gammas, current_gammas,
-                                             proposed_alphas, tau_bs_gammas)
-                log_ratio <- numerator_surv - denominator_surv
-                if (is.finite(log_ratio) && min(1, exp(log_ratio)) > runif(1)) {
-                    current_alphas <- proposed_alphas
-                    denominator_surv <- numerator_surv
-                    acceptance_alphas[[i]][m, j] <- 1
+            ###
+            # updates alphas
+            for (i in seq_along(current_alphas)) {
+                for (j in seq_along(current_alphas[[i]])) {
+                    proposed_alphas <- current_alphas
+                    proposed_alphas[[i]][j] <- rnorm(1L, current_alphas[[i]][j],
+                                                     scale_alphas[[i]][j])
+                    numerator_surv <- logPC_surv(current_bs_gammas, current_gammas,
+                                                 proposed_alphas, tau_bs_gammas)
+                    log_ratio <- numerator_surv - denominator_surv
+                    if (is.finite(log_ratio) && min(1, exp(log_ratio)) > runif(1)) {
+                        current_alphas <- proposed_alphas
+                        denominator_surv <- numerator_surv
+                        acceptance_alphas[[i]][m, j] <- 1
+                    }
+                    if (m > 20) {
+                        scale_alphas[i] <-
+                            robbins_monro_univ(scale = scale_alphas[[i]][j],
+                                               acceptance_it = acceptance_alphas[[i]][m, j],
+                                               it = m, target_acceptance = 0.45)
+                    }
+                    res_alphas[[i]][m, j] <- current_alphas[[i]][j]
                 }
-                if (m > 20) {
-                    scale_alphas[i] <-
-                        robbins_monro_univ(scale = scale_alphas[[i]][j],
-                                           acceptance_it = acceptance_alphas[[i]][m, j],
-                                           it = m, target_acceptance = 0.45)
-                }
-                res_alphas[[i]][m, j] <- current_alphas[[i]][j]
             }
         }
         ###
@@ -145,6 +147,25 @@ for (k in seq_len(length(current_bs_gammas))) {
     matplot(v, type = "l", ylab = paste0("bs_gammas", k),
             lty = 1)
 }
+
+################################################################################
+################################################################################
+
+# Check fitted baseline hazard
+
+ttt <- seq(0.0, 12, length.out = 500)
+WW <- splineDesign(test$control$knots, ttt,
+                   ord = test$control$Bsplines_degree + 1)
+h0 <- apply(res_bs_gammas, 1, function (g) exp(c(WW %*% g)))
+mean_h0 <- rowMeans(h0)
+low_h0 <- apply(h0, 1, quantile, probs = 0.025)
+upp_h0 <- apply(h0, 1, quantile, probs = 0.975)
+
+matplot(x = ttt, y = cbind(low_h0, mean_h0, upp_h0), type = "l",
+        lty = c(2, 1, 2), col = 1, xlab = "Time",
+        ylab = "Baseline Hazard Function")
+lines(ttt, exp(DDD$trueValues$gammas[1] + log(DDD$trueValues$sigma.t) +
+          (DDD$trueValues$sigma.t - 1) * log(ttt)), col = "red")
 
 
 
