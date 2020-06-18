@@ -8,7 +8,6 @@ source(file.path(getwd(), "R/jm.R"))
 source(file.path(getwd(), "R/help_functions.R"))
 source(file.path(getwd(), "Development/jm/R_to_Cpp.R"))
 source(file.path(getwd(), "Development/jm/PBC_data.R"))
-source(file.path(getwd(), "Development/MCMC/Surv_Model/simulate.R"))
 
 ##########################################################################################
 ##########################################################################################

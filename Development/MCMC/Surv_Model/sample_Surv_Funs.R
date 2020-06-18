@@ -1,24 +1,3 @@
-# id_H is used to repeat the random effects of each subject GK_k times
-id_H <- lapply(X_H, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
-# this is the linear predictor for the longitudinal outcomes evaluated at the
-# Gauss-Kronrod quadrature points
-eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
-# Wlong is the design matrix of all longitudinal outcomes according to the specified
-# functional forms per outcome already multiplied with the interaction terms matrix U
-Wlong_H <- create_Wlong(eta_H, functional_forms_per_outcome, U_H)
-if (length(which_event)) {
-    id_h <- lapply(X_h, function (x) seq_len(nrow(x[[1]])))
-    eta_h <- linpred_surv(X_h, betas, Z_h, b, id_h)
-    Wlong_h <- create_Wlong(eta_h, functional_forms_per_outcome, U_h)
-}
-if (length(which_interval)) {
-    id_H2 <- lapply(X_H2, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
-    eta_H2 <- linpred_surv(X_H2, betas, Z_H, b, id_H2)
-    Wlong_H2 <- create_Wlong(eta_H2, functional_forms_per_outcome, U_H2)
-} else {
-    Wlong_H2 <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
-}
-
 log_density_surv <- function (bs_gammas, gammas, alphas) {
     lambda_H <- W0_H %*% bs_gammas + W_H %*% gammas
     for (i in seq_along(Wlong_H)) {
