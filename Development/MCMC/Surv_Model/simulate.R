@@ -239,6 +239,7 @@ fit_hazard <- function (Data) {
     current_bs_gammas <- jitter(bs_gammas, 80)
     current_gammas <- gammas
     current_alphas <- alphas
+    t0 <- proc.time()
     for (m in seq_len(M)) {
         if (m == 1) denominator_surv <- logPC_surv(current_bs_gammas, current_gammas,
                                                    current_alphas, tau_bs_gammas)
@@ -316,6 +317,7 @@ fit_hazard <- function (Data) {
         res_gammas[m, ] <- current_gammas
         ###
     }
+    t1 <- proc.time()
     ###########################
     res_bs_gammas <- res_bs_gammas[-seq_len(1000L), ]
     res_gammas <- res_gammas[-seq_len(1000L), , drop = FALSE]
@@ -324,7 +326,8 @@ fit_hazard <- function (Data) {
                        ord = test$control$Bsplines_degree + 1)
     h0 <- apply(res_bs_gammas, 1, function (g) exp(c(WW %*% g)))
     list(h0 = rowMeans(h0), gammas = colMeans(res_gammas),
-         alphas = colMeans(res_alphas[[1]]))
+         alphas = colMeans(res_alphas[[1]]),
+         run_time = t1 - t0)
 }
 
 ################################################################################
@@ -335,12 +338,15 @@ N <- 10
 res_h0 <- matrix(0.0, N, 500)
 res_gam <- matrix(0.0, N, 1)
 res_alph <- matrix(0.0, N, 1)
+times <- matrix(0.0, N, 3)
 for (j in seq_len(N)) {
     Data_n <- simulateJoint(alpha = 0, mean.Cens = 35)
     fit <- fit_hazard(Data_n)
     res_h0[j, ] <- fit$h0
     res_gam[j, ] <- fit$gammas
     res_alph[j, ] <- fit$alphas
+    times[j, ] <- fit$run_time[1:3]
+    print(j)
 }
 
 ttt <- seq(0.0, 12, length.out = 500)
@@ -354,3 +360,5 @@ lines(ttt, exp(Data_n$trueValues$gammas[1] + log(Data_n$trueValues$sigma.t) +
 colMeans(res_gam)
 Data_n$trueValues$gammas
 
+colMeans(res_alph)
+Data_n$trueValues$alphas
