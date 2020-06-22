@@ -25,11 +25,8 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
     sigma.y <- 0.6 # measurement error standard deviation
 
     # parameters for the survival model
-    gammas <- c("(Intercept)" = -6.7, "Group" = 0.5)
-    #alpha <- 0.5 #0.191
-    #Dalpha <- 0.0 # -1.064
-    phi <- 2 #2.2
-    mean.Cens <- 7
+    gammas <- c("(Intercept)" = -9.2, "Group" = 0.5, "Age" = 0.05)
+    phi <- 2
 
     D <- matrix(0, 4, 4)
     D[lower.tri(D, TRUE)] <- c(0.71, 0.33, 0.07, 1.26, 2.68, 3.81, 4.35, 7.62, 5.4, 8)
@@ -44,13 +41,14 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
     # design matrices for the longitudinal measurement model
     times <- c(replicate(n, c(0, 0.5, 1, sort(runif(K - 3, 1, t.max)))))
     group <- rep(0:1, each = n/2)
+    age <- runif(n, 30, 70)
     DF <- data.frame(time = times)
     X <- model.matrix(~ ns(time, knots = kn, Boundary.knots = Bkn),
                       data = DF)
     Z <- model.matrix(~ ns(time, knots = kn, Boundary.knots = Bkn), data = DF)
 
     # design matrix for the survival model
-    W <- cbind("(Intercept)" = 1, "Group" = group)
+    W <- cbind("(Intercept)" = 1, "Group" = group, "Age" = age)
 
     ################################################
 
@@ -123,7 +121,7 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
     dat$event <- event[id]
     dat <- dat[c("id", "y", "time", "Time", "event")]
     dat.id <- data.frame(id = unique(dat$id), Time = Time,
-                         event = event, group = W[, 2])
+                         event = event, group = W[, 2], age = W[, 3])
     dat$group <- dat.id$group[id]
 
     #summary(tapply(id, id, length))
@@ -141,11 +139,11 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
     list(DF = dat, DF.id = dat.id, trueValues = trueValues)
 }
 
-fit_hazard <- function (Data) {
+fit_hazard <- function (Data, center = FALSE) {
     lmeFit <- lme(y ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)), data = Data$DF,
                   random = list(id = pdDiag(form = ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)))),
                   control = lmeControl(opt = "optim", niterEM = 45))
-    coxFit <- coxph(Surv(Time, event) ~ group, data = Data$DF.id)
+    coxFit <- coxph(Surv(Time, event) ~ group + age, data = Data$DF.id)
 
     JM2 <- jm(coxFit, list(lmeFit), time_var = "time")
     test <- JM2
@@ -239,6 +237,12 @@ fit_hazard <- function (Data) {
     current_bs_gammas <- jitter(bs_gammas, 80)
     current_gammas <- gammas
     current_alphas <- alphas
+    if (center) {
+        W_h <- scale(W_h, scale = FALSE)
+        W_H <- scale(W_H, scale = FALSE)
+        W_H2 <- scale(W_H2, scale = FALSE)
+        W_bar <- rbind(attr(W_h, "scaled:center"))
+    }
     t0 <- proc.time()
     for (m in seq_len(M)) {
         if (m == 1) denominator_surv <- logPC_surv(current_bs_gammas, current_gammas,
@@ -325,6 +329,10 @@ fit_hazard <- function (Data) {
     WW <- splineDesign(test$control$knots, ttt,
                        ord = test$control$Bsplines_degree + 1)
     h0 <- apply(res_bs_gammas, 1, function (g) exp(c(WW %*% g)))
+    if (center && any_gammas) {
+        mu_bar <- apply(res_gammas, 1, function (g) exp(c(W_bar %*% g)))
+        h0 <- h0 * mu_bar
+    }
     list(h0 = rowMeans(h0), gammas = colMeans(res_gammas),
          alphas = colMeans(res_alphas[[1]]),
          run_time = t1 - t0)
@@ -334,14 +342,17 @@ fit_hazard <- function (Data) {
 ################################################################################
 
 
-N <- 10
+N <- 20
 res_h0 <- matrix(0.0, N, 500)
-res_gam <- matrix(0.0, N, 1)
+res_gam <- matrix(0.0, N, 2)
 res_alph <- matrix(0.0, N, 1)
 times <- matrix(0.0, N, 3)
 for (j in seq_len(N)) {
     Data_n <- simulateJoint(alpha = 0, mean.Cens = 35)
+
     fit <- fit_hazard(Data_n)
+    fit2 <- fit_hazard(Data_n, center = TRUE)
+
     res_h0[j, ] <- fit$h0
     res_gam[j, ] <- fit$gammas
     res_alph[j, ] <- fit$alphas
@@ -357,8 +368,17 @@ lines(ttt, exp(Data_n$trueValues$gammas[1] + log(Data_n$trueValues$sigma.t) +
                    (Data_n$trueValues$sigma.t - 1) * log(ttt)), col = "red")
 
 
+ttt <- seq(0.0, 12, length.out = 500)
+plot(x = ttt, y = fit$h0, type = "l", lty = 1, col = 1, ylim = c(0, 0.45),
+     xlab = "Time", ylab = "Baseline Hazard Function")
+lines(ttt, fit2$h0, col = "blue")
+lines(ttt, exp(Data_n$trueValues$gammas[1] + log(Data_n$trueValues$sigma.t) +
+                   (Data_n$trueValues$sigma.t - 1) * log(ttt)), col = "red")
+
+
+
 colMeans(res_gam)
-Data_n$trueValues$gammas
+Data_n$trueValues$gammas[-1]
 
 colMeans(res_alph)
 Data_n$trueValues$alphas
