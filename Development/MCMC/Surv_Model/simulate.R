@@ -156,7 +156,6 @@ fit_hazard <- function (Data, center = FALSE) {
     gammas <- test$initial_values$gammas
     bs_gammas <- test$initial_values$bs_gammas
     alphas <- test$initial_values$alphas
-    alphas <- list(Data$trueValues$alphas)
 
     # outcome vectors and design matrices
     n <- test$model_data$n
@@ -330,8 +329,8 @@ fit_hazard <- function (Data, center = FALSE) {
                        ord = test$control$Bsplines_degree + 1)
     h0 <- apply(res_bs_gammas, 1, function (g) exp(c(WW %*% g)))
     if (center && any_gammas) {
-        mu_bar <- apply(res_gammas, 1, function (g) exp(c(W_bar %*% g)))
-        h0 <- h0 * mu_bar
+        mu_bar <- exp(c(W_bar %*% colMeans(res_gammas)))
+        h0 <- h0 / mu_bar
     }
     list(h0 = rowMeans(h0), gammas = colMeans(res_gammas),
          alphas = colMeans(res_alphas[[1]]),
@@ -369,7 +368,7 @@ lines(ttt, exp(Data_n$trueValues$gammas[1] + log(Data_n$trueValues$sigma.t) +
 
 
 ttt <- seq(0.0, 12, length.out = 500)
-plot(x = ttt, y = fit$h0, type = "l", lty = 1, col = 1, ylim = c(0, 0.45),
+plot(x = ttt, y = fit$h0, type = "l", lty = 1, col = 1,
      xlab = "Time", ylab = "Baseline Hazard Function")
 lines(ttt, fit2$h0, col = "blue")
 lines(ttt, exp(Data_n$trueValues$gammas[1] + log(Data_n$trueValues$sigma.t) +
