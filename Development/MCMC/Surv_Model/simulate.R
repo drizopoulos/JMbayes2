@@ -327,12 +327,17 @@ fit_hazard <- function (Data, center = FALSE) {
     ttt <- seq(0.0, 12, length.out = 500)
     WW <- splineDesign(test$control$knots, ttt,
                        ord = test$control$Bsplines_degree + 1)
-    h0 <- apply(res_bs_gammas, 1, function (g) exp(c(WW %*% g)))
-    if (center && any_gammas) {
-        mu_bar <- exp(c(W_bar %*% colMeans(res_gammas)))
-        h0 <- h0 / mu_bar
+    h0 <- matrix(0.0, nrow(res_bs_gammas), length(ttt))
+    for (i in seq_len(nrow(res_bs_gammas))) {
+        bs_gammas <- res_bs_gammas[i, ]
+        eta <- c(WW %*% bs_gammas)
+        if (center && any_gammas) {
+            gammas <- res_gammas[i, ]
+            eta <- eta - c(W_bar %*% gammas)
+        }
+        h0[i, ] <- exp(eta)
     }
-    list(h0 = rowMeans(h0), gammas = colMeans(res_gammas),
+    list(h0 = colMeans(h0), gammas = colMeans(res_gammas),
          alphas = colMeans(res_alphas[[1]]),
          run_time = t1 - t0)
 }
@@ -341,17 +346,14 @@ fit_hazard <- function (Data, center = FALSE) {
 ################################################################################
 
 
-N <- 20
+N <- 60
 res_h0 <- matrix(0.0, N, 500)
 res_gam <- matrix(0.0, N, 2)
 res_alph <- matrix(0.0, N, 1)
 times <- matrix(0.0, N, 3)
 for (j in seq_len(N)) {
     Data_n <- simulateJoint(alpha = 0, mean.Cens = 35)
-
-    fit <- fit_hazard(Data_n)
-    fit2 <- fit_hazard(Data_n, center = TRUE)
-
+    fit <- fit_hazard(Data_n, center = TRUE)
     res_h0[j, ] <- fit$h0
     res_gam[j, ] <- fit$gammas
     res_alph[j, ] <- fit$alphas
@@ -361,16 +363,8 @@ for (j in seq_len(N)) {
 
 ttt <- seq(0.0, 12, length.out = 500)
 plot(x = ttt, y = cbind(colMeans(res_h0)), type = "l",
-        lty = c(1), col = 1, xlab = "Time",
+        lty = c(1), col = 1, xlab = "Time", ylim = c(0, 0.0045),
         ylab = "Baseline Hazard Function")
-lines(ttt, exp(Data_n$trueValues$gammas[1] + log(Data_n$trueValues$sigma.t) +
-                   (Data_n$trueValues$sigma.t - 1) * log(ttt)), col = "red")
-
-
-ttt <- seq(0.0, 12, length.out = 500)
-plot(x = ttt, y = fit$h0, type = "l", lty = 1, col = 1,
-     xlab = "Time", ylab = "Baseline Hazard Function")
-lines(ttt, fit2$h0, col = "blue")
 lines(ttt, exp(Data_n$trueValues$gammas[1] + log(Data_n$trueValues$sigma.t) +
                    (Data_n$trueValues$sigma.t - 1) * log(ttt)), col = "red")
 
