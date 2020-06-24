@@ -10,7 +10,7 @@ source(file.path(getwd(), "Development/jm/R_to_Cpp.R"))
 source(file.path(getwd(), "Development/jm/PBC_data.R"))
 source(file.path(getwd(), "Development/MCMC/Surv_Model/sample_Surv_Funs.R"))
 
-simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
+simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 1000,
                            mean.Cens = 7) {
     # if alpha = 0, mean.Cens = 35
     library("splines")
