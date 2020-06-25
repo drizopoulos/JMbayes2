@@ -40,8 +40,8 @@ log_density_surv2 <- function (W0H_bs_gammas, WH_gammas, WlongH_alphas,
     }
     if (length(which_interval)) {
         H2 <- group_sum(exp(log_Pwk2 + lambda_H2), indFast_H2)
-        log_Lik_surv[which_interval] <- log(exp(- H[which_interval]) -
-                                exp(- (H2[which_interval] + H[which_interval])))
+        log_Lik_surv[which_interval] <- - H[which_interval] +
+            log(- expm1(- H2[which_interval]))
     }
     sum(log_Lik_surv, na.rm = TRUE)
 }
@@ -89,9 +89,18 @@ microbenchmark(
 )
 
 
+A <- matrix(rnorm(1e06, 100), 1000, 1000)
+B <- matrix(rnorm(1e06, 100), 1000, 1000)
 
+t1 <- log(exp(- A) - exp(- A - B))
+t2 <- - A + log(- expm1(-B))
 
+all.equal(t1, t2)
 
-
+microbenchmark(
+    old = log(exp(- A) - exp(- A - B)),
+    new = - A + log(- expm1(-B)),
+    times = 100
+)
 
 
