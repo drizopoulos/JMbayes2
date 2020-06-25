@@ -207,8 +207,8 @@ fit_hazard <- function (Data, center = FALSE) {
     } else {
         Wlong_H2 <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
     }
-    environment(log_density_surv) <- environment()
-    environment(logPC_surv) <- environment()
+    environment(log_density_surv2) <- environment()
+    environment(logPC_surv2) <- environment()
     M <- 5000L
     res_bs_gammas <- acceptance_bs_gammas <- matrix(0.0, M, length(bs_gammas))
     vcov_prop_bs_gammas <- test$vcov_prop$vcov_prop_bs_gammas
@@ -313,12 +313,8 @@ fit_hazard <- function (Data, center = FALSE) {
                 proposed_gammas[i] <- rnorm(1L, current_gammas[i],
                                             scale_gammas[i])
                 proposed_WH_gammas <- W_H %*% proposed_gammas
-                if (length(which_event)) {
-                    proposed_Wh_gammas <- W_h %*% proposed_gammas
-                }
-                if (length(which_interval)) {
-                    proposed_WH2_gammas <- W_H2 %*% proposed_gammas
-                }
+                if (length(which_event)) proposed_Wh_gammas <- W_h %*% proposed_gammas
+                if (length(which_interval)) proposed_WH2_gammas <- W_H2 %*% proposed_gammas
                 numerator_surv <-
                     logPC_surv2(current_bs_gammas, proposed_gammas,
                                 current_alphas, tau_bs_gammas,
@@ -409,7 +405,7 @@ fit_hazard <- function (Data, center = FALSE) {
 ################################################################################
 
 
-N <- 60
+N <- 10
 res_h0 <- matrix(0.0, N, 500)
 res_gam <- matrix(0.0, N, 2)
 res_alph <- matrix(0.0, N, 1)
@@ -430,7 +426,6 @@ plot(x = ttt, y = cbind(colMeans(res_h0)), type = "l",
         ylab = "Baseline Hazard Function")
 lines(ttt, exp(Data_n$trueValues$gammas[1] + log(Data_n$trueValues$sigma.t) +
                    (Data_n$trueValues$sigma.t - 1) * log(ttt)), col = "red")
-
 
 
 colMeans(res_gam)

@@ -346,7 +346,7 @@ fit_hazard <- function (Data, center = FALSE) {
 ################################################################################
 
 
-N <- 60
+N <- 10
 res_h0 <- matrix(0.0, N, 500)
 res_gam <- matrix(0.0, N, 2)
 res_alph <- matrix(0.0, N, 1)

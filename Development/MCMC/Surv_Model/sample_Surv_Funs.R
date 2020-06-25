@@ -98,7 +98,9 @@ logPC_surv2 <- function (bs_gammas, gammas, alphas, tau_bs_gammas,
                          W0H_bs_gammas, WH_gammas, WlongH_alphas,
                          W0h_bs_gammas, Wh_gammas, Wlongh_alphas,
                          W0H2_bs_gammas, WH2_gammas, WlongH2_alphas) {
-    log_density_surv2(bs_gammas, gammas, alphas) +
+    log_density_surv2(W0H_bs_gammas, WH_gammas, WlongH_alphas,
+                      W0h_bs_gammas, Wh_gammas, Wlongh_alphas,
+                      W0H2_bs_gammas, WH2_gammas, WlongH2_alphas) +
         logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas,
                  tau_bs_gammas)
 }
