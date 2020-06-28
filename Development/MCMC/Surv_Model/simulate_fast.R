@@ -209,7 +209,7 @@ fit_hazard <- function (Data, center = FALSE) {
     }
     environment(log_density_surv2) <- environment()
     environment(logPC_surv2) <- environment()
-    M <- 5000L
+    M <- 3500L
     res_bs_gammas <- acceptance_bs_gammas <- matrix(0.0, M, length(bs_gammas))
     vcov_prop_bs_gammas <- test$vcov_prop$vcov_prop_bs_gammas
     scale_bs_gammas <- rep(0.1, length(bs_gammas))
@@ -381,8 +381,9 @@ fit_hazard <- function (Data, center = FALSE) {
     }
     t1 <- proc.time()
     ###########################
-    res_bs_gammas <- res_bs_gammas[-seq_len(1000L), ]
-    res_gammas <- res_gammas[-seq_len(1000L), , drop = FALSE]
+    res_bs_gammas <- res_bs_gammas[-seq_len(500L), ]
+    res_gammas <- res_gammas[-seq_len(500L), , drop = FALSE]
+    res_alphas[[1]] <- res_alphas[[1]][-seq_len(500L), , drop = FALSE]
     ttt <- seq(0.0, 12, length.out = 500)
     WW <- splineDesign(test$control$knots, ttt,
                        ord = test$control$Bsplines_degree + 1)
@@ -405,7 +406,7 @@ fit_hazard <- function (Data, center = FALSE) {
 ################################################################################
 
 
-N <- 10
+N <- 100
 res_h0 <- matrix(0.0, N, 500)
 res_gam <- matrix(0.0, N, 2)
 res_alph <- matrix(0.0, N, 1)

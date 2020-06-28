@@ -137,6 +137,11 @@ for (k in seq_len(length(current_gammas))) {
     plot(res_gammas[, k], type = "l", ylab = paste0("gammas", k))
 }
 
+for (k in seq_len(length(current_alphas))) {
+    for (j in seq_len(length(current_alphas[[k]])))
+        plot(res_alphas[[k]][, j], type = "l", ylab = paste0("alphas", k, j))
+}
+
 
 #out1 <- res_bs_gammas
 #out2 <- res_bs_gammas
