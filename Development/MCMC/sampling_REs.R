@@ -1,3 +1,11 @@
+#########################################################################################################
+# SIMULATE DATA FROM A JOINT MODEL - SAVE THE RANDOM-EFFECTS - AND CHECK WHETHER IT WORKS - 3TO5 DATASETS
+# TO IMPLEMENT HIERARCHICAL CENTERING
+# CENTERING OF THE X AND Z MATRICES
+# CHECK SYSTEM TIME
+# MULTIPLE CHAINS (JITTER (NOISE FROM UNIFORM) OR NORMAL DISTRIBUTION WITH VARIANCE)
+#########################################################################################################
+
 library("survival")
 library("nlme")
 library("GLMMadaptive")
