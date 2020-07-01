@@ -12,7 +12,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # - n_iter: the number of iterations per chain. These will be the iterations after
     #           n_adapt
     con <- list(GK_k = 15L, Bsplines_degree = 2, base_hazard_segments = 10,
-                n_chains = 3L, n_adapt = 500L, n_iter = 1000L)
+                diff = 2L, n_chains = 3L, n_adapt = 500L, n_iter = 1000L)
     control <- c(control, list(...))
     namC <- names(con)
     con[(namc <- names(control))] <- control
@@ -58,8 +58,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # for some outcomes)
     NAs_FE_dataL <- lapply(mf_FE_dataL, attr, "na.action")
     NAs_RE_dataL <- lapply(mf_RE_dataL, attr, "na.action")
-    mf_FE_dataL <- mapply(fix_NAs_fixed, mf_FE_dataL, NAs_FE_dataL, NAs_RE_dataL)
-    mf_RE_dataL <- mapply(fix_NAs_random, mf_RE_dataL, NAs_RE_dataL, NAs_FE_dataL)
+    mf_FE_dataL <- mapply(fix_NAs_fixed, mf_FE_dataL, NAs_FE_dataL, NAs_RE_dataL,
+                          SIMPLIFY = FALSE)
+    mf_RE_dataL <- mapply(fix_NAs_random, mf_RE_dataL, NAs_RE_dataL, NAs_FE_dataL,
+                          SIMPLIFY = FALSE)
 
     # create response vectors
     y <- lapply(mf_FE_dataL, model.response)
@@ -93,8 +95,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     unq_idL <- lapply(idL, unique)
 
     # create design matrices for mixed models
-    X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL)
-    Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL)
+    X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL, SIMPLIFY = FALSE)
+    Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL, SIMPLIFY = FALSE)
     componentsHC <- mapply(create_HC_X, terms_FE, terms_RE, X, Z, idL, mf_FE_dataL,
                            SIMPLIFY = FALSE)
     Xhc <- lapply(componentsHC, "[[", "Xhc")
@@ -128,7 +130,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     if (is.null(dataS[[idVar]])) {
         if (is.null(id_var)) {
             stop("cannot extract the subject id variable from the dataset used to fit the ",
-                 "survival model. Please specify the 'id_var' argument.\n")
+                 "survival model. Please include this variable in the dataset ",
+                 "and/or specify the 'id_var' argument.\n")
         } else {
             idT <- dataS[[id_var]]
         }
@@ -293,7 +296,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     dataS_H <- SurvData_HazardModel(st, dataS, Time_start, idT)
     mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
     W_H <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
-    if (!ncol(W_H)) {
+    any_gammas <- as.logical(ncol(W_H))
+    if (!any_gammas) {
         W_H <- matrix(0.0, nrow = nrow(W_H), ncol = 1L)
     }
     X_H <- desing_matrices_functional_forms(st, terms_FE_noResp,
@@ -311,7 +315,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start, idT)
         mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
         W_h <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
-        if (!ncol(W_h)) {
+        if (!any_gammas) {
             W_h <- matrix(0.0, nrow = nrow(W_h), ncol = 1L)
         }
         X_h <- desing_matrices_functional_forms(Time_right, terms_FE_noResp,
@@ -333,7 +337,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start, idT)
         mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
         W_H2 <- model.matrix.default(terms_Surv_noResp, mf2)[, -1, drop = FALSE]
-        if (!ncol(W_H2)) {
+        if (!any_gammas) {
             W_H2 <- matrix(0.0, nrow = nrow(W_H2), ncol = 1L)
         }
         X_H2 <- desing_matrices_functional_forms(st, terms_FE_noResp,
@@ -352,11 +356,11 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     }
     ######################################################################################
     ######################################################################################
-    Data <- list(idL = idL, idL_lp = idL_lp, unq_idL = unq_idL,
+    Data <- list(n = nY, idL = idL, idL_lp = idL_lp, unq_idL = unq_idL,
                  y = y, X = X, Z = Z, Xhc = Xhc,
                  columns_HC = columns_HC, columns_nHC = columns_nHC,
                  #####
-                 idT = idT,
+                 idT = idT, any_gammas = any_gammas,
                  Time_right = Time_right, Time_left = Time_left, Time_start = Time_start,
                  delta = delta, which_event = which_event, which_right = which_right,
                  which_left = which_left, which_interval = which_interval,
@@ -430,7 +434,23 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                       vcov_prop_bs_gammas = vcov_prop_bs_gammas,
                       vcov_prop_gammas = vcov_prop_gammas,
                       vcov_prop_alphas = vcov_prop_alphas)
-    list(betas = betas, D = D, log_sigmas = log_sigmas,
-         bs_gammas = bs_gammas, gammas = gammas, alphas = alphas,
-         vcov_prop = vcov_prop)
+    ######################################################################################
+    ######################################################################################
+    # Priors
+    DD <- diag(ncol(W0_H))
+    Tau_bs_gammas <- crossprod(diff(DD, differences = con$diff)) #+ 1e-06 * DD
+    priors <- list(mean_betas = lapply(betas, "*", 0.0),
+                   Tau_betas = lapply(betas, function (b) 0.01 * diag(length(b))),
+                   mean_gammas = gammas * 0.0,
+                   Tau_gammas = 0.01 * diag(length(gammas)),
+                   mean_bs_gammas = bs_gammas * 0.0,
+                   Tau_bs_gammas = Tau_bs_gammas,
+                   mean_alphas = lapply(alphas, "*", 0.0),
+                   Tau_alphas = lapply(alphas, function (a) 0.01 * diag(length(a))),
+                   A_tau_bs_gammas = 1, B_tau_bs_gammas = 0.1,
+                   rank_Tau_bs_gammas = qr(Tau_bs_gammas)$rank)
+
+    list(initial_values = initial_values, vcov_prop = vcov_prop,
+         priors = priors, model_info = model_info, data = data,
+         model_data = Data, control = con)
 }
