@@ -101,16 +101,7 @@ res_betas <- lapply(betas, function(b){ m <- matrix(0.0, M, length(b))
                                         colnames(m) <- names(b)
                                         m})
 
-
-# benchmarking: to ensure that all approaches make use of the same random values [DELETE LATER]
-# {
-# length_betas <- sapply(betas, length)
-# set.seed(2020)
-# proposal_betas <- sapply(seq_along(betas), function(i){ rmvnorm(n = M,
-#                                                                 mu = numeric(length_betas[i]), 
-#                                                                 Sigma = vcov_prop_betas[[i]]) })
-# u_betas <- runif(length(betas) * M)
-# }
+scale_betas <- rep(0.1, length(betas))
 
 # Update betas
 system.time({#set.seed(2020)
@@ -118,27 +109,28 @@ for (i in seq_along(betas)) { # i-th mixed model
 
   for (m in seq_len(M)) { # m-th sample
     
-    if(m == 1) denominator <- target_log_dist(current_betas, i) # + 0 given the proposal is symmetric
+    if (m == 1) denominator <- target_log_dist(current_betas, i) # + 0 given the proposal is symmetric
     
       proposed_betas <- current_betas
       
       proposed_betas[[i]] <- rmvnorm(n = 1,
                                      mu = current_betas[[i]],
-                                     Sigma = vcov_prop_betas[[i]])
-      
-      # benchmarking [DELETE LATER]
-      #proposed_betas[[i]] <- current_betas[[i]] + proposal_betas[[i]][m,]
+                                     Sigma = vcov_prop_betas[[i]] * scale_betas[i])
       
       numerator <- target_log_dist(proposed_betas, i) # + 0 given the proposal is symmetric
       
       log_ratio <- numerator - denominator
       
       if (log_ratio > log(runif(1))) {
-      # benchmarking [DELETE LATER]
-      #if (log_ratio > log(u_betas[m + (i-1)*M])) {  
         current_betas <- proposed_betas
         acceptance_betas[m, i] <- 1.0
         denominator <- numerator
+      }
+      
+      if (m > 20) {
+        scale_betas[i] <- robbins_monro_univ(scale = scale_betas[i],
+                                             acceptance_it = acceptance_betas[m, i],
+                                             it = m, target_acceptance = 0.234)
       }
       
       res_betas[[i]][m, ] <- current_betas[[i]]
