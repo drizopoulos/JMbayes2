@@ -12,7 +12,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # - n_iter: the number of iterations per chain. These will be the iterations after
     #           n_adapt
     con <- list(GK_k = 15L, Bsplines_degree = 2, base_hazard_segments = 10,
-                diff = 2L, n_chains = 3L, n_adapt = 500L, n_iter = 1000L)
+                diff = 2L, n_chains = 3L, n_burnin = 1000L, n_iter = 4000L)
     control <- c(control, list(...))
     namC <- names(con)
     con[(namc <- names(control))] <- control
@@ -238,7 +238,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         log_Pwk2 <- rep(log(P2), each = length(sk)) +
             rep_len(log(GK$wk), length.out = length(st2))
     } else {
-        P2 <- st2 <- log_Pwk2 <- NULL
+        P2 <- st2 <- log_Pwk2 <- rep(0.0, nT * con$GK_k)
     }
 
     # knots for the log baseline hazard function
