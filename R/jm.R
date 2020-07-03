@@ -406,7 +406,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # initial values
     initial_values <- list(betas = betas, log_sigmas = log_sigmas, D = D,
                            b = b, bs_gammas = bs_gammas, gammas = gammas,
-                           alphas = alphas)
+                           alphas = alphas, tau_bs_gammas = 2)
     ######################################################################################
     ######################################################################################
     # variance covariance matrices for proposal distributions in
