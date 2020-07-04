@@ -17,3 +17,4 @@ xxx <- mcmc(model_data, model_info, initial_values, priors, control)
 all.equal((xxx$WlongH_alphas), WlongH_alphas, check.attributes = FALSE)
 
 #}
+xxx$denominator_surv
