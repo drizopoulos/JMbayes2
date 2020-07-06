@@ -74,6 +74,19 @@ arma::vec propose (const arma::vec& thetas, const arma::vec& scale, const int& i
     return(proposed_thetas);
 }
 
+double robbins_monro (const double& scale, const double& acceptance_it,
+                      const int& it, const double& target_acceptance = 0.45) {
+    double step_length = scale / (target_acceptance * (1 - target_acceptance));
+    double out;
+    if (acceptance_it == 1) {
+        out = scale + step_length * (1 - target_acceptance) / (double)it;
+    } else {
+        out = scale - step_length * target_acceptance / (double)it;
+    }
+    return out;
+}
+
+
 // [[Rcpp::export]]
 double log_density_surv (const arma::vec& W0H_bs_gammas,
                          const arma::vec& W0h_bs_gammas,
@@ -181,10 +194,12 @@ List mcmc (List model_data, List model_info, List initial_values,
         scale_alphas.at(i) = scale_alphas.at(i) * 0 + 0.1;
     }
     // store results
-    mat res_bs_gammas(n_iter, bs_gammas.n_rows);
-    mat acceptance_bs_gammas(n_iter, bs_gammas.n_rows);
-    mat res_gammas(n_iter, gammas.n_rows);
-    mat acceptance_gammas(n_iter, gammas.n_rows);
+    int n_bs_gammas = bs_gammas.n_rows;
+    int n_gammas = gammas.n_rows;
+    mat res_bs_gammas(n_iter, n_bs_gammas);
+    mat acceptance_bs_gammas(n_iter, n_bs_gammas);
+    mat res_gammas(n_iter, n_gammas);
+    mat acceptance_gammas(n_iter, n_gammas);
     field<mat> res_alphas = create_storage(alphas, n_iter);
     field<mat> acceptance_alphas = create_storage(alphas, n_iter);
     vec res_tau_bs_gammas(n_iter);
@@ -219,8 +234,6 @@ List mcmc (List model_data, List model_info, List initial_values,
     if (any_interval) {
         WlongH2_alphas = Wlong_alphas_fun(Wlong_H2, alphas);
     }
-    int n_bs_gammas = bs_gammas.n_rows;
-    int n_gammas = gammas.n_rows;
     double denominator_surv;
     for (int it = 0; it < n_iter; ++it) {
         if (it == 0) {
@@ -232,11 +245,10 @@ List mcmc (List model_data, List model_info, List initial_values,
                                  which_event, which_right_event, which_left,
                                  any_interval, which_interval) +
                 logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
-                logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1); //+
-                //logPrior(conv_to<vec>::from(alphas), prior_mean_alphas, prior_Tau_alphas, 1)
+                logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1);
         }
         for (int i = 0; i < n_bs_gammas; ++i) {
-            vec proposed_bs_gammas = propose(bs_gammas, scale_gammas, i);
+            vec proposed_bs_gammas = propose(bs_gammas, scale_bs_gammas, i);
             vec proposed_W0H_bs_gammas = W0_H * proposed_bs_gammas;
             vec proposed_W0h_bs_gammas(W0_h.n_rows);
             vec proposed_W0H2_bs_gammas(W0_H2.n_rows);
@@ -266,19 +278,30 @@ List mcmc (List model_data, List model_info, List initial_values,
                     W0H2_bs_gammas = proposed_W0H2_bs_gammas;
                 }
                 denominator_surv = numerator_surv;
-                acceptance_bs_gammas.at(it, i) <- 1;
+                acceptance_bs_gammas.at(it, i) = 1;
             }
+            if (it > 19) {
+                scale_bs_gammas.at(i) =
+                    robbins_monro(scale_bs_gammas.at(i),
+                                  acceptance_bs_gammas.at(it, i), it);
+            }
+            // store results
+            res_bs_gammas.at(it, i) = bs_gammas.at(i);
         }
-
+        double post_B_tau_bs_gammas = prior_B_tau_bs_gammas +
+            0.5 * as_scalar(bs_gammas.t() * prior_Tau_bs_gammas * bs_gammas);
+        tau_bs_gammas = R::rgamma(post_A_tau_bs_gammas, 1 / post_B_tau_bs_gammas);
+        res_tau_bs_gammas.at(it) = tau_bs_gammas;
     }
     return List::create(
-        Named("Time_right") = Time_right,
-        Named("Time_left") = Time_left,
-        Named("delta") = delta,
-        Named("which_interval") = which_interval,
-        Named("res_alphas") = res_alphas,
-        Named("any_event") = any_event,
-        Named("denominator_surv") = denominator_surv
+        Named("mcmc") = List::create(
+            Named("bs_gammas") = res_bs_gammas.rows(n_burnin, n_iter - 1),
+            Named("tau_bs_gammas") = res_tau_bs_gammas.rows(n_burnin, n_iter - 1)
+        ),
+        Named("acc_rate") = List::create(
+            Named("bs_gammas") = acceptance_bs_gammas
+        ),
+        Named("scale_bs_gammas") = scale_bs_gammas
     );
 
 }

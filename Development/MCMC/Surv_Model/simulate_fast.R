@@ -209,7 +209,7 @@ fit_hazard <- function (Data, center = FALSE) {
     }
     environment(log_density_surv2) <- environment()
     environment(logPC_surv2) <- environment()
-    M <- 3500L
+    M <- 4000L
     res_bs_gammas <- acceptance_bs_gammas <- matrix(0.0, M, length(bs_gammas))
     vcov_prop_bs_gammas <- test$vcov_prop$vcov_prop_bs_gammas
     scale_bs_gammas <- rep(0.1, length(bs_gammas))

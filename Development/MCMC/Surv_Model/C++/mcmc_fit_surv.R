@@ -12,9 +12,14 @@ model_data <- c(model_data, create_Wlong_mats(model_data, model_info,
 priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
 priors$Tau_alphas <- .bdiag(priors$Tau_alphas)
 
-xxx <- mcmc(model_data, model_info, initial_values, priors, control)
+system.time(xxx <- mcmc(model_data, model_info, initial_values, priors, control))
 
-all.equal((xxx$WlongH_alphas), WlongH_alphas, check.attributes = FALSE)
 
 #}
-xxx$denominator_surv
+
+for (k in 0:12) {
+    if (k == 0)
+        plot(xxx$mcmc$tau_bs_gammas, type = "l")
+    else
+        plot(xxx$mcmc$bs_gammas[, k], type = "l")
+}
