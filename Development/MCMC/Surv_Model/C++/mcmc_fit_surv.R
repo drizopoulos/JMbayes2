@@ -9,6 +9,12 @@ model_data <- c(model_data, create_Wlong_mats(model_data, model_info,
                                               control),
                 list(id_H = id_H, id_H2 = id_H2))
 
+model_data$W_h <- scale(model_data$W_h, scale = FALSE)
+model_data$W_H <- scale(model_data$W_H, scale = FALSE)
+model_data$W_H2 <- scale(model_data$W_H2, scale = FALSE)
+model_data$W_bar <- rbind(attr(model_data$W_h, "scaled:center"))
+
+
 priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
 priors$Tau_alphas <- .bdiag(priors$Tau_alphas)
 
@@ -23,3 +29,8 @@ for (k in 0:12) {
     else
         plot(xxx$mcmc$bs_gammas[, k], type = "l")
 }
+
+plot(xxx$mcmc$gammas[, 1], type = "l")
+plot(xxx$mcmc$gammas[, 2], type = "l")
+
+
