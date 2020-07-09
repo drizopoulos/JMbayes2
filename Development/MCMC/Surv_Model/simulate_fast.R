@@ -139,7 +139,7 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
     list(DF = dat, DF.id = dat.id, trueValues = trueValues)
 }
 
-fit_hazard <- function (Data, center = FALSE) {
+fit_hazard <- function (Data, center = TRUE, block_bs_gammas = TRUE) {
     lmeFit <- lme(y ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)), data = Data$DF,
                   random = list(id = pdDiag(form = ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)))),
                   control = lmeControl(opt = "optim", niterEM = 45))
@@ -209,9 +209,10 @@ fit_hazard <- function (Data, center = FALSE) {
     }
     environment(log_density_surv2) <- environment()
     environment(logPC_surv2) <- environment()
-    M <- 4000L
+    M <- 5500L
     res_bs_gammas <- acceptance_bs_gammas <- matrix(0.0, M, length(bs_gammas))
-    vcov_prop_bs_gammas <- test$vcov_prop$vcov_prop_bs_gammas
+    Sigma_bs_gammas <- test$vcov_prop$vcov_prop_bs_gammas
+    sigma_bs_gammas <- 0.01
     scale_bs_gammas <- rep(0.1, length(bs_gammas))
     prior_mean_bs_gammas <- test$priors$mean_bs_gammas
     prior_Tau_bs_gammas <- test$priors$Tau_bs_gammas
@@ -259,21 +260,18 @@ fit_hazard <- function (Data, center = FALSE) {
         WH2_gammas <- W_H2 %*% current_gammas
         WlongH2_alphas <- Wlong_alphas_fun(Wlong_H2, current_alphas)
     }
+    denominator_surv <-
+        logPC_surv2(current_bs_gammas, current_gammas,
+                    current_alphas, tau_bs_gammas,
+                    W0H_bs_gammas, WH_gammas, WlongH_alphas,
+                    W0h_bs_gammas, Wh_gammas, Wlongh_alphas,
+                    W0H2_bs_gammas, WH2_gammas, WlongH2_alphas)
     t0 <- proc.time()
     for (m in seq_len(M)) {
-        if (m == 1) {
-            denominator_surv <-
-                logPC_surv2(current_bs_gammas, current_gammas,
-                            current_alphas, tau_bs_gammas,
-                            W0H_bs_gammas, WH_gammas, WlongH_alphas,
-                            W0h_bs_gammas, Wh_gammas, Wlongh_alphas,
-                            W0H2_bs_gammas, WH2_gammas, WlongH2_alphas)
-        }
         # Update bs_gammas
-        for (i in seq_along(current_bs_gammas)) {
-            proposed_bs_gammas <- current_bs_gammas
-            proposed_bs_gammas[i] <- rnorm(1L, current_bs_gammas[i],
-                                           scale_bs_gammas[i])
+        if (block_bs_gammas) {
+            proposed_bs_gammas <- rmvnorm(1L, current_bs_gammas,
+                                          sigma_bs_gammas * Sigma_bs_gammas)
             proposed_W0H_bs_gammas <- W0_H %*% proposed_bs_gammas
             if (length(which_event)) {
                 proposed_W0h_bs_gammas <- W0_h %*% proposed_bs_gammas
@@ -294,13 +292,50 @@ fit_hazard <- function (Data, center = FALSE) {
                 if (length(which_event)) W0h_bs_gammas <- proposed_W0h_bs_gammas
                 if (length(which_interval)) W0H2_bs_gammas <- proposed_W0H2_bs_gammas
                 denominator_surv <- numerator_surv
-                acceptance_bs_gammas[m, i] <- 1
+                acceptance_bs_gammas[m, ] <- 1
+            }
+            if (m > 200) {
+                g <- 0.3 / (m - 200)
+                Sigma_bs_gammas <- g * Sigma_bs_gammas + (1 - g) * var(res_bs_gammas[1:m, ])
             }
             if (m > 20) {
-                scale_bs_gammas[i] <-
-                    robbins_monro_univ(scale = scale_bs_gammas[i],
-                                       acceptance_it = acceptance_bs_gammas[m, i],
-                                       it = m, target_acceptance = 0.45)
+                sigma_bs_gammas <-
+                    robbins_monro_mv(sigma_bs_gammas, acceptance_bs_gammas[m, 1],
+                                     m, length(bs_gammas))
+            }
+        } else {
+            for (i in seq_along(current_bs_gammas)) {
+                proposed_bs_gammas <- current_bs_gammas
+                proposed_bs_gammas[i] <- rnorm(1L, current_bs_gammas[i],
+                                               scale_bs_gammas[i])
+                proposed_W0H_bs_gammas <- W0_H %*% proposed_bs_gammas
+                if (length(which_event)) {
+                    proposed_W0h_bs_gammas <- W0_h %*% proposed_bs_gammas
+                }
+                if (length(which_interval)) {
+                    proposed_W0H2_bs_gammas <- W0_H2 %*% proposed_bs_gammas
+                }
+                numerator_surv <-
+                    logPC_surv2(proposed_bs_gammas, current_gammas,
+                                current_alphas, tau_bs_gammas,
+                                proposed_W0H_bs_gammas, WH_gammas, WlongH_alphas,
+                                proposed_W0h_bs_gammas, Wh_gammas, Wlongh_alphas,
+                                proposed_W0H2_bs_gammas, WH2_gammas, WlongH2_alphas)
+                log_ratio <- numerator_surv - denominator_surv
+                if (is.finite(log_ratio) && min(1, exp(log_ratio)) > runif(1)) {
+                    current_bs_gammas <- proposed_bs_gammas
+                    W0H_bs_gammas <- proposed_W0H_bs_gammas
+                    if (length(which_event)) W0h_bs_gammas <- proposed_W0h_bs_gammas
+                    if (length(which_interval)) W0H2_bs_gammas <- proposed_W0H2_bs_gammas
+                    denominator_surv <- numerator_surv
+                    acceptance_bs_gammas[m, i] <- 1
+                }
+                if (m > 20) {
+                    scale_bs_gammas[i] <-
+                        robbins_monro_univ(scale = scale_bs_gammas[i],
+                                           acceptance_it = acceptance_bs_gammas[m, i],
+                                           it = m, target_acceptance = 0.45)
+                }
             }
         }
         post_B_tau_bs_gammas <- prior_B_tau_bs_gammas +
@@ -399,21 +434,22 @@ fit_hazard <- function (Data, center = FALSE) {
     }
     list(h0 = colMeans(h0), gammas = colMeans(res_gammas),
          alphas = colMeans(res_alphas[[1]]),
-         run_time = t1 - t0)
+         run_time = t1 - t0,
+         res_bs_gammas = res_bs_gammas)
 }
 
 ################################################################################
 ################################################################################
 
 
-N <- 100
+N <- 20
 res_h0 <- matrix(0.0, N, 500)
 res_gam <- matrix(0.0, N, 2)
 res_alph <- matrix(0.0, N, 1)
 times <- matrix(0.0, N, 3)
 for (j in seq_len(N)) {
     Data_n <- simulateJoint(alpha = 0, mean.Cens = 35)
-    fit <- fit_hazard(Data_n, center = TRUE)
+    fit <- fit_hazard(Data_n, center = TRUE, block_bs_gammas = TRUE)
     res_h0[j, ] <- fit$h0
     res_gam[j, ] <- fit$gammas
     res_alph[j, ] <- fit$alphas

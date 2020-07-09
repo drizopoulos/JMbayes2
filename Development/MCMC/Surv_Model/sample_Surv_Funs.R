@@ -120,6 +120,21 @@ robbins_monro_univ <- function (scale, acceptance_it, it, target_acceptance = 0.
     }
 }
 
+robbins_monro_mv <- function (scale, acceptance_it, it, dim,
+                              target_acceptance = 0.25) {
+    A <- 1 - 1 / dim
+    alpha <- - qnorm(target_acceptance  / 2)
+    B <- 0.5 * sqrt(2 * pi) * exp(alpha^2 / 2) / alpha
+    C <- 1 / (dim * target_acceptance * (1 - target_acceptance))
+    step_length <- scale * (A * B + C)
+    den <- max(200, it / dim)
+    if (acceptance_it) {
+        scale + step_length * (1 - target_acceptance) / den
+    } else {
+        scale - step_length * target_acceptance / den
+    }
+}
+
 Wlong_alphas_fun <- function (Wlong, alphas) {
     out <- numeric(nrow(Wlong[[1L]]))
     for (i in seq_along(Wlong)) {
