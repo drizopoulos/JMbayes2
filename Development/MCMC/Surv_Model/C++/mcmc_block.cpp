@@ -316,7 +316,7 @@ List mcmc (List model_data, List model_info, List initial_values,
                                  it, n_bs_gammas);
         }
         if (it > 299) {
-            double g = 0.3 / ((double)it - 299);
+            double g = 0.3; //0.3 / ((double)it - 299);
             Sigma_bs_gammas = g * Sigma_bs_gammas +
                 (1 - g) * cov(res_bs_gammas.rows(0, it));
         }

@@ -209,9 +209,10 @@ fit_hazard <- function (Data, center = TRUE, block_bs_gammas = TRUE) {
     }
     environment(log_density_surv2) <- environment()
     environment(logPC_surv2) <- environment()
-    M <- 5500L
+    M <- 6000L
     res_bs_gammas <- acceptance_bs_gammas <- matrix(0.0, M, length(bs_gammas))
     Sigma_bs_gammas <- test$vcov_prop$vcov_prop_bs_gammas
+    S <- t(chol(Sigma_bs_gammas))
     sigma_bs_gammas <- 0.01
     scale_bs_gammas <- rep(0.1, length(bs_gammas))
     prior_mean_bs_gammas <- test$priors$mean_bs_gammas
@@ -270,8 +271,8 @@ fit_hazard <- function (Data, center = TRUE, block_bs_gammas = TRUE) {
     for (m in seq_len(M)) {
         # Update bs_gammas
         if (block_bs_gammas) {
-            proposed_bs_gammas <- rmvnorm(1L, current_bs_gammas,
-                                          sigma_bs_gammas * Sigma_bs_gammas)
+            u <- rnorm(length(bs_gammas))
+            proposed_bs_gammas <- current_bs_gammas + c(S %*% u)
             proposed_W0H_bs_gammas <- W0_H %*% proposed_bs_gammas
             if (length(which_event)) {
                 proposed_W0h_bs_gammas <- W0_h %*% proposed_bs_gammas
@@ -294,15 +295,7 @@ fit_hazard <- function (Data, center = TRUE, block_bs_gammas = TRUE) {
                 denominator_surv <- numerator_surv
                 acceptance_bs_gammas[m, ] <- 1
             }
-            if (m > 200) {
-                g <- 0.3 / (m - 200)
-                Sigma_bs_gammas <- g * Sigma_bs_gammas + (1 - g) * var(res_bs_gammas[1:m, ])
-            }
-            if (m > 20) {
-                sigma_bs_gammas <-
-                    robbins_monro_mv(sigma_bs_gammas, acceptance_bs_gammas[m, 1],
-                                     m, length(bs_gammas))
-            }
+            if (m > 1 && m <= 3000) S <- ramcmc::adapt_S(S, u, acceptance_bs_gammas[m, 1], m - 1)
         } else {
             for (i in seq_along(current_bs_gammas)) {
                 proposed_bs_gammas <- current_bs_gammas
@@ -416,9 +409,10 @@ fit_hazard <- function (Data, center = TRUE, block_bs_gammas = TRUE) {
     }
     t1 <- proc.time()
     ###########################
-    res_bs_gammas <- res_bs_gammas[-seq_len(500L), ]
-    res_gammas <- res_gammas[-seq_len(500L), , drop = FALSE]
-    res_alphas[[1]] <- res_alphas[[1]][-seq_len(500L), , drop = FALSE]
+    burn <- 3000
+    res_bs_gammas <- res_bs_gammas[-seq_len(burn), ]
+    res_gammas <- res_gammas[-seq_len(burn), , drop = FALSE]
+    res_alphas[[1]] <- res_alphas[[1]][-seq_len(burn), , drop = FALSE]
     ttt <- seq(0.0, 12, length.out = 500)
     WW <- splineDesign(test$control$knots, ttt,
                        ord = test$control$Bsplines_degree + 1)
@@ -442,7 +436,7 @@ fit_hazard <- function (Data, center = TRUE, block_bs_gammas = TRUE) {
 ################################################################################
 
 
-N <- 20
+N <- 100
 res_h0 <- matrix(0.0, N, 500)
 res_gam <- matrix(0.0, N, 2)
 res_alph <- matrix(0.0, N, 1)
@@ -454,7 +448,6 @@ for (j in seq_len(N)) {
     res_gam[j, ] <- fit$gammas
     res_alph[j, ] <- fit$alphas
     times[j, ] <- fit$run_time[1:3]
-    print(j)
 }
 
 ttt <- seq(0.0, 12, length.out = 500)
@@ -470,3 +463,47 @@ Data_n$trueValues$gammas[-1]
 
 colMeans(res_alph)
 Data_n$trueValues$alphas
+
+for (k in 1:12) {
+    plot(fit$res_bs_gammas[, k], type = "l")
+}
+
+
+
+
+
+
+
+proposed_bs_gammas <- rmvnorm(1L, current_bs_gammas,
+                              sigma_bs_gammas * Sigma_bs_gammas)
+proposed_W0H_bs_gammas <- W0_H %*% proposed_bs_gammas
+if (length(which_event)) {
+    proposed_W0h_bs_gammas <- W0_h %*% proposed_bs_gammas
+}
+if (length(which_interval)) {
+    proposed_W0H2_bs_gammas <- W0_H2 %*% proposed_bs_gammas
+}
+numerator_surv <-
+    logPC_surv2(proposed_bs_gammas, current_gammas,
+                current_alphas, tau_bs_gammas,
+                proposed_W0H_bs_gammas, WH_gammas, WlongH_alphas,
+                proposed_W0h_bs_gammas, Wh_gammas, Wlongh_alphas,
+                proposed_W0H2_bs_gammas, WH2_gammas, WlongH2_alphas)
+log_ratio <- numerator_surv - denominator_surv
+if (is.finite(log_ratio) && min(1, exp(log_ratio)) > runif(1)) {
+    current_bs_gammas <- proposed_bs_gammas
+    W0H_bs_gammas <- proposed_W0H_bs_gammas
+    if (length(which_event)) W0h_bs_gammas <- proposed_W0h_bs_gammas
+    if (length(which_interval)) W0H2_bs_gammas <- proposed_W0H2_bs_gammas
+    denominator_surv <- numerator_surv
+    acceptance_bs_gammas[m, ] <- 1
+}
+if (m > 200) {
+    g <- 0.3 / (m - 200)
+    Sigma_bs_gammas <- g * Sigma_bs_gammas + (1 - g) * var(res_bs_gammas[1:m, ])
+}
+if (m > 20) {
+    sigma_bs_gammas <-
+        robbins_monro_mv(sigma_bs_gammas, acceptance_bs_gammas[m, 1],
+                         m, length(bs_gammas))
+}

@@ -18,7 +18,7 @@ model_data$W_bar <- rbind(attr(model_data$W_h, "scaled:center"))
 priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
 priors$Tau_alphas <- .bdiag(priors$Tau_alphas)
 
-system.time(xxx <- mcmc(model_data, model_info, initial_values, priors, vcov_prop,
+system.time(xxx <- mcmc(model_data, model_info, initial_values, priors,
                         control))
 
 

@@ -120,14 +120,14 @@ robbins_monro_univ <- function (scale, acceptance_it, it, target_acceptance = 0.
     }
 }
 
-robbins_monro_mv <- function (scale, acceptance_it, it, dim,
+robbins_monro_mv2 <- function (scale, acceptance_it, it, dim,
                               target_acceptance = 0.25) {
     A <- 1 - 1 / dim
     alpha <- - qnorm(target_acceptance  / 2)
     B <- 0.5 * sqrt(2 * pi) * exp(alpha^2 / 2) / alpha
     C <- 1 / (dim * target_acceptance * (1 - target_acceptance))
     step_length <- scale * (A * B + C)
-    den <- max(200, it / dim)
+    den <- if (it > 299) max(299, it / dim) else it
     if (acceptance_it) {
         scale + step_length * (1 - target_acceptance) / den
     } else {

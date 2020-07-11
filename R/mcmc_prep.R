@@ -10,8 +10,8 @@ source("./R/help_functions.R")
 source("./Development/jm/R_to_Cpp.R")
 source("./Development/jm/PBC_data.R")
 source("./Development/MCMC/Surv_Model/sample_Surv_Funs.R")
-#Rcpp::sourceCpp('./Development/MCMC/Surv_Model/C++/mcmc.cpp')
-Rcpp::sourceCpp('./Development/MCMC/Surv_Model/C++/mcmc_block.cpp')
+Rcpp::sourceCpp('./Development/MCMC/Surv_Model/C++/mcmc.cpp')
+#Rcpp::sourceCpp('./Development/MCMC/Surv_Model/C++/mcmc_block.cpp')
 
 simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
                            mean.Cens = 7) {
