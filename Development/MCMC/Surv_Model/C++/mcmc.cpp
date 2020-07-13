@@ -68,11 +68,21 @@ double logPrior(const vec& x, const vec& mean, const mat& Tau, double tau = 1) {
     return(- 0.5 * tau * as_scalar(z.t() * Tau * z));
 }
 
-arma::vec propose (const arma::vec& thetas, const arma::vec& scale, const int& it) {
+arma::vec propose (const arma::vec& thetas, const arma::vec& scale, const int& i) {
     arma::vec proposed_thetas = thetas;
-    proposed_thetas.at(it) = R::rnorm(thetas.at(it), scale.at(it));
-    return(proposed_thetas);
+    proposed_thetas.at(i) = R::rnorm(thetas.at(i), scale.at(i));
+    return proposed_thetas;
 }
+
+arma::field<arma::vec> propose_field (const arma::field<arma::vec>& thetas,
+                                      const arma::field<arma::vec>& scale,
+                                      const int& k, const int& i) {
+    arma::field<arma::vec> proposed_thetas = thetas;
+    proposed_thetas.at(k).at(i) = R::rnorm(thetas.at(k).at(i),
+                                           scale.at(k).at(i));
+    return proposed_thetas;
+}
+
 
 double robbins_monro (const double& scale, const double& acceptance_it,
                       const int& it, const double& target_acceptance = 0.45) {
@@ -150,6 +160,8 @@ List mcmc (List model_data, List model_info, List initial_values,
     field<mat> Wlong_h = List2Field_mat(Wlong_h_);
     List Wlong_H2_ = as<List>(model_data["Wlong_H2"]);
     field<mat> Wlong_H2 = List2Field_mat(Wlong_H2_);
+    List Wlong_bar_ = as<List>(model_data["Wlong_bar"]);
+    field<mat> Wlong_bar = List2Field_mat(Wlong_bar_);
     // other information
     int n_outcomes = Wlong_H.size();
     uvec idT = as<uvec>(model_data["idT"]) - 1;
@@ -189,8 +201,8 @@ List mcmc (List model_data, List model_info, List initial_values,
     vec scale_gammas(gammas.n_rows, fill::ones);
     scale_gammas = 0.1 * scale_gammas;
     field<vec> scale_alphas = alphas;
-    for (int i = 0; i < n_outcomes; ++i) {
-        scale_alphas.at(i) = scale_alphas.at(i) * 0 + 0.1;
+    for (int k = 0; k < n_outcomes; ++k) {
+        scale_alphas.at(k) = scale_alphas.at(k) * 0 + 0.1;
     }
     // store results
     int n_bs_gammas = bs_gammas.n_rows;
@@ -285,10 +297,12 @@ List mcmc (List model_data, List model_info, List initial_values,
             // store results
             res_bs_gammas.at(it, i) = bs_gammas.at(i);
         }
+        ////////////////////////////////////////////////////////////////////////
         double post_B_tau_bs_gammas = prior_B_tau_bs_gammas +
             0.5 * as_scalar(bs_gammas.t() * prior_Tau_bs_gammas * bs_gammas);
         tau_bs_gammas = R::rgamma(post_A_tau_bs_gammas, 1 / post_B_tau_bs_gammas);
         res_tau_bs_gammas.at(it) = tau_bs_gammas;
+        ////////////////////////////////////////////////////////////////////////
         if (any_gammas) {
             for (int i = 0; i < n_gammas; ++i) {
                 vec proposed_gammas = propose(gammas, scale_gammas, i);
@@ -333,17 +347,67 @@ List mcmc (List model_data, List model_info, List initial_values,
             }
             res_W_bar_gammas.at(it) = as_scalar(W_bar * gammas);
         }
+        ////////////////////////////////////////////////////////////////////////
+        for (int k = 0; k < n_outcomes; ++k) {
+            for (unsigned int i = 0; i < alphas.at(k).n_rows; ++i) {
+                field<vec> proposed_alphas = propose_field(alphas, scale_alphas, k, i);
+                vec proposed_WlongH_alphas = Wlong_alphas_fun(Wlong_H, proposed_alphas);
+                vec proposed_Wlongh_alphas(W0_h.n_rows);
+                if (any_event) {
+                    proposed_Wlongh_alphas = Wlong_alphas_fun(Wlong_h, proposed_alphas);
+                }
+                vec proposed_WlongH2_alphas(W0_H2.n_rows);
+                if (any_interval) {
+                    proposed_WlongH2_alphas = Wlong_alphas_fun(Wlong_H2, proposed_alphas);
+                }
+                double numerator_surv =
+                    log_density_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                                     WH_gammas, Wh_gammas, WH2_gammas,
+                                     proposed_WlongH_alphas, proposed_Wlongh_alphas, proposed_WlongH2_alphas,
+                                     log_Pwk, log_Pwk2, id_H,
+                                     which_event, which_right_event, which_left,
+                                     any_interval, which_interval) +
+                    logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
+                    logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1);
+                double log_ratio = numerator_surv - denominator_surv;
+                if (is_finite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
+                    alphas = proposed_alphas;
+                    WlongH_alphas = proposed_WlongH_alphas;
+                    if (any_event) {
+                        Wlongh_alphas = proposed_Wlongh_alphas;
+                    }
+                    if (any_interval) {
+                        WlongH2_alphas = proposed_WlongH2_alphas;
+                    }
+                    denominator_surv = numerator_surv;
+                    acceptance_alphas.at(k).at(it, i) = 1;
+                }
+                if (it > 19) {
+                    scale_alphas.at(k).at(i) =
+                        robbins_monro(scale_alphas.at(k).at(i),
+                                      acceptance_alphas.at(k).at(it, i), it);
+                }
+                // store results
+                res_alphas.at(k).at(it, i) = alphas.at(k).at(i);
+            }
+        }
+    }
+    for (int k = 0; k < n_outcomes; ++k) {
+        res_alphas.at(k) = res_alphas.at(k).rows(n_burnin, n_iter - 1);
+        acceptance_alphas.at(k) = acceptance_alphas.at(k).rows(n_burnin, n_iter - 1);
     }
     return List::create(
         Named("mcmc") = List::create(
             Named("bs_gammas") = res_bs_gammas.rows(n_burnin, n_iter - 1),
             Named("tau_bs_gammas") = res_tau_bs_gammas.rows(n_burnin, n_iter - 1),
             Named("gammas") = res_gammas.rows(n_burnin, n_iter - 1),
-            Named("W_bar_gammas") = res_W_bar_gammas.rows(n_burnin, n_iter - 1)
+            Named("W_bar_gammas") = res_W_bar_gammas.rows(n_burnin, n_iter - 1),
+            Named("alphas") = res_alphas
         ),
         Named("acc_rate") = List::create(
-            Named("bs_gammas") = acceptance_bs_gammas,
-            Named("gammas") = acceptance_gammas
+            Named("bs_gammas") = acceptance_bs_gammas.rows(n_burnin, n_iter - 1),
+            Named("gammas") = acceptance_gammas.rows(n_burnin, n_iter - 1),
+            Named("alphas") = acceptance_alphas
         )
     );
 }

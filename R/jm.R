@@ -12,7 +12,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # - n_iter: the number of iterations per chain. These will be the iterations after
     #           n_adapt
     con <- list(GK_k = 15L, Bsplines_degree = 2, base_hazard_segments = 10,
-                diff = 2L, n_chains = 3L, n_burnin = 500L, n_iter = 5500L)
+                diff = 2L, n_chains = 3L, n_burnin = 500L, n_iter = 3500L)
     control <- c(control, list(...))
     namC <- names(con)
     con[(namc <- names(control))] <- control
