@@ -139,7 +139,8 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
     list(DF = dat, DF.id = dat.id, trueValues = trueValues)
 }
 
-fit_hazard <- function (Data, center = TRUE, block_bs_gammas = TRUE) {
+fit_hazard <- function (Data, center = TRUE, block_bs_gammas = TRUE,
+                        M = 6000L, burn = M/2) {
     lmeFit <- lme(y ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)), data = Data$DF,
                   random = list(id = pdDiag(form = ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)))),
                   control = lmeControl(opt = "optim", niterEM = 45))
@@ -209,7 +210,6 @@ fit_hazard <- function (Data, center = TRUE, block_bs_gammas = TRUE) {
     }
     environment(log_density_surv2) <- environment()
     environment(logPC_surv2) <- environment()
-    M <- 6000L
     res_bs_gammas <- acceptance_bs_gammas <- matrix(0.0, M, length(bs_gammas))
     Sigma_bs_gammas <- test$vcov_prop$vcov_prop_bs_gammas
     S <- t(chol(Sigma_bs_gammas))
@@ -409,7 +409,6 @@ fit_hazard <- function (Data, center = TRUE, block_bs_gammas = TRUE) {
     }
     t1 <- proc.time()
     ###########################
-    burn <- 3000
     res_bs_gammas <- res_bs_gammas[-seq_len(burn), ]
     res_gammas <- res_gammas[-seq_len(burn), , drop = FALSE]
     res_alphas[[1]] <- res_alphas[[1]][-seq_len(burn), , drop = FALSE]
@@ -443,7 +442,8 @@ res_alph <- matrix(0.0, N, 1)
 times <- matrix(0.0, N, 3)
 for (j in seq_len(N)) {
     Data_n <- simulateJoint(alpha = 0, mean.Cens = 35)
-    fit <- fit_hazard(Data_n, center = TRUE, block_bs_gammas = TRUE)
+    fit <- fit_hazard(Data_n, center = TRUE, block_bs_gammas = TRUE,
+                      M = 30000)
     res_h0[j, ] <- fit$h0
     res_gam[j, ] <- fit$gammas
     res_alph[j, ] <- fit$alphas
