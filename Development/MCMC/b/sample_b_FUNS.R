@@ -154,7 +154,7 @@ to_list_b <- function(b, b.cols) {
   }
   for (i in 2:length(b.cols)) {
     if (b.cols[i] > 1) {
-      out[[i]] <- t(b[, b.cols[i-1]:cumsum_b.cols[i], ])
+      out[[i]] <- t(b[, (b.cols[i-1]+1):(cumsum_b.cols[i]), ])
     } else {
       out[[i]] <- matrix(b[, b.cols[i], ], ncol = 1)
     }
