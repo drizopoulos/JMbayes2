@@ -28,18 +28,20 @@ CoxFit <- coxph(Surv(years, status2) ~ age * sex,
 #                  data = pbc2.id, model = TRUE)
 
 fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
-                   value(log(serBilir)):sex,
+                 value(log(serBilir)):sex,
                "serChol" = ~ value(serChol) + slope(serChol),
-               #"hepatomegaly" = ~ value(hepatomegaly),
+               "hepatomegaly" = ~ value(hepatomegaly),
                "ascites" = ~ value(ascites) + area(ascites))
 
 JM1 <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
-           functional_forms = fForms)
+          functional_forms = fForms)
+
+#JM1 <- jm(CoxFit, list(fm1, fm3, fm4), time_var = "year",
+#          functional_forms = fForms)
 
 ###########################################################
 
 test <- JM1
-
 
 # parameter values
 betas <- test$initial_values$betas
@@ -76,27 +78,39 @@ Z_H2 <- test$model_data$Z_H2
 U_H2 <- test$model_data$U_H2
 log_Pwk <- test$model_data$log_Pwk
 log_Pwk2 <- test$model_data$log_Pwk2
-
+Xhc <- test$model_data$Xhc
+columns_HC <- test$model_data$columns_HC
+unq_idL <- test$model_data$unq_idL
+X <- test$model_data$X
+Z <- test$model_data$Z
+idL_lp <- test$model_data$idL_lp
+y <- test$model_data$y
+nY <- length(unique(test$model_data$unq_idL[[1]]))
+log_sigmas <- test$initial_values$log_sigmas
+idL <- test$model_data$idL
+Funs <- lapply(test$model_info$families, log_dens_Funs)
+mu_funs <- lapply(test$model_info$families, "[[", 'linkinv')
 
 control <- test$control
 functional_forms_per_outcome <- test$model_info$fun_forms$functional_forms_per_outcome
 
-################################################################################
-
-source(file.path(getwd(), "Development/MCMC/Surv_Model/sample_Surv_Funs.R"))
-
-M <- 5000L
-res_bs_gammas <- acceptance_bs_gammas <- matrix(0.0, M, length(bs_gammas))
-vcov_prop_bs_gammas <- test$vcov_prop$vcov_prop_bs_gammas
-scale_bs_gammas <- rep(0.1, length(bs_gammas))
-prior_mean_bs_gammas <- test$priors$mean_bs_gammas
-prior_Tau_bs_gammas <- test$priors$Tau_bs_gammas
-post_A_tau_bs_gammas <- test$priors$A_tau_bs_gammas +
-    0.5 * test$priors$rank_Tau_bs_gammas
-prior_B_tau_bs_gammas <- test$priors$B_tau_bs_gammas
-res_tau_bs_gammas <- numeric(M)
-
-tau_bs_gammas <- 2
-current_bs_gammas <- jitter(bs_gammas, 80)
-current_gammas <- gammas
-current_alphas <- alphas
+# id_H is used to repeat the random effects of each subject GK_k times
+id_H <- lapply(X_H, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
+# this is the linear predictor for the longitudinal outcomes evaluated at the
+# Gauss-Kronrod quadrature points
+eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
+# Wlong is the design matrix of all longitudinal outcomes according to the specified
+# functional forms per outcome already multiplied with the interaction terms matrix U
+Wlong_H <- create_Wlong(eta_H, functional_forms_per_outcome, U_H)
+if (length(which_event)) {
+  id_h <- lapply(X_h, function (x) seq_len(nrow(x[[1]])))
+  eta_h <- linpred_surv(X_h, betas, Z_h, b, id_h)
+  Wlong_h <- create_Wlong(eta_h, functional_forms_per_outcome, U_h)
+}
+if (length(which_interval)) {
+  id_H2 <- lapply(X_H2, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
+  eta_H2 <- linpred_surv(X_H2, betas, Z_H, b, id_H2)
+  Wlong_H2 <- create_Wlong(eta_H2, functional_forms_per_outcome, U_H2)
+} else {
+  Wlong_H2 <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
+}

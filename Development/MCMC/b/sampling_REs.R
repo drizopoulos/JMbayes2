@@ -1,3 +1,11 @@
+#########################################################################################################
+# SIMULATE DATA FROM A JOINT MODEL - SAVE THE RANDOM-EFFECTS - AND CHECK WHETHER IT WORKS - 3TO5 DATASETS
+# TO IMPLEMENT HIERARCHICAL CENTERING
+# CENTERING OF THE X AND Z MATRICES
+# CHECK SYSTEM TIME
+# MULTIPLE CHAINS (JITTER (NOISE FROM UNIFORM) OR NORMAL DISTRIBUTION WITH VARIANCE)
+#########################################################################################################
+
 library("survival")
 library("nlme")
 library("GLMMadaptive")
@@ -159,7 +167,26 @@ log_dens_surv <- function (bs_gammas, n, Data, Wlong_h, Wlong_H, gammas, alphas,
   - sum(log_Lik_surv, na.rm = TRUE)
 }
 
-target_log_dist <- function(X, betas, Z, b, id, 
+log_post_b <- function(X, betas, Z, b, id, 
+                            y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
+                            D, 
+                            Data, 
+                            Wlong_h, Wlong_H,
+                            bs_gammas, gammas, 
+                            alphas, 
+                            id_H, 
+                            n, bnew) {
+  b_lst <- list(t(b[, 1:2, ]), t(b[, 3:4, ]), matrix(b[, 5, ], ncol = 1), matrix(b[, 6, ], ncol = 1))
+  linear_predictor <- linpred_mixed(X, betas, Z, b_lst, id)
+  log_pyb <- log_density_mixed(y, linear_predictor, log_sigmas, Funs, mu_funs, nY, unq_idL, idL)
+  log_pb <- dmvnorm(t(b[1, , ]), mu = rep(0, ncol(b)), Sigma = D, log = TRUE, prop = TRUE)
+  #log_pb <- dmvnorm(t(b[1, , ]), mu = t(bnew[1, , ]), Sigma = D, log = TRUE, prop = FALSE)
+  log_ptb <- log_dens_surv(bs_gammas = bs_gammas, n = n, Data = Data, Wlong_h = Wlong_h, Wlong_H = Wlong_H, 
+                           gammas = gammas, alphas = alphas, id_H = id_H)
+  log_pyb + log_pb + log_ptb
+}
+
+log_post_b_HC <- function(X, betas, Z, b, id, 
                             y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
                             D, 
                             Data, 
@@ -192,7 +219,7 @@ robbins_monro_univ <- function (scale, acceptance_it, it, target_acceptance = 0.
 unq_idL <- lapply(idL, unique)
 
 # MCMC
-M <- 100000
+M <- 10000
 b.rows <- max(do.call(c, lapply(b, nrow)))
 b.cols <- do.call(c, lapply(b, ncol))
 bs <- array(0.0, dim = c(M, sum(b.cols), length(unq_idL[[1]])))
@@ -247,5 +274,5 @@ for (m in seq_len(M)) {
 
 
 #mean(acceptance_b[312, ][-seq_len(500L)])
-plot(bs[, 5, 1], type = 'l')
+plot(bs[, 6, 1], type = 'l')
 apply(acceptance_b, MARGIN = 1, mean)
