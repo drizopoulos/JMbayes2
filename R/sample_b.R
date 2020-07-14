@@ -93,15 +93,15 @@ D <- test$initial_values$D
 system.time({
   for (m in seq_len(M)) {
     proposed_u <- rmvnorm_array(1, vcov_prop_RE, sigmas) + current_u
-    numerator <- log_post_b(X = Xhc, betas = betas, Z = Z, b = proposed_u, b.cols = b.cols, id = idL_lp, 
+    numerator <- log_post_b_HC(X = X, betas = betas, Z = Z, b = proposed_u, b.cols = b.cols, id = idL_lp, 
                             y = y, log_sigmas = log_sigmas, Funs = Funs, mu_funs = mu_funs, nY = nY, unq_idL = unq_idL, idL = idL, 
-                            D = D,
+                            D = D, Xhc = Xhc, columns_HC = columns_HC,
                             bs_gammas = bs_gammas, gammas = gammas, 
                             alphas = alphas,
                             n = b.rows, bnew = proposed_u)
-    denominator <- log_post_b(X = Xhc, betas = betas, Z = Z, b = current_u, b.cols = b.cols, id = idL_lp, 
+    denominator <- log_post_b_HC(X = X, betas = betas, Z = Z, b = current_u, b.cols = b.cols, id = idL_lp, 
                               y = y, log_sigmas = log_sigmas, Funs = Funs, mu_funs = mu_funs, nY = nY, unq_idL = unq_idL, idL = idL, 
-                              D = D,
+                              D = D, Xhc = Xhc, columns_HC = columns_HC,
                               bs_gammas = bs_gammas, gammas = gammas, 
                               alphas = alphas,
                               n = b.rows, bnew = current_u)

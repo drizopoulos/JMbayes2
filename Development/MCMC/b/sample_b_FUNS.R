@@ -142,11 +142,19 @@ robbins_monro_univ <- function (scale, acceptance_it, it, target_acceptance = 0.
   }
 }
 
+# this can probably be coded more efficiently but not needed since
+# this function can be removed when translated to c++ in the final code
 to_list_b <- function(b, b.cols) {
   out <- vector('list', length = length(b.cols))
-  for (i in 1:length(b.cols)) {
-    if (length(b.cols[i]) > 1) {
-      out[[i]] <- t(b[, b.cols[i], ])
+  cumsum_b.cols <- cumsum(b.cols)
+  if (b.cols[1] > 1) {
+    out[[1]] <- t(b[, 1:b.cols[1], ])
+  } else {
+    out[[1]] <- matrix(b[, b.cols[1], ], ncol = 1)
+  }
+  for (i in 2:length(b.cols)) {
+    if (b.cols[i] > 1) {
+      out[[i]] <- t(b[, b.cols[i-1]:cumsum_b.cols[i], ])
     } else {
       out[[i]] <- matrix(b[, b.cols[i], ], ncol = 1)
     }
@@ -172,7 +180,7 @@ log_post_b <- function(X, betas, Z, b, b.cols, id,
 
 log_post_b_HC <- function(X, betas, Z, b, b.cols, id, 
                           y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
-                          D, 
+                          D, Xhc, columns_HC,
                           bs_gammas, gammas, 
                           alphas, 
                           n, bnew) {
@@ -181,7 +189,9 @@ log_post_b_HC <- function(X, betas, Z, b, b.cols, id,
   b_lst <- to_list_b(b, b.cols)
   linear_predictor <- linpred_mixed(X, betas, Z, b_lst, id)
   log_pyb <- log_density_mixed(y, linear_predictor, log_sigmas, Funs, mu_funs, nY, unq_idL, idL)
-  log_pb <- dmvnorm(t(b[1, , ]), mu = rep(0, ncol(b)), Sigma = D, log = TRUE, prop = TRUE)
+  mean_b_i <- calculate_mean_b_i(Xhc, columns_HC, betas, b_lst, unq_idL)
+  mean_b_i <- do.call(cbind, mean_b_i)
+  log_pb <- dmvnorm(t(b[1, , ]), mu = mean_b_i, Sigma = D, log = TRUE, prop = TRUE)
   log_ptb <- log_density_surv(bs_gammas = bs_gammas, gammas = gammas, alphas = alphas)
   log_pyb + log_pb + log_ptb
 }
@@ -246,3 +256,23 @@ calculate_u <- function (Xhc, columns_HC, betas, b, unq_idL) {
   }
   u
 }
+
+calculate_mean_b_i <- function (Xhc, columns_HC, betas, b, unq_idL) {
+  u <- b
+  for (i in seq_along(Xhc)) {
+    Xhc_i <- Xhc[[i]]
+    columns_HC_i <- columns_HC[[i]]
+    betas_i <- betas[[i]]
+    b_i <- b[[i]]
+    unq_idL_i <- unq_idL[[i]]
+    mean_b_i <- b_i * 0
+    for (j in seq_len(ncol(b_i))) {
+      index <- columns_HC_i == j
+      mean_b_i[unq_idL_i, j] <- c(Xhc_i[, index, drop = FALSE] %*% betas_i[index])
+    }
+    u[[i]] <- mean_b_i
+  }
+  u
+}
+
+
