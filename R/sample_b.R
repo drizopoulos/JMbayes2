@@ -72,7 +72,7 @@ apply(acceptance_b, MARGIN = 1, mean)
 #--------------------
 # WITH HC
 #--------------------
-M <- 5000L
+M <- 10000L
 b.rows <- max(do.call(c, lapply(b, nrow)))
 b.cols <- do.call(c, lapply(b, ncol))
 bs <- array(0.0, dim = c(M, sum(b.cols), b.rows))
