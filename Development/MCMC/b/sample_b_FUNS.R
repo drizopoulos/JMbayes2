@@ -142,14 +142,27 @@ robbins_monro_univ <- function (scale, acceptance_it, it, target_acceptance = 0.
   }
 }
 
-log_post_b <- function(X, betas, Z, b, id, 
+to_list_b <- function(b, b.cols) {
+  out <- vector('list', length = length(b.cols))
+  for (i in 1:length(b.cols)) {
+    if (length(b.cols[i]) > 1) {
+      out[[i]] <- t(b[, b.cols[i], ])
+    } else {
+      out[[i]] <- matrix(b[, b.cols[i], ], ncol = 1)
+    }
+  }
+  out
+}
+
+log_post_b <- function(X, betas, Z, b, b.cols, id, 
                        y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
                        D, 
                        bs_gammas, gammas, 
                        alphas, 
                        n, bnew) {
   #b_lst <- list(t(b[, 1:2, ]), t(b[, 3:4, ]), matrix(b[, 5, ], ncol = 1), matrix(b[, 6, ], ncol = 1))
-  b_lst <- list(t(b[, 1:2, ]), matrix(b[, 3, ], ncol = 1), matrix(b[, 4, ], ncol = 1))
+  #b_lst <- list(t(b[, 1:2, ]), matrix(b[, 3, ], ncol = 1), matrix(b[, 4, ], ncol = 1))
+  b_lst <- to_list_b(b, b.cols)
   linear_predictor <- linpred_mixed(X, betas, Z, b_lst, id)
   log_pyb <- log_density_mixed(y, linear_predictor, log_sigmas, Funs, mu_funs, nY, unq_idL, idL)
   log_pb <- dmvnorm(t(b[1, , ]), mu = rep(0, ncol(b)), Sigma = D, log = TRUE, prop = TRUE)
@@ -157,14 +170,15 @@ log_post_b <- function(X, betas, Z, b, id,
   log_pyb + log_pb + log_ptb
 }
 
-log_post_b_HC <- function(X, betas, Z, b, id, 
-                       y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
-                       D, 
-                       Data,
-                       bs_gammas, gammas, 
-                       alphas, 
-                       n, bnew) {
-  b_lst <- list(t(b[, 1:2, ]), t(b[, 3:4, ]), matrix(b[, 5, ], ncol = 1), matrix(b[, 6, ], ncol = 1))
+log_post_b_HC <- function(X, betas, Z, b, b.cols, id, 
+                          y, log_sigmas, Funs, mu_funs, nY, unq_idL, idL, 
+                          D, 
+                          bs_gammas, gammas, 
+                          alphas, 
+                          n, bnew) {
+  #b_lst <- list(t(b[, 1:2, ]), t(b[, 3:4, ]), matrix(b[, 5, ], ncol = 1), matrix(b[, 6, ], ncol = 1))
+  #b_lst <- list(t(b[, 1:2, ]), matrix(b[, 3, ], ncol = 1), matrix(b[, 4, ], ncol = 1))
+  b_lst <- to_list_b(b, b.cols)
   linear_predictor <- linpred_mixed(X, betas, Z, b_lst, id)
   log_pyb <- log_density_mixed(y, linear_predictor, log_sigmas, Funs, mu_funs, nY, unq_idL, idL)
   log_pb <- dmvnorm(t(b[1, , ]), mu = rep(0, ncol(b)), Sigma = D, log = TRUE, prop = TRUE)
