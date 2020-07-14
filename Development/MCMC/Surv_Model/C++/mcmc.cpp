@@ -48,10 +48,31 @@ arma::vec Wlong_alphas_fun (const arma::field<arma::mat>& Mats,
     int n = Mats.size();
     int n_rows = Mats.at(0).n_rows;
     arma::vec out(n_rows, fill::zeros);
-    for (int i = 0; i < n; ++i) {
-        out += Mats.at(i) * coefs.at(i);
+    for (int k = 0; k < n; ++k) {
+        out += Mats.at(k) * coefs.at(k);
     }
     return(out);
+}
+
+arma::mat docall_cbind (const List& Mats_) {
+    field<mat> Mats = List2Field_mat(Mats_);
+    int n = Mats.size();
+    arma::uvec ncols(n);
+    for (int k = 0; k < n; ++k) {
+        ncols.at(k) = Mats.at(k).n_cols;
+    }
+    int N = sum(ncols);
+    int col_start = 0;
+    int col_end = ncols.at(0) - 1;
+    arma::mat out(Mats.at(0).n_rows, N);
+    for (int k = 0; k < n; ++k) {
+        if (k > 0) {
+            col_start += ncols.at(k - 1);
+            col_end += ncols.at(k);
+        }
+        out.cols(col_start, col_end) = Mats.at(k);
+    }
+    return out;
 }
 
 arma::uvec create_fast_ind (const arma::uvec& group) {
@@ -155,15 +176,14 @@ List mcmc (List model_data, List model_info, List initial_values,
     mat W_H2 = as<mat>(model_data["W_H2"]);
     mat W_bar = as<mat>(model_data["W_bar"]);
     List Wlong_H_ = as<List>(model_data["Wlong_H"]);
-    field<mat> Wlong_H = List2Field_mat(Wlong_H_);
+    mat Wlong_H = docall_cbind(Wlong_H_);
     List Wlong_h_ = as<List>(model_data["Wlong_h"]);
-    field<mat> Wlong_h = List2Field_mat(Wlong_h_);
+    mat Wlong_h = docall_cbind(Wlong_h_);
     List Wlong_H2_ = as<List>(model_data["Wlong_H2"]);
-    field<mat> Wlong_H2 = List2Field_mat(Wlong_H2_);
+    mat Wlong_H2 = docall_cbind(Wlong_H2_);
     List Wlong_bar_ = as<List>(model_data["Wlong_bar"]);
     field<mat> Wlong_bar = List2Field_mat(Wlong_bar_);
     // other information
-    int n_outcomes = Wlong_H.size();
     uvec idT = as<uvec>(model_data["idT"]) - 1;
     vec log_Pwk = as<vec>(model_data["log_Pwk"]);
     vec log_Pwk2 = as<vec>(model_data["log_Pwk2"]);
@@ -179,8 +199,7 @@ List mcmc (List model_data, List model_info, List initial_values,
     field<mat> b = List2Field_mat(b_);
     vec bs_gammas = as<vec>(initial_values["bs_gammas"]);
     vec gammas = as<vec>(initial_values["gammas"]);
-    List alphas_ = as<List>(initial_values["alphas"]);
-    field<vec> alphas = List2Field_vec(alphas_);
+    vec alphas = as<vec>(initial_values["alphas"]);
     double tau_bs_gammas = as<double>(initial_values["tau_bs_gammas"]);
     // MCMC settings
     int n_iter = as<int>(control["n_iter"]);
@@ -200,20 +219,19 @@ List mcmc (List model_data, List model_info, List initial_values,
     scale_bs_gammas = 0.1 * scale_bs_gammas;
     vec scale_gammas(gammas.n_rows, fill::ones);
     scale_gammas = 0.1 * scale_gammas;
-    field<vec> scale_alphas = alphas;
-    for (int k = 0; k < n_outcomes; ++k) {
-        scale_alphas.at(k) = scale_alphas.at(k) * 0 + 0.1;
-    }
+    vec scale_alphas(alphas.n_rows, fill::ones);
+    scale_alphas = 0.1 * scale_alphas;
     // store results
     int n_bs_gammas = bs_gammas.n_rows;
     int n_gammas = gammas.n_rows;
+    int n_alphas = alphas.n_rows;
     mat res_bs_gammas(n_iter, n_bs_gammas);
     mat acceptance_bs_gammas(n_iter, n_bs_gammas, fill::zeros);
     mat res_gammas(n_iter, n_gammas);
     vec res_W_bar_gammas(n_iter);
     mat acceptance_gammas(n_iter, n_gammas, fill::zeros);
-    field<mat> res_alphas = create_storage(alphas, n_iter);
-    field<mat> acceptance_alphas = create_storage(alphas, n_iter);
+    mat res_alphas(n_iter, n_alphas);
+    mat acceptance_alphas(n_iter, n_alphas, fill::zeros);
     vec res_tau_bs_gammas(n_iter);
     // preliminaries
     vec W0H_bs_gammas = W0_H * bs_gammas;
@@ -237,14 +255,14 @@ List mcmc (List model_data, List model_info, List initial_values,
     if (any_gammas && any_interval) {
         WH2_gammas = WH2_gammas * gammas;
     }
-    vec WlongH_alphas = Wlong_alphas_fun(Wlong_H, alphas);
+    vec WlongH_alphas = Wlong_H * alphas;
     vec Wlongh_alphas(W0_h.n_rows);
     if (any_event) {
-        Wlongh_alphas = Wlong_alphas_fun(Wlong_h, alphas);
+        Wlongh_alphas = Wlong_h * alphas;
     }
     vec WlongH2_alphas(W0_H2.n_rows);
     if (any_interval) {
-        WlongH2_alphas = Wlong_alphas_fun(Wlong_H2, alphas);
+        WlongH2_alphas = Wlong_H2 * alphas;
     }
     double denominator_surv =
         log_density_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
@@ -348,53 +366,47 @@ List mcmc (List model_data, List model_info, List initial_values,
             res_W_bar_gammas.at(it) = as_scalar(W_bar * gammas);
         }
         ////////////////////////////////////////////////////////////////////////
-        for (int k = 0; k < n_outcomes; ++k) {
-            for (unsigned int i = 0; i < alphas.at(k).n_rows; ++i) {
-                field<vec> proposed_alphas = propose_field(alphas, scale_alphas, k, i);
-                vec proposed_WlongH_alphas = Wlong_alphas_fun(Wlong_H, proposed_alphas);
-                vec proposed_Wlongh_alphas(W0_h.n_rows);
-                if (any_event) {
-                    proposed_Wlongh_alphas = Wlong_alphas_fun(Wlong_h, proposed_alphas);
-                }
-                vec proposed_WlongH2_alphas(W0_H2.n_rows);
-                if (any_interval) {
-                    proposed_WlongH2_alphas = Wlong_alphas_fun(Wlong_H2, proposed_alphas);
-                }
-                double numerator_surv =
-                    log_density_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-                                     WH_gammas, Wh_gammas, WH2_gammas,
-                                     proposed_WlongH_alphas, proposed_Wlongh_alphas, proposed_WlongH2_alphas,
-                                     log_Pwk, log_Pwk2, id_H,
-                                     which_event, which_right_event, which_left,
-                                     any_interval, which_interval) +
+        for (int i = 0; i < n_alphas; ++i) {
+            vec proposed_alphas = propose(alphas, scale_alphas, i);
+            vec proposed_WlongH_alphas = Wlong_H * proposed_alphas;
+            vec proposed_Wlongh_alphas(W0_h.n_rows);
+            if (any_event) {
+                proposed_Wlongh_alphas = Wlong_h * proposed_alphas;
+            }
+            vec proposed_WlongH2_alphas(W0_H2.n_rows);
+            if (any_interval) {
+                proposed_WlongH2_alphas = Wlong_H2 * proposed_alphas;
+            }
+            double numerator_surv =
+                log_density_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                                 WH_gammas, Wh_gammas, WH2_gammas,
+                                 proposed_WlongH_alphas, proposed_Wlongh_alphas, proposed_WlongH2_alphas,
+                                 log_Pwk, log_Pwk2, id_H,
+                                 which_event, which_right_event, which_left,
+                                 any_interval, which_interval) +
                     logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
                     logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1);
-                double log_ratio = numerator_surv - denominator_surv;
-                if (is_finite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
-                    alphas = proposed_alphas;
-                    WlongH_alphas = proposed_WlongH_alphas;
-                    if (any_event) {
-                        Wlongh_alphas = proposed_Wlongh_alphas;
-                    }
-                    if (any_interval) {
-                        WlongH2_alphas = proposed_WlongH2_alphas;
-                    }
-                    denominator_surv = numerator_surv;
-                    acceptance_alphas.at(k).at(it, i) = 1;
+            double log_ratio = numerator_surv - denominator_surv;
+            if (is_finite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
+                alphas = proposed_alphas;
+                WlongH_alphas = proposed_WlongH_alphas;
+                if (any_event) {
+                    Wlongh_alphas = proposed_Wlongh_alphas;
                 }
-                if (it > 19) {
-                    scale_alphas.at(k).at(i) =
-                        robbins_monro(scale_alphas.at(k).at(i),
-                                      acceptance_alphas.at(k).at(it, i), it);
+                if (any_interval) {
+                    WlongH2_alphas = proposed_WlongH2_alphas;
                 }
-                // store results
-                res_alphas.at(k).at(it, i) = alphas.at(k).at(i);
+                denominator_surv = numerator_surv;
+                acceptance_alphas.at(it, i) = 1;
             }
+            if (it > 19) {
+                scale_alphas.at(i) =
+                    robbins_monro(scale_alphas.at(i),
+                                  acceptance_alphas.at(it, i), it);
+            }
+            // store results
+            res_alphas.at(it, i) = alphas.at(i);
         }
-    }
-    for (int k = 0; k < n_outcomes; ++k) {
-        res_alphas.at(k) = res_alphas.at(k).rows(n_burnin, n_iter - 1);
-        acceptance_alphas.at(k) = acceptance_alphas.at(k).rows(n_burnin, n_iter - 1);
     }
     return List::create(
         Named("mcmc") = List::create(
@@ -402,12 +414,12 @@ List mcmc (List model_data, List model_info, List initial_values,
             Named("tau_bs_gammas") = res_tau_bs_gammas.rows(n_burnin, n_iter - 1),
             Named("gammas") = res_gammas.rows(n_burnin, n_iter - 1),
             Named("W_bar_gammas") = res_W_bar_gammas.rows(n_burnin, n_iter - 1),
-            Named("alphas") = res_alphas
+            Named("alphas") = res_alphas.rows(n_burnin, n_iter - 1)
         ),
         Named("acc_rate") = List::create(
             Named("bs_gammas") = acceptance_bs_gammas.rows(n_burnin, n_iter - 1),
             Named("gammas") = acceptance_gammas.rows(n_burnin, n_iter - 1),
-            Named("alphas") = acceptance_alphas
+            Named("alphas") = acceptance_alphas.rows(n_burnin, n_iter - 1)
         )
     );
 }

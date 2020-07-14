@@ -21,6 +21,7 @@ model_data$Wlong_H2 <- lapply(model_data$Wlong_H2, scale, scale = FALSE)
 model_data$Wlong_bar <- lapply(model_data$Wlong_h,
                                function (w) rbind(attr(w, "scaled:center")))
 
+initial_values$alphas <- unlist(initial_values$alphas, use.names = FALSE)
 
 priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
 priors$Tau_alphas <- .bdiag(priors$Tau_alphas)
@@ -41,4 +42,4 @@ for (k in 0:12) {
 plot(xxx$mcmc$gammas[, 1], type = "l")
 plot(xxx$mcmc$gammas[, 2], type = "l")
 
-plot(xxx$mcmc$alphas[[1]][, 1], type = "l")
+plot(xxx$mcmc$alphas[, 1], type = "l")

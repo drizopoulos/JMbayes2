@@ -250,7 +250,13 @@ fit_hazard <- function (Data, center = TRUE, block_bs_gammas = TRUE,
     indFast_H2 <- c(indFast_H2[-length(indFast_H2)] != indFast_H2[-1L], TRUE)
     W0H_bs_gammas <- W0_H %*% current_bs_gammas
     WH_gammas <- W_H %*% current_gammas
+
     WlongH_alphas <- Wlong_alphas_fun(Wlong_H, current_alphas)
+    xxx <- do.call('cbind', Wlong_H) %*% unlist(current_alphas)
+    all.equal(WlongH_alphas, xxx)
+
+
+
     if (length(which_event)) {
         W0h_bs_gammas <- W0_h %*% current_bs_gammas
         Wh_gammas <- W_h %*% current_gammas
