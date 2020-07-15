@@ -104,7 +104,6 @@ arma::field<arma::vec> propose_field (const arma::field<arma::vec>& thetas,
     return proposed_thetas;
 }
 
-
 double robbins_monro (const double& scale, const double& acceptance_it,
                       const int& it, const double& target_acceptance = 0.45) {
     double step_length = scale / (target_acceptance * (1 - target_acceptance));
@@ -153,6 +152,182 @@ double log_density_surv (const arma::vec& W0H_bs_gammas,
             log(- expm1(- H2.elem(which_interval)));
     }
     return(sum(log_Lik_surv));
+}
+
+void update_bs_gammas (vec& bs_gammas, vec& gammas, vec& alphas,
+                       vec& W0H_bs_gammas, vec& W0h_bs_gammas, vec& W0H2_bs_gammas,
+                       vec& WH_gammas, vec& Wh_gammas, vec& WH2_gammas,
+                       vec& WlongH_alphas, vec& Wlongh_alphas, vec& WlongH2_alphas,
+                       vec& log_Pwk, vec& log_Pwk2, uvec& id_H,
+                       uvec& which_event, uvec& which_right_event, uvec& which_left, uvec& which_interval,
+                       bool& any_event, bool& any_interval,
+                       vec& prior_mean_bs_gammas, mat& prior_Tau_bs_gammas, double& tau_bs_gammas,
+                       vec& prior_mean_gammas, mat& prior_Tau_gammas,
+                       double& denominator_surv, int& it,
+                       /////
+                       mat& W0_H, mat& W0_h, mat& W0_H2,
+                       vec& scale_bs_gammas,
+                       mat& acceptance_bs_gammas,
+                       mat& res_bs_gammas) {
+    for (unsigned int i = 0; i < bs_gammas.n_rows; ++i) {
+        vec proposed_bs_gammas = propose(bs_gammas, scale_bs_gammas, i);
+        vec proposed_W0H_bs_gammas = W0_H * proposed_bs_gammas;
+        vec proposed_W0h_bs_gammas(W0_h.n_rows);
+        vec proposed_W0H2_bs_gammas(W0_H2.n_rows);
+        if (any_event) {
+            proposed_W0h_bs_gammas = W0_h * proposed_bs_gammas;
+        }
+        if (any_interval) {
+            proposed_W0H2_bs_gammas = W0_H2 * proposed_bs_gammas;
+        }
+        double numerator_surv =
+            log_density_surv(proposed_W0H_bs_gammas, proposed_W0h_bs_gammas, proposed_W0H2_bs_gammas,
+                             WH_gammas, Wh_gammas, WH2_gammas,
+                             WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+                             log_Pwk, log_Pwk2, id_H,
+                             which_event, which_right_event, which_left,
+                             any_interval, which_interval) +
+                                 logPrior(proposed_bs_gammas, prior_mean_bs_gammas,
+                                          prior_Tau_bs_gammas, tau_bs_gammas) +
+                                              logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1);
+        double log_ratio = numerator_surv - denominator_surv;
+        if (is_finite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
+            bs_gammas = proposed_bs_gammas;
+            W0H_bs_gammas = proposed_W0H_bs_gammas;
+            if (any_event) {
+                W0h_bs_gammas = proposed_W0h_bs_gammas;
+            }
+            if (any_interval) {
+                W0H2_bs_gammas = proposed_W0H2_bs_gammas;
+            }
+            denominator_surv = numerator_surv;
+            acceptance_bs_gammas.at(it, i) = 1;
+        }
+        if (it > 19) {
+            scale_bs_gammas.at(i) =
+                robbins_monro(scale_bs_gammas.at(i),
+                              acceptance_bs_gammas.at(it, i), it);
+        }
+        res_bs_gammas.at(it, i) = bs_gammas.at(i);
+    }
+}
+
+void update_gammas (vec& bs_gammas, vec& gammas, vec& alphas,
+                    vec& W0H_bs_gammas, vec& W0h_bs_gammas, vec& W0H2_bs_gammas,
+                    vec& WH_gammas, vec& Wh_gammas, vec& WH2_gammas,
+                    vec& WlongH_alphas, vec& Wlongh_alphas, vec& WlongH2_alphas,
+                    vec& log_Pwk, vec& log_Pwk2, uvec& id_H,
+                    uvec& which_event, uvec& which_right_event, uvec& which_left, uvec& which_interval,
+                    bool& any_event, bool& any_interval,
+                    vec& prior_mean_bs_gammas, mat& prior_Tau_bs_gammas, double& tau_bs_gammas,
+                    vec& prior_mean_gammas, mat& prior_Tau_gammas,
+                    double& denominator_surv, int& it,
+                    /////
+                    mat& W_H, mat& W_h, mat& W_H2,
+                    vec& scale_gammas,
+                    mat& acceptance_gammas,
+                    mat& res_gammas) {
+    for (unsigned int i = 0; i < gammas.n_rows; ++i) {
+        vec proposed_gammas = propose(gammas, scale_gammas, i);
+        vec proposed_WH_gammas = W_H * proposed_gammas;
+        vec proposed_Wh_gammas(W_h.n_rows);
+        vec proposed_WH2_gammas(W_H2.n_rows);
+        if (any_event) {
+            proposed_Wh_gammas = W_h * proposed_gammas;
+        }
+        if (any_interval) {
+            proposed_WH2_gammas = W_H2 * proposed_gammas;
+        }
+        double numerator_surv =
+            log_density_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                             proposed_WH_gammas, proposed_Wh_gammas, proposed_WH2_gammas,
+                             WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+                             log_Pwk, log_Pwk2, id_H,
+                             which_event, which_right_event, which_left,
+                             any_interval, which_interval) +
+            logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas,
+                     tau_bs_gammas) +
+            logPrior(proposed_gammas, prior_mean_gammas, prior_Tau_gammas, 1);
+        double log_ratio = numerator_surv - denominator_surv;
+        if (is_finite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
+            gammas = proposed_gammas;
+            WH_gammas = proposed_WH_gammas;
+            if (any_event) {
+                Wh_gammas = proposed_Wh_gammas;
+            }
+            if (any_interval) {
+                WH2_gammas = proposed_WH2_gammas;
+            }
+            denominator_surv = numerator_surv;
+            acceptance_gammas.at(it, i) = 1;
+        }
+        if (it > 19) {
+            scale_gammas.at(i) =
+                robbins_monro(scale_gammas.at(i),
+                              acceptance_gammas.at(it, i), it);
+        }
+        // store results
+        res_gammas.at(it, i) = gammas.at(i);
+    }
+}
+
+
+void update_alphas (vec& bs_gammas, vec& gammas, vec& alphas,
+                    vec& W0H_bs_gammas, vec& W0h_bs_gammas, vec& W0H2_bs_gammas,
+                    vec& WH_gammas, vec& Wh_gammas, vec& WH2_gammas,
+                    vec& WlongH_alphas, vec& Wlongh_alphas, vec& WlongH2_alphas,
+                    vec& log_Pwk, vec& log_Pwk2, uvec& id_H,
+                    uvec& which_event, uvec& which_right_event, uvec& which_left, uvec& which_interval,
+                    bool& any_event, bool& any_interval,
+                    vec& prior_mean_bs_gammas, mat& prior_Tau_bs_gammas, double& tau_bs_gammas,
+                    vec& prior_mean_gammas, mat& prior_Tau_gammas,
+                    double& denominator_surv, int& it,
+                    /////
+                    mat& Wlong_H, mat& Wlong_h, mat& Wlong_H2,
+                    vec& scale_alphas,
+                    mat& acceptance_alphas,
+                    mat& res_alphas) {
+    for (unsigned int i = 0; i < alphas.n_rows; ++i) {
+        vec proposed_alphas = propose(alphas, scale_alphas, i);
+        vec proposed_WlongH_alphas = Wlong_H * proposed_alphas;
+        vec proposed_Wlongh_alphas(Wlong_h.n_rows);
+        if (any_event) {
+            proposed_Wlongh_alphas = Wlong_h * proposed_alphas;
+        }
+        vec proposed_WlongH2_alphas(Wlong_H2.n_rows);
+        if (any_interval) {
+            proposed_WlongH2_alphas = Wlong_H2 * proposed_alphas;
+        }
+        double numerator_surv =
+            log_density_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                             WH_gammas, Wh_gammas, WH2_gammas,
+                             proposed_WlongH_alphas, proposed_Wlongh_alphas, proposed_WlongH2_alphas,
+                             log_Pwk, log_Pwk2, id_H,
+                             which_event, which_right_event, which_left,
+                             any_interval, which_interval) +
+                                 logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
+                                 logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1);
+        double log_ratio = numerator_surv - denominator_surv;
+        if (is_finite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
+            alphas = proposed_alphas;
+            WlongH_alphas = proposed_WlongH_alphas;
+            if (any_event) {
+                Wlongh_alphas = proposed_Wlongh_alphas;
+            }
+            if (any_interval) {
+                WlongH2_alphas = proposed_WlongH2_alphas;
+            }
+            denominator_surv = numerator_surv;
+            acceptance_alphas.at(it, i) = 1;
+        }
+        if (it > 19) {
+            scale_alphas.at(i) =
+                robbins_monro(scale_alphas.at(i),
+                              acceptance_alphas.at(it, i), it);
+        }
+        // store results
+        res_alphas.at(it, i) = alphas.at(i);
+    }
 }
 
 // [[Rcpp::export]]
@@ -274,47 +449,19 @@ List mcmc (List model_data, List model_info, List initial_values,
         logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
         logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1);
     for (int it = 0; it < n_iter; ++it) {
-        for (int i = 0; i < n_bs_gammas; ++i) {
-            vec proposed_bs_gammas = propose(bs_gammas, scale_bs_gammas, i);
-            vec proposed_W0H_bs_gammas = W0_H * proposed_bs_gammas;
-            vec proposed_W0h_bs_gammas(W0_h.n_rows);
-            vec proposed_W0H2_bs_gammas(W0_H2.n_rows);
-            if (any_event) {
-                proposed_W0h_bs_gammas = W0_h * proposed_bs_gammas;
-            }
-            if (any_interval) {
-                proposed_W0H2_bs_gammas = W0_H2 * proposed_bs_gammas;
-            }
-            double numerator_surv =
-                log_density_surv(proposed_W0H_bs_gammas, proposed_W0h_bs_gammas, proposed_W0H2_bs_gammas,
-                                 WH_gammas, Wh_gammas, WH2_gammas,
-                                 WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                                 log_Pwk, log_Pwk2, id_H,
-                                 which_event, which_right_event, which_left,
-                                 any_interval, which_interval) +
-                logPrior(proposed_bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
-                logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1);
-            double log_ratio = numerator_surv - denominator_surv;
-            if (is_finite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
-                bs_gammas = proposed_bs_gammas;
-                W0H_bs_gammas = proposed_W0H_bs_gammas;
-                if (any_event) {
-                    W0h_bs_gammas = proposed_W0h_bs_gammas;
-                }
-                if (any_interval) {
-                    W0H2_bs_gammas = proposed_W0H2_bs_gammas;
-                }
-                denominator_surv = numerator_surv;
-                acceptance_bs_gammas.at(it, i) = 1;
-            }
-            if (it > 19) {
-                scale_bs_gammas.at(i) =
-                    robbins_monro(scale_bs_gammas.at(i),
-                                  acceptance_bs_gammas.at(it, i), it);
-            }
-            // store results
-            res_bs_gammas.at(it, i) = bs_gammas.at(i);
-        }
+        update_bs_gammas(bs_gammas, gammas, alphas,
+            W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+            WH_gammas, Wh_gammas, WH2_gammas,
+            WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+            log_Pwk, log_Pwk2, id_H,
+            which_event, which_right_event, which_left, which_interval,
+            any_event, any_interval,
+            prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
+            prior_mean_gammas, prior_Tau_gammas,
+            denominator_surv, it,
+            /////
+            W0_H, W0_h, W0_H2, scale_bs_gammas, acceptance_bs_gammas,
+            res_bs_gammas);
         ////////////////////////////////////////////////////////////////////////
         double post_B_tau_bs_gammas = prior_B_tau_bs_gammas +
             0.5 * as_scalar(bs_gammas.t() * prior_Tau_bs_gammas * bs_gammas);
@@ -322,91 +469,35 @@ List mcmc (List model_data, List model_info, List initial_values,
         res_tau_bs_gammas.at(it) = tau_bs_gammas;
         ////////////////////////////////////////////////////////////////////////
         if (any_gammas) {
-            for (int i = 0; i < n_gammas; ++i) {
-                vec proposed_gammas = propose(gammas, scale_gammas, i);
-                vec proposed_WH_gammas = W_H * proposed_gammas;
-                vec proposed_Wh_gammas(W_h.n_rows);
-                vec proposed_WH2_gammas(W_H2.n_rows);
-                if (any_event) {
-                    proposed_Wh_gammas = W_h * proposed_gammas;
-                }
-                if (any_interval) {
-                    proposed_WH2_gammas = W_H2 * proposed_gammas;
-                }
-                double numerator_surv =
-                    log_density_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-                                     proposed_WH_gammas, proposed_Wh_gammas, proposed_WH2_gammas,
-                                     WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                                     log_Pwk, log_Pwk2, id_H,
-                                     which_event, which_right_event, which_left,
-                                     any_interval, which_interval) +
-                    logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
-                    logPrior(proposed_gammas, prior_mean_gammas, prior_Tau_gammas, 1);
-                double log_ratio = numerator_surv - denominator_surv;
-                if (is_finite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
-                    gammas = proposed_gammas;
-                    WH_gammas = proposed_WH_gammas;
-                    if (any_event) {
-                        Wh_gammas = proposed_Wh_gammas;
-                    }
-                    if (any_interval) {
-                        WH2_gammas = proposed_WH2_gammas;
-                    }
-                    denominator_surv = numerator_surv;
-                    acceptance_gammas.at(it, i) = 1;
-                }
-                if (it > 19) {
-                    scale_gammas.at(i) =
-                        robbins_monro(scale_gammas.at(i),
-                                      acceptance_gammas.at(it, i), it);
-                }
-                // store results
-                res_gammas.at(it, i) = gammas.at(i);
-            }
+            update_gammas(bs_gammas, gammas, alphas,
+                          W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                          WH_gammas, Wh_gammas, WH2_gammas,
+                          WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+                          log_Pwk, log_Pwk2, id_H,
+                          which_event, which_right_event, which_left, which_interval,
+                          any_event, any_interval,
+                          prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
+                          prior_mean_gammas, prior_Tau_gammas,
+                          denominator_surv, it,
+                          /////
+                          W_H, W_h, W_H2, scale_gammas, acceptance_gammas,
+                          res_gammas);
             res_W_bar_gammas.at(it) = as_scalar(W_bar * gammas);
         }
         ////////////////////////////////////////////////////////////////////////
-        for (int i = 0; i < n_alphas; ++i) {
-            vec proposed_alphas = propose(alphas, scale_alphas, i);
-            vec proposed_WlongH_alphas = Wlong_H * proposed_alphas;
-            vec proposed_Wlongh_alphas(W0_h.n_rows);
-            if (any_event) {
-                proposed_Wlongh_alphas = Wlong_h * proposed_alphas;
-            }
-            vec proposed_WlongH2_alphas(W0_H2.n_rows);
-            if (any_interval) {
-                proposed_WlongH2_alphas = Wlong_H2 * proposed_alphas;
-            }
-            double numerator_surv =
-                log_density_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-                                 WH_gammas, Wh_gammas, WH2_gammas,
-                                 proposed_WlongH_alphas, proposed_Wlongh_alphas, proposed_WlongH2_alphas,
-                                 log_Pwk, log_Pwk2, id_H,
-                                 which_event, which_right_event, which_left,
-                                 any_interval, which_interval) +
-                    logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
-                    logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1);
-            double log_ratio = numerator_surv - denominator_surv;
-            if (is_finite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
-                alphas = proposed_alphas;
-                WlongH_alphas = proposed_WlongH_alphas;
-                if (any_event) {
-                    Wlongh_alphas = proposed_Wlongh_alphas;
-                }
-                if (any_interval) {
-                    WlongH2_alphas = proposed_WlongH2_alphas;
-                }
-                denominator_surv = numerator_surv;
-                acceptance_alphas.at(it, i) = 1;
-            }
-            if (it > 19) {
-                scale_alphas.at(i) =
-                    robbins_monro(scale_alphas.at(i),
-                                  acceptance_alphas.at(it, i), it);
-            }
-            // store results
-            res_alphas.at(it, i) = alphas.at(i);
-        }
+        update_alphas(bs_gammas, gammas, alphas,
+                      W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                      WH_gammas, Wh_gammas, WH2_gammas,
+                      WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+                      log_Pwk, log_Pwk2, id_H,
+                      which_event, which_right_event, which_left, which_interval,
+                      any_event, any_interval,
+                      prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
+                      prior_mean_gammas, prior_Tau_gammas,
+                      denominator_surv, it,
+                      /////
+                      Wlong_H, Wlong_h, Wlong_H2, scale_alphas,
+                      acceptance_alphas, res_alphas);
     }
     return List::create(
         Named("mcmc") = List::create(
