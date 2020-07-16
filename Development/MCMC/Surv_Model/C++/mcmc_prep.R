@@ -1,6 +1,7 @@
 library("survival")
 library("nlme")
 library("GLMMadaptive")
+library("coda")
 library("splines")
 library("rbenchmark")
 data("pbc2", package = "JM")

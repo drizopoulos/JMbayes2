@@ -4,67 +4,65 @@
 using namespace Rcpp;
 using namespace arma;
 
-arma::vec group_sum (const arma::vec& x, const arma::uvec& ind) {
-    arma::vec cumsum_x = cumsum(x);
-    arma::vec out = cumsum_x.elem(ind);
+vec group_sum (const vec& x, const uvec& ind) {
+    vec cumsum_x = cumsum(x);
+    vec out = cumsum_x.elem(ind);
     out.insert_rows(0, 1);
     out = diff(out);
-    return(out);
+    return out;
 }
 
-arma::field<arma::mat> List2Field_mat (const List& Mats) {
+field<mat> List2Field_mat (const List& Mats) {
     int n_list = Mats.size();
-    arma::field<arma::mat> res(n_list);
+    field<mat> res(n_list);
     for (int i = 0; i < n_list; ++i) {
-        res.at(i) = as<arma::mat>(Mats[i]);
+        res.at(i) = as<mat>(Mats[i]);
     }
-    return(res);
+    return res;
 }
 
-arma::field<arma::vec> List2Field_vec (const List& Vecs) {
+field<vec> List2Field_vec (const List& Vecs) {
     int n_list = Vecs.size();
-    arma::field<arma::vec> res(n_list);
+    field<vec> res(n_list);
     for (int i = 0; i < n_list; ++i) {
-        res.at(i) = as<arma::vec>(Vecs[i]);
+        res.at(i) = as<vec>(Vecs[i]);
     }
-    return(res);
+    return res;
 }
 
-arma::field<arma::mat> create_storage(const arma::field<arma::vec>& F,
-                                      const int& n_iter) {
+field<mat> create_storage(const field<vec>& F, const int& n_iter) {
     int n = F.size();
-    arma::field<arma::mat> out(n);
+    field<mat> out(n);
     for (int i = 0; i < n; ++i) {
-        arma::vec aa = F.at(i);
+        vec aa = F.at(i);
         int n_i = aa.n_rows;
-        arma::mat tt(n_iter, n_i, fill::zeros);
+        mat tt(n_iter, n_i, fill::zeros);
         out.at(i) = tt;
     }
-    return(out);
+    return out;
 }
 
-arma::vec Wlong_alphas_fun (const arma::field<arma::mat>& Mats,
-                            const arma::field<arma::vec>& coefs) {
+vec Wlong_alphas_fun(const field<mat>& Mats, const field<vec>& coefs) {
     int n = Mats.size();
     int n_rows = Mats.at(0).n_rows;
-    arma::vec out(n_rows, fill::zeros);
+    vec out(n_rows, fill::zeros);
     for (int k = 0; k < n; ++k) {
         out += Mats.at(k) * coefs.at(k);
     }
-    return(out);
+    return out;
 }
 
-arma::mat docall_cbind (const List& Mats_) {
+mat docall_cbind (const List& Mats_) {
     field<mat> Mats = List2Field_mat(Mats_);
     int n = Mats.size();
-    arma::uvec ncols(n);
+    uvec ncols(n);
     for (int k = 0; k < n; ++k) {
         ncols.at(k) = Mats.at(k).n_cols;
     }
     int N = sum(ncols);
     int col_start = 0;
     int col_end = ncols.at(0) - 1;
-    arma::mat out(Mats.at(0).n_rows, N);
+    mat out(Mats.at(0).n_rows, N);
     for (int k = 0; k < n; ++k) {
         if (k > 0) {
             col_start += ncols.at(k - 1);
@@ -75,30 +73,31 @@ arma::mat docall_cbind (const List& Mats_) {
     return out;
 }
 
-arma::uvec create_fast_ind (const arma::uvec& group) {
+uvec create_fast_ind (const uvec& group) {
     unsigned int l = group.n_rows;
-    arma::uvec ind = find(group.rows(1, l - 1) != group.rows(0, l - 2));
+    uvec ind = find(group.rows(1, l - 1) != group.rows(0, l - 2));
     unsigned int k = ind.n_rows;
     ind.insert_rows(k, 1);
     ind.at(k) = l - 1;
-    return(ind);
+    return ind;
 }
 
 double logPrior(const vec& x, const vec& mean, const mat& Tau, double tau = 1) {
     vec z = (x - mean);
-    return(- 0.5 * tau * as_scalar(z.t() * Tau * z));
+    double out = - 0.5 * tau * as_scalar(z.t() * Tau * z);
+    return out;
 }
 
-arma::vec propose (const arma::vec& thetas, const arma::vec& scale, const int& i) {
-    arma::vec proposed_thetas = thetas;
+vec propose (const vec& thetas, const vec& scale, const int& i) {
+    vec proposed_thetas = thetas;
     proposed_thetas.at(i) = R::rnorm(thetas.at(i), scale.at(i));
     return proposed_thetas;
 }
 
-arma::field<arma::vec> propose_field (const arma::field<arma::vec>& thetas,
-                                      const arma::field<arma::vec>& scale,
+field<vec> propose_field (const field<vec>& thetas,
+                                      const field<vec>& scale,
                                       const int& k, const int& i) {
-    arma::field<arma::vec> proposed_thetas = thetas;
+    field<vec> proposed_thetas = thetas;
     proposed_thetas.at(k).at(i) = R::rnorm(thetas.at(k).at(i),
                                            scale.at(k).at(i));
     return proposed_thetas;
@@ -117,41 +116,42 @@ double robbins_monro (const double& scale, const double& acceptance_it,
 }
 
 // [[Rcpp::export]]
-double log_density_surv (const arma::vec& W0H_bs_gammas,
-                         const arma::vec& W0h_bs_gammas,
-                         const arma::vec& W0H2_bs_gammas,
-                         const arma::vec& WH_gammas,
-                         const arma::vec& Wh_gammas,
-                         const arma::vec& WH2_gammas,
-                         const arma::vec& WlongH_alphas,
-                         const arma::vec& Wlongh_alphas,
-                         const arma::vec& WlongH2_alphas,
-                         const arma::vec& log_Pwk, const arma::vec& log_Pwk2,
-                         const arma::uvec& indFast_H,
-                         const arma::uvec& which_event,
-                         const arma::uvec& which_right_event,
-                         const arma::uvec& which_left,
+double log_density_surv (const vec& W0H_bs_gammas,
+                         const vec& W0h_bs_gammas,
+                         const vec& W0H2_bs_gammas,
+                         const vec& WH_gammas,
+                         const vec& Wh_gammas,
+                         const vec& WH2_gammas,
+                         const vec& WlongH_alphas,
+                         const vec& Wlongh_alphas,
+                         const vec& WlongH2_alphas,
+                         const vec& log_Pwk, const vec& log_Pwk2,
+                         const uvec& indFast_H,
+                         const uvec& which_event,
+                         const uvec& which_right_event,
+                         const uvec& which_left,
                          const bool& any_interval,
-                         const arma::uvec& which_interval) {
-    arma::vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
-    arma::vec H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
+                         const uvec& which_interval) {
+    vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
+    vec H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
     int n = H.n_rows;
-    arma::vec lambda_h(n);
+    vec lambda_h(n);
     lambda_h.elem(which_event) = W0h_bs_gammas.elem(which_event) +
         Wh_gammas.elem(which_event) + Wlongh_alphas.elem(which_event);
-    arma::vec log_Lik_surv(n);
+    vec log_Lik_surv(n);
     log_Lik_surv.elem(which_right_event) = - H.elem(which_right_event);
     log_Lik_surv.elem(which_event) += lambda_h.elem(which_event);
     log_Lik_surv.elem(which_left) = log1p(- exp(- H.elem(which_left)));
-    arma::vec lambda_H2(lambda_H.n_rows);
-    arma::vec H2(n);
+    vec lambda_H2(lambda_H.n_rows);
+    vec H2(n);
     if (any_interval) {
         lambda_H2 = W0H2_bs_gammas + WH2_gammas + WlongH2_alphas;
         H2 = group_sum(exp(log_Pwk2 + lambda_H2), indFast_H);
         log_Lik_surv.elem(which_interval) = - H.elem(which_interval) +
             log(- expm1(- H2.elem(which_interval)));
     }
-    return(sum(log_Lik_surv));
+    double logLik = sum(log_Lik_surv);
+    return logLik;
 }
 
 void update_bs_gammas (vec& bs_gammas, vec& gammas, vec& alphas,
@@ -163,6 +163,7 @@ void update_bs_gammas (vec& bs_gammas, vec& gammas, vec& alphas,
                        bool& any_event, bool& any_interval,
                        vec& prior_mean_bs_gammas, mat& prior_Tau_bs_gammas, double& tau_bs_gammas,
                        vec& prior_mean_gammas, mat& prior_Tau_gammas,
+                       vec& prior_mean_alphas, mat& prior_Tau_alphas,
                        double& denominator_surv, int& it,
                        /////
                        mat& W0_H, mat& W0_h, mat& W0_H2,
@@ -187,9 +188,10 @@ void update_bs_gammas (vec& bs_gammas, vec& gammas, vec& alphas,
                              log_Pwk, log_Pwk2, id_H,
                              which_event, which_right_event, which_left,
                              any_interval, which_interval) +
-                                 logPrior(proposed_bs_gammas, prior_mean_bs_gammas,
+                    logPrior(proposed_bs_gammas, prior_mean_bs_gammas,
                                           prior_Tau_bs_gammas, tau_bs_gammas) +
-                                              logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1);
+                    logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
+                    logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
         double log_ratio = numerator_surv - denominator_surv;
         if (is_finite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
             bs_gammas = proposed_bs_gammas;
@@ -221,6 +223,7 @@ void update_gammas (vec& bs_gammas, vec& gammas, vec& alphas,
                     bool& any_event, bool& any_interval,
                     vec& prior_mean_bs_gammas, mat& prior_Tau_bs_gammas, double& tau_bs_gammas,
                     vec& prior_mean_gammas, mat& prior_Tau_gammas,
+                    vec& prior_mean_alphas, mat& prior_Tau_alphas,
                     double& denominator_surv, int& it,
                     /////
                     mat& W_H, mat& W_h, mat& W_H2,
@@ -247,7 +250,8 @@ void update_gammas (vec& bs_gammas, vec& gammas, vec& alphas,
                              any_interval, which_interval) +
             logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas,
                      tau_bs_gammas) +
-            logPrior(proposed_gammas, prior_mean_gammas, prior_Tau_gammas, 1);
+            logPrior(proposed_gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
+            logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
         double log_ratio = numerator_surv - denominator_surv;
         if (is_finite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
             gammas = proposed_gammas;
@@ -281,6 +285,7 @@ void update_alphas (vec& bs_gammas, vec& gammas, vec& alphas,
                     bool& any_event, bool& any_interval,
                     vec& prior_mean_bs_gammas, mat& prior_Tau_bs_gammas, double& tau_bs_gammas,
                     vec& prior_mean_gammas, mat& prior_Tau_gammas,
+                    vec& prior_mean_alphas, mat& prior_Tau_alphas,
                     double& denominator_surv, int& it,
                     /////
                     mat& Wlong_H, mat& Wlong_h, mat& Wlong_H2,
@@ -305,8 +310,10 @@ void update_alphas (vec& bs_gammas, vec& gammas, vec& alphas,
                              log_Pwk, log_Pwk2, id_H,
                              which_event, which_right_event, which_left,
                              any_interval, which_interval) +
-                                 logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
-                                 logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1);
+            logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas,
+                     tau_bs_gammas) +
+            logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
+            logPrior(proposed_alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
         double log_ratio = numerator_surv - denominator_surv;
         if (is_finite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
             alphas = proposed_alphas;
@@ -331,8 +338,8 @@ void update_alphas (vec& bs_gammas, vec& gammas, vec& alphas,
 }
 
 // [[Rcpp::export]]
-List mcmc (List model_data, List model_info, List initial_values,
-           List priors, List control) {
+List mcmc_cpp (List model_data, List model_info, List initial_values,
+               List priors, List control) {
     // outcome vectors and design matrices
     vec Time_right = as<vec>(model_data["Time_right"]);
     vec Time_left = as<vec>(model_data["Time_left"]);
@@ -447,7 +454,8 @@ List mcmc (List model_data, List model_info, List initial_values,
                          which_event, which_right_event, which_left,
                          any_interval, which_interval) +
         logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
-        logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1);
+        logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
+        logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
     for (int it = 0; it < n_iter; ++it) {
         update_bs_gammas(bs_gammas, gammas, alphas,
             W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
@@ -458,6 +466,7 @@ List mcmc (List model_data, List model_info, List initial_values,
             any_event, any_interval,
             prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
             prior_mean_gammas, prior_Tau_gammas,
+            prior_mean_alphas, prior_Tau_alphas,
             denominator_surv, it,
             /////
             W0_H, W0_h, W0_H2, scale_bs_gammas, acceptance_bs_gammas,
@@ -478,6 +487,7 @@ List mcmc (List model_data, List model_info, List initial_values,
                           any_event, any_interval,
                           prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
                           prior_mean_gammas, prior_Tau_gammas,
+                          prior_mean_alphas, prior_Tau_alphas,
                           denominator_surv, it,
                           /////
                           W_H, W_h, W_H2, scale_gammas, acceptance_gammas,
@@ -494,6 +504,7 @@ List mcmc (List model_data, List model_info, List initial_values,
                       any_event, any_interval,
                       prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
                       prior_mean_gammas, prior_Tau_gammas,
+                      prior_mean_alphas, prior_Tau_alphas,
                       denominator_surv, it,
                       /////
                       Wlong_H, Wlong_h, Wlong_H2, scale_alphas,

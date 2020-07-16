@@ -147,3 +147,13 @@ group_sum <- function (x, ind) {
     xx <- c(0, cumsum(x)[ind])
     xx[-1L] - xx[-length(xx)]
 }
+
+jitter2 <- function (x, factor = 1) {
+    if (is.list(x)) {
+        x[] <- lapply(x, jitter, factor = factor)
+    } else {
+        jitter(x, factor = factor)
+    }
+}
+
+
