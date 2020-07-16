@@ -70,12 +70,12 @@ mcmc_fit <- function (model_data, model_info, initial_values, priors, control) {
 
 xxx <- mcmc_fit(model_data, model_info, initial_values, priors, control)
 
-parm <- xxx$mcmc$alphas
+parm <- xxx$mcmc$gammas
 
 gelman.diag(parm)
 summary(parm)
 effectiveSize(parm)
-
+raftery.diag(parm)
 traceplot(parm)
-
-
+densityplot(parm)
+autocorr.plot(parm)
