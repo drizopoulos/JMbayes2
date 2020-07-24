@@ -4,6 +4,67 @@
 using namespace Rcpp;
 using namespace arma;
 
+static double const log2pi = std::log(2.0 * M_PI);
+
+void inplace_tri_mat_mult (rowvec &x, mat const &trimat) {
+    // in-place multiplication of x with an upper triangular matrix trimat
+    // because in-place assignment is much faster but careful in use because
+    // it changes the input vector x, i.e., not const
+    uword const n = trimat.n_cols;
+    for (unsigned j = n; j-- > 0;) {
+        double tmp(0.);
+        for (unsigned i = 0; i <= j; ++i)
+            tmp += trimat.at(i, j) * x.at(i);
+        x[j] = tmp;
+    }
+}
+
+void inplace_tri_mat_mult2 (rowvec &x, mat const &trimat) {
+    // in-place multiplication of x with an lower triangular matrix trimat
+    // because in-place assignment is much faster but careful in use because
+    // it changes the input vector x, i.e., not const
+    uword const n = trimat.n_cols;
+    for (unsigned j = 0; j++ < n;) {
+        double tmp(0.);
+        for (unsigned i = 0; i >= j; ++i)
+            tmp += trimat.at(i, j) * x.at(i);
+        x[j] = tmp;
+    }
+}
+
+// [[Rcpp::export]]
+vec log_dmvnrm_chol (const mat &x, const mat &chol_sigma, const bool tt = false) {
+    // fast log density of the multivariate normal distribution
+    // chol_sigma is the the Cholesky factor of the covariance matrix
+    // chol_sigma should be upper triangular
+    using arma::uword;
+    uword const n = x.n_rows,
+        xdim = x.n_cols;
+    vec out(n);
+    mat inv_chol_sigma(xdim, xdim);
+    if (tt) {
+        inv_chol_sigma = chol_sigma.t();
+    } else {
+        inv_chol_sigma = inv(trimatu(chol_sigma));
+    }
+    double const log_det = sum(log(inv_chol_sigma.diag())),
+        constants = -(double)xdim / 2.0 * log2pi,
+        other_terms = constants + log_det;
+    rowvec z_i;
+    for (uword i = 0; i < n; i++) {
+        z_i = x.row(i);
+        if (tt) {
+            inplace_tri_mat_mult2(z_i, inv_chol_sigma);
+        } else {
+            inplace_tri_mat_mult(z_i, inv_chol_sigma);
+        }
+        //z_i = x.row(i) * inv_chol_sigma;
+        out.at(i) = other_terms - 0.5 * dot(z_i, z_i);
+    }
+    return out;
+}
+
+
 vec group_sum (const vec& x, const uvec& ind) {
     vec cumsum_x = cumsum(x);
     vec out = cumsum_x.elem(ind);
