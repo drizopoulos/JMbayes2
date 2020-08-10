@@ -21,7 +21,7 @@ dmvnorm_chol <- function (x, chol_Sigma = NULL, chol_inv_Sigma = NULL, log = FAL
     if (log) as.vector(fact - quad) else as.vector(exp(fact - quad))
 }
 
-dht <- function (x, sigma = 10, df = 1, log = FALSE) {
+dht <- function (x, sigma = 10, df = 3, log = FALSE) {
     ind <- x > 0
     out <- rep(as.numeric(NA), length(x))
     log_const <- log(2) + lgamma(0.5 * (df + 1)) - lgamma(0.5 * df) -

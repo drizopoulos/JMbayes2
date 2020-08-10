@@ -5,63 +5,155 @@ using namespace Rcpp;
 using namespace arma;
 
 static double const log2pi = std::log(2.0 * M_PI);
+static double const Const_Unif_Proposal = 0.5 * std::pow(12.0, 0.5);
 
-void inplace_tri_mat_mult (rowvec &x, mat const &trimat) {
+void inplace_UpperTrimat_mult (rowvec &x, const mat &trimat) {
     // in-place multiplication of x with an upper triangular matrix trimat
     // because in-place assignment is much faster but careful in use because
     // it changes the input vector x, i.e., not const
     uword const n = trimat.n_cols;
-    for (unsigned j = n; j-- > 0;) {
-        double tmp(0.);
-        for (unsigned i = 0; i <= j; ++i)
+    for (uword j = n; j-- > 0;) {
+        double tmp(0.0);
+        for (uword i = 0; i <= j; ++i)
             tmp += trimat.at(i, j) * x.at(i);
-        x[j] = tmp;
+        x.at(j) = tmp;
     }
 }
 
-void inplace_tri_mat_mult2 (rowvec &x, mat const &trimat) {
+void inplace_LowerTrimat_mult (rowvec &x, const mat &trimat) {
     // in-place multiplication of x with an lower triangular matrix trimat
     // because in-place assignment is much faster but careful in use because
     // it changes the input vector x, i.e., not const
     uword const n = trimat.n_cols;
-    for (unsigned j = 0; j++ < n;) {
-        double tmp(0.);
-        for (unsigned i = 0; i >= j; ++i)
+    for (uword j = 0; j < n; ++j) {
+        double tmp(0.0);
+        for (uword i = j; i < n; ++i)
             tmp += trimat.at(i, j) * x.at(i);
-        x[j] = tmp;
+        x.at(j) = tmp;
     }
 }
 
-// [[Rcpp::export]]
-vec log_dmvnrm_chol (const mat &x, const mat &chol_sigma, const bool tt = false) {
+vec log_dmvnrm_chol (const mat &x, const mat &L) {
     // fast log density of the multivariate normal distribution
-    // chol_sigma is the the Cholesky factor of the covariance matrix
-    // chol_sigma should be upper triangular
+    // L is the Cholesky factor of the covariance matrix.
     using arma::uword;
-    uword const n = x.n_rows,
-        xdim = x.n_cols;
+    uword const n = x.n_rows, xdim = x.n_cols;
     vec out(n);
-    mat inv_chol_sigma(xdim, xdim);
-    if (tt) {
-        inv_chol_sigma = chol_sigma.t();
-    } else {
-        inv_chol_sigma = inv(trimatu(chol_sigma));
-    }
-    double const log_det = sum(log(inv_chol_sigma.diag())),
+    mat V = inv(trimatu(L));
+    double const log_det = sum(log(V.diag())),
         constants = -(double)xdim / 2.0 * log2pi,
         other_terms = constants + log_det;
-    rowvec z_i;
+    rowvec z_i(xdim);
     for (uword i = 0; i < n; i++) {
         z_i = x.row(i);
-        if (tt) {
-            inplace_tri_mat_mult2(z_i, inv_chol_sigma);
-        } else {
-            inplace_tri_mat_mult(z_i, inv_chol_sigma);
-        }
-        //z_i = x.row(i) * inv_chol_sigma;
+        inplace_UpperTrimat_mult(z_i, V);
         out.at(i) = other_terms - 0.5 * dot(z_i, z_i);
     }
     return out;
+}
+
+vec log_dht (const vec &x, const double &sigma = 10.0, const double df = 3.0) {
+    // log density of half Student's t with scale sigma and df degrees of freedom
+    // https://en.m.wikipedia.org/wiki/Folded-t_and_half-t_distributions
+    uword n = x.n_rows;
+    vec out(n);
+    double log_const = std::log(2.0) + lgamma(0.5 * (df + 1)) - lgamma(0.5 * df) -
+        0.5 * (std::log(df) + std::log(M_PI)) - std::log(sigma);
+    vec log_kernel = - 0.5 * (df + 1.0) * log(1.0 + square(x) / (df * pow(sigma, 2.0)));
+    out = log_const + log_kernel;
+    return out;
+}
+
+mat cor2cov (const mat &R, const vec &sds) {
+    mat out = R.each_col() % sds;
+    out.each_row() %= sds.t();
+    return out;
+}
+
+double logPC_D_sds (const vec &sds, const mat &L, const mat &b,
+                    const double &prior_D_sds_df,
+                    const double &prior_D_sds_sigma) {
+    mat chol_Sigma = L.each_row() % sds.t();
+    double log_p_b = sum(log_dmvnrm_chol(b, chol_Sigma));
+    double log_p_sds = sum(log_dht(sds, prior_D_sds_sigma, prior_D_sds_df));
+    double out = log_p_b + log_p_sds;
+    return out;
+}
+
+double logPC_D_L (const mat &L, const vec &sds, const mat &b,
+                  const double &prior_eta_LKJ) {
+    uword p = L.n_rows;
+    mat chol_Sigma = L.each_row() % sds.t(); // check this
+    double log_p_b = sum(log_dmvnrm_chol(b, chol_Sigma));
+    double log_p_L(0.0);
+    for (unsigned i = 1; i < p; ++i) {
+        log_p_L += (p - i - 1.0 + 2.0 * prior_eta_LKJ - 2.0) * log(L.at(i, i));
+    }
+    double out = log_p_b + log_p_L;
+    return out;
+}
+
+vec propose_norm (const vec &thetas, const vec &scale, const uword &i) {
+    // change R::rnorm to Armadillo native, and set the seed in Armadillo.
+    vec proposed_thetas = thetas;
+    proposed_thetas.at(i) = R::rnorm(thetas.at(i), scale.at(i));
+    return proposed_thetas;
+}
+
+vec propose_unif (const vec &thetas, const vec &scale, const uword &i) {
+    vec proposed_thetas = thetas;
+    proposed_thetas.at(i) = R::runif(thetas.at(i) - Const_Unif_Proposal * scale.at(i),
+                       thetas.at(i) + Const_Unif_Proposal * scale.at(i));
+    return proposed_thetas;
+}
+
+vec propose_lnorm (const vec &thetas, const double &log_mu_i, const vec &scale,
+                   const uword &i) {
+    vec proposed_thetas = thetas;
+    proposed_thetas.at(i) = R::rlnorm(log_mu_i, scale.at(i));
+    return proposed_thetas;
+}
+
+vec propose_norm_mala (const vec &thetas, const vec &scale,
+                       const double &deriv, const uword &i) {
+    vec proposed_thetas = thetas;
+    double mu = thetas.at(i) + 0.5 * scale.at(i) * deriv;
+    double sigma = sqrt(scale.at(i));
+    proposed_thetas.at(i) = R::rnorm(mu, sigma);
+    return proposed_thetas;
+}
+
+// [[Rcpp::export]]
+List deriv_L (const mat &L, const vec &sds, const mat &b,
+                const double &log_target, const uword &i,
+                const uvec &upper_part,
+                const double &prior_eta_LKJ,
+                const char direction = 'b', const double eps = 1e-06) {
+    uword n = L.n_rows;
+    uword upper_part_i = upper_part.at(i);
+    uword column = floor(upper_part_i / n);
+    mat L_eps = L;
+    if (direction == 'f') {
+        L_eps(upper_part_i) += L_eps(upper_part_i) * eps;
+    } else {
+        L_eps(upper_part_i) -= L_eps(upper_part_i) * eps;
+    }
+    vec ll = L_eps.submat(0, column, column - 1, column);
+    double ss = dot(ll, ll);
+    //if (ss > 1) return datum::nan;
+    //L_eps.at(column, column) = sqrt(1 - ss);
+    //double out(0.0);
+    //if (direction == 'f') {
+    //    out = (logPC_D_L(L_eps, sds, b, prior_eta_LKJ) - log_target) / eps;
+    //} else {
+    //    out = (log_target - logPC_D_L(L_eps, sds, b, prior_eta_LKJ)) / eps;
+    //}
+    return List::create(
+        Named("L_eps") = L_eps,
+        Named("column") = column,
+        Named("ll") = ll,
+        Named("ss") = ss
+    );
 }
 
 
