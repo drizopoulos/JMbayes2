@@ -80,6 +80,7 @@ double logPC_D_sds (const vec &sds, const mat &L, const mat &b,
     return out;
 }
 
+// [[Rcpp::export]]
 double logPC_D_L (const mat &L, const vec &sds, const mat &b,
                   const double &prior_eta_LKJ) {
     uword p = L.n_rows;
@@ -124,7 +125,7 @@ vec propose_norm_mala (const vec &thetas, const vec &scale,
 }
 
 // [[Rcpp::export]]
-List deriv_L (const mat &L, const vec &sds, const mat &b,
+double deriv_L (const mat &L, const vec &sds, const mat &b,
                 const double &log_target, const uword &i,
                 const uvec &upper_part,
                 const double &prior_eta_LKJ,
@@ -140,21 +141,42 @@ List deriv_L (const mat &L, const vec &sds, const mat &b,
     }
     vec ll = L_eps.submat(0, column, column - 1, column);
     double ss = dot(ll, ll);
-    //if (ss > 1) return datum::nan;
-    //L_eps.at(column, column) = sqrt(1 - ss);
-    //double out(0.0);
-    //if (direction == 'f') {
-    //    out = (logPC_D_L(L_eps, sds, b, prior_eta_LKJ) - log_target) / eps;
-    //} else {
-    //    out = (log_target - logPC_D_L(L_eps, sds, b, prior_eta_LKJ)) / eps;
-    //}
-    return List::create(
-        Named("L_eps") = L_eps,
-        Named("column") = column,
-        Named("ll") = ll,
-        Named("ss") = ss
-    );
+    if (ss > 1) return datum::nan;
+    L_eps.at(column, column) = sqrt(1 - ss);
+    double out(0.0);
+    if (direction == 'f') {
+        out = (logPC_D_L(L_eps, sds, b, prior_eta_LKJ) - log_target) / eps;
+    } else {
+        out = (log_target - logPC_D_L(L_eps, sds, b, prior_eta_LKJ)) / eps;
+    }
+    return out;
 }
+
+// [[Rcpp::export]]
+mat propose_L (const mat &L, const vec &scale, const uvec &upper_part,
+               const double &deriv, const uword &i, const bool mala = false) {
+    mat proposed_L = L;
+    vec l = L(upper_part);
+    vec proposed_l(l.n_rows);
+    if (mala) {
+        if (std::isfinite(deriv)) {
+            proposed_l = propose_norm_mala(l, scale, deriv, i);
+        } else {
+            return proposed_L.fill(datum::nan);
+        }
+    } else {
+        proposed_l = propose_unif(l, scale, i);
+    }
+    proposed_L(upper_part) = proposed_l;
+    uword n = L.n_rows;
+    uword column = floor(upper_part.at(i) / n);
+    vec ll = proposed_L.submat(0, column, column - 1, column);
+    double ss = dot(ll, ll);
+    if (ss > 1) return proposed_L.fill(datum::nan);
+    proposed_L.at(column, column) = sqrt(1 - ss);
+    return proposed_L;
+}
+
 
 
 vec group_sum (const vec& x, const uvec& ind) {
@@ -241,12 +263,6 @@ double logPrior(const vec& x, const vec& mean, const mat& Tau, double tau = 1) {
     return out;
 }
 
-vec propose (const vec& thetas, const vec& scale, const int& i) {
-    vec proposed_thetas = thetas;
-    proposed_thetas.at(i) = R::rnorm(thetas.at(i), scale.at(i));
-    return proposed_thetas;
-}
-
 field<vec> propose_field (const field<vec>& thetas,
                                       const field<vec>& scale,
                                       const int& k, const int& i) {
@@ -324,7 +340,7 @@ void update_bs_gammas (vec& bs_gammas, vec& gammas, vec& alphas,
                        mat& acceptance_bs_gammas,
                        mat& res_bs_gammas) {
     for (unsigned int i = 0; i < bs_gammas.n_rows; ++i) {
-        vec proposed_bs_gammas = propose(bs_gammas, scale_bs_gammas, i);
+        vec proposed_bs_gammas = propose_norm(bs_gammas, scale_bs_gammas, i);
         vec proposed_W0H_bs_gammas = W0_H * proposed_bs_gammas;
         vec proposed_W0h_bs_gammas(W0_h.n_rows);
         vec proposed_W0H2_bs_gammas(W0_H2.n_rows);
@@ -384,7 +400,7 @@ void update_gammas (vec& bs_gammas, vec& gammas, vec& alphas,
                     mat& acceptance_gammas,
                     mat& res_gammas) {
     for (unsigned int i = 0; i < gammas.n_rows; ++i) {
-        vec proposed_gammas = propose(gammas, scale_gammas, i);
+        vec proposed_gammas = propose_norm(gammas, scale_gammas, i);
         vec proposed_WH_gammas = W_H * proposed_gammas;
         vec proposed_Wh_gammas(W_h.n_rows);
         vec proposed_WH2_gammas(W_H2.n_rows);
@@ -446,7 +462,7 @@ void update_alphas (vec& bs_gammas, vec& gammas, vec& alphas,
                     mat& acceptance_alphas,
                     mat& res_alphas) {
     for (unsigned int i = 0; i < alphas.n_rows; ++i) {
-        vec proposed_alphas = propose(alphas, scale_alphas, i);
+        vec proposed_alphas = propose_norm(alphas, scale_alphas, i);
         vec proposed_WlongH_alphas = Wlong_H * proposed_alphas;
         vec proposed_Wlongh_alphas(Wlong_h.n_rows);
         if (any_event) {
