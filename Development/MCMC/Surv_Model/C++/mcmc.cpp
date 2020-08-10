@@ -7,6 +7,18 @@ using namespace arma;
 static double const log2pi = std::log(2.0 * M_PI);
 static double const Const_Unif_Proposal = 0.5 * std::pow(12.0, 0.5);
 
+double robbins_monro (const double& scale, const double& acceptance_it,
+                      const int& it, const double& target_acceptance = 0.45) {
+    double step_length = scale / (target_acceptance * (1 - target_acceptance));
+    double out;
+    if (acceptance_it > 0) {
+        out = scale + step_length * (1 - target_acceptance) / (double)it;
+    } else {
+        out = scale - step_length * target_acceptance / (double)it;
+    }
+    return out;
+}
+
 void inplace_UpperTrimat_mult (rowvec &x, const mat &trimat) {
     // in-place multiplication of x with an upper triangular matrix trimat
     // because in-place assignment is much faster but careful in use because
@@ -80,7 +92,6 @@ double logPC_D_sds (const vec &sds, const mat &L, const mat &b,
     return out;
 }
 
-// [[Rcpp::export]]
 double logPC_D_L (const mat &L, const vec &sds, const mat &b,
                   const double &prior_eta_LKJ) {
     uword p = L.n_rows;
@@ -124,7 +135,15 @@ vec propose_norm_mala (const vec &thetas, const vec &scale,
     return proposed_thetas;
 }
 
-// [[Rcpp::export]]
+field<vec> propose_field (const field<vec>& thetas,
+                          const field<vec>& scale,
+                          const int& k, const int& i) {
+    field<vec> proposed_thetas = thetas;
+    proposed_thetas.at(k).at(i) = R::rnorm(thetas.at(k).at(i),
+                       scale.at(k).at(i));
+    return proposed_thetas;
+}
+
 double deriv_L (const mat &L, const vec &sds, const mat &b,
                 const double &log_target, const uword &i,
                 const uvec &upper_part,
@@ -152,7 +171,6 @@ double deriv_L (const mat &L, const vec &sds, const mat &b,
     return out;
 }
 
-// [[Rcpp::export]]
 mat propose_L (const mat &L, const vec &scale, const uvec &upper_part,
                const double &deriv, const uword &i, const bool mala = false) {
     mat proposed_L = L;
@@ -177,7 +195,86 @@ mat propose_L (const mat &L, const vec &scale, const uvec &upper_part,
     return proposed_L;
 }
 
-
+void update_D (mat &L, vec &sds, const mat &b,
+               const uvec &upper_part,
+               const double &prior_D_sds_df,
+               const double &prior_D_sds_sigma,
+               const double prior_eta_LKJ,
+               const int &it, const bool &MALA,
+               mat &res_sds, mat &res_L,
+               vec &scale_sds, vec scale_L,
+               mat &acceptance_sds, mat &acceptance_L) {
+    uword n_sds = sds.n_rows;
+    uword n_L = upper_part.n_rows;
+    double denominator_sds = logPC_D_sds(sds, L, b, prior_D_sds_df,
+                                         prior_D_sds_sigma);
+    for (uword i = 0; i < n_sds; ++i) {
+        double SS = 0.5 * pow(scale_sds.at(i), 2.0);
+        double log_mu_current = log(sds.at(i)) - SS;
+        vec proposed_sds = propose_lnorm(sds, log_mu_current, scale_sds, i);
+        double numerator_sds = logPC_D_sds(proposed_sds, L, b,
+                                           prior_D_sds_df, prior_D_sds_sigma);
+        double log_mu_proposed = log(proposed_sds.at(i)) - SS;
+        double log_ratio_sds = numerator_sds - denominator_sds +
+            R::dlnorm(sds.at(i), log_mu_proposed, scale_sds.at(i), true) -
+            R::dlnorm(proposed_sds.at(i), log_mu_current, scale_sds.at(i), true);
+        if (std::isfinite(log_ratio_sds) && exp(log_ratio_sds) > R::runif(0.0, 1.0)) {
+            sds = proposed_sds;
+            denominator_sds = numerator_sds;
+            acceptance_sds.at(it, i) = 1;
+        }
+        if (it > 19) {
+            scale_sds.at(i) =
+                robbins_monro(scale_sds.at(i), acceptance_sds.at(it, i),
+                              it);
+        }
+        res_sds.at(it, i) = sds.at(i);
+    }
+    double denominator_L = logPC_D_L(L, sds, b, prior_eta_LKJ);
+    for (uword i = 0; i < n_L; ++i) {
+        uword upper_part_i = upper_part.at(i);
+        double deriv_current(0.0);
+        double mu_current(0.0);
+        mat proposed_L = L;
+        if (MALA) {
+            deriv_current = deriv_L(L, sds, b, denominator_L, i, upper_part,
+                                    prior_eta_LKJ);
+            mu_current = L.at(upper_part_i) + 0.5 * scale_L.at(i) * deriv_current;
+            proposed_L = propose_L(L, scale_L, upper_part, deriv_current, i, true);
+        } else {
+            proposed_L = propose_L(L, scale_L, upper_part, deriv_current, i);
+        }
+        double numerator_L(0.0);
+        double deriv_proposed(0.0);
+        double mu_proposed(0.0);
+        double log_ratio_L(0.0);
+        if (proposed_L.is_finite()) {
+            numerator_L = logPC_D_L(proposed_L, sds, b, prior_eta_LKJ);
+            if (MALA) {
+                deriv_proposed = deriv_L(proposed_L, sds, b, numerator_L,
+                                         i, upper_part, prior_eta_LKJ);
+                mu_proposed = proposed_L.at(upper_part_i) +
+                    0.5 * scale_L.at(i) * deriv_proposed;
+                log_ratio_L = numerator_L - denominator_L +
+                    log_normpdf(L.at(upper_part_i), mu_proposed, sqrt(scale_L.at(i))) -
+                    log_normpdf(proposed_L.at(upper_part_i), mu_current, sqrt(scale_L.at(i)));
+            } else {
+                log_ratio_L = numerator_L - denominator_L;
+            }
+        }
+        if (std::isfinite(log_ratio_L) && exp(log_ratio_L) > R::runif(0.0, 1.0)) {
+            L = proposed_L;
+            denominator_L = numerator_L;
+            acceptance_L.at(it, i) = 1;
+        }
+        if (it > 19) {
+            scale_L.at(i) =
+                robbins_monro(scale_L.at(i), acceptance_L.at(it, i),
+                              it);
+        }
+        res_L.at(it, i) = L.at(upper_part_i);
+    }
+}
 
 vec group_sum (const vec& x, const uvec& ind) {
     vec cumsum_x = cumsum(x);
@@ -263,28 +360,6 @@ double logPrior(const vec& x, const vec& mean, const mat& Tau, double tau = 1) {
     return out;
 }
 
-field<vec> propose_field (const field<vec>& thetas,
-                                      const field<vec>& scale,
-                                      const int& k, const int& i) {
-    field<vec> proposed_thetas = thetas;
-    proposed_thetas.at(k).at(i) = R::rnorm(thetas.at(k).at(i),
-                                           scale.at(k).at(i));
-    return proposed_thetas;
-}
-
-double robbins_monro (const double& scale, const double& acceptance_it,
-                      const int& it, const double& target_acceptance = 0.45) {
-    double step_length = scale / (target_acceptance * (1 - target_acceptance));
-    double out;
-    if (acceptance_it > 0) {
-        out = scale + step_length * (1 - target_acceptance) / (double)it;
-    } else {
-        out = scale - step_length * target_acceptance / (double)it;
-    }
-    return out;
-}
-
-// [[Rcpp::export]]
 double log_density_surv (const vec& W0H_bs_gammas,
                          const vec& W0h_bs_gammas,
                          const vec& W0H2_bs_gammas,
