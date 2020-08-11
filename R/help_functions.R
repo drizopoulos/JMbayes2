@@ -635,3 +635,38 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
                  control = list(parscale = rep(0.01, ncol(W0_H))))
     c(out, list(bs_gammas = opt$par, vcov_prop_bs_gammas = solve(opt$hessian)))
 }
+
+linpred_surv <- function (X, betas, Z, b, id) {
+    out <- vector("list", length(X))
+    for (i in seq_along(X)) {
+        X_i <- X[[i]]
+        Z_i <- Z[[i]]
+        betas_i <- betas[[i]]
+        b_i <- b[[i]]
+        id_i <- id[[i]]
+        out[[i]] <- matrix(0.0, nrow = nrow(X_i[[1]]), ncol = length(X_i))
+        for (j in seq_along(X_i)) {
+            X_ij <- X_i[[j]]
+            Z_ij <- Z_i[[j]]
+            out[[i]][, j] <- X_ij %*% betas_i + rowSums(Z_ij * b_i[id_i, ])
+        }
+    }
+    out
+}
+
+create_Wlong <- function (eta, functional_forms_per_outcome, U) {
+    Wlong <- vector("list", length(eta))
+    for (i in seq_along(functional_forms_per_outcome)) {
+        FF_i <- functional_forms_per_outcome[[i]]
+        eta_i <- eta[[i]]
+        U_i <- U[[i]]
+        Wlong_i <- matrix(1.0, nrow(eta_i), max(unlist(FF_i)))
+        for (j in seq_along(FF_i)) {
+            ind <- FF_i[[j]]
+            Wlong_i[, ind] <- Wlong_i[, ind] * eta_i[, j]
+        }
+        Wlong[[i]] <- U_i * Wlong_i
+    }
+    Wlong
+}
+

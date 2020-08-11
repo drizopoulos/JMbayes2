@@ -1,3 +1,4 @@
+data("pbc2", package = "JM")
 pbc2$id <- factor(pbc2$id, levels = levels(pbc2$id),
                   labels = paste0("A", levels(pbc2$id)))
 pbc2$status2 <- as.numeric(pbc2$status != "alive")

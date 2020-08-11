@@ -356,8 +356,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         W0_H2 <- W_H2 <- matrix(0.0)
         X_H2 <- Z_H2 <- U_H2 <- rep(list(matrix(0.0)), length(respVars))
     }
-    ######################################################################################
-    ######################################################################################
+    ############################################################################
+    ############################################################################
     Data <- list(n = nY, idL = idL, idL_lp = idL_lp, unq_idL = unq_idL,
                  y = y, X = X, Z = Z, Xhc = Xhc,
                  columns_HC = columns_HC, columns_nHC = columns_nHC,
@@ -372,8 +372,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                  log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2)
     # drop names and other attributes from model matrices
     Data[] <- lapply(Data, drop_names)
-    ######################################################################################
-    ######################################################################################
+    ############################################################################
+    ############################################################################
     # objects to export
     data <- list(dataL = dataL, dataS = dataS)
     model_info <- list(
@@ -391,8 +391,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                          functional_forms_per_outcome = functional_forms_per_outcome,
                          collapsed_functional_forms = collapsed_functional_forms)
     )
-    ######################################################################################
-    ######################################################################################
+    ############################################################################
+    ############################################################################
     # initial values
     betas <- lapply(Mixed_objects, fixef)
     log_sigmas <- lapply(Mixed_objects, extract_log_sigmas)
@@ -404,17 +404,17 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     bs_gammas <- init_surv$bs_gammas
     gammas <- init_surv$gammas
     alphas <- init_surv$alphas
-    # we are going to have multiple chains; hence, we need to randomly permute these
     # initial values
     initial_values <- list(betas = betas, log_sigmas = log_sigmas, D = D,
                            b = b, bs_gammas = bs_gammas, gammas = gammas,
                            alphas = alphas, tau_bs_gammas = 20)
-    ######################################################################################
-    ######################################################################################
+    ############################################################################
+    ############################################################################
     # variance covariance matrices for proposal distributions in
     # the Metropolis-Hastings algorithm
     #  - betas the fixed effects that in the hierarchical centering part
-    #  - tilde_betas the fixed effects that are not in the hierarchical centering part
+    #  - tilde_betas the fixed effects that are not in the hierarchical
+    #    centering part
     vcov_prop_betas <- mapply(get_vcov_FE, Mixed_objects, columns_nHC,
                               MoreArgs = list(which = "betas"), SIMPLIFY = FALSE)
     vcov_prop_tilde_betas <- mapply(get_vcov_FE, Mixed_objects, columns_nHC,
@@ -436,8 +436,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                       vcov_prop_bs_gammas = vcov_prop_bs_gammas,
                       vcov_prop_gammas = vcov_prop_gammas,
                       vcov_prop_alphas = vcov_prop_alphas)
-    ######################################################################################
-    ######################################################################################
+    ############################################################################
+    ############################################################################
     # Priors
     DD <- diag(ncol(W0_H))
     Tau_bs_gammas <- crossprod(diff(DD, differences = con$diff)) #+ 1e-06 * DD
@@ -453,8 +453,13 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                    rank_Tau_bs_gammas = qr(Tau_bs_gammas)$rank,
                    prior_D_sds_df = 3.0, prior_D_sds_sigma = 10.0,
                    prior_D_L_etaLKJ = 3.0)
-
-    list(initial_values = initial_values, vcov_prop = vcov_prop,
-         priors = priors, model_info = model_info, data = data,
-         model_data = Data, control = con)
+    ############################################################################
+    ############################################################################
+    # Fit the model
+    Fit <- jm_fit(Data, model_info, initial_values, priors, con)
+    out <- Fit
+    out <- c(out, list(model_data = Data, model_info = model_info,
+                       control = con, priors = priors, call = call))
+    out$class <- "jm"
+    out
 }

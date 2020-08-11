@@ -1,1 +1,8 @@
-exportPattern("^[[:alpha:]]+")
+export(jm, jm_fit)
+
+
+importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply")
+importFrom("nlme", "fixef", "ranef")
+
+
+useDynLib(JMbayes2, .registration = TRUE)

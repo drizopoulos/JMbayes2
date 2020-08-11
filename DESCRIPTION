@@ -1,17 +1,24 @@
 Package: JMbayes2
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
+Title: Extended Joint Models for Longitudinal and Time-to-Event Data
+Version: 0.1-0
+Authors@R: c(person("Dimitris", "Rizopoulos", email = "d.rizopoulos@erasmusmc.nl",
+                  role = c("aut", "cre"), comment = c(ORCID = '0000-0001-9397-0900')),
+           person("Grigorios", "Papageorgiou", email = "g.papageorgiou@erasmusmc.nl",
+                  role = "aut"),
+           person("Pedro", "Miranda Afonso", email = "p.mirandaafonso@erasmusmc.nl",
+                  role = "aut"))
+Maintainer: Dimitris Rizopoulos <d.rizopoulos@erasmusmc.nl>
+BugReports: https://github.com/drizopoulos/JMbayes2/issues
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Suggests: lattice, knitr, rmarkdown, pkgdown, multcomp, emmeans, estimability, effects, DHARMa, optimParallel
 Encoding: UTF-8
-LazyData: true
+LinkingTo: Rcpp, RcppArmadillo
+Imports: Rcpp, coda, splines, parallel
+LazyLoad: yes
+LazyData: yes
+License: GPL (>= 3)
+URL: https://drizopoulos.github.io/JMbayes2/, https://github.com/drizopoulos/JMbayes2
+VignetteBuilder: knitr
 RoxygenNote: 6.1.1
-LinkingTo: 
-    Rcpp,
-    RcppArmadillo
-Imports: 
-    Rcpp
