@@ -641,7 +641,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     field<mat> b = List2Field_mat(b_);
     mat b_mat = docall_cbind(b_);
     mat D = as<mat>(initial_values["D"]);
-    vec sds = D.diag();
+    vec sds = sqrt(D.diag());
     mat R = cov2cor(D);
     mat L = chol(R);
     List betas_ = as<List>(initial_values["betas"]);
@@ -795,15 +795,16 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
             Named("tau_bs_gammas") = res_tau_bs_gammas.rows(n_burnin, n_iter - 1),
             Named("gammas") = res_gammas.rows(n_burnin, n_iter - 1),
             Named("W_bar_gammas") = res_W_bar_gammas.rows(n_burnin, n_iter - 1),
-            Named("alphas") = res_alphas.rows(n_burnin, n_iter - 1)
+            Named("alphas") = res_alphas.rows(n_burnin, n_iter - 1),
+            Named("sds") = res_sds.rows(n_burnin, n_iter - 1),
+            Named("L") = res_L.rows(n_burnin, n_iter - 1)
         ),
         Named("acc_rate") = List::create(
             Named("bs_gammas") = acceptance_bs_gammas.rows(n_burnin, n_iter - 1),
             Named("gammas") = acceptance_gammas.rows(n_burnin, n_iter - 1),
-            Named("alphas") = acceptance_alphas.rows(n_burnin, n_iter - 1)
+            Named("alphas") = acceptance_alphas.rows(n_burnin, n_iter - 1),
+            Named("sds") = acceptance_sds.rows(n_burnin, n_iter - 1),
+            Named("L") = acceptance_L.rows(n_burnin, n_iter - 1)
         )
     );
 }
-
-
-

@@ -1,4 +1,4 @@
-mcmc_fit <- function (model_data, model_info, initial_values, priors, control) {
+jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     id_H <- id_H2 <- rep(seq_len(model_data$n), each = control$GK_k)
     model_data <- c(model_data, create_Wlong_mats(model_data, model_info,
                                                   initial_values, priors,
@@ -33,7 +33,8 @@ mcmc_fit <- function (model_data, model_info, initial_values, priors, control) {
                                    priors, control) {
             seed_ <- control$seed + chain
             set.seed(seed_)
-            initial_values[] <- lapply(initial_values, jitter2, factor = 40)
+            not_D <- names(initial_values) != "D"
+            initial_values[not_D] <- lapply(initial_values[not_D], jitter2)
             mcmc_cpp(model_data, model_info, initial_values, priors, control)
         }
         cores <- control$cores
@@ -63,14 +64,16 @@ mcmc_fit <- function (model_data, model_info, initial_values, priors, control) {
             "bs_gammas" = convert2_mcmclist("bs_gammas"),
             "tau_bs_gammas" = convert2_mcmclist("tau_bs_gammas"),
             "gammas" = convert2_mcmclist("gammas"),
-            "alphas" = convert2_mcmclist("alphas")
+            "alphas" = convert2_mcmclist("alphas"),
+            "sds" = convert2_mcmclist("sds"),
+            "L" = convert2_mcmclist("L")
         )
     )
 }
 
-xxx <- mcmc_fit(model_data, model_info, initial_values, priors, control)
+xxx <- jm_fit(model_data, model_info, initial_values, priors, control)
 
-parm <- xxx$mcmc$gammas
+parm <- xxx$mcmc$L
 
 gelman.diag(parm)
 summary(parm)
