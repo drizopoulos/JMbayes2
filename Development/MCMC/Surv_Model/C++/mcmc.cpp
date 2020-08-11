@@ -7,8 +7,8 @@ using namespace arma;
 static double const log2pi = std::log(2.0 * M_PI);
 static double const Const_Unif_Proposal = 0.5 * std::pow(12.0, 0.5);
 
-double robbins_monro (const double& scale, const double& acceptance_it,
-                      const int& it, const double& target_acceptance = 0.45) {
+double robbins_monro (const double &scale, const double &acceptance_it,
+                      const int &it, const double &target_acceptance = 0.45) {
     double step_length = scale / (target_acceptance * (1 - target_acceptance));
     double out;
     if (acceptance_it > 0) {
@@ -64,7 +64,8 @@ vec log_dmvnrm_chol (const mat &x, const mat &L) {
     return out;
 }
 
-vec log_dht (const vec &x, const double &sigma = 10.0, const double df = 3.0) {
+vec log_dht (const vec &x, const double &sigma = 10.0,
+             const double &df = 3.0) {
     // log density of half Student's t with scale sigma and df degrees of freedom
     // https://en.m.wikipedia.org/wiki/Folded-t_and_half-t_distributions
     uword n = x.n_rows;
@@ -73,6 +74,13 @@ vec log_dht (const vec &x, const double &sigma = 10.0, const double df = 3.0) {
         0.5 * (std::log(df) + std::log(M_PI)) - std::log(sigma);
     vec log_kernel = - 0.5 * (df + 1.0) * log(1.0 + square(x) / (df * pow(sigma, 2.0)));
     out = log_const + log_kernel;
+    return out;
+}
+
+mat cov2cor (const mat &V) {
+    vec Is = sqrt(1 / V.diag());
+    mat out = V.each_col() % Is;
+    out.each_row() %= Is.t();
     return out;
 }
 
@@ -93,13 +101,13 @@ double logPC_D_sds (const vec &sds, const mat &L, const mat &b,
 }
 
 double logPC_D_L (const mat &L, const vec &sds, const mat &b,
-                  const double &prior_eta_LKJ) {
+                  const double &prior_D_L_etaLKJ) {
     uword p = L.n_rows;
     mat chol_Sigma = L.each_row() % sds.t(); // check this
     double log_p_b = sum(log_dmvnrm_chol(b, chol_Sigma));
     double log_p_L(0.0);
     for (unsigned i = 1; i < p; ++i) {
-        log_p_L += (p - i - 1.0 + 2.0 * prior_eta_LKJ - 2.0) * log(L.at(i, i));
+        log_p_L += (p - i - 1.0 + 2.0 * prior_D_L_etaLKJ - 2.0) * log(L.at(i, i));
     }
     double out = log_p_b + log_p_L;
     return out;
@@ -147,8 +155,8 @@ field<vec> propose_field (const field<vec>& thetas,
 double deriv_L (const mat &L, const vec &sds, const mat &b,
                 const double &log_target, const uword &i,
                 const uvec &upper_part,
-                const double &prior_eta_LKJ,
-                const char direction = 'b', const double eps = 1e-06) {
+                const double &prior_D_L_etaLKJ,
+                const char &direction = 'b', const double &eps = 1e-06) {
     uword n = L.n_rows;
     uword upper_part_i = upper_part.at(i);
     uword column = floor(upper_part_i / n);
@@ -164,15 +172,15 @@ double deriv_L (const mat &L, const vec &sds, const mat &b,
     L_eps.at(column, column) = sqrt(1 - ss);
     double out(0.0);
     if (direction == 'f') {
-        out = (logPC_D_L(L_eps, sds, b, prior_eta_LKJ) - log_target) / eps;
+        out = (logPC_D_L(L_eps, sds, b, prior_D_L_etaLKJ) - log_target) / eps;
     } else {
-        out = (log_target - logPC_D_L(L_eps, sds, b, prior_eta_LKJ)) / eps;
+        out = (log_target - logPC_D_L(L_eps, sds, b, prior_D_L_etaLKJ)) / eps;
     }
     return out;
 }
 
 mat propose_L (const mat &L, const vec &scale, const uvec &upper_part,
-               const double &deriv, const uword &i, const bool mala = false) {
+               const double &deriv, const uword &i, const bool &mala = false) {
     mat proposed_L = L;
     vec l = L(upper_part);
     vec proposed_l(l.n_rows);
@@ -199,10 +207,10 @@ void update_D (mat &L, vec &sds, const mat &b,
                const uvec &upper_part,
                const double &prior_D_sds_df,
                const double &prior_D_sds_sigma,
-               const double prior_eta_LKJ,
+               const double &prior_D_L_etaLKJ,
                const int &it, const bool &MALA,
                mat &res_sds, mat &res_L,
-               vec &scale_sds, vec scale_L,
+               vec &scale_sds, vec &scale_L,
                mat &acceptance_sds, mat &acceptance_L) {
     uword n_sds = sds.n_rows;
     uword n_L = upper_part.n_rows;
@@ -230,7 +238,7 @@ void update_D (mat &L, vec &sds, const mat &b,
         }
         res_sds.at(it, i) = sds.at(i);
     }
-    double denominator_L = logPC_D_L(L, sds, b, prior_eta_LKJ);
+    double denominator_L = logPC_D_L(L, sds, b, prior_D_L_etaLKJ);
     for (uword i = 0; i < n_L; ++i) {
         uword upper_part_i = upper_part.at(i);
         double deriv_current(0.0);
@@ -238,7 +246,7 @@ void update_D (mat &L, vec &sds, const mat &b,
         mat proposed_L = L;
         if (MALA) {
             deriv_current = deriv_L(L, sds, b, denominator_L, i, upper_part,
-                                    prior_eta_LKJ);
+                                    prior_D_L_etaLKJ);
             mu_current = L.at(upper_part_i) + 0.5 * scale_L.at(i) * deriv_current;
             proposed_L = propose_L(L, scale_L, upper_part, deriv_current, i, true);
         } else {
@@ -249,10 +257,10 @@ void update_D (mat &L, vec &sds, const mat &b,
         double mu_proposed(0.0);
         double log_ratio_L(0.0);
         if (proposed_L.is_finite()) {
-            numerator_L = logPC_D_L(proposed_L, sds, b, prior_eta_LKJ);
+            numerator_L = logPC_D_L(proposed_L, sds, b, prior_D_L_etaLKJ);
             if (MALA) {
                 deriv_proposed = deriv_L(proposed_L, sds, b, numerator_L,
-                                         i, upper_part, prior_eta_LKJ);
+                                         i, upper_part, prior_D_L_etaLKJ);
                 mu_proposed = proposed_L.at(upper_part_i) +
                     0.5 * scale_L.at(i) * deriv_proposed;
                 log_ratio_L = numerator_L - denominator_L +
@@ -276,7 +284,7 @@ void update_D (mat &L, vec &sds, const mat &b,
     }
 }
 
-vec group_sum (const vec& x, const uvec& ind) {
+vec group_sum (const vec &x, const uvec &ind) {
     vec cumsum_x = cumsum(x);
     vec out = cumsum_x.elem(ind);
     out.insert_rows(0, 1);
@@ -284,7 +292,13 @@ vec group_sum (const vec& x, const uvec& ind) {
     return out;
 }
 
-field<mat> List2Field_mat (const List& Mats) {
+vec create_init_scale(const uword &n, const double &fill_val = 0.1) {
+    vec out(n);
+    out.fill(fill_val);
+    return out;
+}
+
+field<mat> List2Field_mat (const List &Mats) {
     int n_list = Mats.size();
     field<mat> res(n_list);
     for (int i = 0; i < n_list; ++i) {
@@ -293,7 +307,7 @@ field<mat> List2Field_mat (const List& Mats) {
     return res;
 }
 
-field<vec> List2Field_vec (const List& Vecs) {
+field<vec> List2Field_vec (const List &Vecs) {
     int n_list = Vecs.size();
     field<vec> res(n_list);
     for (int i = 0; i < n_list; ++i) {
@@ -302,7 +316,7 @@ field<vec> List2Field_vec (const List& Vecs) {
     return res;
 }
 
-field<mat> create_storage(const field<vec>& F, const int& n_iter) {
+field<mat> create_storage(const field<vec> &F, const int &n_iter) {
     int n = F.size();
     field<mat> out(n);
     for (int i = 0; i < n; ++i) {
@@ -314,7 +328,7 @@ field<mat> create_storage(const field<vec>& F, const int& n_iter) {
     return out;
 }
 
-vec Wlong_alphas_fun(const field<mat>& Mats, const field<vec>& coefs) {
+vec Wlong_alphas_fun(const field<mat> &Mats, const field<vec> &coefs) {
     int n = Mats.size();
     int n_rows = Mats.at(0).n_rows;
     vec out(n_rows, fill::zeros);
@@ -324,7 +338,7 @@ vec Wlong_alphas_fun(const field<mat>& Mats, const field<vec>& coefs) {
     return out;
 }
 
-mat docall_cbind (const List& Mats_) {
+mat docall_cbind (const List &Mats_) {
     field<mat> Mats = List2Field_mat(Mats_);
     int n = Mats.size();
     uvec ncols(n);
@@ -345,7 +359,7 @@ mat docall_cbind (const List& Mats_) {
     return out;
 }
 
-uvec create_fast_ind (const uvec& group) {
+uvec create_fast_ind (const uvec &group) {
     unsigned int l = group.n_rows;
     uvec ind = find(group.rows(1, l - 1) != group.rows(0, l - 2));
     unsigned int k = ind.n_rows;
@@ -354,28 +368,29 @@ uvec create_fast_ind (const uvec& group) {
     return ind;
 }
 
-double logPrior(const vec& x, const vec& mean, const mat& Tau, double tau = 1) {
+double logPrior(const vec &x, const vec &mean, const mat &Tau,
+                const double tau = 1.0) {
     vec z = (x - mean);
     double out = - 0.5 * tau * as_scalar(z.t() * Tau * z);
     return out;
 }
 
-double log_density_surv (const vec& W0H_bs_gammas,
-                         const vec& W0h_bs_gammas,
-                         const vec& W0H2_bs_gammas,
-                         const vec& WH_gammas,
-                         const vec& Wh_gammas,
-                         const vec& WH2_gammas,
-                         const vec& WlongH_alphas,
-                         const vec& Wlongh_alphas,
-                         const vec& WlongH2_alphas,
-                         const vec& log_Pwk, const vec& log_Pwk2,
-                         const uvec& indFast_H,
-                         const uvec& which_event,
-                         const uvec& which_right_event,
-                         const uvec& which_left,
-                         const bool& any_interval,
-                         const uvec& which_interval) {
+double log_density_surv (const vec &W0H_bs_gammas,
+                         const vec &W0h_bs_gammas,
+                         const vec &W0H2_bs_gammas,
+                         const vec &WH_gammas,
+                         const vec &Wh_gammas,
+                         const vec &WH2_gammas,
+                         const vec &WlongH_alphas,
+                         const vec &Wlongh_alphas,
+                         const vec &WlongH2_alphas,
+                         const vec &log_Pwk, const vec &log_Pwk2,
+                         const uvec &indFast_H,
+                         const uvec &which_event,
+                         const uvec &which_right_event,
+                         const uvec &which_left,
+                         const bool &any_interval,
+                         const uvec &which_interval) {
     vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
     vec H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
     int n = H.n_rows;
@@ -519,7 +534,6 @@ void update_gammas (vec& bs_gammas, vec& gammas, vec& alphas,
     }
 }
 
-
 void update_alphas (vec& bs_gammas, vec& gammas, vec& alphas,
                     vec& W0H_bs_gammas, vec& W0h_bs_gammas, vec& W0H2_bs_gammas,
                     vec& WH_gammas, vec& Wh_gammas, vec& WH2_gammas,
@@ -619,17 +633,25 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     bool any_event = which_event.n_rows > 0;
     bool any_interval = which_interval.n_rows > 0;
     // initial values
-    List betas_ = as<List>(initial_values["betas"]);
-    field<vec> betas = List2Field_vec(betas_);
-    List b_ = as<List>(initial_values["b"]);
-    field<mat> b = List2Field_mat(b_);
     vec bs_gammas = as<vec>(initial_values["bs_gammas"]);
     vec gammas = as<vec>(initial_values["gammas"]);
     vec alphas = as<vec>(initial_values["alphas"]);
     double tau_bs_gammas = as<double>(initial_values["tau_bs_gammas"]);
+    List b_ = as<List>(initial_values["b"]);
+    field<mat> b = List2Field_mat(b_);
+    mat b_mat = docall_cbind(b_);
+    mat D = as<mat>(initial_values["D"]);
+    vec sds = D.diag();
+    mat R = cov2cor(D);
+    mat L = chol(R);
+    List betas_ = as<List>(initial_values["betas"]);
+    field<vec> betas = List2Field_vec(betas_);
+    // indexes or other useful things
+    uvec upper_part = trimatu_ind(size(R),  1);
     // MCMC settings
     int n_iter = as<int>(control["n_iter"]);
     int n_burnin = as<int>(control["n_burnin"]);
+    bool MALA = as<bool>(control["MALA"]);
     // priors
     vec prior_mean_bs_gammas = as<vec>(priors["mean_bs_gammas"]);
     mat prior_Tau_bs_gammas = as<mat>(priors["Tau_bs_gammas"]);
@@ -640,17 +662,15 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     double post_A_tau_bs_gammas = as<double>(priors["A_tau_bs_gammas"]) +
         0.5 * as<double>(priors["rank_Tau_bs_gammas"]);
     double prior_B_tau_bs_gammas = as<double>(priors["B_tau_bs_gammas"]);
-    // scales
-    vec scale_bs_gammas(bs_gammas.n_rows, fill::ones);
-    scale_bs_gammas = 0.1 * scale_bs_gammas;
-    vec scale_gammas(gammas.n_rows, fill::ones);
-    scale_gammas = 0.1 * scale_gammas;
-    vec scale_alphas(alphas.n_rows, fill::ones);
-    scale_alphas = 0.1 * scale_alphas;
+    double prior_D_sds_df = as<double>(priors["prior_D_sds_df"]);
+    double prior_D_sds_sigma = as<double>(priors["prior_D_sds_sigma"]);
+    double prior_D_L_etaLKJ = as<double>(priors["prior_D_L_etaLKJ"]);
     // store results
     int n_bs_gammas = bs_gammas.n_rows;
     int n_gammas = gammas.n_rows;
     int n_alphas = alphas.n_rows;
+    int n_sds = sds.n_rows;
+    int n_L = vec(L(upper_part)).n_rows;
     mat res_bs_gammas(n_iter, n_bs_gammas);
     mat acceptance_bs_gammas(n_iter, n_bs_gammas, fill::zeros);
     mat res_gammas(n_iter, n_gammas);
@@ -659,6 +679,16 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     mat res_alphas(n_iter, n_alphas);
     mat acceptance_alphas(n_iter, n_alphas, fill::zeros);
     vec res_tau_bs_gammas(n_iter);
+    mat res_sds(n_iter, n_sds, fill::zeros);
+    mat acceptance_sds(n_iter, n_sds, fill::zeros);
+    mat res_L(n_iter, n_L, fill::zeros);
+    mat acceptance_L(n_iter, n_L, fill::zeros);
+    // scales
+    vec scale_bs_gammas = create_init_scale(n_bs_gammas);
+    vec scale_gammas = create_init_scale(n_gammas);
+    vec scale_alphas = create_init_scale(n_alphas);
+    vec scale_sds = create_init_scale(n_sds);
+    vec scale_L = create_init_scale(n_L);
     // preliminaries
     vec W0H_bs_gammas = W0_H * bs_gammas;
     vec W0h_bs_gammas(W0_h.n_rows);
@@ -753,6 +783,11 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                       /////
                       Wlong_H, Wlong_h, Wlong_H2, scale_alphas,
                       acceptance_alphas, res_alphas);
+        ////////////////////////////////////////////////////////////////////////
+        update_D(L, sds, b_mat, upper_part,
+                 prior_D_sds_df, prior_D_sds_sigma, prior_D_L_etaLKJ,
+                 it, MALA, res_sds, res_L, scale_sds, scale_L,
+                 acceptance_sds, acceptance_L);
     }
     return List::create(
         Named("mcmc") = List::create(

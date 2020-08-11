@@ -13,7 +13,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     #           n_adapt
     con <- list(GK_k = 15L, Bsplines_degree = 2, base_hazard_segments = 10,
                 diff = 2L, n_chains = 3L, n_burnin = 500L, n_iter = 3500L,
-                seed = 123L,  cores = max(parallel::detectCores() - 1, 1))
+                seed = 123L,  cores = max(parallel::detectCores() - 1, 1),
+                MALA = FALSE)
     control <- c(control, list(...))
     namC <- names(con)
     con[(namc <- names(control))] <- control
@@ -449,7 +450,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                    mean_alphas = lapply(alphas, "*", 0.0),
                    Tau_alphas = lapply(alphas, function (a) 0.01 * diag(length(a))),
                    A_tau_bs_gammas = 1, B_tau_bs_gammas = 0.1,
-                   rank_Tau_bs_gammas = qr(Tau_bs_gammas)$rank)
+                   rank_Tau_bs_gammas = qr(Tau_bs_gammas)$rank,
+                   prior_D_sds_df = 3.0, prior_D_sds_sigma = 10.0,
+                   prior_D_L_etaLKJ = 3.0)
 
     list(initial_values = initial_values, vcov_prop = vcov_prop,
          priors = priors, model_info = model_info, data = data,
