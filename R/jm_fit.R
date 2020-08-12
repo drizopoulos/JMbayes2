@@ -27,7 +27,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     RNGstate <- get(".Random.seed", envir = .GlobalEnv)
     on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
     n_chains <- control$n_chains
-    #n_chains <- 1
     if (n_chains > 1) {
         mcmc_parallel <- function (chain, model_data, model_info, initial_values,
                                    priors, control) {
@@ -42,15 +41,15 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
                         rep(seq_len(cores), each = ceiling(n_chains / cores),
                             length.out = n_chains))
         cores <- min(cores, length(chains))
-        #cl <- parallel::makeCluster(cores)
-        #out <- parallel::parLapply(cl, chains, mcmc_parallel,
-        #                           model_data = model_data, model_info = model_info,
-        #                           initial_values = initial_values,
-        #                           priors = priors, control = control)
-        #parallel::stopCluster(cl)
-        out <- lapply(chains, mcmc_parallel, model_data = model_data,
-                      model_info = model_info, initial_values = initial_values,
-                      priors = priors, control = control)
+        cl <- parallel::makeCluster(cores)
+        out <- parallel::parLapply(cl, chains, mcmc_parallel,
+                                   model_data = model_data, model_info = model_info,
+                                   initial_values = initial_values,
+                                   priors = priors, control = control)
+        parallel::stopCluster(cl)
+        #out <- lapply(chains, mcmc_parallel, model_data = model_data,
+        #              model_info = model_info, initial_values = initial_values,
+        #              priors = priors, control = control)
     } else {
         set.seed(control$seed)
         out <- list(mcmc_cpp(model_data, model_info, initial_values, priors,

@@ -1,92 +1,50 @@
-#ifndef JMBAYES2BLOCKS
-#define JMBAYES2BLOCKS
+#ifndef JMBAYES2SURV_H
+#define JMBAYES2SURV_H
 
 #include <Rcpp.h>
 #include <RcppArmadillo.h>
+#include "JMbayes2_Funs.h"
 // [[Rcpp::depends("RcppArmadillo")]]
 
 using namespace Rcpp;
 using namespace arma;
 
-void update_D (mat &L, vec &sds, const mat &b,
-               const uvec &upper_part,
-               const double &prior_D_sds_df,
-               const double &prior_D_sds_sigma,
-               const double &prior_D_L_etaLKJ,
-               const int &it, const bool &MALA,
-               mat &res_sds, mat &res_L,
-               vec &scale_sds, vec &scale_L,
-               mat &acceptance_sds, mat &acceptance_L) {
-  uword n_sds = sds.n_rows;
-  uword n_L = upper_part.n_rows;
-  double denominator_sds = logPC_D_sds(sds, L, b, prior_D_sds_df,
-                                       prior_D_sds_sigma);
-  for (uword i = 0; i < n_sds; ++i) {
-    double SS = 0.5 * pow(scale_sds.at(i), 2.0);
-    double log_mu_current = log(sds.at(i)) - SS;
-    vec proposed_sds = propose_lnorm(sds, log_mu_current, scale_sds, i);
-    double numerator_sds = logPC_D_sds(proposed_sds, L, b,
-                                       prior_D_sds_df, prior_D_sds_sigma);
-    double log_mu_proposed = log(proposed_sds.at(i)) - SS;
-    double log_ratio_sds = numerator_sds - denominator_sds +
-      R::dlnorm(sds.at(i), log_mu_proposed, scale_sds.at(i), true) -
-      R::dlnorm(proposed_sds.at(i), log_mu_current, scale_sds.at(i), true);
-    if (std::isfinite(log_ratio_sds) && exp(log_ratio_sds) > R::runif(0.0, 1.0)) {
-      sds = proposed_sds;
-      denominator_sds = numerator_sds;
-      acceptance_sds.at(it, i) = 1;
-    }
-    if (it > 19) {
-      scale_sds.at(i) =
-        robbins_monro(scale_sds.at(i), acceptance_sds.at(it, i),
-                      it);
-    }
-    res_sds.at(it, i) = sds.at(i);
+double log_density_surv (const vec &W0H_bs_gammas,
+                         const vec &W0h_bs_gammas,
+                         const vec &W0H2_bs_gammas,
+                         const vec &WH_gammas,
+                         const vec &Wh_gammas,
+                         const vec &WH2_gammas,
+                         const vec &WlongH_alphas,
+                         const vec &Wlongh_alphas,
+                         const vec &WlongH2_alphas,
+                         const vec &log_Pwk, const vec &log_Pwk2,
+                         const uvec &indFast_H,
+                         const uvec &which_event,
+                         const uvec &which_right_event,
+                         const uvec &which_left,
+                         const bool &any_interval,
+                         const uvec &which_interval) {
+  vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
+  vec H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
+  int n = H.n_rows;
+  vec lambda_h(n);
+  lambda_h.elem(which_event) = W0h_bs_gammas.elem(which_event) +
+    Wh_gammas.elem(which_event) + Wlongh_alphas.elem(which_event);
+  vec log_Lik_surv(n);
+  log_Lik_surv.elem(which_right_event) = - H.elem(which_right_event);
+  log_Lik_surv.elem(which_event) += lambda_h.elem(which_event);
+  log_Lik_surv.elem(which_left) = log1p(- exp(- H.elem(which_left)));
+  vec lambda_H2(lambda_H.n_rows);
+  vec H2(n);
+  if (any_interval) {
+    lambda_H2 = W0H2_bs_gammas + WH2_gammas + WlongH2_alphas;
+    H2 = group_sum(exp(log_Pwk2 + lambda_H2), indFast_H);
+    log_Lik_surv.elem(which_interval) = - H.elem(which_interval) +
+      log(- expm1(- H2.elem(which_interval)));
   }
-  double denominator_L = logPC_D_L(L, sds, b, prior_D_L_etaLKJ);
-  for (uword i = 0; i < n_L; ++i) {
-    uword upper_part_i = upper_part.at(i);
-    double deriv_current(0.0);
-    double mu_current(0.0);
-    mat proposed_L = L;
-    if (MALA) {
-      deriv_current = deriv_L(L, sds, b, denominator_L, i, upper_part,
-                              prior_D_L_etaLKJ);
-      mu_current = L.at(upper_part_i) + 0.5 * scale_L.at(i) * deriv_current;
-      proposed_L = propose_L(L, scale_L, upper_part, deriv_current, i, true);
-    } else {
-      proposed_L = propose_L(L, scale_L, upper_part, deriv_current, i);
-    }
-    double numerator_L(0.0);
-    double deriv_proposed(0.0);
-    double mu_proposed(0.0);
-    double log_ratio_L(0.0);
-    if (proposed_L.is_finite()) {
-      numerator_L = logPC_D_L(proposed_L, sds, b, prior_D_L_etaLKJ);
-      if (MALA) {
-        deriv_proposed = deriv_L(proposed_L, sds, b, numerator_L,
-                                 i, upper_part, prior_D_L_etaLKJ);
-        mu_proposed = proposed_L.at(upper_part_i) +
-          0.5 * scale_L.at(i) * deriv_proposed;
-        log_ratio_L = numerator_L - denominator_L +
-          log_normpdf(L.at(upper_part_i), mu_proposed, sqrt(scale_L.at(i))) -
-          log_normpdf(proposed_L.at(upper_part_i), mu_current, sqrt(scale_L.at(i)));
-      } else {
-        log_ratio_L = numerator_L - denominator_L;
-      }
-    }
-    if (std::isfinite(log_ratio_L) && exp(log_ratio_L) > R::runif(0.0, 1.0)) {
-      L = proposed_L;
-      denominator_L = numerator_L;
-      acceptance_L.at(it, i) = 1;
-    }
-    if (it > 19) {
-      scale_L.at(i) =
-        robbins_monro(scale_L.at(i), acceptance_L.at(it, i),
-                      it);
-    }
-    res_L.at(it, i) = L.at(upper_part_i);
-  }
+  double logLik = sum(log_Lik_surv);
+  return logLik;
 }
 
 void update_bs_gammas (vec& bs_gammas, vec& gammas, vec& alphas,

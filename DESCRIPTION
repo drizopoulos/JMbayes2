@@ -12,10 +12,11 @@ Maintainer: Dimitris Rizopoulos <d.rizopoulos@erasmusmc.nl>
 BugReports: https://github.com/drizopoulos/JMbayes2/issues
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-Suggests: lattice, knitr, rmarkdown, pkgdown, multcomp, emmeans, estimability, effects, DHARMa, optimParallel
+Suggests: lattice, knitr, rmarkdown, pkgdown
 Encoding: UTF-8
+Depends: survival, nlme, GLMMadaptive, splines
+Imports: Rcpp, coda, parallel
 LinkingTo: Rcpp, RcppArmadillo
-Imports: Rcpp, coda, splines, parallel
 LazyLoad: yes
 LazyData: yes
 License: GPL (>= 3)

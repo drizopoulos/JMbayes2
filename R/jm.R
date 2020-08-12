@@ -440,7 +440,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ############################################################################
     # Priors
     DD <- diag(ncol(W0_H))
-    Tau_bs_gammas <- crossprod(diff(DD, differences = con$diff)) #+ 1e-06 * DD
+    Tau_bs_gammas <- crossprod(diff(DD, differences = con$diff))
     priors <- list(mean_betas = lapply(betas, "*", 0.0),
                    Tau_betas = lapply(betas, function (b) 0.01 * diag(length(b))),
                    mean_gammas = gammas * 0.0,

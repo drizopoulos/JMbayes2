@@ -3,6 +3,7 @@ export(jm, jm_fit)
 
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply")
 importFrom("nlme", "fixef", "ranef")
-
+importFrom("coda", "as.mcmc.list", "as.mcmc")
+import(Rcpp)
 
 useDynLib(JMbayes2, .registration = TRUE)

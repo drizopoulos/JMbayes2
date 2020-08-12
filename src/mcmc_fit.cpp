@@ -1,8 +1,6 @@
 #include <RcppArmadillo.h>
-#include "../inst/include/JMbayes2_blocks.h"
-#include "../inst/include/JMbayes2_logDens.h"
-#include "../inst/include/JMbayes2_Funs.h"
-#include "../inst/include/JMbayes2_Distrs.h"
+#include "JMbayes2_D.h"
+#include "JMbayes2_Surv.h"
 // [[Rcpp::depends("RcppArmadillo")]]
 
 using namespace Rcpp;

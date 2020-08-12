@@ -1,5 +1,5 @@
-#ifndef JMBAYES2FUNS
-#define JMBAYES2FUNS
+#ifndef JMBAYES2FUNS_H
+#define JMBAYES2FUNS_H
 
 #include <Rcpp.h>
 #include <RcppArmadillo.h>
@@ -7,6 +7,8 @@
 
 using namespace Rcpp;
 using namespace arma;
+
+static double const Const_Unif_Proposal = 0.5 * std::pow(12.0, 0.5);
 
 double robbins_monro (const double &scale, const double &acceptance_it,
                       const int &it, const double &target_acceptance = 0.45) {
@@ -150,5 +152,42 @@ double logPrior(const vec &x, const vec &mean, const mat &Tau,
   return out;
 }
 
+vec propose_norm (const vec &thetas, const vec &scale, const uword &i) {
+  vec proposed_thetas = thetas;
+  proposed_thetas.at(i) = R::rnorm(thetas.at(i), scale.at(i));
+  return proposed_thetas;
+}
+
+vec propose_unif (const vec &thetas, const vec &scale, const uword &i) {
+  vec proposed_thetas = thetas;
+  proposed_thetas.at(i) = R::runif(thetas.at(i) - Const_Unif_Proposal * scale.at(i),
+                     thetas.at(i) + Const_Unif_Proposal * scale.at(i));
+  return proposed_thetas;
+}
+
+vec propose_lnorm (const vec &thetas, const double &log_mu_i, const vec &scale,
+                   const uword &i) {
+  vec proposed_thetas = thetas;
+  proposed_thetas.at(i) = R::rlnorm(log_mu_i, scale.at(i));
+  return proposed_thetas;
+}
+
+vec propose_norm_mala (const vec &thetas, const vec &scale,
+                       const double &deriv, const uword &i) {
+  vec proposed_thetas = thetas;
+  double mu = thetas.at(i) + 0.5 * scale.at(i) * deriv;
+  double sigma = sqrt(scale.at(i));
+  proposed_thetas.at(i) = R::rnorm(mu, sigma);
+  return proposed_thetas;
+}
+
+field<vec> propose_field (const field<vec>& thetas,
+                          const field<vec>& scale,
+                          const int& k, const int& i) {
+  field<vec> proposed_thetas = thetas;
+  proposed_thetas.at(k).at(i) = R::rnorm(thetas.at(k).at(i),
+                     scale.at(k).at(i));
+  return proposed_thetas;
+}
 
 #endif
