@@ -670,3 +670,64 @@ create_Wlong <- function (eta, functional_forms_per_outcome, U) {
     Wlong
 }
 
+Ptail <- function (x) {
+    above <- mean(x >= 0)
+    below <- mean(x < 0)
+    2 * min(above, below)
+}
+
+effective_size <- function (x) {
+    spectrum0.ar <- function(x) {
+        d <- dim(x)
+        nrx <- d[1L]
+        ncx <- d[2L]
+        v0 <- numeric(ncx)
+        res <- as.matrix(lm.fit(cbind(1, seq_len(nrx)),
+                                cbind(x, x))$residuals)
+        for (i in seq_len(ncx)) {
+            if (identical(all.equal(sd(res[, i]), 0), TRUE)) {
+                v0[i] <- 0
+            }
+            else {
+                ar.out <- ar(x[, i], aic = TRUE)
+                v0[i] <- ar.out$var.pred / (1 - sum(ar.out$ar))^2
+            }
+        }
+        v0
+    }
+    x <- as.matrix(x)
+    spec <- spectrum0.ar(x)
+    ifelse(spec == 0, 0, nrow(x) * apply(x, 2L, var) / spec)
+}
+
+std_err <- function (x) {
+    x <- as.matrix(x)
+    vars <- apply(x, 2L, var)
+    ess <- effectiveSize(x)
+    sqrt(vars / ess)
+}
+
+quantile2 <- function (x) quantile(x, probs = c(0.025, 0.975), na.rm = TRUE)
+
+cor2cov <- function (R, vars, sds = NULL) {
+    p <- nrow(R)
+    if (is.null(sds)) sds <- sqrt(vars)
+    sds * R * rep(sds, each = p)
+}
+
+reconstr_D <- function (L, sds) {
+    p <- length(sds)
+    LL <- matrix(0.0, p, p)
+    LL[upper.tri(LL)] <- L
+    LL[1, 1] <- 1
+    LL[cbind(2:p, 2:p)] <- sqrt(1 - colSums(LL^2)[-1L])
+    cor2cov(crossprod(LL), sds = sds)
+}
+
+lapply_nams <- function (X, FUN, ...) {
+    out <- lapply(X, FUN, ...)
+    names(out) <- X
+    out
+}
+
+

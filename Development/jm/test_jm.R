@@ -11,6 +11,7 @@ library("splines")
 source("./R/jm.R")
 source("./R/jm_fit.R")
 source("./R/help_functions.R")
+source("./R/temp.R")
 source("./Development/jm/PBC_data.R")
 Rcpp::sourceCpp('src/mcmc_fit.cpp')
 
@@ -149,12 +150,18 @@ lmeFit <- lme(y ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)), data = Data$DF,
               control = lmeControl(opt = "optim", niterEM = 45))
 coxFit <- coxph(Surv(Time, event) ~ group + age, data = Data$DF.id)
 
-obj <- jm(coxFit, list(lmeFit), time_var = "time")
+obj <- jm(coxFit, list(lmeFit), time_var = "time", n_chains = 1)
 
-coda::traceplot(obj$mcmc$alphas)
+coda::traceplot(obj$mcmc$D)
 
 
 #obj
+model_data <- obj$model_data
+model_info <- obj$model_info
+initial_values <- obj$initial_values
+priors <- obj$priors
+vcov_prop <- obj$vcov_prop
+control <- obj$control
 
 
 

@@ -27,6 +27,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     RNGstate <- get(".Random.seed", envir = .GlobalEnv)
     on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
     n_chains <- control$n_chains
+    tic <- proc.time()
     if (n_chains > 1) {
         mcmc_parallel <- function (chain, model_data, model_info, initial_values,
                                    priors, control) {
@@ -47,25 +48,41 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
                                    initial_values = initial_values,
                                    priors = priors, control = control)
         parallel::stopCluster(cl)
-        #out <- lapply(chains, mcmc_parallel, model_data = model_data,
-        #              model_info = model_info, initial_values = initial_values,
-        #              priors = priors, control = control)
     } else {
         set.seed(control$seed)
         out <- list(mcmc_cpp(model_data, model_info, initial_values, priors,
                              control))
     }
+    toc <- proc.time()
+    # reconstruct D matrix
+    get_D <- function (x) {
+        mapply(reconstr_D, split(x$L, row(x$L)), split(x$sds, row(x$sds)),
+               SIMPLIFY = FALSE)
+    }
+    for (i in seq_along(out)) {
+        out[[i]][["mcmc"]][["D"]] <-
+            do.call("rbind", lapply(get_D(out[[i]][["mcmc"]]), c))
+    }
     convert2_mcmclist <- function (name) {
         as.mcmc.list(lapply(out, function (x) as.mcmc(x$mcmc[[name]])))
     }
+    get_acc_rates <- function (name_parm) {
+        do.call("rbind", lapply(out, function (x) x[["acc_rate"]][[name_parm]]))
+    }
+    parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "D")
+    mcmc_out <- lapply_nams(parms, convert2_mcmclist)
+    # Fix names
+    colnames(mcmc_out$bs_gammas[[1]]) <-
+        paste0("bs_gammas_", seq_along(mcmc_out$bs_gammas[[1]][1, ]))
+    mcmc_out$tau_bs_gammas[[1]] <- cbind(mcmc_out$tau_bs_gammas[[1]])
+    colnames(mcmc_out$tau_bs_gammas[[1]]) <- "tau_bs_gammas"
+    colnames(mcmc_out$gammas[[1]]) <- attr(model_info$terms$terms_Surv_noResp, "term.labels")
+    colnames(mcmc_out$alphas[[1]]) <- paste0("alphas", seq_len(ncol(mcmc_out$alphas[[1]])))
+    colnames(mcmc_out$D[[1]]) <-
+        paste0("D[", row(initial_values$D), ", ", col(initial_values$D), "]")
     list(
-        "mcmc" = list(
-            "bs_gammas" = convert2_mcmclist("bs_gammas"),
-            "tau_bs_gammas" = convert2_mcmclist("tau_bs_gammas"),
-            "gammas" = convert2_mcmclist("gammas"),
-            "alphas" = convert2_mcmclist("alphas"),
-            "sds" = convert2_mcmclist("sds"),
-            "L" = convert2_mcmclist("L")
-        )
+        "mcmc" = mcmc_out,
+        "acc_rates" = lapply_nams(parms, get_acc_rates),
+        "running_time" = toc - tic
     )
 }

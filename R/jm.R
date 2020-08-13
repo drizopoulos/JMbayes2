@@ -459,6 +459,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     Fit <- jm_fit(Data, model_info, initial_values, priors, con)
     out <- Fit
     out <- c(out, list(model_data = Data, model_info = model_info,
+                       initial_values = initial_values,
                        control = con, priors = priors, call = call))
     out$class <- "jm"
     out
