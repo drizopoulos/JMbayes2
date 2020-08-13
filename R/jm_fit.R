@@ -74,7 +74,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     # Fix names
     colnames(mcmc_out$bs_gammas[[1]]) <-
         paste0("bs_gammas_", seq_along(mcmc_out$bs_gammas[[1]][1, ]))
-    mcmc_out$tau_bs_gammas[[1]] <- cbind(mcmc_out$tau_bs_gammas[[1]])
     colnames(mcmc_out$tau_bs_gammas[[1]]) <- "tau_bs_gammas"
     colnames(mcmc_out$gammas[[1]]) <- attr(model_info$terms$terms_Surv_noResp, "term.labels")
     colnames(mcmc_out$alphas[[1]]) <- paste0("alphas", seq_len(ncol(mcmc_out$alphas[[1]])))

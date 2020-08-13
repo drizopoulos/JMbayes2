@@ -89,7 +89,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat acceptance_gammas(n_iter, n_gammas, fill::zeros);
   mat res_alphas(n_iter, n_alphas);
   mat acceptance_alphas(n_iter, n_alphas, fill::zeros);
-  vec res_tau_bs_gammas(n_iter);
+  mat res_tau_bs_gammas(n_iter, 1, fill::zeros);
   mat res_sds(n_iter, n_sds, fill::zeros);
   mat acceptance_sds(n_iter, n_sds, fill::zeros);
   mat res_L(n_iter, n_L, fill::zeros);
@@ -160,7 +160,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     double post_B_tau_bs_gammas = prior_B_tau_bs_gammas +
       0.5 * as_scalar(bs_gammas.t() * prior_Tau_bs_gammas * bs_gammas);
     tau_bs_gammas = R::rgamma(post_A_tau_bs_gammas, 1 / post_B_tau_bs_gammas);
-    res_tau_bs_gammas.at(it) = tau_bs_gammas;
+    res_tau_bs_gammas.at(it, 0) = tau_bs_gammas;
     ////////////////////////////////////////////////////////////////////////
     if (any_gammas) {
       update_gammas(bs_gammas, gammas, alphas,

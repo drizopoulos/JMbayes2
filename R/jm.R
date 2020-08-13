@@ -456,9 +456,18 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ############################################################################
     ############################################################################
     # Fit the model
-    Fit <- jm_fit(Data, model_info, initial_values, priors, con)
-    out <- Fit
-    out <- c(out, list(model_data = Data, model_info = model_info,
+    out <- jm_fit(Data, model_info, initial_values, priors, con)
+    #S <- lapply(out$mcmc, summary)
+    #statistics <- list(
+    #    Mean = lapply(S, get_statistic, "Mean"),
+    #    Median = lapply(S, get_statistic, "Median"),
+    #    SD = lapply(S, get_statistic, "SD"),
+    #    SE = lapply(S, get_statistic, "Time-series SE"),
+    #    CI_low = lapply(S, get_statistic, "2.5CI"),
+    #    CI_upp = lapply(S, get_statistic, "97.5CI")
+    #)
+    out <- c(out, list(#statistics = statistics,
+                       model_data = Data, model_info = model_info,
                        initial_values = initial_values,
                        control = con, priors = priors, call = call))
     out$class <- "jm"

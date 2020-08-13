@@ -730,4 +730,16 @@ lapply_nams <- function (X, FUN, ...) {
     out
 }
 
+get_statistic <- function (s, stat) {
+    out <- if (stat %in% c("Mean", "SD", "Time-series SE")) {
+        s <- s$statistics
+        if (is.matrix(s)) s[, stat] else s[stat]
+    } else {
+        s <- s$quantiles
+        stat <- switch(stat, "Median" = "50%", "2.5CI" = "2.5%",
+                       "97.5CI" = "97.5%")
+        if (is.matrix(s)) s[, stat] else s[stat]
+    }
+}
+
 
