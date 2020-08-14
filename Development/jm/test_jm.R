@@ -154,6 +154,8 @@ obj <- jm(coxFit, list(lmeFit), time_var = "time", n_chains = 3)
 
 #coda::traceplot(obj$mcmc$D)
 
+traceplot(obj)
+gelman.diag(obj$mcmc$D)
 
 #obj
 model_data <- obj$model_data

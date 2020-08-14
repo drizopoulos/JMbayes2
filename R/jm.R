@@ -473,6 +473,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                        model_data = Data, model_info = model_info,
                        initial_values = initial_values,
                        control = con, priors = priors, call = call))
-    out$class <- "jm"
+    class(out) <- "jm"
     out
 }
