@@ -152,7 +152,7 @@ coxFit <- coxph(Surv(Time, event) ~ group + age, data = Data$DF.id)
 
 obj <- jm(coxFit, list(lmeFit), time_var = "time", n_chains = 3)
 
-coda::traceplot(obj$mcmc$D)
+#coda::traceplot(obj$mcmc$D)
 
 
 #obj

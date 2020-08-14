@@ -48,6 +48,9 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
                                    initial_values = initial_values,
                                    priors = priors, control = control)
         parallel::stopCluster(cl)
+        #out <- lapply(chains, mcmc_parallel, model_data = model_data,
+        #              model_info = model_info, initial_values = initial_values,
+        #              priors = priors, control = control)
     } else {
         set.seed(control$seed)
         out <- list(mcmc_cpp(model_data, model_info, initial_values, priors,
@@ -63,6 +66,19 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
         out[[i]][["mcmc"]][["D"]] <-
             do.call("rbind", lapply(get_D(out[[i]][["mcmc"]]), c))
     }
+    # Set names
+    for (i in seq_along(out)) {
+        colnames(out[[i]][["mcmc"]][["bs_gammas"]]) <-
+            paste0("bs_gammas_",
+                   seq_along(out[[i]][["mcmc"]][["bs_gammas"]][1, ]))
+        colnames(out[[i]][["mcmc"]][["tau_bs_gammas"]]) <- "tau_bs_gammas"
+        colnames(out[[i]][["mcmc"]][["gammas"]]) <-
+            attr(model_info$terms$terms_Surv_noResp, "term.labels")
+        colnames(out[[i]][["mcmc"]][["alphas"]]) <-
+            paste0("alphas", seq_len(ncol(out[[i]][["mcmc"]][["alphas"]])))
+        colnames(out[[i]][["mcmc"]][["D"]]) <-
+            paste0("D[", row(initial_values$D), ", ", col(initial_values$D), "]")
+    }
     convert2_mcmclist <- function (name) {
         as.mcmc.list(lapply(out, function (x) as.mcmc(x$mcmc[[name]])))
     }
@@ -71,14 +87,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     }
     parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "D")
     mcmc_out <- lapply_nams(parms, convert2_mcmclist)
-    # Fix names
-    colnames(mcmc_out$bs_gammas[[1]]) <-
-        paste0("bs_gammas_", seq_along(mcmc_out$bs_gammas[[1]][1, ]))
-    colnames(mcmc_out$tau_bs_gammas[[1]]) <- "tau_bs_gammas"
-    colnames(mcmc_out$gammas[[1]]) <- attr(model_info$terms$terms_Surv_noResp, "term.labels")
-    colnames(mcmc_out$alphas[[1]]) <- paste0("alphas", seq_len(ncol(mcmc_out$alphas[[1]])))
-    colnames(mcmc_out$D[[1]]) <-
-        paste0("D[", row(initial_values$D), ", ", col(initial_values$D), "]")
     list(
         "mcmc" = mcmc_out,
         "acc_rates" = lapply_nams(parms, get_acc_rates),
