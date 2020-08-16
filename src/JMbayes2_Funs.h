@@ -190,4 +190,61 @@ field<vec> propose_field (const field<vec>& thetas,
   return proposed_thetas;
 }
 
+vec mu_fun (const vec &eta, const std::string &link) {
+  uword n = eta.n_rows;
+  vec exp_eta(n);
+  vec out(n);
+  if (link == "identity") {
+    out = eta;
+  } else if (link == "logit") {
+    exp_eta = trunc_exp(eta);
+    out = exp_eta / (1 + exp_eta);
+  } else if (link == "probit") {
+    out = normcdf(eta);
+  } else if (link == "cloglog") {
+    out = - trunc_exp(- trunc_exp(eta)) + 1;
+  } else if (link == "log") {
+    out = trunc_exp(eta);
+  }
+  return out;
+}
+
+vec lbeta_arma (const vec &a, const vec &b) {
+  uword n = a.n_rows;
+  vec out(n);
+  for (uword i = 0; i < n; ++i) {
+    out.at(i) = R::lbeta(a.at(i), b.at(i));
+  }
+  return out;
+}
+
+vec lchoose_arma (const vec &n, const vec &k) {
+  uword n_ = n.n_rows;
+  vec out(n_);
+  for (uword i = 0; i < n_; ++i) {
+    out.at(i) = R::lchoose(n.at(i), k.at(i));
+  }
+  return out;
+}
+
+vec log_dt_arma (const vec &x, const double &df) {
+  uword n = x.n_rows;
+  vec out(n);
+  for (uword i = 0; i < n; ++i) {
+    out.at(i) = R::dt(x.at(i), df, 1);
+  }
+  return out;
+}
+
+vec log_dbbinom (const vec &x, const vec &size, const vec &prob,
+                 const double &phi) {
+  vec A = phi * prob;
+  vec B = phi * (1 - prob);
+  vec log_numerator = lbeta_arma(x + A, size - x + B);
+  vec log_denominator = lbeta_arma(A, B);
+  vec fact = lchoose_arma(size, x);
+  vec out = fact + log_numerator - log_denominator;
+  return out;
+}
+
 #endif
