@@ -41,12 +41,20 @@ vec lchoose_arma (const vec &n, const vec &k) {
     return out;
 }
 
-// [[Rcpp::export]]
-vec log_dt_arma (const vec &x, const double &df) {
+vec log_dbinom (const vec &x, const vec &size, const vec &prob) {
     uword n = x.n_rows;
     vec out(n);
     for (uword i = 0; i < n; ++i) {
-        out.at(i) = R::dt(x.at(i), df, 1);
+        out.at(i) = R::dbinom(x.at(i), size.at(i), prob.at(i), 1);
+    }
+    return out;
+}
+
+vec log_dpois (const vec &x, const vec &lambda) {
+    uword n = x.n_rows;
+    vec out(n);
+    for (uword i = 0; i < n; ++i) {
+        out.at(i) = R::dpois(x.at(i), lambda.at(i), 1);
     }
     return out;
 }
@@ -62,44 +70,89 @@ vec log_dbbinom (const vec &x, const vec &size, const vec &prob,
     return out;
 }
 
-/*
-vec log_long (const field<mat> &y, const field<vec> &eta, const vec &scales, const vec &extra_parms,
-              const CharacterVector &families, const CharacterVector &links, const field<uvec> &ids) {
+vec log_dnbinom (const vec &x, const vec &mu, const double &size) {
+    vec log_mu_size = log(mu + size);
+    vec comp1 = lgamma(x + size) - lgamma(size) - lgamma(x + 1);
+    vec comp2 = size * log(size) - size * log_mu_size;
+    vec comp3 = x % (log(mu) - log_mu_size);
+    vec out = comp1 + comp2 + comp3;
+    return out;
+}
+
+vec log_dnorm (const vec &x, const vec &mu, const double &sigma) {
+    vec sigmas(x.n_rows);
+    sigmas.fill(sigma);
+    vec out = log_normpdf(x, mu, sigmas);
+    return out;
+}
+
+vec log_dt (const vec &x, const double &df) {
+    uword n = x.n_rows;
+    vec out(n);
+    for (uword i = 0; i < n; ++i) {
+        out.at(i) = R::dt(x.at(i), df, 1);
+    }
+    return out;
+}
+
+vec log_dgamma (const vec &x, const vec &shape, const vec &scale) {
+    uword n = x.n_rows;
+    vec out(n);
+    for (uword i = 0; i < n; ++i) {
+        out.at(i) = R::dgamma(x.at(i), shape.at(i), scale.at(i), 1);
+    }
+    return out;
+}
+
+vec log_dbeta (const vec &x, const vec &shape1, const vec &shape2) {
+    uword n = x.n_rows;
+    vec out(n);
+    for (uword i = 0; i < n; ++i) {
+        out.at(i) = R::dbeta(x.at(i), shape1.at(i), shape2.at(i), 1);
+    }
+    return out;
+}
+
+// [[Rcpp::export]]
+vec log_long (const field<mat> &y, const field<vec> &eta, const vec &scales,
+              const vec &extra_parms, const CharacterVector &families,
+              const CharacterVector &links, const field<uvec> &ids) {
     uword n_outcomes = y.size();
     uword n = y.at(0).n_rows;
     vec log_contr(n);
     vec out(n);
     for (uword i = 0; i < n_outcomes; ++i) {
-        uvec id_i = id.at(i);
+        uvec id_i = ids.at(i);
         mat y_i = y.at(i);
         vec mu_i = mu_fun(eta.at(i), links[i]);
         double scale_i = scales.at(i);
         double extr_prm_i = extra_parms.at(i);
         if (families[i] == "gaussian") {
-            log_contr = log_normpdf(y_i, mu_i, scale_i);
+            log_contr = log_dnorm(y_i, mu_i, scale_i);
         } else if (families[i] == "binomial") {
             uword k = y_i.n_cols;
-            if (k == ) {
-                log_contr = dbinom(y.col(0), y.col(0) + y.col(1), mu_i, true); // do y.col(0) + y.col(1) once
+            if (k == 2) {
+                log_contr = log_dbinom(y.col(0), y.col(0) + y.col(1), mu_i);
             } else {
                 log_contr = y_i % log(mu_i) + (1 - y_i) % log(1 - mu_i);
             }
         } else if (families[i] == "poisson") {
-            log_contr = dpois(y_i, mu_i, true);
+            log_contr = log_dpois(y_i, mu_i);
         } else if (families[i] == "negative binomial") {
-            log_contr = dnbinom_mu(y_i, scale_i, mu_i, true);
+            log_contr = log_dnbinom(y_i, mu_i, scale_i);
         } else if (families[i] == "beta") {
-            log_contr = dbeta(y_i, mu_i * scale_i, scale_i * (1 - mu_i), true);
+            log_contr = log_dbeta(y_i, mu_i * scale_i, scale_i * (1 - mu_i));
         } else if (families[i] == "Student-t") {
-            log_contr = dt((y_i - mu_i) / scale_i, extr_prm_i, true) - log(scale_i);
+            log_contr = log_dt((y_i - mu_i) / scale_i, extr_prm_i) - log(scale_i);
         } else if (families[i] == "Gamma") {
-            log_contr = dgamma(y_i, square(mu_i) / scale_i, scale_i / mu_i, true);
+            log_contr = log_dgamma(y_i, square(mu_i) / scale_i, scale_i / mu_i);
         } else if (families[i] == "beta binomial") {
             uword k = y_i.n_cols;
             if (k == 2) {
                 log_contr = log_dbbinom(y_i.col(0), y_i.col(0) + y_i.col(1), mu_i, scale_i);
             } else {
-                log_contr = log_dbbinom(y_i, 1 + 0 * y_i, mu_i, scale_i);
+                vec ones(n, fill::ones);
+                log_contr = log_dbbinom(y_i, ones, mu_i, scale_i);
             }
         } else if (families[i] == "unit Lindley") {
             vec theta = 1 / mu_i - 1;
@@ -112,4 +165,3 @@ vec log_long (const field<mat> &y, const field<vec> &eta, const vec &scales, con
     }
     return out;
 }
-*/

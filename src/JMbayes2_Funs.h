@@ -227,11 +227,20 @@ vec lchoose_arma (const vec &n, const vec &k) {
   return out;
 }
 
-vec log_dt_arma (const vec &x, const double &df) {
+vec log_dbinom (const vec &x, const vec &size, const vec &prob) {
   uword n = x.n_rows;
   vec out(n);
   for (uword i = 0; i < n; ++i) {
-    out.at(i) = R::dt(x.at(i), df, 1);
+    out.at(i) = R::dbinom(x.at(i), size.at(i), prob.at(i), 1);
+  }
+  return out;
+}
+
+vec log_dpois (const vec &x, const vec &lambda) {
+  uword n = x.n_rows;
+  vec out(n);
+  for (uword i = 0; i < n; ++i) {
+    out.at(i) = R::dpois(x.at(i), lambda.at(i), 1);
   }
   return out;
 }
@@ -244,6 +253,49 @@ vec log_dbbinom (const vec &x, const vec &size, const vec &prob,
   vec log_denominator = lbeta_arma(A, B);
   vec fact = lchoose_arma(size, x);
   vec out = fact + log_numerator - log_denominator;
+  return out;
+}
+
+vec log_dnbinom (const vec &x, const vec &mu, const double &size) {
+  vec log_mu_size = log(mu + size);
+  vec comp1 = lgamma(x + size) - lgamma(size) - lgamma(x + 1);
+  vec comp2 = size * log(size) - size * log_mu_size;
+  vec comp3 = x % (log(mu) - log_mu_size);
+  vec out = comp1 + comp2 + comp3;
+  return out;
+}
+
+vec log_dnorm (const vec &x, const vec &mu, const double &sigma) {
+  vec sigmas(x.n_rows);
+  sigmas.fill(sigma);
+  vec out = log_normpdf(x, mu, sigmas);
+  return out;
+}
+
+vec log_dt (const vec &x, const double &df) {
+  uword n = x.n_rows;
+  vec out(n);
+  for (uword i = 0; i < n; ++i) {
+    out.at(i) = R::dt(x.at(i), df, 1);
+  }
+  return out;
+}
+
+vec log_dgamma (const vec &x, const vec &shape, const vec &scale) {
+  uword n = x.n_rows;
+  vec out(n);
+  for (uword i = 0; i < n; ++i) {
+    out.at(i) = R::dgamma(x.at(i), shape.at(i), scale.at(i), 1);
+  }
+  return out;
+}
+
+vec log_dbeta (const vec &x, const vec &shape1, const vec &shape2) {
+  uword n = x.n_rows;
+  vec out(n);
+  for (uword i = 0; i < n; ++i) {
+    out.at(i) = R::dbeta(x.at(i), shape1.at(i), shape2.at(i), 1);
+  }
   return out;
 }
 
