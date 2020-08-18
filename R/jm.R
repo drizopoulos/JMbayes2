@@ -74,7 +74,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         stop("infite value detected in some longitudinal outcomes. These are not allowed.\n")
     }
 
-    # exctract families
+    # extract families
     families <- lapply(Mixed_objects, "[[", "family")
     families[sapply(families, is.null)] <- rep(list(gaussian()),
                                                sum(sapply(families, is.null)))

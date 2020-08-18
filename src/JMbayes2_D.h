@@ -170,7 +170,8 @@ void update_D (mat &L, vec &sds, const mat &b,
     double deriv_proposed(0.0);
     double mu_proposed(0.0);
     double log_ratio_L(0.0);
-    if (proposed_L.is_finite()) {
+    bool finite_L = proposed_L.is_finite();
+    if (finite_L) {
       numerator_L = logPC_D_L(proposed_L, sds, b, prior_D_L_etaLKJ);
       if (MALA) {
         deriv_proposed = deriv_L(proposed_L, sds, b, numerator_L,
@@ -184,7 +185,8 @@ void update_D (mat &L, vec &sds, const mat &b,
         log_ratio_L = numerator_L - denominator_L;
       }
     }
-    if (std::isfinite(log_ratio_L) && exp(log_ratio_L) > R::runif(0.0, 1.0)) {
+    if (finite_L && std::isfinite(log_ratio_L) &&
+        exp(log_ratio_L) > R::runif(0.0, 1.0)) {
       L = proposed_L;
       denominator_L = numerator_L;
       acceptance_L.at(it, i) = 1;

@@ -93,6 +93,15 @@ field<vec> List2Field_vec (const List &Vecs) {
   return res;
 }
 
+field<uvec> List2Field_uvec (const List &uVecs) {
+  int n_list = uVecs.size();
+  field<uvec> res(n_list);
+  for (int i = 0; i < n_list; ++i) {
+    res.at(i) = as<uvec>(uVecs[i]);
+  }
+  return res;
+}
+
 field<mat> create_storage(const field<vec> &F, const int &n_iter) {
   int n = F.size();
   field<mat> out(n);

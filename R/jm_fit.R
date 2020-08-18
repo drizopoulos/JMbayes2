@@ -1,10 +1,24 @@
 jm_fit <- function (model_data, model_info, initial_values, priors, control) {
+    # extract family names
+    model_info$family_names <- sapply(model_info$families, "[[", "family")
+    # extract link names
+    model_info$links <- sapply(model_info$families, "[[", "link")
+    # set each y element to a matrix
+    model_data$y[] <- lapply(model_data$y, as.matrix)
+    # for family = binomial and when y has two columns, set the second column
+    # to the number of trials instead the number of failures
+    binomial_data <- model_info$family_names == "binomial"
+    trials_fun <- function (y) {
+        if (NCOL(y) == 2) y[, 2] <- y[, 1] + y[, 2]
+        y
+    }
+    model_data$y[binomial_data] <- lapply(model_data$y[binomial_data],
+                                          trials_fun)
     id_H <- id_H2 <- rep(seq_len(model_data$n), each = control$GK_k)
     model_data <- c(model_data, create_Wlong_mats(model_data, model_info,
                                                   initial_values, priors,
                                                   control),
                     list(id_H = id_H, id_H2 = id_H2))
-
     # center the design matrices for the baseline covariates and
     # the longitudinal process
     model_data$W_H <- scale(model_data$W_H, scale = FALSE)
