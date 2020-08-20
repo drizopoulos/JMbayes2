@@ -50,13 +50,11 @@ vec group_sum (const vec &x, const uvec &ind) {
 
 vec mu_fun (const vec &eta, const std::string &link) {
     uword n = eta.n_rows;
-    vec exp_eta(n);
     vec out(n);
     if (link == "identity") {
         out = eta;
     } else if (link == "logit") {
-        exp_eta = trunc_exp(eta);
-        out = exp_eta / (1 + exp_eta);
+        out = 1 / (1 + trunc_exp(- eta));
     } else if (link == "probit") {
         out = normcdf(eta);
     } else if (link == "cloglog") {
@@ -159,10 +157,9 @@ vec log_dbeta (const vec &x, const vec &shape1, const vec &shape2) {
 
 vec log_long (const field<mat> &y, const field<vec> &eta, const vec &scales,
               const vec &extra_parms, const CharacterVector &families,
-              const CharacterVector &links, const field<uvec> &ids) {
+              const CharacterVector &links, const field<uvec> &ids,
+              const field<uvec> &unq_ids) {
     uword n_outcomes = y.size();
-    uword N = y.at(0).n_rows;
-    vec log_contr(N);
     uvec ns(n_outcomes);
     for (uword i = 0; i < n_outcomes; ++i) {
         ns.at(i) = ids.at(i).n_rows;
@@ -171,7 +168,10 @@ vec log_long (const field<mat> &y, const field<vec> &eta, const vec &scales,
     vec out(n, fill::zeros);
     for (uword i = 0; i < n_outcomes; ++i) {
         uvec id_i = ids.at(i);
+        uvec unq_id_i = unq_ids.at(i);
         mat y_i = y.at(i);
+        uword N = y_i.n_rows;
+        vec log_contr(N);
         vec mu_i = mu_fun(eta.at(i), std::string(links[i]));
         double scale_i = scales.at(i);
         double extr_prm_i = extra_parms.at(i);
@@ -215,7 +215,7 @@ vec log_long (const field<mat> &y, const field<vec> &eta, const vec &scales,
             vec comp3 = - (theta * y_i) / (1 - y_i);
             log_contr = comp1 + comp2 + comp3;
         }
-        out += group_sum(log_contr, id_i);
+        out.rows(unq_id_i) += group_sum(log_contr, id_i);
     }
     return out;
 }
@@ -235,7 +235,13 @@ List test_log_long (List model_data, List model_info, List initial_values) {
     for (uword i = 0; i < idL_lp.size(); ++i) {
         idL_lp.at(i) = create_fast_ind(idL_lp.at(i));
     }
-    vec out = log_long(y, eta, scales, extra_parms, families, links, idL_lp);
+    List unq_idL_ = as<List>(model_data["unq_idL"]);
+    field<uvec> unq_idL = List2Field_uvec(unq_idL_);
+    for (uword i = 0; i < unq_idL.size(); ++i) {
+        unq_idL.at(i) = unq_idL.at(i) - 1;
+    }
+    vec out = log_long(y, eta, scales, extra_parms, families, links, idL_lp,
+                       unq_idL);
     return List::create(
         Named("y") = y,
         Named("scales") = scales,
@@ -243,6 +249,7 @@ List test_log_long (List model_data, List model_info, List initial_values) {
         Named("idL_lp") = idL_lp,
         Named("families") = families,
         Named("links") = links,
+        Named("unq_idL") = unq_idL,
         Named("log_Lik") = out
     );
 }

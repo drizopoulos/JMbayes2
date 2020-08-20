@@ -202,13 +202,11 @@ field<vec> propose_field (const field<vec>& thetas,
 
 vec mu_fun (const vec &eta, const std::string &link) {
   uword n = eta.n_rows;
-  vec exp_eta(n);
   vec out(n);
   if (link == "identity") {
     out = eta;
   } else if (link == "logit") {
-    exp_eta = trunc_exp(eta);
-    out = exp_eta / (1 + exp_eta);
+    out = 1 / (1 + trunc_exp(- eta));
   } else if (link == "probit") {
     out = normcdf(eta);
   } else if (link == "cloglog") {

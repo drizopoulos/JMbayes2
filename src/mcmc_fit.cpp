@@ -1,6 +1,8 @@
 #include <RcppArmadillo.h>
 #include "JMbayes2_D.h"
 #include "JMbayes2_Surv.h"
+#include "JMbayes2_LongRE.h"
+
 // [[Rcpp::depends("RcppArmadillo")]]
 
 using namespace Rcpp;

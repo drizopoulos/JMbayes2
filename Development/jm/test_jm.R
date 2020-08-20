@@ -181,7 +181,25 @@ control$n_chaines = 1
 
 
 #
+fm1 <- lme(log(serBilir) ~ year * sex + I(year^2) + age + prothrombin,
+           data = pbc2, random = ~ year | id)
+fm2 <- lme(serChol ~ ns(year, 3, B = c(0, 10)) + sex + age, data = pbc2,
+           random = ~ year | id, na.action = na.exclude)
+fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
+                   random = ~ 1 | id, family = binomial())
+fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
+                   random = ~ year | id, family = binomial())
 
+Mixed <- list(fm1, fm2, fm3, fm4)
+Cox <- coxph(Surv(years, status2) ~ sex + age, data = pbc2.id)
+obj <- jm(Cox, Mixed, time_var = "year", n_chains = 1)
+
+model_data <- obj$model_data
+model_info <- obj$model_info
+initial_values <- obj$initial_values
+priors <- obj$priors
+vcov_prop <- obj$vcov_prop
+control <- obj$control
 
 
 
