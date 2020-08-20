@@ -161,9 +161,14 @@ vec log_long (const field<mat> &y, const field<vec> &eta, const vec &scales,
               const vec &extra_parms, const CharacterVector &families,
               const CharacterVector &links, const field<uvec> &ids) {
     uword n_outcomes = y.size();
-    uword n = y.at(0).n_rows;
-    vec log_contr(n);
-    vec out(n);
+    uword N = y.at(0).n_rows;
+    vec log_contr(N);
+    uvec ns(n_outcomes);
+    for (uword i = 0; i < n_outcomes; ++i) {
+        ns.at(i) = ids.at(i).n_rows;
+    }
+    uword n = ns.max();
+    vec out(n, fill::zeros);
     for (uword i = 0; i < n_outcomes; ++i) {
         uvec id_i = ids.at(i);
         mat y_i = y.at(i);
@@ -218,20 +223,42 @@ vec log_long (const field<mat> &y, const field<vec> &eta, const vec &scales,
 // [[Rcpp::export]]
 List test_log_long (List model_data, List model_info, List initial_values) {
     List y_ = as<List>(model_data["y"]);
-    field<mat> y = List2Field_mat(y_);
+    const field<mat> y = List2Field_mat(y_);
+     List eta_ = as<List>(initial_values["eta"]);
+    const field<vec> eta = List2Field_vec(eta_);
+    const vec scales = exp(as<vec>(initial_values["log_sigmas"]));
+    const vec extra_parms(scales.n_rows, fill::zeros);
+    CharacterVector families = as<CharacterVector>(model_info["family_names"]);
+    CharacterVector links = as<CharacterVector>(model_info["links"]);
     List idL_lp_ = as<List>(model_data["idL_lp"]);
     field<uvec> idL_lp = List2Field_uvec(idL_lp_);
     for (uword i = 0; i < idL_lp.size(); ++i) {
         idL_lp.at(i) = create_fast_ind(idL_lp.at(i));
     }
-    CharacterVector families = as<CharacterVector>(model_info["family_names"]);
-    CharacterVector links = as<CharacterVector>(model_info["links"]);
+    vec out = log_long(y, eta, scales, extra_parms, families, links, idL_lp);
     return List::create(
         Named("y") = y,
+        Named("scales") = scales,
+        Named("extra_parms") = extra_parms,
         Named("idL_lp") = idL_lp,
         Named("families") = families,
-        Named("links") = links
+        Named("links") = links,
+        Named("log_Lik") = out
     );
 }
+
+// [[Rcpp::export]]
+vec test_ind (const mat &M, const uvec &ind) {
+    uword n = M.n_rows;
+    uword k = M.n_cols;
+    uvec ind2 = ind - 1;
+    vec out(n, fill::zeros);
+    for (uword j = 0; j < k; ++j) {
+        vec cc = M.col(j);
+        out.rows(ind2) += cc.rows(ind2);
+    }
+    return out;
+}
+
 
 

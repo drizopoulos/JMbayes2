@@ -9,6 +9,7 @@ using namespace Rcpp;
 using namespace arma;
 
 static double const Const_Unif_Proposal = 0.5 * std::pow(12.0, 0.5);
+static double const log2pi = std::log(2.0 * M_PI);
 
 double robbins_monro (const double &scale, const double &acceptance_it,
                       const int &it, const double &target_acceptance = 0.45) {
@@ -304,6 +305,25 @@ vec log_dbeta (const vec &x, const vec &shape1, const vec &shape2) {
   vec out(n);
   for (uword i = 0; i < n; ++i) {
     out.at(i) = R::dbeta(x.at(i), shape1.at(i), shape2.at(i), 1);
+  }
+  return out;
+}
+
+vec log_dmvnrm_chol (const mat &x, const mat &L) {
+  // fast log density of the multivariate normal distribution
+  // L is the Cholesky factor of the covariance matrix.
+  using arma::uword;
+  uword const n = x.n_rows, xdim = x.n_cols;
+  vec out(n);
+  mat V = inv(trimatu(L));
+  double const log_det = sum(log(V.diag())),
+    constants = -(double)xdim / 2.0 * log2pi,
+    other_terms = constants + log_det;
+  rowvec z_i(xdim);
+  for (uword i = 0; i < n; i++) {
+    z_i = x.row(i);
+    inplace_UpperTrimat_mult(z_i, V);
+    out.at(i) = other_terms - 0.5 * dot(z_i, z_i);
   }
   return out;
 }

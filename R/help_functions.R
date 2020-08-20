@@ -363,12 +363,14 @@ extract_b <- function (object, id, n) {
 }
 
 extract_log_sigmas <- function (object) {
-    if (inherits(object, "lme")) {
+    out <- if (inherits(object, "lme")) {
         # we extract the log of sigma to be consistent with GLMMadaptive
         log(object$sigma)
     } else {
         object$phis
     }
+    if (is.null(out)) out <- 0.0
+    out
 }
 
 value <- slope <- area <- function (x) rep(1, length(x))

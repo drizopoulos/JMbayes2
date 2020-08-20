@@ -9,27 +9,6 @@
 using namespace Rcpp;
 using namespace arma;
 
-static double const log2pi = std::log(2.0 * M_PI);
-
-vec log_dmvnrm_chol (const mat &x, const mat &L) {
-  // fast log density of the multivariate normal distribution
-  // L is the Cholesky factor of the covariance matrix.
-  using arma::uword;
-  uword const n = x.n_rows, xdim = x.n_cols;
-  vec out(n);
-  mat V = inv(trimatu(L));
-  double const log_det = sum(log(V.diag())),
-    constants = -(double)xdim / 2.0 * log2pi,
-    other_terms = constants + log_det;
-  rowvec z_i(xdim);
-  for (uword i = 0; i < n; i++) {
-    z_i = x.row(i);
-    inplace_UpperTrimat_mult(z_i, V);
-    out.at(i) = other_terms - 0.5 * dot(z_i, z_i);
-  }
-  return out;
-}
-
 vec log_dht (const vec &x, const double &sigma = 10.0,
              const double &df = 3.0) {
   // log density of half Student's t with scale sigma and df degrees of freedom
