@@ -156,7 +156,7 @@ obj <- jm(coxFit, list(lmeFit), time_var = "time", n_chains = 1)
 #coda::traceplot(obj$mcmc$D)
 
 traceplot(obj)
-gelman.diag(obj$mcmc$D)
+gelman_diag(obj)
 
 #obj
 model_data <- obj$model_data
@@ -181,18 +181,20 @@ control$n_chaines = 1
 
 
 #
-fm1 <- lme(log(serBilir) ~ year * sex + I(year^2) + age + prothrombin,
-           data = pbc2, random = ~ year | id)
-fm2 <- lme(serChol ~ ns(year, 3, B = c(0, 10)) + sex + age, data = pbc2,
-           random = ~ year | id, na.action = na.exclude)
-fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
-                   random = ~ 1 | id, family = binomial())
-fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
-                   random = ~ year | id, family = binomial())
+system.time({
+    fm1 <- lme(log(serBilir) ~ year * sex + I(year^2) + age + prothrombin,
+               data = pbc2, random = ~ year | id)
+    fm2 <- lme(serChol ~ ns(year, 3, B = c(0, 10)) + sex + age, data = pbc2,
+               random = ~ year | id, na.action = na.exclude)
+    fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
+                       random = ~ 1 | id, family = binomial())
+    fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
+                       random = ~ year | id, family = binomial())
 
-Mixed <- list(fm1, fm2, fm3, fm4)
-Cox <- coxph(Surv(years, status2) ~ sex + age, data = pbc2.id)
-obj <- jm(Cox, Mixed, time_var = "year", n_chains = 1)
+    Mixed <- list(fm1, fm2, fm3, fm4)
+    Cox <- coxph(Surv(years, status2) ~ sex + age, data = pbc2.id)
+})
+system.time(obj <- jm(Cox, Mixed, time_var = "year"))
 
 model_data <- obj$model_data
 model_info <- obj$model_info
@@ -201,6 +203,14 @@ priors <- obj$priors
 vcov_prop <- obj$vcov_prop
 control <- obj$control
 
+Surv_object = Cox
+Mixed_objects = Mixed
+time_var = 'year'
+functional_forms = NULL
+data_Surv = NULL
+id_var = NULL
+priors = NULL
+control = NULL
 
 
 

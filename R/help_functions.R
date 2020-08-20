@@ -496,14 +496,14 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     if (length(which_left)) {
         Time_right[which_left] <- Time_left[which_left]
     }
-    n <- model_info$n
+    n <- Data$n
     ###
     dataL <- data$dataL
     dataS <- data$dataS
     ###
     idVar <- model_info$var_names$idVar
     time_var <- model_info$var_names$time_var
-    idT <- model_info$ids$idT
+    idT <- Data$idT
     terms_FE_noResp <- model_info$terms$terms_FE_noResp
     terms_RE <- model_info$terms$terms_RE
     terms_RE <- model_info$terms$terms_RE
@@ -723,7 +723,8 @@ reconstr_D <- function (L, sds) {
     LL[upper.tri(LL)] <- L
     LL[1, 1] <- 1
     LL[cbind(2:p, 2:p)] <- sqrt(1 - colSums(LL^2)[-1L])
-    cor2cov(crossprod(LL), sds = sds)
+    out <- cor2cov(crossprod(LL), sds = sds)
+    out[lower.tri(out, TRUE)]
 }
 
 lapply_nams <- function (X, FUN, ...) {

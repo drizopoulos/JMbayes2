@@ -326,4 +326,23 @@ vec log_dmvnrm_chol (const mat &x, const mat &L) {
   return out;
 }
 
+vec log_dmvnrm (const mat &x, const mat &D) {
+  // fast log density of the multivariate normal distribution
+  // D is the covariance matrix.
+  using arma::uword;
+  uword const n = x.n_rows, xdim = x.n_cols;
+  vec out(n);
+  mat V = inv(trimatu(chol(D)));
+  double const log_det = sum(log(V.diag())),
+    constants = -(double)xdim / 2.0 * log2pi,
+    other_terms = constants + log_det;
+  rowvec z_i(xdim);
+  for (uword i = 0; i < n; i++) {
+    z_i = x.row(i);
+    inplace_UpperTrimat_mult(z_i, V);
+    out.at(i) = other_terms - 0.5 * dot(z_i, z_i);
+  }
+  return out;
+}
+
 #endif

@@ -107,12 +107,15 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ########################################################
     ########################################################
     # try to recover survival dataset
-    if (is.null(data_Surv))
-        try(dataS <- eval(Surv_object$call$data, envir = parent.frame()),
-            silent = TRUE)
-    if (inherits(dataS, "try-error")) {
-        stop("could not recover the dataset used to fit the Cox/AFT model; please provide ",
-             " this dataset in the 'data_Surv' argument of jm().")
+    if (is.null(data_Surv) || !is.data.frame(data_Surv)) {
+        dataS <- try(eval(Surv_object$call$data, envir = parent.frame()),
+                     silent = TRUE)
+        if (inherits(dataS, "try-error")) {
+            stop("could not recover the dataset used to fit the Cox/AFT model; ",
+                 "please provide this dataset in the 'data_Surv' argument of jm().")
+        }
+    } else {
+        dataS <- data_Surv
     }
 
     # if the longitudinal outcomes are not in dataS, we set a random value for
@@ -162,7 +165,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # we need to check that the ordering of the subjects in the same in dataL and dataS.
     # If not, then a warning and do it internally
     if (!all(order(unique(idT)) == order(unique(dataL[[idVar]])))) {
-        warning("It seems that the ordering of the subjects in dataset used to fit the ",
+        warning("It seems that the ordering of the subjects in the dataset used to fit the ",
                 "mixed models and the dataset used for the survival model is not the same. ",
                 "We set internally the datasets in the same order, but it would be best ",
                 "that you do it beforehand on your own.")

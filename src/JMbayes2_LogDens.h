@@ -1,5 +1,5 @@
-#ifndef JMBAYES2LONGRE_H
-#define JMBAYES2LONGRE_H
+#ifndef JMBAYES2LOGDENS_H
+#define JMBAYES2LOGDENS_H
 
 #include <Rcpp.h>
 #include <RcppArmadillo.h>
@@ -69,9 +69,48 @@ vec log_long (const field<mat> &y, const field<vec> &eta, const vec &scales,
         log_contr = log_dbbinom(y_i, ones, mu_i, scale_i);
       }
     }
-    out.rows(unq_id_i) += group_sum(log_contr, id_i);
+    out.elem(unq_id_i) += group_sum(log_contr, id_i);
   }
   return out;
 }
+
+double log_density_surv (const vec &W0H_bs_gammas,
+                         const vec &W0h_bs_gammas,
+                         const vec &W0H2_bs_gammas,
+                         const vec &WH_gammas,
+                         const vec &Wh_gammas,
+                         const vec &WH2_gammas,
+                         const vec &WlongH_alphas,
+                         const vec &Wlongh_alphas,
+                         const vec &WlongH2_alphas,
+                         const vec &log_Pwk, const vec &log_Pwk2,
+                         const uvec &indFast_H,
+                         const uvec &which_event,
+                         const uvec &which_right_event,
+                         const uvec &which_left,
+                         const bool &any_interval,
+                         const uvec &which_interval) {
+  vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
+  vec H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
+  int n = H.n_rows;
+  vec lambda_h(n);
+  lambda_h.elem(which_event) = W0h_bs_gammas.elem(which_event) +
+    Wh_gammas.elem(which_event) + Wlongh_alphas.elem(which_event);
+  vec log_Lik_surv(n);
+  log_Lik_surv.elem(which_right_event) = - H.elem(which_right_event);
+  log_Lik_surv.elem(which_event) += lambda_h.elem(which_event);
+  log_Lik_surv.elem(which_left) = log1p(- exp(- H.elem(which_left)));
+  vec lambda_H2(lambda_H.n_rows);
+  vec H2(n);
+  if (any_interval) {
+    lambda_H2 = W0H2_bs_gammas + WH2_gammas + WlongH2_alphas;
+    H2 = group_sum(exp(log_Pwk2 + lambda_H2), indFast_H);
+    log_Lik_surv.elem(which_interval) = - H.elem(which_interval) +
+      log(- expm1(- H2.elem(which_interval)));
+  }
+  double logLik = sum(log_Lik_surv);
+  return logLik;
+}
+
 
 #endif
