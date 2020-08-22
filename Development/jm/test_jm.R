@@ -149,7 +149,7 @@ Data <- simulateJoint()
 lmeFit <- lme(y ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)), data = Data$DF,
               random = list(id = pdDiag(form = ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)))),
               control = lmeControl(opt = "optim", niterEM = 45))
-coxFit <- coxph(Surv(Time, event) ~ group + age, data = Data$DF.id)
+coxFit <- coxph(Surv(Time, event) ~ 1, data = Data$DF.id)
 
 obj <- jm(coxFit, list(lmeFit), time_var = "time", n_chains = 1)
 
@@ -192,7 +192,7 @@ system.time({
                        random = ~ year | id, family = binomial())
 
     Mixed <- list(fm1, fm2, fm3, fm4)
-    Cox <- coxph(Surv(years, status2) ~ sex + age, data = pbc2.id)
+    Cox <- coxph(Surv(years, status2) ~ 1, data = pbc2.id)
 })
 system.time(obj <- jm(Cox, Mixed, time_var = "year"))
 
@@ -253,8 +253,7 @@ fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ 1 | id, family = binomial())
 
-CoxFit <- coxph(Surv(years, status2) ~ age,
-                data = pbc2.id, model = TRUE)
+CoxFit <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
 CoxFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ 1,
                   data = pbc2.id, model = TRUE)
@@ -278,7 +277,7 @@ time_var = "year"
 functional_forms = list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
                             value(log(serBilir)):sex,
                         "serChol" = ~ value(serChol) + slope(serChol),
-                        #"hepatomegaly" = ~ value(hepatomegaly),
+                        "hepatomegaly" = ~ value(hepatomegaly),
                         "ascites" = ~ value(ascites) + area(ascites))
 data_Surv = NULL
 id_var = NULL

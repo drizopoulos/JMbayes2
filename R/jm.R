@@ -248,7 +248,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
 
     # knots for the log baseline hazard function
     if (is.null(con$knots)) {
-        con$knots <- knots(0, floor(max(Time_integration, Time_integration2)) + 1,
+        #con$knots <- knots(0, floor(max(Time_integration, Time_integration2)) + 1,
+        #                   con$base_hazard_segments, con$Bsplines_degree)
+        con$knots <- knots(0, quantile(c(Time_right, Time_left), 0.9),
                            con$base_hazard_segments, con$Bsplines_degree)
     }
 
@@ -270,7 +272,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                                                       respVars_form))]
     ###################################################################
     # List of lists
-    # One list component per association structure per ouctome
+    # One list component per association structure per outcome
     # List components vectors of integers corresponding to the term
     # each association structure corresponds to
     functional_forms_per_outcome <- lapply(functional_forms,
@@ -297,7 +299,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # 'Time_right', we put "_H" to denote calculation at the 'Time_integration', and
     # "_H2" to denote calculation at the 'Time_integration2'.
 
-    W0_H <- splineDesign(con$knots, c(t(st)), ord = con$Bsplines_degree + 1)
+    W0_H <- splineDesign(con$knots, c(t(st)), ord = con$Bsplines_degree + 1,
+                         outer.ok = TRUE)
     dataS_H <- SurvData_HazardModel(st, dataS, Time_start, idT)
     mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
     W_H <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
@@ -316,7 +319,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         model.matrix(tt, model.frame(tt, data = dataS_H))[, -1, drop = FALSE]
     })
     if (length(which_event)) {
-        W0_h <- splineDesign(con$knots, Time_right, ord = con$Bsplines_degree + 1)
+        W0_h <- splineDesign(con$knots, Time_right,
+                             ord = con$Bsplines_degree + 1, outer.ok = TRUE)
         dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start, idT)
         mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
         W_h <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
@@ -338,7 +342,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         X_h <- Z_h <- U_h <- rep(list(matrix(0.0)), length(respVars))
     }
     if (length(which_interval)) {
-        W0_H2 <- splineDesign(con$knots, c(t(st2)), ord = con$Bsplines_degree + 1)
+        W0_H2 <- splineDesign(con$knots, c(t(st2)),
+                              ord = con$Bsplines_degree + 1, outer.ok = TRUE)
         dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start, idT)
         mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
         W_H2 <- model.matrix.default(terms_Surv_noResp, mf2)[, -1, drop = FALSE]
@@ -444,18 +449,25 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # Priors
     DD <- diag(ncol(W0_H))
     Tau_bs_gammas <- crossprod(diff(DD, differences = con$diff))
-    priors <- list(mean_betas = lapply(betas, "*", 0.0),
-                   Tau_betas = lapply(betas, function (b) 0.01 * diag(length(b))),
-                   mean_gammas = gammas * 0.0,
-                   Tau_gammas = 0.01 * diag(length(gammas)),
-                   mean_bs_gammas = bs_gammas * 0.0,
-                   Tau_bs_gammas = Tau_bs_gammas,
-                   mean_alphas = lapply(alphas, "*", 0.0),
-                   Tau_alphas = lapply(alphas, function (a) 0.01 * diag(length(a))),
-                   A_tau_bs_gammas = 1, B_tau_bs_gammas = 0.1,
-                   rank_Tau_bs_gammas = qr(Tau_bs_gammas)$rank,
-                   prior_D_sds_df = 3.0, prior_D_sds_sigma = 10.0,
-                   prior_D_L_etaLKJ = 3.0)
+    prs <- list(mean_betas = lapply(betas, "*", 0.0),
+                Tau_betas = lapply(betas, function (b) 0.01 * diag(length(b))),
+                mean_gammas = gammas * 0.0,
+                Tau_gammas = 0.01 * diag(length(gammas)),
+                mean_bs_gammas = bs_gammas * 0.0,
+                Tau_bs_gammas = Tau_bs_gammas,
+                mean_alphas = lapply(alphas, "*", 0.0),
+                Tau_alphas = lapply(alphas, function (a) 0.01 * diag(length(a))),
+                A_tau_bs_gammas = 1, B_tau_bs_gammas = 0.1,
+                rank_Tau_bs_gammas = qr(Tau_bs_gammas)$rank,
+                prior_D_sds_df = 3.0, prior_D_sds_sigma = 10.0,
+                prior_D_L_etaLKJ = 3.0)
+    if (is.null(priors) || !is.list(priors)) {
+        priors <- prs
+    } else {
+        ind <- names(prs) %in% names(priors)
+        prs[ind] <- priors[ind]
+        priors <- prs
+    }
     ############################################################################
     ############################################################################
     # Fit the model

@@ -29,11 +29,14 @@ gelman_diag.jm <- function (object,
     if (parm == "all") {
         parms <- c("betas", "sigmas", "D", "bs_gammas", "tau_bs_gammas",
                    "gammas", "alphas")
+        out <- vector("list", length(parms))
+        names(out) <- parms
         for (i in seq_along(parms)) {
             parms_i <- parms[[i]]
             x <- object$mcmc[[parms_i]]
-            if (!is.null(x)) coda::gelman.diag(x, ...)
+            out[[i]] <- if (!is.null(x)) coda::gelman.diag(x, ...)
         }
+        out[!sapply(out, is.null)]
     } else {
         coda::gelman.diag(object$mcmc[[parm]], ...)
     }

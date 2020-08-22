@@ -90,8 +90,10 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
             attr(model_info$terms$terms_Surv_noResp, "term.labels")
         colnames(out[[i]][["mcmc"]][["alphas"]]) <-
             paste0("alphas", seq_len(ncol(out[[i]][["mcmc"]][["alphas"]])))
+        ind <- lower.tri(initial_values$D, TRUE)
         colnames(out[[i]][["mcmc"]][["D"]]) <-
-            paste0("D[", row(initial_values$D), ", ", col(initial_values$D), "]")
+            paste0("D[", row(initial_values$D)[ind], ", ",
+                   col(initial_values$D)[ind], "]")
     }
     convert2_mcmclist <- function (name) {
         as.mcmc.list(lapply(out, function (x) as.mcmc(x$mcmc[[name]])))
@@ -100,6 +102,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
         do.call("rbind", lapply(out, function (x) x[["acc_rate"]][[name_parm]]))
     }
     parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "D")
+    if (!length(attr(model_info$terms$terms_Surv_noResp, "term.labels")))
+        parms <- parms[parms != "gammas"]
     mcmc_out <- lapply_nams(parms, convert2_mcmclist)
     list(
         "mcmc" = mcmc_out,
