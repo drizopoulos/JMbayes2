@@ -6,11 +6,15 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # - GK_k: number of quadrature points for the Gauss Kronrod rule; options 15 and 7
     # - Bsplines_degree: the degree of the splines in each basis; default quadratic splines
     # - base_hazard_segments: number of segments to split the follow-up period; default 10
+    # - diff: the order of the difference used in the penalty matrix for the
+    #         B-splines for h_0; default is 2
     # - n_chains: the number of chains for the MCMC
-    # - n_adapt: the number of iterations to use in optimizing acceptance rates;
-    #            this will be also the burn-in
-    # - n_iter: the number of iterations per chain. These will be the iterations after
-    #           n_adapt
+    # - n_burnin: the number of burn-in iterations
+    # - n_iter: the number of total iterations per chain
+    # - seed: the seed used in the sampling procedures
+    # - cores: the number of cores to use for running the chains in parallel
+    # - MALA: if TRUE, the MALA algorithm is used when update the elements of
+    #         of the Cholesky factor of the D matrix
     con <- list(GK_k = 15L, Bsplines_degree = 2, base_hazard_segments = 10,
                 diff = 2L, n_chains = 3L, n_burnin = 500L, n_iter = 3500L,
                 seed = 123L,  cores = max(parallel::detectCores() - 1, 1),
@@ -248,10 +252,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
 
     # knots for the log baseline hazard function
     if (is.null(con$knots)) {
-        #con$knots <- knots(0, floor(max(Time_integration, Time_integration2)) + 1,
-        #                   con$base_hazard_segments, con$Bsplines_degree)
-        con$knots <- knots(0, quantile(c(Time_right, Time_left), 0.9),
-                           con$base_hazard_segments, con$Bsplines_degree)
+        qs <- quantile(c(Time_right, Time_left), probs = c(0.1, 0.9))
+        con$knots <- knots(qs[1L], qs[2L], con$base_hazard_segments,
+                           con$Bsplines_degree)
     }
 
     # Extract functional forms per longitudinal outcome

@@ -34,7 +34,7 @@ gelman_diag.jm <- function (object,
         for (i in seq_along(parms)) {
             parms_i <- parms[[i]]
             x <- object$mcmc[[parms_i]]
-            out[[i]] <- if (!is.null(x)) coda::gelman.diag(x, ...)
+            if (!is.null(x)) out[[i]] <- coda::gelman.diag(x, ...)
         }
         out[!sapply(out, is.null)]
     } else {

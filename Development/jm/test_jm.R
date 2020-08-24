@@ -151,7 +151,7 @@ lmeFit <- lme(y ~ ns(time, k = c(2.1, 3.5), B = c(0, 9)), data = Data$DF,
               control = lmeControl(opt = "optim", niterEM = 45))
 coxFit <- coxph(Surv(Time, event) ~ 1, data = Data$DF.id)
 
-obj <- jm(coxFit, list(lmeFit), time_var = "time", n_chains = 1)
+obj <- jm(coxFit, list(lmeFit), time_var = "time", n_chains = 3)
 
 #coda::traceplot(obj$mcmc$D)
 
@@ -266,8 +266,6 @@ fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
 
 test <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
            functional_forms = fForms)
-
-str(test$vcov_prop$vcov_prop_RE)
 
 ################################################################################
 ################################################################################

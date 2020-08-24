@@ -1,3 +1,6 @@
+# model_data = Data
+# control = con
+
 create_Wlong_mats <- function (model_data, model_info, initial_values, priors,
                                control) {
     betas <- initial_values$betas
