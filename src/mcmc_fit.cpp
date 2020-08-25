@@ -27,6 +27,18 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat W_h = as<mat>(model_data["W_h"]);
   mat W_H2 = as<mat>(model_data["W_H2"]);
   mat W_bar = as<mat>(model_data["W_bar"]);
+  List X_H_ = as<List>(model_data["X_H"]);
+  const field<mat> X_H = List2Field_mat(X_H_);
+  List X_h_ = as<List>(model_data["X_h"]);
+  const field<mat> X_h = List2Field_mat(X_H_);
+  List X_H2_ = as<List>(model_data["X_H2"]);
+  const field<mat> X_H2 = List2Field_mat(X_H2_);
+  List Z_H_ = as<List>(model_data["Z_H"]);
+  const field<mat> Z_H = List2Field_mat(Z_H_);
+  List Z_h_ = as<List>(model_data["Z_h"]);
+  const field<mat> Z_h = List2Field_mat(X_H_);
+  List Z_H2_ = as<List>(model_data["Z_H2"]);
+  const field<mat> Z_H2 = List2Field_mat(Z_H2_);
   List Wlong_H_ = as<List>(model_data["Wlong_H"]);
   mat Wlong_H = docall_cbind(Wlong_H_);
   List Wlong_h_ = as<List>(model_data["Wlong_h"]);
@@ -39,8 +51,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uvec idT = as<uvec>(model_data["idT"]) - 1;
   vec log_Pwk = as<vec>(model_data["log_Pwk"]);
   vec log_Pwk2 = as<vec>(model_data["log_Pwk2"]);
-  uvec id_H = create_fast_ind(as<uvec>(model_data["id_H"]));
-  uvec id_H2 = create_fast_ind(as<uvec>(model_data["id_H2"]));
+  uvec id_H = as<uvec>(model_data["id_H"]) - 1;
+  uvec id_h = as<uvec>(model_data["id_h"]) - 1;
+  uvec id_H_fast = create_fast_ind(id_H + 1);
   bool any_gammas = as<bool>(model_data["any_gammas"]);
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
@@ -137,7 +150,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       log_density_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                        WH_gammas, Wh_gammas, WH2_gammas,
                        WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                       log_Pwk, log_Pwk2, id_H,
+                       log_Pwk, log_Pwk2, id_H_fast,
                        which_event, which_right_event, which_left,
                        any_interval, which_interval) +
       logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
@@ -147,7 +160,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                      W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                      WH_gammas, Wh_gammas, WH2_gammas,
                      WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                     log_Pwk, log_Pwk2, id_H,
+                     log_Pwk, log_Pwk2, id_H_fast,
                      which_event, which_right_event, which_left, which_interval,
                      any_event, any_interval,
                      prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
@@ -168,7 +181,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                     WH_gammas, Wh_gammas, WH2_gammas,
                     WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                    log_Pwk, log_Pwk2, id_H,
+                    log_Pwk, log_Pwk2, id_H_fast,
                     which_event, which_right_event, which_left, which_interval,
                     any_event, any_interval,
                     prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
@@ -185,7 +198,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                   W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                   WH_gammas, Wh_gammas, WH2_gammas,
                   WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                  log_Pwk, log_Pwk2, id_H,
+                  log_Pwk, log_Pwk2, id_H_fast,
                   which_event, which_right_event, which_left, which_interval,
                   any_event, any_interval,
                   prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,

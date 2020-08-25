@@ -15,11 +15,12 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     model_data$y[binomial_data] <- lapply(model_data$y[binomial_data],
                                           trials_fun)
     id_H <- id_H2 <- rep(seq_len(model_data$n), each = control$GK_k)
+    id_h <- seq_len(nrow(model_data$X_h[[1]][[1]]))
     docall_cbind <- function (l) if (is.list(l)) do.call("cbind", l) else l
     model_data <- c(model_data, create_Wlong_mats(model_data, model_info,
                                                   initial_values, priors,
                                                   control),
-                    list(id_H = id_H, id_H2 = id_H2))
+                    list(id_H = id_H, id_H2 = id_H2, id_h = id_h))
     # cbind the elements of X_H and Z_H, etc.
     model_data$X_H[] <- lapply(model_data$X_H, docall_cbind)
     model_data$X_h[] <- lapply(model_data$X_h, docall_cbind)
