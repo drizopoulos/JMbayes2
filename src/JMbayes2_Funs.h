@@ -345,4 +345,29 @@ vec log_dmvnrm (const mat &x, const mat &D) {
   return out;
 }
 
+field<mat> linpred_surv (const field<mat> &X, const field<vec> &betas,
+                         const field<mat> &Z, const field<mat> &b,
+                         const uvec &id) {
+  uword n_outcomes = X.n_elem;
+  field<mat> out(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+    mat X_i = X.at(i);
+    vec betas_i = betas.at(i);
+    mat Z_i = Z.at(i);
+    mat b_i = b.at(i);
+    uword n_betas = betas_i.n_rows;
+    uword n_REs = b_i.n_cols;
+    uword n_forms = X_i.n_cols / n_betas;
+    mat out_i(X_i.n_rows, n_forms);
+    out.at(i) = out_i;
+    for (uword j = 0; j < n_forms; ++j) {
+      mat X_ij = X_i.cols(j * n_betas, (j + 1) * n_betas - 1);
+      mat Z_ij = Z_i.cols(j * n_REs, (j + 1) * n_REs - 1);
+      out.at(i).col(j) = X_ij * betas_i +
+        arma::sum(Z_ij % b_i.rows(id), 1);
+    }
+  }
+  return out;
+}
+
 #endif

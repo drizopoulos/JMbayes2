@@ -215,32 +215,6 @@ control = NULL
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-library("survival")
-library("nlme")
-library("GLMMadaptive")
-library("splines")
-#library("Formula")
-data("pbc2", package = "JM")
-data("pbc2.id", package = "JM")
-source(file.path(getwd(), "R/jm.R"))
-source(file.path(getwd(), "R/help_functions.R"))
-source(file.path(getwd(), "Development/jm/R_to_Cpp.R"))
-source(file.path(getwd(), "Development/jm/PBC_data.R"))
-
 ##########################################################################################
 ##########################################################################################
 
@@ -255,8 +229,8 @@ fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
 
 CoxFit <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
-CoxFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ 1,
-                  data = pbc2.id, model = TRUE)
+#CoxFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ 1,
+#                  data = pbc2.id, model = TRUE)
 
 fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
                    value(log(serBilir)):sex,

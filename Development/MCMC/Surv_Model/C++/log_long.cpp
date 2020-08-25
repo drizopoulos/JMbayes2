@@ -254,17 +254,58 @@ List test_log_long (List model_data, List model_info, List initial_values) {
     );
 }
 
-// [[Rcpp::export]]
-vec test_ind (const mat &M, const uvec &ind) {
-    uword n = M.n_rows;
-    uword k = M.n_cols;
-    uvec ind2 = ind - 1;
-    vec out(n, fill::zeros);
-    for (uword j = 0; j < k; ++j) {
-        vec cc = M.col(j);
-        out.rows(ind2) += cc.rows(ind2);
+field<mat> linpred_surv (const field<mat> &X, const field<vec> &betas,
+                         const field<mat> &Z, const field<mat> &b,
+                         const uvec &id) {
+    uword n_outcomes = X.n_elem;
+    field<mat> out(n_outcomes);
+    for (uword i = 0; i < n_outcomes; ++i) {
+        mat X_i = X.at(i);
+        vec betas_i = betas.at(i);
+        mat Z_i = Z.at(i);
+        mat b_i = b.at(i);
+        uword n_betas = betas_i.n_rows;
+        uword n_REs = b_i.n_cols;
+        uword n_forms = X_i.n_cols / n_betas;
+        mat out_i(X_i.n_rows, n_forms);
+        out.at(i) = out_i;
+        for (uword j = 0; j < n_forms; ++j) {
+            mat X_ij = X_i.cols(j * n_betas, (j + 1) * n_betas - 1);
+            mat Z_ij = Z_i.cols(j * n_REs, (j + 1) * n_REs - 1);
+            out.at(i).col(j) = X_ij * betas_i +
+                arma::sum(Z_ij % b_i.rows(id), 1);
+        }
     }
     return out;
+}
+
+// [[Rcpp::export]]
+List test (List model_data, List model_info, List initial_values) {
+    List X_H_ = as<List>(model_data["X_H"]);
+    const field<mat> X_H = List2Field_mat(X_H_);
+    List X_h_ = as<List>(model_data["X_h"]);
+    const field<mat> X_h = List2Field_mat(X_H_);
+    List X_H2_ = as<List>(model_data["X_H2"]);
+    const field<mat> X_H2 = List2Field_mat(X_H2_);
+    List Z_H_ = as<List>(model_data["Z_H"]);
+    const field<mat> Z_H = List2Field_mat(Z_H_);
+    List Z_h_ = as<List>(model_data["Z_h"]);
+    const field<mat> Z_h = List2Field_mat(X_H_);
+    List Z_H2_ = as<List>(model_data["Z_H2"]);
+    const field<mat> Z_H2 = List2Field_mat(Z_H2_);
+    List b_ = as<List>(initial_values["b"]);
+    field<mat> b = List2Field_mat(b_);
+    List betas_ = as<List>(initial_values["betas"]);
+    field<vec> betas = List2Field_vec(betas_);
+    //uvec id_H = create_fast_ind(as<uvec>(model_data["id_H"]));
+    uvec id_H = as<uvec>(model_data["id_H"]) - 1;
+    field<mat> eta_H = linpred_surv(X_H, betas, Z_H, b, id_H);
+    return List::create(
+        Named("X_H") = X_H,
+        Named("b") = b,
+        Named("betas") = betas,
+        Named("eta_H") = eta_H
+    );
 }
 
 

@@ -275,6 +275,13 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                                                       respVars_form))]
     ###################################################################
     # List of lists
+    # check if "*" has been used in functional_forms
+    search_int <- grep("*", sapply(functional_forms, function (form)
+        as.character(form)[2L]), fixed = TRUE)
+    if (length(search_int)) {
+        stop("the use of the '*' symbol has been detected within functional_forms. ",
+             "\nThis is not allowed; for an interaction use the ':' symbol.")
+    }
     # One list component per association structure per outcome
     # List components vectors of integers corresponding to the term
     # each association structure corresponds to

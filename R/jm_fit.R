@@ -15,10 +15,18 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     model_data$y[binomial_data] <- lapply(model_data$y[binomial_data],
                                           trials_fun)
     id_H <- id_H2 <- rep(seq_len(model_data$n), each = control$GK_k)
+    docall_cbind <- function (l) if (is.list(l)) do.call("cbind", l) else l
     model_data <- c(model_data, create_Wlong_mats(model_data, model_info,
                                                   initial_values, priors,
                                                   control),
                     list(id_H = id_H, id_H2 = id_H2))
+    # cbind the elements of X_H and Z_H, etc.
+    model_data$X_H[] <- lapply(model_data$X_H, docall_cbind)
+    model_data$X_h[] <- lapply(model_data$X_h, docall_cbind)
+    model_data$X_H2[] <- lapply(model_data$X_H2, docall_cbind)
+    model_data$Z_H[] <- lapply(model_data$Z_H, docall_cbind)
+    model_data$Z_h[] <- lapply(model_data$Z_h, docall_cbind)
+    model_data$Z_H2[] <- lapply(model_data$Z_H2, docall_cbind)
     # center the design matrices for the baseline covariates and
     # the longitudinal process
     model_data$W_H <- scale(model_data$W_H, scale = FALSE)
