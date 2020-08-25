@@ -145,6 +145,14 @@ extract_functional_forms_per_outcome <- function (Form) {
     sapply(possible_forms, grep, x = term_labels, fixed = TRUE)
 }
 
+extract_functional_forms <- function (Form, data) {
+    tr <- terms(Form)
+    mF <- model.frame(tr, data = data[1:5L, ])
+    M <- model.matrix(tr, mF)[, -1L, drop = FALSE]
+    possible_forms <- c("value", "slope", "area")
+    sapply(possible_forms, grep, x = colnames(M), fixed = TRUE)
+}
+
 LongData_HazardModel <- function (time_points, data, times, ids, timeVar) {
     unq_ids <- unique(ids)
     fids <- factor(ids, levels = unq_ids)
@@ -509,9 +517,9 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     terms_RE <- model_info$terms$terms_RE
     terms_Surv_noResp <- model_info$terms$terms_Surv_noResp
     ###
-    functional_forms <- model_info$fun_forms$functional_forms
-    functional_forms_per_outcome <- model_info$fun_forms$functional_forms_per_outcome
-    collapsed_functional_forms <- model_info$fun_forms$collapsed_functional_forms
+    functional_forms <- model_info$functional_forms
+    FunForms_per_outcome <- model_info$FunForms_per_outcome
+    collapsed_functional_forms <- model_info$collapsed_functional_forms
     ###
     X_H <- Data$X_H; Z_H <- Data$Z_H; U_H <- Data$U_H; W0_H <- Data$W0_H; W_H <- Data$W_H
     X_h <- Data$X_h; Z_h <- Data$Z_h; U_h <- Data$U_h; W0_h <- Data$W0_h; W_h <- Data$W_h
@@ -541,7 +549,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     ##############
     id_init <- rep(list(dataL[[idVar]]), length.out = length(X_init))
     eta_init <- linpred_surv(X_init, betas, Z_init, b, id_init)
-    Wlong_init <- create_Wlong(eta_init, functional_forms_per_outcome, U_init)
+    Wlong_init <- create_Wlong(eta_init, FunForms_per_outcome, U_init)
     Wlong_init <- do.call("cbind", Wlong_init)
     ######################################################################################
     ######################################################################################
@@ -577,18 +585,18 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     ######################################################################################
     id_H <- lapply(X_H, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
     eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
-    Wlong_H <- create_Wlong(eta_H, functional_forms_per_outcome, U_H)
+    Wlong_H <- create_Wlong(eta_H, FunForms_per_outcome, U_H)
     if (length(which_event)) {
         id_h <- lapply(X_h, function (x) seq_len(nrow(x[[1]])))
         eta_h <- linpred_surv(X_h, betas, Z_h, b, id_h)
-        Wlong_h <- create_Wlong(eta_h, functional_forms_per_outcome, U_h)
+        Wlong_h <- create_Wlong(eta_h, FunForms_per_outcome, U_h)
     } else {
         Wlong_h <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
     }
     if (length(which_interval)) {
         id_H2 <- lapply(X_H2, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
         eta_H2 <- linpred_surv(X_H2, betas, Z_H, b, id_H2)
-        Wlong_H2 <- create_Wlong(eta_H2, functional_forms_per_outcome, U_H2)
+        Wlong_H2 <- create_Wlong(eta_H2, FunForms_per_outcome, U_H2)
     } else {
         Wlong_H2 <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
     }
@@ -656,10 +664,15 @@ linpred_surv <- function (X, betas, Z, b, id) {
     out
 }
 
-create_Wlong <- function (eta, functional_forms_per_outcome, U) {
+FunForms_ind <- function (FunForms) {
+    f <- function (l) rep(seq_along(l), sapply(l, length))
+    lapply(FunForms, f)
+}
+
+create_Wlong <- function (eta, functional_forms, U) {
     Wlong <- vector("list", length(eta))
-    for (i in seq_along(functional_forms_per_outcome)) {
-        FF_i <- functional_forms_per_outcome[[i]]
+    for (i in seq_along(functional_forms)) {
+        FF_i <- functional_forms[[i]]
         eta_i <- eta[[i]]
         U_i <- U[[i]]
         Wlong_i <- matrix(1.0, nrow(eta_i), max(unlist(FF_i)))
@@ -667,6 +680,20 @@ create_Wlong <- function (eta, functional_forms_per_outcome, U) {
             ind <- FF_i[[j]]
             Wlong_i[, ind] <- Wlong_i[, ind] * eta_i[, j]
         }
+        Wlong[[i]] <- U_i * Wlong_i
+    }
+    Wlong
+}
+
+create_Wlong2 <- function (eta, FunForms, U, ind) {
+    Wlong <- vector("list", length(eta))
+    for (i in seq_along(FunForms)) {
+        FF_i <- FunForms[[i]]
+        eta_i <- eta[[i]]
+        U_i <- U[[i]]
+        ind_i <- ind[[i]]
+        Wlong_i <- matrix(1.0, nrow(eta_i), max(unlist(FF_i)))
+        Wlong_i[, FF_i] <- Wlong_i[, FF_i] * eta_i[, ind_i]
         Wlong[[i]] <- U_i * Wlong_i
     }
     Wlong

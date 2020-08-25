@@ -308,5 +308,20 @@ List test (List model_data, List model_info, List initial_values) {
     );
 }
 
+field<mat> create_Wlong (const field<mat> &eta, const field<uvec> &FunForms,
+                         const field<mat> &U, const field<uvec> &ind) {
+    uword n_outcomes = eta.n_elem;
+    field<mat> out(n_outcomes);
+    for (uword i = 0; i < n_outcomes; ++i) {
+        mat eta_i = eta.at(i);
+        uvec FF_i = FunForms.at(i);
+        mat U_i = U.at(i);
+        uvec ind_i = ind.at(i);
+        mat Wlong_i(eta_i.n_rows, U_i.n_cols, fill::ones);
+        Wlong_i.cols(FF_i) %= eta_i.cols(ind_i);
+        out.at(i) = U_i % Wlong_i;
+    }
+    return out;
+}
 
 

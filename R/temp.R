@@ -37,8 +37,7 @@ create_Wlong_mats <- function (model_data, model_info, initial_values, priors,
     idT <- model_data$idT
     log_Pwk <- model_data$log_Pwk
     log_Pwk2 <- model_data$log_Pwk2
-    functional_forms_per_outcome <-
-        model_info$fun_forms$functional_forms_per_outcome
+    FunForms_per_outcome <- model_info$FunForms_per_outcome
     # id_H is used to repeat the random effects of each subject GK_k times
     id_H <- lapply(X_H, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
     # this is the linear predictor for the longitudinal outcomes evaluated at the
@@ -46,18 +45,22 @@ create_Wlong_mats <- function (model_data, model_info, initial_values, priors,
     eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
     # Wlong is the design matrix of all longitudinal outcomes according to the specified
     # functional forms per outcome already multiplied with the interaction terms matrix U
-    Wlong_H <- create_Wlong(eta_H, functional_forms_per_outcome, U_H)
+    Wlong_H <- create_Wlong(eta_H, FunForms_per_outcome, U_H)
+
+    Wlong_H. <- create_Wlong2(eta_H,  model_info$FunForms_cpp, U_H,
+                             model_info$FunForms_ind)
+
     if (length(which_event)) {
         id_h <- lapply(X_h, function (x) seq_len(nrow(x[[1]])))
         eta_h <- linpred_surv(X_h, betas, Z_h, b, id_h)
-        Wlong_h <- create_Wlong(eta_h, functional_forms_per_outcome, U_h)
+        Wlong_h <- create_Wlong(eta_h, FunForms_per_outcome, U_h)
     } else {
         Wlong_h <- rep(list(matrix(0.0, length(Time_right), 1)), length(Wlong_H))
     }
     if (length(which_interval)) {
         id_H2 <- lapply(X_H2, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
         eta_H2 <- linpred_surv(X_H2, betas, Z_H, b, id_H2)
-        Wlong_H2 <- create_Wlong(eta_H2, functional_forms_per_outcome, U_H2)
+        Wlong_H2 <- create_Wlong(eta_H2, FunForms_per_outcome, U_H2)
     } else {
         Wlong_H2 <- rep(list(matrix(0.0, length(Time_right), 1)), length(Wlong_H))
     }

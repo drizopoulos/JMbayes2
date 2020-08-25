@@ -250,7 +250,7 @@ functional_forms = list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(ser
                             value(log(serBilir)):sex,
                         "serChol" = ~ value(serChol) + slope(serChol),
                         "hepatomegaly" = ~ value(hepatomegaly),
-                        "ascites" = ~ value(ascites) + area(ascites))
+                        "ascites" = ~ value(ascites) + area(ascites):drug)
 data_Surv = NULL
 id_var = NULL
 priors = NULL

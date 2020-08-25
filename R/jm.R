@@ -285,14 +285,14 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # One list component per association structure per outcome
     # List components vectors of integers corresponding to the term
     # each association structure corresponds to
-    functional_forms_per_outcome <- lapply(functional_forms,
-                                           extract_functional_forms_per_outcome)
-    functional_forms_per_outcome <- lapply(functional_forms_per_outcome,
-                                           function (x) x[sapply(x, length) > 0])
-    collapsed_functional_forms <- lapply(functional_forms_per_outcome, names)
+    FunForms_per_outcome <- lapply(functional_forms, extract_functional_forms,
+                                   data = dataS)
+    FunForms_per_outcome <- lapply(FunForms_per_outcome,
+                                   function (x) x[sapply(x, length) > 0])
+    collapsed_functional_forms <- lapply(FunForms_per_outcome, names)
     # NEW INPUT OBJECTS FOR create_Wlong.cpp
-    ns_functional_forms_per_outcome <- sapply(functional_forms_per_outcome, length)
-    maxs_functional_forms_per_outcome <- sapply(lapply(functional_forms_per_outcome, unlist), max)
+    ns_functional_forms <- sapply(FunForms_per_outcome, length)
+    maxs_functional_forms <- sapply(lapply(FunForms_per_outcome, unlist), max)
 
     #####################################################
 
@@ -308,7 +308,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # in the above design matrices we put the "_h" to denote calculation at the event time
     # 'Time_right', we put "_H" to denote calculation at the 'Time_integration', and
     # "_H2" to denote calculation at the 'Time_integration2'.
-
     W0_H <- splineDesign(con$knots, c(t(st)), ord = con$Bsplines_degree + 1,
                          outer.ok = TRUE)
     dataS_H <- SurvData_HazardModel(st, dataS, Time_start, idT)
@@ -401,13 +400,13 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         var_names = list(respVars = respVars, respVars_form = respVars_form,
                          idVar = idVar, time_var = time_var),
         families = families,
-        #ids = list(idL = idL, idL_lp = idL_lp, unq_idL = unq_idL, idT = idT),
-        #n = nY,
         HC = list(columns_HC = columns_HC, columns_nHC = columns_nHC),
         type_censoring = type_censoring,
-        fun_forms = list(functional_forms = functional_forms,
-                         functional_forms_per_outcome = functional_forms_per_outcome,
-                         collapsed_functional_forms = collapsed_functional_forms)
+        functional_forms = functional_forms,
+        FunForms_per_outcome = FunForms_per_outcome,
+        collapsed_functional_forms = collapsed_functional_forms,
+        FunForms_cpp = lapply(FunForms_per_outcome, unlist),
+        FunForms_ind = FunForms_ind(FunForms_per_outcome)
     )
     ############################################################################
     ############################################################################
