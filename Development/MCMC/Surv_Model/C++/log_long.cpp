@@ -22,11 +22,15 @@ field<vec> List2Field_vec (const List &Vecs) {
     return res;
 }
 
-field<uvec> List2Field_uvec (const List &uVecs) {
+field<uvec> List2Field_uvec (const List &uVecs, const bool &sub_one = false) {
     int n_list = uVecs.size();
     field<uvec> res(n_list);
     for (int i = 0; i < n_list; ++i) {
-        res.at(i) = as<uvec>(uVecs[i]);
+        if (sub_one) {
+            res.at(i) = as<uvec>(uVecs[i]) - 1;
+        } else {
+            res.at(i) = as<uvec>(uVecs[i]);
+        }
     }
     return res;
 }
@@ -279,6 +283,22 @@ field<mat> linpred_surv (const field<mat> &X, const field<vec> &betas,
     return out;
 }
 
+field<mat> create_Wlong (const field<mat> &eta, const field<uvec> &FunForms,
+                         const field<mat> &U, const field<uvec> &ind) {
+    uword n_outcomes = eta.n_elem;
+    field<mat> out(n_outcomes);
+    for (uword i = 0; i < n_outcomes; ++i) {
+        mat eta_i = eta.at(i);
+        uvec FF_i = FunForms.at(i);
+        mat U_i = U.at(i);
+        uvec ind_i = ind.at(i);
+        mat Wlong_i(eta_i.n_rows, U_i.n_cols, fill::ones);
+        Wlong_i.cols(FF_i) %= eta_i.cols(ind_i);
+        out.at(i) = U_i % Wlong_i;
+    }
+    return out;
+}
+
 // [[Rcpp::export]]
 List test (List model_data, List model_info, List initial_values) {
     List X_H_ = as<List>(model_data["X_H"]);
@@ -297,31 +317,25 @@ List test (List model_data, List model_info, List initial_values) {
     field<mat> b = List2Field_mat(b_);
     List betas_ = as<List>(initial_values["betas"]);
     field<vec> betas = List2Field_vec(betas_);
-    //uvec id_H = create_fast_ind(as<uvec>(model_data["id_H"]));
     uvec id_H = as<uvec>(model_data["id_H"]) - 1;
+    List U_H_ = as<List>(model_data["U_H"]);
+    const field<mat> U_H = List2Field_mat(U_H_);
+    List FunForms_ = as<List>(model_info["FunForms_cpp"]);
+    field<uvec> FunForms = List2Field_uvec(FunForms_, true);
+    List FunForms_ind_ = as<List>(model_info["FunForms_ind"]);
+    field<uvec> FunForms_ind = List2Field_uvec(FunForms_ind_, true);
+    ////
     field<mat> eta_H = linpred_surv(X_H, betas, Z_H, b, id_H);
+    field<mat> Wlong_H = create_Wlong(eta_H, FunForms, U_H, FunForms_ind);
     return List::create(
         Named("X_H") = X_H,
         Named("b") = b,
         Named("betas") = betas,
-        Named("eta_H") = eta_H
+        Named("eta_H") = eta_H,
+        Named("Wlong_H") = Wlong_H
     );
 }
 
-field<mat> create_Wlong (const field<mat> &eta, const field<uvec> &FunForms,
-                         const field<mat> &U, const field<uvec> &ind) {
-    uword n_outcomes = eta.n_elem;
-    field<mat> out(n_outcomes);
-    for (uword i = 0; i < n_outcomes; ++i) {
-        mat eta_i = eta.at(i);
-        uvec FF_i = FunForms.at(i);
-        mat U_i = U.at(i);
-        uvec ind_i = ind.at(i);
-        mat Wlong_i(eta_i.n_rows, U_i.n_cols, fill::ones);
-        Wlong_i.cols(FF_i) %= eta_i.cols(ind_i);
-        out.at(i) = U_i % Wlong_i;
-    }
-    return out;
-}
+
 
 

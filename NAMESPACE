@@ -1,4 +1,4 @@
-export(jm, traceplot, gelman_diag, densityplot)
+export(jm, traceplot, gelman_diag, densityplot, value, slope, area)
 
 
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply")

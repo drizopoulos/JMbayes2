@@ -94,11 +94,15 @@ field<vec> List2Field_vec (const List &Vecs) {
   return res;
 }
 
-field<uvec> List2Field_uvec (const List &uVecs) {
+field<uvec> List2Field_uvec (const List &uVecs, const bool &sub_one = false) {
   int n_list = uVecs.size();
   field<uvec> res(n_list);
   for (int i = 0; i < n_list; ++i) {
-    res.at(i) = as<uvec>(uVecs[i]);
+    if (sub_one) {
+      res.at(i) = as<uvec>(uVecs[i]) - 1;
+    } else {
+      res.at(i) = as<uvec>(uVecs[i]);
+    }
   }
   return res;
 }
@@ -115,11 +119,11 @@ field<mat> create_storage(const field<vec> &F, const int &n_iter) {
   return out;
 }
 
-vec Wlong_alphas_fun(const field<mat> &Mats, const field<vec> &coefs) {
-  int n = Mats.size();
-  int n_rows = Mats.at(0).n_rows;
+vec Wlong_alphas_fun (const field<mat> &Mats, const field<vec> &coefs) {
+  uword n = Mats.n_elem;
+  uword n_rows = Mats.at(0).n_rows;
   vec out(n_rows, fill::zeros);
-  for (int k = 0; k < n; ++k) {
+  for (uword k = 0; k < n; ++k) {
     out += Mats.at(k) * coefs.at(k);
   }
   return out;
@@ -366,6 +370,22 @@ field<mat> linpred_surv (const field<mat> &X, const field<vec> &betas,
       out.at(i).col(j) = X_ij * betas_i +
         arma::sum(Z_ij % b_i.rows(id), 1);
     }
+  }
+  return out;
+}
+
+field<mat> create_Wlong (const field<mat> &eta, const field<uvec> &FunForms,
+                         const field<mat> &U, const field<uvec> &ind) {
+  uword n_outcomes = eta.n_elem;
+  field<mat> out(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+    mat eta_i = eta.at(i);
+    uvec FF_i = FunForms.at(i);
+    mat U_i = U.at(i);
+    uvec ind_i = ind.at(i);
+    mat Wlong_i(eta_i.n_rows, U_i.n_cols, fill::ones);
+    Wlong_i.cols(FF_i) %= eta_i.cols(ind_i);
+    out.at(i) = U_i % Wlong_i;
   }
   return out;
 }
