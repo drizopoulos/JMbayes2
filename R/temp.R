@@ -46,10 +46,6 @@ create_Wlong_mats <- function (model_data, model_info, initial_values, priors,
     # Wlong is the design matrix of all longitudinal outcomes according to the specified
     # functional forms per outcome already multiplied with the interaction terms matrix U
     Wlong_H <- create_Wlong(eta_H, FunForms_per_outcome, U_H)
-
-    Wlong_H. <- create_Wlong2(eta_H,  model_info$FunForms_cpp, U_H,
-                             model_info$FunForms_ind)
-
     if (length(which_event)) {
         id_h <- lapply(X_h, function (x) seq_len(nrow(x[[1]])))
         eta_h <- linpred_surv(X_h, betas, Z_h, b, id_h)

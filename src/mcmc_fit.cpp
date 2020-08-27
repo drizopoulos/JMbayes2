@@ -1,6 +1,7 @@
 #include <RcppArmadillo.h>
 #include "JMbayes2_D.h"
 #include "JMbayes2_Surv.h"
+# include "JMbayes2_Long.h"
 
 // [[Rcpp::depends("RcppArmadillo")]]
 
@@ -15,11 +16,13 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec Time_left = as<vec>(model_data["Time_left"]);
   vec Time_start = as<vec>(model_data["Time_start"]);
   vec delta = as<vec>(model_data["Time_start"]);
+  //
   uvec which_event = as<uvec>(model_data["which_event"]) - 1;
   uvec which_right = as<uvec>(model_data["which_right"]) - 1;
   uvec which_right_event = join_cols(which_event, which_right);
   uvec which_left = as<uvec>(model_data["which_left"]) - 1;
   uvec which_interval = as<uvec>(model_data["which_interval"]) - 1;
+  //
   mat W0_H = as<mat>(model_data["W0_H"]);
   mat W0_h = as<mat>(model_data["W0_h"]);
   mat W0_H2 = as<mat>(model_data["W0_H2"]);
@@ -27,24 +30,32 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat W_h = as<mat>(model_data["W_h"]);
   mat W_H2 = as<mat>(model_data["W_H2"]);
   mat W_bar = as<mat>(model_data["W_bar"]);
+  //
   List X_H_ = as<List>(model_data["X_H"]);
-  const field<mat> X_H = List2Field_mat(X_H_);
+  field<mat> X_H = List2Field_mat(X_H_);
   List X_h_ = as<List>(model_data["X_h"]);
-  const field<mat> X_h = List2Field_mat(X_H_);
+  field<mat> X_h = List2Field_mat(X_H_);
   List X_H2_ = as<List>(model_data["X_H2"]);
-  const field<mat> X_H2 = List2Field_mat(X_H2_);
+  field<mat> X_H2 = List2Field_mat(X_H2_);
   List Z_H_ = as<List>(model_data["Z_H"]);
-  const field<mat> Z_H = List2Field_mat(Z_H_);
+  field<mat> Z_H = List2Field_mat(Z_H_);
   List Z_h_ = as<List>(model_data["Z_h"]);
-  const field<mat> Z_h = List2Field_mat(X_H_);
+  field<mat> Z_h = List2Field_mat(X_H_);
   List Z_H2_ = as<List>(model_data["Z_H2"]);
-  const field<mat> Z_H2 = List2Field_mat(Z_H2_);
+  field<mat> Z_H2 = List2Field_mat(Z_H2_);
+  List U_H_ = as<List>(model_data["U_H"]);
+  field<mat> U_H = List2Field_mat(U_H_);
+  List U_h_ = as<List>(model_data["U_h"]);
+  field<mat> U_h = List2Field_mat(U_h_);
+  List U_H2_ = as<List>(model_data["U_H2"]);
+  field<mat> U_H2 = List2Field_mat(U_H2_);
+  //
   List Wlong_H_ = as<List>(model_data["Wlong_H"]);
-  mat Wlong_H = docall_cbind(Wlong_H_);
+  mat Wlong_H = docall_cbindL(Wlong_H_);
   List Wlong_h_ = as<List>(model_data["Wlong_h"]);
-  mat Wlong_h = docall_cbind(Wlong_h_);
+  mat Wlong_h = docall_cbindL(Wlong_h_);
   List Wlong_H2_ = as<List>(model_data["Wlong_H2"]);
-  mat Wlong_H2 = docall_cbind(Wlong_H2_);
+  mat Wlong_H2 = docall_cbindL(Wlong_H2_);
   List Wlong_bar_ = as<List>(model_data["Wlong_bar"]);
   field<mat> Wlong_bar = List2Field_mat(Wlong_bar_);
   // other information
@@ -57,6 +68,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   bool any_gammas = as<bool>(model_data["any_gammas"]);
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
+  List FunForms_ = as<List>(model_info["FunForms_cpp"]);
+  field<uvec> FunForms = List2Field_uvec(FunForms_, true);
+  List FunForms_ind_ = as<List>(model_info["FunForms_ind"]);
+  field<uvec> FunForms_ind = List2Field_uvec(FunForms_ind_, true);
   // initial values
   vec bs_gammas = as<vec>(initial_values["bs_gammas"]);
   vec gammas = as<vec>(initial_values["gammas"]);
@@ -64,7 +79,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   double tau_bs_gammas = as<double>(initial_values["tau_bs_gammas"]);
   List b_ = as<List>(initial_values["b"]);
   field<mat> b = List2Field_mat(b_);
-  mat b_mat = docall_cbind(b_);
+  mat b_mat = docall_cbindF(b);
   mat D = as<mat>(initial_values["D"]);
   vec sds = sqrt(D.diag());
   mat R = cov2cor(D);

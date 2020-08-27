@@ -94,14 +94,14 @@ field<vec> List2Field_vec (const List &Vecs) {
   return res;
 }
 
-field<uvec> List2Field_uvec (const List &uVecs, const bool &sub_one = false) {
+field<uvec> List2Field_uvec (const List & uVecs, bool substract1 = true) {
   int n_list = uVecs.size();
   field<uvec> res(n_list);
   for (int i = 0; i < n_list; ++i) {
-    if (sub_one) {
-      res.at(i) = as<uvec>(uVecs[i]) - 1;
+    if (substract1) {
+      res.at(i) = as<arma::uvec>(uVecs[i]) - 1;
     } else {
-      res.at(i) = as<uvec>(uVecs[i]);
+      res.at(i) = as<arma::uvec>(uVecs[i]);
     }
   }
   return res;
@@ -129,18 +129,38 @@ vec Wlong_alphas_fun (const field<mat> &Mats, const field<vec> &coefs) {
   return out;
 }
 
-mat docall_cbind (const List &Mats_) {
+mat docall_cbindL (const List &Mats_) {
   field<mat> Mats = List2Field_mat(Mats_);
-  int n = Mats.size();
+  uword n = Mats.n_elem;
   uvec ncols(n);
-  for (int k = 0; k < n; ++k) {
+  for (uword k = 0; k < n; ++k) {
     ncols.at(k) = Mats.at(k).n_cols;
   }
-  int N = sum(ncols);
-  int col_start = 0;
-  int col_end = ncols.at(0) - 1;
+  uword N = sum(ncols);
+  uword col_start = 0;
+  uword col_end = ncols.at(0) - 1;
   mat out(Mats.at(0).n_rows, N);
-  for (int k = 0; k < n; ++k) {
+  for (uword k = 0; k < n; ++k) {
+    if (k > 0) {
+      col_start += ncols.at(k - 1);
+      col_end += ncols.at(k);
+    }
+    out.cols(col_start, col_end) = Mats.at(k);
+  }
+  return out;
+}
+
+mat docall_cbindF (const field<mat> &Mats) {
+  uword n = Mats.n_elem;
+  uvec ncols(n);
+  for (uword k = 0; k < n; ++k) {
+    ncols.at(k) = Mats.at(k).n_cols;
+  }
+  uword N = sum(ncols);
+  uword col_start = 0;
+  uword col_end = ncols.at(0) - 1;
+  mat out(Mats.at(0).n_rows, N);
+  for (uword k = 0; k < n; ++k) {
     if (k > 0) {
       col_start += ncols.at(k - 1);
       col_end += ncols.at(k);

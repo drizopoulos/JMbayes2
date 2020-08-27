@@ -112,5 +112,4 @@ double log_density_surv (const vec &W0H_bs_gammas,
   return logLik;
 }
 
-
 #endif
