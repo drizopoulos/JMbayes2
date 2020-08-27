@@ -56,8 +56,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat Wlong_h = docall_cbindL(Wlong_h_);
   List Wlong_H2_ = as<List>(model_data["Wlong_H2"]);
   mat Wlong_H2 = docall_cbindL(Wlong_H2_);
-  List Wlong_bar_ = as<List>(model_data["Wlong_bar"]);
-  field<mat> Wlong_bar = List2Field_mat(Wlong_bar_);
+  //List Wlong_bar_ = as<List>(model_data["Wlong_bar"]);
+  //field<mat> Wlong_bar = List2Field_mat(Wlong_bar_);
   // other information
   uvec idT = as<uvec>(model_data["idT"]) - 1;
   vec log_Pwk = as<vec>(model_data["log_Pwk"]);

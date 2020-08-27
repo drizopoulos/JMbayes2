@@ -1,21 +1,4 @@
-##########################################################################################
-# Author: D. Rizopoulos                                                                  #
-# Aim: Test function jm()                                                                #
-#########################################################################################
-library("survival")
-library("nlme")
-library("GLMMadaptive")
-library("coda")
-library("lattice")
-library("splines")
-source("./R/jm.R")
-source("./R/jm_fit.R")
-source("./R/help_functions.R")
-source("./R/basic_methods.R")
-source("./R/temp.R")
-source("./Development/jm/PBC_data.R")
-Rcpp::sourceCpp('src/mcmc_fit.cpp')
-
+library("JMbayes2")
 simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
                            mean.Cens = 7) {
     # if alpha = 0, mean.Cens = 35
@@ -136,128 +119,50 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
     #summary(dat$time)
 
     # true values for parameters and random effects
-    trueValues <- list(betas = betas, tau = 1/sigma.y^2, gammas = gammas,
+    trueValues <- list(betas = betas, tau = 1/sigma.y^2, gammas = gammas[-1L],
                        alphas = alpha, Dalphas = Dalpha, sigma.t = phi,
-                       inv.D = solve(D), b = b)
+                       D = D[lower.tri(D, TRUE)], b = b)
 
     # return list
     list(DF = dat, DF.id = dat.id, trueValues = trueValues)
 }
 
+################################################################################
+################################################################################
+
+M <- 20
 Data <- simulateJoint()
-lmeFit <- lme(y ~ ns(time, 3), data = Data$DF,
-              random = list(id = pdDiag(form = ~ ns(time, 3))),
-              control = lmeControl(opt = "optim", niterEM = 45))
-coxFit <- coxph(Surv(Time, event) ~ group + age, data = Data$DF.id)
+res_bs_gammas <- matrix(as.numeric(NA), M, 12)
+res_gammas <- matrix(as.numeric(NA), M, length(Data$trueValues$gammas))
+res_alphas <- matrix(as.numeric(NA), M, length(Data$trueValues$alphas))
+res_D <- matrix(as.numeric(NA), M, length(Data$trueValues$D))
+times <- matrix(as.numeric(NA), M, 3)
 
-obj <- jm(coxFit, list(lmeFit), time_var = "time", n_chains = 3)
+for (m in seq_len(M)) {
+    try_run <- try({
+        Data <- simulateJoint()
+        lmeFit <- lme(y ~ ns(time, 3), data = Data$DF,
+                      random = list(id = pdDiag(form = ~ ns(time, 3))),
+                      control = lmeControl(opt = "optim", niterEM = 45))
+        coxFit <- coxph(Surv(Time, event) ~ group + age, data = Data$DF.id)
 
-obj$statistics$Mean$alphas
-obj$statistics$Mean$gammas
+        obj <- jm(coxFit, list(lmeFit), time_var = "time")
+    }, silent = TRUE)
+    if (!inherits(try_run, "try-error")) {
+        res_bs_gammas[m, ] <- obj$statistics$Mean$bs_gammas
+        res_gammas[m, ] <- obj$statistics$Mean$gammas
+        res_alphas[m, ] <- obj$statistics$Mean$alphas
+        res_D[m, ] <- obj$statistics$Mean$D
+        times[m, ] <- obj$running_time[1:3L]
+    }
+    print(m)
+}
 
-#coda::traceplot(obj$mcmc$D)
+##########
 
-traceplot(obj)
-gelman_diag(obj)
-
-#obj
-model_data <- obj$model_data
-model_info <- obj$model_info
-initial_values <- obj$initial_values
-priors <- obj$priors
-vcov_prop <- obj$vcov_prop
-control <- obj$control
-
-Surv_object = coxFit
-Mixed_objects = list(lmeFit)
-time_var = "time"
-functional_forms = NULL
-data_Surv = NULL
-id_var = NULL
-priors = NULL
-control = NULL
-#
-model_data <- Data
-control <- con
-control$n_chains = 1
-
-
-#
-system.time({
-    fm1 <- lme(log(serBilir) ~ year * sex + I(year^2) + age + prothrombin,
-               data = pbc2, random = ~ year | id)
-    fm2 <- lme(serChol ~ ns(year, 3, B = c(0, 10)) + sex + age, data = pbc2,
-               random = ~ year | id, na.action = na.exclude)
-    fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
-                       random = ~ 1 | id, family = binomial())
-    fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
-                       random = ~ year | id, family = binomial())
-
-    Mixed <- list(fm1, fm2, fm3, fm4)
-    Cox <- coxph(Surv(years, status2) ~ 1, data = pbc2.id)
-})
-system.time(obj <- jm(Cox, Mixed, time_var = "year"))
-
-model_data <- obj$model_data
-model_info <- obj$model_info
-initial_values <- obj$initial_values
-priors <- obj$priors
-vcov_prop <- obj$vcov_prop
-control <- obj$control
-
-Surv_object = Cox
-Mixed_objects = Mixed
-time_var = 'year'
-functional_forms = NULL
-data_Surv = NULL
-id_var = NULL
-priors = NULL
-control = NULL
-
-
-
-
-##########################################################################################
-##########################################################################################
-
-fm1 <- lme(log(serBilir) ~ year * sex + I(year^2) + age + prothrombin,
-           data = pbc2, random = ~ year | id)
-fm2 <- lme(serChol ~ ns(year, 3) + sex + age, data = pbc2, random = ~ year | id,
-           na.action = na.exclude)
-fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
-                   random = ~ 1 | id, family = binomial())
-fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
-                   random = ~ 1 | id, family = binomial())
-
-CoxFit <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
-
-#CoxFit <- survreg(Surv(years, yearsU, status3, type = "interval") ~ 1,
-#                  data = pbc2.id, model = TRUE)
-
-fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
-                   value(log(serBilir)):sex,
-               "serChol" = ~ value(serChol) + slope(serChol),
-               #"hepatomegaly" = ~ value(hepatomegaly),
-               "ascites" = ~ value(ascites) + area(ascites))
-
-test <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
-           functional_forms = fForms)
-
-################################################################################
-################################################################################
-Surv_object = CoxFit
-Mixed_objects = list(fm1, fm2, fm3, fm4)
-time_var = "year"
-functional_forms = list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
-                            value(log(serBilir)):sex,
-                        "serChol" = ~ value(serChol) + slope(serChol),
-                        "hepatomegaly" = ~ value(hepatomegaly),
-                        "ascites" = ~ value(ascites) + area(ascites):drug)
-data_Surv = NULL
-id_var = NULL
-priors = NULL
-control = NULL
-
+colMeans(res_gammas) - Data$trueValues$gammas
+colMeans(res_alphas) - Data$trueValues$alphas
+colMeans(res_D) - Data$trueValues$D
 
 
 

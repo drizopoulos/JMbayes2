@@ -14,13 +14,13 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     }
     model_data$y[binomial_data] <- lapply(model_data$y[binomial_data],
                                           trials_fun)
-    id_H <- id_H2 <- rep(seq_len(model_data$n), each = control$GK_k)
+    id_H <- rep(seq_len(model_data$n), each = control$GK_k)
     id_h <- seq_len(nrow(model_data$X_h[[1]][[1]]))
     docall_cbind <- function (l) if (is.list(l)) do.call("cbind", l) else l
     model_data <- c(model_data, create_Wlong_mats(model_data, model_info,
                                                   initial_values, priors,
                                                   control),
-                    list(id_H = id_H, id_H2 = id_H2, id_h = id_h))
+                    list(id_H = id_H, id_h = id_h))
     # cbind the elements of X_H and Z_H, etc.
     model_data$X_H[] <- lapply(model_data$X_H, docall_cbind)
     model_data$X_h[] <- lapply(model_data$X_h, docall_cbind)
@@ -30,16 +30,19 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     model_data$Z_H2[] <- lapply(model_data$Z_H2, docall_cbind)
     # center the design matrices for the baseline covariates and
     # the longitudinal process
-    model_data$W_H <- scale(model_data$W_H, scale = FALSE)
-    model_data$W_h <- scale(model_data$W_h, scale = FALSE)
-    model_data$W_H2 <- scale(model_data$W_H2, scale = FALSE)
-    model_data$W_bar <- rbind(attr(model_data$W_h, "scaled:center"))
+    center_fun <- function (M, means) as.matrix(M - rep(means, each = nrow(M)))
+    model_data$W_bar <- rbind(colMeans(model_data$W_H))
+    model_data$W_H <- center_fun(model_data$W_H, model_data$W_bar)
+    model_data$W_h <- center_fun(model_data$W_h, model_data$W_bar)
+    model_data$W_H2 <- center_fun(model_data$W_H, model_data$W_bar)
 
-    model_data$Wlong_H <- lapply(model_data$Wlong_H, scale, scale = FALSE)
-    model_data$Wlong_h <- lapply(model_data$Wlong_h, scale, scale = FALSE)
-    model_data$Wlong_H2 <- lapply(model_data$Wlong_H2, scale, scale = FALSE)
-    model_data$Wlong_bar <- lapply(model_data$Wlong_h,
-                                   function (w) rbind(attr(w, "scaled:center")))
+    model_data$Wlong_bar <- lapply(model_data$Wlong_H, colMeans)
+    model_data$Wlong_H <- mapply(center_fun, model_data$Wlong_H, model_data$Wlong_bar,
+                                 SIMPLIFY = FALSE)
+    model_data$Wlong_h <- mapply(center_fun, model_data$Wlong_h, model_data$Wlong_bar,
+                                 SIMPLIFY = FALSE)
+    model_data$Wlong_H2 <- mapply(center_fun, model_data$Wlong_H2, model_data$Wlong_bar,
+                                  SIMPLIFY = FALSE)
     # unlist priors and initial values for alphas
     initial_values$alphas <- unlist(initial_values$alphas, use.names = FALSE)
     priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
