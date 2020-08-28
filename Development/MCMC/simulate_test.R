@@ -1,5 +1,5 @@
 library("JMbayes2")
-simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
+simulateJoint <- function (alpha = 0.3, Dalpha = 0, n = 500,
                            mean.Cens = 7) {
     # if alpha = 0, mean.Cens = 35
     library("splines")
@@ -130,7 +130,7 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
 ################################################################################
 ################################################################################
 
-M <- 20
+M <- 50
 Data <- simulateJoint()
 res_bs_gammas <- matrix(as.numeric(NA), M, 12)
 res_gammas <- matrix(as.numeric(NA), M, length(Data$trueValues$gammas))

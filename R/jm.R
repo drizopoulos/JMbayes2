@@ -387,8 +387,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                  W0_h = W0_h, W_h = W_h, X_h = X_h, Z_h = Z_h, U_h = U_h,
                  W0_H2 = W0_H2, W_H2 = W_H2, X_H2 = X_H2, Z_H2 = Z_H2, U_H2 = U_H2,
                  log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2)
-    # drop names and other attributes from model matrices
-    Data[] <- lapply(Data, drop_names)
     ############################################################################
     ############################################################################
     # objects to export

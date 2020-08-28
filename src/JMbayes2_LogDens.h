@@ -74,22 +74,14 @@ vec log_long (const field<mat> &y, const field<vec> &eta, const vec &scales,
   return out;
 }
 
-double log_density_surv (const vec &W0H_bs_gammas,
-                         const vec &W0h_bs_gammas,
-                         const vec &W0H2_bs_gammas,
-                         const vec &WH_gammas,
-                         const vec &Wh_gammas,
-                         const vec &WH2_gammas,
-                         const vec &WlongH_alphas,
-                         const vec &Wlongh_alphas,
-                         const vec &WlongH2_alphas,
-                         const vec &log_Pwk, const vec &log_Pwk2,
-                         const uvec &indFast_H,
-                         const uvec &which_event,
-                         const uvec &which_right_event,
-                         const uvec &which_left,
-                         const bool &any_interval,
-                         const uvec &which_interval) {
+double log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
+                 const vec &W0H2_bs_gammas, const vec &WH_gammas,
+                 const vec &Wh_gammas, const vec &WH2_gammas,
+                 const vec &WlongH_alphas, const vec &Wlongh_alphas,
+                 const vec &WlongH2_alphas, const vec &log_Pwk, const vec &log_Pwk2,
+                 const uvec &indFast_H, const uvec &which_event,
+                 const uvec &which_right_event, const uvec &which_left,
+                 const bool &any_interval, const uvec &which_interval) {
   vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
   vec H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
   int n = H.n_rows;
