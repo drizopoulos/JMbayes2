@@ -30,19 +30,21 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     model_data$Z_H2[] <- lapply(model_data$Z_H2, docall_cbind)
     # center the design matrices for the baseline covariates and
     # the longitudinal process
-    center_fun <- function (M, means) as.matrix(M - rep(means, each = nrow(M)))
+    center_fun <- function (M, means) {
+        if (!all(M == 0)) as.matrix(M - rep(means, each = nrow(M))) else M
+    }
     model_data$W_bar <- rbind(colMeans(model_data$W_H))
     model_data$W_H <- center_fun(model_data$W_H, model_data$W_bar)
     model_data$W_h <- center_fun(model_data$W_h, model_data$W_bar)
-    model_data$W_H2 <- center_fun(model_data$W_H, model_data$W_bar)
+    model_data$W_H2 <- center_fun(model_data$W_H2, model_data$W_bar)
 
     model_data$Wlong_bar <- lapply(model_data$Wlong_H, colMeans)
-    model_data$Wlong_H <- mapply(center_fun, model_data$Wlong_H, model_data$Wlong_bar,
-                                 SIMPLIFY = FALSE)
-    model_data$Wlong_h <- mapply(center_fun, model_data$Wlong_h, model_data$Wlong_bar,
-                                 SIMPLIFY = FALSE)
-    model_data$Wlong_H2 <- mapply(center_fun, model_data$Wlong_H2, model_data$Wlong_bar,
-                                  SIMPLIFY = FALSE)
+    model_data$Wlong_H <- mapply(center_fun, model_data$Wlong_H,
+                                 model_data$Wlong_bar, SIMPLIFY = FALSE)
+    model_data$Wlong_h <- mapply(center_fun, model_data$Wlong_h,
+                                 model_data$Wlong_bar, SIMPLIFY = FALSE)
+    model_data$Wlong_H2 <- mapply(center_fun, model_data$Wlong_H2,
+                                  model_data$Wlong_bar, SIMPLIFY = FALSE)
     # unlist priors and initial values for alphas
     initial_values$alphas <- unlist(initial_values$alphas, use.names = FALSE)
     priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
