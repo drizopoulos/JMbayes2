@@ -239,7 +239,7 @@ log_us_RE <- matrix(log(runif(b.rows * M)), nrow = b.rows, ncol = M)
 
 for (m in seq_len(M)) {
   proposed_b <- mvrnorm_gp_array(1, vcov_prop_RE, sigmas) + current_b
-  numerator <- target_log_dist(X = X, betas = betas, Z = Z, b = proposed_b, id = idL_lp, 
+  numerator <- log_post_b_HC(X = X, betas = betas, Z = Z, b = proposed_b, id = idL_lp, 
                                y = y, log_sigmas = log_sigmas, Funs = Funs, mu_funs = mu_funs, nY = nY, unq_idL = unq_idL, idL = idL, 
                                D = D,
                                Data = Data,
@@ -248,7 +248,7 @@ for (m in seq_len(M)) {
                                alphas = init_surv$alphas,
                                id_H = id_H, 
                                n = b.rows, bnew = proposed_b)
-  denominator <- target_log_dist(X = X, betas = betas, Z = Z, b = current_b, id = idL_lp, 
+  denominator <- log_post_b_HC(X = X, betas = betas, Z = Z, b = current_b, id = idL_lp, 
                                  y = y, log_sigmas = log_sigmas, Funs = Funs, mu_funs = mu_funs, nY = nY, unq_idL = unq_idL, idL = idL, 
                                  D = D,
                                  Data = Data,
