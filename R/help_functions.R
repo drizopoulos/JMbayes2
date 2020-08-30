@@ -693,7 +693,11 @@ create_Wlong2 <- function (eta, FunForms, U, ind) {
         U_i <- U[[i]]
         ind_i <- ind[[i]]
         Wlong_i <- matrix(1.0, nrow(eta_i), max(unlist(FF_i)))
-        Wlong_i[, FF_i] <- Wlong_i[, FF_i] * eta_i[, ind_i]
+        for (j in unique(ind_i)) {
+            kk <- FF_i[ind_i == j]
+            Wlong_i[, kk] <- Wlong_i[, kk] * eta_i[, j]
+        }
+
         Wlong[[i]] <- U_i * Wlong_i
     }
     Wlong

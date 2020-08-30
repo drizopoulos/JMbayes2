@@ -248,8 +248,7 @@ test <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
 Surv_object = CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 time_var = "year"
-functional_forms = list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
-                            value(log(serBilir)):sex,
+functional_forms = list("log(serBilir)" = ~ value(log(serBilir)) * slope(log(serBilir)),
                         "serChol" = ~ value(serChol) + slope(serChol),
                         "hepatomegaly" = ~ value(hepatomegaly),
                         "ascites" = ~ value(ascites) + area(ascites):drug)
