@@ -336,6 +336,21 @@ List test (List model_data, List model_info, List initial_values) {
     );
 }
 
+// [[Rcpp::export]]
+mat Wlong_cpp (const mat &eta, const uvec &FunForms,
+                const mat &U, const uvec &ind) {
+    mat Wlong(eta.n_rows, U.n_cols, fill::ones);
+    Wlong.cols(FunForms) %= eta.cols(ind);
+    mat out = U % Wlong;
+    return out;
+}
+
+
+
+
+
+
+
 
 
 

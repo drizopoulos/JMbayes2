@@ -100,10 +100,9 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
             paste0("bs_gammas_",
                    seq_along(out[[i]][["mcmc"]][["bs_gammas"]][1, ]))
         colnames(out[[i]][["mcmc"]][["tau_bs_gammas"]]) <- "tau_bs_gammas"
-        colnames(out[[i]][["mcmc"]][["gammas"]]) <-
-            attr(model_info$terms$terms_Surv_noResp, "term.labels")
+        colnames(out[[i]][["mcmc"]][["gammas"]]) <- colnames(model_data$W_H)
         colnames(out[[i]][["mcmc"]][["alphas"]]) <-
-            paste0("alphas", seq_len(ncol(out[[i]][["mcmc"]][["alphas"]])))
+            unlist(lapply(model_data$U_H, colnames), use.names = FALSE)
         ind <- lower.tri(initial_values$D, TRUE)
         colnames(out[[i]][["mcmc"]][["D"]]) <-
             paste0("D[", row(initial_values$D)[ind], ", ",

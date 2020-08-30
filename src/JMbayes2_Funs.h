@@ -410,21 +410,20 @@ field<mat> create_Wlong (const field<mat> &eta, const field<uvec> &FunForms,
   return out;
 }
 
-
-field<vec> linpred_mixed(const field<mat>& X, const field<vec>& betas, 
-                         const field<mat>& Z, const field<mat>& b, 
+field<vec> linpred_mixed(const field<mat> &X, const field<vec> &betas,
+                         const field<mat> &Z, const field<mat> &b,
                          const field<uvec>& id) {
-  int n_outcomes = X.n_elem;
+  uword n_outcomes = X.n_elem;
   field<vec> out;
-  for (uword i = 0; i < n_outcomes; i++) {
+  for (uword i = 0; i < n_outcomes; ++i) {
     mat X_i = X(i);
-    vec betas_i = betas(i);
-    mat Z_i = Z(i);
-    mat b_i = b(i);
-    uvec id_i = id(i);
-    out(i) = X_i * betas_i + arma::sum(Z_i % b_i.rows(id_i), 1); 
+    vec betas_i = betas.at(i);
+    mat Z_i = Z.at(i);
+    mat b_i = b.at(i);
+    uvec id_i = id.at(i);
+    out(i) = X_i * betas_i + arma::sum(Z_i % b_i.rows(id_i), 1);
   }
-  return(out);
+  return out;
 }
 
 #endif
