@@ -16,7 +16,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
                                           trials_fun)
     id_H <- rep(seq_len(model_data$n), each = control$GK_k)
     id_h <- seq_len(nrow(model_data$X_h[[1]][[1]]))
-    docall_cbind <- function (l) if (is.list(l)) do.call("cbind", l) else l
     model_data <- c(model_data, create_Wlong_mats(model_data, model_info,
                                                   initial_values, priors,
                                                   control),
@@ -30,9 +29,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     model_data$Z_H2[] <- lapply(model_data$Z_H2, docall_cbind)
     # center the design matrices for the baseline covariates and
     # the longitudinal process
-    center_fun <- function (M, means) {
-        if (!all(M == 0)) as.matrix(M - rep(means, each = nrow(M))) else M
-    }
     model_data$W_bar <- rbind(colMeans(model_data$W_H))
     model_data$W_H <- center_fun(model_data$W_H, model_data$W_bar)
     model_data$W_h <- center_fun(model_data$W_h, model_data$W_bar)
@@ -85,6 +81,26 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
                              control))
     }
     toc <- proc.time()
+    # create dummy betas
+    if (is.null(out[[1]][["mcmc"]][["betas"]])) {
+        for (i in seq_along(out)) {
+            M <- nrow(out[[i]][["mcmc"]][["bs_gammas"]])
+            K <- length(model_data$X)
+            for (j in seq_len(K)) {
+                k <- ncol(model_data$X[[j]])
+                nmn <- paste0("betas", j)
+                out[[i]][["mcmc"]][[nmn]] <- matrix(rnorm(M * k), M, k)
+            }
+        }
+    }
+    # create dummy sigmas
+    if (is.null(out[[1]][["mcmc"]][["sigmas"]])) {
+        for (i in seq_along(out)) {
+            M <- nrow(out[[i]][["mcmc"]][["bs_gammas"]])
+            K <- length(model_data$X)
+            out[[i]][["mcmc"]][["sigmas"]] <- matrix(rlnorm(M * K), M, K)
+        }
+    }
     # reconstruct D matrix
     get_D <- function (x) {
         mapply(reconstr_D, split(x$L, row(x$L)), split(x$sds, row(x$sds)),
@@ -107,6 +123,14 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
         colnames(out[[i]][["mcmc"]][["D"]]) <-
             paste0("D[", row(initial_values$D)[ind], ", ",
                    col(initial_values$D)[ind], "]")
+        for (j in seq_along(model_data$X)) {
+            colnames(out[[i]][["mcmc"]][[paste0("betas", j)]]) <-
+                colnames(model_data$X[[j]])
+        }
+        colnames(out[[i]][["mcmc"]][["sigmas"]]) <-
+            paste0("sigmas_",
+                   seq_along(out[[i]][["mcmc"]][["sigmas"]][1, ]))
+
     }
     convert2_mcmclist <- function (name) {
         as.mcmc.list(lapply(out, function (x) as.mcmc(x$mcmc[[name]])))
@@ -114,7 +138,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     get_acc_rates <- function (name_parm) {
         do.call("rbind", lapply(out, function (x) x[["acc_rate"]][[name_parm]]))
     }
-    parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "D")
+    parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "D",
+               paste0("betas", seq_along(model_data$X)), "sigmas")
     if (!length(attr(model_info$terms$terms_Surv_noResp, "term.labels")))
         parms <- parms[parms != "gammas"]
     mcmc_out <- lapply_nams(parms, convert2_mcmclist)

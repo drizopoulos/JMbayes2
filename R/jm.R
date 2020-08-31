@@ -489,7 +489,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         CI_upp = lapply(S, get_statistic, "97.5CI"),
         P = lapply(out$mcmc, function (x) apply(do.call("rbind", x), 2L, Ptail)),
         Effective_Size = lapply(out$mcmc, function (x)
-            apply(do.call("rbind", x), 2L, effective_size))
+            apply(do.call("rbind", x), 2L, effective_size)),
+        Rhat = lapply(out$mcm, function (theta) coda::gelman.diag(theta)$psrf)
     )
     out <- c(out, list(statistics = statistics,
                        model_data = Data, model_info = model_info,

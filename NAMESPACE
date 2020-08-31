@@ -1,6 +1,5 @@
 export(jm, traceplot, gelman_diag, densityplot, value, slope, area)
 
-
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply")
 importFrom("nlme", "fixef", "ranef")
 importFrom("coda", "as.mcmc.list", "as.mcmc", "traceplot")
@@ -11,3 +10,7 @@ useDynLib(JMbayes2, .registration = TRUE)
 S3method(traceplot, jm)
 S3method(gelman_diag, jm)
 S3method(densityplot, jm)
+
+S3method(summary, jm)
+S3method(print, summary.jm)
+

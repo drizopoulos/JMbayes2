@@ -32,12 +32,13 @@ gelman_diag.jm <- function (object,
         out <- vector("list", length(parms))
         names(out) <- parms
         for (i in seq_along(parms)) {
-            parms_i <- parms[[i]]
+            parms_i <- tail(grep(parms[[i]], names(object$mcmc)), 1L)
             x <- object$mcmc[[parms_i]]
             if (!is.null(x)) out[[i]] <- coda::gelman.diag(x, ...)
         }
         out[!sapply(out, is.null)]
     } else {
+        parm <- tail(grep(parm, names(object$mcmc)), 1L)
         coda::gelman.diag(object$mcmc[[parm]], ...)
     }
 }
@@ -63,3 +64,119 @@ densityplot.jm <- function (object,
     invisible()
 }
 
+summary.jm <- function (object, ...) {
+    families <- object$model_info$families
+    n_outcomes <- length(families)
+    respVars <- object$model_info$var_names$respVars_form
+    N <- sapply(object$model_data$X, nrow)
+    descrpt <- data.frame(` ` = N, row.names = respVars, check.rows = FALSE,
+                          check.names = FALSE)
+    nams_D <- unlist(lapply(object$model_data$Z, colnames), use.names = FALSE)
+    D <- lowertri2mat(object$statistics$Mean$D, nams_D)
+    out <- list(n = object$model_data$n, descrpt = descrpt, D = D,
+                families = families, respVars = respVars,
+                events = object$model_data$delta,
+                control = object$control, time = object$running_time,
+                call = object$call)
+   tab_f <- function(name) {
+        data.frame(Mean = object$statistics$Mean[[name]],
+                   StDev = object$statistics$SD[[name]],
+                   `2.5%` = object$statistics$CI_low[[name]],
+                   `97.5%` = object$statistics$CI_low[[name]],
+                   P = object$statistics$P[[name]],
+                   Rhat = object$statistics$Rhat[[name]][, 1L],
+                   row.names = names(object$statistics$Mean[[name]]),
+                   check.names = FALSE)
+    }
+    fam_names <- sapply(families, "[[", "family")
+    has_sigma <- c("gaussian", "Student-t", "beta", "Gamma",
+                   "negative binomial", "beta binomial")
+    tab_sigmas <- tab_f("sigmas")
+    for (i in seq_len(n_outcomes)) {
+        nam_outcome <- paste0("Outcome", i)
+        out[[nam_outcome]] <- tab_f(paste0("betas", i))
+        if (fam_names[i] %in% has_sigma) {
+            k <- nrow(out[[nam_outcome]])
+            out[[nam_outcome]] <- rbind(out[[nam_outcome]], tab_sigmas[i, ])
+            row.names(out[[nam_outcome]])[k + 1] <- "sigma"
+        }
+    }
+    out$Survival <- do.call(rbind, list(tab_f("gammas"), tab_f("alphas")))
+    class(out) <- "summary.jm"
+    out
+}
+
+print.summary.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) {
+    cat("\nCall:\n", printCall(x$call), "\n\n", sep = "")
+    cat("Data Descriptives:")
+    cat("\nNumber of Groups: ", x$n, "\t\tNumber of events: ",
+        sum(x$event == 1), " (", round(100 * mean(x$event == 1), 1),
+        "%)", sep = "")
+    cat("\nNumber of Observations:")
+    obs <- x$descrpt
+    for (i in 1:nrow(obs)) {
+        cat("\n  ", row.names(obs)[i], ": ", obs[[1]][i],
+            sep = "")
+    }
+    cat("\n")
+    if (!is.null(x$DIC)) {
+        model.sum <- data.frame(DIC = x$DIC, pD = x$pD, row.names = "")
+        print(model.sum)
+    }
+    cat("\nRandom-effects covariance matrix:\n")
+    D <- x$D
+    ncz <- nrow(D)
+    diag.D <- ncz != ncol(D)
+    sds <- if (diag.D) sqrt(D) else sqrt(diag(D))
+    if (ncz > 1) {
+        if (diag.D) {
+            dat <- as.data.frame(round(rbind(sds), digits))
+            names(dat) <- "StdDev"
+        } else {
+            corrs <- cov2cor(D)
+            corrs[upper.tri(corrs, TRUE)] <- 0
+            mat <- round(cbind(sds, corrs[, -ncz]), digits)
+            mat <- rbind(mat)
+            mat <- apply(mat, 2, sprintf, fmt = "% .4f")
+            mat[mat == mat[1, 2]] <- ""
+            mat[1, -1] <- abbreviate(colnames(D)[-ncz], 6)
+            colnames(mat) <- c(colnames(mat)[1], rep("",
+                                                     ncz - 1))
+            dat <- data.frame(mat, check.rows = FALSE, check.names = FALSE)
+            names(dat) <- c("StdDev", "Corr", if (ncz >
+                                                  2) rep(" ", ncz - 2) else NULL)
+            row.names(dat) <- abbreviate(c(dimnames(D)[[1]]))
+        }
+    } else {
+        dat <- data.frame(StdDev = c(sds, x$sigma), row.names = if (!is.null(x$sigma))
+            c(rownames(D), "Residual")
+            else rownames(D), check.rows = FALSE, check.names = FALSE)
+    }
+    print(dat, digits = digits)
+    cat("\nSurvival Outcome:\n")
+    print(round(x[["Survival"]], digits))
+    n_outcomes <- length(x$families)
+    for (i in seq_len(n_outcomes)) {
+        cat("\nLongitudinal Outcome: ", x$respVars[i],
+            " (family = ", x$families[[i]][["family"]],
+            ", link = ", x$families[[i]][["link"]],
+            ")", "\n", sep = "")
+        xx <- round(x[[paste0("Outcome", i)]], digits)
+        rnams <- row.names(xx)
+        if (any(offend <- nchar(rnams) > 20))
+            row.names(xx)[offend] <- abbreviate(rnams[offend])
+        print(xx)
+    }
+    cat("\nMCMC summary:\n")
+    tt <- x$time[3L] / 60
+    cat("chains:", x$control$n_chains,
+        "\niterations per chain:", x$control$n_iter,
+        "\nburn-in per chain:", x$control$n_burnin,
+        "\ntime:", if (tt > 60)
+            round(tt/60, 1)
+        else round(tt, 1), if (tt > 60)
+            "hours"
+        else "min")
+    cat("\n")
+    invisible(x)
+}
