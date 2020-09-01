@@ -186,6 +186,12 @@ double logPrior(const vec &x, const vec &mean, const mat &Tau,
   return out;
 }
 
+mat rnorm_mat (const int& rows, const int& cols, const double& mu, const double& sigma) {
+  mat out(rows, cols);
+  out.each_col([&](vec& x) {x = as<vec>(rnorm(rows)); } );
+  return out;
+}
+
 vec propose_norm (const vec &thetas, const vec &scale, const uword &i) {
   vec proposed_thetas = thetas;
   proposed_thetas.at(i) = R::rnorm(thetas.at(i), scale.at(i));
