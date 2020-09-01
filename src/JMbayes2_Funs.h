@@ -225,8 +225,8 @@ field<vec> propose_field (const field<vec>& thetas,
 }
 
 cube propose_mvnorm_cube (const int& n, const cube& S, const vec& sigmas) {
-  int ncol_per_slice = S.n_cols;
-  int slices = S.n_slices;
+  uword ncol_per_slice = S.n_cols;
+  uword slices = S.n_slices;
   cube out(n, ncol_per_slice, slices);
   for (uword i = 0; i < slices; i++) {
     out.slice(i) = sqrt(sigmas.at(i)) * (randn(n, ncol_per_slice) * chol(S.slice(i)));
@@ -422,9 +422,9 @@ field<mat> create_Wlong (const field<mat> &eta, const field<uvec> &FunForms,
 
 field<vec> linpred_mixed (const field<mat> &X, const field<vec> &betas,
                           const field<mat> &Z, const field<mat> &b,
-                          const field<uvec>& id) {
+                          const field<uvec> &id) {
   uword n_outcomes = X.n_elem;
-  field<vec> out;
+  field<vec> out(n_outcomes);
   for (uword i = 0; i < n_outcomes; ++i) {
     mat X_i = X.at(i);
     vec betas_i = betas.at(i);
