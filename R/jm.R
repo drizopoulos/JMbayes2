@@ -478,7 +478,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ############################################################################
     ############################################################################
     # Fit the model
-    out <- jm_fit(Data, model_info, initial_values, priors, con)
+    out <- jm_fit(Data, model_info, initial_values, priors, con, vcov_prop)
     S <- lapply(out$mcmc, summary)
     statistics <- list(
         Mean = lapply(S, get_statistic, "Mean"),

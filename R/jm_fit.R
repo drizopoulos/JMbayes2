@@ -1,4 +1,4 @@
-jm_fit <- function (model_data, model_info, initial_values, priors, control) {
+jm_fit <- function (model_data, model_info, initial_values, priors, control, vcov_prop) {
     # extract family names
     model_info$family_names <- sapply(model_info$families, "[[", "family")
     # extract link names
@@ -54,12 +54,12 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     tic <- proc.time()
     if (n_chains > 1) {
         mcmc_parallel <- function (chain, model_data, model_info, initial_values,
-                                   priors, control) {
+                                   priors, control, vcov_prop) {
             seed_ <- control$seed + chain
             set.seed(seed_)
             not_D <- names(initial_values) != "D"
             initial_values[not_D] <- lapply(initial_values[not_D], jitter2)
-            mcmc_cpp(model_data, model_info, initial_values, priors, control)
+            mcmc_cpp(model_data, model_info, initial_values, priors, control, vcov_prop)
         }
         cores <- control$cores
         chains <- split(seq_len(n_chains),
@@ -70,7 +70,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
         out <- parallel::parLapply(cl, chains, mcmc_parallel,
                                    model_data = model_data, model_info = model_info,
                                    initial_values = initial_values,
-                                   priors = priors, control = control)
+                                   priors = priors, control = control, vcov_prop = vcov_prop)
         parallel::stopCluster(cl)
         #out <- lapply(chains, mcmc_parallel, model_data = model_data,
         #              model_info = model_info, initial_values = initial_values,
