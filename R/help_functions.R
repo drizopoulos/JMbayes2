@@ -758,6 +758,17 @@ reconstr_D <- function (L, sds) {
     out[lower.tri(out, TRUE)]
 }
 
+lowertri2mat <- function (x, nams = NULL) {
+    nx <- length(x)
+    p <- round(0.5 * (sqrt(1 + 8 * nx) - 1))
+    out <- matrix(0.0, p, p)
+    out[lower.tri(out, TRUE)] <- x
+    out[upper.tri(out)] <- t(out)[upper.tri(out)]
+    out <- (out + t(out)) / 2
+    if (!is.null(nams)) dimnames(out) <- list(nams, nams)
+    out
+}
+
 lapply_nams <- function (X, FUN, ...) {
     out <- lapply(X, FUN, ...)
     names(out) <- X
@@ -776,4 +787,23 @@ get_statistic <- function (s, stat) {
     }
 }
 
+center_fun <- function (M, means) {
+    if (!all(M == 0)) as.matrix(M - rep(means, each = nrow(M))) else M
+}
+
+docall_cbind <- function (l) {
+    if (is.list(l)) do.call("cbind", l) else l
+}
+
+printCall <- function (call) {
+    d <- deparse(call)
+    if (length(d) <= 3) {
+        paste(d, sep = "\n", collapse = "\n")
+    }
+    else {
+        d <- d[1:3]
+        d[3] <- paste0(d[3], "...")
+        paste(d, sep = "\n", collapse = "\n")
+    }
+}
 
