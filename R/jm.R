@@ -499,7 +499,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     out <- c(out, list(statistics = statistics,
                        model_data = Data, model_info = model_info,
                        initial_values = initial_values,
-                       control = con, priors = priors, call = call))
+                       control = con, priors = priors, call = call, 
+                       vcov_prop = vcov_prop))
     class(out) <- "jm"
     out
 }
