@@ -10,7 +10,7 @@ using namespace arma;
 
 // [[Rcpp::export]]
 List mcmc_cpp (List model_data, List model_info, List initial_values,
-               List priors, List control) {
+               List priors, List control, List vcov_prop) {
   // outcome vectors and design matrices
   vec Time_right = as<vec>(model_data["Time_right"]);
   vec Time_left = as<vec>(model_data["Time_left"]);
@@ -49,6 +49,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<mat> U_h = List2Field_mat(U_h_);
   List U_H2_ = as<List>(model_data["U_H2"]);
   field<mat> U_H2 = List2Field_mat(U_H2_);
+  //
+  cube vcov_prop_RE = as<cube>(vcov_prop["vcov_prop_RE"]);
   //
   List Wlong_H_ = as<List>(model_data["Wlong_H"]);
   mat Wlong_H = docall_cbindL(Wlong_H_);
