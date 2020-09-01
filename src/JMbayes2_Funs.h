@@ -230,13 +230,6 @@ field<vec> propose_field (const field<vec>& thetas,
   return proposed_thetas;
 }
 
-cube propose_mvnorm (const cube& S, const vec& sigmas) {
-  cube out = S;
-  out.each_slice( [](mat&A) {A = chol(A);});
-  
-  
-}
-
 vec mu_fun (const vec &eta, const std::string &link) {
   uword n = eta.n_rows;
   vec out(n);
