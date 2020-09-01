@@ -78,15 +78,18 @@ summary.jm <- function (object, ...) {
                 events = object$model_data$delta,
                 control = object$control, time = object$running_time,
                 call = object$call)
-   tab_f <- function(name) {
-        data.frame(Mean = object$statistics$Mean[[name]],
-                   StDev = object$statistics$SD[[name]],
-                   `2.5%` = object$statistics$CI_low[[name]],
-                   `97.5%` = object$statistics$CI_low[[name]],
-                   P = object$statistics$P[[name]],
-                   Rhat = object$statistics$Rhat[[name]][, 1L],
-                   row.names = names(object$statistics$Mean[[name]]),
-                   check.names = FALSE)
+    tab_f <- function(name) {
+        out <- data.frame(Mean = object$statistics$Mean[[name]],
+                          StDev = object$statistics$SD[[name]],
+                          `2.5%` = object$statistics$CI_low[[name]],
+                          `97.5%` = object$statistics$CI_low[[name]],
+                          P = object$statistics$P[[name]],
+                          row.names = names(object$statistics$P[[name]]),
+                          check.names = FALSE)
+        Rhat <- object$statistics$Rhat[[name]][, 1L]
+        if (!is.null(Rhat))
+            out$Rhat <- Rhat
+        out
     }
     fam_names <- sapply(families, "[[", "family")
     has_sigma <- c("gaussian", "Student-t", "beta", "Gamma",
@@ -180,3 +183,55 @@ print.summary.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) 
     cat("\n")
     invisible(x)
 }
+
+print.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) {
+    xx <- summary(x)
+    cat("\nCall:\n", printCall(xx$call), "\n", sep = "")
+    cat("\nRandom-effects covariance matrix:\n")
+    D <- xx$D
+    ncz <- nrow(D)
+    diag.D <- ncz != ncol(D)
+    sds <- if (diag.D) sqrt(D) else sqrt(diag(D))
+    if (ncz > 1) {
+        if (diag.D) {
+            dat <- as.data.frame(round(rbind(sds), digits))
+            names(dat) <- "StdDev"
+        } else {
+            corrs <- cov2cor(D)
+            corrs[upper.tri(corrs, TRUE)] <- 0
+            mat <- round(cbind(sds, corrs[, -ncz]), digits)
+            mat <- rbind(mat)
+            mat <- apply(mat, 2, sprintf, fmt = "% .4f")
+            mat[mat == mat[1, 2]] <- ""
+            mat[1, -1] <- abbreviate(colnames(D)[-ncz], 6)
+            colnames(mat) <- c(colnames(mat)[1], rep("",
+                                                     ncz - 1))
+            dat <- data.frame(mat, check.rows = FALSE, check.names = FALSE)
+            names(dat) <- c("StdDev", "Corr", if (ncz >
+                                                  2) rep(" ", ncz - 2) else NULL)
+            row.names(dat) <- abbreviate(c(dimnames(D)[[1]]))
+        }
+    } else {
+        dat <- data.frame(StdDev = c(sds, x$sigma), row.names = if (!is.null(x$sigma))
+            c(rownames(D), "Residual")
+            else rownames(D), check.rows = FALSE, check.names = FALSE)
+    }
+    print(dat, digits = digits)
+    cat("\nSurvival Outcome:\n")
+    print(round(xx[["Survival"]], digits))
+    n_outcomes <- length(xx$families)
+    for (i in seq_len(n_outcomes)) {
+        cat("\nLongitudinal Outcome: ", xx$respVars[i],
+            " (family = ", xx$families[[i]][["family"]],
+            ", link = ", xx$families[[i]][["link"]],
+            ")", "\n", sep = "")
+        yy <- round(xx[[paste0("Outcome", i)]], digits)
+        rnams <- row.names(yy)
+        if (any(offend <- nchar(rnams) > 20))
+            row.names(yy)[offend] <- abbreviate(rnams[offend])
+        print(yy)
+    }
+    cat("\n")
+    invisible(x)
+}
+

@@ -11,6 +11,7 @@ S3method(traceplot, jm)
 S3method(gelman_diag, jm)
 S3method(densityplot, jm)
 
+S3method(print, jm)
 S3method(summary, jm)
 S3method(print, summary.jm)
 
