@@ -226,6 +226,13 @@ print.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) {
     invisible(x)
 }
 
+coef.jm <- function (object, ...) {
+    gammas <- object$statistics$Mean[["gammas"]]
+    if (is.null(gammas)) object$statistics$Mean[["alphas"]] else
+        list("gammas" = gammas,
+             "association" = object$statistics$Mean[["alphas"]])
+}
+
 fixef.jm <- function(object, outcome = 1, ...) {
     if (!is.numeric(outcome) || outcome < 0) {
         stop("'outcome' should be a positive integer.")
@@ -256,59 +263,43 @@ ranef.jm <- function(object, outcome = Inf, ...) {
     }
 }
 
-terms.MixMod <- function (x, type = c("fixed", "random", "zi_fixed", "zi_random"), ...) {
+terms.jm <- function (x, process = c("longitudinal", "event"),
+                      type = c("fixed", "random"), ...) {
+    process <- match.arg(process)
     type <- match.arg(type)
-    switch(type, "fixed" = x$Terms$termsX, "random" = x$Terms$termsZ,
-           "zi_fixed" = x$Terms$termsX_zi, "zi_random" = x$Terms$termsZ_zi)
+    combo <- paste(process, type, sep = "_")
+    switch(combo,
+           "longitudinal_fixed" = x$model_info$terms$terms_FE,
+           "longitudinal_random" = x$model_info$terms$terms_RE,
+           "event_fixed" = , "event_random" = x$model_info$terms$terms_Surv)
 }
 
-model.frame.MixMod <- function (formula, type = c("fixed", "random", "zi_fixed",
-                                                  "zi_random"), ...) {
+model.frame.jm <- function (formula, process = c("longitudinal", "event"),
+                            type = c("fixed", "random"), ...) {
+    process <- match.arg(process)
     type <- match.arg(type)
-    switch(type, "fixed" = formula$model_frames$mfX, "random" = formula$model_frames$mfZ,
-           "zi_fixed" = formula$model_frames$mfX_zi,
-           "zi_random" = formula$model_frames$mfZ_zi)
+    combo <- paste(process, type, sep = "_")
+    switch(combo,
+           "longitudinal_fixed" = formula$model_info$frames$mf_FE,
+           "longitudinal_random" = formula$model_info$frames$mf_RE,
+           "event_fixed" = , "event_random" = formula$model_info$frames$mf_Surv)
 }
 
-model.matrix.MixMod <- function (object, type = c("fixed", "random", "zi_fixed", "zi_random"), ...) {
-    type <- match.arg(type)
-    switch(type,
-           "fixed" = model.matrix(object$Terms$termsX, object$model_frames$mfX),
-           "random" = {
-               id <- object$id[[1]]
-               id <- match(id, unique(id))
-               Z <- mapply(constructor_Z, object$Terms$termsZ, object$model_frames$mfZ,
-                           MoreArgs = list(id = id), SIMPLIFY = FALSE)
-               do.call("cbind", Z)
-           },
-           "zi_fixed" = model.matrix(object$Terms$termsX_zi, object$model_frames$mfX_zi),
-           "zi_random" = {
-               id <- object$id[[1]]
-               id <- match(id, unique(id))
-               Z <- mapply(constructor_Z, object$Terms$termsZ_zi, object$model_frames$mfZ_zi,
-                           MoreArgs = list(id = id), SIMPLIFY = FALSE)
-               do.call("cbind", Z)
-           }
-    )
-}
-
-formula.MixMod <- function (x, type = c("fixed", "random", "zi_fixed", "zi_random"), ...) {
-    type <- match.arg(type)
-    switch(type, "fixed" = eval(x$call$fixed), "random" = eval(x$call$random),
-           "zi_fixed" = eval(x$call$zi_fixed), "zi_random" = eval(x$call$zi_random))
-}
-
-family.MixMod <- function (object, ...) {
-    object$family
-}
-
-nobs.MixMod <- function (object, level = 1,...) {
-    if (level == 0) {
-        length(unique(object$id[[1]]))
+model.matrix.jm <- function (object, process = c("longitudinal", "event"),
+                             type = c("fixed", "random"), ...) {
+    tr <- terms(object)
+    mf <- model.frame(object)
+    if (is.data.frame(mf)) {
+        model.matrix(tr, mf)
     } else {
-        length(object$id[[1]])
+        mapply(model.matrix.default, object = tr, data = mf, SIMPLIFY = FALSE)
     }
 }
+
+family.jm <- function (object, ...) {
+    object$model_info$families
+}
+
 
 
 

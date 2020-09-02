@@ -393,8 +393,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     data <- list(dataL = dataL, dataS = dataS)
     model_info <- list(
         terms = list(terms_FE = terms_FE, terms_FE_noResp = terms_FE_noResp,
-                     terms_RE = terms_RE, terms_Surv,
+                     terms_RE = terms_RE, terms_Surv = terms_Surv,
                      terms_Surv_noResp = terms_Surv_noResp),
+        frames = list(mf_FE = mf_FE_dataL, mf_RE = mf_RE_dataL,
+                      mf_Surv = mf_surv_dataS),
         var_names = list(respVars = respVars, respVars_form = respVars_form,
                          idVar = idVar, time_var = time_var),
         families = families,
@@ -499,7 +501,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     out <- c(out, list(statistics = statistics,
                        model_data = Data, model_info = model_info,
                        initial_values = initial_values,
-                       control = con, priors = priors, call = call, 
+                       control = con, priors = priors, call = call,
                        vcov_prop = vcov_prop))
     class(out) <- "jm"
     out

@@ -150,7 +150,7 @@ lmeFit <- lme(y ~ ns(time, 3), data = Data$DF,
               control = lmeControl(opt = "optim", niterEM = 45))
 coxFit <- coxph(Surv(Time, event) ~ group + age, data = Data$DF.id)
 
-obj <- jm(coxFit, list(lmeFit), time_var = "time", n_chains = 1)
+obj <- jm(coxFit, list(lmeFit), time_var = "time", n_chains = 3)
 
 summary(obj)
 #coda::traceplot(obj$mcmc$D)
@@ -193,6 +193,8 @@ system.time({
 FF <- list("log(serBilir)" = ~ value(log(serBilir)) * slope(log(serBilir)),
            "ascites" = ~ value(ascites) + area(ascites):drug)
 system.time(obj <- jm(Cox, Mixed, time_var = "year", functional_forms = FF))
+
+summary(obj)
 
 model_data <- obj$model_data
 model_info <- obj$model_info

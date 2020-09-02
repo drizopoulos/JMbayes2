@@ -1,8 +1,8 @@
 export(jm, traceplot, gelman_diag, densityplot, value, slope, area,
-       fixef, ranef)
+       coef, fixef, ranef, terms, model.frame, model.matrix, family)
 
 import(Rcpp)
-importFrom("stats", "coef")
+importFrom("stats", "coef", "terms", "model.frame", "model.matrix", "family")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply")
 importFrom("nlme", "fixef", "ranef")
 importFrom("coda", "as.mcmc.list", "as.mcmc", "traceplot")
@@ -19,4 +19,8 @@ S3method(summary, jm)
 S3method(print, summary.jm)
 S3method(fixef, jm)
 S3method(ranef, jm)
+S3method(terms, jm)
+S3method(model.frame, jm)
+S3method(model.matrix, jm)
+S3method(family, jm)
 
