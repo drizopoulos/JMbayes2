@@ -71,7 +71,7 @@ summary.jm <- function (object, ...) {
     N <- sapply(object$model_data$X, nrow)
     descrpt <- data.frame(` ` = N, row.names = respVars, check.rows = FALSE,
                           check.names = FALSE)
-    nams_D <- unlist(lapply(object$model_data$Z, colnames), use.names = FALSE)
+    nams_D <- unlist(lapply(object$model_data$Z, colnames))
     D <- lowertri2mat(object$statistics$Mean$D, nams_D)
     out <- list(n = object$model_data$n, descrpt = descrpt, D = D,
                 families = families, respVars = respVars,
@@ -129,33 +129,24 @@ print.summary.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) 
     cat("\nRandom-effects covariance matrix:\n")
     D <- x$D
     ncz <- nrow(D)
-    diag.D <- ncz != ncol(D)
-    sds <- if (diag.D) sqrt(D) else sqrt(diag(D))
+    sds <- sqrt(diag(D))
     if (ncz > 1) {
-        if (diag.D) {
-            dat <- as.data.frame(round(rbind(sds), digits))
-            names(dat) <- "StdDev"
-        } else {
-            corrs <- cov2cor(D)
-            corrs[upper.tri(corrs, TRUE)] <- 0
-            mat <- round(cbind(sds, corrs[, -ncz]), digits)
-            mat <- rbind(mat)
-            mat <- apply(mat, 2, sprintf, fmt = "% .4f")
-            mat[mat == mat[1, 2]] <- ""
-            mat[1, -1] <- abbreviate(colnames(D)[-ncz], 6)
-            colnames(mat) <- c(colnames(mat)[1], rep("",
-                                                     ncz - 1))
-            dat <- data.frame(mat, check.rows = FALSE, check.names = FALSE)
-            names(dat) <- c("StdDev", "Corr", if (ncz >
-                                                  2) rep(" ", ncz - 2) else NULL)
-            row.names(dat) <- abbreviate(c(dimnames(D)[[1]]))
-        }
+        corrs <- cov2cor(D)
+        corrs[upper.tri(corrs, TRUE)] <- 0
+        mat <- round(cbind(sds, corrs[, -ncz]), digits)
+        mat <- rbind(mat)
+        mat <- apply(mat, 2L, sprintf, fmt = "%.4f")
+        mat[mat == mat[1, 2]] <- ""
+        mat[1, -1] <- sprintf("%06s", abbreviate(colnames(D)[-ncz], 6))
+        colnames(mat) <- rep("", ncol(mat))
+        mat <- rbind(c("StdDev", "  Corr", if (ncz > 2) rep(" ", ncz - 2) else NULL),
+                     mat)
+        rownames(mat) <- c("", abbreviate(c(dimnames(D)[[1]]), 6))
     } else {
-        dat <- data.frame(StdDev = c(sds, x$sigma), row.names = if (!is.null(x$sigma))
-            c(rownames(D), "Residual")
-            else rownames(D), check.rows = FALSE, check.names = FALSE)
+        mat <- cbind(StdDev = sprintf(sds, fmt = "%.4f"))
+        rownames(mat) <- rownames(D)
     }
-    print(dat, digits = digits)
+    print(noquote(mat), digits = digits)
     cat("\nSurvival Outcome:\n")
     print(round(x[["Survival"]], digits))
     n_outcomes <- length(x$families)
@@ -234,4 +225,92 @@ print.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) {
     cat("\n")
     invisible(x)
 }
+
+fixef.jm <- function(object, outcome = 1, ...) {
+    if (!is.numeric(outcome) || outcome < 0) {
+        stop("'outcome' should be a positive integer.")
+    }
+    outcome <- round(outcome)
+    if (outcome > length(object$model_data$y)) {
+        Means <- object$statistics$Mean
+        ind_betas <- grep("betas", names(Means), fixed = TRUE)
+        Means <- Means[ind_betas]
+        names(Means) <- object$model_info$var_names$respVars_form
+        Means
+    } else {
+        object$statistics$Mean[[paste0("betas", outcome)]]
+    }
+}
+
+ranef.jm <- function(object, outcome = Inf, ...) {
+    if (!is.numeric(outcome) || outcome < 0) {
+        stop("'outcome' should be a positive integer.")
+    }
+    outcome <- round(outcome)
+    if (outcome > length(object$model_data$y)) {
+        object$statistics$RE
+    } else {
+        Means <- object$statistics$Mean$RE
+        ind <- 1:2 # to be fixed.
+        Means[, ind]
+    }
+}
+
+terms.MixMod <- function (x, type = c("fixed", "random", "zi_fixed", "zi_random"), ...) {
+    type <- match.arg(type)
+    switch(type, "fixed" = x$Terms$termsX, "random" = x$Terms$termsZ,
+           "zi_fixed" = x$Terms$termsX_zi, "zi_random" = x$Terms$termsZ_zi)
+}
+
+model.frame.MixMod <- function (formula, type = c("fixed", "random", "zi_fixed",
+                                                  "zi_random"), ...) {
+    type <- match.arg(type)
+    switch(type, "fixed" = formula$model_frames$mfX, "random" = formula$model_frames$mfZ,
+           "zi_fixed" = formula$model_frames$mfX_zi,
+           "zi_random" = formula$model_frames$mfZ_zi)
+}
+
+model.matrix.MixMod <- function (object, type = c("fixed", "random", "zi_fixed", "zi_random"), ...) {
+    type <- match.arg(type)
+    switch(type,
+           "fixed" = model.matrix(object$Terms$termsX, object$model_frames$mfX),
+           "random" = {
+               id <- object$id[[1]]
+               id <- match(id, unique(id))
+               Z <- mapply(constructor_Z, object$Terms$termsZ, object$model_frames$mfZ,
+                           MoreArgs = list(id = id), SIMPLIFY = FALSE)
+               do.call("cbind", Z)
+           },
+           "zi_fixed" = model.matrix(object$Terms$termsX_zi, object$model_frames$mfX_zi),
+           "zi_random" = {
+               id <- object$id[[1]]
+               id <- match(id, unique(id))
+               Z <- mapply(constructor_Z, object$Terms$termsZ_zi, object$model_frames$mfZ_zi,
+                           MoreArgs = list(id = id), SIMPLIFY = FALSE)
+               do.call("cbind", Z)
+           }
+    )
+}
+
+formula.MixMod <- function (x, type = c("fixed", "random", "zi_fixed", "zi_random"), ...) {
+    type <- match.arg(type)
+    switch(type, "fixed" = eval(x$call$fixed), "random" = eval(x$call$random),
+           "zi_fixed" = eval(x$call$zi_fixed), "zi_random" = eval(x$call$zi_random))
+}
+
+family.MixMod <- function (object, ...) {
+    object$family
+}
+
+nobs.MixMod <- function (object, level = 1,...) {
+    if (level == 0) {
+        length(unique(object$id[[1]]))
+    } else {
+        length(object$id[[1]])
+    }
+}
+
+
+
+
 

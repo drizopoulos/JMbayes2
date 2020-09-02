@@ -1,9 +1,12 @@
-export(jm, traceplot, gelman_diag, densityplot, value, slope, area)
+export(jm, traceplot, gelman_diag, densityplot, value, slope, area,
+       fixef, ranef)
 
+import(Rcpp)
+importFrom("stats", "coef")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply")
 importFrom("nlme", "fixef", "ranef")
 importFrom("coda", "as.mcmc.list", "as.mcmc", "traceplot")
-import(Rcpp)
+
 
 useDynLib(JMbayes2, .registration = TRUE)
 
@@ -14,4 +17,6 @@ S3method(densityplot, jm)
 S3method(print, jm)
 S3method(summary, jm)
 S3method(print, summary.jm)
+S3method(fixef, jm)
+S3method(ranef, jm)
 
