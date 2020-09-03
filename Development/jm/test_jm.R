@@ -154,6 +154,8 @@ obj <- jm(coxFit, list(lmeFit), time_var = "time", n_chains = 3)
 
 summary(obj)
 #coda::traceplot(obj$mcmc$D)
+coda::autocorr.diag(obj$mcmc$D)
+coda::cumuplot(obj$mcmc$alphas)
 
 traceplot(obj)
 gelman_diag(obj)

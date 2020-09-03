@@ -6,15 +6,19 @@ traceplot.jm <- function (object,
                           ...) {
     parm <- match.arg(parm)
     if (parm == "all") {
-        parms <- c("betas", "sigmas", "D", "bs_gammas", "tau_bs_gammas",
-                   "gammas", "alphas")
-        for (i in seq_along(parms)) {
-            parms_i <- parms[[i]]
+        nams_mcmc <- names(object$mcmc)
+        for (i in seq_along(nams_mcmc)) {
+            parms_i <- nams_mcmc[[i]]
             x <- object$mcmc[[parms_i]]
             if (!is.null(x)) coda::traceplot(x, ...)
         }
     } else {
-        coda::traceplot(object$mcmc[[parm]], ...)
+        parm <- grep(paste0("^", parm), names(object$mcmc))
+        if (length(parm) > 1) {
+            for (l in parm) coda::traceplot(object$mcmc[[l]], ...)
+        } else {
+            coda::traceplot(object$mcmc[[parm]], ...)
+        }
     }
     invisible()
 }
@@ -27,19 +31,25 @@ gelman_diag.jm <- function (object,
                           ...) {
     parm <- match.arg(parm)
     if (parm == "all") {
-        parms <- c("betas", "sigmas", "D", "bs_gammas", "tau_bs_gammas",
-                   "gammas", "alphas")
-        out <- vector("list", length(parms))
-        names(out) <- parms
-        for (i in seq_along(parms)) {
-            parms_i <- tail(grep(parms[[i]], names(object$mcmc)), 1L)
+        nams_mcmc <- names(object$mcmc)
+        out <- vector("list", length(nams_mcmc))
+        names(out) <- nams_mcmc
+        for (i in seq_along(out)) {
+            parms_i <- nams_mcmc[[i]]
             x <- object$mcmc[[parms_i]]
-            if (!is.null(x)) out[[i]] <- coda::gelman.diag(x, ...)
+            if (!is.null(x)) out[[i]] <- coda::gelman.diag(x)
         }
         out[!sapply(out, is.null)]
     } else {
-        parm <- tail(grep(parm, names(object$mcmc)), 1L)
-        coda::gelman.diag(object$mcmc[[parm]], ...)
+        parm <- grep(paste0("^", parm), names(object$mcmc))
+        if (length(parm) > 1) {
+            out <- lapply(parm, function (l)
+                coda::gelman.diag(object$mcmc[[l]], ...))
+            names(out) <- object$model_info$var_names$respVars_form
+            out
+        } else {
+            coda::gelman.diag(object$mcmc[[parm]], ...)
+        }
     }
 }
 
@@ -50,16 +60,46 @@ densityplot.jm <- function (object,
                                    "tau_bs_gammas", "gammas", "alphas"),
                           ...) {
     parm <- match.arg(parm)
+
+
     if (parm == "all") {
-        parms <- c("betas", "sigmas", "D", "bs_gammas", "tau_bs_gammas",
-                   "gammas", "alphas")
-        for (i in seq_along(parms)) {
-            parms_i <- parms[[i]]
+        nams_mcmc <- names(object$mcmc)
+        for (i in seq_along(nams_mcmc)) {
+            parms_i <- nams_mcmc[[i]]
             x <- object$mcmc[[parms_i]]
             if (!is.null(x)) coda::densityplot(x, ...)
         }
     } else {
-        coda::densityplot(object$mcmc[[parm]], ...)
+        parm <- grep(paste0("^", parm), names(object$mcmc))
+        if (length(parm) > 1) {
+            for (l in parm) coda::densityplot(object$mcmc[[l]], ...)
+        } else {
+            coda::densityplot(object$mcmc[[parm]], ...)
+        }
+    }
+    invisible()
+}
+
+cumuplot <- function (object, ...) UseMethod("cumuplot")
+
+cumuplot.jm <- function (object,
+                         parm = c("all", "betas", "sigmas", "D", "bs_gammas",
+                                  "tau_bs_gammas", "gammas", "alphas"), ...) {
+    parm <- match.arg(parm)
+    if (parm == "all") {
+        nams_mcmc <- names(object$mcmc)
+        for (i in seq_along(nams_mcmc)) {
+            parms_i <- nams_mcmc[[i]]
+            x <- object$mcmc[[parms_i]]
+            if (!is.null(x)) coda::cumuplot(x, ...)
+        }
+    } else {
+        parm <- grep(paste0("^", parm), names(object$mcmc))
+        if (length(parm) > 1) {
+            for (l in parm) coda::cumuplot(object$mcmc[[l]], ...)
+        } else {
+            coda::cumuplot(object$mcmc[[parm]], ...)
+        }
     }
     invisible()
 }
