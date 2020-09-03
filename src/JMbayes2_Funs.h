@@ -224,12 +224,18 @@ field<vec> propose_field (const field<vec>& thetas,
   return proposed_thetas;
 }
 
+mat rnorm_mat (const int& rows, const int& cols) {
+  mat out(rows, cols);
+  out.each_col([&](vec& x) {x = as<vec>(rnorm(rows)); } );
+  return out;
+}
+
 cube propose_mvnorm_cube (const int& n, const cube& S, const vec& sigmas) {
   uword ncol_per_slice = S.n_cols;
   uword slices = S.n_slices;
   cube out(n, ncol_per_slice, slices);
   for (uword i = 0; i < slices; i++) {
-    out.slice(i) = sqrt(sigmas.at(i)) * (randn(n, ncol_per_slice) * chol(S.slice(i)));
+    out.slice(i) = sqrt(sigmas.at(i)) * (rnorm_mat(n, ncol_per_slice) * chol(S.slice(i)));
   }
   return out;
 }
