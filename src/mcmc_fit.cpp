@@ -108,6 +108,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   double prior_D_sds_sigma = as<double>(priors["prior_D_sds_sigma"]);
   double prior_D_L_etaLKJ = as<double>(priors["prior_D_L_etaLKJ"]);
   // store results
+  int n_b = b_mat.n_rows;
   int n_bs_gammas = bs_gammas.n_rows;
   int n_gammas = gammas.n_rows;
   int n_alphas = alphas.n_rows;
@@ -131,6 +132,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec scale_alphas = create_init_scale(n_alphas);
   vec scale_sds = create_init_scale(n_sds);
   vec scale_L = create_init_scale(n_L);
+  vec scale_sigmas = create_init_scale()
   // preliminaries
   vec W0H_bs_gammas = W0_H * bs_gammas;
   vec W0h_bs_gammas(W0_h.n_rows);

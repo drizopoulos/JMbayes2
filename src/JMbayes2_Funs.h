@@ -230,12 +230,16 @@ mat rnorm_mat (const uword& rows, const uword& cols) {
   return out;
 }
 
-cube propose_mvnorm_cube (const int& n, const cube& S, const vec& sigmas) {
+
+// S is the cholesky factorisation of vcov_prep_RE which needs to be doen outside MCMC loop
+// currently with rnorm_mat but we need to check if sth changed with the seeds in armadillo
+// maybe we can go back to randn() [faster]
+cube propose_mvnorm_cube (const int& n, const cube& S, const vec& scale) {
   uword ncol_per_slice = S.n_cols;
   uword slices = S.n_slices;
   cube out(n, ncol_per_slice, slices);
   for (uword i = 0; i < slices; i++) {
-    out.slice(i) = sqrt(sigmas.at(i)) * (rnorm_mat(n, ncol_per_slice) * chol(S.slice(i)));
+    out.slice(i) = scale.at(i) * (rnorm_mat(n, ncol_per_slice) * S.slice(i));
   }
   return out;
 }
