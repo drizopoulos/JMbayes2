@@ -22,13 +22,3 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-
-static const R_CallMethodDef CallEntries[] = {
-    {"_JMbayes2_mcmc_cpp", (DL_FUNC) &_JMbayes2_mcmc_cpp, 6},
-    {NULL, NULL, 0}
-};
-
-RcppExport void R_init_JMbayes2(DllInfo *dll) {
-    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
-    R_useDynamicSymbols(dll, FALSE);
-}

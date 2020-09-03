@@ -1,18 +1,26 @@
-export(jm, traceplot, gelman_diag, densityplot, cumuplot, value, slope, area,
+export(jm, traceplot, gelman_diag, densplot, cumuplot, value, slope, area,
        coef, fixef, ranef, terms, model.frame, model.matrix, family)
 
-import(Rcpp)
-importFrom("stats", "coef", "terms", "model.frame", "model.matrix", "family")
+import(Rcpp, GLMMadaptive, splines)
+importFrom("utils", "glob2rx", "tail", "head")
+importFrom("stats", "coef", "terms", "model.frame", "model.frame.default",
+           "model.matrix", "model.matrix.default", "family", "lm.fit", "sd",
+           "ar", "var", "vcov", "optim", "delete.response", "model.response",
+           "rnorm", "quantile", "runif", "rlnorm", "cov2cor", "as.formula",
+           "gaussian")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply")
-importFrom("nlme", "fixef", "ranef")
-importFrom("coda", "as.mcmc.list", "as.mcmc", "traceplot")
+importFrom("nlme", "fixef", "ranef", "pdMatrix")
+importFrom("survival", "coxph")
+importFrom("splines", "splineDesign")
+importFrom("coda", "as.mcmc.list", "as.mcmc", "traceplot", "densplot",
+           "gelman.diag", "cumuplot")
 
 
 useDynLib(JMbayes2, .registration = TRUE)
 
 S3method(traceplot, jm)
 S3method(gelman_diag, jm)
-S3method(densityplot, jm)
+S3method(densplot, jm)
 S3method(cumuplot, jm)
 
 S3method(print, jm)

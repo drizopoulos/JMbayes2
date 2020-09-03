@@ -736,7 +736,7 @@ effective_size <- function (x) {
 std_err <- function (x) {
     x <- as.matrix(x)
     vars <- apply(x, 2L, var)
-    ess <- effectiveSize(x)
+    ess <- effective_size(x)
     sqrt(vars / ess)
 }
 
