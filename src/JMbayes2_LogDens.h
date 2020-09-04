@@ -9,7 +9,7 @@
 using namespace Rcpp;
 using namespace arma;
 
-vec log_long (const field<mat> &y, const field<vec> &eta, const vec &scales,
+vec log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
               const vec &extra_parms, const CharacterVector &families,
               const CharacterVector &links, const field<uvec> &ids,
               const field<uvec> &unq_ids) {
@@ -126,7 +126,7 @@ double logLik (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
                                 which_right_event, which_left, any_interval,
                                 which_interval);
   mat chol_D = L.each_row() % sds.t();
-  double logLik_D = sum(log_dmvnrm_chol(b_mat, D));
+  double logLik_D = sum(log_dmvnrm_chol(b_mat, chol_D));
   double out = logLik_long + logLik_surv + logLik_D;
   return out;
 }
@@ -141,7 +141,8 @@ double logLik_prior (const mat &L, const vec &sds,
                      const double &tau_bs_gammas,
                      double prior_A_tau_bs_gammas, double prior_B_tau_bs_gammas) {
   double out(0.0);
-  out += log_p_sds = sum(log_dht(sds, prior_D_sds_sigma, prior_D_sds_df));
+  out += sum(log_dht(sds, prior_D_sds_sigma, prior_D_sds_df));
+  uword p = L.n_rows;
   double log_p_L(0.0);
   for (unsigned i = 1; i < p; ++i) {
     log_p_L += (p - i - 1.0 + 2.0 * prior_D_L_etaLKJ - 2.0) * log(L.at(i, i));
@@ -155,14 +156,13 @@ double logLik_prior (const mat &L, const vec &sds,
   return out;
 }
 
-vec log_u (const field<mat>& Xbetas, const field<mat>& Z, const field<mat> &b, 
+vec log_u (const field<mat>& Xbetas, const field<mat>& Z, const field<mat> &b,
            const field<uvec> &id, const field<mat> &y, const vec &scales,
            const vec &extra_parms, const CharacterVector &families,
            const CharacterVector &links, const field<uvec> &ids,
-           const field<uvec> &unq_ids, ) {
+           const field<uvec> &unq_ids) {
   field<vec> eta = linpred_mixed_Zb(Xbetas, Z, b, id);
   vec log_lik_y = log_long(y, eta, scales, extra_parms, families, links, ids, unq_ids);
-
 }
 
 #endif
