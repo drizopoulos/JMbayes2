@@ -53,9 +53,9 @@ gelman_diag.jm <- function (object,
     }
 }
 
-densityplot <- function (object, ...) UseMethod("densityplot")
+densplot <- function (object, ...) UseMethod("densityplot")
 
-densityplot.jm <- function (object,
+densplot.jm <- function (object,
                           parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                    "tau_bs_gammas", "gammas", "alphas"),
                           ...) {
@@ -67,14 +67,14 @@ densityplot.jm <- function (object,
         for (i in seq_along(nams_mcmc)) {
             parms_i <- nams_mcmc[[i]]
             x <- object$mcmc[[parms_i]]
-            if (!is.null(x)) coda::densityplot(x, ...)
+            if (!is.null(x)) coda::densplot(x, ...)
         }
     } else {
         parm <- grep(paste0("^", parm), names(object$mcmc))
         if (length(parm) > 1) {
-            for (l in parm) coda::densityplot(object$mcmc[[l]], ...)
+            for (l in parm) coda::densplot(object$mcmc[[l]], ...)
         } else {
-            coda::densityplot(object$mcmc[[parm]], ...)
+            coda::densplot(object$mcmc[[parm]], ...)
         }
     }
     invisible()

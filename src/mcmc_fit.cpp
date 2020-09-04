@@ -91,8 +91,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   // indexes or other useful things
   uvec upper_part = trimatu_ind(size(R),  1);
   // MCMC settings
-  int n_iter = as<int>(control["n_iter"]);
-  int n_burnin = as<int>(control["n_burnin"]);
+  uword n_iter = as<uword>(control["n_iter"]);
+  uword n_burnin = as<uword>(control["n_burnin"]);
   bool MALA = as<bool>(control["MALA"]);
   // priors
   vec prior_mean_bs_gammas = as<vec>(priors["mean_bs_gammas"]);
@@ -108,12 +108,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   double prior_D_sds_sigma = as<double>(priors["prior_D_sds_sigma"]);
   double prior_D_L_etaLKJ = as<double>(priors["prior_D_L_etaLKJ"]);
   // store results
-  int n_b = b_mat.n_rows;
-  int n_bs_gammas = bs_gammas.n_rows;
-  int n_gammas = gammas.n_rows;
-  int n_alphas = alphas.n_rows;
-  int n_sds = sds.n_rows;
-  int n_L = vec(L(upper_part)).n_rows;
+  uword n_b = b_mat.n_rows;
+  uword n_bs_gammas = bs_gammas.n_rows;
+  uword n_gammas = gammas.n_rows;
+  uword n_alphas = alphas.n_rows;
+  uword n_sds = sds.n_rows;
+  uword n_L = vec(L(upper_part)).n_rows;
   mat res_bs_gammas(n_iter, n_bs_gammas);
   mat acceptance_bs_gammas(n_iter, n_bs_gammas, fill::zeros);
   mat res_gammas(n_iter, n_gammas);
@@ -132,7 +132,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec scale_alphas = create_init_scale(n_alphas);
   vec scale_sds = create_init_scale(n_sds);
   vec scale_L = create_init_scale(n_L);
-  vec scale_sigmas = create_init_scale()
+  vec scale_sigmas = create_init_scale(n_b);
   // preliminaries
   vec W0H_bs_gammas = W0_H * bs_gammas;
   vec W0h_bs_gammas(W0_h.n_rows);
@@ -164,7 +164,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   if (any_interval) {
     WlongH2_alphas = Wlong_H2 * alphas;
   }
-  for (int it = 0; it < n_iter; ++it) {
+  for (uword it = 0; it < n_iter; ++it) {
     double denominator_surv =
       log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                WH_gammas, Wh_gammas, WH2_gammas,

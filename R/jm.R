@@ -194,7 +194,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         Time_right <- tapply(Time_stop, idT, tail, n = 1) # time of event
         trunc_Time <- tapply(Time_start, idT, head, n = 1) # possible left truncation time
         Time_left <- rep(0.0, nT)
-        delta <- tapply(event, idT, tail, n = 1) # event indicator at Time_right
+        delta <- tapply(delta, idT, tail, n = 1) # event indicator at Time_right
     } else if (type_censoring == "interval") {
         Time1 <-  unname(Surv_Response[, "time1"])
         Time2 <-  unname(Surv_Response[, "time2"])
