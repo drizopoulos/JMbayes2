@@ -9,6 +9,7 @@ Authors@R: c(person("Dimitris", "Rizopoulos", email = "d.rizopoulos@erasmusmc.nl
            person("Pedro", "Miranda Afonso", email = "p.mirandaafonso@erasmusmc.nl",
                   role = "aut"))
 Maintainer: Dimitris Rizopoulos <d.rizopoulos@erasmusmc.nl>
+Date: 2020-09-04
 BugReports: https://github.com/drizopoulos/JMbayes2/issues
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
