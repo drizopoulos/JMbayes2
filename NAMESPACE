@@ -1,7 +1,7 @@
 export(jm, traceplot, gelman_diag, densplot, cumuplot, value, slope, area,
        coef, fixef, ranef, terms, model.frame, model.matrix, family)
 
-import(Rcpp, GLMMadaptive, splines)
+import(Rcpp)
 importFrom("utils", "glob2rx", "tail", "head")
 importFrom("stats", "coef", "terms", "model.frame", "model.frame.default",
            "model.matrix", "model.matrix.default", "family", "lm.fit", "sd",
@@ -10,6 +10,7 @@ importFrom("stats", "coef", "terms", "model.frame", "model.frame.default",
            "gaussian")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply")
 importFrom("nlme", "fixef", "ranef", "pdMatrix")
+importFrom("GLMMadaptive", "effectPlotData")
 importFrom("survival", "coxph")
 importFrom("splines", "splineDesign")
 importFrom("coda", "as.mcmc.list", "as.mcmc", "traceplot", "densplot",
