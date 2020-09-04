@@ -10,3 +10,4 @@
 using namespace Rcpp;
 using namespace arma;
 
+void update_u ()

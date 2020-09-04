@@ -446,6 +446,21 @@ field<vec> linpred_mixed (const field<mat> &X, const field<vec> &betas,
   return out;
 }
 
+field<vec> linpred_mixed_Zb (const field<mat>& Xbetas, 
+                             const field<mat> &Z, const field<mat> &b, 
+                             const field<uvec> &id) { 
+  uword n_outcomes = Z.n_elem;
+  field<vec> out(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+    mat Xbetas_i = Xbetas.at(i);
+    mat Z_i = Z.at(i);
+    mat b_i = b.at(i);
+    uvec id_i = id.at(i);
+    out.at(i) = Xbetas_i + arma::sum(Z_i % b_i.rows(id_i), 1);
+  }
+  return out;
+}
+
 arma::field<arma::mat> calculate_u(arma::field<arma::mat> Xhc, 
                                    arma::field<arma::uvec> columns_HC, 
                                    arma::field<arma::vec> betas, 

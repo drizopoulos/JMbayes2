@@ -9,7 +9,7 @@
 using namespace Rcpp;
 using namespace arma;
 
-vec log_long (const field<mat> &y, const field<vec> &eta, const vec &scales,
+vec log_long (const field<vec> &y, const field<vec> &eta, const vec &scales,
               const vec &extra_parms, const CharacterVector &families,
               const CharacterVector &links, const field<uvec> &ids,
               const field<uvec> &unq_ids) {
@@ -102,6 +102,18 @@ double log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
   }
   double logLik = sum(log_Lik_surv);
   return logLik;
+}
+
+vec log_u (const field<mat>& Xbetas, const field<mat>& Z, const field<mat> &b, 
+           const field<uvec> &id, const field<mat> &y, const vec &scales,
+           const vec &extra_parms, const CharacterVector &families,
+           const CharacterVector &links, const field<uvec> &ids,
+           const field<uvec> &unq_ids, ) {
+  field<vec> eta = linpred_mixed_Zb(Xbetas, Z, b, id);
+  vec log_lik_y = log_long(y, eta, scales, extra_parms, families, links, ids, unq_ids);
+  
+  
+  
 }
 
 #endif

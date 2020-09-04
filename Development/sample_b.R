@@ -1,4 +1,7 @@
 #source(file.path(getwd(), "Development/MCMC/b/examples.R"))
+source(file.path(getwd(), "R/jm_fit.R"))
+source(file.path(getwd(), "R/help_functions.R"))
+source(file.path(getwd(), "Development/jm/R_to_Cpp.R"))
 source(file.path(getwd(), "Development/MCMC/b/examples_2.R"))
 source(file.path(getwd(), "Development/MCMC/b/sample_b_FUNS.R"))
 
@@ -23,6 +26,7 @@ gammas <- test$initial_values$gammas
 alphas <- test$initial_values$alphas
 D <- test$initial_values$D
 
+m <- 1
 system.time({
   for (m in seq_len(M)) {
     proposed_b <- rmvnorm_array(1, vcov_prop_RE, sigmas) + current_b
