@@ -9,15 +9,7 @@
 using namespace Rcpp;
 using namespace arma;
 
-<<<<<<< Updated upstream
-vec log_long (const field<vec> &y, const field<vec> &eta, const vec &scales,
-=======
-<<<<<<< HEAD
-vec log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
-=======
-vec log_long (const field<vec> &y, const field<vec> &eta, const vec &scales,
->>>>>>> cd47254ef38c7b32730bcdba25f402ec41b09155
->>>>>>> Stashed changes
+vec log_long (const field<mat> &y, const field<vec> &eta, const vec &scales,
               const vec &extra_parms, const CharacterVector &families,
               const CharacterVector &links, const field<uvec> &ids,
               const field<uvec> &unq_ids) {
@@ -112,9 +104,6 @@ double log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
   return logLik;
 }
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 double logLik (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
                const vec &extra_parms, const CharacterVector &families,
                const CharacterVector &links, const field<uvec> &ids,
@@ -164,8 +153,8 @@ double logLik_prior (const mat &L, const vec &sds,
   out += logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
 
   return out;
-=======
->>>>>>> Stashed changes
+}
+
 vec log_u (const field<mat>& Xbetas, const field<mat>& Z, const field<mat> &b, 
            const field<uvec> &id, const field<mat> &y, const vec &scales,
            const vec &extra_parms, const CharacterVector &families,
@@ -173,13 +162,7 @@ vec log_u (const field<mat>& Xbetas, const field<mat>& Z, const field<mat> &b,
            const field<uvec> &unq_ids, ) {
   field<vec> eta = linpred_mixed_Zb(Xbetas, Z, b, id);
   vec log_lik_y = log_long(y, eta, scales, extra_parms, families, links, ids, unq_ids);
-  
-  
-  
-<<<<<<< Updated upstream
-=======
->>>>>>> cd47254ef38c7b32730bcdba25f402ec41b09155
->>>>>>> Stashed changes
+
 }
 
 #endif

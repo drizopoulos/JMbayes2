@@ -445,15 +445,6 @@ field<vec> linpred_mixed (const field<mat> &X, const field<vec> &betas,
   return out;
 }
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-arma::field<arma::mat> calculate_u(arma::field<arma::mat> Xhc,
-                                   arma::field<arma::uvec> columns_HC,
-                                   arma::field<arma::vec> betas,
-                                   arma::field<arma::mat> b,
-=======
->>>>>>> Stashed changes
 field<vec> linpred_mixed_Zb (const field<mat>& Xbetas, 
                              const field<mat> &Z, const field<mat> &b, 
                              const field<uvec> &id) { 
@@ -473,7 +464,6 @@ arma::field<arma::mat> calculate_u(arma::field<arma::mat> Xhc,
                                    arma::field<arma::uvec> columns_HC, 
                                    arma::field<arma::vec> betas, 
                                    arma::field<arma::mat> b, 
->>>>>>> cd47254ef38c7b32730bcdba25f402ec41b09155
                                    arma::field<arma::uvec> unq_idL) {
   arma::field<arma::mat>u(b);
   uword n = Xhc.n_elem;
