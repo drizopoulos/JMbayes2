@@ -514,4 +514,13 @@ arma::field<arma::mat> calculate_u_mean(arma::field<arma::mat> Xhc,
   return(u);
 }
 
+field<mat> Xbeta_calc (const field<mat> &X, const field<vec> &betas) {
+  uword n = X.n_elem;
+  field<mat> out(n);
+  for (uword i = 0; i < n; i++) {
+    out.at(i) = X.at(i) * betas.at(i);
+  }
+  return out;
+}
+
 #endif
