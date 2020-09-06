@@ -807,3 +807,10 @@ printCall <- function (call) {
     }
 }
 
+mapply2 <- function (FUN, ..., MoreArgs = NULL, USE.NAMES = TRUE) {
+    mapply(FUN, ..., MoreArgs = MoreArgs, SIMPLIFY = FALSE,
+           USE.NAMES = USE.NAMES)
+}
+
+
+
