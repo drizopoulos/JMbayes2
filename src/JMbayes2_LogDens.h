@@ -204,7 +204,7 @@ vec log_b (const field<mat> &Xbetas, const field<mat> &Z, const field<mat> &b, c
   vec log_lik_surv = log_surv_vec(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, 
                                   WH_gammas, Wh_gammas, WH2_gammas, 
                                   WlongH_alphas, Wlongh_alphas, WlongH2_alphas, 
-                                  log_Pwk, log_Pwk2, id_H, 
+                                  log_Pwk, log_Pwk2, indFast_H, 
                                   which_event, which_right_event, which_left, 
                                   any_interval, which_interval); 
   vec logLik = log_lik_y + log_pb + log_lik_surv;
