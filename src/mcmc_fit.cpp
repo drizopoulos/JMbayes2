@@ -74,6 +74,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<uvec> FunForms = List2Field_uvec(FunForms_, true);
   List FunForms_ind_ = as<List>(model_info["FunForms_ind"]);
   field<uvec> FunForms_ind = List2Field_uvec(FunForms_ind_, true);
+  List ind_RE_ = as<List>(model_info["ind_RE"]);
+  field<uvec> ind_RE = List2Field_uvec(ind_RE_, true);
   // initial values
   vec bs_gammas = as<vec>(initial_values["bs_gammas"]);
   vec gammas = as<vec>(initial_values["gammas"]);
