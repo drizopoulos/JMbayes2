@@ -107,6 +107,15 @@ field<uvec> List2Field_uvec (const List & uVecs, bool substract1 = true) {
   return res;
 }
 
+field<mat> mat2field_mat (const mat &b, const field<uvec> &ind_RE) {
+  uword n = ind_RE.n_elem;
+  field<mat> out(n);
+  for (uword i = 0; i < n; i++) {
+    out.at(i) = b.cols(ind_RE.at(i));
+  }
+  return out;
+}
+
 field<mat> create_storage(const field<vec> &F, const int &n_iter) {
   int n = F.size();
   field<mat> out(n);

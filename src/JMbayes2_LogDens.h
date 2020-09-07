@@ -185,7 +185,7 @@ double logLik_prior (const mat &L, const vec &sds,
   return out;
 }
 
-int log_b (const field<mat> &Xbetas, const field<mat> &Z, const field<mat> &b, const mat &b_mat,
+vec log_b (const field<mat> &Xbetas, const field<mat> &Z, const field<mat> &b, const mat &b_mat,
            const field<uvec> &id, const field<mat> &y, const vec &scales,
            const vec &extra_parms, const CharacterVector &families,
            const CharacterVector &links, const field<uvec> &ids,
@@ -208,7 +208,7 @@ int log_b (const field<mat> &Xbetas, const field<mat> &Z, const field<mat> &b, c
                                   which_event, which_right_event, which_left, 
                                   any_interval, which_interval); 
   vec logLik = log_lik_y + log_pb + log_lik_surv;
-  return 1;
+  return logLik;
 }
 
 #endif
