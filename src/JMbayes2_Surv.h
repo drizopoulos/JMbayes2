@@ -22,7 +22,7 @@ void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
                        const double &tau_bs_gammas,
                        const vec &prior_mean_gammas, const mat &prior_Tau_gammas,
                        const vec &prior_mean_alphas, const mat &prior_Tau_alphas,
-                       double &denominator_surv, const int &it,
+                       double &denominator_surv, const uword &it,
                        /////
                        const mat &W0_H, const mat &W0_h, const mat &W0_H2,
                        vec &scale_bs_gammas, mat &acceptance_bs_gammas,
@@ -82,7 +82,7 @@ void update_gammas (const vec &bs_gammas, vec &gammas, const vec &alphas,
                     const double &tau_bs_gammas,
                     const vec &prior_mean_gammas, const mat &prior_Tau_gammas,
                     const vec &prior_mean_alphas, const mat &prior_Tau_alphas,
-                    double &denominator_surv, const int &it,
+                    double &denominator_surv, const uword &it,
                     /////
                     const mat &W_H, const mat &W_h, const mat &W_H2,
                     vec &scale_gammas, mat &acceptance_gammas, mat &res_gammas) {
@@ -142,7 +142,7 @@ void update_alphas (const vec &bs_gammas, const vec &gammas, vec &alphas,
                     const double &tau_bs_gammas,
                     const vec &prior_mean_gammas, const mat &prior_Tau_gammas,
                     const vec &prior_mean_alphas, const mat &prior_Tau_alphas,
-                    double &denominator_surv, const int &it,
+                    double &denominator_surv, const uword &it,
                     /////
                     const mat &Wlong_H, const mat &Wlong_h, const mat &Wlong_H2,
                     vec &scale_alphas, mat &acceptance_alphas, mat &res_alphas) {
