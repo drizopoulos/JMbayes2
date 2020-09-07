@@ -426,6 +426,33 @@ create_HC_X <- function (TermsX, TermsZ, x, z, id, mfHC) {
     list(Xhc = Xhc, columns_HC = index, columns_nHC = ind_colmns2)
 }
 
+create_HC_X2 <- function (x, z, id) {
+    check_tv <- function (x, id) {
+        !all(sapply(split(x, id),
+                    function (z) all(z - z[1L] < .Machine$double.eps^0.5)))
+    }
+    ####
+    cnams_x <- colnames(x)
+    cnams_z <- colnames(z)
+    if (!"(Intercept)" %in% cnams_x || !"(Intercept)" %in% cnams_z) {
+        stop("cannot perform hierarchical centering in the absense of an ",
+             "intercept term in both the fixed and random effects design ",
+             "matrices.")
+    }
+    which_tv <- unname(which(apply(x, 2L, check_tv, id = id)))
+    x_in_z <- lapply(cnams_z, function (nam) which(colnames(x) %in% nam))
+    x_notin_z <- cnams_x[!cnams_x %in% cnams_z]
+    baseline <- !apply(x[, x_notin_z, drop = FALSE], 2L, check_tv, id = id)
+    baseline <- names(baseline[baseline])
+    x_notin_z <- x_notin_z[!x_notin_z %in% baseline]
+    baseline <- which(cnams_x %in% baseline)
+    x_notin_z <- which(cnams_x %in% x_notin_z)
+    if (!length(baseline)) baseline <- 0L
+    if (!length(x_notin_z)) x_notin_z <- 0L
+    list(baseline = baseline, x_in_z = unlist(x_in_z), x_notin_z = x_notin_z,
+         Xbase = x[!duplicated(id), baseline, drop = FALSE])
+}
+
 drop_names <- function (x) {
     unname2 <- function (x) {
         if (!is.null(attr(x, "assign"))) {

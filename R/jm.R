@@ -103,11 +103,16 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # create design matrices for mixed models
     X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL, SIMPLIFY = FALSE)
     Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL, SIMPLIFY = FALSE)
-    componentsHC <- mapply(create_HC_X, terms_FE, terms_RE, X, Z, idL, mf_FE_dataL,
-                           SIMPLIFY = FALSE)
+    componentsHC <- mapply2(create_HC_X, terms_FE, terms_RE, X, Z, idL,
+                            mf_FE_dataL)
     Xhc <- lapply(componentsHC, "[[", "Xhc")
     columns_HC <- lapply(componentsHC, "[[", "columns_HC")
     columns_nHC <- lapply(componentsHC, "[[", "columns_nHC")
+    # componentsHC <- mapply2(create_HC_X2, X, Z, idL)
+    # Xbase <- lapply(componentsHC, "[[", "Xbase")
+    # baseline <- lapply(componentsHC, "[[", "baseline")
+    # x_in_z <- lapply(componentsHC, "[[", "x_in_z")
+    # x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
     ########################################################
     ########################################################
     # try to recover survival dataset

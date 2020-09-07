@@ -9,7 +9,7 @@ Authors@R: c(person("Dimitris", "Rizopoulos", email = "d.rizopoulos@erasmusmc.nl
            person("Pedro", "Miranda Afonso", email = "p.mirandaafonso@erasmusmc.nl",
                   role = "aut"))
 Maintainer: Dimitris Rizopoulos <d.rizopoulos@erasmusmc.nl>
-Date: 2020-09-04
+Date: 2020-09-08
 BugReports: https://github.com/drizopoulos/JMbayes2/issues
 Description: Fit joint models for longitudinal and time-to-event data under the Bayesian approach. Multiple longitudinal outcomes and multiple event times are accommodated. Dimitris Rizopoulos (2012) Joint Models for Longitudinal and Time-to-Event Data With Applications in R. Chapman & Hall/CRC.
 Suggests: lattice, knitr, rmarkdown, pkgdown
