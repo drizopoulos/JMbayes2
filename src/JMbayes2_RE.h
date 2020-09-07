@@ -13,7 +13,7 @@ using namespace arma;
 void update_b (field<mat> &b, mat &b_mat, const field<mat> &Xbetas, const field<mat> &Z, const field<uvec> &id, 
                const field<mat> &y, const vec &extra_parms, 
                const CharacterVector &families, const CharacterVector &links, const field<uvec> &ids,
-               const field<uvec> &unq_ids, const mat &L, , 
+               const field<uvec> &unq_ids, const mat &L, 
                const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
                const vec &W0H2_bs_gammas, const vec &WH_gammas,
                const vec &Wh_gammas, const vec &WH2_gammas,
@@ -24,7 +24,7 @@ void update_b (field<mat> &b, mat &b_mat, const field<mat> &Xbetas, const field<
                const bool &any_interval, const uvec &which_interval, 
                const field<uvec> ind_RE, const uword &it,
                cube &res_b, vec &scale_b, mat &acceptance_b) {
-  mat proposed_b = propose_mvnorm_mat(1, L, scales) + b_mat;
+  mat proposed_b = propose_mvnorm_mat(1, L, scale_b) + b_mat;
   field<mat> proposed_b_field = mat2field_mat(proposed_b, ind_RE); 
   vec numerator_b = log_b(Xbetas, Z, proposed_b_field, proposed_b,
                           id, y, scale_b,
