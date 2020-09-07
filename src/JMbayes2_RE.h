@@ -36,7 +36,7 @@ void update_b (field<mat> &b, mat &b_mat, const field<mat> &Xbetas, const field<
                           Wh_gammas, WH2_gammas,
                           WlongH_alphas, Wlongh_alphas,
                           WlongH2_alphas, log_Pwk, log_Pwk2,
-                          indFast_H, which_event,
+                          id_H, which_event,
                           which_right_event, which_left,
                           any_interval, which_interval); 
   vec denominator_b = log_b(Xbetas, Z, b, b_mat,
@@ -49,7 +49,7 @@ void update_b (field<mat> &b, mat &b_mat, const field<mat> &Xbetas, const field<
                             Wh_gammas, WH2_gammas,
                             WlongH_alphas, Wlongh_alphas,
                             WlongH2_alphas, log_Pwk, log_Pwk2,
-                            indFast_H, which_event,
+                            id_H, which_event,
                             which_right_event, which_left,
                             any_interval, which_interval); 
   vec log_ratio = numerator_b - denominator_b;
