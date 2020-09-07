@@ -243,6 +243,18 @@ cube propose_mvnorm_cube (const int& n, const cube& S, const vec& scale) {
   return out;
 }
 
+// returns a mat transposed version: same dimensions as b_mat
+mat propose_mvnorm_mat (const int& n, const cube& S, const vec& scale) {
+  uword ncol_per_slice = S.n_cols;
+  uword slices = S.n_slices;
+  cube tmp(n, ncol_per_slice, slices);
+  for (uword i = 0; i < slices; i++) {
+    tmp.slice(i) = scale.at(i) * (rnorm_mat(n, ncol_per_slice) * S.slice(i));
+  }
+  mat out = tmp.row(0);
+  return out.t();
+}
+
 vec mu_fun (const vec &eta, const std::string &link) {
   uword n = eta.n_rows;
   vec out(n);

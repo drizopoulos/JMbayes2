@@ -156,13 +156,14 @@ double logLik_prior (const mat &L, const vec &sds,
   return out;
 }
 
-int log_u (const field<mat>& Xbetas, const field<mat>& Z, const field<mat> &b,
+int log_b (const field<mat> &Xbetas, const field<mat> &Z, const field<mat> &b, const mat &b_mat,
            const field<uvec> &id, const field<mat> &y, const vec &scales,
            const vec &extra_parms, const CharacterVector &families,
            const CharacterVector &links, const field<uvec> &ids,
-           const field<uvec> &unq_ids) {
+           const field<uvec> &unq_ids, const mat &L,) {
   field<vec> eta = linpred_mixed_Zb(Xbetas, Z, b, id);
   vec log_lik_y = log_long(y, eta, scales, extra_parms, families, links, ids, unq_ids);
+  vec log_pb = log_dmvnrm_chol(b_mat, L);
   
   return 1;
 
