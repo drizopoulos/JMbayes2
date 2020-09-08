@@ -1,5 +1,5 @@
 export(jm, traceplot, gelman_diag, densplot, cumuplot, value, slope, area,
-       coef, fixef, ranef, terms, model.frame, model.matrix, family)
+       coef, fixef, ranef, terms, model.frame, model.matrix, family, ggtraceplot, ggdensityplot)
 
 import(Rcpp)
 importFrom("utils", "glob2rx", "tail", "head")
@@ -23,6 +23,8 @@ S3method(traceplot, jm)
 S3method(gelman_diag, jm)
 S3method(densplot, jm)
 S3method(cumuplot, jm)
+S3method(ggtraceplot, jm)
+S3method(ggdensityplot, jm)
 
 S3method(print, jm)
 S3method(summary, jm)
