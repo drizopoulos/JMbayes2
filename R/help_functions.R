@@ -839,5 +839,61 @@ mapply2 <- function (FUN, ..., MoreArgs = NULL, USE.NAMES = TRUE) {
            USE.NAMES = USE.NAMES)
 }
 
+#help functions for ggplot mcmc diagnostics
 
+# help function to extract mcmc lists
+ggextractmcmc <- function(mcmc_list) {
+    fun1 <- function(x) do.call(rbind, x) 
+    tmp <- lapply(mcmc_list, fun1)
+    tmp2 <- lapply(mcmc_list, FUN = function(x) ncol(fun1(x)))
+    list(do.call(cbind, tmp), do.call(c, tmp2))
+}
 
+# prepare data in a nice format to work with ggplot
+# this can be exported in case a user wants to work with ggplot
+# and use his/her own colors themes etc.
+ggprepare <- function(object, 
+                      parm = c("all", "betas", "sigmas", "D", "bs_gammas", 
+                               "tau_bs_gammas", "gammas", "alphas")) {
+    parm <- match.arg(parm)
+    n_chains <- object$control$n_chains
+    n_iter <- object$control$n_iter - object$control$n_burnin
+    widedat_list <- ggextractmcmc(object$mcmc)
+    widedat <- widedat_list[[1]]
+    n_parms_each_fam <- widedat_list[[2]]
+    n_parms <- ncol(widedat)
+    parms <- colnames(widedat)
+    parms <- make.unique(parms)
+    parm_fam <- names(object$mcmc)
+    reps <- n_parms_each_fam * (n_iter * n_chains)
+    parm_fam <- rep(parm_fam, times = reps)
+    parm_fam <- gsub('[[:digit:]]+', '', parm_fam)
+    ggdata <- expand.grid('iteration' = 1:n_iter, 
+                          'chain' = 1:n_chains, 
+                          'parm' = parms)
+    ggdata$value <- as.vector(widedat)
+    ggdata$parm_fam <- parm_fam
+    ggdata <- ggdata[, c('iteration', 'chain', 'parm_fam', 'parm', 'value')]
+    ggdata$chain <- factor(ggdata$chain)
+    ggdata$parm_fam <- factor(ggdata$parm_fam, levels = unique(parm_fam))
+    ggdata$parm <- factor(ggdata$parm, levels = unique(ggdata$parm))
+    if (parm == "all") {
+        ggdata
+    } else {
+        ggdata[ggdata$parm_fam %in% parm, ]
+    }
+}
+
+# fancy color themes
+# This is not a function and is better to not be exported but be
+# an object used only internally
+ggcolthemes <- list(
+    'standard' = c("1" = '#363636', "2" = '#f25f5c', "3" = '#247ba0'),
+    'catalog' = c("1" = '#cc2a36', "2" = '#edc951', "3" = '#00a0b0'),
+    'metro' = c("1" = '#d11141', "2" = '#00aedb', "3" = '#ffc425'), 
+    'pastel' = c("1" = '#a8e6cf', "2" = '#ffd3b6', "3" = '#ff8b94'), 
+    'beach' = c("1" = '#ff6f69', "2" = '#ffcc5c', "3" = '#88d8b0'), 
+    'moonlight' = c("1" = '#3da4ab', "2" = '#f6cd61', "3" = '#fe8a71'), 
+    'goo' = c("1" = '#008744', "2" = '#0057e7', "3" = '#d62d20'), 
+    'sunset' = c("1" = '#f67e7d', "2" = '#843b62', "3" = '#0b032d')
+)
