@@ -67,7 +67,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
                             length.out = n_chains))
         cores <- min(cores, length(chains))
         cl <- parallel::makeCluster(cores)
-        out <- parallel::parLapply(cl, chains, mcmc_parallel,
+        out <- parallel::parLapply(cl, chains, mcmc_parallel, 
                                    model_data = model_data, model_info = model_info,
                                    initial_values = initial_values,
                                    priors = priors, control = control, vcov_prop = vcov_prop)
