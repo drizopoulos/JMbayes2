@@ -390,7 +390,7 @@ ggdensityplot <- function (object, ...) UseMethod("ggdensityplot")
 ggdensityplot.jm <- function(object, 
                       parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                "tau_bs_gammas", "gammas", "alphas"), 
-                      size_line = 1, alpha_fill = 0.6, 
+                      size = 1, alpha = 0.6, 
                       chaincols = c('standard', 'catalog', 'metro', 
                                     'pastel', 'beach', 'moonlight', 'goo', 
                                     'sunset'),
@@ -405,7 +405,7 @@ ggdensityplot.jm <- function(object,
         gplots <- list(NULL)
         for (i in seq_len(n_parms)) {
             gplots[[i]] <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) + 
-                geom_density(aes(x = value, color = chain, fill = chain), size = size_line, alpha = alpha_fill) + 
+                geom_density(aes(x = value, color = chain, fill = chain), size = size, alpha = alpha) + 
                 ggtitle(paste('Density plot of ', unique(ggdata$parm)[i])) +
                 theme_bw() + theme(plot.title = element_text(hjust=0.5)) + 
                 scale_color_manual(values = ggcolthemes[[coltheme]]) + 
@@ -416,7 +416,7 @@ ggdensityplot.jm <- function(object,
     } else {
         for (i in seq_len(n_parms)) {
             g <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) + 
-                geom_density(aes(x = value, color = chain, fill = chain), size = size_line, alpha = alpha_fill) + 
+                geom_density(aes(x = value, color = chain, fill = chain), size = size, alpha = alpha) + 
                 ggtitle(paste('Density plot of ', unique(ggdata$parm)[i])) +
                 theme_bw() + theme(plot.title = element_text(hjust=0.5)) + 
                 scale_color_manual(values = ggcolthemes[[coltheme]]) + 
