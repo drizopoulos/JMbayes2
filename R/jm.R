@@ -420,8 +420,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     log_sigmas <- sapply(Mixed_objects, extract_log_sigmas)
     D_lis <- lapply(Mixed_objects, extract_D)
     D <- bdiag(D_lis)
-    b <- mapply(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY),
-                SIMPLIFY = FALSE)
+    b <- mapply2(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY))
     init_surv <- init_vals_surv(Data, model_info, data, betas, b, con)
     bs_gammas <- init_surv$bs_gammas
     gammas <- init_surv$gammas

@@ -188,9 +188,11 @@ system.time({
                    age + sex:year + prothrombin,
                data = pbc2, random = ~ year * sex | id,
                control = lmeControl(opt = "optim"))
+    fm2 <- lme(serChol ~ ns(year, 3) + sex + age, data = pbc2, random = ~ year | id,
+               na.action = na.exclude)
     fm4 <- mixed_model(ascites ~ year, data = pbc2,
                        random = ~ year | id, family = binomial())
-    Mixed <- list(fm1, fm4)
+    Mixed <- list(fm1, fm2, fm4)
     Cox <- coxph(Surv(years, status2) ~ 1, data = pbc2.id)
 })
 

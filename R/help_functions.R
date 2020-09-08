@@ -447,8 +447,8 @@ create_HC_X2 <- function (x, z, id) {
     x_notin_z <- x_notin_z[!x_notin_z %in% baseline]
     baseline <- which(cnams_x %in% baseline)
     x_notin_z <- which(cnams_x %in% x_notin_z)
-    if (!length(baseline)) baseline <- 0L
-    if (!length(x_notin_z)) x_notin_z <- 0L
+    if (!length(baseline)) baseline <- as.integer(NA)
+    if (!length(x_notin_z)) x_notin_z <- as.integer(NA)
     list(baseline = baseline, x_in_z = unlist(x_in_z), x_notin_z = x_notin_z,
          Xbase = x[!duplicated(id), baseline, drop = FALSE])
 }
