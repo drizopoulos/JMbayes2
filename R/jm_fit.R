@@ -78,7 +78,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     } else {
         set.seed(control$seed)
         out <- list(mcmc_cpp(model_data, model_info, initial_values, priors,
-                             control))
+                             control, vcov_prop))
     }
     toc <- proc.time()
     # create dummy betas
