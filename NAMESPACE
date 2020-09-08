@@ -1,5 +1,6 @@
 export(jm, traceplot, gelman_diag, densplot, cumuplot, value, slope, area,
-       coef, fixef, ranef, terms, model.frame, model.matrix, family, ggtraceplot, ggdensityplot)
+       coef, fixef, ranef, terms, model.frame, model.matrix, family,
+       ggtraceplot, ggdensityplot)
 
 import(Rcpp)
 importFrom("utils", "glob2rx", "tail", "head")
@@ -15,6 +16,10 @@ importFrom("survival", "coxph")
 importFrom("splines", "splineDesign")
 importFrom("coda", "as.mcmc.list", "as.mcmc", "traceplot", "densplot",
            "gelman.diag", "cumuplot")
+importFrom("ggplot2", "ggplot", "geom_density", "aes", "ggtitle", "theme_bw",
+           "theme", "element_text", "scale_color_manual", "scale_fill_manual",
+           "guide_legend", "geom_line", "guides")
+importFrom("gridExtra", "marrangeGrob")
 
 
 useDynLib(JMbayes2, .registration = TRUE)
@@ -25,7 +30,6 @@ S3method(densplot, jm)
 S3method(cumuplot, jm)
 S3method(ggtraceplot, jm)
 S3method(ggdensityplot, jm)
-
 S3method(print, jm)
 S3method(summary, jm)
 S3method(print, summary.jm)

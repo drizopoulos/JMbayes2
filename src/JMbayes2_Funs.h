@@ -77,27 +77,27 @@ vec create_init_scale(const uword &n, const double &fill_val = 0.1) {
 }
 
 field<mat> List2Field_mat (const List &Mats) {
-  int n_list = Mats.size();
+  uword n_list = Mats.size();
   field<mat> res(n_list);
-  for (int i = 0; i < n_list; ++i) {
+  for (uword i = 0; i < n_list; ++i) {
     res.at(i) = as<mat>(Mats[i]);
   }
   return res;
 }
 
 field<vec> List2Field_vec (const List &Vecs) {
-  int n_list = Vecs.size();
+  uword n_list = Vecs.size();
   field<vec> res(n_list);
-  for (int i = 0; i < n_list; ++i) {
+  for (uword i = 0; i < n_list; ++i) {
     res.at(i) = as<vec>(Vecs[i]);
   }
   return res;
 }
 
 field<uvec> List2Field_uvec (const List & uVecs, bool substract1 = true) {
-  int n_list = uVecs.size();
+  uword n_list = uVecs.size();
   field<uvec> res(n_list);
-  for (int i = 0; i < n_list; ++i) {
+  for (uword i = 0; i < n_list; ++i) {
     if (substract1) {
       res.at(i) = as<arma::uvec>(uVecs[i]) - 1;
     } else {
@@ -117,11 +117,11 @@ field<mat> mat2field_mat (const mat &b, const field<uvec> &ind_RE) {
 }
 
 field<mat> create_storage(const field<vec> &F, const int &n_iter) {
-  int n = F.size();
+  uword n = F.size();
   field<mat> out(n);
-  for (int i = 0; i < n; ++i) {
+  for (uword i = 0; i < n; ++i) {
     vec aa = F.at(i);
-    int n_i = aa.n_rows;
+    uword n_i = aa.n_rows;
     mat tt(n_iter, n_i, fill::zeros);
     out.at(i) = tt;
   }
@@ -180,9 +180,9 @@ mat docall_cbindF (const field<mat> &Mats) {
 }
 
 uvec create_fast_ind (const uvec &group) {
-  unsigned int l = group.n_rows;
+  uword l = group.n_rows;
   uvec ind = find(group.rows(1, l - 1) != group.rows(0, l - 2));
-  unsigned int k = ind.n_rows;
+  uword k = ind.n_rows;
   ind.insert_rows(k, 1);
   ind.at(k) = l - 1;
   return ind;
@@ -226,7 +226,7 @@ vec propose_norm_mala (const vec &thetas, const vec &scale,
 
 field<vec> propose_field (const field<vec>& thetas,
                           const field<vec>& scale,
-                          const int& k, const int& i) {
+                          const uword &k, const uword &i) {
   field<vec> proposed_thetas = thetas;
   proposed_thetas.at(k).at(i) = R::rnorm(thetas.at(k).at(i),
                      scale.at(k).at(i));
@@ -466,9 +466,9 @@ field<vec> linpred_mixed (const field<mat> &X, const field<vec> &betas,
   return out;
 }
 
-field<vec> linpred_mixed_Zb (const field<mat>& Xbetas, 
-                             const field<mat> &Z, const field<mat> &b, 
-                             const field<uvec> &id) { 
+field<vec> linpred_mixed_Zb (const field<mat>& Xbetas,
+                             const field<mat> &Z, const field<mat> &b,
+                             const field<uvec> &id) {
   uword n_outcomes = Z.n_elem;
   field<vec> out(n_outcomes);
   for (uword i = 0; i < n_outcomes; ++i) {
@@ -481,10 +481,10 @@ field<vec> linpred_mixed_Zb (const field<mat>& Xbetas,
   return out;
 }
 
-arma::field<arma::mat> calculate_u(arma::field<arma::mat> Xhc, 
-                                   arma::field<arma::uvec> columns_HC, 
-                                   arma::field<arma::vec> betas, 
-                                   arma::field<arma::mat> b, 
+arma::field<arma::mat> calculate_u(arma::field<arma::mat> Xhc,
+                                   arma::field<arma::uvec> columns_HC,
+                                   arma::field<arma::vec> betas,
+                                   arma::field<arma::mat> b,
                                    arma::field<arma::uvec> unq_idL) {
   arma::field<arma::mat>u(b);
   uword n = Xhc.n_elem;
