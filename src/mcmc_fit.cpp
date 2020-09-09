@@ -72,8 +72,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec gammas = as<vec>(initial_values["gammas"]);
   vec alphas = as<vec>(initial_values["alphas"]);
   double tau_bs_gammas = as<double>(initial_values["tau_bs_gammas"]);
-  List b_ = as<List>(initial_values["b"]);
-  field<mat> b = List2Field_mat(b_);
+  field<mat> b = List2Field_mat(as<List>(initial_values["b"]));
   mat b_mat = docall_cbindF(b);
   field<mat> mean_u(b.n_elem);
   for (uword i = 0; i < b.n_elem; ++i) mean_u.at(i) = zeros<mat>(size(b.at(i)));
@@ -228,7 +227,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              acceptance_sds, acceptance_L);
     ////////////////////////////////////////////////////////////////////////
     // update_b()...
-    mean_u = update_mean_u(mean_u, betas, Xbase, x_in_z, baseline, unq_idL);
+    update_mean_u(mean_u, betas, Xbase, x_in_z, baseline, unq_idL);
     //update_Wlong(Wlong_H, Wlong_h, Wlong_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
     //             U_H, U_h, U_H2, betas, b, id_H, id_h, FunForms, FunForms_ind,
     //             any_event, any_interval);

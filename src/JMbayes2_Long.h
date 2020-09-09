@@ -30,7 +30,7 @@ void update_Wlong (mat &Wlong_H, mat &Wlong_h, mat &Wlong_H2,
   }
 }
 
-field<mat> update_mean_u (field<mat> mean_u, const field<vec> &betas,
+void update_mean_u (field<mat> &mean_u, const field<vec> &betas,
                     const field<mat> &Xbase, const field<uvec> &x_in_z,
                     const field<uvec> &baseline, const field<uvec> &unq_idL) {
   uword n = mean_u.n_elem;
@@ -40,17 +40,16 @@ field<mat> update_mean_u (field<mat> mean_u, const field<vec> &betas,
     uvec xinz_i = x_in_z.at(i);
     uvec base_i = baseline.at(i);
     uvec rowind_i = unq_idL.at(i);
-    uword n = xinz_i.n_rows;
-    if (mean_u.at(i).n_cols == n) {
-      mean_u.at(i).each_row() = betas_i.elem(xinz_i).t();
+    uword k = xinz_i.n_rows;
+    if (mean_u.at(i).n_cols == k) {
+      mean_u.at(i).each_row() = betas_i.rows(xinz_i).t();
     } else {
-      mean_u.at(i).cols(0, n - 1).each_row() = betas_i.elem(xinz_i).t();
+      mean_u.at(i).cols(0, k - 1).each_row() = betas_i.rows(xinz_i).t();
     }
     if (is_finite(Xbase_i)) {
       mean_u.at(i)(rowind_i) = Xbase_i * betas_i.rows(base_i);
     }
   }
-  return mean_u;
 }
 
 #endif
