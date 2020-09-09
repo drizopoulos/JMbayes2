@@ -22,4 +22,4 @@ LazyData: yes
 License: GPL (>= 3)
 URL: https://drizopoulos.github.io/JMbayes2/, https://github.com/drizopoulos/JMbayes2
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
