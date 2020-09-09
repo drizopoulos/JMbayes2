@@ -340,20 +340,18 @@ family.jm <- function (object, ...) {
     object$model_info$families
 }
 
-
-
 # ggplot mcmc diagnostics need ggplot2 and gridExtra
 ggtraceplot <- function (object, ...) UseMethod("ggtraceplot")
 
 # traceplot with ggplot
-ggtraceplot.jm <- function(object, 
+ggtraceplot.jm <- function(object,
                         parm = c("all", "betas", "sigmas", "D", "bs_gammas",
-                                 "tau_bs_gammas", "gammas", "alphas"), 
-                        size = 1, alpha = 0.8, 
-                        chaincols = c('standard', 'catalog', 'metro', 
-                                      'pastel', 'beach', 'moonlight', 'goo', 
+                                 "tau_bs_gammas", "gammas", "alphas"),
+                        size = 1, alpha = 0.8,
+                        chaincols = c('standard', 'catalog', 'metro',
+                                      'pastel', 'beach', 'moonlight', 'goo',
                                       'sunset'),
-                        gridrow = 3, gridcol = 1, grid = FALSE, 
+                        gridrow = 3, gridcol = 1, grid = FALSE,
                         ...) {
     parm <- match.arg(parm)
     coltheme <- match.arg(chaincols)
@@ -363,38 +361,38 @@ ggtraceplot.jm <- function(object,
     if (grid) {
         gplots <- list(NULL)
         for (i in seq_len(n_parms)) {
-            gplots[[i]] <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) + 
-                geom_line(aes(x = iteration, y = value, color = chain), size = size, alpha = alpha) + 
+            gplots[[i]] <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
+                geom_line(aes(x = iteration, y = value, color = chain), size = size, alpha = alpha) +
                 ggtitle(paste('Traceplot of ', unique(ggdata$parm)[i])) +
-                theme_bw() + theme(plot.title = element_text(hjust=0.5)) + 
-                scale_color_manual(values = ggcolthemes[[coltheme]]) + 
+                theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
+                scale_color_manual(values = ggcolthemes[[coltheme]]) +
                 guides(color = guide_legend(override.aes = list(alpha = 1)))
         }
         marrangeGrob(grobs = gplots, nrow = gridrow, ncol = gridcol)
     } else {
         for (i in seq_len(n_parms)) {
-            g <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) + 
-                geom_line(aes(x = iteration, y = value, color = chain), size = size, alpha = alpha) + 
+            g <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
+                geom_line(aes(x = iteration, y = value, color = chain), size = size, alpha = alpha) +
                 ggtitle(paste('Traceplot of ', unique(ggdata$parm)[i])) +
-                theme_bw() + theme(plot.title = element_text(hjust=0.5)) + 
-                scale_color_manual(values = ggcolthemes[[coltheme]]) + 
+                theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
+                scale_color_manual(values = ggcolthemes[[coltheme]]) +
                 guides(color = guide_legend(override.aes = list(alpha = 1)))
             print(g)
         }
     }
-} 
+}
 
 ggdensityplot <- function (object, ...) UseMethod("ggdensityplot")
 
 # density plot with ggplot
-ggdensityplot.jm <- function(object, 
+ggdensityplot.jm <- function(object,
                       parm = c("all", "betas", "sigmas", "D", "bs_gammas",
-                               "tau_bs_gammas", "gammas", "alphas"), 
-                      size = 1, alpha = 0.6, 
-                      chaincols = c('standard', 'catalog', 'metro', 
-                                    'pastel', 'beach', 'moonlight', 'goo', 
+                               "tau_bs_gammas", "gammas", "alphas"),
+                      size = 1, alpha = 0.6,
+                      chaincols = c('standard', 'catalog', 'metro',
+                                    'pastel', 'beach', 'moonlight', 'goo',
                                     'sunset'),
-                      gridrow = 3, gridcol = 1, grid = FALSE, 
+                      gridrow = 3, gridcol = 1, grid = FALSE,
                       ...) {
     parm <- match.arg(parm)
     coltheme <- match.arg(chaincols)
@@ -404,22 +402,22 @@ ggdensityplot.jm <- function(object,
     if (grid) {
         gplots <- list(NULL)
         for (i in seq_len(n_parms)) {
-            gplots[[i]] <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) + 
-                geom_density(aes(x = value, color = chain, fill = chain), size = size, alpha = alpha) + 
+            gplots[[i]] <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
+                geom_density(aes(x = value, color = chain, fill = chain), size = size, alpha = alpha) +
                 ggtitle(paste('Density plot of ', unique(ggdata$parm)[i])) +
-                theme_bw() + theme(plot.title = element_text(hjust=0.5)) + 
-                scale_color_manual(values = ggcolthemes[[coltheme]]) + 
+                theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
+                scale_color_manual(values = ggcolthemes[[coltheme]]) +
                 scale_fill_manual(values = ggcolthemes[[coltheme]]) +
                 guides(color = guide_legend(override.aes = list(alpha = 1)))
         }
         marrangeGrob(grobs = gplots, nrow = gridrow, ncol = gridcol)
     } else {
         for (i in seq_len(n_parms)) {
-            g <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) + 
-                geom_density(aes(x = value, color = chain, fill = chain), size = size, alpha = alpha) + 
+            g <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
+                geom_density(aes(x = value, color = chain, fill = chain), size = size, alpha = alpha) +
                 ggtitle(paste('Density plot of ', unique(ggdata$parm)[i])) +
-                theme_bw() + theme(plot.title = element_text(hjust=0.5)) + 
-                scale_color_manual(values = ggcolthemes[[coltheme]]) + 
+                theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
+                scale_color_manual(values = ggcolthemes[[coltheme]]) +
                 scale_fill_manual(values = ggcolthemes[[coltheme]]) +
                 guides(color = guide_legend(override.aes = list(alpha = 1)))
             print(g)

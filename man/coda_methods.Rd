@@ -56,9 +56,9 @@ ggdensityplot(object, \dots)
 \method{ggdensityplot}{jm}(object,
   parm = c("all", "betas", "sigmas", "D", "bs_gammas",
            "tau_bs_gammas", "gammas", "alphas"),
-  size_line = 1, alpha_fill = 0.6,
-  chaincols = c('standard', 'catalog', 'metro',
-                'pastel', 'beach', 'moonlight', 'goo', 'sunset'),
+  size = 1, alpha = 0.6,
+  chaincols = c('standard', 'catalog', 'metro', 'pastel',
+                'beach', 'moonlight', 'goo', 'sunset'),
   gridrow = 3, gridcol = 1, grid = FALSE, \dots)
 
 cumuplot(object, \dots)
@@ -73,9 +73,7 @@ cumuplot(object, \dots)
 \item{object}{objects inheriting from class \code{"jm"}.}
 \item{parm}{.}
 \item{size}{.}
-\item{size_line}{.}
 \item{alpha}{.}
-\item{alpha_fill}{.}
 \item{chaincols}{.}
 \item{gridrow}{.}
 \item{gridcol}{.}
