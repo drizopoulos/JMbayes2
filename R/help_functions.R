@@ -855,7 +855,6 @@ ggextractmcmc <- function(mcmc_list) {
 ggprepare <- function(object, 
                       parm = c("all", "betas", "sigmas", "D", "bs_gammas", 
                                "tau_bs_gammas", "gammas", "alphas")) {
-    chain <- iteraion <- NULL
     parm <- match.arg(parm)
     n_chains <- object$control$n_chains
     n_iter <- object$control$n_iter - object$control$n_burnin

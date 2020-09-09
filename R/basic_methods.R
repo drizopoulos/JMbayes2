@@ -353,6 +353,7 @@ ggtraceplot.jm <- function(object,
                                       'sunset'),
                         gridrow = 3, gridcol = 1, grid = FALSE,
                         ...) {
+    chain <- iteration <- NULL
     parm <- match.arg(parm)
     coltheme <- match.arg(chaincols)
     ggdata <- ggprepare(object, parm)
@@ -394,6 +395,7 @@ ggdensityplot.jm <- function(object,
                                     'sunset'),
                       gridrow = 3, gridcol = 1, grid = FALSE,
                       ...) {
+    chain <- NULL
     parm <- match.arg(parm)
     coltheme <- match.arg(chaincols)
     ggdata <- ggprepare(object, parm)
