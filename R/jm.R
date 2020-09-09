@@ -24,7 +24,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     con[(namc <- names(control))] <- control
     if (length(noNms <- namc[!namc %in% namC]) > 0)
         warning("unknown names in control: ", paste(noNms, collapse = ", "))
-
     # extract the data from each of the mixed models
     # and check whether the same data have been used;
     # otherwise an error
@@ -103,16 +102,11 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # create design matrices for mixed models
     X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL, SIMPLIFY = FALSE)
     Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL, SIMPLIFY = FALSE)
-    componentsHC <- mapply2(create_HC_X, terms_FE, terms_RE, X, Z, idL,
-                            mf_FE_dataL)
-    Xhc <- lapply(componentsHC, "[[", "Xhc")
-    columns_HC <- lapply(componentsHC, "[[", "columns_HC")
-    columns_nHC <- lapply(componentsHC, "[[", "columns_nHC")
-    # componentsHC <- mapply2(create_HC_X2, X, Z, idL)
-    # Xbase <- lapply(componentsHC, "[[", "Xbase")
-    # baseline <- lapply(componentsHC, "[[", "baseline")
-    # x_in_z <- lapply(componentsHC, "[[", "x_in_z")
-    # x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
+    componentsHC <- mapply2(create_HC_X2, X, Z, idL)
+    Xbase <- lapply(componentsHC, "[[", "Xbase")
+    baseline <- lapply(componentsHC, "[[", "baseline")
+    x_in_z <- lapply(componentsHC, "[[", "x_in_z")
+    x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
     ########################################################
     ########################################################
     # try to recover survival dataset
@@ -280,13 +274,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                                                       respVars_form))]
     ###################################################################
     # List of lists
-    # check if "*" has been used in functional_forms
-    #search_int <- grep("*", sapply(functional_forms, function (form)
-    #    as.character(form)[2L]), fixed = TRUE)
-    #if (length(search_int)) {
-    #    stop("the use of the '*' symbol has been detected within functional_forms. ",
-    #         "\nThis is not allowed; for an interaction use the ':' symbol.")
-    #}
     # One list component per association structure per outcome
     # List components vectors of integers corresponding to the term
     # each association structure corresponds to
@@ -381,8 +368,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ############################################################################
     ############################################################################
     Data <- list(n = nY, idL = idL, idL_lp = idL_lp, unq_idL = unq_idL,
-                 y = y, X = X, Z = Z, Xhc = Xhc,
-                 columns_HC = columns_HC, columns_nHC = columns_nHC,
+                 y = y, X = X, Z = Z, Xbase = Xbase,
+                 baseline = baseline, x_in_z = x_in_z, x_notin_z = x_notin_z,
                  #####
                  idT = idT, any_gammas = any_gammas,
                  Time_right = Time_right, Time_left = Time_left, Time_start = Time_start,
@@ -405,7 +392,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         var_names = list(respVars = respVars, respVars_form = respVars_form,
                          idVar = idVar, time_var = time_var),
         families = families,
-        HC = list(columns_HC = columns_HC, columns_nHC = columns_nHC),
         type_censoring = type_censoring,
         functional_forms = functional_forms,
         FunForms_per_outcome = FunForms_per_outcome,
@@ -425,7 +411,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     bs_gammas <- init_surv$bs_gammas
     gammas <- init_surv$gammas
     alphas <- init_surv$alphas
-    # initial values
     initial_values <- list(betas = betas, log_sigmas = log_sigmas, D = D,
                            b = b, bs_gammas = bs_gammas, gammas = gammas,
                            alphas = alphas, tau_bs_gammas = 20)
@@ -436,12 +421,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     #  - betas the fixed effects that in the hierarchical centering part
     #  - tilde_betas the fixed effects that are not in the hierarchical
     #    centering part
-    vcov_prop_betas <- mapply(get_vcov_FE, Mixed_objects, columns_nHC,
-                              MoreArgs = list(which = "betas"), SIMPLIFY = FALSE)
-    vcov_prop_tilde_betas <- mapply(get_vcov_FE, Mixed_objects, columns_nHC,
-                                    MoreArgs = list(which = "tilde_betas"),
-                                    SIMPLIFY = FALSE)
-    r <- mapply(extract_vcov_prop_RE, Mixed_objects, Z, idL, SIMPLIFY = FALSE)
+    vcov_prop_betas <- lapply(Mixed_objects, vcov2)
+    r <- mapply2(extract_vcov_prop_RE, Mixed_objects, Z, idL)
     vcov_prop_RE <- array(0.0, c(dim(D), nY))
     for (i in seq_len(nY)) {
         rr <- lapply(r, function (m, i) m[[as.character(i)]], i = i)
@@ -452,7 +433,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     vcov_prop_gammas <- init_surv$vcov_prop_gammas
     vcov_prop_alphas <- init_surv$vcov_prop_alphas
     vcov_prop <- list(vcov_prop_betas = vcov_prop_betas,
-                      vcov_prop_tilde_betas = vcov_prop_tilde_betas,
                       vcov_prop_RE = vcov_prop_RE,
                       vcov_prop_bs_gammas = vcov_prop_bs_gammas,
                       vcov_prop_gammas = vcov_prop_gammas,

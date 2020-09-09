@@ -30,7 +30,7 @@ void update_Wlong (mat &Wlong_H, mat &Wlong_h, mat &Wlong_H2,
   }
 }
 
-void update_mean_u (field<mat> mean_u, const field<vec> &betas,
+field<mat> update_mean_u (field<mat> mean_u, const field<vec> &betas,
                     const field<mat> &Xbase, const field<uvec> &x_in_z,
                     const field<uvec> &baseline, const field<uvec> &unq_idL) {
   uword n = mean_u.n_elem;
@@ -50,6 +50,7 @@ void update_mean_u (field<mat> mean_u, const field<vec> &betas,
       mean_u.at(i)(rowind_i) = Xbase_i * betas_i.rows(base_i);
     }
   }
+  return mean_u;
 }
 
 #endif

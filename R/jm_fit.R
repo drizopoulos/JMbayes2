@@ -35,12 +35,12 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     model_data$W_H2 <- center_fun(model_data$W_H2, model_data$W_bar)
 
     model_data$Wlong_bar <- lapply(model_data$Wlong_H, colMeans)
-    model_data$Wlong_H <- mapply(center_fun, model_data$Wlong_H,
-                                 model_data$Wlong_bar, SIMPLIFY = FALSE)
-    model_data$Wlong_h <- mapply(center_fun, model_data$Wlong_h,
-                                 model_data$Wlong_bar, SIMPLIFY = FALSE)
-    model_data$Wlong_H2 <- mapply(center_fun, model_data$Wlong_H2,
-                                  model_data$Wlong_bar, SIMPLIFY = FALSE)
+    model_data$Wlong_H <- mapply2(center_fun, model_data$Wlong_H,
+                                 model_data$Wlong_bar)
+    model_data$Wlong_h <- mapply2(center_fun, model_data$Wlong_h,
+                                 model_data$Wlong_bar)
+    model_data$Wlong_H2 <- mapply2(center_fun, model_data$Wlong_H2,
+                                  model_data$Wlong_bar)
     # unlist priors and initial values for alphas
     initial_values$alphas <- unlist(initial_values$alphas, use.names = FALSE)
     priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
@@ -59,7 +59,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
             set.seed(seed_)
             not_D <- names(initial_values) != "D"
             initial_values[not_D] <- lapply(initial_values[not_D], jitter2)
-            mcmc_cpp(model_data, model_info, initial_values, priors, control, vcov_prop)
+            mcmc_cpp(model_data, model_info, initial_values, priors, control,
+                     vcov_prop)
         }
         cores <- control$cores
         chains <- split(seq_len(n_chains),
@@ -67,7 +68,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
                             length.out = n_chains))
         cores <- min(cores, length(chains))
         cl <- parallel::makeCluster(cores)
-        out <- parallel::parLapply(cl, chains, mcmc_parallel, 
+        out <- parallel::parLapply(cl, chains, mcmc_parallel,
                                    model_data = model_data, model_info = model_info,
                                    initial_values = initial_values,
                                    priors = priors, control = control, vcov_prop = vcov_prop)

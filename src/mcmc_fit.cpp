@@ -31,35 +31,24 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat W_H2 = as<mat>(model_data["W_H2"]);
   mat W_bar = as<mat>(model_data["W_bar"]);
   //
-  List X_H_ = as<List>(model_data["X_H"]);
-  field<mat> X_H = List2Field_mat(X_H_);
-  List X_h_ = as<List>(model_data["X_h"]);
-  field<mat> X_h = List2Field_mat(X_H_);
-  List X_H2_ = as<List>(model_data["X_H2"]);
-  field<mat> X_H2 = List2Field_mat(X_H2_);
-  List Z_H_ = as<List>(model_data["Z_H"]);
-  field<mat> Z_H = List2Field_mat(Z_H_);
-  List Z_h_ = as<List>(model_data["Z_h"]);
-  field<mat> Z_h = List2Field_mat(X_H_);
-  List Z_H2_ = as<List>(model_data["Z_H2"]);
-  field<mat> Z_H2 = List2Field_mat(Z_H2_);
-  List U_H_ = as<List>(model_data["U_H"]);
-  field<mat> U_H = List2Field_mat(U_H_);
-  List U_h_ = as<List>(model_data["U_h"]);
-  field<mat> U_h = List2Field_mat(U_h_);
-  List U_H2_ = as<List>(model_data["U_H2"]);
-  field<mat> U_H2 = List2Field_mat(U_H2_);
+  field<mat> X_H = List2Field_mat(as<List>(model_data["X_H"]));
+  field<mat> X_h = List2Field_mat(as<List>(model_data["X_h"]));
+  field<mat> X_H2 = List2Field_mat(as<List>(model_data["X_H2"]));
+  field<mat> Z_H = List2Field_mat(as<List>(model_data["Z_H"]));
+  field<mat> Z_h = List2Field_mat(as<List>(model_data["Z_h"]));
+  field<mat> Z_H2 = List2Field_mat(as<List>(model_data["Z_H2"]));
+  field<mat> U_H = List2Field_mat(as<List>(model_data["U_H"]));
+  field<mat> U_h = List2Field_mat(as<List>(model_data["U_h"]));
+  field<mat> U_H2 = List2Field_mat(as<List>(model_data["U_H2"]));
   //
   cube vcov_prop_RE = as<cube>(vcov_prop["vcov_prop_RE"]);
   //
-  List Wlong_H_ = as<List>(model_data["Wlong_H"]);
-  mat Wlong_H = docall_cbindL(Wlong_H_);
-  List Wlong_h_ = as<List>(model_data["Wlong_h"]);
-  mat Wlong_h = docall_cbindL(Wlong_h_);
-  List Wlong_H2_ = as<List>(model_data["Wlong_H2"]);
-  mat Wlong_H2 = docall_cbindL(Wlong_H2_);
+  mat Wlong_H = docall_cbindL(as<List>(model_data["Wlong_H"]));
+  mat Wlong_h = docall_cbindL(as<List>(model_data["Wlong_h"]));
+  mat Wlong_H2 = docall_cbindL(as<List>(model_data["Wlong_H2"]));
   //List Wlong_bar_ = as<List>(model_data["Wlong_bar"]);
   //field<mat> Wlong_bar = List2Field_mat(Wlong_bar_);
+  field<mat> Xbase = List2Field_mat(as<List>(model_data["Xbase"]));
   // other information
   uvec idT = as<uvec>(model_data["idT"]) - 1;
   vec log_Pwk = as<vec>(model_data["log_Pwk"]);
@@ -70,10 +59,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   bool any_gammas = as<bool>(model_data["any_gammas"]);
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
-  List FunForms_ = as<List>(model_info["FunForms_cpp"]);
-  field<uvec> FunForms = List2Field_uvec(FunForms_, true);
-  List FunForms_ind_ = as<List>(model_info["FunForms_ind"]);
-  field<uvec> FunForms_ind = List2Field_uvec(FunForms_ind_, true);
+  field<uvec> FunForms = List2Field_uvec(as<List>(model_info["FunForms_cpp"]), true);
+  field<uvec> FunForms_ind = List2Field_uvec(as<List>(model_info["FunForms_ind"]), true);
+  field<uvec> baseline = List2Field_uvec(as<List>(model_data["baseline"]), true);
+  field<uvec> x_in_z = List2Field_uvec(as<List>(model_data["x_in_z"]), true);
+  field<uvec> x_notin_z = List2Field_uvec(as<List>(model_data["x_notin_z"]), true);
+  field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
   //List ind_RE_ = as<List>(model_info["ind_RE"]);
   //field<uvec> ind_RE = List2Field_uvec(ind_RE_, true);
   // initial values
@@ -84,12 +75,13 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   List b_ = as<List>(initial_values["b"]);
   field<mat> b = List2Field_mat(b_);
   mat b_mat = docall_cbindF(b);
+  field<mat> mean_u(b.n_elem);
+  for (uword i = 0; i < b.n_elem; ++i) mean_u.at(i) = zeros<mat>(size(b.at(i)));
   mat D = as<mat>(initial_values["D"]);
   vec sds = sqrt(D.diag());
   mat R = cov2cor(D);
   mat L = chol(R);
-  List betas_ = as<List>(initial_values["betas"]);
-  field<vec> betas = List2Field_vec(betas_);
+  field<vec> betas = List2Field_vec(as<List>(initial_values["betas"]));
   // indexes or other useful things
   uvec upper_part = trimatu_ind(size(R),  1);
   // MCMC settings
@@ -234,6 +226,13 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              prior_D_sds_df, prior_D_sds_sigma, prior_D_L_etaLKJ,
              it, MALA, res_sds, res_L, scale_sds, scale_L,
              acceptance_sds, acceptance_L);
+    ////////////////////////////////////////////////////////////////////////
+    // update_b()...
+    mean_u = update_mean_u(mean_u, betas, Xbase, x_in_z, baseline, unq_idL);
+    //update_Wlong(Wlong_H, Wlong_h, Wlong_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
+    //             U_H, U_h, U_H2, betas, b, id_H, id_h, FunForms, FunForms_ind,
+    //             any_event, any_interval);
+    ////////////////////////////////////////////////////////////////////////
   }
   return List::create(
     Named("mcmc") = List::create(
@@ -251,6 +250,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("alphas") = acceptance_alphas.rows(n_burnin, n_iter - 1),
       Named("sds") = acceptance_sds.rows(n_burnin, n_iter - 1),
       Named("L") = acceptance_L.rows(n_burnin, n_iter - 1)
-    )
+    ),
+    Named("mean_u") = mean_u,
+    Named("Wlong_H") = Wlong_H,
+    Named("Wlong_h") = Wlong_h,
+    Named("Wlong_H2") = Wlong_H2
   );
 }
