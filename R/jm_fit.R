@@ -57,7 +57,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
                                    priors, control, vcov_prop) {
             seed_ <- control$seed + chain
             set.seed(seed_)
-            not_D <- names(initial_values) != "D"
+            not_D <- names(initial_values) != c("betas", "D")
             initial_values[not_D] <- lapply(initial_values[not_D], jitter2)
             mcmc_cpp(model_data, model_info, initial_values, priors, control,
                      vcov_prop)
