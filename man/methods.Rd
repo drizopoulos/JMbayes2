@@ -14,6 +14,8 @@
 \alias{model.frame.jm}
 \alias{family}
 \alias{family.jm}
+\alias{get_links}
+\alias{get_links.jm}
 
 \title{
 Various Methods for Standard Generics
@@ -55,6 +57,11 @@ model.matrix(object, \dots)
 family(object, \dots)
 
 \method{family}{jm}(object, \dots)
+
+get_links(object, \dots)
+
+\method{get_links}{jm}(object, \dots)
+
 }
 
 \arguments{
