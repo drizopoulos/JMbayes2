@@ -1,5 +1,5 @@
 export(jm, traceplot, gelman_diag, densplot, cumuplot, value, slope, area,
-       coef, fixef, ranef, terms, model.frame, model.matrix, family,
+       coef, fixef, ranef, terms, model.frame, model.matrix, family, get_links,
        ggtraceplot, ggdensityplot)
 
 import(Rcpp)
@@ -39,4 +39,5 @@ S3method(terms, jm)
 S3method(model.frame, jm)
 S3method(model.matrix, jm)
 S3method(family, jm)
+S3method(get_links, jm)
 
