@@ -426,3 +426,25 @@ ggdensityplot.jm <- function(object,
         }
     }
 }
+
+effectPlotData.jm <- function (object, newdata, level = 0.95, ...) {
+    termsX <- object$model_info$terms$terms_FE_noResp
+    xlevels <- mapply2(.getXlevels, termsX, object$model_info$frames$mf_FE)
+    mfX <- mapply2(model.frame.default, formula = termsX, xlev = xlevels,
+                   MoreArgs = list(data = newdata))
+    X <- mapply2(model.matrix.default, object = termsX, data = mfX)
+    ind_betas <- grep("^betas", names(object$mcmc))
+    betas <- object$mcmc[ind_betas]
+    betas <- lapply(betas, function (b) do.call("rbind", b))
+    Xbetas <- mapply2(tcrossprod, X, betas)
+    pred <- lapply(Xbetas, rowMeans)
+    names(pred) <- paste0("pred", seq_along(pred))
+    Qs <- lapply(Xbetas, rowQuantiles,
+                 probs = c((1 - level) / 2, (1 + level) / 2))
+    for (i in seq_along(Qs)) {
+        colnames(Qs[[i]]) <- paste0(c("low", "upp"), i)
+    }
+    cbind(newdata, do.call("cbind", pred), do.call("cbind", Qs))
+}
+
+

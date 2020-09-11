@@ -39,4 +39,5 @@ S3method(terms, jm)
 S3method(model.frame, jm)
 S3method(model.matrix, jm)
 S3method(family, jm)
+S3method(effectPlotData, jm)
 
