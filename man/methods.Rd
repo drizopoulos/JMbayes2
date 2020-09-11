@@ -14,6 +14,8 @@
 \alias{model.frame.jm}
 \alias{family}
 \alias{family.jm}
+\alias{get_links}
+\alias{get_links.jm}
 
 \title{
 Various Methods for Standard Generics
