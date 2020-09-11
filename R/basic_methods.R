@@ -340,13 +340,6 @@ family.jm <- function (object, ...) {
     object$model_info$families
 }
 
-
-get_links <- function (object, ...) UseMethod("get_links")
-
-get_links.jm <- function (object, ...) {
-    lapply(object$model_info$families, '[[', 'link')
-}
-
 # ggplot mcmc diagnostics need ggplot2 and gridExtra
 ggtraceplot <- function (object, ...) UseMethod("ggtraceplot")
 

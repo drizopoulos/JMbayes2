@@ -57,11 +57,6 @@ model.matrix(object, \dots)
 family(object, \dots)
 
 \method{family}{jm}(object, \dots)
-
-get_links(object, \dots)
-
-\method{get_links}{jm}(object, \dots)
-
 }
 
 \arguments{
