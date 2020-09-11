@@ -175,10 +175,10 @@ LongData_HazardModel <- function (time_points, data, times, ids, timeVar) {
         if (!is.matrix(ind)) {
             ind <- rbind(ind)
         }
-        ind <- mapply(`[`, rownams_id, split(ind, col(ind)), SIMPLIFY = FALSE)
+        ind <- mapply2(`[`, rownams_id, split(ind, col(ind)))
     } else {
         ind <- lapply(ind, function (x) {x[x < 1] <- 1; x})
-        ind <- mapply(`[`, rownams_id, ind, SIMPLIFY = FALSE)
+        ind <- mapply2(`[`, rownams_id, ind)
     }
     data <- data[unlist(ind, use.names = FALSE), ]
     data[[timeVar]] <- if (is.matrix(time_points)) {
@@ -222,7 +222,7 @@ desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         D <- LongData_HazardModel(time, data, data[[timeVar]],
                                   data[[idVar]], timeVar)
         mf <- lapply(terms, model.frame.default, data = D)
-        mapply(model.matrix.default, terms, mf, SIMPLIFY = FALSE)
+        mapply2(model.matrix.default, terms, mf)
     }
     degn_matr_slp <- function (time, terms) {
         if (is.list(time)) {
@@ -234,7 +234,7 @@ desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
             M1 <- desgn_matr(time + 0.001, terms)
             M2 <- desgn_matr(time - 0.001, terms)
         }
-        mapply(function (x1, x2) (x1 - x2) / 0.002, M1, M2, SIMPLIFY = FALSE)
+        mapply2(function (x1, x2) (x1 - x2) / 0.002, M1, M2)
     }
     degn_matr_area <- function (time, terms) {
         if (!is.list(time)) {
@@ -354,10 +354,10 @@ SurvData_HazardModel <- function (time_points, data, times, ids) {
         if (!is.matrix(ind)) {
             ind <- rbind(ind)
         }
-        ind <- mapply(`[`, rownams_id, split(ind, col(ind)), SIMPLIFY = FALSE)
+        ind <- mapply2(`[`, rownams_id, split(ind, col(ind)))
     } else {
         ind <- lapply(ind, function (x) {x[x < 1] <- 1; x})
-        ind <- mapply(`[`, rownams_id, ind, SIMPLIFY = FALSE)
+        ind <- mapply2(`[`, rownams_id, ind)
     }
     data <- data[unlist(ind, use.names = FALSE), ]
 }
@@ -583,13 +583,13 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     start <- dataL[[time_var]]
     fid <- dataL[[idVar]]
     fid <- factor(fid, levels = unique(fid))
-    stop <- unlist(mapply(`c`, tapply(start, fid, tail, n = -1), split(Time_right, idT),
-                          SIMPLIFY = FALSE), use.names = FALSE)
+    stop <- unlist(mapply2(`c`, tapply(start, fid, tail, n = -1),
+                           split(Time_right, idT)), use.names = FALSE)
     create_event <- function (ni, delta) {
         if (ni == 1) delta else c(rep(0, ni - 1), delta)
     }
-    event <- unlist(mapply(create_event, ni = tapply(fid, fid, length), delta,
-                           SIMPLIFY = FALSE), use.names = FALSE)
+    event <- unlist(mapply2(create_event, ni = tapply(fid, fid, length), delta),
+                    use.names = FALSE)
     any_gammas <- !(ncol(W_init) == 1 && all(W_init[, 1] == 0))
     WW <- if (any_gammas) cbind(W_init, Wlong_init) else Wlong_init
     ####
@@ -843,7 +843,7 @@ mapply2 <- function (FUN, ..., MoreArgs = NULL, USE.NAMES = TRUE) {
 
 # help function to extract mcmc lists
 ggextractmcmc <- function(mcmc_list) {
-    fun1 <- function(x) do.call(rbind, x) 
+    fun1 <- function(x) do.call(rbind, x)
     tmp <- lapply(mcmc_list, fun1)
     tmp2 <- lapply(mcmc_list, FUN = function(x) ncol(fun1(x)))
     list(do.call(cbind, tmp), do.call(c, tmp2))
@@ -852,8 +852,8 @@ ggextractmcmc <- function(mcmc_list) {
 # prepare data in a nice format to work with ggplot
 # this can be exported in case a user wants to work with ggplot
 # and use his/her own colors themes etc.
-ggprepare <- function(object, 
-                      parm = c("all", "betas", "sigmas", "D", "bs_gammas", 
+ggprepare <- function(object,
+                      parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                "tau_bs_gammas", "gammas", "alphas")) {
     parm <- match.arg(parm)
     n_chains <- object$control$n_chains
@@ -868,8 +868,8 @@ ggprepare <- function(object,
     reps <- n_parms_each_fam * (n_iter * n_chains)
     parm_fam <- rep(parm_fam, times = reps)
     parm_fam <- gsub('[[:digit:]]+', '', parm_fam)
-    ggdata <- expand.grid('iteration' = 1:n_iter, 
-                          'chain' = 1:n_chains, 
+    ggdata <- expand.grid('iteration' = 1:n_iter,
+                          'chain' = 1:n_chains,
                           'parm' = parms)
     ggdata$value <- as.vector(widedat)
     ggdata$parm_fam <- parm_fam
@@ -890,10 +890,10 @@ ggprepare <- function(object,
 ggcolthemes <- list(
     'standard' = c("1" = '#363636', "2" = '#f25f5c', "3" = '#247ba0'),
     'catalog' = c("1" = '#cc2a36', "2" = '#edc951', "3" = '#00a0b0'),
-    'metro' = c("1" = '#d11141', "2" = '#00aedb', "3" = '#ffc425'), 
-    'pastel' = c("1" = '#a8e6cf', "2" = '#ffd3b6', "3" = '#ff8b94'), 
-    'beach' = c("1" = '#ff6f69', "2" = '#ffcc5c', "3" = '#88d8b0'), 
-    'moonlight' = c("1" = '#3da4ab', "2" = '#f6cd61', "3" = '#fe8a71'), 
-    'goo' = c("1" = '#008744', "2" = '#0057e7', "3" = '#d62d20'), 
+    'metro' = c("1" = '#d11141', "2" = '#00aedb', "3" = '#ffc425'),
+    'pastel' = c("1" = '#a8e6cf', "2" = '#ffd3b6', "3" = '#ff8b94'),
+    'beach' = c("1" = '#ff6f69', "2" = '#ffcc5c', "3" = '#88d8b0'),
+    'moonlight' = c("1" = '#3da4ab', "2" = '#f6cd61', "3" = '#fe8a71'),
+    'goo' = c("1" = '#008744', "2" = '#0057e7', "3" = '#d62d20'),
     'sunset' = c("1" = '#f67e7d', "2" = '#843b62', "3" = '#0b032d')
 )
