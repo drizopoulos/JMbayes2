@@ -150,10 +150,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   }
   vec WlongH_alphas = Wlong_H * alphas;
   vec Wlongh_alphas(W0_h.n_rows);
+  vec WlongH2_alphas(W0_H2.n_rows);
   if (any_event) {
     Wlongh_alphas = Wlong_h * alphas;
   }
-  vec WlongH2_alphas(W0_H2.n_rows);
   if (any_interval) {
     WlongH2_alphas = Wlong_H2 * alphas;
   }
