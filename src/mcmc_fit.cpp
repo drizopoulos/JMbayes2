@@ -157,17 +157,19 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   if (any_interval) {
     WlongH2_alphas = Wlong_H2 * alphas;
   }
+  vec logLik_surv =
+    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+             WH_gammas, Wh_gammas, WH2_gammas,
+             WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+             log_Pwk, log_Pwk2, id_H_fast,
+             which_event, which_right_event, which_left,
+             any_interval, which_interval);
+  double denominator_surv =
+    sum(logLik_surv) +
+    logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
+    logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
+    logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
   for (uword it = 0; it < n_iter; ++it) {
-    double denominator_surv =
-      sum(log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-               WH_gammas, Wh_gammas, WH2_gammas,
-               WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-               log_Pwk, log_Pwk2, id_H_fast,
-               which_event, which_right_event, which_left,
-               any_interval, which_interval)) +
-      logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
-      logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
-      logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
     update_bs_gammas(bs_gammas, gammas, alphas,
                      W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                      WH_gammas, Wh_gammas, WH2_gammas,
@@ -178,7 +180,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                      prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
                      prior_mean_gammas, prior_Tau_gammas,
                      prior_mean_alphas, prior_Tau_alphas,
-                     denominator_surv, it,
+                     logLik_surv, denominator_surv, it,
                      /////
                      W0_H, W0_h, W0_H2, scale_bs_gammas, acceptance_bs_gammas,
                      res_bs_gammas);
@@ -199,7 +201,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
                     prior_mean_gammas, prior_Tau_gammas,
                     prior_mean_alphas, prior_Tau_alphas,
-                    denominator_surv, it,
+                    logLik_surv, denominator_surv, it,
                     /////
                     W_H, W_h, W_H2, scale_gammas, acceptance_gammas,
                     res_gammas);
@@ -216,7 +218,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                   prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
                   prior_mean_gammas, prior_Tau_gammas,
                   prior_mean_alphas, prior_Tau_alphas,
-                  denominator_surv, it,
+                  logLik_surv, denominator_surv, it,
                   /////
                   Wlong_H, Wlong_h, Wlong_H2, scale_alphas,
                   acceptance_alphas, res_alphas);
