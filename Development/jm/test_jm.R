@@ -157,7 +157,7 @@ summary(obj)
 coda::autocorr.diag(obj$mcmc$D)
 coda::cumuplot(obj$mcmc$alphas)
 
-traceplot(obj, "D")
+traceplot(obj)
 ggtraceplot(obj)
 gelman_diag(obj)
 
@@ -199,7 +199,7 @@ system.time({
 
 FF <- list("log(serBilir)" = ~ value(log(serBilir)) * slope(log(serBilir)),
            "ascites" = ~ value(ascites) + area(ascites):drug)
-system.time(obj <- jm(Cox, Mixed, time_var = "year", functional_forms = FF))
+system.time(obj <- jm(Cox, Mixed, time_var = "year"))
 
 summary(obj)
 
@@ -248,8 +248,8 @@ fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
 test <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
            functional_forms = fForms)
 
-################################################################################
-################################################################################
+####
+
 Surv_object = CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 time_var = "year"
@@ -263,7 +263,26 @@ priors = NULL
 control = NULL
 
 
+################################################################################
+################################################################################
 
 
+fm1 <- lme(log(serBilir) ~ year, data = pbc2, random = ~ year | id)
+CoxFit <- coxph(Surv(years, status2) ~ 1, data = pbc2.id)
+test <- jm(CoxFit, list(fm1), time_var = "year")
 
+####
+
+Surv_object = CoxFit
+Mixed_objects = list(fm1)
+time_var = "year"
+functional_forms = NULL
+data_Surv = NULL
+id_var = NULL
+priors = NULL
+control = NULL
+#
+model_data <- Data
+control <- con
+control$n_chains = 1
 
