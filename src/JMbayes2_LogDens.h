@@ -183,7 +183,7 @@ vec log_b (const field<mat> &X, const field<mat> &X_H, const field<mat> &X_h, co
   field<vec> eta = linpred_mixed(X, betas, Z, b, id);
   vec logLik_long = log_long(y, eta, scales, extra_parms, families, links, ids, unq_ids);
   // log_pb
-  vec log_pb = log_dmvnrm_chol(b_mat, chol_S);
+  vec log_re = log_dmvnrm_chol(b_mat, chol_S);
   // log_lik_surv
   field<mat> eta_H = linpred_surv(X_H, betas, Z_H, b, id_H);
   Wlong_H = docall_cbindF(create_Wlong(eta_H, FunForms, U_H, FunForms_ind));
@@ -211,7 +211,7 @@ vec log_b (const field<mat> &X, const field<mat> &X_H, const field<mat> &X_h, co
                               which_event, which_right_event, which_left,
                               any_interval, which_interval);
   // 
-  vec out = logLik_long + log_pb + log_lik_surv;
+  vec out = logLik_long + log_re + log_lik_surv;
   return out;
 }
 
