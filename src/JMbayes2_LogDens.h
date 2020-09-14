@@ -88,19 +88,25 @@ vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
   vec lambda_h(n);
   lambda_h.elem(which_event) = W0h_bs_gammas.elem(which_event) +
     Wh_gammas.elem(which_event) + Wlongh_alphas.elem(which_event);
-  vec log_Lik_surv(n);
-  log_Lik_surv.elem(which_right_event) = - H.elem(which_right_event);
-  log_Lik_surv.elem(which_event) += lambda_h.elem(which_event);
-  log_Lik_surv.elem(which_left) = log1p(- exp(- H.elem(which_left)));
+  vec out(n);
+  out.elem(which_right_event) = - H.elem(which_right_event);
+  out.elem(which_event) += lambda_h.elem(which_event);
+  out.elem(which_left) = log1p(- exp(- H.elem(which_left)));
   vec lambda_H2(lambda_H.n_rows);
   vec H2(n);
   if (any_interval) {
     lambda_H2 = W0H2_bs_gammas + WH2_gammas + WlongH2_alphas;
     H2 = group_sum(exp(log_Pwk2 + lambda_H2), indFast_H);
-    log_Lik_surv.elem(which_interval) = - H.elem(which_interval) +
+    out.elem(which_interval) = - H.elem(which_interval) +
       log(- expm1(- H2.elem(which_interval)));
   }
-  return log_Lik_surv;
+  return out;
+}
+
+vec log_re (const mat &b, const mat &L, const vec &sds) {
+  mat chol_Sigma = L.each_row() % sds.t();
+  vec out = log_dmvnrm_chol(b, chol_Sigma);
+  return out;
 }
 
 vec logLik (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
@@ -124,9 +130,8 @@ vec logLik (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
                              log_Pwk2, indFast_H, which_event,
                              which_right_event, which_left, any_interval,
                              which_interval);
-  mat chol_D = L.each_row() % sds.t();
-  vec logLik_D = log_dmvnrm_chol(b_mat, chol_D);
-  vec out = logLik_long + logLik_surv + logLik_D;
+  vec logLik_re = log_re(b_mat, L, sds);
+  vec out = logLik_long + logLik_surv + logLik_re;
   return out;
 }
 
