@@ -573,7 +573,7 @@ field<mat> Xbeta_calc (const field<mat> &X, const field<vec> &betas) {
 
 cube chol_cube (const cube &S) {
   cube out = S;
-  out.each_slice( [&] (mat &X) {chol(X); } );
+  out.each_slice([](mat &X){X = chol(X);});
   return out;
 }
 
