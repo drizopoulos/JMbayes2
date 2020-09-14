@@ -41,7 +41,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<mat> U_h = List2Field_mat(as<List>(model_data["U_h"]));
   field<mat> U_H2 = List2Field_mat(as<List>(model_data["U_H2"]));
   //
-  cube vcov_prop_RE = as<cube>(vcov_prop["vcov_prop_RE"]);
+  field<mat> X = List2Field_mat(as<List>(model_data["X"]));
+  field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
+  field<vec> y = List2Field_vec(as<List>(initial_values["y"]));
+  //
+  cube S = as<cube>(vcov_prop["vcov_prop_RE"]);
+  cube chol_S = chol_cube(S);
   //
   mat Wlong_H = docall_cbindL(as<List>(model_data["Wlong_H"]));
   mat Wlong_h = docall_cbindL(as<List>(model_data["Wlong_h"]));
@@ -65,8 +70,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<uvec> x_in_z = List2Field_uvec(as<List>(model_data["x_in_z"]), true);
   field<uvec> x_notin_z = List2Field_uvec(as<List>(model_data["x_notin_z"]), true);
   field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
-  //List ind_RE_ = as<List>(model_info["ind_RE"]);
-  //field<uvec> ind_RE = List2Field_uvec(ind_RE_, true);
+  field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
+  //vec extra_parms = as<vec>(model_data["extra_parms"]);
+  CharacterVector families = as<CharacterVector>(model_info["families"]);
+  CharacterVector links = as<CharacterVector>(model_info["links"]);
   // initial values
   vec bs_gammas = as<vec>(initial_values["bs_gammas"]);
   vec gammas = as<vec>(initial_values["gammas"]);
