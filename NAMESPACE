@@ -8,7 +8,7 @@ importFrom("stats", "coef", "terms", "model.frame", "model.frame.default",
            "model.matrix", "model.matrix.default", "family", "lm.fit", "sd",
            "ar", "var", "vcov", "optim", "delete.response", "model.response",
            "rnorm", "quantile", "runif", "rlnorm", "cov2cor", "as.formula",
-           "gaussian")
+           "gaussian", ".getXlevels")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply")
 importFrom("nlme", "fixef", "ranef", "pdMatrix")
 importFrom("GLMMadaptive", "effectPlotData")
@@ -20,6 +20,7 @@ importFrom("ggplot2", "ggplot", "geom_density", "aes", "ggtitle", "theme_bw",
            "theme", "element_text", "scale_color_manual", "scale_fill_manual",
            "guide_legend", "geom_line", "guides")
 importFrom("gridExtra", "marrangeGrob")
+importFrom("matrixStats", "rowQuantiles")
 
 
 useDynLib(JMbayes2, .registration = TRUE)

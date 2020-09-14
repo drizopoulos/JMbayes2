@@ -160,24 +160,25 @@ double logLik_prior (const mat &L, const vec &sds,
   return out;
 }
 
-vec log_b (const field<mat> &X, const field<mat> &X_H, const field<mat> &X_h, const field<mat> &X_H2, 
-           const field<mat> &Z, const field<mat> &Z_H, const field<mat> &Z_h, const field<mat> &Z_H2, 
-           const field<mat> &U_H, const field<mat> &U_h, const field<mat> &U_H2, 
-           const field<vec> &betas, 
-           const field<mat> &b, const mat &b_mat, 
-           const field<mat> &y, const vec &scales, const mat &chol_S, 
-           const vec &extra_parms, const CharacterVector &families, const CharacterVector &links, 
-           const field<uvec> &id, const uvec &id_H, const uvec &id_h, 
+/*
+vec log_b (const field<mat> &X, const field<mat> &X_H, const field<mat> &X_h, const field<mat> &X_H2,
+           const field<mat> &Z, const field<mat> &Z_H, const field<mat> &Z_h, const field<mat> &Z_H2,
+           const field<mat> &U_H, const field<mat> &U_h, const field<mat> &U_H2,
+           const field<vec> &betas,
+           const field<mat> &b, const mat &b_mat,
+           const field<mat> &y, const vec &scales, const mat &chol_S,
+           const vec &extra_parms, const CharacterVector &families, const CharacterVector &links,
+           const field<uvec> &id, const uvec &id_H, const uvec &id_h,
            const field<uvec> &ids, const field<uvec> &unq_ids,
            const mat &W0_h, const mat &W0_H2,
            const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
            const vec &W0H2_bs_gammas, const vec &WH_gammas,
-           const vec &Wh_gammas, const vec &WH2_gammas, 
-           const vec &alphas, 
+           const vec &Wh_gammas, const vec &WH2_gammas,
+           const vec &alphas,
            const vec &log_Pwk, const vec &log_Pwk2,
            const uvec &indFast_H, const uvec &which_event,
            const uvec &which_right_event, const uvec &which_left,
-           const bool &any_interval, const uvec &which_interval, 
+           const bool &any_interval, const uvec &which_interval,
            const field<uvec> &FunForms, const field<uvec> &FunForms_ind) {
   // log_lik_y
   field<vec> eta = linpred_mixed(X, betas, Z, b, id);
@@ -210,9 +211,10 @@ vec log_b (const field<mat> &X, const field<mat> &X_H, const field<mat> &X_h, co
                               log_Pwk, log_Pwk2, indFast_H,
                               which_event, which_right_event, which_left,
                               any_interval, which_interval);
-  // 
+  //
   vec out = logLik_long + log_re + log_lik_surv;
   return out;
 }
+*/
 
 #endif

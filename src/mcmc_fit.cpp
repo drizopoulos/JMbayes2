@@ -43,7 +43,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   //
   field<mat> X = List2Field_mat(as<List>(model_data["X"]));
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
-  field<vec> y = List2Field_vec(as<List>(initial_values["y"]));
+  field<mat> y = List2Field_mat(as<List>(model_data["y"]));
   //
   cube S = as<cube>(vcov_prop["vcov_prop_RE"]);
   cube chol_S = chol_cube(S);
@@ -72,7 +72,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
   //vec extra_parms = as<vec>(model_data["extra_parms"]);
-  CharacterVector families = as<CharacterVector>(model_info["families"]);
+  CharacterVector families = as<CharacterVector>(model_info["family_names"]);
   CharacterVector links = as<CharacterVector>(model_info["links"]);
   // initial values
   vec bs_gammas = as<vec>(initial_values["bs_gammas"]);
@@ -176,6 +176,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
     logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
     logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
+  //
+  vec logLik_re = log_re(b_mat, L, sds);
+  //
   for (uword it = 0; it < n_iter; ++it) {
     update_bs_gammas(bs_gammas, gammas, alphas,
                      W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
@@ -232,7 +235,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     ////////////////////////////////////////////////////////////////////////
     update_D(L, sds, b_mat, upper_part,
              prior_D_sds_df, prior_D_sds_sigma, prior_D_L_etaLKJ,
-             it, MALA, res_sds, res_L, scale_sds, scale_L,
+             it, MALA, logLik_re, res_sds, res_L, scale_sds, scale_L,
              acceptance_sds, acceptance_L);
     ////////////////////////////////////////////////////////////////////////
     // update_b()...
