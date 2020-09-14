@@ -102,6 +102,12 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # create design matrices for mixed models
     X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL, SIMPLIFY = FALSE)
     Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL, SIMPLIFY = FALSE)
+    ind_RE <- lapply(Z, FUN = function(x) seq_len(ncol(x)))
+    if (length(ind_RE) > 1) {
+        for (i in 2:length(ind_RE)) {
+            ind_RE[[i]] <- max(ind_RE[[i - 1]])
+        }
+    }
     componentsHC <- mapply2(create_HC_X2, X, Z, idL)
     Xbase <- lapply(componentsHC, "[[", "Xbase")
     baseline <- lapply(componentsHC, "[[", "baseline")
@@ -378,7 +384,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                  W0_H = W0_H, W_H = W_H, X_H = X_H, Z_H = Z_H, U_H = U_H,
                  W0_h = W0_h, W_h = W_h, X_h = X_h, Z_h = Z_h, U_h = U_h,
                  W0_H2 = W0_H2, W_H2 = W_H2, X_H2 = X_H2, Z_H2 = Z_H2, U_H2 = U_H2,
-                 log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2)
+                 log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2, 
+                 ind_RE = ind_RE)
     ############################################################################
     ############################################################################
     # objects to export
