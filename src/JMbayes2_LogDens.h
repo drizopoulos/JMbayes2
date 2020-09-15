@@ -36,7 +36,7 @@ vec log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
     } else if (families[i] == "beta") {
       log_contr = log_dbeta(y_i, mu_i * sigma_i, sigma_i * (1 - mu_i));
     } else if (families[i] == "Gamma") {
-      log_contr = log_dgamma(y_i, square(mu_i) / sigma_i, sigma_i / mu_i);
+      log_contr = log_dgamma(y_i, sigma_i, mu_i / sigma_i);
     } else if (families[i] == "unit Lindley") {
       vec theta = 1 / mu_i - 1;
       vec comp1 = 2 * log(theta) - log(1 + theta);
