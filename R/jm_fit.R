@@ -41,6 +41,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
                                  model_data$Wlong_bar)
     model_data$Wlong_H2 <- mapply2(center_fun, model_data$Wlong_H2,
                                   model_data$Wlong_bar)
+    model_data$Wlong_bar <- lapply(model_data$Wlong_bar, rbind)
     # unlist priors and initial values for alphas
     initial_values$alphas <- unlist(initial_values$alphas, use.names = FALSE)
     priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
@@ -139,8 +140,9 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     get_acc_rates <- function (name_parm) {
         do.call("rbind", lapply(out, function (x) x[["acc_rate"]][[name_parm]]))
     }
-    parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "D",
-               paste0("betas", seq_along(model_data$X)), "sigmas")
+    parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
+               "Wlong_bar_alphas", "D", paste0("betas", seq_along(model_data$X)),
+               "sigmas")
     if (!length(attr(model_info$terms$terms_Surv_noResp, "term.labels")))
         parms <- parms[parms != "gammas"]
     mcmc_out <- lapply_nams(parms, convert2_mcmclist)

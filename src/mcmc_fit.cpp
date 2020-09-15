@@ -51,8 +51,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat Wlong_H = docall_cbindL(as<List>(model_data["Wlong_H"]));
   mat Wlong_h = docall_cbindL(as<List>(model_data["Wlong_h"]));
   mat Wlong_H2 = docall_cbindL(as<List>(model_data["Wlong_H2"]));
-  //List Wlong_bar_ = as<List>(model_data["Wlong_bar"]);
-  //field<mat> Wlong_bar = List2Field_mat(Wlong_bar_);
+  mat Wlong_bar = docall_cbindL(as<List>(model_data["Wlong_bar"]));
   field<mat> Xbase = List2Field_mat(as<List>(model_data["Xbase"]));
   // other information
   uvec idT = as<uvec>(model_data["idT"]) - 1;
@@ -117,9 +116,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat res_bs_gammas(n_iter, n_bs_gammas);
   mat acceptance_bs_gammas(n_iter, n_bs_gammas, fill::zeros);
   mat res_gammas(n_iter, n_gammas);
-  vec res_W_bar_gammas(n_iter);
+  mat res_W_bar_gammas(n_iter, 1);
   mat acceptance_gammas(n_iter, n_gammas, fill::zeros);
   mat res_alphas(n_iter, n_alphas);
+  mat res_Wlong_bar_alphas(n_iter, 1);
   mat acceptance_alphas(n_iter, n_alphas, fill::zeros);
   mat res_tau_bs_gammas(n_iter, 1, fill::zeros);
   mat res_sds(n_iter, n_sds, fill::zeros);
@@ -232,6 +232,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                   /////
                   Wlong_H, Wlong_h, Wlong_H2, scale_alphas,
                   acceptance_alphas, res_alphas);
+    res_Wlong_bar_alphas.at(it) = as_scalar(Wlong_bar * alphas);
     ////////////////////////////////////////////////////////////////////////
     update_D(L, sds, b_mat, upper_part,
              prior_D_sds_df, prior_D_sds_sigma, prior_D_L_etaLKJ,
@@ -252,6 +253,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("gammas") = res_gammas.rows(n_burnin, n_iter - 1),
       Named("W_bar_gammas") = res_W_bar_gammas.rows(n_burnin, n_iter - 1),
       Named("alphas") = res_alphas.rows(n_burnin, n_iter - 1),
+      Named("Wlong_bar_alphas") = res_Wlong_bar_alphas.rows(n_burnin, n_iter - 1),
       Named("sds") = res_sds.rows(n_burnin, n_iter - 1),
       Named("L") = res_L.rows(n_burnin, n_iter - 1)
     ),
@@ -261,10 +263,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("alphas") = acceptance_alphas.rows(n_burnin, n_iter - 1),
       Named("sds") = acceptance_sds.rows(n_burnin, n_iter - 1),
       Named("L") = acceptance_L.rows(n_burnin, n_iter - 1)
-    ),
-    Named("mean_u") = mean_u,
-    Named("Wlong_H") = Wlong_H,
-    Named("Wlong_h") = Wlong_h,
-    Named("Wlong_H2") = Wlong_H2
+    )
   );
 }

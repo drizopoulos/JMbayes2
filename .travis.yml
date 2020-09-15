@@ -13,7 +13,7 @@ os:
 r:
   - release
   - devel
- 
+
 cran: http://cran.rstudio.com
 repos:
   CRAN: http://cran.rstudio.com
@@ -22,5 +22,12 @@ r_packages:
   - knitr
   - rmarkdown
   - pkgdown
-  - geepack
+  - nlme
+  - GLMMadaptive
+  - coda
+  - matrixStats
+  - splines
+  - parallel
+  - ggplot2
+  - gridExtra
   - lattice

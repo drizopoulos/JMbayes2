@@ -213,7 +213,7 @@ control <- obj$control
 Surv_object = Cox
 Mixed_objects = Mixed
 time_var = 'year'
-functional_forms = NULL
+functional_forms = FF
 data_Surv = NULL
 id_var = NULL
 priors = NULL
