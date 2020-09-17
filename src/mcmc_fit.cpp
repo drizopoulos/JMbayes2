@@ -257,6 +257,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     //             U_H, U_h, U_H2, betas, b, id_H, id_h, FunForms, FunForms_ind,
     //             any_event, any_interval);
     ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    // update_sigmas()
   }
   return List::create(
     Named("mcmc") = List::create(
