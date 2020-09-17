@@ -58,7 +58,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
                                    priors, control, vcov_prop) {
             seed_ <- control$seed + chain
             set.seed(seed_)
-            not_D <- names(initial_values) != "D"
+            not_D <- !names(initial_values) %in% c("betas", "D", "b")
             initial_values[not_D] <- lapply(initial_values[not_D], jitter2)
             mcmc_cpp(model_data, model_info, initial_values, priors, control,
                      vcov_prop)
@@ -93,14 +93,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
                 nmn <- paste0("betas", j)
                 out[[i]][["mcmc"]][[nmn]] <- matrix(rnorm(M * k), M, k)
             }
-        }
-    }
-    # create dummy sigmas
-    if (is.null(out[[1]][["mcmc"]][["sigmas"]])) {
-        for (i in seq_along(out)) {
-            M <- nrow(out[[i]][["mcmc"]][["bs_gammas"]])
-            K <- length(model_data$X)
-            out[[i]][["mcmc"]][["sigmas"]] <- matrix(rlnorm(M * K), M, K)
         }
     }
     # reconstruct D matrix

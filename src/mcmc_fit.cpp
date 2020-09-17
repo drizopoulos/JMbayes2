@@ -2,6 +2,8 @@
 #include "JMbayes2_D.h"
 #include "JMbayes2_Surv.h"
 # include "JMbayes2_Long.h"
+# include "JMbayes2_sigmas.h"
+
 
 // [[Rcpp::depends("RcppArmadillo")]]
 
@@ -270,7 +272,11 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     //             any_event, any_interval);
     ////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////
-    // update_sigmas()
+    update_sigmas(sigmas, has_sigmas, y, eta, extra_parms, families, links,
+                  idL_lp_fast, unq_idL, prior_sigmas_df, prior_sigmas_sigma,
+                  it, res_sigmas, scale_sigmas, acceptance_sigmas);
+    vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
+                               idL_lp_fast, unq_idL);
   }
   return List::create(
     Named("mcmc") = List::create(
@@ -281,7 +287,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("alphas") = res_alphas.rows(n_burnin, n_iter - 1),
       Named("Wlong_bar_alphas") = res_Wlong_bar_alphas.rows(n_burnin, n_iter - 1),
       Named("sds") = res_sds.rows(n_burnin, n_iter - 1),
-      Named("L") = res_L.rows(n_burnin, n_iter - 1)
+      Named("L") = res_L.rows(n_burnin, n_iter - 1),
+      Named("sigmas") = res_sigmas.rows(n_burnin, n_iter - 1)
     ),
     Named("acc_rate") = List::create(
       Named("bs_gammas") = acceptance_bs_gammas.rows(n_burnin, n_iter - 1),
