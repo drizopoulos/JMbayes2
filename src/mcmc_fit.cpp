@@ -116,6 +116,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   double prior_D_sds_df = as<double>(priors["prior_D_sds_df"]);
   double prior_D_sds_sigma = as<double>(priors["prior_D_sds_sigma"]);
   double prior_D_L_etaLKJ = as<double>(priors["prior_D_L_etaLKJ"]);
+  double prior_sigmas_df = as<double>(priors["prior_sigmas_df"]);
+  double prior_sigmas_sigma = as<double>(priors["prior_sigmas_sigma"]);
   // store results
   uword n_b = b_mat.n_rows;
   uword n_bs_gammas = bs_gammas.n_rows;
@@ -123,6 +125,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uword n_alphas = alphas.n_rows;
   uword n_sds = sds.n_rows;
   uword n_L = vec(L(upper_part)).n_rows;
+  uword n_sigmas = sigmas.n_rows;
   mat res_bs_gammas(n_iter, n_bs_gammas);
   mat acceptance_bs_gammas(n_iter, n_bs_gammas, fill::zeros);
   mat res_gammas(n_iter, n_gammas);
@@ -136,15 +139,20 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat acceptance_sds(n_iter, n_sds, fill::zeros);
   mat res_L(n_iter, n_L, fill::zeros);
   mat acceptance_L(n_iter, n_L, fill::zeros);
+<<<<<<< Updated upstream
   cube res_b(n_b, b_mat.n_cols, n_iter, fill::zeros);
   mat acceptance_b(n_iter, n_b);
+=======
+  mat res_sigmas(n_iter, n_sigmas, fill::zeros);
+  mat acceptance_sigmas(n_iter, n_sigmas, fill::zeros);
+>>>>>>> Stashed changes
   // scales
   vec scale_bs_gammas = create_init_scale(n_bs_gammas);
   vec scale_gammas = create_init_scale(n_gammas);
   vec scale_alphas = create_init_scale(n_alphas);
   vec scale_sds = create_init_scale(n_sds);
   vec scale_L = create_init_scale(n_L);
-  vec scale_sigmas = create_init_scale(n_b);
+  vec scale_sigmas = create_init_scale(n_sigmas);
   vec scale_b = create_init_scale(n_b);
   // preliminaries
   vec W0H_bs_gammas = W0_H * bs_gammas;

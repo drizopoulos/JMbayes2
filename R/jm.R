@@ -464,7 +464,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                 A_tau_bs_gammas = 1, B_tau_bs_gammas = 0.1,
                 rank_Tau_bs_gammas = qr(Tau_bs_gammas)$rank,
                 prior_D_sds_df = 3.0, prior_D_sds_sigma = 10.0,
-                prior_D_L_etaLKJ = 3.0)
+                prior_D_L_etaLKJ = 3.0, prior_sigmas_df = 3.0,
+                prior_sigmas_sigma = 20.0)
     if (is.null(priors) || !is.list(priors)) {
         priors <- prs
     } else {
