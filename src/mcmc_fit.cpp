@@ -70,8 +70,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<uvec> x_notin_z = List2Field_uvec(as<List>(model_data["x_notin_z"]), true);
   field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
+  field<uvec> idL_lp_fast(idL_lp.n_elem);
+  for (uword i = 0; i < idL_lp.n_elem; ++i) {
+    idL_lp_fast.at(i) = create_fast_ind(idL_lp.at(i));
+  }
+  vec extra_parms = as<vec>(model_data["extra_parms"]);
   field<uvec> ind_RE = List2Field_uvec(as<List>(model_data["ind_RE"]), true);
-  //vec extra_parms = as<vec>(model_data["extra_parms"]);
   CharacterVector families = as<CharacterVector>(model_info["family_names"]);
   CharacterVector links = as<CharacterVector>(model_info["links"]);
   // initial values
@@ -88,6 +92,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat R = cov2cor(D);
   mat L = chol(R);
   field<vec> betas = List2Field_vec(as<List>(initial_values["betas"]));
+  vec sigmas = exp(as<vec>(initial_values["log_sigmas"]));
+  uvec has_sigmas = find(sigmas > 1e-07);
   // indexes or other useful things
   uvec upper_part = trimatu_ind(size(R),  1);
   // MCMC settings
@@ -180,6 +186,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
   //
   vec logLik_re = log_re(b_mat, L, sds);
+  //
+  field<vec> eta = linpred_mixed(X, betas, Z, b, idL_lp);
+  vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
+                             idL_lp_fast, unq_idL);
   //
   for (uword it = 0; it < n_iter; ++it) {
     update_bs_gammas(bs_gammas, gammas, alphas,

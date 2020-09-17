@@ -269,6 +269,8 @@ vec mu_fun (const vec &eta, const std::string &link) {
   vec out(n);
   if (link == "identity") {
     out = eta;
+  } else if (link == "inverse") {
+    out = 1 / eta;
   } else if (link == "logit") {
     out = 1 / (1 + trunc_exp(- eta));
   } else if (link == "probit") {
