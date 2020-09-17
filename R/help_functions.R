@@ -377,7 +377,7 @@ extract_log_sigmas <- function (object) {
     } else {
         object$phis
     }
-    if (is.null(out)) out <- 0.0
+    if (is.null(out)) out <- -20.0
     out
 }
 

@@ -10,7 +10,6 @@
 using namespace Rcpp;
 using namespace arma;
 
-
 void update_sigmas (vec &sigmas, const uvec &has_sigmas,
                     const field<mat> &y, const field<vec> &eta,
                     const vec &extra_parms, const CharacterVector &families,
