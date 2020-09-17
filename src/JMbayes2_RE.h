@@ -115,7 +115,7 @@ void update_b (field<mat> &b, mat &b_mat, const cube &chol_S, vec &scale_b,
                const uvec &which_interval,
                const mat &L, const vec &sds, vec &denominator_b, 
                const uword &it, const uword &n_rows_W0_h, 
-               const uword &n_rows_W0_H2, mat &acceptance_b
+               const uword &n_rows_W0_H2, mat &acceptance_b, cube &res_b
                ) {
   // propose new random effects in mat and field<mat> form
   mat proposed_b = propose_mvnorm_mat(1, chol_S, scale_b) + b_mat;
@@ -150,7 +150,7 @@ void update_b (field<mat> &b, mat &b_mat, const cube &chol_S, vec &scale_b,
         robbins_monro(scale_b.at(i),
                       acceptance_b.at(i, it), it);
     }
-    res_b.row(i) = b_mat.row(i);
+    res_b.slice(it).row(i) = b_mat.row(i);
   }
   b = mat2field_mat(b_mat, ind_RE);
 }
