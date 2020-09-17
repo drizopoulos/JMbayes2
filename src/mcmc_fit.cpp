@@ -96,6 +96,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uvec has_sigmas = find(sigmas > 1e-07);
   // indexes or other useful things
   uvec upper_part = trimatu_ind(size(R),  1);
+  uword n_rows_W0_H = W0_H.n_rows;
+  uword n_rows_W0_h = W0_h.n_rows;
+  uword n_rows_W0_H2 = W0_H2.n_rows;
   // MCMC settings
   uword n_iter = as<uword>(control["n_iter"]);
   uword n_burnin = as<uword>(control["n_burnin"]);
@@ -143,17 +146,17 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec scale_b = create_init_scale(n_b);
   // preliminaries
   vec W0H_bs_gammas = W0_H * bs_gammas;
-  vec W0h_bs_gammas(W0_h.n_rows);
-  vec W0H2_bs_gammas(W0_H2.n_rows);
+  vec W0h_bs_gammas(n_rows_W0_h);
+  vec W0H2_bs_gammas(n_rows_W0_H2);
   if (any_event) {
     W0h_bs_gammas = W0_h * bs_gammas;
   }
   if (any_interval) {
     W0H2_bs_gammas = W0_H2 * bs_gammas;
   }
-  vec WH_gammas(W0_H.n_rows);
-  vec Wh_gammas(W0_h.n_rows);
-  vec WH2_gammas(W0_H2.n_rows);
+  vec WH_gammas(n_rows_W0_H);
+  vec Wh_gammas(n_rows_W0_h);
+  vec WH2_gammas(n_rows_W0_H2);
   if (any_gammas) {
     WH_gammas = W_H * gammas;
   }
@@ -164,8 +167,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     WH2_gammas = WH2_gammas * gammas;
   }
   vec WlongH_alphas = Wlong_H * alphas;
-  vec Wlongh_alphas(W0_h.n_rows);
-  vec WlongH2_alphas(W0_H2.n_rows);
+  vec Wlongh_alphas(n_rows_W0_h);
+  vec WlongH2_alphas(n_rows_W0_H2);
   if (any_event) {
     Wlongh_alphas = Wlong_h * alphas;
   }
