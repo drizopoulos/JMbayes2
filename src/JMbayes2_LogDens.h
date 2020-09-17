@@ -79,8 +79,8 @@ vec log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
     std::string link_i = std::string(links[i]);
     uvec idFast_i = idFast.at(i);
     uvec unq_id_i = unq_ids.at(i);
-    vec log_contr_i = log_long_i (y_i, eta_i, sigma_i, extr_prm_i, fam_i,
-                                  link_i, idFast_i);
+    vec log_contr_i = log_long_i(y_i, eta_i, sigma_i, extr_prm_i, fam_i,
+                                 link_i, idFast_i);
     out.elem(unq_id_i) += log_contr_i;
   }
   return out;
