@@ -134,6 +134,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec scale_sds = create_init_scale(n_sds);
   vec scale_L = create_init_scale(n_L);
   vec scale_sigmas = create_init_scale(n_b);
+  vec scale_b = create_init_scale(n_b);
   // preliminaries
   vec W0H_bs_gammas = W0_H * bs_gammas;
   vec W0h_bs_gammas(W0_h.n_rows);
