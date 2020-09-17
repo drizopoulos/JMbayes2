@@ -150,7 +150,7 @@ void update_b (field<mat> &b, mat &b_mat, const cube &chol_S, vec &scale_b,
         robbins_monro(scale_b.at(i),
                       acceptance_b.at(i, it), it);
     }
-    res_b.slice(it).row(i) = b_mat.row(i);
   }
+  res_b.slice(it) = b_mat;
   b = mat2field_mat(b_mat, ind_RE);
 }
