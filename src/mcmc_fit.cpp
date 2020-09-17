@@ -194,6 +194,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
                              idL_lp_fast, unq_idL);
   //
+  vec denominator_b = logLik_long + logLik_re + logLik_surv;
+  //
   for (uword it = 0; it < n_iter; ++it) {
     update_bs_gammas(bs_gammas, gammas, alphas,
                      W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
