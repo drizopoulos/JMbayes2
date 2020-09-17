@@ -70,6 +70,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<uvec> x_notin_z = List2Field_uvec(as<List>(model_data["x_notin_z"]), true);
   field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
+  field<uvec> ind_RE = List2Field_uvec(as<List>(model_data["ind_RE"]), true);
   //vec extra_parms = as<vec>(model_data["extra_parms"]);
   CharacterVector families = as<CharacterVector>(model_info["family_names"]);
   CharacterVector links = as<CharacterVector>(model_info["links"]);
