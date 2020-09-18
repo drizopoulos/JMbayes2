@@ -13,7 +13,7 @@ using namespace arma;
 
 void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                vec &logLik_long, vec &logLik_surv, vec &logLik_re, 
-               mat &Wlong_H, mat &Wlong_h, mat & Wlong_H2, 
+               mat &Wlong_H, mat &Wlong_h, mat &Wlong_H2, 
                const cube &chol_S, vec &scale_b, 
                const field<uvec> &ind_RE, 
                const field<mat> &X_H, const field<mat> &X_h, const field<mat> &X_H2,
@@ -22,7 +22,6 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const field<vec> &betas, const vec &alphas, 
                const uvec &id_H, const uvec &id_h,
                const field<uvec> &FunForms, const field<uvec> &FunForms_ind,
-               const bool &any_event, const bool &any_interval, 
                const field<mat> &X, const field<mat> &Z, 
                const field<uvec> &id, const field<mat> &y,  const vec &sigmas,
                const vec &extra_parms, const CharacterVector &families,
@@ -33,7 +32,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const vec &log_Pwk, const vec &log_Pwk2,
                const uvec &indFast_H, const uvec &which_event,
                const uvec &which_right_event, const uvec &which_left,
-               const uvec &which_interval,
+               const uvec &which_interval, const bool &any_event, const bool &any_interval, 
                const mat &L, const vec &sds,
                const uword &it, const uword &n_rows_W0_h, 
                const uword &n_rows_W0_H2, const field<uvec> &rows_Wlong_H,
@@ -93,7 +92,6 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
       Wlong_H.rows(rows_Wlong_H.at(i)) = Wlong_H_proposed.rows(rows_Wlong_H.at(i));
       Wlong_h.row(i) = Wlong_h_proposed.row(i);
       Wlong_H2.row(i) = Wlong_H2_proposed.row(i);
-      
     }
     if (it > 19) {
       scale_b.at(i) =
