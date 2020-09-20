@@ -30,6 +30,17 @@ void update_Wlong (mat &Wlong_H, mat &Wlong_h, mat &Wlong_H2,
   }
 }
 
+mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
+                     const field<mat> &U, const mat &Wlong_bar,
+                     const field<vec> &betas, const field<mat> &b,
+                     const uvec &id, const field<uvec> &FunForms,
+                     const field<uvec> &FunForms_ind) {
+  field<mat> eta = linpred_surv(X, betas, Z, b, id);
+  mat Wlong = docall_cbindF(create_Wlong(eta, FunForms, U, FunForms_ind));
+  Wlong.each_row() -= Wlong_bar;
+  return Wlong;
+}
+
 void update_mean_u (field<mat> &mean_u, const field<vec> &betas,
                     const field<mat> &Xbase, const field<uvec> &x_in_z,
                     const field<uvec> &baseline, const field<uvec> &unq_idL) {

@@ -126,6 +126,12 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
                    seq_along(out[[i]][["mcmc"]][["sigmas"]][1, ]))
 
     }
+    # drop sigmas that are not needed
+    has_sigmas <- initial_values$log_sigmas > -20.0
+    for (i in seq_along(out)) {
+        out[[i]][["mcmc"]][["sigmas"]] <-
+            out[[i]][["mcmc"]][["sigmas"]][, has_sigmas, drop = FALSE]
+    }
     convert2_mcmclist <- function (name) {
         as.mcmc.list(lapply(out, function (x) as.mcmc(x$mcmc[[name]])))
     }

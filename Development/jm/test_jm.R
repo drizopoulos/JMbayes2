@@ -197,7 +197,7 @@ system.time({
     Cox <- coxph(Surv(years, status2) ~ 1, data = pbc2.id)
 })
 
-FF <- list("log(serBilir)" = ~ value(log(serBilir)) * slope(log(serBilir)),
+FF <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)),
            "ascites" = ~ value(ascites) + area(ascites):drug)
 system.time(obj <- jm(Cox, Mixed, time_var = "year"))
 
@@ -218,7 +218,10 @@ data_Surv = NULL
 id_var = NULL
 priors = NULL
 control = NULL
-
+#
+model_data <- Data
+control <- con
+control$n_chains = 1
 
 
 

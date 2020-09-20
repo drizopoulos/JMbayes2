@@ -1,6 +1,3 @@
-# model_data = Data
-# control = con
-
 create_Wlong_mats <- function (model_data, model_info, initial_values, priors,
                                control) {
     betas <- initial_values$betas
@@ -58,7 +55,7 @@ create_Wlong_mats <- function (model_data, model_info, initial_values, priors,
         eta_H2 <- linpred_surv(X_H2, betas, Z_H, b, id_H2)
         Wlong_H2 <- create_Wlong(eta_H2, FunForms_per_outcome, U_H2)
     } else {
-        Wlong_H2 <- rep(list(matrix(0.0, length(Time_right), 1)), length(Wlong_H))
+        Wlong_H2 <- rep(list(matrix(0.0, control$GK_k * n, 1)), length(Wlong_H))
     }
     list(Wlong_H = Wlong_H, Wlong_h = Wlong_h, Wlong_H2 = Wlong_H2)
 }
