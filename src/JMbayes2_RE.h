@@ -98,7 +98,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     }
   }
   res_b.slice(it) = b_mat;
-  b = mat2field_mat(b_mat, ind_RE);*/
+  b = mat2field_mat(b_mat, ind_RE);
 }
 
 #endif
