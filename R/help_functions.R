@@ -332,7 +332,7 @@ knots <- function (xl, xr, ndx, deg) {
     seq(xl - deg * dx, xr + deg * dx, by = dx)
 }
 
-SurvData_HazardModel <- function (time_points, data, times, ids) {
+SurvData_HazardModel <- function (time_points, data, times, ids, time_var) {
     unq_ids <- unique(ids)
     fids <- factor(ids, levels = unq_ids)
     tt <- if (is.list(time_points)) {
@@ -360,6 +360,8 @@ SurvData_HazardModel <- function (time_points, data, times, ids) {
         ind <- mapply2(`[`, rownams_id, ind)
     }
     data <- data[unlist(ind, use.names = FALSE), ]
+    if (is.matrix(time_points)) data[[time_var]] <- c(t(time_points))
+    data
 }
 
 extract_b <- function (object, id, n) {
@@ -557,7 +559,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     ######################################################################################
     ######################################################################################
     times_long <- split(dataL[[time_var]], dataL[[idVar]])
-    dataS_init <- SurvData_HazardModel(times_long, dataS, Time_start, idT)
+    dataS_init <- SurvData_HazardModel(times_long, dataS, Time_start, idT, time_var)
     mf <- model.frame.default(terms_Surv_noResp, data = dataS_init)
     W_init <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
     if (!ncol(W_init)) {
@@ -897,3 +899,25 @@ ggcolthemes <- list(
     'goo' = c("1" = '#008744', "2" = '#0057e7', "3" = '#d62d20'),
     'sunset' = c("1" = '#f67e7d', "2" = '#843b62', "3" = '#0b032d')
 )
+
+tve <- function (x, knots = NULL, ord = 2) {
+    if (is.null(knots)) {
+        knots <- .knots_baseline_hazard
+    }
+    out <- splines::splineDesign(knots, x, ord = ord, outer.ok = TRUE)
+    attr(out, "knots") <- knots
+    attr(out, "ord") <- ord
+    attr(out, "class") <- c("tve", "basis", "matrix")
+    out
+}
+
+makepredictcall.tve <- function (var, call) {
+    if (as.character(call)[1L] != "tve")
+        return(call)
+    at <- attributes(var)[c("knots", "ord")]
+    x <- call[1L:2L]
+    x[names(at)] <- at
+    x
+}
+
+

@@ -47,7 +47,8 @@ void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
                any_interval, which_interval);
     double numerator_surv =
       sum(logLik_surv_proposed) +
-      logPrior(proposed_bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
+      logPrior(proposed_bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas,
+               tau_bs_gammas) +
       logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
       logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
     double log_ratio = numerator_surv - denominator_surv;

@@ -267,6 +267,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         con$knots <- knots(qs[1L], qs[2L], con$base_hazard_segments,
                            con$Bsplines_degree)
     }
+    .knots_baseline_hazard <- con$knots
+    env <- new.env(parent = .GlobalEnv)
+    assign(".knots_baseline_hazard", con$knots, envir = env)
+
     # create long version of idT
     idTs <- rep(idT, each = con$GK_k)
     rows_Wlong_H <- tapply(which(idTs == idTs), idTs, c)
@@ -285,8 +289,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         names(functional_forms_ns) <- respVars_form[not_specified]
         functional_forms <- c(functional_forms, functional_forms_ns)
     }
-    functional_forms <-  functional_forms[order(match(names(functional_forms),
-                                                      respVars_form))]
+    functional_forms <- functional_forms[order(match(names(functional_forms),
+                                                     respVars_form))]
     ###################################################################
     # List of lists
     # One list component per association structure per outcome
@@ -297,9 +301,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     FunForms_per_outcome <- lapply(FunForms_per_outcome,
                                    function (x) x[sapply(x, length) > 0])
     collapsed_functional_forms <- lapply(FunForms_per_outcome, names)
-    # NEW INPUT OBJECTS FOR create_Wlong.cpp
-    ns_functional_forms <- sapply(FunForms_per_outcome, length)
-    maxs_functional_forms <- sapply(lapply(FunForms_per_outcome, unlist), max)
 
     #####################################################
 
@@ -317,7 +318,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # "_H2" to denote calculation at the 'Time_integration2'.
     W0_H <- splineDesign(con$knots, c(t(st)), ord = con$Bsplines_degree + 1,
                          outer.ok = TRUE)
-    dataS_H <- SurvData_HazardModel(st, dataS, Time_start, idT)
+    dataS_H <- SurvData_HazardModel(st, dataS, Time_start, idT, time_var)
     mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
     W_H <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
     any_gammas <- as.logical(ncol(W_H))
@@ -337,7 +338,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     if (length(which_event)) {
         W0_h <- splineDesign(con$knots, Time_right,
                              ord = con$Bsplines_degree + 1, outer.ok = TRUE)
-        dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start, idT)
+        dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start, idT,
+                                        time_var)
         mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
         W_h <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
         if (!any_gammas) {
@@ -360,7 +362,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     if (length(which_interval)) {
         W0_H2 <- splineDesign(con$knots, c(t(st2)),
                               ord = con$Bsplines_degree + 1, outer.ok = TRUE)
-        dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start, idT)
+        dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start, idT, time_var)
         mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
         W_H2 <- model.matrix.default(terms_Surv_noResp, mf2)[, -1, drop = FALSE]
         if (!any_gammas) {

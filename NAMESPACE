@@ -8,7 +8,7 @@ importFrom("stats", "coef", "terms", "model.frame", "model.frame.default",
            "model.matrix", "model.matrix.default", "family", "lm.fit", "sd",
            "ar", "var", "vcov", "optim", "delete.response", "model.response",
            "rnorm", "quantile", "runif", "rlnorm", "cov2cor", "as.formula",
-           "gaussian", ".getXlevels")
+           "gaussian", ".getXlevels", "makepredictcall")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply")
 importFrom("nlme", "fixef", "ranef", "pdMatrix")
 importFrom("GLMMadaptive", "effectPlotData")
@@ -37,6 +37,7 @@ S3method(print, summary.jm)
 S3method(fixef, jm)
 S3method(ranef, jm)
 S3method(terms, jm)
+S3method(makepredictcall, tve)
 S3method(model.frame, jm)
 S3method(model.matrix, jm)
 S3method(family, jm)
