@@ -248,8 +248,7 @@ fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
                #"hepatomegaly" = ~ value(hepatomegaly),
                "ascites" = ~ value(ascites) + area(ascites))
 
-test <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
-           functional_forms = fForms)
+test <- jm(CoxFit, list(fm1), time_var = "year")
 
 ####
 
