@@ -12,18 +12,18 @@ using namespace Rcpp;
 using namespace arma;
 
 void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
-               vec &logLik_long, vec &logLik_surv, vec &logLik_re, 
-               mat &Wlong_H, mat &Wlong_h, mat &Wlong_H2, 
-               vec &WlongH_alphas, vec &Wlongh_alphas, vec &WlongH2_alphas,  
-               const cube &chol_S, vec &scale_b, 
-               const field<uvec> &ind_RE, 
+               vec &logLik_long, vec &logLik_surv, vec &logLik_re,
+               mat &Wlong_H, mat &Wlong_h, mat &Wlong_H2,
+               vec &WlongH_alphas, vec &Wlongh_alphas, vec &WlongH2_alphas,
+               const cube &chol_S, vec &scale_b,
+               const field<uvec> &ind_RE,
                const field<mat> &X_H, const field<mat> &X_h, const field<mat> &X_H2,
                const field<mat> &Z_H, const field<mat> &Z_h, const field<mat> &Z_H2,
                const field<mat> &U_H, const field<mat> &U_h, const field<mat> &U_H2,
-               const mat &Wlong_bar, const field<vec> &betas, const vec &alphas, 
+               const mat &Wlong_bar, const field<vec> &betas, const vec &alphas,
                const uvec &id_H, const uvec &id_h,
                const field<uvec> &FunForms, const field<uvec> &FunForms_ind,
-               const field<mat> &X, const field<mat> &Z, 
+               const field<mat> &X, const field<mat> &Z,
                const field<uvec> &id, const field<mat> &y,  const vec &sigmas,
                const vec &extra_parms, const CharacterVector &families,
                const CharacterVector &links, const field<uvec> &ids,
@@ -33,9 +33,11 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const vec &log_Pwk, const vec &log_Pwk2,
                const uvec &indFast_H, const uvec &which_event,
                const uvec &which_right_event, const uvec &which_left,
-               const uvec &which_interval, const bool &any_event, const bool &any_interval, 
+               const uvec &which_interval, const bool &any_event,
+               const bool &any_interval,
                const mat &L, const vec &sds,
-               const uword &it, const field<uvec> &rows_Wlong_H, const field<uvec> &idL_ind,
+               const uword &it, const field<uvec> &rows_Wlong_H,
+               const field<uvec> &idL_ind,
                mat &acceptance_b, cube &res_b
                ) {
   // calculate denominator_b
@@ -45,12 +47,19 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
   field<mat> proposed_b = mat2field_mat(proposed_b_mat, ind_RE);
   // calculate log_lik_long based on proposed_b_mat
   field<vec> eta_proposed = linpred_mixed(X, betas, Z, proposed_b, id);
-  vec logLik_long_proposed = log_long(y, eta_proposed, sigmas, extra_parms, families, links, ids, unq_ids);
+  vec logLik_long_proposed = log_long(y, eta_proposed, sigmas, extra_parms,
+                                      families, links, ids, unq_ids);
   // calculate Wlong_H, Wlong_h and Wlong_H2 based on the proposed_b
-  mat Wlong_H_proposed = calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas, proposed_b, id_H, FunForms, FunForms_ind);
-  mat Wlong_h_proposed = calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas, proposed_b, id_h, FunForms, FunForms_ind);
-  mat Wlong_H2_proposed = calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas, proposed_b, id_H, FunForms, FunForms_ind);
-  // create and initiate  WlongH_alphas_proposed, Wlongh_alphas_proposed, WlongH2_alphas_proposed  
+  mat Wlong_H_proposed =
+    calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas, proposed_b, id_H, FunForms,
+                    FunForms_ind);
+  mat Wlong_h_proposed =
+    calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas, proposed_b, id_h, FunForms,
+                    FunForms_ind);
+  mat Wlong_H2_proposed =
+    calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas, proposed_b, id_H,
+                    FunForms, FunForms_ind);
+  // create and initiate  WlongH_alphas_proposed, Wlongh_alphas_proposed, WlongH2_alphas_proposed
   vec WlongH_alphas_proposed = Wlong_H_proposed * alphas;
   vec Wlongh_alphas_proposed(Wlongh_alphas.n_rows);
   vec WlongH2_alphas_proposed(WlongH2_alphas.n_rows);
@@ -61,17 +70,19 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     WlongH2_alphas_proposed = Wlong_H2_proposed * alphas;
   }
   // calculate logLik_Surv_proposed
-  vec logLik_surv_proposed = log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, 
-                                      WH_gammas, Wh_gammas, WH2_gammas, 
-                                      WlongH_alphas_proposed, Wlongh_alphas_proposed, 
-                                      WlongH2_alphas_proposed, 
-                                      log_Pwk, log_Pwk2, indFast_H, 
-                                      which_event, which_right_event, which_left, 
-                                      any_interval, which_interval);
+  vec logLik_surv_proposed =
+    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+             WH_gammas, Wh_gammas, WH2_gammas,
+             WlongH_alphas_proposed, Wlongh_alphas_proposed,
+             WlongH2_alphas_proposed,
+             log_Pwk, log_Pwk2, indFast_H,
+             which_event, which_right_event, which_left,
+             any_interval, which_interval);
   // logLik_re
   vec logLik_re_proposed = log_re(proposed_b_mat, L, sds);
   // calculate the numerator
-  vec numerator_b = logLik_long_proposed + logLik_surv_proposed + logLik_re_proposed;
+  vec numerator_b =
+    logLik_long_proposed + logLik_surv_proposed + logLik_re_proposed;
   // log_rati
   vec log_ratio = numerator_b - denominator_b;
   uword n = log_ratio.n_elem;
@@ -86,9 +97,18 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
       for (uword j = 0; j < n_outcomes; j++) {
         eta.at(j).elem(idL_ind.at(i)) = eta_proposed.at(j).elem(idL_ind.at(i));
       }
-      Wlong_H.rows(rows_Wlong_H.at(i)) = Wlong_H_proposed.rows(rows_Wlong_H.at(i));
+
+      Wlong_H.rows(rows_Wlong_H.at(i)) =
+        Wlong_H_proposed.rows(rows_Wlong_H.at(i));
       Wlong_h.row(i) = Wlong_h_proposed.row(i);
-      Wlong_H2.rows(rows_Wlong_H.at(i)) = Wlong_H2_proposed.rows(rows_Wlong_H.at(i));
+      Wlong_H2.rows(rows_Wlong_H.at(i)) =
+        Wlong_H2_proposed.rows(rows_Wlong_H.at(i));
+
+     // WlongH_alphas.rows(rows_Wlong_H.at(i)) =
+      //  WlongH_alphas_proposed.rows(rows_Wlong_H.at(i));
+     // Wlongh_alphas.row(i) = Wlongh_alphas_proposed.row(i);
+     // WlongH2_alphas.rows(rows_Wlong_H.at(i)) =
+     //   WlongH2_alphas_proposed.rows(rows_Wlong_H.at(i));
     }
     if (it > 19) {
       scale_b.at(i) =

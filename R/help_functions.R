@@ -900,7 +900,7 @@ ggcolthemes <- list(
     'sunset' = c("1" = '#f67e7d', "2" = '#843b62', "3" = '#0b032d')
 )
 
-tve <- function (x, knots = NULL, ord = 2) {
+tv <- function (x, knots = NULL, ord = 2) {
     if (is.null(knots)) {
         knots <- .knots_baseline_hazard
     }
@@ -911,7 +911,7 @@ tve <- function (x, knots = NULL, ord = 2) {
     out
 }
 
-makepredictcall.tve <- function (var, call) {
+makepredictcall.tv <- function (var, call) {
     if (as.character(call)[1L] != "tve")
         return(call)
     at <- attributes(var)[c("knots", "ord")]
