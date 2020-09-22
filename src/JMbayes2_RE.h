@@ -35,8 +35,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const uvec &which_right_event, const uvec &which_left,
                const uvec &which_interval, const bool &any_event, const bool &any_interval, 
                const mat &L, const vec &sds,
-               const uword &it, const uword &n_rows_W0_h, 
-               const uword &n_rows_W0_H2, const field<uvec> &rows_Wlong_H, const field<uvec> &idL_ind,
+               const uword &it, const field<uvec> &rows_Wlong_H, const field<uvec> &idL_ind,
                mat &acceptance_b, cube &res_b
                ) {
   // calculate denominator_b
@@ -53,8 +52,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
   mat Wlong_H2_proposed = calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas, proposed_b, id_H, FunForms, FunForms_ind);
   // create and initiate  WlongH_alphas_proposed, Wlongh_alphas_proposed, WlongH2_alphas_proposed  
   vec WlongH_alphas_proposed = Wlong_H_proposed * alphas;
-  vec Wlongh_alphas_proposed(n_rows_W0_h);
-  vec WlongH2_alphas_proposed(n_rows_W0_H2);
+  vec Wlongh_alphas_proposed(Wlongh_alphas.n_rows);
+  vec WlongH2_alphas_proposed(WlongH2_alphas.n_rows);
   if (any_event) {
     Wlongh_alphas_proposed = Wlong_h_proposed * alphas;
   }
