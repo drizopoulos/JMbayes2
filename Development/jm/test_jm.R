@@ -12,7 +12,7 @@ source("./R/jm.R")
 source("./R/jm_fit.R")
 source("./R/help_functions.R")
 source("./R/basic_methods.R")
-source("./R/temp.R")
+source("./R/create_Wlong_mats.R")
 source("./Development/jm/PBC_data.R")
 Rcpp::sourceCpp('src/mcmc_fit.cpp')
 
@@ -197,7 +197,7 @@ system.time({
     Cox <- coxph(Surv(years, status2) ~ 1, data = pbc2.id)
 })
 
-FF <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)),
+FF <- list("log(serBilir)" = ~ tve(year):value(log(serBilir)) + slope(log(serBilir)),
            "ascites" = ~ value(ascites) + area(ascites):drug)
 system.time(obj <- jm(Cox, Mixed, time_var = "year"))
 
