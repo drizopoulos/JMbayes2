@@ -71,9 +71,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<uvec> baseline = List2Field_uvec(as<List>(model_data["baseline"]), true);
   field<uvec> x_in_z = List2Field_uvec(as<List>(model_data["x_in_z"]), true);
   field<uvec> x_notin_z = List2Field_uvec(as<List>(model_data["x_notin_z"]), true);
+  field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
   field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
-  field<uvec> idL_ind = List2Field_uvec(as<List>(model_data["idL_ind"]), true);
+  //field<uvec> idL_ind = List2Field_uvec(as<List>(model_data["idL_ind"]), true);
   field<uvec> idL_lp_fast(idL_lp.n_elem);
   for (uword i = 0; i < idL_lp.n_elem; ++i) {
     idL_lp_fast.at(i) = create_fast_ind(idL_lp.at(i));
@@ -258,11 +259,14 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                   acceptance_alphas, res_alphas);
     res_Wlong_bar_alphas.at(it) = as_scalar(Wlong_bar * alphas);
     ////////////////////////////////////////////////////////////////////////
+
     update_D(L, sds, b_mat, upper_part,
              prior_D_sds_df, prior_D_sds_sigma, prior_D_L_etaLKJ,
              it, MALA, logLik_re, res_sds, res_L, scale_sds, scale_L,
              acceptance_sds, acceptance_L);
+
     ////////////////////////////////////////////////////////////////////////
+
     update_b(b, b_mat, eta, logLik_long, logLik_surv, logLik_re,
              Wlong_H, Wlong_h, Wlong_H2, WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
              chol_S, scale_b, ind_RE,
@@ -274,15 +278,13 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2,
              id_H_fast, which_event, which_right_event, which_left,
              which_interval, any_event, any_interval,
-             L, sds, it, rows_Wlong_H, idL_ind,
+             L, sds, it, rows_Wlong_H, idL,
              acceptance_b, res_b);
-    ////////////////////////////////////////////////////////////////////////
+
     update_mean_u(mean_u, betas, Xbase, x_in_z, baseline, unq_idL);
-    //update_Wlong(Wlong_H, Wlong_h, Wlong_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
-    //             U_H, U_h, U_H2, betas, b, id_H, id_h, FunForms, FunForms_ind,
-    //             any_event, any_interval);
-    ////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////
+
     update_sigmas(sigmas, has_sigmas, y, eta, extra_parms, families, links,
                   idL_lp_fast, unq_idL, prior_sigmas_df, prior_sigmas_sigma,
                   it, res_sigmas, scale_sigmas, acceptance_sigmas);

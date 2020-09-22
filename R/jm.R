@@ -43,8 +43,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     }
     idVar <- id_names[1L]
     idL <- dataL[[idVar]]
-    idL_ind <- lapply(idL, function(x) seq_along(x))
-    idL_ind <- mapply(function(x, y) split(x, y), idL_ind, idL, SIMPLIFY = TRUE)
+    idL_ind <- lapply(idL, function (x) seq_along(x))
+    idL_ind <- mapply2(function (x, y) split(x, y), idL_ind, idL)
     nY <- length(unique(idL))
     # order data by idL and time_var
     dataL <- dataL[order(idL, dataL[[time_var]]), ]

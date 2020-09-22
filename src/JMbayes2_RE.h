@@ -27,7 +27,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const field<uvec> &id, const field<mat> &y,  const vec &sigmas,
                const vec &extra_parms, const CharacterVector &families,
                const CharacterVector &links, const field<uvec> &ids,
-               const field<uvec> &unq_ids, const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
+               const field<uvec> &unq_ids, const vec &W0H_bs_gammas,
+               const vec &W0h_bs_gammas,
                const vec &W0H2_bs_gammas, const vec &WH_gammas,
                const vec &Wh_gammas, const vec &WH2_gammas,
                const vec &log_Pwk, const vec &log_Pwk2,
@@ -37,7 +38,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const bool &any_interval,
                const mat &L, const vec &sds,
                const uword &it, const field<uvec> &rows_Wlong_H,
-               const field<uvec> &idL_ind,
+               const field<uvec> &idL,
                mat &acceptance_b, cube &res_b
                ) {
   // calculate denominator_b
@@ -50,23 +51,26 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
   vec logLik_long_proposed = log_long(y, eta_proposed, sigmas, extra_parms,
                                       families, links, ids, unq_ids);
   // calculate Wlong_H, Wlong_h and Wlong_H2 based on the proposed_b
+  // and calculate Wlong * alphas
   mat Wlong_H_proposed =
     calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas, proposed_b, id_H, FunForms,
                     FunForms_ind);
-  mat Wlong_h_proposed =
-    calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas, proposed_b, id_h, FunForms,
-                    FunForms_ind);
-  mat Wlong_H2_proposed =
-    calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas, proposed_b, id_H,
-                    FunForms, FunForms_ind);
-  // create and initiate  WlongH_alphas_proposed, Wlongh_alphas_proposed, WlongH2_alphas_proposed
   vec WlongH_alphas_proposed = Wlong_H_proposed * alphas;
+
+  mat Wlong_h_proposed(Wlong_h.n_rows, Wlong_h.n_cols);
   vec Wlongh_alphas_proposed(Wlongh_alphas.n_rows);
-  vec WlongH2_alphas_proposed(WlongH2_alphas.n_rows);
   if (any_event) {
+    Wlong_h_proposed =
+      calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas, proposed_b, id_h, FunForms,
+                      FunForms_ind);
     Wlongh_alphas_proposed = Wlong_h_proposed * alphas;
   }
+  mat Wlong_H2_proposed(Wlong_H2.n_rows, Wlong_H2.n_cols);
+  vec WlongH2_alphas_proposed(WlongH2_alphas.n_rows);
   if (any_interval) {
+    Wlong_H2_proposed =
+      calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas, proposed_b, id_H,
+                      FunForms, FunForms_ind);
     WlongH2_alphas_proposed = Wlong_H2_proposed * alphas;
   }
   // calculate logLik_Surv_proposed
@@ -83,9 +87,9 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
   // calculate the numerator
   vec numerator_b =
     logLik_long_proposed + logLik_surv_proposed + logLik_re_proposed;
-  // log_rati
+  // log_ratio
   vec log_ratio = numerator_b - denominator_b;
-  uword n = log_ratio.n_elem;
+  uword n = log_ratio.n_rows;
   for (uword i = 0; i < n; i++) {
     if (std::isfinite(log_ratio.at(i)) && exp(log_ratio.at(i)) > R::runif(0, 1)) {
       acceptance_b.at(it, i) = 1;
@@ -93,27 +97,29 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
       logLik_long.at(i) = logLik_long_proposed.at(i);
       logLik_surv.at(i) = logLik_surv_proposed.at(i);
       logLik_re.at(i) = logLik_re_proposed.at(i);
-      uword n_outcomes = eta.n_elem;
-      for (uword j = 0; j < n_outcomes; j++) {
-        eta.at(j).elem(idL_ind.at(i)) = eta_proposed.at(j).elem(idL_ind.at(i));
-      }
-
+      //uword n_outcomes = eta.n_elem;
+      //for (uword j = 0; j < n_outcomes; j++) {
+      //  eta.at(j).rows(find(idL.at(i) == i)) =
+      //    eta_proposed.at(j).rows(find(idL.at(i) == i));
+      //}
       Wlong_H.rows(rows_Wlong_H.at(i)) =
         Wlong_H_proposed.rows(rows_Wlong_H.at(i));
-      Wlong_h.row(i) = Wlong_h_proposed.row(i);
-      Wlong_H2.rows(rows_Wlong_H.at(i)) =
-        Wlong_H2_proposed.rows(rows_Wlong_H.at(i));
-
-     // WlongH_alphas.rows(rows_Wlong_H.at(i)) =
-      //  WlongH_alphas_proposed.rows(rows_Wlong_H.at(i));
-     // Wlongh_alphas.row(i) = Wlongh_alphas_proposed.row(i);
-     // WlongH2_alphas.rows(rows_Wlong_H.at(i)) =
-     //   WlongH2_alphas_proposed.rows(rows_Wlong_H.at(i));
+      WlongH_alphas.rows(rows_Wlong_H.at(i)) =
+        WlongH_alphas_proposed.rows(rows_Wlong_H.at(i));
+      if (any_event) {
+        Wlong_h.row(i) = Wlong_h_proposed.row(i);
+        Wlongh_alphas.row(i) = Wlongh_alphas_proposed.row(i);
+      }
+      if (any_interval) {
+        Wlong_H2.rows(rows_Wlong_H.at(i)) =
+          Wlong_H2_proposed.rows(rows_Wlong_H.at(i));
+        WlongH2_alphas.rows(rows_Wlong_H.at(i)) =
+          WlongH2_alphas_proposed.rows(rows_Wlong_H.at(i));
+      }
     }
     if (it > 19) {
       scale_b.at(i) =
-        robbins_monro(scale_b.at(i),
-                      acceptance_b.at(i, it), it);
+        robbins_monro(scale_b.at(i), acceptance_b.at(it, i), it);
     }
   }
   res_b.slice(it) = b_mat;
