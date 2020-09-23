@@ -289,6 +289,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              L, sds, it, rows_Wlong_H, idL,
              acceptance_b, res_b);
 
+    denominator_surv =
+      sum(logLik_surv) +
+      logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
+      logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
+      logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
+
     update_mean_u(mean_u, betas, Xbase, x_in_z, baseline, unq_idL);
 
     eta = linpred_mixed(X, betas, Z, b, idL_lp);
