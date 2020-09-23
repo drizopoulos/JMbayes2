@@ -219,12 +219,16 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                      /////
                      W0_H, W0_h, W0_H2, scale_bs_gammas, acceptance_bs_gammas,
                      res_bs_gammas);
+
     ////////////////////////////////////////////////////////////////////////
+
     double post_B_tau_bs_gammas = prior_B_tau_bs_gammas +
       0.5 * as_scalar(bs_gammas.t() * prior_Tau_bs_gammas * bs_gammas);
     tau_bs_gammas = R::rgamma(post_A_tau_bs_gammas, 1 / post_B_tau_bs_gammas);
     res_tau_bs_gammas.at(it, 0) = tau_bs_gammas;
+
     ////////////////////////////////////////////////////////////////////////
+
     if (any_gammas) {
       update_gammas(bs_gammas, gammas, alphas,
                     W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
@@ -242,7 +246,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     res_gammas);
       res_W_bar_gammas.at(it) = as_scalar(W_bar * gammas);
     }
+
     ////////////////////////////////////////////////////////////////////////
+
     update_alphas(bs_gammas, gammas, alphas,
                   W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                   WH_gammas, Wh_gammas, WH2_gammas,
@@ -257,7 +263,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                   /////
                   Wlong_H, Wlong_h, Wlong_H2, scale_alphas,
                   acceptance_alphas, res_alphas);
+
     res_Wlong_bar_alphas.at(it) = as_scalar(Wlong_bar * alphas);
+
     ////////////////////////////////////////////////////////////////////////
 
     update_D(L, sds, b_mat, upper_part,
@@ -283,13 +291,16 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     update_mean_u(mean_u, betas, Xbase, x_in_z, baseline, unq_idL);
 
+    eta = linpred_mixed(X, betas, Z, b, idL_lp);
+
     ////////////////////////////////////////////////////////////////////
 
     update_sigmas(sigmas, has_sigmas, y, eta, extra_parms, families, links,
                   idL_lp_fast, unq_idL, prior_sigmas_df, prior_sigmas_sigma,
                   it, res_sigmas, scale_sigmas, acceptance_sigmas);
-    vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
-                               idL_lp_fast, unq_idL);
+
+    logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
+                           idL_lp_fast, unq_idL);
   }
   res_b = res_b.slices(n_burnin, n_iter - 1);
   return List::create(

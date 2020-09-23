@@ -102,19 +102,18 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
       //  eta.at(j).rows(find(idL.at(i) == i)) =
       //    eta_proposed.at(j).rows(find(idL.at(i) == i));
       //}
-      Wlong_H.rows(rows_Wlong_H.at(i)) =
-        Wlong_H_proposed.rows(rows_Wlong_H.at(i));
-      WlongH_alphas.rows(rows_Wlong_H.at(i)) =
-        WlongH_alphas_proposed.rows(rows_Wlong_H.at(i));
+      uword first = i * 15;
+      uword last = (i + 1) * 15 - 1;
+      Wlong_H.rows(first, last) = Wlong_H_proposed.rows(first, last);
+      WlongH_alphas.rows(first, last) = WlongH_alphas_proposed.rows(first, last);
       if (any_event) {
         Wlong_h.row(i) = Wlong_h_proposed.row(i);
         Wlongh_alphas.row(i) = Wlongh_alphas_proposed.row(i);
       }
       if (any_interval) {
-        Wlong_H2.rows(rows_Wlong_H.at(i)) =
-          Wlong_H2_proposed.rows(rows_Wlong_H.at(i));
-        WlongH2_alphas.rows(rows_Wlong_H.at(i)) =
-          WlongH2_alphas_proposed.rows(rows_Wlong_H.at(i));
+        Wlong_H2.rows(first, last) = Wlong_H2_proposed.rows(first, last);
+        WlongH2_alphas.rows(first, last) =
+          WlongH2_alphas_proposed.rows(first, last);
       }
     }
     if (it > 19) {
