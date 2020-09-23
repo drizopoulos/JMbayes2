@@ -301,7 +301,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("Wlong_bar_alphas") = res_Wlong_bar_alphas.rows(n_burnin, n_iter - 1),
       Named("sds") = res_sds.rows(n_burnin, n_iter - 1),
       Named("L") = res_L.rows(n_burnin, n_iter - 1),
-      //Named("b") = res_b.each_slice([&](mat &X){X.rows(n_burnin, n_iter - 1);}),
+      Named("b") = res_b.slices(n_burnin, n_iter - 1),
       Named("sigmas") = res_sigmas.rows(n_burnin, n_iter - 1)
     ),
     Named("acc_rate") = List::create(
@@ -309,8 +309,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("gammas") = acceptance_gammas.rows(n_burnin, n_iter - 1),
       Named("alphas") = acceptance_alphas.rows(n_burnin, n_iter - 1),
       Named("sds") = acceptance_sds.rows(n_burnin, n_iter - 1),
-      Named("L") = acceptance_L.rows(n_burnin, n_iter - 1)
-      //Named("b") = acceptance_b(n_burnin, n_iter - 1)
+      Named("L") = acceptance_L.rows(n_burnin, n_iter - 1),
+      Named("b") = acceptance_b.rows(n_burnin, n_iter - 1)
     )
   );
 }
