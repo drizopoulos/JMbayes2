@@ -83,7 +83,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<uvec> ind_RE = List2Field_uvec(as<List>(model_data["ind_RE"]), true);
   CharacterVector families = as<CharacterVector>(model_info["family_names"]);
   CharacterVector links = as<CharacterVector>(model_info["links"]);
-  field<uvec> rows_Wlong_H = List2Field_uvec(as<List>(model_data["rows_Wlong_H"]), true);
   // initial values
   vec bs_gammas = as<vec>(initial_values["bs_gammas"]);
   vec gammas = as<vec>(initial_values["gammas"]);
@@ -286,8 +285,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2,
              id_H_fast, which_event, which_right_event, which_left,
              which_interval, any_event, any_interval,
-             L, sds, it, rows_Wlong_H, idL,
-             acceptance_b, res_b);
+             L, sds, it, idL, acceptance_b, res_b);
 
     denominator_surv =
       sum(logLik_surv) +

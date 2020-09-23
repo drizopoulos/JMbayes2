@@ -273,7 +273,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
 
     # create long version of idT
     idTs <- rep(idT, each = con$GK_k)
-    rows_Wlong_H <- tapply(which(idTs == idTs), idTs, c)
 
     # Extract functional forms per longitudinal outcome
     if (any(!names(functional_forms) %in% respVars_form)) {
@@ -396,7 +395,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                  W0_h = W0_h, W_h = W_h, X_h = X_h, Z_h = Z_h, U_h = U_h,
                  W0_H2 = W0_H2, W_H2 = W_H2, X_H2 = X_H2, Z_H2 = Z_H2, U_H2 = U_H2,
                  log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2,
-                 ind_RE = ind_RE, extra_parms = rep(0.0, length(y)), rows_Wlong_H = rows_Wlong_H)
+                 ind_RE = ind_RE, extra_parms = rep(0.0, length(y)))
     ############################################################################
     ############################################################################
     # objects to export

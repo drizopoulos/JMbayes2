@@ -124,7 +124,12 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         colnames(out[[i]][["mcmc"]][["sigmas"]]) <-
             paste0("sigmas_",
                    seq_along(out[[i]][["mcmc"]][["sigmas"]][1, ]))
-
+        if (!is.null(out[[i]][["mcmc"]][["b"]])) {
+            znams <- unlist(lapply(model_data$Z, colnames), use.names = FALSE)
+            l <- sapply(model_data$unq_idL, length)
+            dimnames(out[[i]][["mcmc"]][["b"]]) <-
+                list(unlist(model_data$unq_idL[which.max(l)]), znams, NULL)
+        }
     }
     # drop sigmas that are not needed
     has_sigmas <- initial_values$log_sigmas > -20.0
@@ -133,14 +138,21 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
             out[[i]][["mcmc"]][["sigmas"]][, has_sigmas, drop = FALSE]
     }
     convert2_mcmclist <- function (name) {
-        as.mcmc.list(lapply(out, function (x) as.mcmc(x$mcmc[[name]])))
+        as.mcmc.list(lapply(out, function (x) {
+            kk <- x$mcmc[[name]]
+            if (length(d <- dim(kk)) > 2) {
+                m <- matrix(0.0, d[3L], d[1L] * d[2L])
+                for (j in seq_len(d[3L])) m[j, ] <- c(kk[, , j])
+                as.mcmc(m)
+            } else as.mcmc(kk)
+        }))
     }
     get_acc_rates <- function (name_parm) {
         do.call("rbind", lapply(out, function (x) x[["acc_rate"]][[name_parm]]))
     }
     parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
                "Wlong_bar_alphas", "D", paste0("betas", seq_along(model_data$X)),
-               "sigmas")
+               "sigmas", "b")
     if (!length(attr(model_info$terms$terms_Surv_noResp, "term.labels")))
         parms <- parms[parms != "gammas"]
     mcmc_out <- lapply_nams(parms, convert2_mcmclist)

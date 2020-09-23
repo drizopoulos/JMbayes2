@@ -37,8 +37,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const uvec &which_interval, const bool &any_event,
                const bool &any_interval,
                const mat &L, const vec &sds,
-               const uword &it, const field<uvec> &rows_Wlong_H,
-               const field<uvec> &idL,
+               const uword &it, const field<uvec> &idL,
                mat &acceptance_b, cube &res_b
                ) {
   // calculate denominator_b
