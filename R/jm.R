@@ -509,8 +509,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         statistics[] <- lapply(statistics, fix_b)
     }
     if (con$n_chains > 1) {
+        no_b <- !names(out$mcmc) %in% "b"
         statistics <- c(statistics,
-                        Rhat = list(lapply(out$mcm, function (theta)
+                        Rhat = list(lapply(out$mcm[no_b], function (theta)
                             coda::gelman.diag(theta)$psrf)))
     }
     out <- c(out, list(statistics = statistics,

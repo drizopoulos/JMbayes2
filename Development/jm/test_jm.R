@@ -157,7 +157,7 @@ summary(obj)
 coda::autocorr.diag(obj$mcmc$D)
 coda::cumuplot(obj$mcmc$alphas)
 
-traceplot(obj, "sigmas")
+traceplot(obj)
 ggtraceplot(obj)
 gelman_diag(obj)
 

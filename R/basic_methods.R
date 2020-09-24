@@ -7,6 +7,9 @@ traceplot.jm <- function (object,
     parm <- match.arg(parm)
     if (parm == "all") {
         nams_mcmc <- names(object$mcmc)
+        nams_mcmc <-
+            nams_mcmc[nams_mcmc %in% c("betas", "sigmas", "D", "bs_gammas",
+                                       "tau_bs_gammas", "gammas", "alphas")]
         for (i in seq_along(nams_mcmc)) {
             parms_i <- nams_mcmc[[i]]
             x <- object$mcmc[[parms_i]]
@@ -32,6 +35,9 @@ gelman_diag.jm <- function (object,
     parm <- match.arg(parm)
     if (parm == "all") {
         nams_mcmc <- names(object$mcmc)
+        nams_mcmc <-
+            nams_mcmc[nams_mcmc %in% c("betas", "sigmas", "D", "bs_gammas",
+                                       "tau_bs_gammas", "gammas", "alphas")]
         out <- vector("list", length(nams_mcmc))
         names(out) <- nams_mcmc
         for (i in seq_along(out)) {
@@ -64,6 +70,9 @@ densplot.jm <- function (object,
 
     if (parm == "all") {
         nams_mcmc <- names(object$mcmc)
+        nams_mcmc <-
+            nams_mcmc[nams_mcmc %in% c("betas", "sigmas", "D", "bs_gammas",
+                                       "tau_bs_gammas", "gammas", "alphas")]
         for (i in seq_along(nams_mcmc)) {
             parms_i <- nams_mcmc[[i]]
             x <- object$mcmc[[parms_i]]
@@ -88,6 +97,9 @@ cumuplot.jm <- function (object,
     parm <- match.arg(parm)
     if (parm == "all") {
         nams_mcmc <- names(object$mcmc)
+        nams_mcmc <-
+            nams_mcmc[nams_mcmc %in% c("betas", "sigmas", "D", "bs_gammas",
+                                       "tau_bs_gammas", "gammas", "alphas")]
         for (i in seq_along(nams_mcmc)) {
             parms_i <- nams_mcmc[[i]]
             x <- object$mcmc[[parms_i]]
