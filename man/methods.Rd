@@ -37,7 +37,7 @@ fixef(object, \dots)
 
 ranef(object, \dots)
 
-\method{ranef}{jm}(object, outcome = Inf, \dots)
+\method{ranef}{jm}(object, outcome = Inf, post_vars = FALSE, \dots)
 
 terms(x, \dots)
 
@@ -62,6 +62,7 @@ family(object, \dots)
 \arguments{
 \item{object, x, formula}{objects inheriting from class \code{"jm"}.}
 \item{outcome}{.}
+\item{post_vars}{.}
 \item{process}{.}
 \item{type}{.}
 \item{\dots}{further arguments; currently none is used.}

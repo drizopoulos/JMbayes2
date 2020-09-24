@@ -507,6 +507,13 @@ jm <- function (Surv_object, Mixed_objects, time_var,
             stats
         }
         statistics[] <- lapply(statistics, fix_b)
+        nRE <- ncol(statistics$Mean$b)
+        b <- do.call("rbind", out$mcmc[["b"]])
+        post_vars <- array(0.0, c(nRE, nRE, nY))
+        for (i in seq_len(nY)) {
+            post_vars[, , i] <- var(b[, seq(0, nRE - 1) * nY + i, drop = FALSE])
+        }
+        statistics <- c(statistics, post_vars = list(post_vars))
     }
     if (con$n_chains > 1) {
         no_b <- !names(out$mcmc) %in% "b"

@@ -301,18 +301,23 @@ fixef.jm <- function(object, outcome = 1, ...) {
     }
 }
 
-ranef.jm <- function(object, outcome = Inf, ...) {
+ranef.jm <- function(object, outcome = Inf, post_vars = FALSE, ...) {
     if (!is.numeric(outcome) || outcome < 0) {
         stop("'outcome' should be a positive integer.")
     }
     outcome <- round(outcome)
     if (outcome > length(object$model_data$y)) {
-        object$statistics$RE
+        out <- object$statistics$Mean$b
+        if (post_vars)
+            attr(out, "post_vars") <- object$statistics$post_vars
     } else {
-        Means <- object$statistics$Mean$RE
-        ind <- 1:2 # to be fixed.
-        Means[, ind]
+        ind <- object$model_data$ind_RE[outcome]
+        out <- object$statistics$Mean$b[, ind, drop = FALSE]
+        if (post_vars)
+            attr(out, "post_vars") <-
+            object$statistics$post_vars[ind, ind, , drop = FALSE]
     }
+    out
 }
 
 terms.jm <- function (x, process = c("longitudinal", "event"),
