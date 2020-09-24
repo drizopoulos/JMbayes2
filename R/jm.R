@@ -495,6 +495,19 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         Effective_Size = lapply(out$mcmc, function (x)
             apply(do.call("rbind", x), 2L, effective_size))
     )
+    if (!is.null(out$mcmc[["b"]])) {
+        znams <- unlist(lapply(Data$Z, colnames), use.names = FALSE)
+        l <- sapply(Data$unq_idL, length)
+        dnames_b <- list(unlist(Data$unq_idL[which.max(l)]), znams)
+        fix_b <- function (stats) {
+            x <- stats$b
+            dim(x) <- sapply(dnames_b, length)
+            dimnames(x) <- dnames_b
+            stats$b <- x
+            stats
+        }
+        statistics[] <- lapply(statistics, fix_b)
+    }
     if (con$n_chains > 1) {
         statistics <- c(statistics,
                         Rhat = list(lapply(out$mcm, function (theta)

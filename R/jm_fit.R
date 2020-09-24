@@ -76,7 +76,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         parallel::stopCluster(cl)
         #out <- lapply(chains, mcmc_parallel, model_data = model_data,
         #              model_info = model_info, initial_values = initial_values,
-        #              priors = priors, control = control)
+        #              priors = priors, control = control, vcov_prop = vcov_prop)
     } else {
         set.seed(control$seed)
         out <- list(mcmc_cpp(model_data, model_info, initial_values, priors,
@@ -124,12 +124,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         colnames(out[[i]][["mcmc"]][["sigmas"]]) <-
             paste0("sigmas_",
                    seq_along(out[[i]][["mcmc"]][["sigmas"]][1, ]))
-        if (!is.null(out[[i]][["mcmc"]][["b"]])) {
-            znams <- unlist(lapply(model_data$Z, colnames), use.names = FALSE)
-            l <- sapply(model_data$unq_idL, length)
-            dimnames(out[[i]][["mcmc"]][["b"]]) <-
-                list(unlist(model_data$unq_idL[which.max(l)]), znams, NULL)
-        }
     }
     # drop sigmas that are not needed
     has_sigmas <- initial_values$log_sigmas > -20.0
