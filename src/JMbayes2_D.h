@@ -116,8 +116,7 @@ void update_D (mat &L, vec &sds, const mat &b,
     }
     if (it > 19) {
       scale_sds.at(i) =
-        robbins_monro(scale_sds.at(i), acceptance_sds.at(it, i),
-                      it);
+        robbins_monro(scale_sds.at(i), acceptance_sds.at(it, i), it);
     }
     res_sds.at(it, i) = sds.at(i);
   }
@@ -166,8 +165,7 @@ void update_D (mat &L, vec &sds, const mat &b,
     }
     if (it > 19) {
       scale_L.at(i) =
-        robbins_monro(scale_L.at(i), acceptance_L.at(it, i),
-                      it);
+        robbins_monro(scale_L.at(i), acceptance_L.at(it, i), it);
     }
     res_L.at(it, i) = L.at(upper_part_i);
   }

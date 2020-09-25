@@ -669,10 +669,19 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
         }
         - sum(log_Lik_surv, na.rm = TRUE)
     }
-    opt <- optim(rep(0.01, ncol(W0_H)), log_dens_surv, method = "BFGS",
-                 hessian = TRUE,
-                 control = list(parscale = rep(0.01, ncol(W0_H))))
-    c(out, list(bs_gammas = opt$par, vcov_prop_bs_gammas = solve(opt$hessian)))
+    opt <- try({
+        optim(rep(0.01, ncol(W0_H)), log_dens_surv, method = "BFGS",
+              hessian = TRUE,
+              control = list(parscale = rep(0.01, ncol(W0_H))))
+    }, silent = TRUE)
+    if (!inherits(opt, "try-error")) {
+        c(out, list(bs_gammas = opt$par,
+                    vcov_prop_bs_gammas = solve(opt$hessian)))
+    } else {
+        c(out, list(bs_gammas = rep(0.1, ncol(W0_H)),
+                    vcov_prop_bs_gammas = diag(ncol(W0_H))))
+
+    }
 }
 
 linpred_surv <- function (X, betas, Z, b, id) {
