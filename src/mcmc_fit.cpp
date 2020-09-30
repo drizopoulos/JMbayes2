@@ -74,6 +74,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
   field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
+  bool save_random_effects = as<bool>(control["save_random_effects"]);
   //field<uvec> idL_ind = List2Field_uvec(as<List>(model_data["idL_ind"]), true);
   field<uvec> idL_lp_fast(idL_lp.n_elem);
   for (uword i = 0; i < idL_lp.n_elem; ++i) {
@@ -141,7 +142,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat acceptance_sds(n_iter, n_sds, fill::zeros);
   mat res_L(n_iter, n_L, fill::zeros);
   mat acceptance_L(n_iter, n_L, fill::zeros);
-  cube res_b(n_b, b_mat.n_cols, n_iter, fill::zeros);
+  cube res_b(n_b, b_mat.n_cols, 1, fill::zeros);
+  if (save_random_effects) {
+    res_b.set_size(n_b, b_mat.n_cols, n_iter);
+  }
   mat acceptance_b(n_iter, n_b);
   mat res_sigmas(n_iter, n_sigmas, fill::zeros);
   mat acceptance_sigmas(n_iter, n_sigmas, fill::zeros);
@@ -285,7 +289,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2,
              id_H_fast, which_event, which_right_event, which_left,
              which_interval, any_event, any_interval,
-             L, sds, it, idL, acceptance_b, res_b);
+             L, sds, it, idL, acceptance_b, res_b, save_random_effects, n_burnin);
 
     denominator_surv =
       sum(logLik_surv) +
@@ -306,7 +310,11 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
                            idL_lp_fast, unq_idL);
   }
-  res_b = res_b.slices(n_burnin, n_iter - 1);
+  if (save_random_effects) {
+    res_b = res_b.slices(n_burnin, n_iter - 1);
+  } else {
+    res_b.slice(0) = res_b.slice(0) / (n_iter - n_burnin); 
+  }
   return List::create(
     Named("mcmc") = List::create(
       Named("bs_gammas") = res_bs_gammas.rows(n_burnin, n_iter - 1),

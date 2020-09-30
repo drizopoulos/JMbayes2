@@ -144,15 +144,30 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     get_acc_rates <- function (name_parm) {
         do.call("rbind", lapply(out, function (x) x[["acc_rate"]][[name_parm]]))
     }
-    parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
-               "Wlong_bar_alphas", "D", paste0("betas", seq_along(model_data$X)),
-               "sigmas", "b")
+    if (control$save_random_effects) {
+        parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
+                   "Wlong_bar_alphas", "D", paste0("betas", seq_along(model_data$X)),
+                   "sigmas", "b")
+    } else {
+        parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
+                   "Wlong_bar_alphas", "D", paste0("betas", seq_along(model_data$X)),
+                   "sigmas")
+    }
     if (!length(attr(model_info$terms$terms_Surv_noResp, "term.labels")))
         parms <- parms[parms != "gammas"]
     mcmc_out <- lapply_nams(parms, convert2_mcmclist)
-    list(
-        "mcmc" = mcmc_out,
-        "acc_rates" = lapply_nams(parms, get_acc_rates),
-        "running_time" = toc - tic
-    )
+    if (control$save_random_effects) {
+        list(
+            "mcmc" = mcmc_out,
+            "acc_rates" = lapply_nams(parms, get_acc_rates),
+            "running_time" = toc - tic
+        )
+    } else {
+        list(
+            "postmeans_b" = Reduce('+', lapply(out, function(x) x$mcmc$b[, , 1])) / n_chains, 
+            "mcmc" = mcmc_out,
+            "acc_rates" = lapply_nams(parms, get_acc_rates),
+            "running_time" = toc - tic
+        )
+    }
 }

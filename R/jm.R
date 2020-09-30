@@ -18,7 +18,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     con <- list(GK_k = 15L, Bsplines_degree = 2, base_hazard_segments = 10,
                 diff = 2L, n_chains = 3L, n_burnin = 500L, n_iter = 3500L,
                 seed = 123L,  cores = max(parallel::detectCores() - 1, 1),
-                MALA = FALSE)
+                MALA = FALSE, save_random_effects = FALSE)
     control <- c(control, list(...))
     namC <- names(con)
     con[(namc <- names(control))] <- control
@@ -521,11 +521,20 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                         Rhat = list(lapply(out$mcm[no_b], function (theta)
                             coda::gelman.diag(theta)$psrf)))
     }
-    out <- c(out, list(statistics = statistics,
-                       model_data = Data, model_info = model_info,
-                       initial_values = initial_values,
-                       control = con, priors = priors, call = call,
-                       vcov_prop = vcov_prop))
+    if (con$save_random_effects) {
+        out <- c(out, list(statistics = statistics,
+                           model_data = Data, model_info = model_info,
+                           initial_values = initial_values,
+                           control = con, priors = priors, call = call,
+                           vcov_prop = vcov_prop))
+    } else {
+        statistics$Mean$b <- out$postmeans_b
+        out <- c(out[names(out) != 'postmeans_b'], list(statistics = statistics,
+                           model_data = Data, model_info = model_info,
+                           initial_values = initial_values,
+                           control = con, priors = priors, call = call,
+                           vcov_prop = vcov_prop))
+    }
     class(out) <- "jm"
     out
 }

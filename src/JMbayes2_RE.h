@@ -38,7 +38,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const bool &any_interval,
                const mat &L, const vec &sds,
                const uword &it, const field<uvec> &idL,
-               mat &acceptance_b, cube &res_b
+               mat &acceptance_b, cube &res_b, const bool &save_random_effects,
+               const uword &n_burnin
                ) {
   // calculate denominator_b
   vec denominator_b = logLik_long + logLik_surv + logLik_re;
@@ -120,7 +121,13 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
         robbins_monro(scale_b.at(i), acceptance_b.at(it, i), it, 0.25);
     }
   }
-  res_b.slice(it) = b_mat;
+  if (save_random_effects) {
+    res_b.slice(it) = b_mat;
+  } else {
+    if (it > n_burnin) {
+      res_b.slice(0) += b_mat;
+    }
+  }
   b = mat2field_mat(b_mat, ind_RE);
 }
 
