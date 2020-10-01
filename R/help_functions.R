@@ -147,7 +147,7 @@ extract_functional_forms_per_outcome <- function (Form) {
 
 extract_functional_forms <- function (Form, data) {
     tr <- terms(Form)
-    mF <- model.frame(tr, data = data[1:5L, ])
+    mF <- model.frame(tr, data = data[1L:5L, ])
     M <- model.matrix(tr, mF)[, -1L, drop = FALSE]
     possible_forms <- c("value", "slope", "area")
     sapply(possible_forms, grep, x = colnames(M), fixed = TRUE)
@@ -909,9 +909,9 @@ ggcolthemes <- list(
     'sunset' = c("1" = '#f67e7d', "2" = '#843b62', "3" = '#0b032d')
 )
 
-tv <- function (x, knots = NULL, ord = 2) {
+tv <- function (x, knots = NULL, ord = 2L) {
     if (is.null(knots)) {
-        knots <- .knots_baseline_hazard
+        knots <- .knots_base_hazard
     }
     out <- splines::splineDesign(knots, x, ord = ord, outer.ok = TRUE)
     attr(out, "knots") <- knots
@@ -927,6 +927,27 @@ makepredictcall.tv <- function (var, call) {
     x <- call[1L:2L]
     x[names(at)] <- at
     x
+}
+
+create_W0 <- function (times, knots, ord, strata) {
+    W0 <- splineDesign(knots, times, ord = ord, outer.ok = TRUE)
+    n_strata <- length(unique(strata))
+    ncW0 <- ncol(W0)
+    ind_cols <- matrix(seq_len(ncW0 * n_strata), ncW0)
+    out <- matrix(0.0, nrow(W0), ncW0 * n_strata)
+    for (i in seq_len(n_strata)) {
+        row_inds <- strata == i
+        col_inds <- ind_cols[, i]
+        out[row_inds, col_inds] <- W0[row_inds, ]
+    }
+    out
+}
+
+construct_Umat <- function (fForms, dataS) {
+    tt <- terms(fForms)
+    m <- model.matrix(tt, model.frame(tt, data = dataS))[, -1, drop = FALSE]
+    qr_m <- qr(m)
+    m[, qr_m$pivot[seq_len(qr_m$rank)], drop = FALSE]
 }
 
 

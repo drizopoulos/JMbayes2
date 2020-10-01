@@ -139,6 +139,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     for (i in seq_along(respVars)) {
         if (is.null(dataS[[respVars[i]]])) dataS[[respVars[i]]] <- rnorm(nrow(dataS))
     }
+    # if the time_var is not in dataS set it to a random number
+    if (is.null(dataS[[time_var]])) dataS[[time_var]] <- rnorm(nrow(dataS))
     # terms for survival model
     terms_Surv <- Surv_object$terms
     terms_Surv_noResp <- delete.response(terms_Surv)
@@ -221,6 +223,15 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     which_right <- which(delta == 0)
     which_left <- which(delta == 2)
     which_interval <- which(delta == 3)
+    # extract strata if present otherwise all subjects in one stratum
+    ind_strata <- attr(terms_Surv, "specials")$strata
+    strata <- if (is.null(ind_strata)) {
+        rep(1, nrow(mf_surv_dataS))
+    } else {
+        unclass(mf_surv_dataS[[ind_strata]])
+    }
+    n_strata <- length(unique(strata))
+
     # 'Time_integration' is the upper limit of the integral in likelihood
     # of the survival model. For subjects with event (delta = 1), for subjects with
     # right censoring and for subjects with interval censoring we need to integrate
@@ -267,12 +278,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         con$knots <- knots(qs[1L], qs[2L], con$base_hazard_segments,
                            con$Bsplines_degree)
     }
-    .knots_baseline_hazard <- con$knots
+    .knots_base_hazard <- con$knots
     env <- new.env(parent = .GlobalEnv)
-    assign(".knots_baseline_hazard", con$knots, envir = env)
-
-    # create long version of idT
-    idTs <- rep(idT, each = con$GK_k)
+    assign(".knots_base_hazard", con$knots, envir = env)
 
     # Extract functional forms per longitudinal outcome
     if (any(!names(functional_forms) %in% respVars_form)) {
@@ -295,6 +303,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # One list component per association structure per outcome
     # List components vectors of integers corresponding to the term
     # each association structure corresponds to
+    set_env <- function (form, env) {environment(form) <- env; form}
+    functional_forms[] <- lapply(functional_forms, set_env, env = env)
     FunForms_per_outcome <- lapply(functional_forms, extract_functional_forms,
                                    data = dataS)
     FunForms_per_outcome <- lapply(FunForms_per_outcome,
@@ -315,8 +325,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # in the above design matrices we put the "_h" to denote calculation at the event time
     # 'Time_right', we put "_H" to denote calculation at the 'Time_integration', and
     # "_H2" to denote calculation at the 'Time_integration2'.
-    W0_H <- splineDesign(con$knots, c(t(st)), ord = con$Bsplines_degree + 1,
-                         outer.ok = TRUE)
+    strata_H <- rep(strata, each = con$GK_k)
+    W0_H <- create_W0(c(t(st)), con$knots, con$Bsplines_degree + 1, strata_H)
     dataS_H <- SurvData_HazardModel(st, dataS, Time_start, idT, time_var)
     mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
     W_H <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
@@ -330,13 +340,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     Z_H <- desing_matrices_functional_forms(st, terms_RE,
                                             dataL, time_var, idVar,
                                             collapsed_functional_forms)
-    U_H <- lapply(seq_along(Mixed_objects), function (i) {
-        tt <- terms(functional_forms[[i]])
-        model.matrix(tt, model.frame(tt, data = dataS_H))[, -1, drop = FALSE]
-    })
+    U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
     if (length(which_event)) {
-        W0_h <- splineDesign(con$knots, Time_right,
-                             ord = con$Bsplines_degree + 1, outer.ok = TRUE)
+        W0_h <- create_W0(Time_right, con$knots, con$Bsplines_degree + 1, strata)
         dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start, idT,
                                         time_var)
         mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
@@ -350,17 +356,14 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         Z_h <- desing_matrices_functional_forms(Time_right, terms_RE,
                                                 dataL, time_var, idVar,
                                                 collapsed_functional_forms)
-        U_h <- lapply(seq_along(Mixed_objects), function (i) {
-            tt <- terms(functional_forms[[i]])
-            model.matrix(tt, model.frame(tt, data = dataS_h))[, -1, drop = FALSE]
-        })
+        U_h <- lapply(functional_forms, construct_Umat, dataS = dataS_h)
     } else {
         W0_h <- W_h <- matrix(0.0)
         X_h <- Z_h <- U_h <- rep(list(matrix(0.0)), length(respVars))
     }
     if (length(which_interval)) {
-        W0_H2 <- splineDesign(con$knots, c(t(st2)),
-                              ord = con$Bsplines_degree + 1, outer.ok = TRUE)
+        W0_H2 <- create_W0(c(t(st2)), con$knots, con$Bsplines_degree + 1,
+                           strata_H)
         dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start, idT, time_var)
         mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
         W_H2 <- model.matrix.default(terms_Surv_noResp, mf2)[, -1, drop = FALSE]
@@ -373,10 +376,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         Z_H2 <- desing_matrices_functional_forms(st, terms_RE,
                                                  dataL, time_var, idVar,
                                                  collapsed_functional_forms)
-        U_H2 <- lapply(seq_along(Mixed_objects), function (i) {
-            tt <- terms(functional_forms[[i]])
-            model.matrix(tt, model.frame(tt, data = dataS_H2))[, -1, drop = FALSE]
-        })
+        U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
     } else {
         W0_H2 <- W_H2 <- matrix(0.0)
         X_H2 <- Z_H2 <- U_H2 <- rep(list(matrix(0.0)), length(respVars))
@@ -430,7 +430,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     alphas <- init_surv$alphas
     initial_values <- list(betas = betas, log_sigmas = log_sigmas, D = D,
                            b = b, bs_gammas = bs_gammas, gammas = gammas,
-                           alphas = alphas, tau_bs_gammas = 20)
+                           alphas = alphas, tau_bs_gammas = rep(20, n_strata))
     ############################################################################
     ############################################################################
     # variance covariance matrices for proposal distributions in
@@ -457,18 +457,40 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ############################################################################
     ############################################################################
     # Priors
-    DD <- diag(ncol(W0_H))
-    Tau_bs_gammas <- crossprod(diff(DD, differences = con$diff))
+    # we define as thetas = c(bs_gammas, gammas, unlist(alphas))
+    # for some of these coefficients we place penalties/shrinkage priors
+    # 'Tau_thetas' is list of the prior precision matrices for thetas
+    # 'ind_thetas' is a list of position indicators specifying which of the
+    # thetas are involved in the calculation of the corresponding tau parameter,
+    # where tau is the penalty parameter. Hence, the number of taus we will need
+    # to estimate is the length of ind_thetas.
+    # For each of these taus we place a Gamma prior with parameters A_tau and
+    # B_tau. Thus, A_tau and B_tau are vectors with length equal to ind_thetas
+    #
+    thetas <- if (any_gammas) {
+        c(bs_gammas, gammas, unlist(alphas))
+    } else {
+        c(bs_gammas, unlist(alphas))
+    }
+    Tau_bs_gammas <- crossprod(diff(diag(ncol(W0_H) / n_strata),
+                                    differences = con$diff))
+    Tau_bs_gammas <- rep(list(Tau_bs_gammas), n_strata)
+    A_tau <- rep(1, n_strata)
+    B_tau <- rep(0.1, n_strata)
+    ind_thetas <- split(seq_len(ncol(W0_H)),
+                      rep(seq_len(n_strata), each = ncol(W0_H) / n_strata))
     prs <- list(mean_betas = lapply(betas, "*", 0.0),
                 Tau_betas = lapply(betas, function (b) 0.01 * diag(length(b))),
                 mean_gammas = gammas * 0.0,
                 Tau_gammas = 0.01 * diag(length(gammas)),
-                mean_bs_gammas = bs_gammas * 0.0,
+                mean_bs_gammas = lapply(Tau_bs_gammas, function (x) x[, 1] * 0),
                 Tau_bs_gammas = Tau_bs_gammas,
                 mean_alphas = lapply(alphas, "*", 0.0),
                 Tau_alphas = lapply(alphas, function (a) 0.01 * diag(length(a))),
-                A_tau_bs_gammas = 1, B_tau_bs_gammas = 0.1,
-                rank_Tau_bs_gammas = qr(Tau_bs_gammas)$rank,
+                A_tau_bs_gammas = rep(1, n_strata),
+                B_tau_bs_gammas = rep(0.1, n_strata),
+                rank_Tau_bs_gammas =
+                    sapply(lapply(Tau_bs_gammas, qr), "[[", 'rank'),
                 prior_D_sds_df = 3.0, prior_D_sds_sigma = 10.0,
                 prior_D_L_etaLKJ = 3.0, prior_sigmas_df = 3.0,
                 prior_sigmas_sigma = 20.0)

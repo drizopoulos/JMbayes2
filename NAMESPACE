@@ -1,6 +1,6 @@
-export(jm, traceplot, gelman_diag, densplot, cumuplot, value, slope, area,
-       coef, fixef, ranef, terms, model.frame, model.matrix, family,
-       ggtraceplot, ggdensityplot)
+export(area, cumuplot, coef, densplot, family, fixef, gelman_diag,
+       ggdensityplot, ggtraceplot, jm, model.frame, model.matrix, ranef, slope,
+       terms, traceplot, tv, value)
 
 import(Rcpp)
 importFrom("utils", "glob2rx", "tail", "head")

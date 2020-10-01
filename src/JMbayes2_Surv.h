@@ -10,6 +10,25 @@
 using namespace Rcpp;
 using namespace arma;
 
+double logPrior_surv (const vec &bs_gammas, const vec&gammas, const vec &alphas,
+                      const field<vec> &prior_mean_bs_gammas,
+                      const field<mat> &prior_Tau_bs_gammas, const vec &tau_bs_gammas,
+                      const vec &prior_mean_gammas, const mat &prior_Tau_gammas,
+                      const vec &prior_mean_alphas, const mat &prior_Tau_alphas) {
+  uword n_strata = prior_mean_bs_gammas.n_elem;
+  uword n_per_stratum = bs_gammas.n_rows / n_strata;
+  double out(0.0);
+  for (uword i = 0; i < n_strata; ++i) {
+    out += logPrior(bs_gammas.rows(i * n_per_stratum, (i + 1) * n_per_stratum - 1),
+                    prior_mean_bs_gammas.at(i),
+                    prior_Tau_bs_gammas.at(i), tau_bs_gammas.at(i));
+  }
+  out += logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0);
+  out += logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
+  return out;
+}
+
+
 void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
                        vec &W0H_bs_gammas, vec &W0h_bs_gammas, vec &W0H2_bs_gammas,
                        const vec &WH_gammas, const vec &Wh_gammas, const vec &WH2_gammas,
@@ -18,8 +37,8 @@ void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
                        const uvec &which_event, const uvec &which_right_event,
                        const uvec &which_left, const uvec &which_interval,
                        const bool &any_event, const bool &any_interval,
-                       const vec &prior_mean_bs_gammas, const mat &prior_Tau_bs_gammas,
-                       const double &tau_bs_gammas,
+                       const field<vec> &prior_mean_bs_gammas, const field<mat> &prior_Tau_bs_gammas,
+                       const vec &tau_bs_gammas,
                        const vec &prior_mean_gammas, const mat &prior_Tau_gammas,
                        const vec &prior_mean_alphas, const mat &prior_Tau_alphas,
                        vec &logLik_surv, double &denominator_surv, const uword &it,
@@ -47,10 +66,10 @@ void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
                any_interval, which_interval);
     double numerator_surv =
       sum(logLik_surv_proposed) +
-      logPrior(proposed_bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas,
-               tau_bs_gammas) +
-      logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
-      logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
+      logPrior_surv(proposed_bs_gammas, gammas, alphas, prior_mean_bs_gammas,
+                    prior_Tau_bs_gammas, tau_bs_gammas,
+                    prior_mean_gammas, prior_Tau_gammas,
+                    prior_mean_alphas, prior_Tau_alphas);
     double log_ratio = numerator_surv - denominator_surv;
     if (std::isfinite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
       bs_gammas = proposed_bs_gammas;
@@ -82,8 +101,8 @@ void update_gammas (const vec &bs_gammas, vec &gammas, const vec &alphas,
                     const uvec &which_event, const uvec &which_right_event,
                     const uvec &which_left, const uvec &which_interval,
                     const bool &any_event, const bool &any_interval,
-                    const vec &prior_mean_bs_gammas, const mat &prior_Tau_bs_gammas,
-                    const double &tau_bs_gammas,
+                    const field<vec> &prior_mean_bs_gammas, const field<mat> &prior_Tau_bs_gammas,
+                    const vec &tau_bs_gammas,
                     const vec &prior_mean_gammas, const mat &prior_Tau_gammas,
                     const vec &prior_mean_alphas, const mat &prior_Tau_alphas,
                     vec &logLik_surv, double &denominator_surv, const uword &it,
@@ -110,9 +129,10 @@ void update_gammas (const vec &bs_gammas, vec &gammas, const vec &alphas,
                any_interval, which_interval);
     double numerator_surv =
       sum(logLik_surv_proposed) +
-      logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
-      logPrior(proposed_gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
-      logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
+      logPrior_surv(bs_gammas, proposed_gammas, alphas, prior_mean_bs_gammas,
+                    prior_Tau_bs_gammas, tau_bs_gammas,
+                    prior_mean_gammas, prior_Tau_gammas,
+                    prior_mean_alphas, prior_Tau_alphas);
     double log_ratio = numerator_surv - denominator_surv;
     if (std::isfinite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
       gammas = proposed_gammas;
@@ -145,8 +165,8 @@ void update_alphas (const vec &bs_gammas, const vec &gammas, vec &alphas,
                     const uvec &which_event, const uvec &which_right_event,
                     const uvec &which_left, const uvec &which_interval,
                     const bool &any_event, const bool &any_interval,
-                    const vec &prior_mean_bs_gammas, const mat &prior_Tau_bs_gammas,
-                    const double &tau_bs_gammas,
+                    const field<vec> &prior_mean_bs_gammas, const field<mat> &prior_Tau_bs_gammas,
+                    const vec &tau_bs_gammas,
                     const vec &prior_mean_gammas, const mat &prior_Tau_gammas,
                     const vec &prior_mean_alphas, const mat &prior_Tau_alphas,
                     vec &logLik_surv, double &denominator_surv, const uword &it,
@@ -173,9 +193,10 @@ void update_alphas (const vec &bs_gammas, const vec &gammas, vec &alphas,
                any_interval, which_interval);
     double numerator_surv =
       sum(logLik_surv_proposed) +
-      logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
-      logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
-      logPrior(proposed_alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
+      logPrior_surv(bs_gammas, gammas, proposed_alphas, prior_mean_bs_gammas,
+                    prior_Tau_bs_gammas, tau_bs_gammas,
+                    prior_mean_gammas, prior_Tau_gammas,
+                    prior_mean_alphas, prior_Tau_alphas);
     double log_ratio = numerator_surv - denominator_surv;
     if (std::isfinite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
       alphas = proposed_alphas;

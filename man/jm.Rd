@@ -19,6 +19,8 @@ jm(Surv_object, Mixed_objects, time_var, functional_forms = NULL,
 value(x)
 slope(x)
 area(x)
+
+tv(x, knots = NULL, ord = 2L)
 }
 
 \arguments{
@@ -31,6 +33,7 @@ area(x)
 \item{priors}{.}
 \item{control}{.}
 \item{x}{.}
+\item{knots, ord}{.}
 \item{\dots}{arguments passed to \code{control}.}
 }
 

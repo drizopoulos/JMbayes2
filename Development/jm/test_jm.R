@@ -270,15 +270,17 @@ control = NULL
 
 
 fm1 <- lme(log(serBilir) ~ year, data = pbc2, random = ~ year | id)
-CoxFit <- coxph(Surv(years, status2) ~ 1, data = pbc2.id)
-test <- jm(CoxFit, list(fm1), time_var = "year")
+CoxFit <- coxph(Surv(years, status2) ~ 1 + strata(sex), data = pbc2.id)
+#test <- jm(CoxFit, list(fm1), time_var = "year")
+
+ff <- list("log(serBilir)" = ~ value(log(serBilir)):tv(year))
 
 ####
 
 Surv_object = CoxFit
 Mixed_objects = list(fm1)
 time_var = "year"
-functional_forms = NULL
+functional_forms = ff
 data_Surv = NULL
 id_var = NULL
 priors = NULL
