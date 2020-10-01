@@ -144,16 +144,11 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat acceptance_sds(n_iter, n_sds, fill::zeros);
   mat res_L(n_iter, n_L, fill::zeros);
   mat acceptance_L(n_iter, n_L, fill::zeros);
-<<<<<<< Updated upstream
   cube res_b(n_b, b_mat.n_cols, 1, fill::zeros);
   if (save_random_effects) {
     res_b.set_size(n_b, b_mat.n_cols, n_iter);
   }
-  mat acceptance_b(n_iter, n_b);
-=======
-  cube res_b(n_b, b_mat.n_cols, n_iter, fill::zeros);
   mat acceptance_b(n_iter, n_b, fill::zeros);
->>>>>>> Stashed changes
   mat res_sigmas(n_iter, n_sigmas, fill::zeros);
   mat acceptance_sigmas(n_iter, n_sigmas, fill::zeros);
   // scales
@@ -327,7 +322,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   if (save_random_effects) {
     res_b = res_b.slices(n_burnin, n_iter - 1);
   } else {
-    res_b.slice(0) = res_b.slice(0) / (n_iter - n_burnin); 
+    res_b.slice(0) = res_b.slice(0) / (n_iter - n_burnin);
   }
   return List::create(
     Named("mcmc") = List::create(
