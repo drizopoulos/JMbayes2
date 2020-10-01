@@ -124,7 +124,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
   if (save_random_effects) {
     res_b.slice(it) = b_mat;
   } else {
-    if (it > n_burnin) {
+    if (it > n_burnin - 1) {
       res_b.slice(0) += b_mat;
     }
   }
