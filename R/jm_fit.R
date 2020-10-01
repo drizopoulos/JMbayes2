@@ -14,7 +14,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     }
     model_data$y[binomial_data] <- lapply(model_data$y[binomial_data],
                                           trials_fun)
-    id_H <- rep(seq_len(model_data$n), each = control$GK_k)
+    id_H <- rep(seq_len(model_data$n), each = control$GK_k)  # <--------------
     id_h <- seq_len(nrow(model_data$X_h[[1]][[1]]))
     model_data <- c(model_data, create_Wlong_mats(model_data, model_info,
                                                   initial_values, priors,
@@ -109,7 +109,10 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         colnames(out[[i]][["mcmc"]][["bs_gammas"]]) <-
             paste0("bs_gammas_",
                    seq_along(out[[i]][["mcmc"]][["bs_gammas"]][1, ]))
-        colnames(out[[i]][["mcmc"]][["tau_bs_gammas"]]) <- "tau_bs_gammas"
+        colnames(out[[i]][["mcmc"]][["tau_bs_gammas"]]) <-
+            if ((n_taus <- ncol(out[[i]][["mcmc"]][["tau_bs_gammas"]])) > 1) {
+                paste0("tau_bs_gammas_", seq_len(n_taus))
+            } else "tau_bs_gammas"
         colnames(out[[i]][["mcmc"]][["gammas"]]) <- colnames(model_data$W_H)
         colnames(out[[i]][["mcmc"]][["alphas"]]) <-
             unlist(lapply(model_data$U_H, colnames), use.names = FALSE)

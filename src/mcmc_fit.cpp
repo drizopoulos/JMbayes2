@@ -88,7 +88,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec bs_gammas = as<vec>(initial_values["bs_gammas"]);
   vec gammas = as<vec>(initial_values["gammas"]);
   vec alphas = as<vec>(initial_values["alphas"]);
-  double tau_bs_gammas = as<double>(initial_values["tau_bs_gammas"]);
+  vec tau_bs_gammas = as<vec>(initial_values["tau_bs_gammas"]);
   field<mat> b = List2Field_mat(as<List>(initial_values["b"]));
   mat b_mat = docall_cbindF(b);
   field<mat> mean_u(b.n_elem);
@@ -107,15 +107,15 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uword n_burnin = as<uword>(control["n_burnin"]);
   bool MALA = as<bool>(control["MALA"]);
   // priors
-  vec prior_mean_bs_gammas = as<vec>(priors["mean_bs_gammas"]);
-  mat prior_Tau_bs_gammas = as<mat>(priors["Tau_bs_gammas"]);
+  field<vec> prior_mean_bs_gammas = List2Field_vec(as<List>(priors["mean_bs_gammas"]));
+  field<mat> prior_Tau_bs_gammas = List2Field_mat(as<List>(priors["Tau_bs_gammas"]));
   vec prior_mean_gammas = as<vec>(priors["mean_gammas"]);
   mat prior_Tau_gammas = as<mat>(priors["Tau_gammas"]);
   vec prior_mean_alphas = as<vec>(priors["mean_alphas"]);
   mat prior_Tau_alphas = as<mat>(priors["Tau_alphas"]);
-  double post_A_tau_bs_gammas = as<double>(priors["A_tau_bs_gammas"]) +
-    0.5 * as<double>(priors["rank_Tau_bs_gammas"]);
-  double prior_B_tau_bs_gammas = as<double>(priors["B_tau_bs_gammas"]);
+  vec post_A_tau_bs_gammas = as<vec>(priors["A_tau_bs_gammas"]) +
+    0.5 * as<vec>(priors["rank_Tau_bs_gammas"]);
+  vec prior_B_tau_bs_gammas = as<vec>(priors["B_tau_bs_gammas"]);
   double prior_D_sds_df = as<double>(priors["prior_D_sds_df"]);
   double prior_D_sds_sigma = as<double>(priors["prior_D_sds_sigma"]);
   double prior_D_L_etaLKJ = as<double>(priors["prior_D_L_etaLKJ"]);
@@ -124,29 +124,36 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   // store results
   uword n_b = b_mat.n_rows;
   uword n_bs_gammas = bs_gammas.n_rows;
+  uword n_strata = tau_bs_gammas.n_rows;
+  uword n_per_stratum = n_bs_gammas / n_strata;
   uword n_gammas = gammas.n_rows;
   uword n_alphas = alphas.n_rows;
   uword n_sds = sds.n_rows;
   uword n_L = vec(L(upper_part)).n_rows;
   uword n_sigmas = sigmas.n_rows;
-  mat res_bs_gammas(n_iter, n_bs_gammas);
+  mat res_bs_gammas(n_iter, n_bs_gammas, fill::zeros);
   mat acceptance_bs_gammas(n_iter, n_bs_gammas, fill::zeros);
-  mat res_gammas(n_iter, n_gammas);
-  mat res_W_bar_gammas(n_iter, 1);
+  mat res_gammas(n_iter, n_gammas, fill::zeros);
+  mat res_W_bar_gammas(n_iter, 1, fill::zeros);
   mat acceptance_gammas(n_iter, n_gammas, fill::zeros);
-  mat res_alphas(n_iter, n_alphas);
-  mat res_Wlong_bar_alphas(n_iter, 1);
+  mat res_alphas(n_iter, n_alphas, fill::zeros);
+  mat res_Wlong_bar_alphas(n_iter, 1, fill::zeros);
   mat acceptance_alphas(n_iter, n_alphas, fill::zeros);
-  mat res_tau_bs_gammas(n_iter, 1, fill::zeros);
+  mat res_tau_bs_gammas(n_iter, n_strata, fill::zeros);
   mat res_sds(n_iter, n_sds, fill::zeros);
   mat acceptance_sds(n_iter, n_sds, fill::zeros);
   mat res_L(n_iter, n_L, fill::zeros);
   mat acceptance_L(n_iter, n_L, fill::zeros);
+<<<<<<< Updated upstream
   cube res_b(n_b, b_mat.n_cols, 1, fill::zeros);
   if (save_random_effects) {
     res_b.set_size(n_b, b_mat.n_cols, n_iter);
   }
   mat acceptance_b(n_iter, n_b);
+=======
+  cube res_b(n_b, b_mat.n_cols, n_iter, fill::zeros);
+  mat acceptance_b(n_iter, n_b, fill::zeros);
+>>>>>>> Stashed changes
   mat res_sigmas(n_iter, n_sigmas, fill::zeros);
   mat acceptance_sigmas(n_iter, n_sigmas, fill::zeros);
   // scales
@@ -197,9 +204,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              any_interval, which_interval);
   double denominator_surv =
     sum(logLik_surv) +
-    logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
-    logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
-    logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
+    logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
+                  prior_Tau_bs_gammas, tau_bs_gammas,
+                  prior_mean_gammas, prior_Tau_gammas,
+                  prior_mean_alphas, prior_Tau_alphas);
   //
   vec logLik_re = log_re(b_mat, L, sds);
   //
@@ -225,10 +233,15 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     ////////////////////////////////////////////////////////////////////////
 
-    double post_B_tau_bs_gammas = prior_B_tau_bs_gammas +
-      0.5 * as_scalar(bs_gammas.t() * prior_Tau_bs_gammas * bs_gammas);
-    tau_bs_gammas = R::rgamma(post_A_tau_bs_gammas, 1 / post_B_tau_bs_gammas);
-    res_tau_bs_gammas.at(it, 0) = tau_bs_gammas;
+    for (uword j = 0; j < n_strata; ++j) {
+      vec bs_gammas_j =
+        bs_gammas.rows(j * n_per_stratum, (j + 1) * n_per_stratum - 1);
+      double quad = as_scalar(bs_gammas_j.t() * prior_Tau_bs_gammas.at(j) *
+                              bs_gammas_j);
+      double post_B_tau = prior_B_tau_bs_gammas.at(j) + 0.5 * quad;
+      tau_bs_gammas.at(j) = R::rgamma(post_A_tau_bs_gammas.at(j), 1 / post_B_tau);
+      res_tau_bs_gammas.at(it, j) = tau_bs_gammas.at(j);
+    }
 
     ////////////////////////////////////////////////////////////////////////
 
@@ -293,9 +306,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     denominator_surv =
       sum(logLik_surv) +
-      logPrior(bs_gammas, prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas) +
-      logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0) +
-      logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
+      logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
+                    prior_Tau_bs_gammas, tau_bs_gammas,
+                    prior_mean_gammas, prior_Tau_gammas,
+                    prior_mean_alphas, prior_Tau_alphas);
 
     update_mean_u(mean_u, betas, Xbase, x_in_z, baseline, unq_idL);
 
