@@ -564,3 +564,5 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     class(out) <- "jm"
     out
 }
+
+if(getRversion() >= "2.15.1") utils::globalVariables(c(".knots_base_hazard"))
