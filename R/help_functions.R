@@ -559,9 +559,9 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     ######################################################################################
     ######################################################################################
     times_long <- split(dataL[[time_var]], dataL[[idVar]])
-    dataS_init_W <- SurvData_HazardModel(times_long, dataS, Time_start,
+    dataS_init <- SurvData_HazardModel(times_long, dataS, Time_start,
                                          paste(idT, "_", strata), time_var)
-    mf <- model.frame.default(terms_Surv_noResp, data = dataS_init_W)
+    mf <- model.frame.default(terms_Surv_noResp, data = dataS_init)
     W_init <- construct_Wmat(terms_Surv_noResp, mf)
     if (!ncol(W_init)) {
         W_init <- cbind(W_init, rep(0, nrow(W_init)))
@@ -572,19 +572,24 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     Z_init <- desing_matrices_functional_forms(times_long, terms_RE,
                                                dataL, time_var, idVar,
                                                collapsed_functional_forms)
-    dataS_init <- SurvData_HazardModel(times_long, dataS, Time_start, idT,
-                                       time_var)
     U_init <- lapply(functional_forms, construct_Umat, dataS = dataS_init)
     ##############
+    fid <- dataL[[idVar]]
+    fid <- factor(fid, levels = unique(fid))
+    ind_multipl_events <-
+        unlist(mapply2(rep.int,
+                       x = lapply(split(fid, fid), unclass),
+                       times = tapply(idT, idT, length)), use.names = FALSE)
+
     id_init <- rep(list(dataL[[idVar]]), length.out = length(X_init))
     eta_init <- linpred_surv(X_init, betas, Z_init, b, id_init)
-    Wlong_init <- create_Wlong(eta_init, FunForms_per_outcome, U_init)
+    Wlong_init <- create_Wlong(lapply(eta_init,
+                                      function (x) x[ind_multipl_events, , drop = FALSE]),
+                               FunForms_per_outcome, U_init)
     Wlong_init <- do.call("cbind", Wlong_init)
     ######################################################################################
     ######################################################################################
     start <- dataL[[time_var]]
-    fid <- dataL[[idVar]]
-    fid <- factor(fid, levels = unique(fid))
     spl_Time <- split(Time_right, idT)
     stop <- unlist(mapply2(`c`, tapply(start, fid, tail, n = -1),
                            lapply(spl_Time, "[", 1L)), use.names = FALSE)
