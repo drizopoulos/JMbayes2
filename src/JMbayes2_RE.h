@@ -35,7 +35,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const uvec &indFast_H, const uvec &indFast_h, const uvec &which_event,
                const uvec &which_right_event, const uvec &which_left,
                const uvec &which_interval, const bool &any_event,
-               const bool &any_interval,
+               const bool &any_interval, const uword &n_strata,
                const mat &L, const vec &sds,
                const uword &it, const field<uvec> &idL,
                mat &acceptance_b, cube &res_b, const bool &save_random_effects,
@@ -104,18 +104,22 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
       //  eta.at(j).rows(find(idL.at(i) == i)) =
       //    eta_proposed.at(j).rows(find(idL.at(i) == i));
       //}
-      uword first = i * GK_k;
-      uword last = (i + 1) * GK_k - 1;
-      Wlong_H.rows(first, last) = Wlong_H_proposed.rows(first, last);
-      WlongH_alphas.rows(first, last) = WlongH_alphas_proposed.rows(first, last);
+      uword first_H = i * GK_k * n_strata;
+      uword last_H = (i + 1) * GK_k * n_strata - 1;
+      Wlong_H.rows(first_H, last_H) = Wlong_H_proposed.rows(first_H, last_H);
+      WlongH_alphas.rows(first_H, last_H) =
+        WlongH_alphas_proposed.rows(first_H, last_H);
       if (any_event) {
-        Wlong_h.row(i) = Wlong_h_proposed.row(i);
-        Wlongh_alphas.row(i) = Wlongh_alphas_proposed.row(i);
+        uword fitst_h = i * n_strata;
+        uword last_h = (i + 1) * n_strata - 1;
+        Wlong_h.rows(fitst_h, last_h) = Wlong_h_proposed.rows(fitst_h, last_h);
+        Wlongh_alphas.rows(fitst_h, last_h) =
+          Wlongh_alphas_proposed.rows(fitst_h, last_h);
       }
       if (any_interval) {
-        Wlong_H2.rows(first, last) = Wlong_H2_proposed.rows(first, last);
-        WlongH2_alphas.rows(first, last) =
-          WlongH2_alphas_proposed.rows(first, last);
+        Wlong_H2.rows(first_H, last_H) = Wlong_H2_proposed.rows(first_H, last_H);
+        WlongH2_alphas.rows(first_H, last_H) =
+          WlongH2_alphas_proposed.rows(first_H, last_H);
       }
     }
     if (it > 19) {

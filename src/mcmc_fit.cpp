@@ -300,7 +300,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas,
              Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2,
              id_H_fast, id_h_fast, which_event, which_right_event, which_left,
-             which_interval, any_event, any_interval,
+             which_interval, any_event, any_interval, n_strata,
              L, sds, it, idL, acceptance_b, res_b, save_random_effects,
              n_burnin, GK_k);
 
