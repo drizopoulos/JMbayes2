@@ -36,7 +36,7 @@ create_Wlong_mats <- function (model_data, model_info, initial_values, priors,
     log_Pwk2 <- model_data$log_Pwk2
     FunForms_per_outcome <- model_info$FunForms_per_outcome
     # id_H is used to repeat the random effects of each subject GK_k times
-    id_H <- lapply(X_H, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
+    id_H <- rep(list(rep(unclass(idT), each = control$GK_k)), length(X_H))
     # this is the linear predictor for the longitudinal outcomes evaluated at the
     # Gauss-Kronrod quadrature points
     eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
@@ -44,7 +44,7 @@ create_Wlong_mats <- function (model_data, model_info, initial_values, priors,
     # functional forms per outcome already multiplied with the interaction terms matrix U
     Wlong_H <- create_Wlong(eta_H, FunForms_per_outcome, U_H)
     if (length(which_event)) {
-        id_h <- lapply(X_h, function (x) seq_len(nrow(x[[1]])))
+        id_h <- rep(list(unclass(idT)), length(X_h))
         eta_h <- linpred_surv(X_h, betas, Z_h, b, id_h)
         Wlong_h <- create_Wlong(eta_h, FunForms_per_outcome, U_h)
     } else {

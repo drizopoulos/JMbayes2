@@ -3,6 +3,7 @@
 \alias{value}
 \alias{slope}
 \alias{area}
+\alias{tv}
 
 \title{
 Joint Models for Longitudinal and Time-to-Event Data

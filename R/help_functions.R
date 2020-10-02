@@ -164,10 +164,10 @@ LongData_HazardModel <- function (time_points, data, times, ids, timeVar) {
         }
         split(time_points, row(time_points))
     }
-    if (length(tt) != length(unq_ids)) {
-        stop("the length of unique 'ids' does not match the number of rows ",
-             "of 'time_points'.")
-    }
+    #if (length(tt) != length(unq_ids)) {
+    #    stop("the length of unique 'ids' does not match the number of rows ",
+    #         "of 'time_points'.")
+    #}
     ind <- mapply(findInterval, tt, split(times, fids))
     rownams_id <- split(row.names(data), fids)
     if (!is.list(ind)) {
@@ -341,13 +341,12 @@ SurvData_HazardModel <- function (time_points, data, times, ids, time_var) {
         if (!is.matrix(time_points)) {
             time_points <- as.matrix(time_points)
         }
-        split(time_points, row(time_points))
+        sp <- split(time_points, row(time_points))
+        names(sp) <- rownames(time_points)
+        sp
     }
-    if (length(tt) != length(unq_ids)) {
-        stop("the length of unique 'ids' does not match the number of rows ",
-             "of 'time_points'.")
-    }
-    ind <- mapply(findInterval, tt, split(times, fids))
+    spl_times <- split(times, fids)[names(tt)]
+    ind <- mapply(findInterval, tt, spl_times)
     rownams_id <- split(row.names(data), fids)
     if (!is.list(ind)) {
         ind[ind < 1] <- 1
@@ -521,6 +520,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     Time_right <- Data$Time_right
     Time_left <- Data$Time_left
     delta <- Data$delta
+    strata <- Data$strata
     which_event <- Data$which_event
     which_right <- Data$which_right
     which_left <- Data$which_left
@@ -559,9 +559,10 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     ######################################################################################
     ######################################################################################
     times_long <- split(dataL[[time_var]], dataL[[idVar]])
-    dataS_init <- SurvData_HazardModel(times_long, dataS, Time_start, idT, time_var)
-    mf <- model.frame.default(terms_Surv_noResp, data = dataS_init)
-    W_init <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
+    dataS_init_W <- SurvData_HazardModel(times_long, dataS, Time_start,
+                                         paste(idT, "_", strata), time_var)
+    mf <- model.frame.default(terms_Surv_noResp, data = dataS_init_W)
+    W_init <- construct_Wmat(terms_Surv_noResp, mf)
     if (!ncol(W_init)) {
         W_init <- cbind(W_init, rep(0, nrow(W_init)))
     }
@@ -571,10 +572,9 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     Z_init <- desing_matrices_functional_forms(times_long, terms_RE,
                                                dataL, time_var, idVar,
                                                collapsed_functional_forms)
-    U_init <- lapply(seq_along(X_init), function (i) {
-        tt <- terms(functional_forms[[i]])
-        model.matrix(tt, model.frame(tt, data = dataS_init))[, -1, drop = FALSE]
-    })
+    dataS_init <- SurvData_HazardModel(times_long, dataS, Time_start, idT,
+                                       time_var)
+    U_init <- lapply(functional_forms, construct_Umat, dataS = dataS_init)
     ##############
     id_init <- rep(list(dataL[[idVar]]), length.out = length(X_init))
     eta_init <- linpred_surv(X_init, betas, Z_init, b, id_init)
@@ -585,14 +585,24 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     start <- dataL[[time_var]]
     fid <- dataL[[idVar]]
     fid <- factor(fid, levels = unique(fid))
+    spl_Time <- split(Time_right, idT)
     stop <- unlist(mapply2(`c`, tapply(start, fid, tail, n = -1),
-                           split(Time_right, idT)), use.names = FALSE)
+                           lapply(spl_Time, "[", 1L)), use.names = FALSE)
     create_event <- function (ni, delta) {
         if (ni == 1) delta else c(rep(0, ni - 1), delta)
     }
-    event <- unlist(mapply2(create_event, ni = tapply(fid, fid, length), delta),
+    event <- unlist(mapply2(create_event, ni = tapply(fid, fid, length),
+                            delta = sapply(split(delta, idT), "[", 1L)), # <------ only one event, doesn't work with Comp Risks
                     use.names = FALSE)
     any_gammas <- !(ncol(W_init) == 1 && all(W_init[, 1] == 0))
+    ind_multipl_events <-
+        unlist(mapply2(rep.int,
+                       x = lapply(split(fid, fid), unclass),
+                       times = tapply(idT, idT, length)), use.names = FALSE)
+    start <- start[ind_multipl_events]
+    stop <- stop[ind_multipl_events]
+    event <- event[ind_multipl_events]
+    Wlong_init <- Wlong_init[ind_multipl_events, , drop = FALSE]
     WW <- if (any_gammas) cbind(W_init, Wlong_init) else Wlong_init
     ####
     fm <- coxph(Surv(start, stop, event) ~ WW)
@@ -609,22 +619,22 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
         vcov_prop_alphas <- V
     }
     out <- list(gammas = gammas, alphas = alphas,
-                vcov_prop_gammas = vcov_prop_gammas, vcov_prop_alphas = vcov_prop_alphas)
+                vcov_prop_gammas = vcov_prop_gammas,
+                vcov_prop_alphas = vcov_prop_alphas)
     ######################################################################################
     ######################################################################################
-    id_H <- lapply(X_H, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
+    id_H <- rep(list(rep(unclass(Data$idT), each = control$GK_k)), length(X_H))
     eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
     Wlong_H <- create_Wlong(eta_H, FunForms_per_outcome, U_H)
     if (length(which_event)) {
-        id_h <- lapply(X_h, function (x) seq_len(nrow(x[[1]])))
+        id_h <- rep(list(unclass(Data$idT)), length(X_h))
         eta_h <- linpred_surv(X_h, betas, Z_h, b, id_h)
         Wlong_h <- create_Wlong(eta_h, FunForms_per_outcome, U_h)
     } else {
         Wlong_h <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
     }
     if (length(which_interval)) {
-        id_H2 <- lapply(X_H2, function (i, n) rep(seq_len(n), each = control$GK_k), n = n)
-        eta_H2 <- linpred_surv(X_H2, betas, Z_H, b, id_H2)
+        eta_H2 <- linpred_surv(X_H2, betas, Z_H, b, id_H)
         Wlong_H2 <- create_Wlong(eta_H2, FunForms_per_outcome, U_H2)
     } else {
         Wlong_H2 <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
@@ -663,24 +673,28 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
             log_Lik_surv[which_left] <- log1p(- exp(- H[which_left]))
         }
         if (length(which_interval)) {
-            H2 <- rowsum(exp(log_Pwk2 + lambda_H2), group = id_H2[[1]], reorder = FALSE)
-            log_Lik_surv[which_interval] <- log(exp(- H[which_interval]) -
-                                                    exp(- (H2[which_interval] + H[which_interval])))
+            H2 <- rowsum(exp(log_Pwk2 + lambda_H2), group = id_H[[1]], reorder = FALSE)
+            log_Lik_surv[which_interval] <-
+                log(exp(- H[which_interval]) -
+                        exp(- (H2[which_interval] + H[which_interval])))
         }
         - sum(log_Lik_surv, na.rm = TRUE)
     }
-    opt <- try({
-        optim(rep(0.01, ncol(W0_H)), log_dens_surv, method = "BFGS",
-              hessian = TRUE,
-              control = list(parscale = rep(0.01, ncol(W0_H))))
-    }, silent = TRUE)
-    if (!inherits(opt, "try-error")) {
-        c(out, list(bs_gammas = opt$par,
-                    vcov_prop_bs_gammas = solve(opt$hessian)))
+    ncw <- ncol(W0_H)
+    if(ncw > 20) {
+        c(out, list(bs_gammas = rep(-0.1, ncw), vcov_prop_bs_gammas = diag(ncw)))
     } else {
-        c(out, list(bs_gammas = rep(0.1, ncol(W0_H)),
-                    vcov_prop_bs_gammas = diag(ncol(W0_H))))
-
+        opt <- try({
+            optim(rep(-0.1, ncw), log_dens_surv, method = "BFGS", hessian = TRUE,
+                  control = list(parscale = rep(0.01, ncw)))
+        }, silent = TRUE)
+        V <- try(solve(opt$hessian), silent = TRUE)
+        if (!inherits(opt, "try-error") && !inherits(V, "try-error")) {
+            c(out, list(bs_gammas = opt$par, vcov_prop_bs_gammas = V))
+        } else {
+            c(out, list(bs_gammas = rep(-0.1, ncw),
+                        vcov_prop_bs_gammas = diag(ncw)))
+        }
     }
 }
 
@@ -950,4 +964,39 @@ construct_Umat <- function (fForms, dataS) {
     m[, qr_m$pivot[seq_len(qr_m$rank)], drop = FALSE]
 }
 
+construct_Wmat <- function (Terms, mf) {
+    strats <- attr(Terms, "specials")$strata
+    hasinteractions <- FALSE
+    dropterms <- NULL
+    if (length(strats)) {
+        stemp <- untangle.specials(Terms, "strata", 1)
+        if (length(stemp$vars) == 1)
+            strata.keep <- mf[[stemp$vars]]
+        else strata.keep <- strata(mf[, stemp$vars], shortlabel = TRUE)
+        istrat <- as.integer(strata.keep)
+        for (i in stemp$vars) {
+            if (any(attr(Terms, "order")[attr(Terms, "factors")[i, ] > 0] > 1))
+                hasinteractions <- TRUE
+        }
+        if (!hasinteractions)
+            dropterms <- stemp$terms
+    }
+    if (length(dropterms)) {
+        Terms2 <- Terms[-dropterms]
+        X <- model.matrix(Terms2, mf)
+        temp <- attr(X, "assign")
+        shift <- sort(dropterms)
+        temp <- temp + 1 * (shift[1] <= temp)
+        if (length(shift) == 2)
+            temp + 1 * (shift[2] <= temp)
+        attr(X, "assign") <- temp
+    } else X <- model.matrix(Terms, mf)
+    Xatt <- attributes(X)
+    adrop <- if (hasinteractions) c(0, untangle.specials(Terms, "strata")$terms) else 0
+    xdrop <- Xatt$assign %in% adrop
+    X <- X[, !xdrop, drop = FALSE]
+    attr(X, "assign") <- Xatt$assign[!xdrop]
+    attr(X, "contrasts") <- Xatt$contrasts
+    X
+}
 

@@ -21,7 +21,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const field<mat> &Z_H, const field<mat> &Z_h, const field<mat> &Z_H2,
                const field<mat> &U_H, const field<mat> &U_h, const field<mat> &U_H2,
                const mat &Wlong_bar, const field<vec> &betas, const vec &alphas,
-               const uvec &id_H, const uvec &id_h,
+               const uvec &id_H_, const uvec &id_h,
                const field<uvec> &FunForms, const field<uvec> &FunForms_ind,
                const field<mat> &X, const field<mat> &Z,
                const field<uvec> &id, const field<mat> &y,  const vec &sigmas,
@@ -32,14 +32,14 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const vec &W0H2_bs_gammas, const vec &WH_gammas,
                const vec &Wh_gammas, const vec &WH2_gammas,
                const vec &log_Pwk, const vec &log_Pwk2,
-               const uvec &indFast_H, const uvec &which_event,
+               const uvec &indFast_H, const uvec &indFast_h, const uvec &which_event,
                const uvec &which_right_event, const uvec &which_left,
                const uvec &which_interval, const bool &any_event,
                const bool &any_interval,
                const mat &L, const vec &sds,
                const uword &it, const field<uvec> &idL,
                mat &acceptance_b, cube &res_b, const bool &save_random_effects,
-               const uword &n_burnin
+               const uword &n_burnin, const uword &GK_k
                ) {
   // calculate denominator_b
   vec denominator_b = logLik_long + logLik_surv + logLik_re;
@@ -53,7 +53,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
   // calculate Wlong_H, Wlong_h and Wlong_H2 based on the proposed_b
   // and calculate Wlong * alphas
   mat Wlong_H_proposed =
-    calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas, proposed_b, id_H, FunForms,
+    calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas, proposed_b, id_H_, FunForms,
                     FunForms_ind);
   vec WlongH_alphas_proposed = Wlong_H_proposed * alphas;
 
@@ -69,7 +69,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
   vec WlongH2_alphas_proposed(WlongH2_alphas.n_rows);
   if (any_interval) {
     Wlong_H2_proposed =
-      calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas, proposed_b, id_H,
+      calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas, proposed_b, id_H_,
                       FunForms, FunForms_ind);
     WlongH2_alphas_proposed = Wlong_H2_proposed * alphas;
   }
@@ -79,9 +79,11 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
              WH_gammas, Wh_gammas, WH2_gammas,
              WlongH_alphas_proposed, Wlongh_alphas_proposed,
              WlongH2_alphas_proposed,
-             log_Pwk, log_Pwk2, indFast_H,
+             log_Pwk, log_Pwk2, indFast_H, indFast_h,
              which_event, which_right_event, which_left,
              any_interval, which_interval);
+
+
   // logLik_re
   vec logLik_re_proposed = log_re(proposed_b_mat, L, sds);
   // calculate the numerator
@@ -102,8 +104,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
       //  eta.at(j).rows(find(idL.at(i) == i)) =
       //    eta_proposed.at(j).rows(find(idL.at(i) == i));
       //}
-      uword first = i * 15;
-      uword last = (i + 1) * 15 - 1;
+      uword first = i * GK_k;
+      uword last = (i + 1) * GK_k - 1;
       Wlong_H.rows(first, last) = Wlong_H_proposed.rows(first, last);
       WlongH_alphas.rows(first, last) = WlongH_alphas_proposed.rows(first, last);
       if (any_event) {

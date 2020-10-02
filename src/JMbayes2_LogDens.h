@@ -156,7 +156,7 @@ vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
                  const vec &Wh_gammas, const vec &WH2_gammas,
                  const vec &WlongH_alphas, const vec &Wlongh_alphas,
                  const vec &WlongH2_alphas, const vec &log_Pwk, const vec &log_Pwk2,
-                 const uvec &indFast_H, const uvec &which_event,
+                 const uvec &indFast_H, const uvec &indFast_h, const uvec &which_event,
                  const uvec &which_right_event, const uvec &which_left,
                  const bool &any_interval, const uvec &which_interval) {
   vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
@@ -177,6 +177,7 @@ vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
     out.elem(which_interval) = - H.elem(which_interval) +
       log(- expm1(- H2.elem(which_interval)));
   }
+  out = group_sum(out, indFast_h);
   return out;
 }
 
@@ -195,7 +196,8 @@ vec logLik (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
                const vec &Wh_gammas, const vec &WH2_gammas,
                const vec &WlongH_alphas, const vec &Wlongh_alphas,
                const vec &WlongH2_alphas, const vec &log_Pwk, const vec &log_Pwk2,
-               const uvec &indFast_H, const uvec &which_event,
+               const uvec &indFast_H, const uvec &indFast_h,
+               const uvec &which_event,
                const uvec &which_right_event, const uvec &which_left,
                const bool &any_interval, const uvec &which_interval,
                const mat &b_mat, const mat &L, const vec &sds) {
@@ -204,7 +206,7 @@ vec logLik (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
   vec logLik_surv = log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                              WH_gammas, Wh_gammas, WH2_gammas, WlongH_alphas,
                              Wlongh_alphas, WlongH2_alphas, log_Pwk,
-                             log_Pwk2, indFast_H, which_event,
+                             log_Pwk2, indFast_H, indFast_h, which_event,
                              which_right_event, which_left, any_interval,
                              which_interval);
   vec logLik_re = log_re(b_mat, L, sds);

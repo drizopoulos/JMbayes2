@@ -162,6 +162,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     }
     if (!is.null(NAs_surv <- attr(mf_surv_dataS, "na.action"))) {
         idT <- idT[-NAs_surv]
+        dataS <- dataS[-NAs_surv, ]
     }
     idT <- factor(idT, levels = unique(idT))
 
@@ -198,7 +199,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     #           3 for interval censored
     if (type_censoring == "right") {
         Time_right <- unname(Surv_Response[, "time"])
-        Time_left <- Time_start <- trunc_Time <- rep(0.0, nT)
+        Time_left <- Time_start <- trunc_Time <- rep(0.0, nrow(dataS))
         delta <-  unname(Surv_Response[, "status"])
     } else if (type_censoring == "counting") {
         Time_start <- unname(Surv_Response[, "start"])
@@ -206,12 +207,12 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         delta <-  unname(Surv_Response[, "status"])
         Time_right <- tapply(Time_stop, idT, tail, n = 1) # time of event
         trunc_Time <- tapply(Time_start, idT, head, n = 1) # possible left truncation time
-        Time_left <- rep(0.0, nT)
+        Time_left <- rep(0.0, nrow(dataS))
         delta <- tapply(delta, idT, tail, n = 1) # event indicator at Time_right
     } else if (type_censoring == "interval") {
         Time1 <-  unname(Surv_Response[, "time1"])
         Time2 <-  unname(Surv_Response[, "time2"])
-        trunc_Time <- Time_start <- rep(0.0, nT)
+        trunc_Time <- Time_start <- rep(0.0, nrow(dataS))
         delta <- unname(Surv_Response[, "status"])
         Time_right <- Time1
         Time_right[delta == 3] <- Time2[delta == 3]
@@ -219,6 +220,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         Time_left <- Time1
         Time_left[delta <= 1] <- 0.0
     }
+    names(Time_right) <- names(Time_left) <- names(Time_start) <- idT
     which_event <- which(delta == 1)
     which_right <- which(delta == 0)
     which_left <- which(delta == 2)
@@ -249,7 +251,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     Time_integration <- Time_right
     Time_integration[which_left] <- Time_left[which_left]
     Time_integration[which_interval] <- Time_left[which_interval]
-    Time_integration2 <- rep(0.0, nT)
+    Time_integration2 <- rep(0.0, length(Time_integration))
     if (length(which_interval)) {
         Time_integration2[which_interval] <- Time_right[which_interval]
     }
@@ -327,9 +329,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # "_H2" to denote calculation at the 'Time_integration2'.
     strata_H <- rep(strata, each = con$GK_k)
     W0_H <- create_W0(c(t(st)), con$knots, con$Bsplines_degree + 1, strata_H)
-    dataS_H <- SurvData_HazardModel(st, dataS, Time_start, idT, time_var)
+    dataS_H <- SurvData_HazardModel(st, dataS, Time_start,
+                                    paste0(idT, "_", strata), time_var)
     mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
-    W_H <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
+    W_H <- construct_Wmat(terms_Surv_noResp, mf)
     any_gammas <- as.logical(ncol(W_H))
     if (!any_gammas) {
         W_H <- matrix(0.0, nrow = nrow(W_H), ncol = 1L)
@@ -343,10 +346,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
     if (length(which_event)) {
         W0_h <- create_W0(Time_right, con$knots, con$Bsplines_degree + 1, strata)
-        dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start, idT,
-                                        time_var)
+        dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start,
+                                        paste0(idT, "_", strata), time_var)
         mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
-        W_h <- model.matrix.default(terms_Surv_noResp, mf)[, -1, drop = FALSE]
+        W_h <- construct_Wmat(terms_Surv_noResp, mf)
         if (!any_gammas) {
             W_h <- matrix(0.0, nrow = nrow(W_h), ncol = 1L)
         }
@@ -364,9 +367,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     if (length(which_interval)) {
         W0_H2 <- create_W0(c(t(st2)), con$knots, con$Bsplines_degree + 1,
                            strata_H)
-        dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start, idT, time_var)
+        dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start,
+                                         paste0(idT, "_", strata), time_var)
         mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
-        W_H2 <- model.matrix.default(terms_Surv_noResp, mf2)[, -1, drop = FALSE]
+        W_h <- construct_Wmat(terms_Surv_noResp, mf2)
         if (!any_gammas) {
             W_H2 <- matrix(0.0, nrow = nrow(W_H2), ncol = 1L)
         }
@@ -387,7 +391,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                  y = y, X = X, Z = Z, Xbase = Xbase,
                  baseline = baseline, x_in_z = x_in_z, x_notin_z = x_notin_z,
                  #####
-                 idT = idT, any_gammas = any_gammas,
+                 idT = idT, any_gammas = any_gammas, strata = strata,
                  Time_right = Time_right, Time_left = Time_left, Time_start = Time_start,
                  delta = delta, which_event = which_event, which_right = which_right,
                  which_left = which_left, which_interval = which_interval,

@@ -12,14 +12,19 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         if (NCOL(y) == 2) y[, 2] <- y[, 1] + y[, 2]
         y
     }
-    model_data$y[binomial_data] <- lapply(model_data$y[binomial_data],
-                                          trials_fun)
-    id_H <- rep(seq_len(model_data$n), each = control$GK_k)  # <--------------
-    id_h <- seq_len(nrow(model_data$X_h[[1]][[1]]))
-    model_data <- c(model_data, create_Wlong_mats(model_data, model_info,
-                                                  initial_values, priors,
-                                                  control),
-                    list(id_H = id_H, id_h = id_h))
+    model_data$y[binomial_data] <-
+        lapply(model_data$y[binomial_data], trials_fun)
+    idT <- model_data$idT
+    id_H <- rep(paste0(idT, "_", model_data$strata), each = control$GK_k)
+    id_H <- match(id_H, unique(id_H))
+    id_H_ <- rep(idT, each = control$GK_k)
+    id_H_ <- match(id_H_, unique(id_H_))
+    id_h <- unclass(idT)
+    model_data <-
+        c(model_data, create_Wlong_mats(model_data, model_info,
+                                        initial_values, priors,
+                                        control),
+          list(id_H = id_H, id_H_ = id_H_, id_h = id_h))
     # cbind the elements of X_H and Z_H, etc.
     model_data$X_H[] <- lapply(model_data$X_H, docall_cbind)
     model_data$X_h[] <- lapply(model_data$X_h, docall_cbind)
@@ -167,7 +172,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         )
     } else {
         list(
-            "postmeans_b" = Reduce('+', lapply(out, function(x) x$mcmc$b[, , 1])) / n_chains, 
+            "postmeans_b" = Reduce('+', lapply(out, function(x) x$mcmc$b[, , 1])) / n_chains,
             "mcmc" = mcmc_out,
             "acc_rates" = lapply_nams(parms, get_acc_rates),
             "running_time" = toc - tic

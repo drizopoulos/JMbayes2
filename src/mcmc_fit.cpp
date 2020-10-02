@@ -61,8 +61,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec log_Pwk = as<vec>(model_data["log_Pwk"]);
   vec log_Pwk2 = as<vec>(model_data["log_Pwk2"]);
   uvec id_H = as<uvec>(model_data["id_H"]) - 1;
+  uvec id_H_ = as<uvec>(model_data["id_H_"]) - 1;
   uvec id_h = as<uvec>(model_data["id_h"]) - 1;
   uvec id_H_fast = create_fast_ind(id_H + 1);
+  uvec id_h_fast = create_fast_ind(id_h + 1);
   bool any_gammas = as<bool>(model_data["any_gammas"]);
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
@@ -102,6 +104,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uvec has_sigmas = find(sigmas > 1e-07);
   // indexes or other useful things
   uvec upper_part = trimatu_ind(size(R),  1);
+  uword GK_k = as<uword>(control["GK_k"]);
   // MCMC settings
   uword n_iter = as<uword>(control["n_iter"]);
   uword n_burnin = as<uword>(control["n_burnin"]);
@@ -194,7 +197,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
              WH_gammas, Wh_gammas, WH2_gammas,
              WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-             log_Pwk, log_Pwk2, id_H_fast,
+             log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
              which_event, which_right_event, which_left,
              any_interval, which_interval);
   double denominator_surv =
@@ -211,11 +214,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                              idL_lp_fast, unq_idL);
   //
   for (uword it = 0; it < n_iter; ++it) {
+
     update_bs_gammas(bs_gammas, gammas, alphas,
                      W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                      WH_gammas, Wh_gammas, WH2_gammas,
                      WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                     log_Pwk, log_Pwk2, id_H_fast,
+                     log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
                      which_event, which_right_event, which_left, which_interval,
                      any_event, any_interval,
                      prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
@@ -245,7 +249,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                     WH_gammas, Wh_gammas, WH2_gammas,
                     WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                    log_Pwk, log_Pwk2, id_H_fast,
+                    log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
                     which_event, which_right_event, which_left, which_interval,
                     any_event, any_interval,
                     prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
@@ -264,7 +268,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                   W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                   WH_gammas, Wh_gammas, WH2_gammas,
                   WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                  log_Pwk, log_Pwk2, id_H_fast,
+                  log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
                   which_event, which_right_event, which_left, which_interval,
                   any_event, any_interval,
                   prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
@@ -290,14 +294,15 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              Wlong_H, Wlong_h, Wlong_H2, WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
              chol_S, scale_b, ind_RE,
              X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
-             Wlong_bar, betas, alphas, id_H, id_h,
+             Wlong_bar, betas, alphas, id_H_, id_h,
              FunForms, FunForms_ind, X, Z, idL_lp, y, sigmas,
              extra_parms, families, links, idL_lp_fast, unq_idL,
              W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas,
              Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2,
-             id_H_fast, which_event, which_right_event, which_left,
+             id_H_fast, id_h_fast, which_event, which_right_event, which_left,
              which_interval, any_event, any_interval,
-             L, sds, it, idL, acceptance_b, res_b, save_random_effects, n_burnin);
+             L, sds, it, idL, acceptance_b, res_b, save_random_effects,
+             n_burnin, GK_k);
 
     denominator_surv =
       sum(logLik_surv) +
