@@ -139,18 +139,26 @@ right_rows <- function (data, times, ids, Q_points) {
     data[c(ind), ]
 }
 
-extract_functional_forms_per_outcome <- function (Form) {
-    term_labels <- attr(terms(Form), "term.labels")
-    possible_forms <- c("value", "slope", "area")
-    sapply(possible_forms, grep, x = term_labels, fixed = TRUE)
-}
-
 extract_functional_forms <- function (Form, data) {
     tr <- terms(Form)
-    mF <- model.frame(tr, data = data[1L:5L, ])
-    M <- model.matrix(tr, mF)[, -1L, drop = FALSE]
-    possible_forms <- c("value", "slope", "area")
-    sapply(possible_forms, grep, x = colnames(M), fixed = TRUE)
+    mF <- model.frame(tr, data = data)
+    M <- model.matrix(tr, mF)
+    cnams <- colnames(M)
+    possible_forms <- c("value(", "slope(", "area(")
+    ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
+    M <- M[, cnams %in% cnams[unique(ind)], drop = FALSE]
+    sapply(c("value", "slope", "area"), grep, x = colnames(M), fixed = TRUE)
+}
+
+construct_Umat <- function (fForms, dataS) {
+    tt <- terms(fForms)
+    m <- model.matrix(tt, model.frame(tt, data = dataS))
+    cnams <- colnames(m)
+    ind_value <- grep("value(", cnams, fixed = TRUE)
+    ind_slope <- grep("slope(", cnams, fixed = TRUE)
+    ind_area <- grep("area(", cnams, fixed = TRUE)
+    ind <- unique(c(ind_value, ind_slope, ind_area))
+    m[, cnams %in% cnams[ind], drop = FALSE]
 }
 
 LongData_HazardModel <- function (time_points, data, times, ids, timeVar) {

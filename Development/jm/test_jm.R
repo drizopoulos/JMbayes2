@@ -245,7 +245,7 @@ CoxFit <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
                    value(log(serBilir)):sex,
                "serChol" = ~ value(serChol) + slope(serChol),
-               #"hepatomegaly" = ~ value(hepatomegaly),
+               "hepatomegaly" = ~ value(hepatomegaly) + sex,
                "ascites" = ~ value(ascites) + area(ascites))
 
 test <- jm(CoxFit, list(fm1), time_var = "year")
@@ -255,10 +255,7 @@ test <- jm(CoxFit, list(fm1), time_var = "year")
 Surv_object = CoxFit
 Mixed_objects = list(fm1, fm2, fm3, fm4)
 time_var = "year"
-functional_forms = list("log(serBilir)" = ~ value(log(serBilir)) * slope(log(serBilir)),
-                        "serChol" = ~ value(serChol) + slope(serChol),
-                        "hepatomegaly" = ~ value(hepatomegaly),
-                        "ascites" = ~ value(ascites) + area(ascites):drug)
+functional_forms = fForms
 data_Surv = NULL
 id_var = NULL
 priors = NULL
