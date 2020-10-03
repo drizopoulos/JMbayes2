@@ -964,9 +964,13 @@ create_W0 <- function (times, knots, ord, strata) {
 
 construct_Umat <- function (fForms, dataS) {
     tt <- terms(fForms)
-    m <- model.matrix(tt, model.frame(tt, data = dataS))[, -1, drop = FALSE]
-    qr_m <- qr(m)
-    m[, qr_m$pivot[seq_len(qr_m$rank)], drop = FALSE]
+    m <- model.matrix(tt, model.frame(tt, data = dataS))
+    cnams <- colnames(m)
+    ind_value <- grep("value(", cnams, fixed = TRUE)
+    ind_slope <- grep("slope(", cnams, fixed = TRUE)
+    ind_area <- grep("area(", cnams, fixed = TRUE)
+    ind <- unique(c(ind_value, ind_slope, ind_area))
+    m[, cnams %in% cnams[ind], drop = FALSE]
 }
 
 construct_Wmat <- function (Terms, mf) {

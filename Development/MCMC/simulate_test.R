@@ -130,7 +130,7 @@ simulateJoint <- function (alpha = 0.6, Dalpha = 0, n = 500,
 ################################################################################
 ################################################################################
 
-M <- 50
+M <- 200
 Data <- simulateJoint()
 res_bs_gammas <- matrix(as.numeric(NA), M, 12)
 res_gammas <- matrix(as.numeric(NA), M, length(Data$trueValues$gammas))
@@ -160,9 +160,9 @@ for (m in seq_len(M)) {
 
 ##########
 
-colMeans(res_gammas) - Data$trueValues$gammas
-colMeans(res_alphas) - Data$trueValues$alphas
-colMeans(res_D) - Data$trueValues$D
+colMeans(res_gammas, na.rm = TRUE) - Data$trueValues$gammas
+colMeans(res_alphas, na.rm = TRUE) - Data$trueValues$alphas
+colMeans(res_D, na.rm = TRUE) - Data$trueValues$D
 
 
 
