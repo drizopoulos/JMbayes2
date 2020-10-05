@@ -187,10 +187,10 @@ control$n_chains = 1
 system.time({
     fm1 <- lme(log(serBilir) ~ year * drug + sex + I(year^2) +
                    age + sex:year + prothrombin,
-               data = pbc2, random = ~ year * sex | id,
+               data = pbc2, random = ~ year | id,
                control = lmeControl(opt = "optim"))
-    fm2 <- lme(serChol ~ ns(year, 3) + sex + age, data = pbc2, random = ~ year | id,
-               na.action = na.exclude)
+    fm2 <- lme(serChol ~ ns(year, 3) + sex + age, data = pbc2,
+               random = ~ year | id, na.action = na.exclude)
     fm4 <- mixed_model(ascites ~ year, data = pbc2,
                        random = ~ year | id, family = binomial())
     Mixed <- list(fm1, fm2, fm4)
@@ -213,7 +213,7 @@ control <- obj$control
 Surv_object = Cox
 Mixed_objects = Mixed
 time_var = 'year'
-functional_forms = FF
+functional_forms = NULL
 data_Surv = NULL
 id_var = NULL
 priors = NULL

@@ -24,6 +24,14 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     con[(namc <- names(control))] <- control
     if (length(noNms <- namc[!namc %in% namC]) > 0)
         warning("unknown names in control: ", paste(noNms, collapse = ", "))
+    # if a single mixed model has been provided put in a list
+    if (!inherits(Mixed_objects, "list")) {
+        Mixed_objects <- list(Mixed_objects)
+    }
+    # check if only lme and MixMod have been provided
+    if (!all(sapply(Mixed_objects, class) %in% c("lme", "MixMod"))) {
+        stop("'Mixed_objects' should be of class 'lme' of 'MixMod'.\n")
+    }
     # extract the data from each of the mixed models
     # and check whether the same data have been used;
     # otherwise an error
@@ -108,12 +116,14 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         stop("jm() does not currently work when you have a single ",
              "longitudinal outcome and only random intercepts.")
     }
-    ind_RE <- lapply(Z, FUN = function(x) seq_len(ncol(x)))
-    if (length(ind_RE) > 1) {
-        for (i in 2:length(ind_RE)) {
-            ind_RE[[i]] <- max(ind_RE[[i - 1]])
-        }
-    }
+    #ind_RE <- lapply(Z, FUN = function(x) seq_len(ncol(x)))
+    #if (length(ind_RE) > 1) {
+    #    for (i in 2:length(ind_RE)) {
+    #        ind_RE[[i]] <- max(ind_RE[[i - 1]])
+    #    }
+    #}
+    nres <- sapply(Z, ncol)
+    ind_RE <- split(seq_len(sum(nres)), rep(seq_along(Z), nres))
     componentsHC <- mapply2(create_HC_X2, X, Z, idL)
     Xbase <- lapply(componentsHC, "[[", "Xbase")
     baseline <- lapply(componentsHC, "[[", "baseline")
@@ -461,7 +471,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ############################################################################
     ############################################################################
     # Priors
-    # we define as thetas = c(bs_gammas, gammas, unlist(alphas))
+    # we define as thetas = c(gammas, unlist(alphas))
     # for some of these coefficients we place penalties/shrinkage priors
     # 'Tau_thetas' is list of the prior precision matrices for thetas
     # 'ind_thetas' is a list of position indicators specifying which of the
@@ -472,17 +482,17 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # B_tau. Thus, A_tau and B_tau are vectors with length equal to ind_thetas
     #
     thetas <- if (any_gammas) {
-        c(bs_gammas, gammas, unlist(alphas))
+        c(gammas, unlist(alphas))
     } else {
-        c(bs_gammas, unlist(alphas))
+        c(unlist(alphas))
     }
+    A_tau <- rep(1, n_strata)
+    B_tau <- rep(0.1, n_strata)
+    ind_thetas <- list(alphas = grep("tv(", unlist(lapply(U_H, colnames)),
+                                     fixed = TRUE))
     Tau_bs_gammas <- crossprod(diff(diag(ncol(W0_H) / n_strata),
                                     differences = con$diff))
     Tau_bs_gammas <- rep(list(Tau_bs_gammas), n_strata)
-    A_tau <- rep(1, n_strata)
-    B_tau <- rep(0.1, n_strata)
-    ind_thetas <- split(seq_len(ncol(W0_H)),
-                      rep(seq_len(n_strata), each = ncol(W0_H) / n_strata))
     prs <- list(mean_betas = lapply(betas, "*", 0.0),
                 Tau_betas = lapply(betas, function (b) 0.01 * diag(length(b))),
                 mean_gammas = gammas * 0.0,

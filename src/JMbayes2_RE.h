@@ -46,6 +46,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
   // propose new random effects in mat and field<mat> form
   mat proposed_b_mat = propose_mvnorm_mat(1, chol_S, scale_b) + b_mat;
   field<mat> proposed_b = mat2field_mat(proposed_b_mat, ind_RE);
+
   // calculate log_lik_long based on proposed_b_mat
   field<vec> eta_proposed = linpred_mixed(X, betas, Z, proposed_b, id);
   vec logLik_long_proposed = log_long(y, eta_proposed, sigmas, extra_parms,

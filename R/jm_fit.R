@@ -57,7 +57,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     RNGstate <- get(".Random.seed", envir = .GlobalEnv)
     on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
     n_chains <- control$n_chains
-    tic <- proc.time()
+    tik <- proc.time()
     if (n_chains > 1) {
         mcmc_parallel <- function (chain, model_data, model_info, initial_values,
                                    priors, control, vcov_prop) {
@@ -87,7 +87,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         out <- list(mcmc_cpp(model_data, model_info, initial_values, priors,
                              control, vcov_prop))
     }
-    toc <- proc.time()
+    tok <- proc.time()
     # create dummy betas
     if (is.null(out[[1]][["mcmc"]][["betas"]])) {
         for (i in seq_along(out)) {
@@ -168,14 +168,14 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         list(
             "mcmc" = mcmc_out,
             "acc_rates" = lapply_nams(parms, get_acc_rates),
-            "running_time" = toc - tic
+            "running_time" = tok - tik
         )
     } else {
         list(
             "postmeans_b" = Reduce('+', lapply(out, function(x) x$mcmc$b[, , 1])) / n_chains,
             "mcmc" = mcmc_out,
             "acc_rates" = lapply_nams(parms, get_acc_rates),
-            "running_time" = toc - tic
+            "running_time" = tok - tik
         )
     }
 }
