@@ -94,7 +94,7 @@ field<vec> List2Field_vec (const List &Vecs) {
   return res;
 }
 
-field<uvec> List2Field_uvec (const List & uVecs, bool substract1 = true) {
+field<uvec> List2Field_uvec (const List &uVecs, bool substract1 = true) {
   uword n_list = uVecs.size();
   field<uvec> res(n_list);
   for (uword i = 0; i < n_list; ++i) {

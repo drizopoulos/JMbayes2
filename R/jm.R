@@ -36,7 +36,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # and check whether the same data have been used;
     # otherwise an error
     datas <- lapply(Mixed_objects, "[[", "data")
-    if (!all(sapply(datas[-1L], all.equal, datas[[1L]]))) {
+    if (!all(sapply(datas[-1L], function (x) isTRUE(all.equal(x, datas[[1L]]))))) {
         stop("It seems that some of the mixed models have been fitted to different versions ",
              "of the dataset. Use the same exact dataset in the calls to lme() ",
              " and mixed_model().")
@@ -116,12 +116,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         stop("jm() does not currently work when you have a single ",
              "longitudinal outcome and only random intercepts.")
     }
-    #ind_RE <- lapply(Z, FUN = function(x) seq_len(ncol(x)))
-    #if (length(ind_RE) > 1) {
-    #    for (i in 2:length(ind_RE)) {
-    #        ind_RE[[i]] <- max(ind_RE[[i - 1]])
-    #    }
-    #}
     nres <- sapply(Z, ncol)
     ind_RE <- split(seq_len(sum(nres)), rep(seq_along(Z), nres))
     componentsHC <- mapply2(create_HC_X2, X, Z, idL)

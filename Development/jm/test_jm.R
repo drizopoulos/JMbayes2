@@ -191,24 +191,21 @@ system.time({
                control = lmeControl(opt = "optim"))
     fm2 <- lme(serChol ~ ns(year, 3) + sex + age, data = pbc2,
                random = ~ year | id, na.action = na.exclude)
+    pbc2$prothrombin[pbc2$id %in% 1:5] <- NA
+
+    fm3 <- lme(prothrombin ~ year + sex, data = pbc2, random = ~ year | id,
+               na.action = na.exclude)
     fm4 <- mixed_model(ascites ~ year, data = pbc2,
                        random = ~ year | id, family = binomial())
-    Mixed <- list(fm1, fm2, fm4)
+    Mixed <- list(fm1, fm4)
     Cox <- coxph(Surv(years, status2) ~ 1, data = pbc2.id)
 })
 
-FF <- list("log(serBilir)" = ~ tve(year):value(log(serBilir)) + slope(log(serBilir)),
-           "ascites" = ~ value(ascites) + area(ascites):drug)
 system.time(obj <- jm(Cox, Mixed, time_var = "year"))
 
 summary(obj)
-
-model_data <- obj$model_data
-model_info <- obj$model_info
-initial_values <- obj$initial_values
-priors <- obj$priors
-vcov_prop <- obj$vcov_prop
-control <- obj$control
+traceplot
+gelman_diag(obj)
 
 Surv_object = Cox
 Mixed_objects = Mixed
