@@ -64,7 +64,7 @@ mat cor2cov (const mat &R, const vec &sds) {
 
 vec group_sum (const vec &x, const uvec &ind) {
   vec cumsum_x = cumsum(x);
-  vec out = cumsum_x.elem(ind);
+  vec out = cumsum_x.rows(ind);
   out.insert_rows(0, 1);
   out = diff(out);
   return out;

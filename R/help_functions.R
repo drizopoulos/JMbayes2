@@ -373,7 +373,7 @@ SurvData_HazardModel <- function (time_points, data, times, ids, time_var) {
 
 extract_b <- function (object, id, n) {
     b <- data.matrix(ranef(object))
-    mat <- matrix(0.0, n, ncol(b))
+    mat <- matrix(-0.0001, n, ncol(b))
     colnames(mat) <- colnames(b)
     mat[id, ] <- b
     mat

@@ -55,6 +55,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     idL_ind <- mapply2(function (x, y) split(x, y), idL_ind, idL)
     nY <- length(unique(idL))
     # order data by idL and time_var
+    if (is.null(dataL[[time_var]])) {
+        stop("the variable specified in agument 'time_var' cannot be found ",
+             "in the database of the longitudinal models.")
+    }
     dataL <- dataL[order(idL, dataL[[time_var]]), ]
 
     # extract terms from mixed models

@@ -185,7 +185,9 @@ control$n_chains = 1
 
 #
 system.time({
-    pbc2$prothrombin[pbc2$id %in% 1:5] <- NA
+    pbc2$prothrombin[pbc2$id == 1] <- NA
+    pbc2$prothrombin[pbc2$id == 2] <- NA
+
     fm1 <- lme(log(serBilir) ~ year * drug + sex + I(year^2) +
                    age + sex:year,
                data = pbc2, random = ~ year | id,
@@ -193,18 +195,17 @@ system.time({
     fm2 <- lme(serChol ~ ns(year, 3) + sex + age, data = pbc2,
                random = ~ year | id, na.action = na.exclude)
 
-    fm3 <- lme(prothrombin ~ year + sex, data = pbc2, random = ~ year | id,
-               na.action = na.exclude)
+    fm3 <- lme(prothrombin ~ year + sex, data = pbc2, random = ~ year | id, na.action = na.exclude)
     fm4 <- mixed_model(ascites ~ year, data = pbc2,
                        random = ~ year | id, family = binomial())
-    Mixed <- list(fm1, fm3, fm4)
+    Mixed <- list(fm1, fm3)
     Cox <- coxph(Surv(years, status2) ~ 1, data = pbc2.id)
 })
 
 system.time(obj <- jm(Cox, Mixed, time_var = "year"))
 
 summary(obj)
-traceplot
+traceplot(obj)
 gelman_diag(obj)
 
 Surv_object = Cox
