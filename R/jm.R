@@ -455,7 +455,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     vcov_prop_RE <- array(0.0, c(dim(D), nY))
     for (i in seq_len(nY)) {
         rr <- lapply(r, function (m, i) m[[as.character(i)]], i = i)
-        if (any(ind <- sapply(rr, is.null))) rr[ind] <- D_lis[ind]
+        if (any(ind <- sapply(rr, is.null))) rr[ind] <- lapply(D_lis[ind], "*", 0.1)
         vcov_prop_RE[, , i] <- .bdiag(rr)
     }
     vcov_prop_bs_gammas <- init_surv$vcov_prop_bs_gammas
