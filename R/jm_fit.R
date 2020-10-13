@@ -171,8 +171,11 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
             "running_time" = tok - tik
         )
     } else {
+        postmeans_b = Reduce('+', lapply(out, function(x) x$mcmc$b[, , 1])) / n_chains
+        postvars_b = Reduce('+', lapply(out, function(x) x$mcmc$var_b)) / n_chains
         list(
-            "postmeans_b" = Reduce('+', lapply(out, function(x) x$mcmc$b[, , 1])) / n_chains,
+            "postmeans_b" = postmeans_b,
+            'postvars_b' = postvars_b,
             "mcmc" = mcmc_out,
             "acc_rates" = lapply_nams(parms, get_acc_rates),
             "running_time" = tok - tik

@@ -154,6 +154,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     res_b.set_size(n_b, b_mat.n_cols, n_iter);
   }
   mat acceptance_b(n_iter, n_b, fill::zeros);
+  mat cumsum_b(n_b, b_mat.n_cols);
+  cube outprod_b(b_mat.n_cols, b_mat.n_cols, b_mat.n_rows);
+  cube var_b(b_mat.n_cols, b_mat.n_cols, b_mat.n_rows);
   mat res_sigmas(n_iter, n_sigmas, fill::zeros);
   mat acceptance_sigmas(n_iter, n_sigmas, fill::zeros);
   // scales
@@ -292,7 +295,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     ////////////////////////////////////////////////////////////////////////
 
-    update_b(b, b_mat, eta, logLik_long, logLik_surv, logLik_re,
+    /*update_b(b, b_mat, eta, logLik_long, logLik_surv, logLik_re,
              Wlong_H, Wlong_h, Wlong_H2, WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
              chol_S, scale_b, ind_RE,
              X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
@@ -304,7 +307,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              id_H_fast, id_h_fast, which_event, which_right_event, which_left,
              which_interval, any_event, any_interval, n_strata_,
              L, sds, it, idL, acceptance_b, res_b, save_random_effects,
-             n_burnin, GK_k);
+             n_burnin, GK_k, cumsum_b, outprod_b);*/
 
     denominator_surv =
       sum(logLik_surv) +
@@ -329,7 +332,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   if (save_random_effects) {
     res_b = res_b.slices(n_burnin, n_iter - 1);
   } else {
-    res_b.slice(0) = res_b.slice(0) / (n_iter - n_burnin);
+    res_b.slice(0) = cumsum_b / (n_iter - n_burnin);
+    for (uword k = 0; k < outprod_b.n_slices; k ++) {
+      var_b.slice(k) = (outprod_b.slice(k) / (n_iter - n_burnin) - kron(res_b.slice(0).row(k), res_b.slice(0).row(k).t())) * (n_iter - n_burnin) / ((n_iter - n_burnin) - 1);  
+    }
   }
   return List::create(
     Named("mcmc") = List::create(
@@ -342,6 +348,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("sds") = res_sds.rows(n_burnin, n_iter - 1),
       Named("L") = res_L.rows(n_burnin, n_iter - 1),
       Named("b") = res_b,
+      Named("var_b") = var_b,
       Named("sigmas") = res_sigmas.rows(n_burnin, n_iter - 1)
     ),
     Named("acc_rate") = List::create(
