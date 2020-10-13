@@ -64,7 +64,7 @@ mat cor2cov (const mat &R, const vec &sds) {
 
 vec group_sum (const vec &x, const uvec &ind) {
   vec cumsum_x = cumsum(x);
-  vec out = cumsum_x.elem(ind);
+  vec out = cumsum_x.rows(ind);
   out.insert_rows(0, 1);
   out = diff(out);
   return out;
@@ -94,7 +94,7 @@ field<vec> List2Field_vec (const List &Vecs) {
   return res;
 }
 
-field<uvec> List2Field_uvec (const List & uVecs, bool substract1 = true) {
+field<uvec> List2Field_uvec (const List &uVecs, bool substract1 = true) {
   uword n_list = uVecs.size();
   field<uvec> res(n_list);
   for (uword i = 0; i < n_list; ++i) {

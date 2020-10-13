@@ -80,7 +80,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   //field<uvec> idL_ind = List2Field_uvec(as<List>(model_data["idL_ind"]), true);
   field<uvec> idL_lp_fast(idL_lp.n_elem);
   for (uword i = 0; i < idL_lp.n_elem; ++i) {
-    idL_lp_fast.at(i) = create_fast_ind(idL_lp.at(i));
+    idL_lp_fast.at(i) = create_fast_ind(idL_lp.at(i) + 1);
   }
   vec extra_parms = as<vec>(model_data["extra_parms"]);
   field<uvec> ind_RE = List2Field_uvec(as<List>(model_data["ind_RE"]), true);
@@ -214,7 +214,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   //
   vec logLik_re = log_re(b_mat, L, sds);
   //
-  field<vec> eta = linpred_mixed(X, betas, Z, b, idL_lp);
+  field<vec> eta = linpred_mixed(X, betas, Z, b, idL);
   vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
                              idL_lp_fast, unq_idL);
   //
@@ -300,7 +300,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              chol_S, scale_b, ind_RE,
              X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
              Wlong_bar, betas, alphas, id_H_, id_h,
-             FunForms, FunForms_ind, X, Z, idL_lp, y, sigmas,
+             FunForms, FunForms_ind, X, Z, idL, y, sigmas,
              extra_parms, families, links, idL_lp_fast, unq_idL,
              W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas,
              Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2,
@@ -309,16 +309,13 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              L, sds, it, idL, acceptance_b, res_b, save_random_effects,
              n_burnin, GK_k, cumsum_b, outprod_b);*/
 
+    eta = linpred_mixed(X, betas, Z, b, idL);
     denominator_surv =
       sum(logLik_surv) +
       logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
                     prior_Tau_bs_gammas, tau_bs_gammas,
                     prior_mean_gammas, prior_Tau_gammas,
                     prior_mean_alphas, prior_Tau_alphas);
-
-    update_mean_u(mean_u, betas, Xbase, x_in_z, baseline, unq_idL);
-
-    eta = linpred_mixed(X, betas, Z, b, idL_lp);
 
     ////////////////////////////////////////////////////////////////////
 
@@ -329,6 +326,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
                            idL_lp_fast, unq_idL);
   }
+
   if (save_random_effects) {
     res_b = res_b.slices(n_burnin, n_iter - 1);
   } else {

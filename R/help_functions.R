@@ -497,11 +497,12 @@ extract_vcov_prop_RE <- function (object, Z_k, id_k) {
         invD <- solve(D)
         sigma <- object$sigma
         sigma2 <- sigma * sigma
-        n <- length(unique(id_k))
+        unq_id_k <- unique(id_k)
+        n <- length(unq_id_k)
         cov_postRE <- vector("list", n)
-        names(cov_postRE) <- unique(id_k)
+        names(cov_postRE) <- unq_id_k
         for (i in seq_len(n)) {
-            Z_k_i <- Z_k[id_k == i, , drop = FALSE]
+            Z_k_i <- Z_k[id_k == unq_id_k[i], , drop = FALSE]
             cov_postRE[[i]] <- solve.default(crossprod(Z_k_i) / sigma2 + invD)
         }
         cov_postRE

@@ -36,7 +36,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # and check whether the same data have been used;
     # otherwise an error
     datas <- lapply(Mixed_objects, "[[", "data")
-    if (!all(sapply(datas[-1L], all.equal, datas[[1L]]))) {
+    if (!all(sapply(datas[-1L], function (x) isTRUE(all.equal(x, datas[[1L]]))))) {
         stop("It seems that some of the mixed models have been fitted to different versions ",
              "of the dataset. Use the same exact dataset in the calls to lme() ",
              " and mixed_model().")
@@ -55,6 +55,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     idL_ind <- mapply2(function (x, y) split(x, y), idL_ind, idL)
     nY <- length(unique(idL))
     # order data by idL and time_var
+    if (is.null(dataL[[time_var]])) {
+        stop("the variable specified in agument 'time_var' cannot be found ",
+             "in the database of the longitudinal models.")
+    }
     dataL <- dataL[order(idL, dataL[[time_var]]), ]
 
     # extract terms from mixed models
@@ -451,7 +455,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     vcov_prop_RE <- array(0.0, c(dim(D), nY))
     for (i in seq_len(nY)) {
         rr <- lapply(r, function (m, i) m[[as.character(i)]], i = i)
-        if (any(ind <- sapply(rr, is.null))) rr[ind] <- D_lis[ind]
+        if (any(ind <- sapply(rr, is.null))) rr[ind] <- lapply(D_lis[ind], "*", 0.1)
         vcov_prop_RE[, , i] <- .bdiag(rr)
     }
     vcov_prop_bs_gammas <- init_surv$vcov_prop_bs_gammas

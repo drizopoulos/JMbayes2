@@ -81,7 +81,7 @@ vec log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
     uvec unq_id_i = unq_ids.at(i);
     vec log_contr_i = log_long_i(y_i, eta_i, sigma_i, extr_prm_i, fam_i,
                                  link_i, idFast_i);
-    out.elem(unq_id_i) += log_contr_i;
+    out.rows(unq_id_i) += log_contr_i;
   }
   return out;
 }
@@ -98,19 +98,19 @@ vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
   vec H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
   uword n = H.n_rows;
   vec lambda_h(n);
-  lambda_h.elem(which_event) = W0h_bs_gammas.elem(which_event) +
-    Wh_gammas.elem(which_event) + Wlongh_alphas.elem(which_event);
+  lambda_h.rows(which_event) = W0h_bs_gammas.rows(which_event) +
+    Wh_gammas.rows(which_event) + Wlongh_alphas.rows(which_event);
   vec out(n);
-  out.elem(which_right_event) = - H.elem(which_right_event);
-  out.elem(which_event) += lambda_h.elem(which_event);
-  out.elem(which_left) = log1p(- exp(- H.elem(which_left)));
+  out.rows(which_right_event) = - H.rows(which_right_event);
+  out.rows(which_event) += lambda_h.rows(which_event);
+  out.rows(which_left) = log1p(- exp(- H.rows(which_left)));
   vec lambda_H2(lambda_H.n_rows);
   vec H2(n);
   if (any_interval) {
     lambda_H2 = W0H2_bs_gammas + WH2_gammas + WlongH2_alphas;
     H2 = group_sum(exp(log_Pwk2 + lambda_H2), indFast_H);
-    out.elem(which_interval) = - H.elem(which_interval) +
-      log(- expm1(- H2.elem(which_interval)));
+    out.rows(which_interval) = - H.rows(which_interval) +
+      log(- expm1(- H2.rows(which_interval)));
   }
   out = group_sum(out, indFast_h);
   return out;
