@@ -1,7 +1,7 @@
 #include <RcppArmadillo.h>
 #include "JMbayes2_D.h"
 #include "JMbayes2_Surv.h"
-# include "JMbayes2_Long.h"
+# include "JMbayes2_LogDens.h"
 # include "JMbayes2_sigmas.h"
 # include "JMbayes2_RE.h"
 
@@ -156,6 +156,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat acceptance_b(n_iter, n_b, fill::zeros);
   mat res_sigmas(n_iter, n_sigmas, fill::zeros);
   mat acceptance_sigmas(n_iter, n_sigmas, fill::zeros);
+  mat res_logLik(n_iter, 1, fill::zeros);
   // scales
   vec scale_bs_gammas = create_init_scale(n_bs_gammas);
   vec scale_gammas = create_init_scale(n_gammas);
@@ -322,8 +323,11 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
                            idL_lp_fast, unq_idL);
-  }
 
+    ////////////////////////////////////////////////////////////////////
+
+    res_logLik.at(it) = sum(logLik_long + logLik_surv + logLik_re);
+  }
   if (save_random_effects) {
     res_b = res_b.slices(n_burnin, n_iter - 1);
   } else {
@@ -349,6 +353,82 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("sds") = acceptance_sds.rows(n_burnin, n_iter - 1),
       Named("L") = acceptance_L.rows(n_burnin, n_iter - 1),
       Named("b") = acceptance_b.rows(n_burnin, n_iter - 1)
-    )
+    ),
+    Named("logLik") = res_logLik.rows(n_burnin, n_iter - 1)
   );
 }
+
+// [[Rcpp::export]]
+arma::vec logLik_jm (List thetas, List model_data, List model_info,
+                     List control) {
+  field<vec> betas = List2Field_vec(as<List>(thetas["betas"]));
+  field<mat> b = List2Field_mat(as<List>(thetas["b"]));
+  vec sigmas = as<vec>(thetas["sigmas"]);
+  vec bs_gammas = as<vec>(thetas["bs_gammas"]);
+  vec gammas = as<vec>(thetas["gammas"]);
+  vec alphas = as<vec>(thetas["alphas"]);
+  vec tau_bs_gammas = as<vec>(thetas["tau_bs_gammas"]);
+  mat L = as<mat>(thetas["L"]);
+  vec sds = as<vec>(thetas["sds"]);
+  /////////////
+  field<mat> y = List2Field_mat(as<List>(model_data["y"]));
+  field<mat> X = List2Field_mat(as<List>(model_data["X"]));
+  field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
+  vec extra_parms = as<vec>(model_data["extra_parms"]);
+  CharacterVector families = as<CharacterVector>(model_info["family_names"]);
+  CharacterVector links = as<CharacterVector>(model_info["links"]);
+  field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
+  field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
+  field<uvec> idL_lp_fast(idL_lp.n_elem);
+  for (uword i = 0; i < idL_lp.n_elem; ++i) {
+    idL_lp_fast.at(i) = create_fast_ind(idL_lp.at(i) + 1);
+  }
+  field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
+  /////////////
+  mat W0_H = as<mat>(model_data["W0_H"]);
+  mat W0_h = as<mat>(model_data["W0_h"]);
+  mat W0_H2 = as<mat>(model_data["W0_H2"]);
+  mat W_H = as<mat>(model_data["W_H"]);
+  mat W_h = as<mat>(model_data["W_h"]);
+  mat W_H2 = as<mat>(model_data["W_H2"]);
+  field<mat> X_H = List2Field_mat(as<List>(model_data["X_H"]));
+  field<mat> X_h = List2Field_mat(as<List>(model_data["X_h"]));
+  field<mat> X_H2 = List2Field_mat(as<List>(model_data["X_H2"]));
+  field<mat> Z_H = List2Field_mat(as<List>(model_data["Z_H"]));
+  field<mat> Z_h = List2Field_mat(as<List>(model_data["Z_h"]));
+  field<mat> Z_H2 = List2Field_mat(as<List>(model_data["Z_H2"]));
+  field<mat> U_H = List2Field_mat(as<List>(model_data["U_H"]));
+  field<mat> U_h = List2Field_mat(as<List>(model_data["U_h"]));
+  field<mat> U_H2 = List2Field_mat(as<List>(model_data["U_H2"]));
+  mat Wlong_bar = docall_cbindL(as<List>(model_data["Wlong_bar"]));
+  uvec which_event = as<uvec>(model_data["which_event"]) - 1;
+  uvec which_right = as<uvec>(model_data["which_right"]) - 1;
+  uvec which_right_event = join_cols(which_event, which_right);
+  uvec which_left = as<uvec>(model_data["which_left"]) - 1;
+  uvec which_interval = as<uvec>(model_data["which_interval"]) - 1;
+  bool any_gammas = as<bool>(model_data["any_gammas"]);
+  bool any_event = which_event.n_rows > 0;
+  bool any_interval = which_interval.n_rows > 0;
+  field<uvec> FunForms = List2Field_uvec(as<List>(model_info["FunForms_cpp"]), true);
+  field<uvec> FunForms_ind = List2Field_uvec(as<List>(model_info["FunForms_ind"]), true);
+  uvec id_H_ = as<uvec>(model_data["id_H_"]) - 1;
+  uvec id_h = as<uvec>(model_data["id_h"]) - 1;
+  vec log_Pwk = as<vec>(model_data["log_Pwk"]);
+  vec log_Pwk2 = as<vec>(model_data["log_Pwk2"]);
+  uvec id_H = as<uvec>(model_data["id_H"]) - 1;
+  uvec id_H_fast = create_fast_ind(id_H + 1);
+  uvec id_h_fast = create_fast_ind(id_h + 1);
+  /////////////
+  vec out =
+    logLik_jm_stripped(
+      betas, b, sigmas, bs_gammas, gammas, alphas, tau_bs_gammas, L, sds,
+      ///
+      y, X, Z, extra_parms, families, links, idL, idL_lp_fast, unq_idL,
+      ///
+      W0_H, W0_h, W0_H2, W_H, W_h, W_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
+      U_H, U_h, U_H2, Wlong_bar, any_event, any_interval, any_gammas,
+      FunForms, FunForms_ind, id_H_, id_h, log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
+      which_event, which_right_event, which_left, which_interval);
+  return out;
+}
+

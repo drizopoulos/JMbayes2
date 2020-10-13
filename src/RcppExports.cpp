@@ -22,3 +22,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// logLik_jm
+arma::vec logLik_jm(List thetas, List model_data, List model_info, List control);
+RcppExport SEXP _JMbayes2_logLik_jm(SEXP thetasSEXP, SEXP model_dataSEXP, SEXP model_infoSEXP, SEXP controlSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< List >::type model_data(model_dataSEXP);
+    Rcpp::traits::input_parameter< List >::type model_info(model_infoSEXP);
+    Rcpp::traits::input_parameter< List >::type control(controlSEXP);
+    rcpp_result_gen = Rcpp::wrap(logLik_jm(thetas, model_data, model_info, control));
+    return rcpp_result_gen;
+END_RCPP
+}

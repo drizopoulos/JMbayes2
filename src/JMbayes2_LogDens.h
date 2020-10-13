@@ -122,33 +122,6 @@ vec log_re (const mat &b, const mat &L, const vec &sds) {
   return out;
 }
 
-vec logLik (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
-               const vec &extra_parms, const CharacterVector &families,
-               const CharacterVector &links, const field<uvec> &ids,
-               const field<uvec> &unq_ids,
-               const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
-               const vec &W0H2_bs_gammas, const vec &WH_gammas,
-               const vec &Wh_gammas, const vec &WH2_gammas,
-               const vec &WlongH_alphas, const vec &Wlongh_alphas,
-               const vec &WlongH2_alphas, const vec &log_Pwk, const vec &log_Pwk2,
-               const uvec &indFast_H, const uvec &indFast_h,
-               const uvec &which_event,
-               const uvec &which_right_event, const uvec &which_left,
-               const bool &any_interval, const uvec &which_interval,
-               const mat &b_mat, const mat &L, const vec &sds) {
-  vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links, ids,
-                             unq_ids);
-  vec logLik_surv = log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-                             WH_gammas, Wh_gammas, WH2_gammas, WlongH_alphas,
-                             Wlongh_alphas, WlongH2_alphas, log_Pwk,
-                             log_Pwk2, indFast_H, indFast_h, which_event,
-                             which_right_event, which_left, any_interval,
-                             which_interval);
-  vec logLik_re = log_re(b_mat, L, sds);
-  vec out = logLik_long + logLik_surv + logLik_re;
-  return out;
-}
-
 double logLik_prior (const mat &L, const vec &sds,
                      const double &prior_D_sds_df, const double &prior_D_sds_sigma,
                      const double &prior_D_L_etaLKJ,
@@ -171,6 +144,86 @@ double logLik_prior (const mat &L, const vec &sds,
   out += logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, 1.0);
   out += logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, 1.0);
 
+  return out;
+}
+
+vec logLik_jm_stripped (
+    const field<vec> &betas, const field<mat> &b, const vec &sigmas,
+    const vec &bs_gammas, const vec &gammas, const vec &alphas, const vec &tau_bs_gammas,
+    const mat &L, const vec &sds,
+    /////////////
+    const field<mat> &y, const field<mat> &X, const field<mat> &Z,
+    const vec &extra_parms, const CharacterVector &families, const CharacterVector &links,
+    const field<uvec> &idL, const field<uvec> &idL_lp_fast, const field<uvec> &unq_idL,
+    /////////////
+    const mat &W0_H, const mat &W0_h, const mat &W0_H2,
+    const mat &W_H, const mat &W_h, const mat &W_H2,
+    const field<mat> &X_H, const field<mat> &X_h, const field<mat> &X_H2,
+    const field<mat> &Z_H, const field<mat> &Z_h, const field<mat> &Z_H2,
+    const field<mat> &U_H, const field<mat> &U_h, const field<mat> &U_H2,
+    const mat &Wlong_bar,
+    const bool &any_event, const bool &any_interval, const bool &any_gammas,
+    const field<uvec> &FunForms, const field<uvec> &FunForms_ind,
+    const uvec &id_H_, const uvec &id_h,
+    const vec &log_Pwk, const vec &log_Pwk2,
+    const uvec &id_H_fast, const uvec &id_h_fast,
+    const uvec &which_event, const uvec &which_right_event,
+    const uvec &which_left, const uvec &which_interval) {
+  field<vec> eta = linpred_mixed(X, betas, Z, b, idL);
+  vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
+                             idL_lp_fast, unq_idL);
+  /////////////
+  vec W0H_bs_gammas = W0_H * bs_gammas;
+  vec W0h_bs_gammas(W0_h.n_rows);
+  vec W0H2_bs_gammas(W0_H2.n_rows);
+  if (any_event) {
+    W0h_bs_gammas = W0_h * bs_gammas;
+  }
+  if (any_interval) {
+    W0H2_bs_gammas = W0_H2 * bs_gammas;
+  }
+  vec WH_gammas(W0_H.n_rows);
+  vec Wh_gammas(W0_h.n_rows);
+  vec WH2_gammas(W0_H2.n_rows);
+  if (any_gammas) {
+    WH_gammas = W_H * gammas;
+  }
+  if (any_gammas && any_event) {
+    Wh_gammas = W_h * gammas;
+  }
+  if (any_gammas && any_interval) {
+    WH2_gammas = WH2_gammas * gammas;
+  }
+  mat Wlong_H =
+    calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas, b, id_H_, FunForms,
+                    FunForms_ind);
+  vec WlongH_alphas = Wlong_H * alphas;
+  mat Wlong_h(W0_h.n_rows, alphas.n_rows);
+  vec Wlongh_alphas(W0_h.n_rows);
+  if (any_event) {
+    Wlong_h =
+      calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas, b, id_h,
+                      FunForms, FunForms_ind);
+    Wlongh_alphas = Wlong_h * alphas;
+  }
+  mat Wlong_H2(W0_H2.n_rows, alphas.n_rows);
+  vec WlongH2_alphas(W0_H2.n_rows);
+  if (any_interval) {
+    Wlong_H2 =
+      calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas, b, id_H_,
+                      FunForms, FunForms_ind);
+    WlongH2_alphas = Wlong_H2 * alphas;
+  }
+  vec logLik_surv =
+    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+             WH_gammas, Wh_gammas, WH2_gammas,
+             WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+             log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
+             which_event, which_right_event, which_left,
+             any_interval, which_interval);
+  mat b_mat = docall_cbindF(b);
+  vec logLik_re = log_re(b_mat, L, sds);
+  vec out = logLik_long + logLik_surv + logLik_re;
   return out;
 }
 
