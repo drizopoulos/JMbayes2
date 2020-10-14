@@ -5,3 +5,7 @@ mcmc_cpp <- function(model_data, model_info, initial_values, priors, control, vc
     .Call(`_JMbayes2_mcmc_cpp`, model_data, model_info, initial_values, priors, control, vcov_prop)
 }
 
+logLik_jm <- function(thetas, model_data, model_info, control) {
+    .Call(`_JMbayes2_logLik_jm`, thetas, model_data, model_info, control)
+}
+

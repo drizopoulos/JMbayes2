@@ -579,4 +579,15 @@ cube chol_cube (const cube &S) {
   return out;
 }
 
+mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
+                     const field<mat> &U, const mat &Wlong_bar,
+                     const field<vec> &betas, const field<mat> &b,
+                     const uvec &id, const field<uvec> &FunForms,
+                     const field<uvec> &FunForms_ind) {
+  field<mat> eta = linpred_surv(X, betas, Z, b, id);
+  mat Wlong = docall_cbindF(create_Wlong(eta, FunForms, U, FunForms_ind));
+  Wlong.each_row() -= Wlong_bar;
+  return Wlong;
+}
+
 #endif
