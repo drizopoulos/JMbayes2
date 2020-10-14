@@ -563,7 +563,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                            vcov_prop = vcov_prop))
     } else {
         statistics$Mean$b <- out$postmeans_b
-        out <- c(out[names(out) != 'postmeans_b'], list(statistics = statistics,
+        statistics$post_vars <- out$postvars_b
+        out <- c(out[!names(out) %in% c('postmeans_b', 'postvars_b')], list(statistics = statistics,
                            model_data = Data, model_info = model_info,
                            initial_values = initial_values,
                            control = con, priors = priors, call = call,

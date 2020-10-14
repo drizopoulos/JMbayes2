@@ -39,7 +39,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const mat &L, const vec &sds,
                const uword &it, const field<uvec> &idL,
                mat &acceptance_b, cube &res_b, const bool &save_random_effects,
-               const uword &n_burnin, const uword &GK_k
+               const uword &n_burnin, const uword &GK_k, mat &cumsum_b, cube &outprod_b 
                ) {
   // calculate denominator_b
   vec denominator_b = logLik_long + logLik_surv + logLik_re;
@@ -132,7 +132,10 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     res_b.slice(it) = b_mat;
   } else {
     if (it > n_burnin - 1) {
-      res_b.slice(0) += b_mat;
+      cumsum_b += b_mat;
+      for (uword j = 0; j < n; j++) {
+        outprod_b.slice(j) += kron(b_mat.row(j), b_mat.row(j).t());
+      }
     }
   }
   b = mat2field_mat(b_mat, ind_RE);

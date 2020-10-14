@@ -171,8 +171,19 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
             "running_time" = tok - tik
         )
     } else {
+        postmeans_b <- Reduce('+', lapply(out, function(x) x$mcmc$b[, , 1])) / n_chains
+        cumsum_b <- Reduce('+', lapply(out, function(x) x$mcmc$cumsum_b))
+        outprod_b <- Reduce('+', lapply(out, function(x) x$mcmc$outprod_b))
+        K <- (control$n_iter - control$n_burnin)*control$n_chains
+        means_b <- cumsum_b / K
+        outprod_means_b_cube <- array(NA, dim = dim(outprod_b))
+        for (i in 1:nrow(means_b)) {
+            outprod_means_b_cube[, , i] <- means_b[i, ] %o% means_b[i, ] 
+        }
+        postvars_b <- (outprod_b / K - outprod_means_b_cube) * K / (K - 1)
         list(
-            "postmeans_b" = Reduce('+', lapply(out, function(x) x$mcmc$b[, , 1])) / n_chains,
+            "postmeans_b" = postmeans_b,
+            'postvars_b' = postvars_b,
             "mcmc" = mcmc_out,
             "acc_rates" = lapply_nams(parms, get_acc_rates),
             "running_time" = tok - tik

@@ -154,6 +154,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     res_b.set_size(n_b, b_mat.n_cols, n_iter);
   }
   mat acceptance_b(n_iter, n_b, fill::zeros);
+  mat cumsum_b(n_b, b_mat.n_cols);
+  cube outprod_b(b_mat.n_cols, b_mat.n_cols, b_mat.n_rows);
+  cube var_b(b_mat.n_cols, b_mat.n_cols, b_mat.n_rows);
   mat res_sigmas(n_iter, n_sigmas, fill::zeros);
   mat acceptance_sigmas(n_iter, n_sigmas, fill::zeros);
   mat res_logLik(n_iter, 1, fill::zeros);
@@ -305,7 +308,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              id_H_fast, id_h_fast, which_event, which_right_event, which_left,
              which_interval, any_event, any_interval, n_strata_,
              L, sds, it, idL, acceptance_b, res_b, save_random_effects,
-             n_burnin, GK_k);
+             n_burnin, GK_k, cumsum_b, outprod_b);
 
     eta = linpred_mixed(X, betas, Z, b, idL);
     denominator_surv =
@@ -331,7 +334,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   if (save_random_effects) {
     res_b = res_b.slices(n_burnin, n_iter - 1);
   } else {
-    res_b.slice(0) = res_b.slice(0) / (n_iter - n_burnin);
+    res_b.slice(0) = cumsum_b / (n_iter - n_burnin);
   }
   return List::create(
     Named("mcmc") = List::create(
@@ -344,6 +347,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("sds") = res_sds.rows(n_burnin, n_iter - 1),
       Named("L") = res_L.rows(n_burnin, n_iter - 1),
       Named("b") = res_b,
+      Named("cumsum_b") = cumsum_b,
+      Named("outprod_b") = outprod_b,
       Named("sigmas") = res_sigmas.rows(n_burnin, n_iter - 1)
     ),
     Named("acc_rate") = List::create(
