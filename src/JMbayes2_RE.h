@@ -134,7 +134,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     if (it > n_burnin - 1) {
       cumsum_b += b_mat;
       for (uword j = 0; j < n; j++) {
-        outprod_b.slice(j) += b_mat.row(j) * b_mat.row(j).t();
+        outprod_b.slice(j) += b_mat.row(j).t() * b_mat.row(j);
       }
     }
   }
