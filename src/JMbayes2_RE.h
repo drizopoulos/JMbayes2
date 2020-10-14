@@ -132,7 +132,6 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     res_b.slice(it) = b_mat;
   } else {
     if (it > n_burnin - 1) {
-      //res_b.slice(0) += (1/(it + 1)) * (b_mat - res_b.slice(0));
       cumsum_b += b_mat;
       for (uword j = 0; j < n; j++) {
         outprod_b.slice(j) += kron(b_mat.row(j), b_mat.row(j).t());
