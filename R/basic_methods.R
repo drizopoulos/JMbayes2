@@ -6,10 +6,11 @@ traceplot.jm <- function (object,
                           ...) {
     parm <- match.arg(parm)
     if (parm == "all") {
+        nams_parms <- c("betas", "sigmas", "D", "bs_gammas", "tau_bs_gammas",
+                        "gammas", "alphas")
         nams_mcmc <- names(object$mcmc)
-        nams_mcmc <-
-            nams_mcmc[nams_mcmc %in% c("betas", "sigmas", "D", "bs_gammas",
-                                       "tau_bs_gammas", "gammas", "alphas")]
+        ind <- unlist(sapply(paste0("^", nams_parms), grep, nams_mcmc))
+        nams_mcmc <- nams_mcmc[ind]
         for (i in seq_along(nams_mcmc)) {
             parms_i <- nams_mcmc[[i]]
             x <- object$mcmc[[parms_i]]
@@ -34,10 +35,11 @@ gelman_diag.jm <- function (object,
                           ...) {
     parm <- match.arg(parm)
     if (parm == "all") {
+        nams_parms <- c("betas", "sigmas", "D", "bs_gammas", "tau_bs_gammas",
+                        "gammas", "alphas")
         nams_mcmc <- names(object$mcmc)
-        nams_mcmc <-
-            nams_mcmc[nams_mcmc %in% c("betas", "sigmas", "D", "bs_gammas",
-                                       "tau_bs_gammas", "gammas", "alphas")]
+        ind <- unlist(sapply(paste0("^", nams_parms), grep, nams_mcmc))
+        nams_mcmc <- nams_mcmc[ind]
         out <- vector("list", length(nams_mcmc))
         names(out) <- nams_mcmc
         for (i in seq_along(out)) {
@@ -66,13 +68,12 @@ densplot.jm <- function (object,
                                    "tau_bs_gammas", "gammas", "alphas"),
                           ...) {
     parm <- match.arg(parm)
-
-
     if (parm == "all") {
+        nams_parms <- c("betas", "sigmas", "D", "bs_gammas", "tau_bs_gammas",
+                        "gammas", "alphas")
         nams_mcmc <- names(object$mcmc)
-        nams_mcmc <-
-            nams_mcmc[nams_mcmc %in% c("betas", "sigmas", "D", "bs_gammas",
-                                       "tau_bs_gammas", "gammas", "alphas")]
+        ind <- unlist(sapply(paste0("^", nams_parms), grep, nams_mcmc))
+        nams_mcmc <- nams_mcmc[ind]
         for (i in seq_along(nams_mcmc)) {
             parms_i <- nams_mcmc[[i]]
             x <- object$mcmc[[parms_i]]
@@ -96,10 +97,11 @@ cumuplot.jm <- function (object,
                                   "tau_bs_gammas", "gammas", "alphas"), ...) {
     parm <- match.arg(parm)
     if (parm == "all") {
+        nams_parms <- c("betas", "sigmas", "D", "bs_gammas", "tau_bs_gammas",
+                        "gammas", "alphas")
         nams_mcmc <- names(object$mcmc)
-        nams_mcmc <-
-            nams_mcmc[nams_mcmc %in% c("betas", "sigmas", "D", "bs_gammas",
-                                       "tau_bs_gammas", "gammas", "alphas")]
+        ind <- unlist(sapply(paste0("^", nams_parms), grep, nams_mcmc))
+        nams_mcmc <- nams_mcmc[ind]
         for (i in seq_along(nams_mcmc)) {
             parms_i <- nams_mcmc[[i]]
             x <- object$mcmc[[parms_i]]
