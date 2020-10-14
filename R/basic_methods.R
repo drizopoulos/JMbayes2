@@ -136,7 +136,7 @@ summary.jm <- function (object, ...) {
         out <- data.frame(Mean = object$statistics$Mean[[name]],
                           StDev = object$statistics$SD[[name]],
                           `2.5%` = object$statistics$CI_low[[name]],
-                          `97.5%` = object$statistics$CI_low[[name]],
+                          `97.5%` = object$statistics$CI_upp[[name]],
                           P = object$statistics$P[[name]],
                           row.names = names(object$statistics$P[[name]]),
                           check.names = FALSE)

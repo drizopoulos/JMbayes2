@@ -102,8 +102,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     }
     # reconstruct D matrix
     get_D <- function (x) {
-        mapply(reconstr_D, split(x$L, row(x$L)), split(x$sds, row(x$sds)),
-               SIMPLIFY = FALSE)
+        mapply2(reconstr_D, split(x$L, row(x$L)), split(x$sds, row(x$sds)))
     }
     for (i in seq_along(out)) {
         out[[i]][["mcmc"]][["D"]] <-
@@ -152,41 +151,77 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     get_acc_rates <- function (name_parm) {
         do.call("rbind", lapply(out, function (x) x[["acc_rate"]][[name_parm]]))
     }
-    if (control$save_random_effects) {
-        parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
-                   "Wlong_bar_alphas", "D", paste0("betas", seq_along(model_data$X)),
-                   "sigmas", "b")
-    } else {
-        parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
-                   "Wlong_bar_alphas", "D", paste0("betas", seq_along(model_data$X)),
-                   "sigmas")
-    }
+    parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
+               "Wlong_bar_alphas", "D", paste0("betas", seq_along(model_data$X)),
+               "sigmas")
+    if (control$save_random_effects) parms <- c(parms, "b")
     if (!length(attr(model_info$terms$terms_Surv_noResp, "term.labels")))
         parms <- parms[parms != "gammas"]
     mcmc_out <- lapply_nams(parms, convert2_mcmclist)
-    if (control$save_random_effects) {
-        list(
-            "mcmc" = mcmc_out,
-            "acc_rates" = lapply_nams(parms, get_acc_rates),
-            "running_time" = tok - tik
-        )
-    } else {
+    mcmc_out <- list(
+        "mcmc" = mcmc_out,
+        "acc_rates" = lapply_nams(parms, get_acc_rates),
+        "logLik" = do.call("rbind", lapply(out, "[[", "logLik")),
+        "running_time" = tok - tik
+    )
+    if (!control$save_random_effects) {
         postmeans_b <- Reduce('+', lapply(out, function(x) x$mcmc$b[, , 1])) / n_chains
         cumsum_b <- Reduce('+', lapply(out, function(x) x$mcmc$cumsum_b))
         outprod_b <- Reduce('+', lapply(out, function(x) x$mcmc$outprod_b))
         K <- (control$n_iter - control$n_burnin)*control$n_chains
         means_b <- cumsum_b / K
-        outprod_means_b_cube <- array(NA, dim = dim(outprod_b))
+        outprod_means_b_cube <- array(0.0, dim = dim(outprod_b))
         for (i in 1:nrow(means_b)) {
-            outprod_means_b_cube[, , i] <- means_b[i, ] %o% means_b[i, ] 
+            outprod_means_b_cube[, , i] <- means_b[i, ] %o% means_b[i, ]
         }
         postvars_b <- (outprod_b / K - outprod_means_b_cube) * K / (K - 1)
-        list(
-            "postmeans_b" = postmeans_b,
-            'postvars_b' = postvars_b,
-            "mcmc" = mcmc_out,
-            "acc_rates" = lapply_nams(parms, get_acc_rates),
-            "running_time" = tok - tik
-        )
+        mcmc_out <- c(mcmc_out, list("postmeans_b" = postmeans_b,
+                                     'postvars_b' = postvars_b))
     }
+    ########################
+    # Caclulate Statistics
+    S <- lapply(mcmc_out$mcmc, summary)
+    statistics <- list(
+        Mean = lapply(S, get_statistic, "Mean"),
+        Median = lapply(S, get_statistic, "Median"),
+        SD = lapply(S, get_statistic, "SD"),
+        SE = lapply(S, get_statistic, "Time-series SE"),
+        CI_low = lapply(S, get_statistic, "2.5CI"),
+        CI_upp = lapply(S, get_statistic, "97.5CI"),
+        P = lapply(mcmc_out$mcmc, function (x) apply(do.call("rbind", x), 2L, Ptail)),
+        Effective_Size = lapply(mcmc_out$mcmc, function (x)
+            apply(do.call("rbind", x), 2L, effective_size))
+    )
+    if (!is.null(mcmc_out$mcmc[["b"]])) {
+        znams <- unlist(lapply(model_data$Z, colnames), use.names = FALSE)
+        l <- sapply(model_data$unq_idL, length)
+        dnames_b <- list(unlist(model_data$unq_idL[which.max(l)]), znams)
+        fix_b <- function (stats) {
+            x <- stats$b
+            dim(x) <- sapply(dnames_b, length)
+            dimnames(x) <- dnames_b
+            stats$b <- x
+            stats
+        }
+        statistics[] <- lapply(statistics, fix_b)
+        nRE <- ncol(statistics$Mean$b)
+        b <- do.call("rbind", out$mcmc[["b"]])
+        post_vars <- array(0.0, c(nRE, nRE, nY))
+        for (i in seq_len(nY)) {
+            post_vars[, , i] <- var(b[, seq(0, nRE - 1) * nY + i, drop = FALSE])
+        }
+        statistics <- c(statistics, post_vars = list(post_vars))
+    }
+    if (control$n_chains > 1) {
+        no_b <- !names(mcmc_out$mcmc) %in% "b"
+        statistics <- c(statistics,
+                        Rhat = list(lapply(mcmc_out$mcm[no_b], function (theta)
+                            coda::gelman.diag(theta)$psrf)))
+    }
+    if (!control$save_random_effects) {
+        statistics$Mean$b <- mcmc_out$postmeans_b
+        statistics$post_vars <- mcmc_out$postvars_b
+        mcmc_out <- mcmc_out[!names(mcmc_out) %in% c('postmeans_b', 'postvars_b')]
+    }
+    c(mcmc_out, list(statistics = statistics))
 }

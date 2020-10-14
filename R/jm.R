@@ -516,60 +516,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ############################################################################
     ############################################################################
     # Fit the model
-    out <- jm_fit(Data, model_info, initial_values, priors, con, vcov_prop)
-    S <- lapply(out$mcmc, summary)
-    statistics <- list(
-        Mean = lapply(S, get_statistic, "Mean"),
-        Median = lapply(S, get_statistic, "Median"),
-        SD = lapply(S, get_statistic, "SD"),
-        SE = lapply(S, get_statistic, "Time-series SE"),
-        CI_low = lapply(S, get_statistic, "2.5CI"),
-        CI_upp = lapply(S, get_statistic, "97.5CI"),
-        P = lapply(out$mcmc, function (x) apply(do.call("rbind", x), 2L, Ptail)),
-        Effective_Size = lapply(out$mcmc, function (x)
-            apply(do.call("rbind", x), 2L, effective_size))
-    )
-    if (!is.null(out$mcmc[["b"]])) {
-        znams <- unlist(lapply(Data$Z, colnames), use.names = FALSE)
-        l <- sapply(Data$unq_idL, length)
-        dnames_b <- list(unlist(Data$unq_idL[which.max(l)]), znams)
-        fix_b <- function (stats) {
-            x <- stats$b
-            dim(x) <- sapply(dnames_b, length)
-            dimnames(x) <- dnames_b
-            stats$b <- x
-            stats
-        }
-        statistics[] <- lapply(statistics, fix_b)
-        nRE <- ncol(statistics$Mean$b)
-        b <- do.call("rbind", out$mcmc[["b"]])
-        post_vars <- array(0.0, c(nRE, nRE, nY))
-        for (i in seq_len(nY)) {
-            post_vars[, , i] <- var(b[, seq(0, nRE - 1) * nY + i, drop = FALSE])
-        }
-        statistics <- c(statistics, post_vars = list(post_vars))
-    }
-    if (con$n_chains > 1) {
-        no_b <- !names(out$mcmc) %in% "b"
-        statistics <- c(statistics,
-                        Rhat = list(lapply(out$mcm[no_b], function (theta)
-                            coda::gelman.diag(theta)$psrf)))
-    }
-    if (con$save_random_effects) {
-        out <- c(out, list(statistics = statistics,
-                           model_data = Data, model_info = model_info,
-                           initial_values = initial_values,
-                           control = con, priors = priors, call = call,
-                           vcov_prop = vcov_prop))
-    } else {
-        statistics$Mean$b <- out$postmeans_b
-        statistics$post_vars <- out$postvars_b
-        out <- c(out[!names(out) %in% c('postmeans_b', 'postvars_b')], list(statistics = statistics,
-                           model_data = Data, model_info = model_info,
-                           initial_values = initial_values,
-                           control = con, priors = priors, call = call,
-                           vcov_prop = vcov_prop))
-    }
+    Fit <- jm_fit(Data, model_info, initial_values, priors, con, vcov_prop)
+    out <- c(Fit, list(model_data = Data, model_info = model_info,
+                       initial_values = initial_values, control = con,
+                       priors = priors, call = call, vcov_prop = vcov_prop))
     class(out) <- "jm"
     out
 }

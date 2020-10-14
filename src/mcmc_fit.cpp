@@ -423,6 +423,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   uvec id_H = as<uvec>(model_data["id_H"]) - 1;
   uvec id_H_fast = create_fast_ind(id_H + 1);
   uvec id_h_fast = create_fast_ind(id_h + 1);
+
   /////////////
   vec out =
     logLik_jm_stripped(
