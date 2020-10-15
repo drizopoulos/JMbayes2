@@ -159,6 +159,7 @@ summary.jm <- function (object, ...) {
         }
     }
     out$Survival <- do.call(rbind, list(tab_f("gammas"), tab_f("alphas")))
+    out$fit_stats <- object$fit_stats
     class(out) <- "summary.jm"
     out
 }
@@ -176,8 +177,11 @@ print.summary.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) 
             sep = "")
     }
     cat("\n")
-    if (!is.null(x$DIC)) {
-        model.sum <- data.frame(DIC = x$DIC, pD = x$pD, row.names = "")
+    if (!is.null(x$fit_stats$DIC)) {
+        model.sum <-
+            data.frame(DIC = x$fit_stats$DIC, pD = x$fit_stats$pD,
+                       LPML = x$fit_stats$LPML, row.names = "")
+        cat("\n")
         print(model.sum)
     }
     cat("\nRandom-effects covariance matrix:\n")

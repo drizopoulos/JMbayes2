@@ -159,7 +159,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   cube var_b(b_mat.n_cols, b_mat.n_cols, b_mat.n_rows);
   mat res_sigmas(n_iter, n_sigmas, fill::zeros);
   mat acceptance_sigmas(n_iter, n_sigmas, fill::zeros);
-  mat res_logLik(n_iter, 1, fill::zeros);
+  mat res_logLik(n_iter, n_b, fill::zeros);
   // scales
   vec scale_bs_gammas = create_init_scale(n_bs_gammas);
   vec scale_gammas = create_init_scale(n_gammas);
@@ -329,7 +329,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     ////////////////////////////////////////////////////////////////////
 
-    res_logLik.at(it) = sum(logLik_long + logLik_surv + logLik_re);
+    res_logLik.row(it) = trans(logLik_long + logLik_surv + logLik_re);
   }
   if (save_random_effects) {
     res_b = res_b.slices(n_burnin, n_iter - 1);
@@ -367,14 +367,18 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 arma::vec logLik_jm (List thetas, List model_data, List model_info,
                      List control) {
   field<vec> betas = List2Field_vec(as<List>(thetas["betas"]));
-  field<mat> b = List2Field_mat(as<List>(thetas["b"]));
+  mat b_mat = as<mat>(thetas["b"]);
+  field<mat> b =
+    mat2field_mat(b_mat, List2Field_uvec(as<List>(model_data["ind_RE"]), true));
   vec sigmas = as<vec>(thetas["sigmas"]);
   vec bs_gammas = as<vec>(thetas["bs_gammas"]);
   vec gammas = as<vec>(thetas["gammas"]);
   vec alphas = as<vec>(thetas["alphas"]);
   vec tau_bs_gammas = as<vec>(thetas["tau_bs_gammas"]);
-  mat L = as<mat>(thetas["L"]);
-  vec sds = as<vec>(thetas["sds"]);
+  mat D = as<mat>(thetas["D"]);
+  vec sds = sqrt(D.diag());
+  mat R = cov2cor(D);
+  mat L = chol(R);
   /////////////
   field<mat> y = List2Field_mat(as<List>(model_data["y"]));
   field<mat> X = List2Field_mat(as<List>(model_data["X"]));
@@ -423,7 +427,6 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   uvec id_H = as<uvec>(model_data["id_H"]) - 1;
   uvec id_H_fast = create_fast_ind(id_H + 1);
   uvec id_h_fast = create_fast_ind(id_h + 1);
-
   /////////////
   vec out =
     logLik_jm_stripped(

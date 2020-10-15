@@ -223,5 +223,18 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         statistics$post_vars <- mcmc_out$postvars_b
         mcmc_out <- mcmc_out[!names(mcmc_out) %in% c('postmeans_b', 'postvars_b')]
     }
-    c(mcmc_out, list(statistics = statistics))
+    # Fit statistics
+    D_bar <- - 2.0 * mean(rowSums(mcmc_out$logLik, na.rm = TRUE))
+    thetas <- statistics$Mean
+    thetas[["betas"]] <- thetas[grep("^betas", names(thetas))]
+    thetas[["betas"]] <- initial_values$betas # <------------
+    thetas[["D"]] <- nearPD(lowertri2mat(thetas[["D"]]))
+    D_hat <- - 2.0 * sum(logLik_jm(thetas, model_data, model_info, control),
+                       na.rm = TRUE)
+    pD <- D_bar - D_hat
+    CPO <- 1 / colMeans(exp(-mcmc_out$logLik), na.rm = TRUE)
+    LPML <- sum(-log(colMeans(exp(-mcmc_out$logLik), na.rm = TRUE)))
+    c(mcmc_out, list(statistics = statistics,
+                     fit_stats = list(DIC = pD + D_bar, pD = pD, LPML = LPML,
+                                      CPO = CPO)))
 }
