@@ -213,7 +213,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         nn <- nrow(statistics$Mean[["b"]])
         post_vars <- array(0.0, c(nRE, nRE, nn))
         for (i in seq_len(nn)) {
-            post_vars[, , i] <- var(b[, seq(0, nRE - 1) * nY + i, drop = FALSE])
+            post_vars[, , i] <- var(b[, seq(0, nRE - 1) * nn + i, drop = FALSE])
         }
         statistics <- c(statistics, post_vars = list(post_vars))
     }
