@@ -1,4 +1,4 @@
-export(area, cumuplot, coef, densplot, family, fixef, gelman_diag,
+export(area, cumuplot, coef, compare_jm, densplot, family, fixef, gelman_diag,
        ggdensityplot, ggtraceplot, jm, model.frame, model.matrix, ranef, slope,
        terms, traceplot, tv, value)
 
@@ -42,4 +42,5 @@ S3method(model.frame, jm)
 S3method(model.matrix, jm)
 S3method(family, jm)
 S3method(effectPlotData, jm)
+S3method(print, compare_jm)
 

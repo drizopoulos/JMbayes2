@@ -463,4 +463,44 @@ effectPlotData.jm <- function (object, newdata, level = 0.95, ...) {
     cbind(newdata, do.call("cbind", pred), do.call("cbind", Qs))
 }
 
+compare_jm <- function (..., type = c("marginal", "conditional"),
+                        order = c("WAIC", "DIC", "LPML", "none")) {
+    model_names <- sapply(substitute(list(...)), deparse)[-1L]
+    models <- list(...)
+    if (!all(sapply(models, inherits, "jm"))) {
+        stop("compare_jm() works with jm objects.")
+    }
+    type <- match.arg(type)
+    order <- match.arg(order)
+    extract_criteria <- function (m, type) {
+        if (type == "marginal") {
+            data.frame(DIC = m$fit_stats$marginal$DIC,
+                       WAIC = m$fit_stats$marginal$WAIC,
+                       LPML = m$fit_stats$marginal$LPML, check.names = FALSE)
+        } else {
+            data.frame(DIC = m$fit_stats$conditional$DIC,
+                       WAIC = m$fit_stats$conditional$WAIC,
+                       LPML = m$fit_stats$conditional$LPML, check.names = FALSE)
+        }
+    }
+    out <- do.call("rbind", lapply(models, extract_criteria, type = type))
+    out$model <- model_names
+    out <- out[c("model", "DIC", "WAIC", "LPML")]
+    names(out) <- c(" ", "DIC", "WAIC", "LPML")
+    if (order != "none") {
+        out <- if (order == "LPML") out[order(out[[order]], decreasing = TRUE), ]
+            else out[order(out[[order]]), ]
+    }
+    out <- list(table = out, type = type)
+    class(out) <- "compare_jm"
+    out
+}
+
+print.compare_jm <- function (x, ...) {
+    cat("\n")
+    print.data.frame(x$table, row.names = FALSE)
+    cat("\nThe criteria are calculated based on the", x$type, "log-likelihood.")
+}
+
+
 

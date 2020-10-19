@@ -210,8 +210,9 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         statistics[] <- lapply(statistics, fix_b)
         nRE <- ncol(statistics$Mean$b)
         b <- do.call("rbind", out$mcmc[["b"]])
-        post_vars <- array(0.0, c(nRE, nRE, nrow(statistics$Mean[["b"]])))
-        for (i in seq_len(nY)) {
+        nn <- nrow(statistics$Mean[["b"]])
+        post_vars <- array(0.0, c(nRE, nRE, nn))
+        for (i in seq_len(nn)) {
             post_vars[, , i] <- var(b[, seq(0, nRE - 1) * nY + i, drop = FALSE])
         }
         statistics <- c(statistics, post_vars = list(post_vars))

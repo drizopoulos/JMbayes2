@@ -16,6 +16,7 @@
 \alias{family.jm}
 \alias{get_links}
 \alias{get_links.jm}
+\alias{compare_jm}
 
 \title{
 Various Methods for Standard Generics
@@ -57,6 +58,9 @@ model.matrix(object, \dots)
 family(object, \dots)
 
 \method{family}{jm}(object, \dots)
+
+compare_jm(\dots, type = c("marginal", "conditional"),
+  order = c("WAIC", "DIC", "LPML", "none"))
 }
 
 \arguments{
@@ -65,7 +69,9 @@ family(object, \dots)
 \item{post_vars}{.}
 \item{process}{.}
 \item{type}{.}
-\item{\dots}{further arguments; currently none is used.}
+\item{\dots}{further arguments; currently none is used. In \code{compare_jm()} a
+  series of \code{jm} objects}
+\item{order}{.}
 }
 
 \details{
