@@ -1062,3 +1062,18 @@ nearPD <- function (M, eig.tol = 1e-06, conv.tol = 1e-07, posd.tol = 1e-08,
     }
     (X + t(X)) / 2
 }
+
+fit_stats <- function (lL, lL_mean_parms) {
+    D_bar <- - 2.0 * mean(rowSums(lL, na.rm = TRUE))
+    D_hat <- - 2.0 * sum(lL_mean_parms, na.rm = TRUE)
+    pD <- D_bar - D_hat
+    CPO <- 1 / colMeans(exp(-lL), na.rm = TRUE)
+    CC <- log(nrow(lL))
+    LPML <- sum(- colLogSumExps(-lL, na.rm = TRUE) + CC)
+    LPPD <- - 2.0 * sum(colLogSumExps(lL, na.rm = TRUE) - CC)
+    pWAIC2 <- 2.0 * sum(colVars(lL))
+    list(DIC = pD + D_bar, pD = pD, LPML = LPML,
+         CPO = CPO, WAIC = LPPD + pWAIC2)
+}
+
+

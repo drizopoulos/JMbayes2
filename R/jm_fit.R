@@ -9,7 +9,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     # to the number of trials instead the number of failures
     binomial_data <- model_info$family_names == "binomial"
     trials_fun <- function (y) {
-        if (NCOL(y) == 2) y[, 2] <- y[, 1] + y[, 2]
+        if (NCOL(y) == 2L) y[, 2L] <- y[, 1L] + y[, 2L]
         y
     }
     model_data$y[binomial_data] <-
@@ -157,6 +157,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     if (control$save_random_effects) parms <- c(parms, "b")
     if (!length(attr(model_info$terms$terms_Surv_noResp, "term.labels")))
         parms <- parms[parms != "gammas"]
+    if (all(!has_sigmas))
+        parms <- parms[parms != "sigmas"]
     mcmc_out <- lapply_nams(parms, convert2_mcmclist)
     mcmc_out <- list(
         "mcmc" = mcmc_out,
@@ -168,13 +170,15 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         postmeans_b <- Reduce('+', lapply(out, function(x) x$mcmc$b[, , 1])) / n_chains
         cumsum_b <- Reduce('+', lapply(out, function(x) x$mcmc$cumsum_b))
         outprod_b <- Reduce('+', lapply(out, function(x) x$mcmc$outprod_b))
-        K <- (control$n_iter - control$n_burnin)*control$n_chains
+        K <- (control$n_iter - control$n_burnin) * control$n_chains
         means_b <- cumsum_b / K
         outprod_means_b_cube <- array(0.0, dim = dim(outprod_b))
         for (i in 1:nrow(means_b)) {
             outprod_means_b_cube[, , i] <- means_b[i, ] %o% means_b[i, ]
         }
         postvars_b <- (outprod_b / K - outprod_means_b_cube) * K / (K - 1)
+        #for (i in seq_len(dim(postvars_b)[3L]))
+        #    postvars_b[, , i] <- nearPD(postvars_b[, , i])
         mcmc_out <- c(mcmc_out, list("postmeans_b" = postmeans_b,
                                      'postvars_b' = postvars_b))
     }
@@ -206,7 +210,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         statistics[] <- lapply(statistics, fix_b)
         nRE <- ncol(statistics$Mean$b)
         b <- do.call("rbind", out$mcmc[["b"]])
-        post_vars <- array(0.0, c(nRE, nRE, nY))
+        post_vars <- array(0.0, c(nRE, nRE, nrow(statistics$Mean[["b"]])))
         for (i in seq_len(nY)) {
             post_vars[, , i] <- var(b[, seq(0, nRE - 1) * nY + i, drop = FALSE])
         }
@@ -224,17 +228,35 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         mcmc_out <- mcmc_out[!names(mcmc_out) %in% c('postmeans_b', 'postvars_b')]
     }
     # Fit statistics
-    D_bar <- - 2.0 * mean(rowSums(mcmc_out$logLik, na.rm = TRUE))
     thetas <- statistics$Mean
     thetas[["betas"]] <- thetas[grep("^betas", names(thetas))]
     thetas[["betas"]] <- initial_values$betas # <------------
     thetas[["D"]] <- nearPD(lowertri2mat(thetas[["D"]]))
-    D_hat <- - 2.0 * sum(logLik_jm(thetas, model_data, model_info, control),
-                       na.rm = TRUE)
-    pD <- D_bar - D_hat
-    CPO <- 1 / colMeans(exp(-mcmc_out$logLik), na.rm = TRUE)
-    LPML <- sum(-log(colMeans(exp(-mcmc_out$logLik), na.rm = TRUE)))
+    clogLik_mean_parms <- logLik_jm(thetas, model_data, model_info, control)
+    conditional_fit_stats <- fit_stats(mcmc_out$logLik, clogLik_mean_parms)
+    #
+    res_thetas <- thetas
+    res_thetas$sigmas <- do.call("rbind", mcmc_out$mcmc$sigmas)
+    res_thetas$bs_gammas <- do.call("rbind", mcmc_out$mcmc$bs_gammas)
+    res_thetas$gammas <- do.call("rbind", mcmc_out$mcmc$gammas)
+    res_thetas$alphas <- do.call("rbind", mcmc_out$mcmc$alphas)
+    res_thetas$tau_bs_gammas <- do.call("rbind", mcmc_out$mcmc$tau_bs_gammas)
+    D <- do.call("rbind", mcmc_out$mcmc$D)
+    res_thetas$D <- array(0.0, c(dim(thetas$D), nrow(res_thetas$bs_gammas)))
+    for (i in seq_len(nrow(res_thetas$bs_gammas))) {
+        res_thetas$D[, , i] <- lowertri2mat(D[i, ])
+    }
+    mlogLik <- mlogLik_jm(res_thetas, statistics$Mean[["b"]],
+                          statistics$post_vars, model_data, model_info, control)
+    ind <- names(thetas) %in% c("sigmas", "bs_gammas", "gammas", "alphas",
+                                "tau_bs_gammas")
+    thetas[ind] <- lapply(thetas[ind], rbind)
+    dim(thetas[["D"]]) <- c(dim(thetas[["D"]]), 1L)
+    mlogLik_mean_parms <-
+        c(mlogLik_jm(thetas, statistics$Mean[["b"]], statistics$post_vars,
+                     model_data, model_info, control))
+    marginal_fit_stats <- fit_stats(mlogLik, mlogLik_mean_parms)
     c(mcmc_out, list(statistics = statistics,
-                     fit_stats = list(DIC = pD + D_bar, pD = pD, LPML = LPML,
-                                      CPO = CPO)))
+                     fit_stats = list(conditional = conditional_fit_stats,
+                                      marginal = marginal_fit_stats)))
 }

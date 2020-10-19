@@ -8,6 +8,7 @@ library("GLMMadaptive")
 library("coda")
 library("lattice")
 library("splines")
+library("matrixStats")
 source("./R/jm.R")
 source("./R/jm_fit.R")
 source("./R/help_functions.R")
@@ -150,7 +151,7 @@ lmeFit <- lme(y ~ ns(time, 3), data = Data$DF,
               control = lmeControl(opt = "optim", niterEM = 45))
 coxFit <- coxph(Surv(Time, event) ~ group + age, data = Data$DF.id)
 
-obj <- jm(coxFit, list(lmeFit), time_var = "time", n_iter = 25000)
+obj <- jm(coxFit, list(lmeFit), time_var = "time")
 
 summary(obj)
 #coda::traceplot(obj$mcmc$D)

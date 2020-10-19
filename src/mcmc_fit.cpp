@@ -441,3 +441,98 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   return out;
 }
 
+// [[Rcpp::export]]
+arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_vars,
+                      List model_data, List model_info, List control) {
+  field<vec> betas = List2Field_vec(as<List>(res_thetas["betas"]));
+  mat sigmas = trans(as<mat>(res_thetas["sigmas"]));
+  mat bs_gammas = trans(as<mat>(res_thetas["bs_gammas"]));
+  mat gammas = trans(as<mat>(res_thetas["gammas"]));
+  mat alphas = trans(as<mat>(res_thetas["alphas"]));
+  mat tau_bs_gammas = trans(as<mat>(res_thetas["tau_bs_gammas"]));
+  cube D = as<cube>(res_thetas["D"]);
+  uword K = D.n_slices;
+  uword q = D.slice(0).n_rows;
+  mat sds(q, K);
+  cube L(q, q, K);
+  for (uword i = 0; i < K; ++i) {
+    mat D_i = D.slice(i);
+    sds.col(i) = sqrt(D_i.diag());
+    mat R = cov2cor(D_i);
+    L.slice(i) = chol(R);
+  }
+  /////////////
+  uword n = mean_b_mat.n_rows;
+  field<mat> mean_b =
+    mat2field_mat(mean_b_mat, List2Field_uvec(as<List>(model_data["ind_RE"]), true));
+  vec det_post_vars(n);
+  for (uword i = 0; i < n; ++i) det_post_vars.at(i) = det(post_vars.slice(i));
+  /////////////
+  field<mat> y = List2Field_mat(as<List>(model_data["y"]));
+  field<mat> X = List2Field_mat(as<List>(model_data["X"]));
+  field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
+  vec extra_parms = as<vec>(model_data["extra_parms"]);
+  CharacterVector families = as<CharacterVector>(model_info["family_names"]);
+  CharacterVector links = as<CharacterVector>(model_info["links"]);
+  field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
+  field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
+  field<uvec> idL_lp_fast(idL_lp.n_elem);
+  for (uword i = 0; i < idL_lp.n_elem; ++i) {
+    idL_lp_fast.at(i) = create_fast_ind(idL_lp.at(i) + 1);
+  }
+  field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
+  /////////////
+  mat W0_H = as<mat>(model_data["W0_H"]);
+  mat W0_h = as<mat>(model_data["W0_h"]);
+  mat W0_H2 = as<mat>(model_data["W0_H2"]);
+  mat W_H = as<mat>(model_data["W_H"]);
+  mat W_h = as<mat>(model_data["W_h"]);
+  mat W_H2 = as<mat>(model_data["W_H2"]);
+  field<mat> X_H = List2Field_mat(as<List>(model_data["X_H"]));
+  field<mat> X_h = List2Field_mat(as<List>(model_data["X_h"]));
+  field<mat> X_H2 = List2Field_mat(as<List>(model_data["X_H2"]));
+  field<mat> Z_H = List2Field_mat(as<List>(model_data["Z_H"]));
+  field<mat> Z_h = List2Field_mat(as<List>(model_data["Z_h"]));
+  field<mat> Z_H2 = List2Field_mat(as<List>(model_data["Z_H2"]));
+  field<mat> U_H = List2Field_mat(as<List>(model_data["U_H"]));
+  field<mat> U_h = List2Field_mat(as<List>(model_data["U_h"]));
+  field<mat> U_H2 = List2Field_mat(as<List>(model_data["U_H2"]));
+  mat Wlong_bar = docall_cbindL(as<List>(model_data["Wlong_bar"]));
+  uvec which_event = as<uvec>(model_data["which_event"]) - 1;
+  uvec which_right = as<uvec>(model_data["which_right"]) - 1;
+  uvec which_right_event = join_cols(which_event, which_right);
+  uvec which_left = as<uvec>(model_data["which_left"]) - 1;
+  uvec which_interval = as<uvec>(model_data["which_interval"]) - 1;
+  bool any_gammas = as<bool>(model_data["any_gammas"]);
+  bool any_event = which_event.n_rows > 0;
+  bool any_interval = which_interval.n_rows > 0;
+  field<uvec> FunForms = List2Field_uvec(as<List>(model_info["FunForms_cpp"]), true);
+  field<uvec> FunForms_ind = List2Field_uvec(as<List>(model_info["FunForms_ind"]), true);
+  uvec id_H_ = as<uvec>(model_data["id_H_"]) - 1;
+  uvec id_h = as<uvec>(model_data["id_h"]) - 1;
+  vec log_Pwk = as<vec>(model_data["log_Pwk"]);
+  vec log_Pwk2 = as<vec>(model_data["log_Pwk2"]);
+  uvec id_H = as<uvec>(model_data["id_H"]) - 1;
+  uvec id_H_fast = create_fast_ind(id_H + 1);
+  uvec id_h_fast = create_fast_ind(id_h + 1);
+  /////////////
+  mat out(n, K);
+  for (uword i = 0; i < K; ++i) {
+    vec oo = logLik_jm_stripped(
+      betas, mean_b, sigmas.col(i), bs_gammas.col(i), gammas.col(i),
+      alphas.col(i), tau_bs_gammas.col(i), L.slice(i), sds.col(i),
+      ///
+      y, X, Z, extra_parms, families, links, idL, idL_lp_fast, unq_idL,
+      ///
+      W0_H, W0_h, W0_H2, W_H, W_h, W_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
+      U_H, U_h, U_H2, Wlong_bar, any_event, any_interval, any_gammas,
+      FunForms, FunForms_ind, id_H_, id_h, log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
+      which_event, which_right_event, which_left, which_interval);
+    oo += 0.5 * ((double)mean_b_mat.n_cols * log2pi + log(det_post_vars));
+    out.col(i) = oo;
+  }
+  out = out.t();
+  return out;
+}
+
+

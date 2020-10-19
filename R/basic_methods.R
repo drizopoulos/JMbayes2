@@ -177,10 +177,12 @@ print.summary.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) 
             sep = "")
     }
     cat("\n")
-    if (!is.null(x$fit_stats$DIC)) {
+    if (!is.null(x$fit_stats$conditional$DIC)) {
         model.sum <-
-            data.frame(DIC = x$fit_stats$DIC, pD = x$fit_stats$pD,
-                       LPML = x$fit_stats$LPML, row.names = "")
+            data.frame(DIC = c(x$fit_stats$marginal$DIC, x$fit_stats$conditional$DIC),
+                       WAIC = c(x$fit_stats$marginal$WAIC, x$fit_stats$conditional$WAIC),
+                       LPML = c(x$fit_stats$marginal$LPML, x$fit_stats$conditional$LPML),
+                       row.names = c("marginal", "conditional"))
         cat("\n")
         print(model.sum)
     }
@@ -239,33 +241,24 @@ print.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) {
     cat("\nRandom-effects covariance matrix:\n")
     D <- xx$D
     ncz <- nrow(D)
-    diag.D <- ncz != ncol(D)
-    sds <- if (diag.D) sqrt(D) else sqrt(diag(D))
+    sds <- sqrt(diag(D))
     if (ncz > 1) {
-        if (diag.D) {
-            dat <- as.data.frame(round(rbind(sds), digits))
-            names(dat) <- "StdDev"
-        } else {
-            corrs <- cov2cor(D)
-            corrs[upper.tri(corrs, TRUE)] <- 0
-            mat <- round(cbind(sds, corrs[, -ncz]), digits)
-            mat <- rbind(mat)
-            mat <- apply(mat, 2, sprintf, fmt = "% .4f")
-            mat[mat == mat[1, 2]] <- ""
-            mat[1, -1] <- abbreviate(colnames(D)[-ncz], 6)
-            colnames(mat) <- c(colnames(mat)[1], rep("",
-                                                     ncz - 1))
-            dat <- data.frame(mat, check.rows = FALSE, check.names = FALSE)
-            names(dat) <- c("StdDev", "Corr", if (ncz >
-                                                  2) rep(" ", ncz - 2) else NULL)
-            row.names(dat) <- abbreviate(c(dimnames(D)[[1]]))
-        }
+        corrs <- cov2cor(D)
+        corrs[upper.tri(corrs, TRUE)] <- 0
+        mat <- round(cbind(sds, corrs[, -ncz]), digits)
+        mat <- rbind(mat)
+        mat <- apply(mat, 2L, sprintf, fmt = "%.4f")
+        mat[mat == mat[1, 2]] <- ""
+        mat[1, -1] <- sprintf("%06s", abbreviate(colnames(D)[-ncz], 6))
+        colnames(mat) <- rep("", ncol(mat))
+        mat <- rbind(c("StdDev", "  Corr", if (ncz > 2) rep(" ", ncz - 2) else NULL),
+                     mat)
+        rownames(mat) <- c("", abbreviate(c(dimnames(D)[[1]]), 6))
     } else {
-        dat <- data.frame(StdDev = c(sds, x$sigma), row.names = if (!is.null(x$sigma))
-            c(rownames(D), "Residual")
-            else rownames(D), check.rows = FALSE, check.names = FALSE)
+        mat <- cbind(StdDev = sprintf(sds, fmt = "%.4f"))
+        rownames(mat) <- rownames(D)
     }
-    print(dat, digits = digits)
+    print(noquote(mat), digits = digits)
     cat("\nSurvival Outcome:\n")
     print(round(xx[["Survival"]], digits))
     n_outcomes <- length(xx$families)

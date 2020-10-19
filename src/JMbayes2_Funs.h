@@ -270,13 +270,13 @@ vec mu_fun (const vec &eta, const std::string &link) {
   if (link == "identity") {
     out = eta;
   } else if (link == "inverse") {
-    out = 1 / eta;
+    out = 1.0 / eta;
   } else if (link == "logit") {
-    out = 1 / (1 + trunc_exp(- eta));
+    out = 1.0 / (1.0 + trunc_exp(- eta));
   } else if (link == "probit") {
     out = normcdf(eta);
   } else if (link == "cloglog") {
-    out = - trunc_exp(- trunc_exp(eta)) + 1;
+    out = - trunc_exp(- trunc_exp(eta)) + 1.0;
   } else if (link == "log") {
     out = trunc_exp(eta);
   }

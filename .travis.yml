@@ -19,9 +19,6 @@ repos:
   CRAN: http://cran.rstudio.com
 
 r_packages:
-  - knitr
-  - rmarkdown
-  - pkgdown
   - nlme
   - GLMMadaptive
   - coda

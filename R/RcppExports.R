@@ -9,3 +9,7 @@ logLik_jm <- function(thetas, model_data, model_info, control) {
     .Call(`_JMbayes2_logLik_jm`, thetas, model_data, model_info, control)
 }
 
+mlogLik_jm <- function(res_thetas, mean_b_mat, post_vars, model_data, model_info, control) {
+    .Call(`_JMbayes2_mlogLik_jm`, res_thetas, mean_b_mat, post_vars, model_data, model_info, control)
+}
+
