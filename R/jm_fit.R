@@ -233,13 +233,16 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     thetas[["betas"]] <- thetas[grep("^betas", names(thetas))]
     thetas[["betas"]] <- initial_values$betas # <------------
     thetas[["D"]] <- nearPD(lowertri2mat(thetas[["D"]]))
+    if (is.null(thetas[["gammas"]])) thetas[["gammas"]] <- 0.0
+    if (is.null(thetas[["sigmas"]])) thetas[["sigmas"]] <- 0.0
     clogLik_mean_parms <- logLik_jm(thetas, model_data, model_info, control)
     conditional_fit_stats <- fit_stats(mcmc_out$logLik, clogLik_mean_parms)
     #
     res_thetas <- thetas
-    res_thetas$sigmas <- do.call("rbind", mcmc_out$mcmc$sigmas)
     res_thetas$bs_gammas <- do.call("rbind", mcmc_out$mcmc$bs_gammas)
-    res_thetas$gammas <- do.call("rbind", mcmc_out$mcmc$gammas)
+    res_thetas$gammas <- if (!is.null(mcmc_out$mcmc$gammas)) {
+        do.call("rbind", mcmc_out$mcmc$gammas)
+    } else matrix(0.0, nrow(res_thetas$bs_gammas), 1)
     res_thetas$alphas <- do.call("rbind", mcmc_out$mcmc$alphas)
     res_thetas$tau_bs_gammas <- do.call("rbind", mcmc_out$mcmc$tau_bs_gammas)
     D <- do.call("rbind", mcmc_out$mcmc$D)
@@ -247,7 +250,10 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     for (i in seq_len(nrow(res_thetas$bs_gammas))) {
         res_thetas$D[, , i] <- lowertri2mat(D[i, ])
     }
-    mlogLik <- mlogLik_jm(res_thetas, statistics$Mean[["b"]],
+    res_thetas$sigmas <- if (!is.null(mcmc_out$mcmc$sigmas)) {
+        do.call("rbind", mcmc_out$mcmc$sigmas)
+    } else matrix(0.0, nrow(res_thetas$bs_gammas), 1)
+    mcmc_out$mlogLik <- mlogLik_jm(res_thetas, statistics$Mean[["b"]],
                           statistics$post_vars, model_data, model_info, control)
     ind <- names(thetas) %in% c("sigmas", "bs_gammas", "gammas", "alphas",
                                 "tau_bs_gammas")
@@ -256,7 +262,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     mlogLik_mean_parms <-
         c(mlogLik_jm(thetas, statistics$Mean[["b"]], statistics$post_vars,
                      model_data, model_info, control))
-    marginal_fit_stats <- fit_stats(mlogLik, mlogLik_mean_parms)
+    marginal_fit_stats <- fit_stats(mcmc_out$mlogLik, mlogLik_mean_parms)
     c(mcmc_out, list(statistics = statistics,
                      fit_stats = list(conditional = conditional_fit_stats,
                                       marginal = marginal_fit_stats)))
