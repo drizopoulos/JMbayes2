@@ -62,13 +62,8 @@ vec log_long_i (const mat &y_i, const vec &eta_i, const double &sigma_i,
 vec log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
               const vec &extra_parms, const CharacterVector &families,
               const CharacterVector &links, const field<uvec> &idFast,
-              const field<uvec> &unq_ids) {
+              const field<uvec> &unq_ids, const uword &n) {
   uword n_outcomes = y.size();
-  uvec ns(n_outcomes);
-  for (uword i = 0; i < n_outcomes; ++i) {
-    ns.at(i) = idFast.at(i).n_rows;
-  }
-  uword n = ns.max();
   vec out(n, fill::zeros);
   for (uword i = 0; i < n_outcomes; ++i) {
     mat y_i = y.at(i);
@@ -169,9 +164,10 @@ vec logLik_jm_stripped (
     const uvec &id_H_fast, const uvec &id_h_fast,
     const uvec &which_event, const uvec &which_right_event,
     const uvec &which_left, const uvec &which_interval) {
+  uword n = b.at(0).n_rows;
   field<vec> eta = linpred_mixed(X, betas, Z, b, idL);
   vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
-                             idL_lp_fast, unq_idL);
+                             idL_lp_fast, unq_idL, n);
   /////////////
   vec W0H_bs_gammas = W0_H * bs_gammas;
   vec W0h_bs_gammas(W0_h.n_rows);

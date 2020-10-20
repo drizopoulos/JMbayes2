@@ -217,7 +217,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   //
   field<vec> eta = linpred_mixed(X, betas, Z, b, idL);
   vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
-                             idL_lp_fast, unq_idL);
+                             idL_lp_fast, unq_idL, n_b);
   //
   for (uword it = 0; it < n_iter; ++it) {
 
@@ -325,7 +325,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                   it, res_sigmas, scale_sigmas, acceptance_sigmas);
 
     logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
-                           idL_lp_fast, unq_idL);
+                           idL_lp_fast, unq_idL, n_b);
 
     ////////////////////////////////////////////////////////////////////
 
@@ -468,6 +468,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   vec det_post_vars(n);
   for (uword i = 0; i < n; ++i) det_post_vars.at(i) = det(post_vars.slice(i));
   /////////////
+
   field<mat> y = List2Field_mat(as<List>(model_data["y"]));
   field<mat> X = List2Field_mat(as<List>(model_data["X"]));
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));

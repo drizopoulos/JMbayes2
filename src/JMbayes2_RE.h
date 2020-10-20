@@ -39,7 +39,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const mat &L, const vec &sds,
                const uword &it, const field<uvec> &idL,
                mat &acceptance_b, cube &res_b, const bool &save_random_effects,
-               const uword &n_burnin, const uword &GK_k, mat &cumsum_b, cube &outprod_b 
+               const uword &n_burnin, const uword &GK_k, mat &cumsum_b, cube &outprod_b
                ) {
   // calculate denominator_b
   vec denominator_b = logLik_long + logLik_surv + logLik_re;
@@ -48,9 +48,10 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
   field<mat> proposed_b = mat2field_mat(proposed_b_mat, ind_RE);
 
   // calculate log_lik_long based on proposed_b_mat
+  uword n = b_mat.n_rows;
   field<vec> eta_proposed = linpred_mixed(X, betas, Z, proposed_b, id);
   vec logLik_long_proposed = log_long(y, eta_proposed, sigmas, extra_parms,
-                                      families, links, ids, unq_ids);
+                                      families, links, ids, unq_ids, n);
   // calculate Wlong_H, Wlong_h and Wlong_H2 based on the proposed_b
   // and calculate Wlong * alphas
   mat Wlong_H_proposed =
@@ -92,7 +93,6 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     logLik_long_proposed + logLik_surv_proposed + logLik_re_proposed;
   // log_ratio
   vec log_ratio = numerator_b - denominator_b;
-  uword n = log_ratio.n_rows;
   for (uword i = 0; i < n; i++) {
     if (std::isfinite(log_ratio.at(i)) && exp(log_ratio.at(i)) > R::runif(0, 1)) {
       acceptance_b.at(it, i) = 1;
