@@ -346,6 +346,15 @@ vec log_dnorm (const vec &x, const vec &mu, const double &sigma) {
   return out;
 }
 
+vec log_pnorm (const vec &x, const vec &mu, const double &sigma, const int lower_tail = 1) {
+  uword n = x.n_rows;
+  vec out(n);
+  for (uword i = 0; i < n; ++i) {
+    out.at(i) = R::pnorm(x.at(i), mu.at(i), sigma, lower_tail, 1);
+  }
+  return out;
+}
+
 vec log_dt (const vec &x, const double &df) {
   uword n = x.n_rows;
   vec out(n);
@@ -494,74 +503,6 @@ field<vec> linpred_mixed_Zb (const field<mat>& Xbetas,
     out.at(i) = Xbetas_i + arma::sum(Z_i % b_i.rows(id_i), 1);
   }
   return out;
-}
-
-arma::field<arma::mat> calculate_u(arma::field<arma::mat> Xhc,
-                                   arma::field<arma::uvec> columns_HC,
-                                   arma::field<arma::vec> betas,
-                                   arma::field<arma::mat> b,
-                                   arma::field<arma::uvec> unq_idL) {
-  arma::field<arma::mat>u(b);
-  uword n = Xhc.n_elem;
-  arma::mat Xhc_i;
-  arma::uvec columns_HC_i;
-  arma::vec betas_i;
-  arma::mat b_i;
-  arma::uvec unq_idL_i;
-  arma::mat mean_b_i;
-  uword ncol_b_i;
-  arma::uvec index;
-  arma::uvec cindex;
-  for (uword i = 0; i < n; i++) {
-    Xhc_i = Xhc(i);
-    columns_HC_i = columns_HC(i);
-    betas_i = betas(i);
-    b_i = b(i);
-    unq_idL_i = unq_idL(i);
-    mean_b_i = b_i * 0;
-    ncol_b_i = b_i.n_cols;
-    for (uword j = 0; j < ncol_b_i; j++) {
-      index = find(columns_HC_i == j + 1);
-      cindex = j;
-      mean_b_i(unq_idL_i - 1, cindex) = Xhc_i.cols(index) * betas_i(index);
-    }
-    u(i) = b_i + mean_b_i;
-  }
-  return(u);
-}
-
-arma::field<arma::mat> calculate_u_mean(arma::field<arma::mat> Xhc,
-                                        arma::field<arma::uvec> columns_HC,
-                                        arma::field<arma::vec> betas,
-                                        arma::field<arma::mat> b,
-                                        arma::field<arma::uvec> unq_idL) {
-  arma::field<arma::mat>u(b);
-  uword n = Xhc.n_elem;
-  arma::mat Xhc_i;
-  arma::uvec columns_HC_i;
-  arma::vec betas_i;
-  arma::mat b_i;
-  arma::uvec unq_idL_i;
-  arma::mat mean_b_i;
-  uword ncol_b_i;
-  arma::uvec index;
-  arma::uvec cindex;
-  for (uword i = 0; i < n; i++) {
-    Xhc_i = Xhc(i);
-    columns_HC_i = columns_HC(i);
-    betas_i = betas(i);
-    b_i = b(i);
-    unq_idL_i = unq_idL(i);
-    mean_b_i = b_i * 0;
-    ncol_b_i = b_i.n_cols;
-    for (uword j = 0; j < ncol_b_i; j++) {
-      index = find(columns_HC_i == j + 1);
-      cindex = j;
-      mean_b_i(unq_idL_i - 1, cindex) = Xhc_i.cols(index) * betas_i(index);
-    }
-    u(i) = mean_b_i;
-  }
-  return(u);
 }
 
 field<mat> Xbeta_calc (const field<mat> &X, const field<vec> &betas) {

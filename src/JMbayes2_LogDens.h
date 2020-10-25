@@ -20,15 +20,23 @@ vec log_long_i (const mat &y_i, const vec &eta_i, const double &sigma_i,
   } else if (fam_i == "Student-t") {
     log_contr = log_dt((y_i - mu_i) / sigma_i, extr_prm_i) - std::log(sigma_i);
   } else if (fam_i == "beta") {
-    log_contr = log_dbeta(y_i, mu_i * sigma_i, sigma_i * (1 - mu_i));
+    log_contr = log_dbeta(y_i, mu_i * sigma_i, sigma_i * (1.0 - mu_i));
   } else if (fam_i == "Gamma") {
     log_contr = log_dgamma(y_i, sigma_i, mu_i / sigma_i);
   } else if (fam_i == "unit Lindley") {
-    vec theta = 1 / mu_i - 1;
-    vec comp1 = 2 * log(theta) - log(1 + theta);
-    vec comp2 = - 3 * log(1 - y_i);
-    vec comp3 = - (theta * y_i) / (1 - y_i);
+    vec theta = 1.0 / mu_i - 1.0;
+    vec comp1 = 2.0 * log(theta) - log(1.0 + theta);
+    vec comp2 = - 3.0 * log(1.0 - y_i);
+    vec comp3 = - (theta * y_i) / (1.0 - y_i);
     log_contr = comp1 + comp2 + comp3;
+  } else if (fam_i == "censored normal") {
+    uvec ind0 = find(y_i.col(1) == 0);
+    uvec ind1 = find(y_i.col(1) == 1);
+    uvec ind2 = find(y_i.col(1) == 2);
+    vec yy = y_i.col(0);
+    log_contr.rows(ind0) = log_dnorm(yy.rows(ind0), mu_i.rows(ind0), sigma_i);
+    log_contr.rows(ind1) = log_pnorm(yy.rows(ind1), mu_i.rows(ind1), sigma_i);
+    log_contr.rows(ind2) = log_pnorm(yy.rows(ind2), mu_i.rows(ind2), sigma_i, 0);
   } else if (fam_i == "binomial") {
     uword k = y_i.n_cols;
     if (k == 2) {
@@ -37,7 +45,7 @@ vec log_long_i (const mat &y_i, const vec &eta_i, const double &sigma_i,
       // not the number of failures
       log_contr = log_dbinom(y_i.col(0), y_i.col(1), mu_i);
     } else {
-      log_contr = y_i % log(mu_i) + (1 - y_i) % log(1 - mu_i);
+      log_contr = y_i % log(mu_i) + (1.0 - y_i) % log(1.0 - mu_i);
     }
   } else if (fam_i == "poisson") {
     log_contr = log_dpois(y_i, mu_i);
