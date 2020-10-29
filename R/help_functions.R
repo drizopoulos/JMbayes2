@@ -466,7 +466,7 @@ create_X_dot <- function(Xbase, ids_unq, ids_out, nres){
     # ids_out - a list of ids present in each outcome
     # nres - a vector of the number of random effects per outcome
     
-    lapply(ids_unq, function(id){
+    do.call(rbind, lapply(ids_unq, function(id){
         
         Xbase_i <- mapply2(function(out_Xbase, out_ids){
             
@@ -474,19 +474,15 @@ create_X_dot <- function(Xbase, ids_unq, ids_out, nres){
             
         }, Xbase, ids_out)
         
-        is_na <- is.na(Xbase_i)
-        
         .bdiag(
             mapply2(function(X_outc, diag1_ncol){
                 
-                if(is.na(X_outc)) next
-                
                 .bdiag(list(t(c(1, X_outc)), diag(diag1_ncol)))
                 
-            }, Xbase_i[!is_na], nres[!is_na]-1)
+            }, Xbase_i, nres-1)
         )
         
-    })
+    }))
     
 }
 
