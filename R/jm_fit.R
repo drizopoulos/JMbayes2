@@ -177,8 +177,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
             outprod_means_b_cube[, , i] <- means_b[i, ] %o% means_b[i, ]
         }
         postvars_b <- (outprod_b / K - outprod_means_b_cube) * K / (K - 1)
-        #for (i in seq_len(dim(postvars_b)[3L]))
-        #    postvars_b[, , i] <- nearPD(postvars_b[, , i])
         mcmc_out <- c(mcmc_out, list("postmeans_b" = postmeans_b,
                                      'postvars_b' = postvars_b))
     }

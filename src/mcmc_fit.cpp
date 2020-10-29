@@ -1,9 +1,10 @@
 #include <RcppArmadillo.h>
 #include "JMbayes2_D.h"
 #include "JMbayes2_Surv.h"
-# include "JMbayes2_LogDens.h"
-# include "JMbayes2_sigmas.h"
-# include "JMbayes2_RE.h"
+#include "JMbayes2_LogDens.h"
+#include "JMbayes2_sigmas.h"
+#include "JMbayes2_RE.h"
+#include "JMbayes2_penalties.h"
 
 
 // [[Rcpp::depends("RcppArmadillo")]]
@@ -88,9 +89,17 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   CharacterVector links = as<CharacterVector>(model_info["links"]);
   // initial values
   vec bs_gammas = as<vec>(initial_values["bs_gammas"]);
-  vec gammas = as<vec>(initial_values["gammas"]);
-  vec alphas = as<vec>(initial_values["alphas"]);
   vec tau_bs_gammas = as<vec>(initial_values["tau_bs_gammas"]);
+  vec gammas = as<vec>(initial_values["gammas"]);
+  vec lambda_gammas = gammas.ones();
+  double tau_gammas = 1.0;
+  vec nu_gammas = gammas.ones();
+  double xi_gammas = 1.0;
+  vec alphas = as<vec>(initial_values["alphas"]);
+  vec lambda_alphas = alphas.ones();
+  double tau_alphas = 1.0;
+  vec nu_alphas = gammas.ones();
+  double xi_alphas = 1.0;
   field<mat> b = List2Field_mat(as<List>(initial_values["b"]));
   mat b_mat = docall_cbindF(b);
   field<mat> mean_u(b.n_elem);
@@ -112,13 +121,35 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   // priors
   field<vec> prior_mean_bs_gammas = List2Field_vec(as<List>(priors["mean_bs_gammas"]));
   field<mat> prior_Tau_bs_gammas = List2Field_mat(as<List>(priors["Tau_bs_gammas"]));
-  vec prior_mean_gammas = as<vec>(priors["mean_gammas"]);
-  mat prior_Tau_gammas = as<mat>(priors["Tau_gammas"]);
-  vec prior_mean_alphas = as<vec>(priors["mean_alphas"]);
-  mat prior_Tau_alphas = as<mat>(priors["Tau_alphas"]);
   vec post_A_tau_bs_gammas = as<vec>(priors["A_tau_bs_gammas"]) +
     0.5 * as<vec>(priors["rank_Tau_bs_gammas"]);
   vec prior_B_tau_bs_gammas = as<vec>(priors["B_tau_bs_gammas"]);
+  vec prior_mean_gammas = as<vec>(priors["mean_gammas"]);
+  mat prior_Tau_gammas = as<mat>(priors["Tau_gammas"]);
+  std::string penalty_gammas = as<std::string>(priors["penalty_gammas"]);
+  bool shrink_gammas = penalty_gammas != "none";
+  bool single_gammas = penalty_gammas == "single";
+  double A_lambda_gammas = as<double>(priors["A_lambda_gammas"]);
+  double B_lambda_gammas = as<double>(priors["B_lambda_gammas"]);
+  double A_tau_gammas = as<double>(priors["A_tau_gammas"]);
+  double B_tau_gammas = as<double>(priors["B_tau_gammas"]);
+  double A_nu_gammas = as<double>(priors["A_nu_gammas"]);
+  double B_nu_gammas = as<double>(priors["B_nu_gammas"]);
+  double A_xi_gammas = as<double>(priors["A_xi_gammas"]);
+  double B_xi_gammas = as<double>(priors["B_xi_gammas"]);
+  vec prior_mean_alphas = as<vec>(priors["mean_alphas"]);
+  mat prior_Tau_alphas = as<mat>(priors["Tau_alphas"]);
+  std::string penalty_alphas = as<std::string>(priors["penalty_alphas"]);
+  bool shrink_alphas = penalty_alphas != "none";
+  bool single_alphas = penalty_alphas == "single";
+  double A_lambda_alphas = as<double>(priors["A_lambda_alphas"]);
+  double B_lambda_alphas = as<double>(priors["B_lambda_alphas"]);
+  double A_tau_alphas = as<double>(priors["A_tau_alphas"]);
+  double B_tau_alphas = as<double>(priors["B_tau_alphas"]);
+  double A_nu_alphas = as<double>(priors["A_nu_alphas"]);
+  double B_nu_alphas = as<double>(priors["B_nu_alphas"]);
+  double A_xi_alphas = as<double>(priors["A_xi_alphas"]);
+  double B_xi_alphas = as<double>(priors["B_xi_alphas"]);
   double prior_D_sds_df = as<double>(priors["prior_D_sds_df"]);
   double prior_D_sds_sigma = as<double>(priors["prior_D_sds_sigma"]);
   double prior_D_L_etaLKJ = as<double>(priors["prior_D_L_etaLKJ"]);
@@ -210,8 +241,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     sum(logLik_surv) +
     logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
                   prior_Tau_bs_gammas, tau_bs_gammas,
-                  prior_mean_gammas, prior_Tau_gammas,
-                  prior_mean_alphas, prior_Tau_alphas);
+                  prior_mean_gammas, prior_Tau_gammas, lambda_gammas,
+                  tau_gammas, shrink_gammas,
+                  prior_mean_alphas, prior_Tau_alphas, lambda_alphas,
+                  tau_alphas, shrink_alphas);
   //
   vec logLik_re = log_re(b_mat, L, sds);
   //
@@ -220,7 +253,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                              idL_lp_fast, unq_idL, n_b);
   //
   for (uword it = 0; it < n_iter; ++it) {
-
     update_bs_gammas(bs_gammas, gammas, alphas,
                      W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                      WH_gammas, Wh_gammas, WH2_gammas,
@@ -229,8 +261,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                      which_event, which_right_event, which_left, which_interval,
                      any_event, any_interval,
                      prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
-                     prior_mean_gammas, prior_Tau_gammas,
-                     prior_mean_alphas, prior_Tau_alphas,
+                     prior_mean_gammas, prior_Tau_gammas, lambda_gammas,
+                     tau_gammas, shrink_gammas,
+                     prior_mean_alphas, prior_Tau_alphas, lambda_alphas,
+                     tau_alphas, shrink_alphas,
                      logLik_surv, denominator_surv, it,
                      /////
                      W0_H, W0_h, W0_H2, scale_bs_gammas, acceptance_bs_gammas,
@@ -259,13 +293,23 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     which_event, which_right_event, which_left, which_interval,
                     any_event, any_interval,
                     prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
-                    prior_mean_gammas, prior_Tau_gammas,
-                    prior_mean_alphas, prior_Tau_alphas,
+                    prior_mean_gammas, prior_Tau_gammas, lambda_gammas,
+                    tau_gammas, shrink_gammas,
+                    prior_mean_alphas, prior_Tau_alphas, lambda_alphas,
+                    tau_alphas, shrink_alphas,
                     logLik_surv, denominator_surv, it,
                     /////
                     W_H, W_h, W_H2, scale_gammas, acceptance_gammas,
                     res_gammas);
       res_W_bar_gammas.at(it) = as_scalar(W_bar * gammas);
+
+      if (shrink_gammas) {
+        update_penalties (
+            gammas, lambda_gammas, tau_gammas, nu_gammas, xi_gammas,
+            single_gammas, A_lambda_gammas, B_lambda_gammas,
+            A_tau_gammas, B_tau_gammas, A_nu_gammas, B_nu_gammas,
+            A_xi_gammas, B_xi_gammas);
+      }
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -278,14 +322,24 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                   which_event, which_right_event, which_left, which_interval,
                   any_event, any_interval,
                   prior_mean_bs_gammas, prior_Tau_bs_gammas, tau_bs_gammas,
-                  prior_mean_gammas, prior_Tau_gammas,
-                  prior_mean_alphas, prior_Tau_alphas,
+                  prior_mean_gammas, prior_Tau_gammas, lambda_gammas,
+                  tau_gammas, shrink_gammas,
+                  prior_mean_alphas, prior_Tau_alphas, lambda_alphas,
+                  tau_alphas, shrink_alphas,
                   logLik_surv, denominator_surv, it,
                   /////
                   Wlong_H, Wlong_h, Wlong_H2, scale_alphas,
                   acceptance_alphas, res_alphas);
 
     res_Wlong_bar_alphas.at(it) = as_scalar(Wlong_bar * alphas);
+
+    if (shrink_alphas) {
+      update_penalties (
+          alphas, lambda_alphas, tau_alphas, nu_alphas, xi_alphas,
+          single_alphas, A_lambda_alphas, B_lambda_alphas,
+          A_tau_alphas, B_tau_alphas, A_nu_alphas, B_nu_alphas,
+          A_xi_alphas, B_xi_alphas);
+    }
 
     ////////////////////////////////////////////////////////////////////////
 
@@ -315,8 +369,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       sum(logLik_surv) +
       logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
                     prior_Tau_bs_gammas, tau_bs_gammas,
-                    prior_mean_gammas, prior_Tau_gammas,
-                    prior_mean_alphas, prior_Tau_alphas);
+                    prior_mean_gammas, prior_Tau_gammas, lambda_gammas,
+                    tau_gammas, shrink_gammas,
+                    prior_mean_alphas, prior_Tau_alphas, lambda_alphas,
+                    tau_alphas, shrink_alphas);
 
     ////////////////////////////////////////////////////////////////////
 

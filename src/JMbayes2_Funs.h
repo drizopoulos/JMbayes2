@@ -188,9 +188,12 @@ uvec create_fast_ind (const uvec &group) {
   return ind;
 }
 
-double logPrior(const vec &x, const vec &mean, const mat &Tau,
-                const double tau = 1.0) {
-  vec z = (x - mean);
+double logPrior(const vec &x, const vec &mean, mat &Tau, const vec &lambda,
+                const double &tau, const bool &shrink) {
+  vec z = x - mean;
+  if (shrink) {
+    Tau.diag() = lambda;
+  }
   double out = - 0.5 * tau * as_scalar(z.t() * Tau * z);
   return out;
 }
@@ -346,7 +349,8 @@ vec log_dnorm (const vec &x, const vec &mu, const double &sigma) {
   return out;
 }
 
-vec log_pnorm (const vec &x, const vec &mu, const double &sigma, const int lower_tail = 1) {
+vec log_pnorm (const vec &x, const vec &mu, const double &sigma,
+               const int lower_tail = 1) {
   uword n = x.n_rows;
   vec out(n);
   for (uword i = 0; i < n; ++i) {

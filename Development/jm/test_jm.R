@@ -201,7 +201,7 @@ system.time({
                na.action = na.exclude)
     fm4 <- mixed_model(ascites ~ year, data = pbc2,
                        random = ~ year | id, family = binomial())
-    Mixed <- list(fm3)
+    Mixed <- list(fm1, fm3)
     Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 })
 
@@ -217,7 +217,7 @@ time_var = 'year'
 functional_forms = NULL
 data_Surv = NULL
 id_var = NULL
-priors = NULL
+priors = list(penalty_alphas = "single")
 control = NULL
 #
 model_data <- Data

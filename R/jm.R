@@ -493,16 +493,24 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     Tau_bs_gammas <- rep(list(Tau_bs_gammas), n_strata)
     prs <- list(mean_betas = lapply(betas, "*", 0.0),
                 Tau_betas = lapply(betas, function (b) 0.01 * diag(length(b))),
-                mean_gammas = gammas * 0.0,
-                Tau_gammas = 0.01 * diag(length(gammas)),
                 mean_bs_gammas = lapply(Tau_bs_gammas, function (x) x[, 1] * 0),
                 Tau_bs_gammas = Tau_bs_gammas,
-                mean_alphas = lapply(alphas, "*", 0.0),
-                Tau_alphas = lapply(alphas, function (a) 0.01 * diag(length(a))),
-                A_tau_bs_gammas = rep(1, n_strata),
-                B_tau_bs_gammas = rep(0.1, n_strata),
+                A_tau_bs_gammas = rep(1, n_strata), B_tau_bs_gammas = rep(0.1, n_strata),
                 rank_Tau_bs_gammas =
                     sapply(lapply(Tau_bs_gammas, qr), "[[", 'rank'),
+                mean_gammas = gammas * 0.0, Tau_gammas = 0.01 * diag(length(gammas)),
+                penalty_gammas = "none",
+                A_lambda_gammas = 0.5, B_lambda_gammas = 1,
+                A_tau_gammas = 0.5, B_tau_gammas = 1,
+                A_nu_gammas = 0.5, B_nu_gammas = 1,
+                A_xi_gammas = 0.5, B_xi_gammas = 1,
+                mean_alphas = lapply(alphas, "*", 0.0),
+                Tau_alphas = lapply(alphas, function (a) 0.01 * diag(length(a))),
+                penalty_alphas = "none",
+                A_lambda_alphas = 0.5, B_lambda_alphas = 1,
+                A_tau_alphas = 0.5, B_tau_alphas = 1,
+                A_nu_alphas = 0.5, B_nu_alphas = 1,
+                A_xi_alphas = 0.5, B_xi_alphas = 1,
                 prior_D_sds_df = 3.0, prior_D_sds_sigma = 10.0,
                 prior_D_L_etaLKJ = 3.0, prior_sigmas_df = 3.0,
                 prior_sigmas_sigma = 20.0)
@@ -510,8 +518,29 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         priors <- prs
     } else {
         ind <- names(prs) %in% names(priors)
-        prs[ind] <- priors[ind]
+        prs[ind] <- priors
         priors <- prs
+    }
+    if (!priors$penalty_gammas %in% c("none", "single", "double")) {
+        warning("'priors$penalty_gammas' can only take values, 'none', ",
+                "'single' or 'double'.")
+        priors$penalty_gammas <- "none"
+    }
+    if (priors$penalty_gammas != "none" && length(initial_values$gammas) == 1) {
+        warning("it is more meaningful to penalize the 'gamma' coefficients ",
+                "if their length is more than one.")
+        priors$penalty_gammas <- "none"
+    }
+    if (!priors$penalty_alphas %in% c("none", "single", "double")) {
+        warning("'priors$penalty_alphas' can only take values, 'none', ",
+                "'single' or 'double'.")
+        priors$penalty_alphas <- "none"
+    }
+    if (priors$penalty_alphas != "none" &&
+        length(unlist(initial_values$alphas)) == 1) {
+        warning("it is more meaningful to penalize the 'alpha' coefficients ",
+                "if their length is more than one.")
+        priors$penalty_alphas <- "none"
     }
     ############################################################################
     ############################################################################

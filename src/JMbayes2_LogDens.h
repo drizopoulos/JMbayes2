@@ -125,6 +125,7 @@ vec log_re (const mat &b, const mat &L, const vec &sds) {
   return out;
 }
 
+/*
 double logLik_prior (const mat &L, const vec &sds,
                      const double &prior_D_sds_df, const double &prior_D_sds_sigma,
                      const double &prior_D_L_etaLKJ,
@@ -149,6 +150,7 @@ double logLik_prior (const mat &L, const vec &sds,
 
   return out;
 }
+ */
 
 vec logLik_jm_stripped (
     const field<vec> &betas, const field<mat> &b, const vec &sigmas,
