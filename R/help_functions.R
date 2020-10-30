@@ -440,7 +440,7 @@ create_HC_X2 <- function (x, z, id) {
         !all(sapply(split(x, id),
                     function (z) all(z - z[1L] < .Machine$double.eps^0.5)))
     }
-    
+
     cnams_x <- colnames(x)
     cnams_z <- colnames(z)
     if (!"(Intercept)" %in% cnams_x || !"(Intercept)" %in% cnams_z) {
@@ -448,7 +448,7 @@ create_HC_X2 <- function (x, z, id) {
              "intercept term in both the fixed and random effects design ",
              "matrices.")
     }
-    
+
     x_in_z <- which(cnams_x %in% cnams_z)
     x_notin_z <- which(!cnams_x %in% cnams_z)
     baseline <- x_notin_z[!apply(x[, x_notin_z, drop = FALSE], 2L, check_tv, id= id)]
@@ -460,30 +460,30 @@ create_HC_X2 <- function (x, z, id) {
 }
 
 create_X_dot <- function(Xbase, ids_unq, ids_out, nres){
-    
+
     # Xbase - a list of the baseline design matrices X per outcome
     # ids_unq - a vector of unique ids
     # ids_out - a list of ids present in each outcome
     # nres - a vector of the number of random effects per outcome
-    
+
     do.call(rbind, lapply(ids_unq, function(id){
-        
+
         Xbase_i <- mapply2(function(out_Xbase, out_ids){
-            
+
             out_Xbase[match(id, unique(out_ids)), ]
-            
+
         }, Xbase, ids_out)
-        
+
         .bdiag(
             mapply2(function(X_outc, diag1_ncol){
-                
+
                 .bdiag(list(t(c(1, X_outc)), diag(diag1_ncol)))
-                
+
             }, Xbase_i, nres-1)
         )
-        
+
     }))
-    
+
 }
 
 drop_names <- function (x) {
