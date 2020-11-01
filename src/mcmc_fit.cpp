@@ -128,7 +128,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat prior_Tau_gammas = as<mat>(priors["Tau_gammas"]);
   std::string penalty_gammas = as<std::string>(priors["penalty_gammas"]);
   bool shrink_gammas = penalty_gammas != "none";
-  bool single_gammas = penalty_gammas == "single";
+  bool single_gammas = penalty_gammas == "ridge";
   double A_lambda_gammas = as<double>(priors["A_lambda_gammas"]);
   double B_lambda_gammas = as<double>(priors["B_lambda_gammas"]);
   double A_tau_gammas = as<double>(priors["A_tau_gammas"]);
@@ -141,7 +141,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat prior_Tau_alphas = as<mat>(priors["Tau_alphas"]);
   std::string penalty_alphas = as<std::string>(priors["penalty_alphas"]);
   bool shrink_alphas = penalty_alphas != "none";
-  bool single_alphas = penalty_alphas == "single";
+  bool single_alphas = penalty_alphas == "ridge";
   double A_lambda_alphas = as<double>(priors["A_lambda_alphas"]);
   double B_lambda_alphas = as<double>(priors["B_lambda_alphas"]);
   double A_tau_alphas = as<double>(priors["A_tau_alphas"]);

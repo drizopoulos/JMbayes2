@@ -498,14 +498,14 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                 A_tau_bs_gammas = rep(1, n_strata), B_tau_bs_gammas = rep(0.1, n_strata),
                 rank_Tau_bs_gammas =
                     sapply(lapply(Tau_bs_gammas, qr), "[[", 'rank'),
-                mean_gammas = gammas * 0.0, Tau_gammas = 0.01 * diag(length(gammas)),
+                mean_gammas = gammas * 0.0, Tau_gammas = 0.1 * diag(length(gammas)),
                 penalty_gammas = "none",
                 A_lambda_gammas = 0.5, B_lambda_gammas = 1,
                 A_tau_gammas = 0.5, B_tau_gammas = 1,
                 A_nu_gammas = 0.5, B_nu_gammas = 1,
                 A_xi_gammas = 0.5, B_xi_gammas = 1,
                 mean_alphas = lapply(alphas, "*", 0.0),
-                Tau_alphas = lapply(alphas, function (a) 0.01 * diag(length(a))),
+                Tau_alphas = lapply(alphas, function (a) 0.1 * diag(length(a))),
                 penalty_alphas = "none",
                 A_lambda_alphas = 0.5, B_lambda_alphas = 1,
                 A_tau_alphas = 0.5, B_tau_alphas = 1,
@@ -521,7 +521,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         prs[ind] <- priors
         priors <- prs
     }
-    if (!priors$penalty_gammas %in% c("none", "single", "double")) {
+    if (!priors$penalty_gammas %in% c("none", "ridge", "horseshoe")) {
         warning("'priors$penalty_gammas' can only take values, 'none', ",
                 "'single' or 'double'.")
         priors$penalty_gammas <- "none"
@@ -531,7 +531,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                 "if their length is more than one.")
         priors$penalty_gammas <- "none"
     }
-    if (!priors$penalty_alphas %in% c("none", "single", "double")) {
+    if (!priors$penalty_alphas %in% c("none", "ridge", "horseshoe")) {
         warning("'priors$penalty_alphas' can only take values, 'none', ",
                 "'single' or 'double'.")
         priors$penalty_alphas <- "none"
