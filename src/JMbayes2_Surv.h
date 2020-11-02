@@ -80,7 +80,7 @@ void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
                     prior_mean_gammas, prior_Tau_gammas, lambda_gammas, tau_gammas, shrink_gammas,
                     prior_mean_alphas, prior_Tau_alphas, lambda_alphas, tau_alphas, shrink_alphas);
     double log_ratio = numerator_surv - denominator_surv;
-    if (std::isfinite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
+    if (std::isfinite(log_ratio) && exp(log_ratio) > R::runif(0.0, 1.0)) {
       bs_gammas = proposed_bs_gammas;
       W0H_bs_gammas = proposed_W0H_bs_gammas;
       if (any_event) {
@@ -146,7 +146,7 @@ void update_gammas (const vec &bs_gammas, vec &gammas, const vec &alphas,
                     prior_mean_gammas, prior_Tau_gammas, lambda_gammas, tau_gammas, shrink_gammas,
                     prior_mean_alphas, prior_Tau_alphas, lambda_alphas, tau_alphas, shrink_alphas);
     double log_ratio = numerator_surv - denominator_surv;
-    if (std::isfinite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
+    if (std::isfinite(log_ratio) && exp(log_ratio) > R::runif(0.0, 1.0)) {
       gammas = proposed_gammas;
       WH_gammas = proposed_WH_gammas;
       if (any_event) {
@@ -213,7 +213,7 @@ void update_alphas (const vec &bs_gammas, const vec &gammas, vec &alphas,
                     prior_mean_gammas, prior_Tau_gammas, lambda_gammas, tau_gammas, shrink_gammas,
                     prior_mean_alphas, prior_Tau_alphas, lambda_alphas, tau_alphas, shrink_alphas);
     double log_ratio = numerator_surv - denominator_surv;
-    if (std::isfinite(log_ratio) && exp(log_ratio) > R::runif(0, 1)) {
+    if (std::isfinite(log_ratio) && exp(log_ratio) > R::runif(0.0, 1.0)) {
       alphas = proposed_alphas;
       WlongH_alphas = proposed_WlongH_alphas;
       if (any_event) {

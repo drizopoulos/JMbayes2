@@ -13,7 +13,7 @@ static double const log2pi = std::log(2.0 * M_PI);
 
 double robbins_monro (const double &scale, const double &acceptance_it,
                       const int &it, const double &target_acceptance = 0.45) {
-  double step_length = scale / (target_acceptance * (1 - target_acceptance));
+  double step_length = scale / (target_acceptance * (1.0 - target_acceptance));
   double out;
   if (acceptance_it > 0) {
     out = scale + step_length * (1 - target_acceptance) / (double)it;
@@ -50,7 +50,7 @@ void inplace_LowerTrimat_mult (rowvec &x, const mat &trimat) {
 }
 
 mat cov2cor (const mat &V) {
-  vec Is = sqrt(1 / V.diag());
+  vec Is = sqrt(1.0 / V.diag());
   mat out = V.each_col() % Is;
   out.each_row() %= Is.t();
   return out;
@@ -238,7 +238,7 @@ field<vec> propose_field (const field<vec>& thetas,
 
 mat rnorm_mat (const uword& rows, const uword& cols) {
   mat out(rows, cols);
-  out.each_col([&](vec& x) {x = as<vec>(rnorm(rows)); } );
+  out.each_col([&](vec& x) {x = as<vec>(R::rnorm(rows)); } );
   return out;
 }
 
@@ -256,7 +256,7 @@ cube propose_mvnorm_cube (const int& n, const cube& S, const vec& scale) {
 }
 
 // returns a mat transposed version: same dimensions as b_mat
-mat propose_mvnorm_mat (const int& n, const cube& S, const vec& scale) {
+mat propose_mvnorm_mat (const int &n, const cube &S, const vec &scale) {
   uword ncol_per_slice = S.n_cols;
   uword slices = S.n_slices;
   cube tmp(n, ncol_per_slice, slices);
@@ -325,7 +325,7 @@ vec log_dpois (const vec &x, const vec &lambda) {
 vec log_dbbinom (const vec &x, const vec &size, const vec &prob,
                  const double &phi) {
   vec A = phi * prob;
-  vec B = phi * (1 - prob);
+  vec B = phi * (1.0 - prob);
   vec log_numerator = lbeta_arma(x + A, size - x + B);
   vec log_denominator = lbeta_arma(A, B);
   vec fact = lchoose_arma(size, x);

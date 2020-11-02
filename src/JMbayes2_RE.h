@@ -94,7 +94,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
   // log_ratio
   vec log_ratio = numerator_b - denominator_b;
   for (uword i = 0; i < n; i++) {
-    if (std::isfinite(log_ratio.at(i)) && exp(log_ratio.at(i)) > R::runif(0, 1)) {
+    if (std::isfinite(log_ratio.at(i)) &&
+        exp(log_ratio.at(i)) > R::runif(0.0, 1.0)) {
       acceptance_b.at(it, i) = 1;
       b_mat.row(i) = proposed_b_mat.row(i);
       logLik_long.at(i) = logLik_long_proposed.at(i);
