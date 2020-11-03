@@ -73,7 +73,7 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   mean_1 = Tau_1 * (prior_invTau_fe_in_hc * prior_mean_fe_in_hc + sum_JXDu);
   cube::fixed<p_hc, p_hc, 1> L_1; L_1.slice(0) = chol(Tau_1); // propose_mvnorm_mat() expects a cube
   
-  res_betas.submat(it, ind_FE_in_hc - 1) = propose_mvnorm_mat(1, L_1, {1}).t() + mean_1;
+  res_betas.submat(it, ind_FE_in_hc - 1) = (propose_mvnorm_mat(1, L_1, {1}) + mean_1).t();
   
   // FE not in HC - Metropolis-Hastings sampling
   
