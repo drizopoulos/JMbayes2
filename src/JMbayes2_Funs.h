@@ -238,9 +238,11 @@ field<vec> propose_field (const field<vec>& thetas,
 
 mat rnorm_mat (const uword& rows, const uword& cols) {
   mat out(rows, cols);
-  out.each_col([&](vec& x) {x = as<vec>(R::rnorm(rows)); } );
+  out.each_col([&](vec& x) {x = as<vec>(rnorm(rows)); } );
   return out;
 }
+
+R::rno
 
 // S is the Cholesky factorisation of vcov_prep_RE which needs to be doen outside MCMC loop
 // currently with rnorm_mat but we need to check if sth changed with the seeds in Armadillo
