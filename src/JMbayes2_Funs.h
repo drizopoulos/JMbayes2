@@ -242,8 +242,6 @@ mat rnorm_mat (const uword& rows, const uword& cols) {
   return out;
 }
 
-R::rno
-
 // S is the Cholesky factorisation of vcov_prep_RE which needs to be doen outside MCMC loop
 // currently with rnorm_mat but we need to check if sth changed with the seeds in Armadillo
 // maybe we can go back to randn() [faster]

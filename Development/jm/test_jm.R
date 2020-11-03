@@ -185,25 +185,20 @@ control$n_chains = 1
 
 
 #
-system.time({
-    pbc2$prothrombin[pbc2$id == levels(pbc2$id)[1L]] <- NA
-    pbc2$prothrombin[pbc2$id == levels(pbc2$id)[2L]] <- NA
-    #pbc2.id$age[10] <- NA
+pbc2$prothrombin[pbc2$id == levels(pbc2$id)[1L]] <- NA
+pbc2$prothrombin[pbc2$id == levels(pbc2$id)[2L]] <- NA
 
-    fm1 <- lme(log(serBilir) ~ year * drug + sex + I(year^2) +
-                   age + sex:year,
-               data = pbc2, random = ~ year | id,
-               control = lmeControl(opt = "optim"))
-    fm2 <- lme(serChol ~ ns(year, 3) + sex + age, data = pbc2,
-               random = ~ year | id, na.action = na.exclude)
+fm1 <- lme(log(serBilir) ~ year * (drug + sex) + I(year^2) + age + serChol,
+           random = ~ year + I(year^2)| id)
 
-    fm3 <- lme(prothrombin ~ year + sex, data = pbc2, random = ~ year | id,
-               na.action = na.exclude)
-    fm4 <- mixed_model(ascites ~ year, data = pbc2,
-                       random = ~ year | id, family = binomial())
-    Mixed <- list(fm1, fm3)
-    Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
-})
+fm2 <- lme(prothrombin ~ ns(year, 2) + sex, data = pbc2,
+           random = ~ year + I(year^2)| id,
+           na.action = na.exclude)
+
+fm3 <- mixed_model(ascites ~ year, data = pbc2,
+                   random = ~ year | id, family = binomial())
+Mixed <- list(fm1, fm2, fm3)
+Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
 system.time(obj <- jm(Cox, Mixed, time_var = "year"))
 
