@@ -66,14 +66,14 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
     
   }
   
-  mat::fixed<1, p_hc> mean_1; // posterior mean vector
-  mat::fixed<p_hc, p_hc, 1> Tau_1; // posterior vcov matrix (propose_mvnorm_mat() expects a cube)
+  vec::fixed<p_hc> mean_1; // posterior mean vector
+  mat::fixed<p_hc, p_hc> Tau_1; // posterior vcov matrix
   
   Tau_1 = (prior_invTau_fe_in_hc + sum_JXDXJ).i();
   mean_1 = Tau_1 * (prior_invTau_fe_in_hc * prior_mean_fe_in_hc + sum_JXDu);
-  L_1 = chol(Tau_1);
+  cube::fixed<p_hc, p_hc, 1> L_1; L_1.slice(0) = chol(Tau_1); // propose_mvnorm_mat() expects a cube
   
-  res_betas.submat(it, ind_FE_in_hc - 1) = propose_mvnorm_mat(1, L_1, {1}).t();
+  res_betas.submat(it, ind_FE_in_hc - 1) = propose_mvnorm_mat(1, L_1, {1}).t() + mean_1;
   
   // FE not in HC - Metropolis-Hastings sampling
   
