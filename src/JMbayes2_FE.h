@@ -11,7 +11,7 @@ using namespace arma;
 void update_betas (field<vec> &betas, // it-th sampled fixed effects
                    mat &res_betas, // all sampled fixed effects
                    const uword &it, // current iteration
-                   const vec &prior_mean_FE, const mat &prior_invSigma_FE, // prior
+                   const field<vec> &prior_mean_FE, const field<mat> &prior_Tau_FE, // prior
                    const mat &b_mat; // it-th sampled RE
                    const mat &L, // RE corr matrix factorization (lower matrix)
                    const vec &sds, // RE SDs
@@ -29,20 +29,26 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   uword n = b_mat.n_rows; // number of unique subjects
   uword re_count = L.n_cols; // number of random effects
   uword patt_count = id_patt.max(); // number of unique outcome-missing patterns          
-  vec prior_mean_FE_in_hc = prior_mean_FE.elem(ind_FE_in_hc - 1); // prior fot FE in HC 
-  mat prior_invSigma_FE_in_hc = prior_invSigma_FE.submat(ind_FE_in_hc - 1, ind_FE_in_hc - 1);
-  vec prior_mean_FE_notin_hc = prior_mean_FE.elem(ind_FE_notin_hc - 1); // prior for FE NOT in HC 
-  mat prior_invSigma_FE_notin_hc = prior_invSigma_FE.submat(ind_FE_notin_hc - 1, ind_FE_notin_hc - 1);
+  
+  vec prior_mean_FE = vbindF(prior_mean_FE);
+  mat prior_Tau_FE2 = bdiagF(prior_Tau_FE);
+  
+  vec prior_mean_FE_in_hc = prior_mean_FE2.elem(ind_FE_in_hc - 1); // prior for FE in HC 
+  mat prior_Tau_FE_in_hc  = prior_Tau_FE2.submat(ind_FE_in_hc - 1, ind_FE_in_hc - 1);
+  
+  vec prior_mean_FE_notin_hc = prior_mean_FE2.elem(ind_FE_notin_hc - 1); // prior for FE NOT in HC 
+  mat prior_Tau_FE_notin_hc  = prior_Tau_FE2.submat(ind_FE_notin_hc - 1, ind_FE_notin_hc - 1);
+  
+  
   
   // FE in HC - Gibss sampling
-  uword p_hc = ind_FE_in_hc.n_elem; // number of FE in HC
-  mat::fixed<p_hc, p_hc> J; J.eye(); // identity matrix, required in JXDXJ_i and JXDu_i
-  mat::fixed<p_hc, p_hc> sum_JXDXJ; sum_JXDXJ.zeros(); // sum required for posterior parameters
-  vec::fixed<p_hc> sum_JXDu; sum_JXDu.zeros(); // sum required for posterior parameters
+  uword p_hc = ind_FE_in_hc.n_elem; // number of FE in the HC
+  mat J(p_hc, p_hc, fill::eye); // identity matrix, required in JXDXJ_i and JXDu_i
+  mat sum_JXDXJ(p_hc, p_hc, fill::zeros); // sum required for posterior parameters
+  vec sum_JXDu(p_hc, fill::zeros); // sum required for posterior parameters
   
-  
-  mat::fixed<re_count, re_count> L_D = L.each_row() % sds.t(); // RE vcov matrix factorization
-  mat::fixed<re_count, re_count> D = L_D * L_D.t(); // RE vcov matrix
+  mat L_D = L.each_row() % sds.t(); // RE vcov matrix factorization
+  mat D = L_D * L_D.t(); // RE vcov matrix
   field<mat> D_inv(patt_count, 1); // all unique vcov_inv matrices accross the missing outcome patterns
 
   vec::fixed<p_hc> current_FE_in_hc = res_betas.submat(it - 1, ind_FE_notin_hc - 1).t();
@@ -61,7 +67,7 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
     mat X_dot_i = X_dot.submat(ind_RE_patt(patt_i, 0) - 1 + i*re_count, 
                                ind_FE_patt(patt_i, 0) - 1); 
     
-    vec::fixed<re_count> u_i = b_mat.row(i).t() + X_dot_i * current_FE_in_hc.elem(ind_FE_patt(patt_i, 0) - 1);
+    vec u_i = b_mat.row(i).t() + X_dot_i * current_FE_in_hc.elem(ind_FE_patt(patt_i, 0) - 1);
     mat J_i = J.cols(ind_FE_patt(patt_i, 0) - 1);
     D_inv_i = D_inv(patt_i, 0);  
     
@@ -70,12 +76,12 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
     
   }
   
-  vec::fixed<p_hc> mean_1; // posterior mean vector
-  mat::fixed<p_hc, p_hc> Tau_1; // posterior vcov matrix
+  vec mean_1; // posterior mean vector
+  mat Tau_1; // posterior vcov matrix
   
-  Tau_1 = (prior_invTau_fe_in_hc + sum_JXDXJ).i();
-  mean_1 = Tau_1 * (prior_invTau_fe_in_hc * prior_mean_fe_in_hc + sum_JXDu);
-  cube::fixed<p_hc, p_hc, 1> U_1; U_1.slice(0) = chol(Tau_1); // propose_mvnorm_mat() expects a cube
+  Tau_1 = (prior_Tau_fe_in_hc + sum_JXDXJ).i();
+  mean_1 = Tau_1 * (prior_Tau_fe_in_hc * prior_mean_fe_in_hc + sum_JXDu);
+  cube U_1(p_hc, p_hc, 1); U_1.slice(0) = chol(Tau_1); // propose_mvnorm_mat() expects a cube
   
   res_betas.submat(it, ind_FE_in_hc - 1) = (propose_mvnorm_mat(1, U_1, {1}) + mean_1).t();
   
