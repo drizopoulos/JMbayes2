@@ -535,8 +535,8 @@ mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
   return Wlong;
 }
 
-mat bdiag_C(field<mat>& F){ // assumes all matrices being square (nrow=ncol), but with different dim
-  uword n; n = F.n_elem;
+mat bdiagF(const field<mat>& F){ // builds a block diagonal matrix given a field of matrices
+  uword n; n = F.n_elem; // assumes all matrices being square (nrow=ncol), but with different dim
   uword nrows = 0;
   uvec rows(n);
   for(uword i = 0; i < n; i++) {
@@ -550,6 +550,23 @@ mat bdiag_C(field<mat>& F){ // assumes all matrices being square (nrow=ncol), bu
     ii += rows.at(i);
   }
   return B;
+}
+
+vec vbindF(const field<vec> &F){ // binds a field of vectors into one vector
+  uword n; n = F.n_elem;
+  uword nrows = 0;
+  uvec rows(n);
+  for(uword i = 0; i < n; i++) {
+    rows.at(i) = F(i,0).n_elem;
+    nrows += rows.at(i);
+  }
+  vec V(nrows);
+  uword ii = 0;
+  for(uword i = 0; i < n; i++) {
+    V.subvec(ii, ii - 1 + rows.at(i)) = F(i, 0);
+    ii += rows.at(i);
+  }
+  return V;
 }
 
 #endif
