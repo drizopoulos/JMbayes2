@@ -189,14 +189,14 @@ pbc2$prothrombin[pbc2$id == levels(pbc2$id)[1L]] <- NA
 pbc2$prothrombin[pbc2$id == levels(pbc2$id)[2L]] <- NA
 
 fm1 <- lme(log(serBilir) ~ year * (drug + sex) + I(year^2) + age + serChol,
-           random = ~ year + I(year^2)| id)
+           data = pbc2, random = ~ year + I(year^2)| id, na.action = na.exclude)
 
 fm2 <- lme(prothrombin ~ ns(year, 2) + sex, data = pbc2,
            random = ~ year + I(year^2)| id,
-           na.action = na.exclude)
+           na.action = na.exclude, control = lmeControl(opt = "optim"))
 
-fm3 <- mixed_model(ascites ~ year, data = pbc2,
-                   random = ~ year | id, family = binomial())
+fm3 <- mixed_model(ascites ~ year + sex, data = pbc2, random = ~ year | id,
+                   family = binomial())
 Mixed <- list(fm1, fm2, fm3)
 Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
@@ -212,7 +212,7 @@ time_var = 'year'
 functional_forms = NULL
 data_Surv = NULL
 id_var = NULL
-priors = list(penalty_alphas = "single")
+priors = NULL
 control = NULL
 #
 model_data <- Data
