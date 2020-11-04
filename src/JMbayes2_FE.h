@@ -45,6 +45,8 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   mat::fixed<re_count, re_count> D = L_D * L_D.t(); // RE vcov matrix
   field<mat> D_inv(patt_count, 1); // all unique vcov_inv matrices accross the missing outcome patterns
 
+  vec::fixed<p_hc> current_betas = betas_inres_betas.submat(it-1, ind_FE_notin_hc - 1).t();
+  
   for (uword i = 0; i < n; ++i) { // obtain the sums required for the posterior parameters
     
     uword patt_i = id_patt.at(i); // id missing outcome pattern
@@ -57,7 +59,8 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
 
     mat X_dot_i = X_dot.submat(ind_RE_patt(patt_i, 0) - 1 + i*re_count, 
                                ind_FE_patt(patt_i, 0) - 1); 
-    vec::fixed<re_count> u_i = b_mat.row(i); //! b is not u <---------------------------------
+    
+    vec::fixed<re_count> u_i = b_mat.row(i).t() + X_dot_i * current_betas.elem(ind_FE_patt(patt_i, 0) - 1);
     mat J_i = J.cols(ind_FE_patt(patt_i, 0) - 1);
     D_inv_i = D_inv(patt_i, 0);  
     
