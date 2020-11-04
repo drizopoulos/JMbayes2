@@ -13,7 +13,7 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
                    const uword &it, // current iteration
                    const vec &prior_mean_FE, const mat &prior_invSigma_FE, // prior
                    const mat &b_mat; // it-th sampled RE
-                   const mat &L, // RE corr matrix factorization
+                   const mat &L, // RE corr matrix factorization (lower matrix)
                    const vec &sds, // RE SDs
                    const mat &X_dot, // X_dot matrix
                    const field<uvec> &ind_FE, // indices for the FE present in each outcome (to save the sampled FE into a field)
