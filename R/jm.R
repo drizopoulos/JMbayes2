@@ -127,6 +127,18 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     baseline <- lapply(componentsHC, "[[", "baseline")
     x_in_z <- lapply(componentsHC, "[[", "x_in_z")
     x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
+    q_dot <- sapply(x_in_z, length) + sapply(baseline, length)
+    out_in <- sapply(idL, "%in%", x = seq_len(nY)) # change nY to n accounting missing data
+    all_pat <- apply(out_in, 1L, paste0, collapse = "/")
+    id_patt <- match(all_pat, unique(all_pat))
+    find_patt <- function (patt, n) which(rep(patt, times = n))
+    ind_RE_patt <- apply(unique(out_in), 1L, find_patt, n = nres)
+    ind_FE_patt <- apply(unique(out_in), 1L, find_patt, n = q_dot)
+    nfes <- sapply(X, ncol)
+    ind_FE <- split(seq_len(sum(nfes)), rep(seq_along(X), nfes))
+    x_in_z_base <- mapply2(function (x, y) sort(c(x, y)), x_in_z, baseline)
+    ind_FE_HC <- unlist(mapply2(function (x, ind) x[ind], ind_FE, x_in_z_base),
+                        use.names = FALSE)
     ########################################################
     ########################################################
     # try to recover survival dataset
