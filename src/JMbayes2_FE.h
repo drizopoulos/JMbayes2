@@ -26,8 +26,8 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
    
    
   // The variables below could also be function's input parameters. They not change between iterations.
-  uword n = b_mat.n_rows(); // number of unique subjects
-  uword re_count = L.n_cols(); // number of random effects
+  uword n = b_mat.n_rows; // number of unique subjects
+  uword re_count = L.n_cols; // number of random effects
   uword patt_count = id_patt.max(); // number of unique outcome-missing patterns          
   vec prior_mean_FE_in_hc = prior_mean_FE.elem(ind_FE_in_hc - 1); // prior fot FE in HC 
   mat prior_invSigma_FE_in_hc = prior_invSigma_FE.submat(ind_FE_in_hc - 1, ind_FE_in_hc - 1);
@@ -35,7 +35,7 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   mat prior_invSigma_FE_notin_hc = prior_invSigma_FE.submat(ind_FE_notin_hc - 1, ind_FE_notin_hc - 1);
   
   // FE in HC - Gibss sampling
-  uword p_hc = ind_FE_in_hc.n_elem(); // number of FE in HC
+  uword p_hc = ind_FE_in_hc.n_elem; // number of FE in HC
   mat::fixed<p_hc, p_hc> J; J.eye(); // identity matrix, required in JXDXJ_i and JXDu_i
   mat::fixed<p_hc, p_hc> sum_JXDXJ; sum_JXDXJ.zeros(); // sum required for posterior parameters
   vec::fixed<p_hc> sum_JXDu; sum_JXDu.zeros(); // sum required for posterior parameters
