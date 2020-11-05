@@ -540,13 +540,13 @@ mat bdiagF(const field<mat> &F){ // builds a block diagonal matrix given a field
   uword nrows = 0;
   uvec rows(n);
   for (uword i = 0; i < n; i++) {
-    rows.at(i) = F(i, 0).n_rows;
+    rows.at(i) = F.at(i).n_rows;
     nrows += rows.at(i);
   }
-  mat B(nrows, nrows);
+  mat B(nrows, nrows, fill::zeros);
   uword ii = 0;
   for (uword i = 0; i < n; i++) {
-    B.submat(ii, ii, ii - 1 + rows.at(i), ii - 1 + rows.at(i)) = F(i, 0);
+    B.submat(ii, ii, ii - 1 + rows.at(i), ii - 1 + rows.at(i)) = F.at(i);
     ii += rows.at(i);
   }
   return B;
@@ -557,13 +557,13 @@ vec vbindF(const field<vec> &F){ // binds a field of vectors into one vector
   uword nrows = 0;
   uvec rows(n);
   for(uword i = 0; i < n; i++) {
-    rows.at(i) = F(i, 0).n_elem;
+    rows.at(i) = F.at(i).n_elem;
     nrows += rows.at(i);
   }
   vec V(nrows);
   uword ii = 0;
   for(uword i = 0; i < n; i++) {
-    V.subvec(ii, ii - 1 + rows.at(i)) = F(i, 0);
+    V.subvec(ii, ii - 1 + rows.at(i)) = F.at(i);
     ii += rows.at(i);
   }
   return V;
