@@ -127,18 +127,14 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     baseline <- lapply(componentsHC, "[[", "baseline")
     x_in_z <- lapply(componentsHC, "[[", "x_in_z")
     x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
-    q_dot <- sapply(x_in_z, length) + sapply(baseline, length)
-    out_in <- sapply(idL, "%in%", x = seq_len(nY)) # change nY to n accounting missing data
-    all_pat <- apply(out_in, 1L, paste0, collapse = "/")
-    id_patt <- match(all_pat, unique(all_pat))
-    find_patt <- function (patt, n) which(rep(patt, times = n))
-    ind_RE_patt <- apply(unique(out_in), 1L, find_patt, n = nres)
-    ind_FE_patt <- apply(unique(out_in), 1L, find_patt, n = q_dot)
     nfes <- sapply(X, ncol)
     ind_FE <- split(seq_len(sum(nfes)), rep(seq_along(X), nfes))
     x_in_z_base <- mapply2(function (x, y) sort(c(x, y)), x_in_z, baseline)
     ind_FE_HC <- unlist(mapply2(function (x, ind) x[ind], ind_FE, x_in_z_base),
                         use.names = FALSE)
+    ind_FE_nHC <- mapply2(function (x, ind) x[-ind], ind_FE, x_in_z_base)
+    has_tilde_betas <- sapply(ind_FE_nHC, length) > 0
+    ind_FE_nHC[] <- lapply(ind_FE_nHC, function (x) if (length(x)) x else 0L)
     ########################################################
     ########################################################
     # try to recover survival dataset
@@ -405,11 +401,23 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         W0_H2 <- W_H2 <- matrix(0.0)
         X_H2 <- Z_H2 <- U_H2 <- rep(list(matrix(0.0)), length(respVars))
     }
+
+    q_dot <- sapply(x_in_z_base, length)
+    out_in <- sapply(idL, "%in%", x = seq_len(nT))
+    all_pat <- apply(out_in, 1L, paste0, collapse = "/")
+    id_patt <- match(all_pat, unique(all_pat))
+    find_patt <- function (patt, n) which(rep(patt, times = n))
+    ind_RE_patt <- apply(unique(out_in), 1L, find_patt, n = nres)
+    ind_FE_patt <- apply(unique(out_in), 1L, find_patt, n = q_dot)
+
     ############################################################################
     ############################################################################
     Data <- list(n = nY, idL = idL, idL_ind = idL_ind, idL_lp = idL_lp, unq_idL = unq_idL,
-                 y = y, X = X, Z = Z, Xbase = Xbase,
-                 baseline = baseline, x_in_z = x_in_z, x_notin_z = x_notin_z,
+                 y = y, X = X, Z = Z, Xbase = Xbase, baseline = baseline,
+                 x_in_z = x_in_z, x_notin_z = x_notin_z,
+                 has_tilde_betas = has_tilde_betas, ind_FE = ind_FE,
+                 ind_FE_HC = ind_FE_HC, ind_FE_nHC = ind_FE_nHC,
+                 id_patt = id_patt, ind_RE_patt = ind_RE_patt, ind_FE_patt = ind_FE_patt,
                  #####
                  idT = idT, any_gammas = any_gammas, strata = strata,
                  Time_right = Time_right, Time_left = Time_left, Time_start = Time_start,
