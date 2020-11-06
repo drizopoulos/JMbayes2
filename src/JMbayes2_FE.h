@@ -30,8 +30,8 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   uword re_count = L.n_cols; // number of random effects
   uword patt_count = id_patt.max(); // number of unique outcome-missing patterns          
   
-  vec prior_mean_FE = vbindF(prior_mean_FE);
-  mat prior_Tau_FE2 = bdiagF(prior_Tau_FE);
+  vec prior_mean_FE2 = docall_rbindF(prior_mean_FE); // bind the mean-priors from all outcomes in one vector
+  mat prior_Tau_FE2  = bdiagF(prior_Tau_FE);  // bind the Tau-priors from all outcomes in one block-matrix
   
   vec prior_mean_FE_in_hc = prior_mean_FE2.elem(ind_FE_in_hc - 1); // prior for FE in HC 
   mat prior_Tau_FE_in_hc  = prior_Tau_FE2.submat(ind_FE_in_hc - 1, ind_FE_in_hc - 1);
@@ -39,8 +39,7 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   vec prior_mean_FE_notin_hc = prior_mean_FE2.elem(ind_FE_notin_hc - 1); // prior for FE NOT in HC 
   mat prior_Tau_FE_notin_hc  = prior_Tau_FE2.submat(ind_FE_notin_hc - 1, ind_FE_notin_hc - 1);
   
-  
-  
+
   // FE in HC - Gibss sampling
   uword p_hc = ind_FE_in_hc.n_elem; // number of FE in the HC
   mat J(p_hc, p_hc, fill::eye); // identity matrix, required in JXDXJ_i and JXDu_i
@@ -48,11 +47,13 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   vec sum_JXDu(p_hc, fill::zeros); // sum required for posterior parameters
   
   mat L_D = L.each_row() % sds.t(); // RE vcov matrix factorization
-  mat D = L_D * L_D.t(); // RE vcov matrix
   field<mat> D_inv(patt_count, 1); // all unique vcov_inv matrices accross the missing outcome patterns
 
-  vec::fixed<p_hc> current_FE_in_hc = res_betas.submat(it - 1, ind_FE_notin_hc - 1).t();
-  // About the line above: I'm assuming that the initial values for the betas are stored in res_betas.rows(0), and that the iteration 'it' start in 1
+  if(it = 0) { 
+    vec current_FE_in_hc(p_hc) = docall_rbindF(betas).rows(ind_FE_notin_hc - 1)
+  } else { 
+    vec current_FE_in_hc(p_hc) = res_betas.submat(it, ind_FE_notin_hc - 1).t(); // skips the docall_rbindF() step
+  }
   
   for (uword i = 0; i < n; ++i) { // obtain the sums required for the posterior parameters
     
@@ -60,19 +61,23 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
     
     if (i < patt_count) { // obtain all unique vcov_inv matrices required for the sums in the posterior parameters
       
-      D_inv(i, 0) = D.submat( ind_RE_patt(i, 0) - 1, ind_RE_patt(i, 0) - 1).i();
+      mat L_patt_inv = inv( trimatl( chol_update(L_D, ind_RE_patt.at(i)) ) );
+      D_inv.at(i) =  L_patt_inv.t() * L_patt_inv;
       
     }
 
-    mat X_dot_i = X_dot.submat(ind_RE_patt(patt_i, 0) - 1 + i*re_count, 
-                               ind_FE_patt(patt_i, 0) - 1); 
+    mat X_dot_i = X_dot.submat(ind_RE_patt.at(patt_i) - 1 + i*re_count, 
+                               ind_FE_patt.at(patt_i) - 1); 
     
-    vec u_i = b_mat.row(i).t() + X_dot_i * current_FE_in_hc.elem(ind_FE_patt(patt_i, 0) - 1);
-    mat J_i = J.cols(ind_FE_patt(patt_i, 0) - 1);
-    D_inv_i = D_inv(patt_i, 0);  
+    vec u_i = b_mat.row(i).t() + X_dot_i * current_FE_in_hc.elem(ind_FE_patt.at(patt_i) - 1);
+    mat J_i = J.cols(ind_FE_patt.at(patt_i) - 1);
+    D_inv_i = D_inv.at(patt_i);  
     
-    mat sum_JXDu += J_i * (X_dot_i.t() * D_inv_i * X_dot_i) * J_i.t();
-    sum_JXDXJ    += J_i * (X_dot_i.t() * D_inv_i) * u_i;
+    mat XD_i = X_dot_i.t() * D_inv_i;
+    mat XDX_i = XD_i * X_dot_i;
+    
+    vec sum_JXDu  += add_zero_colrows(XD_i, p_hc, XD_i.n_cols, ind_FE_patt.at(patt_i) - 1, regspace<uvec>(0,  XD_i.n_cols - 1)) * u_i; // add zero-rows
+    mat sum_JXDXJ += add_zero_colrows(XDX_i, p_hc, p_hc, ind_FE_patt.at(patt_i) - 1, ind_FE_patt.at(patt_i) - 1); // add zero-rows and zero-columns
     
   }
   
