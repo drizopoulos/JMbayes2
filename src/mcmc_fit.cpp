@@ -77,8 +77,18 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
   field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
+  //
+  field<uvec> ind_FE = List2Field_uvec(as<List>(model_data["ind_FE"]), true);
+  uvec ind_FE_HC = as<uvec>(model_data["ind_FE_HC"]) - 1;
+  // we do not need to subtract 1 from has_tilde_betas; logical vector
+  // we will need to check if has_tilde_betas == 1
+  uvec has_tilde_betas = as<uvec>(model_data["has_tilde_betas"]);
+  field<uvec> ind_FE_nHC = List2Field_uvec(as<List>(model_data["ind_FE_nHC"]), true);
+  uvec id_patt = as<uvec>(model_data["id_patt"]) - 1;
+  field<uvec> ind_RE_patt = List2Field_uvec(as<List>(model_data["ind_RE_patt"]), true);
+  field<uvec> ind_FE_patt = List2Field_uvec(as<List>(model_data["ind_FE_patt"]), true);
+  //
   bool save_random_effects = as<bool>(control["save_random_effects"]);
-  //field<uvec> idL_ind = List2Field_uvec(as<List>(model_data["idL_ind"]), true);
   field<uvec> idL_lp_fast(idL_lp.n_elem);
   for (uword i = 0; i < idL_lp.n_elem; ++i) {
     idL_lp_fast.at(i) = create_fast_ind(idL_lp.at(i) + 1);
@@ -425,7 +435,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   field<vec> betas = List2Field_vec(as<List>(thetas["betas"]));
   mat b_mat = as<mat>(thetas["b"]);
   field<mat> b =
-    mat2field_mat(b_mat, List2Field_uvec(as<List>(model_data["ind_RE"]), true));
+    mat2field(b_mat, List2Field_uvec(as<List>(model_data["ind_RE"]), true));
   vec sigmas = as<vec>(thetas["sigmas"]);
   vec bs_gammas = as<vec>(thetas["bs_gammas"]);
   vec gammas = as<vec>(thetas["gammas"]);
@@ -520,7 +530,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   /////////////
   uword n = mean_b_mat.n_rows;
   field<mat> mean_b =
-    mat2field_mat(mean_b_mat, List2Field_uvec(as<List>(model_data["ind_RE"]), true));
+    mat2field(mean_b_mat, List2Field_uvec(as<List>(model_data["ind_RE"]), true));
   vec det_post_vars(n);
   for (uword i = 0; i < n; ++i) det_post_vars.at(i) = det(post_vars.slice(i));
   /////////////

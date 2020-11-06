@@ -45,7 +45,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
   vec denominator_b = logLik_long + logLik_surv + logLik_re;
   // propose new random effects in mat and field<mat> form
   mat proposed_b_mat = propose_mvnorm_mat(1, chol_S, scale_b) + b_mat;
-  field<mat> proposed_b = mat2field_mat(proposed_b_mat, ind_RE);
+  field<mat> proposed_b = mat2field(proposed_b_mat, ind_RE);
 
   // calculate log_lik_long based on proposed_b_mat
   uword n = b_mat.n_rows;
@@ -139,7 +139,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
       }
     }
   }
-  b = mat2field_mat(b_mat, ind_RE);
+  b = mat2field(b_mat, ind_RE);
 }
 
 #endif

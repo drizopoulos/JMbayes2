@@ -128,10 +128,18 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     x_in_z <- lapply(componentsHC, "[[", "x_in_z")
     x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
     nfes <- sapply(X, ncol)
+    # 'ind_FE' is used in vec2field() to re-create the field of betas
+    # from betas_vec
     ind_FE <- split(seq_len(sum(nfes)), rep(seq_along(X), nfes))
     x_in_z_base <- mapply2(function (x, y) sort(c(x, y)), x_in_z, baseline)
+    # 'ind_FE_HC' denotes which elements of betas_vec are in the HC formulation
+    # this will be use to save the results in the corresponding columns
     ind_FE_HC <- unlist(mapply2(function (x, ind) x[ind], ind_FE, x_in_z_base),
                         use.names = FALSE)
+    # 'ind_FE_HC' denotes which elements of betas_vec are not in the
+    # HC formulation. It is a list, to be used in conjuction with
+    # has_tilde_betas. That is, if has_tilde_betas = TRUE, we need to save
+    # from the Metropolis-Hastings step the betas in the columns 'ind_FE_nHC'
     ind_FE_nHC <- mapply2(function (x, ind) x[-ind], ind_FE, x_in_z_base)
     has_tilde_betas <- sapply(ind_FE_nHC, length) > 0
     ind_FE_nHC[] <- lapply(ind_FE_nHC, function (x) if (length(x)) x else 0L)
@@ -415,7 +423,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                  x_in_z = x_in_z, x_notin_z = x_notin_z,
                  has_tilde_betas = has_tilde_betas, ind_FE = ind_FE,
                  ind_FE_HC = ind_FE_HC, ind_FE_nHC = ind_FE_nHC,
-                 id_patt = id_patt, ind_RE_patt = ind_RE_patt, ind_FE_patt = ind_FE_patt,
+                 id_patt = id_patt, ind_RE_patt = ind_RE_patt,
+                 ind_FE_patt = ind_FE_patt,
                  #####
                  idT = idT, any_gammas = any_gammas, strata = strata,
                  Time_right = Time_right, Time_left = Time_left, Time_start = Time_start,

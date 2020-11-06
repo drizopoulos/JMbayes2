@@ -107,11 +107,20 @@ field<uvec> List2Field_uvec (const List &uVecs, bool substract1 = true) {
   return res;
 }
 
-field<mat> mat2field_mat (const mat &b, const field<uvec> &ind_RE) {
+field<mat> mat2field (const mat &b, const field<uvec> &ind_RE) {
   uword n = ind_RE.n_elem;
   field<mat> out(n);
   for (uword i = 0; i < n; i++) {
     out.at(i) = b.cols(ind_RE.at(i));
+  }
+  return out;
+}
+
+field<vec> vec2field (const vec &betas, const field<uvec> &ind_FE) {
+  uword n = ind_FE.n_elem;
+  field<vec> out(n);
+  for (uword i = 0; i < n; i++) {
+    out.at(i) = betas.rows(ind_FE.at(i));
   }
   return out;
 }
@@ -574,11 +583,11 @@ mat add_zero_colrows (const mat &M, // adds zero-rows and/or zero-cols to a matr
                       const uword &ncols, // n_cols in the target matrix
                       const uvec &rows_ind,    // ind where to place the M's rows (zero-rows will be 'added' to the absent ind). the number of ind must match the M's n_rows
                       const uvec &cols_ind) { // ind where to place the M's cols (zero-cols will be 'added' to the absent ind). the number of ind must match the M's n_cols
-  
+
   mat Res(nrows, ncols, fill::zeros);
-  uword M_nrows = M.n_rows; 
+  uword M_nrows = M.n_rows;
   uword M_ncols = M.n_cols;
-  
+
   for(uword i = 0; i < M_nrows; i++) { // by row
     for(uword j = 0; j < M_ncols; j++) { // by col
       Res.at(rows_ind.at(i), cols_ind.at(j)) = M.at(i, j);
