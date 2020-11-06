@@ -224,8 +224,36 @@ gaussKronrod <- function (k = 15L) {
     }
 }
 
+locf <- function (object, fromLast = FALSE, maxgap = Inf) {
+    .fill_short_gaps <- function (x, fill, maxgap) {
+        if (maxgap <= 0)
+            return(x)
+        if (maxgap >= length(x))
+            return(fill)
+        naruns <- rle(is.na(x))
+        naruns$values[naruns$lengths > maxgap] <- FALSE
+        naok <- inverse.rle(naruns)
+        x[naok] <- fill[naok]
+        return(x)
+    }
+    if (fromLast) object <- rev(object)
+    ok <- which(!is.na(object))
+    if (is.na(object[1L]))
+        ok <- c(1L, ok)
+    gaps <- diff(c(ok, length(object) + 1L))
+    object <- if (any(gaps > maxgap)) {
+        .fill_short_gaps(object, rep(object[ok], gaps), maxgap = maxgap)
+    } else {
+        rep(object[ok], gaps)
+    }
+    if (fromLast)
+        object <- rev(object)
+    object
+}
+
 desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                                               Fun_Forms) {
+    data[] <- lapply(data, function (x) locf(locf(x), fromLast = TRUE))
     desgn_matr <- function (time, terms) {
         D <- LongData_HazardModel(time, data, data[[timeVar]],
                                   data[[idVar]], timeVar)
