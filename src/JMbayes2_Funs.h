@@ -587,4 +587,50 @@ mat add_zero_colrows (const mat &M, // adds zero-rows and/or zero-cols to a matr
   return Res;
 }
 
+mat rank1_update(const mat &M, // performs rank-1 update: Res = M + v * u.t() 
+                 const vec &v) {
+  
+  uword n = v.n_elem;
+  mat Res = M;
+  vec v2   = v;
+  
+  for (uword i = 0; i < n; i++) {
+    double r = pow( pow(Res.at(i, i), 2) + pow(v2.at(i), 2), 0.5);
+    double c = r / Res.at(i, i);
+    double s = v2.at(i) / Res.at(i, i);
+    Res.at(i, i) = r;
+    
+    if (i < n - 1) {
+      Res.submat(i + 1, i, n - 1, i) = (Res.submat(i + 1, i, n - 1, i) + s * v2.rows(i + 1, n - 1)) / c;
+      v2.rows(i + 1, n - 1) = c * v2.rows(i + 1, n - 1) - s * Res.submat(i + 1, i, n - 1, i);
+    }
+  }
+  return Res;
+}
+
+mat chol_update(const mat &L, // If L = chol(M), returns chol(M.submat(keep, keep))
+                const uvec &keep) { // keep must be a sorted vector, i.e, {2, 4, 5}
+  
+  // later we can try to extend this approach further to obtain inv(L) from the required inv(L_i)
+  
+  uvec rem = regspace<uvec>(0,  L.n_cols - 1); rem.shed_rows(keep - 1); // cols-rows to remove
+  mat Res = L;
+  uword n = rem.n_elem;
+  
+  for (uword i = 0; i < n; i++) { // rank-1 update for each col-row to be removed
+    
+    uword last_col = Res.n_cols - 1;
+    
+    if(rem.at(i) < last_col) {
+      Res.submat(rem.at(i) + 1, rem.at(i) + 1, last_col, last_col) = rank1_update(Res.submat(rem.at(i) + 1, rem.at(i) + 1, last_col, last_col),
+                 Res.submat(rem.at(i) + 1, rem.at(i), last_col, rem.at(i)));
+    }
+    
+    Res.shed_row(rem.at(i));
+    Res.shed_col(rem.at(i));
+    rem = rem - 1;
+  }
+  return Res;
+} 
+
 #endif
