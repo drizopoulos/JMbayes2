@@ -1128,4 +1128,7 @@ fit_stats <- function (lL, lL_mean_parms) {
          CPO = CPO, WAIC = LPPD + pWAIC2)
 }
 
+get_vcov_betas_nHC <- function (v, ind) {
+    if (any(is.na(ind))) matrix(0.0) else v[ind, ind, drop = FALSE]
+}
 

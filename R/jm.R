@@ -478,6 +478,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     #  - tilde_betas the fixed effects that are not in the hierarchical
     #    centering part
     vcov_prop_betas <- lapply(Mixed_objects, vcov2)
+    vcov_prop_betas <- mapply2(get_vcov_betas_nHC, vcov_prop_betas, x_notin_z)
     r <- mapply2(extract_vcov_prop_RE, Mixed_objects, Z, idL)
     vcov_prop_RE <- array(0.0, c(dim(D), nY))
     for (i in seq_len(nY)) {

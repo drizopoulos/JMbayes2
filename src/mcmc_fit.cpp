@@ -49,6 +49,11 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   field<mat> y = List2Field_mat(as<List>(model_data["y"]));
   //
+  field<mat> vcov_prop_betas = List2Field_mat(as<List>(vcov_prop["vcov_prop_betas"]));
+  field<mat> chol_vcov_prop_betas = vcov_prop_betas;
+  for (uword i = 0; i < chol_vcov_prop_betas.n_elem; ++i) {
+    chol_vcov_prop_betas.at(i) = chol(vcov_prop_betas.at(i));
+  }
   cube S = as<cube>(vcov_prop["vcov_prop_RE"]);
   cube chol_S = chol_cube(S);
   //
