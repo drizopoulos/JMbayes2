@@ -618,11 +618,11 @@ mat rank1_update(const mat &M, // performs rank-1 update: Res = M + v * u.t()
 }
 
 mat chol_update(const mat &L, // If L = chol(M), returns chol(M.submat(keep, keep))
-                const uvec &keep) { // keep must be a sorted vector, i.e, {2, 4, 5}
+                const uvec &keep) { // keep must be a sorted vector, i.e, {2, 4, 5}, and counts from 0
   
   // later we can try to extend this approach further to obtain inv(L) from the required inv(L_i)
   
-  uvec rem = regspace<uvec>(0,  L.n_cols - 1); rem.shed_rows(keep - 1); // cols-rows to remove
+  uvec rem = regspace<uvec>(0,  L.n_cols - 1); rem.shed_rows(keep); // cols-rows to remove
   mat Res = L;
   uword n = rem.n_elem;
   
