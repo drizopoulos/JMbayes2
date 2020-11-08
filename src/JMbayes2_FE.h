@@ -49,6 +49,38 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
                    mat &acceptance_betas,
                    vec &scale_betas,
                    const uvec &has_tilde_betas,
+                   const field<mat> &X, 
+                   const field<mat> &Z,
+                   const field<mat> &b,
+                   const field<uvec> &id,
+                   const field<mat> &y,
+                   const vec &sigmas,
+                   const vec &extra_parms,
+                   const CharacterVector &families,
+                   const CharacterVector &links,
+                   const field<uvec> &ids,
+                   const field<uvec> &unq_ids,
+                   const field<mat> &X_H, const field<mat> &X_h, const field<mat> &X_H2,
+                   const field<mat> &Z_H, const field<mat> &Z_h, const field<mat> &Z_H2,
+                   const field<mat> &U_H, const field<mat> &U_h, const field<mat> &U_H2,
+                   const mat &Wlong_bar,
+                   const uvec &id_H_, const uvec &id_h,
+                   const field<uvec> &FunForms,
+                   const field<uvec> &FunForms_ind,
+                   const vec &alphas,
+                   mat &Wlong_h,
+                   vec &Wlongh_alphas,
+                   const bool &any_event, const bool &any_interval,
+                   mat &Wlong_H2,
+                   const vec &W0H_bs_gammas, const vec &W0h_bs_gammas, const vec &W0H2_bs_gammas,
+                   const vec &WH_gammas, const vec &Wh_gammas, const vec &WH2_gammas,
+                   const vec &log_Pwk, const vec &log_Pwk2,
+                   const uvec &indFast_H, const uvec &indFast_h,
+                   const uvec &which_event, const uvec &which_right_event, const uvec &which_left,
+                   const uvec &which_interval,
+                   const field<uvec> prop_Sigma_FE_nHC, // vcov for the proposal
+                   vec &logLik_long, // <----------------------------------------------------------------------------
+                   vec &logLik_surv, // <----------------------------------------------------------------------------
                    const uword &RMu_it_thld, // robins monro univariate iterations threshold to update the scale. Updates scale from it > RMu_it_thld
                    const double &RMu_tacce // robins monro univariate target acceptance
                   )
@@ -78,7 +110,7 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   vec betas_HC(p_hc) = docall_rbindF(betas).rows(ind_FE_HC - 1)
 
   uword patt_i; // I am declaring the variables outside the loop, because it seems to reduce the computation time. Seen here: https://gallery.rcpp.org/articles/dmvnorm_arma/
-  mat L_patt_inv
+  mat L_patt_inv;
   mat X_dot_i;
   vec u_i;
   mat D_inv_i;
@@ -127,53 +159,104 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   betas = vec2field(res_betas.row(it), ind_FE);
   
   // FE not in HC - Metropolis-Hastings sampling
-  
-  // (TEMPORARY) additional function inputs
-  const field<uvec> &U_prop_betas,
-  
-  // (TEMPORARY) other variables
-  vec proposed_betas;
-  double numerator;
-  double denominator;
-  
   vec prior_mean_FE_nHC;
   mat prior_Tau_FE_nHC;
   uvec ind_j;
   vec betas_j;
   cube U_j;
+  field<vec> eta_long(1);
+  vec logLik_long_prop(1);
+  vec logLik_surv_prop;
+  vec logLik_prior(1);
+  vec numerator(1);
+  vec denominator(1); 
+  vec log_ratio(1);
+  field<uvec> betas_prop;
+  mat Wlong_H_prop;
+  vec WlongH_alphas_prop; 
+  mat Wlong_h_prop(Wlong_h.n_rows, Wlong_h.n_cols);
+  vec Wlongh_alphas_prop(Wlongh_alphas.n_rows);
+  mat Wlong_H2_prop(Wlong_H2.n_rows, Wlong_H2.n_cols);
+  vec WlongH2_alphas_prop(WlongH2_alphas.n_rows);
   
   for (uword j = 0; j < n_y; ++i) { // per outcome
     
     if (has_tilde_betas.rows(it)) { // some outcomes may not have FE out of the HC
       
       ind_j = indL_FE_nHC.at(j) - 1;
-      U_j.slice(0) = chol_update(U_prop_betas.at(j), ind_j); // this could be done outside the function. It'll remain the same for all iterations
+      U_j.slice(0) = chol_update(prop_Sigma_FE_nHC.at(j), ind_j); //! this could be done outside the function. It'll remain the same for all iterations
       
-      prior_mean_nHC  = prior_mean_FE.at(j).rows(ind_j) // this could also be outside the function as a field
-      prior_Tau_nHC   = prior_Tau_FE.at(j).submat(ind_j, ind_j); // this could also be outside the function as a field
+      prior_mean_nHC  = prior_mean_FE.at(j).rows(ind_j) //! this could also be outside the function as a field
+      prior_U_nHC  = chol(prior_Tau_FE.at(j).submat(ind_j, ind_j)); //! this could also be outside the function
+      //? by using chol(.) we avoid uncessary chol(.) calculations when using logLik_prior = log_dmvnrm(.). 
+      //? Using chol(.) we could use instead log_dmvnrm_chol(.), requring only one chol(.) per outcome. 
+      //? But this only true if we put this outside the function.
       
-      if(it = 0) { denominator = TARGET_LOG_DIST(betas.at(j).rows(ind_j)) } // UPDATE <-------------------------
+      if(it = 0) { denominator = TARGET_LOG_DIST(betas.at(j).rows(ind_j)) } //? <------------------------- check how Greg approaches this. whe works with logLik_X and logLik_X_proposed
 
-      proposed_betas = propose_mvnorm_mat(1, U_j, scale_betas.rows(j)) + betas.at(j).rows(ind_j);
+      betas_prop = betas;
+      beta_prop.at(j).rows(ind_j) = propose_mvnorm_mat(1, U_j, scale_betas.rows(j)) + betas.at(j).rows(ind_j);
       
-      numerator = TARGET_LOG_DIST(proposed_betas); // UPDATE <-------------------------
+      // logLik_prior
+      logLik_prior = log_dmvnrm_chol(??, prior_U_nHC) //  we need to this first because for the first iteration we need the log_prior for the denominator
+      //? I am not sure how the function should be used, I was expecting two input parameters, one for the mean and other for the betas
+      //? note that is beta_prop.at(j).rows(ind_j) and NOT beta_prop.at(j)
+      //? Check if the funtion is expection the factorization of Tau or Sigma
+      
+      // denominator
+      vec denominator = logLik_long + logLik_surv + logLik_prior; 
+      //? I am not if I can use the logLik_long because it accounts for all outcomes. If I use it I need to account for all outcomes in the numerator too.
+      //? but it depends on what really is inside the vectors logLik_long & logLik_surv, in logLik_long could be the log_Lik per outcome. 
+      //? but if its the case I don't understand why logLik_surv is a vector too
+      
+      // logLik_long
+      eta_long.at(1)   = linpred_mixed(X.at(j), betas_prop.at(j), Z.at(j), b.at(j), id.at(j);
+      logLik_long_prop = log_long(y.at(j), eta_long.at(1), sigmas.rows(j), extra_parms.rows(j),
+                                  families.rows(j), links.rows(j), ids.rows(j), unq_ids.rows(j)); 
+      //? Greg uses an extra param n here that does not seem to appear on the function log_long (line 54)
+      //https://github.com/drizopoulos/JMbayes2/blob/9ac64f55086ad48229cdeb6d01c5f82b82aaf8b0/src/JMbayes2_RE.h#L54
 
-      //////////////////////////////////////////////////////////////////////////      
+      // logLik_surv
+      Wlong_H_prop = calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas_prop, b, 
+                                     id_H_, FunForms, FunForms_ind);
+      WlongH_alphas_prop = Wlong_H_prop * alphas;
       
+      if (any_event) {
+        Wlong_h_proposed = calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas_prop,
+                                           b, id_h, FunForms, FunForms_ind);
+        Wlongh_alphas_prop = Wlong_h_prop * alphas;
+      }
       
-      target_log = log_y_j     + log_t       + log_prior
-                 = logLik_long + logLik_surv + logLik_re
+      if (any_interval) {
+        Wlong_H2_prop = calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas_prop, 
+                                        b, id_H_, FunForms, FunForms_ind);
+        WlongH2_alphas_prop = Wlong_H2_prop * alphas;
+      }
+    
+    
+      logLik_surv_prop = log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, 
+                                  WH_gammas, Wh_gammas, WH2_gammas, 
+                                  WlongH_alphas_prop, Wlongh_alphas_prop,
+                                  WlongH2_alphas_prop, log_Pwk, log_Pwk2, 
+                                  indFast_H, indFast_h, which_event, which_right_event, 
+                                  which_left, any_interval, which_interval);
       
+      // numerator
+      numerator = logLik_long_prop + logLik_surv_prop + logLik_prior; //? in my it should be a double, and not a vector as for Greg
+      //? If I'm understanding Greg's code correctly, he samples all patients at the same time and then updtes the random effects 
+      //? for those patients who are accepted. Hoever, shouldn't it be iteratively? If I accept for patient i, I should account 
+      //? for his new RE in the log_Lik_surv (in both numerator and denominator) for patient (i+1)
+      //? are we avoiding it to save computational time? If there is no difference, I could use the same approach for the betas.
       
-      
-      //////////////////////////////////////////////////////////////////////////
       log_ratio =  numerator - denominator;
       
       if(std::isfinite(log_ratio) && std::exp(log_ratio) > R::runif(0.0, 1.0)) {
         
-        betas.at(j).rows(ind_j) = proposed_betas;
+        betas.at(j) = betas_prop.at(j);
         acceptance_betas.at(it, j) = 1;
         denominator = numerator;
+        
+        // update the inputs as Greg does <--------------------------------------------------------------------------------------
         
       }
       
