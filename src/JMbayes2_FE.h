@@ -8,25 +8,28 @@
 using namespace Rcpp;
 using namespace arma;
 
-// To update on jm()
-  // ind_FE_nHC <- which(!seq_len(sum(nfes)) %in% ind_FE_HC)  # new
-  // indL_FE_nHC <- mapply2(function (x, ind) seq_along(x)[-ind], ind_FE, x_in_z_base) # new
-  // has_tilde_betas <- sapply(ind_FE_nHC, length) > 0
-  // indL_FE_nHC[] <- lapply(ind_FE_nHC, function (x) if (length(x)) x else 0L) # new because changed the name of the var, the remaining is the same
-  // OT: ...[] what is the benefit of using the brackets? is it fast because because updates only the content and keeps the old attributes?
+/*?? To update on jm()
+ind_FE_nHC <- which(!seq_len(sum(nfes)) %in% ind_FE_HC)  # new
+indL_FE_nHC <- mapply2(function (x, ind) seq_along(x)[-ind], ind_FE, x_in_z_base) # new
+has_tilde_betas <- sapply(ind_FE_nHC, length) > 0
+indL_FE_nHC[] <- lapply(ind_FE_nHC, function (x) if (length(x)) x else 0L) # new because changed the name of the var, the remaining is the same
+OT: ...[] what is the benefit of using the brackets? is it fast because because updates only the content and keeps the old attributes?
+*/ 
   
-// To update on jm()
-  // change q_dot to nfes_HC 
+/*?? To update on jm()
+change q_dot to nfes_HC 
+*/
 
-// To update on C functions:
-  // field<vec> vec2field (const vec &betas, const field<uvec> &ind_FE) {
-  //   uword n = ind_FE.n_elem;
-  //   field<vec> out(n);
-  //   for (uword i = 0; i < n; i++) {
-  //     out.at(i) = betas.rows(ind_FE.at(i) - 1); # <- The change is here, with the "-1". The counter in ind_FE starts from 1, and not 0. I cannot do ind_FE-1, because ind_FE is a field.
-  //   }
-  //   return out;
-  // }
+/*?? To update on C functions:
+field<vec> vec2field (const vec &betas, const field<uvec> &ind_FE) {
+  uword n = ind_FE.n_elem;
+  field<vec> out(n);
+  for (uword i = 0; i < n; i++) {
+    out.at(i) = betas.rows(ind_FE.at(i) - 1); # <- The change is here, with the "-1". The counter in ind_FE starts from 1, and not 0. I cannot do ind_FE-1, because ind_FE is a field.
+  }
+  return out;
+}
+*/
 
 void update_betas (field<vec> &betas, // it-th sampled fixed effects
                    mat &res_betas, // all sampled fixed effects
