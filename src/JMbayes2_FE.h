@@ -83,78 +83,82 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
                    const double &RMu_tacce // robins monro univariate target acceptance
                   )
    
-   
-  // The variables below could also be function's input parameters. They not change between iterations.
+  // For the HC-FE we first update the row on the res_betas and then update the field betas 
+  // For the nHC-FE outside HC we update the field betas per outcome, and after updating all outcomed we update the row in res_betas
+
+  // FE in HC - Gibss sampling
+  
+  //!! The variables below could also be function's input parameters. They not change between iterations.
   uword n = b_mat.n_rows; // number of unique subjects
   uword n_y = betas.n_elem; // number of longitudinal outcomes
   uword re_count = L.n_cols; // number of random effects
   uword patt_count = id_patt.max(); // number of unique outcome-missing patterns          
 
-  // The factorization below assumes that the vcoc matrices within and between outcomes are diagonal. If not, we need to implement a function to obtain the conditionals distributions.
-  vec prior_mean_HC = docall_rbindF(prior_mean_FE).rows(ind_FE_HC - 1); // prior for FE in HC 
-  mat prior_Tau_HC  = bdiagF(prior_Tau_FE).submat(ind_FE_HC - 1, ind_FE_HC - 1);
+  // below: its assumes that the precision matrices within and between outcomes are diagonal. If not, we need to implement a function to obtain the conditionals distributions.
+  vec prior_mean_HC = docall_rbindF(prior_mean_FE).rows(ind_FE_HC - 1); // prior mean for all HC-FE
+  mat prior_Tau_HC  = bdiagF(prior_Tau_FE).submat(ind_FE_HC - 1, ind_FE_HC - 1); // prior precision for all HC-FE
   
-  // For the FE in HC we first update the full row on the res_betas and then update the field betas. 
-  // For the FE outside HC we update the field betas per outcome, and then update the full row in res_betas
-
-  // FE in HC - Gibss sampling
-  uword p_hc = ind_FE_HC.n_elem; // number of FE in the HC
-  mat sum_JXDXJ(p_hc, p_hc, fill::zeros); // sum required for posterior parameters
-  vec sum_JXDu(p_hc, fill::zeros); // sum required for posterior parameters
+  uword p_hc = ind_FE_HC.n_elem; // number of HC-FE
+  mat sum_JXDXJ(p_hc, p_hc, fill::zeros); // sum for the posterior parameters
+  vec sum_JXDu(p_hc, fill::zeros); // sum for the posterior parameters
+  mat L_D = L.each_row() % sds.t(); // RE vcov matrix Choesky factorization (upper)
+  //?? the L matrix is a lower or upper triangular? If upper update the L_... variables below
+  vec betas_HC(p_hc) = docall_rbindF(betas).rows(ind_FE_HC - 1);
+  /*??
+  I am declaring the variables outside the loop, because it seems to reduce the computation time. 
+  Seen here: https://gallery.rcpp.org/articles/dmvnorm_arma/. I am doing the same for the loop
+  in FE-nHC
+ */
   
-  mat L_D = L.each_row() % sds.t(); // RE vcov matrix factorization
+  uword patt_i; // outcome missing pattern for the i-th patient
+  mat L_patt_inv; // inv cholesky factorization vcov matrix for the i-th (<patt_count) missing pattern
   field<mat> D_inv(patt_count); // all unique vcov_inv matrices accross the missing outcome patterns
-
-  vec betas_HC(p_hc) = docall_rbindF(betas).rows(ind_FE_HC - 1)
-
-  uword patt_i; //? I am declaring the variables outside the loop, because it seems to reduce the computation time. Seen here: https://gallery.rcpp.org/articles/dmvnorm_arma/
-  mat L_patt_inv;
-  mat X_dot_i;
-  vec u_i;
-  mat D_inv_i;
-  mat XD_i;
-  mat XDX_i;
-  vec ind_FE_i;
+  mat X_dot_i; // X_dot for the i-th patient
+  vec u_i; // all RE for the i-th patient (including the RE for the missing outcomes. they'll be cancelled out by the zero-row)
+  mat D_inv_i; // inverse vcov matrix for the i-th patient
+  mat XD_i; // aux var for the posterior parameters for the i-th patient
+  mat XDX_i; // aux var for the posterior parameters for the i-th patient
+  uvec ind_FE_i; // ind of the HC-FE for the i-th patient (patients reporting different outcomes will have different ind)
   
   for (uword i = 0; i < n; ++i) { // i-th patient
     
-    patt_i = id_patt.at(i); // id missing outcome pattern
-    ind_FE_i = ind_FE_patt.at(patt_i) - 1;
+    patt_i = id_patt.at(i); // id missing outcome pattern // uword
+    ind_FE_i = ind_FE_patt.at(patt_i) - 1; // uvec
     
     if (i < patt_count) { // obtain all unique vcov_inv matrices required for the sums in the posterior parameters
       
-      L_patt_inv = inv( trimatl( chol_update(L_D, ind_RE_patt.at(i) - 1) ) );
-      D_inv.at(i) =  L_patt_inv.t() * L_patt_inv;
+      L_patt_inv = inv( trimatl( chol_update(L_D, ind_RE_patt.at(i) - 1) ) ); // mat
+      D_inv.at(i) =  L_patt_inv.t() * L_patt_inv; // mat
       
     }
 
     X_dot_i = X_dot.submat(ind_RE_patt.at(patt_i) - 1 + i*re_count, 
-                           ind_FE_i); 
+                           ind_FE_i); // mat
     
-    u_i = b_mat.row(i).t() + X_dot_i * betas_HC.elem(ind_FE_i);
-    D_inv_i = D_inv.at(patt_i);  
+    u_i = b_mat.row(i).t() + X_dot_i * betas_HC.elem(ind_FE_i); // vec
+    D_inv_i = D_inv.at(patt_i); // mat 
     
-    XD_i = X_dot_i.t() * D_inv_i;
-    XDX_i = XD_i * X_dot_i;
+    XD_i = X_dot_i.t() * D_inv_i; // mat
+    XDX_i = XD_i * X_dot_i; // mat
     
-    sum_JXDu  += add_zero_colrows(XD_i, p_hc, XD_i.n_cols, ind_FE_i, regspace<uvec>(0,  XD_i.n_cols - 1)) * u_i; // add zero-rows
-    sum_JXDXJ += add_zero_colrows(XDX_i, p_hc, p_hc, ind_FE_i, ind_FE_i); // add zero-rows and zero-columns
+    sum_JXDu  += add_zero_colrows(XD_i, p_hc, XD_i.n_cols, ind_FE_i, regspace<uvec>(0,  XD_i.n_cols - 1)) * u_i; // mat
+    sum_JXDXJ += add_zero_colrows(XDX_i, p_hc, p_hc, ind_FE_i, ind_FE_i); // mat
     
   }
   
-  mat Tau_1 = (prior_Tau_HC + sum_JXDXJ).i(); //! Can I write the Tau_1 in terms of an L matrix? to avoid the use of chol(Tau_1) later <---------------------------------
+  mat Tau_1 = inv(prior_Tau_HC + sum_JXDXJ); //?? Can I write the Tau_1 in terms of an L matrix? to avoid the use of chol(Tau_1) later <---------------------------------
   vec mean_1 = Tau_1 * (prior_Tau_HC * prior_mean_HC + sum_JXDu);
   mat U_1 = chol(Tau_1);
   
-  res_betas.submat(it, ind_FE_HC - 1) = (propose_mvnorm_vec(1, U_1, 1) + mean_1).t();
+  res_betas.submat(it, ind_FE_HC - 1) = (propose_mvnorm_vec(1, U_1, 1) + mean_1).t(); // vec.t()
   /* 
   I am doing this here, because I need to the save the update the sampled FE_HC 
   on the betas field, and I need to add the current FE_nHC to avoid add zeros instead. 
   Given I need the current values for the MCMC. I later update the FE_nHC on this 
   same row with the M-H sample. By doing so we avoid a create new ind_variables
   */
-  res_betas.submat(it, ind_FE_nHC - 1) = docall_rbindF(betas).rows(ind_FE_nHC - 1);
-  betas = vec2field(res_betas.row(it), ind_FE);
+  res_betas.submat(it, ind_FE_nHC - 1) = docall_rbindF(betas).rows(ind_FE_nHC - 1).t(); // vec.t()
+  betas = vec2field(res_betas.row(it), ind_FE); // field<vec>
   
   //////////////////////////////////////////////////////////////////////////////
   // FE not in HC - Metropolis-Hastings sampling
@@ -171,8 +175,6 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   double log_ratio; // log acceptance ratio
   field<uvec> betas_prop; // all FE with the proposed nHC-FE for the j-th outcome
   double logLik_fe_nHC_prop; // prior contribution from the j-th outcome for the logLik (given the proposed nHC-FE)
-  //
-  
   mat Wlong_H_prop;
   vec WlongH_alphas_prop; 
   mat Wlong_h_prop(Wlong_h.n_rows, Wlong_h.n_cols);
@@ -188,7 +190,7 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
       //!! the three lines below could be outside the function. They do not change accross iterations
       prop_U_j = chol(prop_Sigma_FE_nHC.at(j).submat(ind_j, ind_j)); // mat
       prior_mean_j = prior_mean_FE.at(j).rows(ind_j);  // vec
-      // below: log_dmvnrm_chol() expects a chol(Sigma) and not a chol(Tau). I am assuming that prior_Tau_FE.at(j) is a diagonal matrix.
+      // below: log_dmvnrm_chol() expects a chol(Sigma) and not a chol(Tau). It assumes that prior_Tau_FE.at(j) is a diagonal matrix.
       prior_U_j = chol( inv(diagmat( prior_Tau_FE.at(j).submat(ind_j, ind_j) )) ); // mat 
       /*!!
       By using chol(.) we avoid uncessary chol(.) calculations. If we were 
