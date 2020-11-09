@@ -276,6 +276,15 @@ mat propose_mvnorm_mat (const int &n, const cube &S, const vec &scale) {
   return out.t();
 }
 
+mat propose_mvnorm_vec (const int &n, // number of samples
+                        const mat &U, // upper triangular Choleski factorization of the vcov matrix
+                        const double &scale) {
+  uword ncols = U.n_cols;
+  mat res(n, ncols);
+  res = scale * (rnorm_mat(n, ncols) * U);
+  return res.t(); // j-th column reports the j-th sample
+}
+
 vec mu_fun (const vec &eta, const std::string &link) {
   uword n = eta.n_rows;
   vec out(n);
