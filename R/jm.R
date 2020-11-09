@@ -141,7 +141,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # has_tilde_betas. That is, if has_tilde_betas = TRUE, we need to save
     # from the Metropolis-Hastings step the betas in the columns 'ind_FE_nHC'
     ind_FE_nHC <- mapply2(function (x, ind) x[-ind], ind_FE, x_in_z_base)
-    has_tilde_betas <- sapply(ind_FE_nHC, length) > 0
+    has_tilde_betas <- as.integer(sapply(ind_FE_nHC, length) > 0)
     ind_FE_nHC[] <- lapply(ind_FE_nHC, function (x) if (length(x)) x else 0L)
     ########################################################
     ########################################################
@@ -478,7 +478,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     #  - tilde_betas the fixed effects that are not in the hierarchical
     #    centering part
     vcov_prop_betas <- lapply(Mixed_objects, vcov2)
-    vcov_prop_betas <- mapply2(get_vcov_betas_nHC, vcov_prop_betas, x_notin_z)
+    vcov_prop_betas <- mapply2(get_betas_nHC, vcov_prop_betas, x_notin_z)
     r <- mapply2(extract_vcov_prop_RE, Mixed_objects, Z, idL)
     vcov_prop_RE <- array(0.0, c(dim(D), nY))
     for (i in seq_len(nY)) {
@@ -519,8 +519,14 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     Tau_bs_gammas <- crossprod(diff(diag(ncol(W0_H) / n_strata),
                                     differences = con$diff))
     Tau_bs_gammas <- rep(list(Tau_bs_gammas), n_strata)
-    prs <- list(mean_betas = lapply(betas, "*", 0.0),
-                Tau_betas = lapply(betas, function (b) 0.01 * diag(length(b))),
+    mean_betas <- lapply(betas, "*", 0.0)
+    Tau_betas <- lapply(betas, function (b) 0.01 * diag(length(b)))
+    mean_betas_HC <- unlist(mean_betas, use.names = FALSE)[ind_FE_HC]
+    Tau_betas_HC <- bdiag(Tau_betas)[ind_FE_HC, ind_FE_HC, drop = FALSE]
+    mean_betas_nHC <- mapply2(get_betas_nHC, mean_betas, x_notin_z)
+    Tau_betas_nHC <- mapply2(get_betas_nHC, Tau_betas, x_notin_z)
+    prs <- list(mean_betas_HC = mean_betas_HC, Tau_betas_HC = Tau_betas_HC,
+                mean_betas_nHC = mean_betas_nHC, Tau_betas_nHC = Tau_betas_nHC,
                 mean_bs_gammas = lapply(Tau_bs_gammas, function (x) x[, 1] * 0),
                 Tau_bs_gammas = Tau_bs_gammas,
                 A_tau_bs_gammas = rep(1, n_strata), B_tau_bs_gammas = rep(0.1, n_strata),

@@ -124,6 +124,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat R = cov2cor(D);
   mat L = chol(R);
   field<vec> betas = List2Field_vec(as<List>(initial_values["betas"]));
+  vec betas_vec = docall_rbindF(betas);
   vec sigmas = exp(as<vec>(initial_values["log_sigmas"]));
   uvec has_sigmas = find(sigmas > 1e-07);
   // indexes or other useful things
@@ -170,7 +171,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   double prior_D_L_etaLKJ = as<double>(priors["prior_D_L_etaLKJ"]);
   double prior_sigmas_df = as<double>(priors["prior_sigmas_df"]);
   double prior_sigmas_sigma = as<double>(priors["prior_sigmas_sigma"]);
+  vec prior_mean_betas_HC = as<vec>(priors["mean_betas_HC"]);
+  mat prior_Tau_betas_HC = as<mat>(priors["Tau_betas_HC"]);
+  field<vec> prior_mean_betas_nHC = List2Field_vec(as<List>(priors["mean_betas_nHC"]));
+  field<mat> prior_Tau_betas_nHC = List2Field_mat(as<List>(priors["Tau_betas_nHC"]));
   // store results
+  uword n_outcomes = y.n_elem;
   uword n_b = b_mat.n_rows;
   uword n_bs_gammas = bs_gammas.n_rows;
   uword n_strata = tau_bs_gammas.n_rows;
@@ -182,6 +188,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uword n_sds = sds.n_rows;
   uword n_L = vec(L(upper_part)).n_rows;
   uword n_sigmas = sigmas.n_rows;
+  uword n_betas = betas_vec.n_rows;
   mat res_bs_gammas(n_iter, n_bs_gammas, fill::zeros);
   mat acceptance_bs_gammas(n_iter, n_bs_gammas, fill::zeros);
   mat res_gammas(n_iter, n_gammas, fill::zeros);
@@ -205,6 +212,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   cube var_b(b_mat.n_cols, b_mat.n_cols, b_mat.n_rows);
   mat res_sigmas(n_iter, n_sigmas, fill::zeros);
   mat acceptance_sigmas(n_iter, n_sigmas, fill::zeros);
+  mat res_betas(n_iter, n_betas, fill::zeros);
+  mat acceptance_betas(n_iter, n_outcomes, fill::zeros);
   mat res_logLik(n_iter, n_b, fill::zeros);
   // scales
   vec scale_bs_gammas = create_init_scale(n_bs_gammas);
@@ -212,8 +221,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec scale_alphas = create_init_scale(n_alphas);
   vec scale_sds = create_init_scale(n_sds);
   vec scale_L = create_init_scale(n_L);
-  vec scale_sigmas = create_init_scale(n_sigmas);
   vec scale_b = create_init_scale(n_b);
+  vec scale_sigmas = create_init_scale(n_sigmas);
+  vec scale_betas = create_init_scale(n_outcomes);
   // preliminaries
   vec W0H_bs_gammas = W0_H * bs_gammas;
   vec W0h_bs_gammas(W0_h.n_rows);
