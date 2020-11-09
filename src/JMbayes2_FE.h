@@ -78,7 +78,7 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
                    const field<uvec> prop_Sigma_FE_nHC, // vcov for the proposal
                    vec &logLik_long,
                    vec &logLik_surv,
-                   vec &logLik_fe_nHC, // a vec(n_outcomes) where vec.at(j) is the logLik_prior for outcome-j at iteration it-1  
+                   vec &logLik_fe_nHC, // a vec(n_outcomes) where vec.rows(j) is the logLik_prior for outcome-j at iteration it-1  
                    const uword &RMu_it_thld, // robins monro univariate iterations threshold to update the scale. Updates scale from it > RMu_it_thld
                    const double &RMu_tacce // robins monro univariate target acceptance
                   )
@@ -116,7 +116,7 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   mat XDX_i;
   vec ind_FE_i;
   
-  for (uword i = 0; i < n; ++i) { // obtain the sums required for the posterior parameters. per subject
+  for (uword i = 0; i < n; ++i) { // i-th patient
     
     patt_i = id_patt.at(i); // id missing outcome pattern
     ind_FE_i = ind_FE_patt.at(patt_i) - 1;
@@ -147,26 +147,32 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   mat U_1 = chol(Tau_1);
   
   res_betas.submat(it, ind_FE_HC - 1) = (propose_mvnorm_vec(1, U_1, 1) + mean_1).t();
-  // I am doing this here, because I need to the save the update the sampled FE_HC on the betas field, 
-  // and I need to add the current FE_nHC to avoid add zeros instead. Given I need the current values for the MCMC. 
-  // I later update the FE_nHC on this same row with the M-H sample. By doing so we avoid a create new ind_variables
+  /* 
+  I am doing this here, because I need to the save the update the sampled FE_HC 
+  on the betas field, and I need to add the current FE_nHC to avoid add zeros instead. 
+  Given I need the current values for the MCMC. I later update the FE_nHC on this 
+  same row with the M-H sample. By doing so we avoid a create new ind_variables
+  */
   res_betas.submat(it, ind_FE_nHC - 1) = docall_rbindF(betas).rows(ind_FE_nHC - 1);
   betas = vec2field(res_betas.row(it), ind_FE);
   
+  //////////////////////////////////////////////////////////////////////////////
   // FE not in HC - Metropolis-Hastings sampling
-  vec prior_mean_FE_nHC;
-  mat prior_Tau_FE_nHC;
-  uvec ind_j;
-  vec betas_j;
-  mat prop_U_j;
-  field<vec> eta_long;
-  vec logLik_long_prop;
-  vec logLik_surv_prop;
-  double logLik_fe_nHC_prop;
-  double numerator;
-  double denominator; 
-  double log_ratio;
-  field<uvec> betas_prop;
+  
+  uvec ind_j; // ind nHC-FE in the j-th outcome. Counts from 0 
+  mat prop_U_j; // Chol-fact (upper) vcov matrix proposal distribution for the nHC-FE in the j-th outcome
+  vec prior_mean_j; // prior mean for the nHC-FE in the j-th outcome
+  mat prior_U_j; //  Chol-fact (upper) vcov matrix for the nHC-FE in the j-th outcome
+  field<vec> eta_long; // eta for all longitudinal outcomes
+  vec logLik_long_prop; // all longitudinal outcomes contribution for the logLik (given the proposed nHC-FE). each k-th row reports to the k-th id
+  vec logLik_surv_prop; // survival contribution for the logLik (given the proposed nHC-FE). each k-th row reports to the k-th id
+  double denominator; // log acceptance ratio denominator
+  double numerator; // log acceptance ratio numerator 
+  double log_ratio; // log acceptance ratio
+  field<uvec> betas_prop; // all FE with the proposed nHC-FE for the j-th outcome
+  double logLik_fe_nHC_prop; // prior contribution from the j-th outcome for the logLik (given the proposed nHC-FE)
+  //
+  
   mat Wlong_H_prop;
   vec WlongH_alphas_prop; 
   mat Wlong_h_prop(Wlong_h.n_rows, Wlong_h.n_cols);
@@ -174,58 +180,61 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   mat Wlong_H2_prop(Wlong_H2.n_rows, Wlong_H2.n_cols);
   vec WlongH2_alphas_prop(WlongH2_alphas.n_rows);
 
-  for (uword j = 0; j < n_y; ++i) { // per outcome
+  for (uword j = 0; j < n_y; ++i) { // j-th outcome
     
-    if (has_tilde_betas.rows(it)) { // some outcomes may not have FE out of the HC
+    if (has_tilde_betas.rows(it)) { // skip the outcomes that don't have nHC-FE
       
-      ind_j = indL_FE_nHC.at(j) - 1;
-      //! the three lines below could be outside the function. They do not change accross iterations
-      prop_U_j = chol(prop_Sigma_FE_nHC.at(j).submat(ind_j, ind_j));
-      prior_mean_j = prior_mean_FE.at(j).rows(ind_j) 
-      prior_U_j = chol( inv(diagmat( prior_Tau_FE.at(j).submat(ind_j, ind_j) )) ); // log_dmvnrm_chol() expects a chol(Sigma) and not a chol(Tau). I am assuming that prior_Tau_FE.at(j) is a diagonal matrix.  
-      //! By using chol(.) we avoid uncessary chol(.) calculations. If we were 
-      // using log_dmvnrm() instead, it will do a chol(Sigma) for each iteration 
-      // and outcome. By using log_dmvnrm_chol(), we require only one chol() per outcome. 
-      // But this is only true if we create these variables outside this function.
+      ind_j = indL_FE_nHC.at(j) - 1; // uvec
+      //!! the three lines below could be outside the function. They do not change accross iterations
+      prop_U_j = chol(prop_Sigma_FE_nHC.at(j).submat(ind_j, ind_j)); // mat
+      prior_mean_j = prior_mean_FE.at(j).rows(ind_j);  // vec
+      // below: log_dmvnrm_chol() expects a chol(Sigma) and not a chol(Tau). I am assuming that prior_Tau_FE.at(j) is a diagonal matrix.
+      prior_U_j = chol( inv(diagmat( prior_Tau_FE.at(j).submat(ind_j, ind_j) )) ); // mat 
+      /*!!
+      By using chol(.) we avoid uncessary chol(.) calculations. If we were 
+      using log_dmvnrm() instead, it will do a chol(Sigma) for each iteration 
+      and outcome. By using log_dmvnrm_chol(), we require only one chol() per outcome. 
+      But this is only true if we create these variables outside this function.
+      */
       
-      if(it = 0) { //? Greg seems to do this step outside. Check this with him.
-        
-        logLik_fe_nHC.at(j) = log_dmvnrm_chol(betas.at(j).rows(ind_j) - prior_mean_j,
-                                              prior_U_j)
+      if(it = 0) { //?? Greg seems to do this step outside. Check this with him.
+        logLik_fe_nHC.rows(j) = log_dmvnrm_chol(betas.at(j).rows(ind_j) - prior_mean_j,
+                                              prior_U_j); // double
         }
 
       // denominator
-      vec denominator = sum(logLik_long) + sum(logLik_surv) + logLik_fe_nHC.at(j); 
-      
-      betas_prop = betas;
-      beta_prop.at(j).rows(ind_j) = propose_mvnorm_vec(1, pro_U_j, 1) + betas.at(j).rows(ind_j); //? implement my own function (I use this function multiple times, replace it there too)
+      denominator = sum(logLik_long) + sum(logLik_surv) + logLik_fe_nHC.at(j); // double
+ 
+      betas_prop = betas; // field<vec>
+      beta_prop.at(j).rows(ind_j) = propose_mvnorm_vec(1, pro_U_j, scale_betas.rows(j)) + betas.at(j).rows(ind_j); // vec
       
       // logLik_prior
       logLik_fe_nHC_prop = log_dmvnrm_chol(betas_prop.at(j).rows(ind_j) - prior_mean_j,
-                                           prior_U_j)
+                                           prior_U_j); // double
 
       // logLik_long
-      eta_long   = linpred_mixed(X.at, betas_prop, Z, b, id);
+      eta_long = linpred_mixed(X, betas_prop, Z, b, id); // field<vec>
       logLik_long_prop = log_long(y, eta_long, sigmas, extra_parms,
-                                  families, links, ids, unq_ids); // there is no need to estimate the logLik_long_prop for all outcomes, the outcome j would be enough. But if we accept we will need to update the full logLik_long
-      //? Greg uses an extra param n here that does not seem to appear on the function log_long (line 54)
-      //https://github.com/drizopoulos/JMbayes2/blob/9ac64f55086ad48229cdeb6d01c5f82b82aaf8b0/src/JMbayes2_RE.h#L54
+                                  families, links, ids, unq_ids, n); // vec
+      // there is no need to estimate the logLik_long_prop for all outcomes, the logLik its proportional to the contibution of outcome j. 
+      // We could remove the raining outcomes from the posterior. But we are using all outcomes 
+      // because if we accept we will need to update the (full) logLik_long variable
 
       // logLik_surv
       Wlong_H_prop = calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas_prop, b, 
-                                     id_H_, FunForms, FunForms_ind);
-      WlongH_alphas_prop = Wlong_H_prop * alphas;
+                                     id_H_, FunForms, FunForms_ind); // mat
+      WlongH_alphas_prop = Wlong_H_prop * alphas; // vec
       
       if (any_event) {
-        Wlong_h_proposed = calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas_prop,
-                                           b, id_h, FunForms, FunForms_ind);
-        Wlongh_alphas_prop = Wlong_h_prop * alphas;
+        Wlong_h_prop = calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas_prop, b,
+                                       id_h, FunForms, FunForms_ind); // mat
+        Wlongh_alphas_prop = Wlong_h_prop * alphas; // vec
       }
       
       if (any_interval) {
-        Wlong_H2_prop = calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas_prop, 
-                                        b, id_H_, FunForms, FunForms_ind);
-        WlongH2_alphas_prop = Wlong_H2_prop * alphas;
+        Wlong_H2_prop = calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas_prop, b, 
+                                        id_H_, FunForms, FunForms_ind); // mat
+        WlongH2_alphas_prop = Wlong_H2_prop * alphas; // vec
       }
     
     
@@ -234,38 +243,43 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
                                   WlongH_alphas_prop, Wlongh_alphas_prop,
                                   WlongH2_alphas_prop, log_Pwk, log_Pwk2, 
                                   indFast_H, indFast_h, which_event, which_right_event, 
-                                  which_left, any_interval, which_interval);
+                                  which_left, any_interval, which_interval); // vec
       
       // numerator
-      numerator = sum(logLik_long_prop) + sum(logLik_surv_prop) + logLik_fe_nHC_prop;
-      //? If I'm understanding Greg's code correctly, he samples all patients at the same time and then updtes the random effects 
-      //? for those patients who are accepted. Hoever, shouldn't it be iteratively? If I accept for patient i, I should account 
-      //? for his new RE in the log_Lik_surv (in both numerator and denominator) for patient (i+1)
-      //? are we avoiding it to save computational time? If there is no difference, I could use the same approach for the betas.
+      numerator = sum(logLik_long_prop) + sum(logLik_surv_prop) + logLik_fe_nHC_prop; // double
       
-      log_ratio =  numerator - denominator;
+      /*??
+      If I'm understanding Greg's code correctly, he samples all patients RE at the
+      same time and then updates the RE for those patients who are accepted. 
+      Hoewver, shouldn't it be iteratively? If I accept for patient i, I should update the log_Lik 
+      (in both numerator and denominator) before estimating the acceptance ratio for patient (i+1). 
+      What is the mistake in my reasoning? Or are we avoiding it to save computational time? 
+      If there is no difference, I could use the same approach for the betas.
+      */
+      
+      log_ratio =  numerator - denominator; // double
       
       if(std::isfinite(log_ratio) && std::exp(log_ratio) > R::runif(0.0, 1.0)) {
         
-        betas.at(j) = betas_prop.at(j);
+        betas.at(j).rows(ind_j) = betas_prop.at(j).rows(ind_j); // vec
         acceptance_betas.at(it, j) = 1;
 
-        logLik_long = logLik_long_prop;
-        logLik_surv = logLik_surv_prop;
-        logLik_fe_nHC.at(j) = logLik_fe_nHC_prop;
+        logLik_long = logLik_long_prop; // vec
+        logLik_surv = logLik_surv_prop; // vec
+        logLik_fe_nHC.rows(j) = logLik_fe_nHC_prop; // double
         
-        //? there are some updates missing here <-------------------------------
+        //?? there are some updates missing here <-------------------------------
         
         
       }
       
       if(it > RMu_it_thld) {
-        scale_betas.rows(j) = robbins_monro(scale_betas.rows(j), acceptance_betas.at(it, j), it, RMu_tacce);
+        scale_betas.rows(j) = robbins_monro(scale_betas.rows(j), acceptance_betas.at(it, j), it, RMu_tacce); // double
       }
     }
   }
   
-  res_betas.submat(it, ind_FE_nHC - 1) = docall_rbindF(betas).rows(ind_FE_nHC - 1);
+  res_betas.submat(it, ind_FE_nHC - 1) = docall_rbindF(betas).rows(ind_FE_nHC - 1).t(); // vec.t()
   
 )
 
