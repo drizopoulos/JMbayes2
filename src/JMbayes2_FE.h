@@ -28,9 +28,6 @@ using namespace arma;
   //   return out;
   // }
 
-// we could write the propose_mvnorm_mat with a sub-function that work with matrices that are slices of the cube, and then I could use that sub-function here, instead of transforming my U_vcov in matrices
-  
-  
 void update_betas (field<vec> &betas, // it-th sampled fixed effects
                    mat &res_betas, // all sampled fixed effects
                    const uword &it, // current iteration
@@ -68,20 +65,20 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
                    const field<uvec> &FunForms,
                    const field<uvec> &FunForms_ind,
                    const vec &alphas,
-                   mat &Wlong_h,
+                   mat &Wlong_h, mat &Wlong_H, mat &Wlong_H2,
                    vec &Wlongh_alphas,
                    const bool &any_event, const bool &any_interval,
-                   mat &Wlong_H2,
                    const vec &W0H_bs_gammas, const vec &W0h_bs_gammas, const vec &W0H2_bs_gammas,
                    const vec &WH_gammas, const vec &Wh_gammas, const vec &WH2_gammas,
                    const vec &log_Pwk, const vec &log_Pwk2,
                    const uvec &indFast_H, const uvec &indFast_h,
                    const uvec &which_event, const uvec &which_right_event, const uvec &which_left,
                    const uvec &which_interval,
+                   const uword &n_strata, const uword &GK_k,
                    const field<uvec> prop_Sigma_FE_nHC, // vcov for the proposal
-                   vec &logLik_long, // <----------------------------------------------------------------------------
-                   vec &logLik_surv, // <----------------------------------------------------------------------------
-                   vec &logLik_fe_nHC, // <----------------------------------------------------------------------------
+                   vec &logLik_long,
+                   vec &logLik_surv,
+                   vec &logLik_fe_nHC, // a vec(n_outcomes) where vec.at(j) is the logLik_prior for outcome-j at iteration it-1  
                    const uword &RMu_it_thld, // robins monro univariate iterations threshold to update the scale. Updates scale from it > RMu_it_thld
                    const double &RMu_tacce // robins monro univariate target acceptance
                   )
@@ -145,14 +142,11 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
     
   }
   
-  vec mean_1; // posterior mean vector
-  mat Tau_1; // posterior vcov matrix
+  mat Tau_1 = (prior_Tau_HC + sum_JXDXJ).i(); //! Can I write the Tau_1 in terms of an L matrix? to avoid the use of chol(Tau_1) later <---------------------------------
+  vec mean_1 = Tau_1 * (prior_Tau_HC * prior_mean_HC + sum_JXDu);
+  mat U_1 = chol(Tau_1);
   
-  Tau_1 = (prior_Tau_HC + sum_JXDXJ).i(); //! Can I write the Tau_1 in terms of an L matrix? to avoid the use of chol(Tau_1) later <---------------------------------
-  mean_1 = Tau_1 * (prior_Tau_HC * prior_mean_HC + sum_JXDu);
-  cube U_1(p_hc, p_hc, 1); U_1.slice(0) = chol(Tau_1); // propose_mvnorm_mat() expects a cube
-  
-  res_betas.submat(it, ind_FE_HC - 1) = (propose_mvnorm_mat(1, U_1, {1}) + mean_1).t();
+  res_betas.submat(it, ind_FE_HC - 1) = (propose_mvnorm_vec(1, U_1, 1) + mean_1).t();
   // I am doing this here, because I need to the save the update the sampled FE_HC on the betas field, 
   // and I need to add the current FE_nHC to avoid add zeros instead. Given I need the current values for the MCMC. 
   // I later update the FE_nHC on this same row with the M-H sample. By doing so we avoid a create new ind_variables
@@ -164,14 +158,14 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   mat prior_Tau_FE_nHC;
   uvec ind_j;
   vec betas_j;
-  cube U_j;
-  field<vec> eta_long(1);
-  vec logLik_long_prop(1);
+  mat prop_U_j;
+  field<vec> eta_long;
+  vec logLik_long_prop;
   vec logLik_surv_prop;
-  vec logLik_fe_nHC_prop(1);
-  vec numerator(1);
-  vec denominator(1); 
-  vec log_ratio(1);
+  double logLik_fe_nHC_prop;
+  double numerator;
+  double denominator; 
+  double log_ratio;
   field<uvec> betas_prop;
   mat Wlong_H_prop;
   vec WlongH_alphas_prop; 
@@ -179,44 +173,41 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   vec Wlongh_alphas_prop(Wlongh_alphas.n_rows);
   mat Wlong_H2_prop(Wlong_H2.n_rows, Wlong_H2.n_cols);
   vec WlongH2_alphas_prop(WlongH2_alphas.n_rows);
-  
+
   for (uword j = 0; j < n_y; ++i) { // per outcome
     
     if (has_tilde_betas.rows(it)) { // some outcomes may not have FE out of the HC
       
       ind_j = indL_FE_nHC.at(j) - 1;
       //! the three lines below could be outside the function. They do not change accross iterations
-      prop_U_j.slice(0) = chol(prop_Sigma_FE_nHC.at(j).submat(ind_j, ind_j));
+      prop_U_j = chol(prop_Sigma_FE_nHC.at(j).submat(ind_j, ind_j));
       prior_mean_j = prior_mean_FE.at(j).rows(ind_j) 
       prior_U_j = chol( inv(diagmat( prior_Tau_FE.at(j).submat(ind_j, ind_j) )) ); // log_dmvnrm_chol() expects a chol(Sigma) and not a chol(Tau). I am assuming that prior_Tau_FE.at(j) is a diagonal matrix.  
-      // By using chol(.) we avoid uncessary chol(.) calculations. If we were 
+      //! By using chol(.) we avoid uncessary chol(.) calculations. If we were 
       // using log_dmvnrm() instead, it will do a chol(Sigma) for each iteration 
       // and outcome. By using log_dmvnrm_chol(), we require only one chol() per outcome. 
       // But this is only true if we create these variables outside this function.
       
       if(it = 0) { //? Greg seems to do this step outside. Check this with him.
         
-        logLik_fe_nHC.at(j) = log_dmvnrm_chol(??, //? I am not sure how the function should be used, I was expecting two input parameters, one for the mean and other for the betas. update below when figure out
-                                              betas.at(j).rows(ind_j),
+        logLik_fe_nHC.at(j) = log_dmvnrm_chol(betas.at(j).rows(ind_j) - prior_mean_j,
                                               prior_U_j)
-          
-        // denominator
-        vec denominator = logLik_long.at(j) + logLik_surv + logLik_fe_nHC.at(j); 
-
         }
 
+      // denominator
+      vec denominator = sum(logLik_long) + sum(logLik_surv) + logLik_fe_nHC.at(j); 
+      
       betas_prop = betas;
-      beta_prop.at(j).rows(ind_j) = propose_mvnorm_mat(1, U_j, scale_betas.rows(j)) + betas.at(j).rows(ind_j);
+      beta_prop.at(j).rows(ind_j) = propose_mvnorm_vec(1, pro_U_j, 1) + betas.at(j).rows(ind_j); //? implement my own function (I use this function multiple times, replace it there too)
       
       // logLik_prior
-      logLik_fe_nHC_prop = log_dmvnrm_chol(??, //? update
-                                          betas_prop.at(j).rows(ind_j),
-                                          prior_U_j)
+      logLik_fe_nHC_prop = log_dmvnrm_chol(betas_prop.at(j).rows(ind_j) - prior_mean_j,
+                                           prior_U_j)
 
       // logLik_long
-      eta_long.at(1)   = linpred_mixed(X.at(j), betas_prop.at(j), Z.at(j), b.at(j), id.at(j);
-      logLik_long_prop = log_long(y.at(j), eta_long.at(1), sigmas.rows(j), extra_parms.rows(j),
-                                  families.rows(j), links.rows(j), ids.rows(j), unq_ids.rows(j)); 
+      eta_long   = linpred_mixed(X.at, betas_prop, Z, b, id);
+      logLik_long_prop = log_long(y, eta_long, sigmas, extra_parms,
+                                  families, links, ids, unq_ids); // there is no need to estimate the logLik_long_prop for all outcomes, the outcome j would be enough. But if we accept we will need to update the full logLik_long
       //? Greg uses an extra param n here that does not seem to appear on the function log_long (line 54)
       //https://github.com/drizopoulos/JMbayes2/blob/9ac64f55086ad48229cdeb6d01c5f82b82aaf8b0/src/JMbayes2_RE.h#L54
 
@@ -246,7 +237,7 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
                                   which_left, any_interval, which_interval);
       
       // numerator
-      numerator = logLik_long_prop + logLik_surv_prop + logLik_fe_nHC_prop; //? in my it should be a double, and not a vector as for Greg
+      numerator = sum(logLik_long_prop) + sum(logLik_surv_prop) + logLik_fe_nHC_prop;
       //? If I'm understanding Greg's code correctly, he samples all patients at the same time and then updtes the random effects 
       //? for those patients who are accepted. Hoever, shouldn't it be iteratively? If I accept for patient i, I should account 
       //? for his new RE in the log_Lik_surv (in both numerator and denominator) for patient (i+1)
@@ -258,13 +249,13 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
         
         betas.at(j) = betas_prop.at(j);
         acceptance_betas.at(it, j) = 1;
-        //denominator = numerator;
-        
-        // update the inputs as Greg does <--------------------------------------------------------------------------------------
-        
-        logLik_long.at(j) = logLik_long_prop;
-        logLik_fe_nHC.at(j) = logLik_fe_nHC_prop;
+
+        logLik_long = logLik_long_prop;
         logLik_surv = logLik_surv_prop;
+        logLik_fe_nHC.at(j) = logLik_fe_nHC_prop;
+        
+        //? there are some updates missing here <-------------------------------
+        
         
       }
       
