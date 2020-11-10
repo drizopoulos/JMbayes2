@@ -127,7 +127,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     baseline <- lapply(componentsHC, "[[", "baseline")
     x_in_z <- lapply(componentsHC, "[[", "x_in_z")
     x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
-    X_dot = function(Xbase, seq_len(nY), unq_idL, nres)
+    X_dot <- create_X_dot(Xbase, seq_len(nY), unq_idL, nres)
     nfes <- sapply(X, ncol)
     # 'ind_FE' is used in vec2field() to re-create the field of betas
     # from betas_vec
@@ -420,7 +420,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ############################################################################
     ############################################################################
     Data <- list(n = nY, idL = idL, idL_ind = idL_ind, idL_lp = idL_lp, unq_idL = unq_idL,
-                 y = y, X = X, Z = Z, Xbase = Xbase, baseline = baseline,
+                 y = y, X = X, Z = Z, Xbase = Xbase, baseline = baseline, X_dot = X_dot,
                  x_in_z = x_in_z, x_notin_z = x_notin_z,
                  has_tilde_betas = has_tilde_betas, ind_FE = ind_FE,
                  ind_FE_HC = ind_FE_HC, ind_FE_nHC = ind_FE_nHC,
