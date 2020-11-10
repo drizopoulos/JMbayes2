@@ -45,11 +45,10 @@ vec logPrior(const vec &x, const vec &mean) {
 }
 
 // [[Rcpp::export]]
-mat index_vec (const uvec &ind) { // binds a field of vectors into one vector
-    mat out(3, sum(ind), fill::zeros);
-    return out;
+mat M_nas (const mat &L, const uvec &ind_RE_patt) {
+    mat L_patt_inv = inv(trimatu(chol_update(L, ind_RE_patt)));
+    mat D_inv =  L_patt_inv.t() * L_patt_inv;
+    return D_inv;
 }
-
-index_vec(c(FALSE, FALSE))
 
 

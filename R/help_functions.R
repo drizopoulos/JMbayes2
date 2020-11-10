@@ -121,7 +121,7 @@ bdiag <- function (...) {
             ret[indx[, 1], indx[, 2]] <- mlist[[i]]
         }
     }
-    colnames(ret) <- unlist(lapply(mlist, colnames))
+    #colnames(ret) <- unlist(lapply(mlist, colnames))
     ret
 }
 
