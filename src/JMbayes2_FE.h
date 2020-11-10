@@ -136,7 +136,7 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
     if (i < patt_count) { // obtain all unique vcov_inv matrices required for the sums in the posterior parameters
       
       L_patt_inv = inv( trimatl( chol_update(L_D, ind_RE_patt.at(i) - 1) ) ); // mat
-      D_inv.at(i) =  L_patt_inv.t() * L_patt_inv; // mat
+      D_inv.at(i) =  L_patt_inv.t() * L_patt_inv; // mat //?? do you know a better way to do this caculation?
       
     }
 
@@ -284,7 +284,6 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
                                         id_H_, FunForms, FunForms_ind); // mat
         WlongH2_alphas_prop = Wlong_H2_prop * alphas; // vec
       }
-      
       
       logLik_surv_prop = log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, 
                                   WH_gammas, Wh_gammas, WH2_gammas, 
