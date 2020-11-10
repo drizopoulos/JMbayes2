@@ -77,7 +77,6 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
                    const uvec &indFast_H, const uvec &indFast_h,
                    const uvec &which_event, const uvec &which_right_event, const uvec &which_left,
                    const uvec &which_interval,
-                   const uword &n_strata, const uword &GK_k,
                    const field<uvec> prop_Sigma_FE_nHC, // vcov for the proposal
                    vec &logLik_long,
                    vec &logLik_surv,
@@ -91,27 +90,24 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
 
   // FE in HC - Gibss sampling
   
-  //!! The variables below could also be function's input parameters. They not change between iterations.
+  //?? The variables below could also be function's input parameters. They not change between iterations.
   uword n = b_mat.n_rows; // number of unique subjects
   uword n_y = betas.n_elem; // number of longitudinal outcomes
   uword re_count = L.n_cols; // number of random effects
   uword patt_count = id_patt.max(); // number of unique outcome-missing patterns          
-
-  // below: its assumes that the precision matrices within and between outcomes are diagonal. If not, we need to implement a function to obtain the conditionals distributions.
+  // below: it assumes that the precision matrices within and between outcomes are diagonal. If not, we need to implement a function to obtain the conditional prior distributions.
   vec prior_mean_HC = docall_rbindF(prior_mean_FE).rows(ind_FE_HC - 1); // prior mean for all HC-FE
   mat prior_Tau_HC  = bdiagF(prior_Tau_FE).submat(ind_FE_HC - 1, ind_FE_HC - 1); // prior precision for all HC-FE
-  
   uword p_hc = ind_FE_HC.n_elem; // number of HC-FE
+  
   mat sum_JXDXJ(p_hc, p_hc, fill::zeros); // sum for the posterior parameters
   vec sum_JXDu(p_hc, fill::zeros); // sum for the posterior parameters
   mat L_D = L.each_row() % sds.t(); // RE vcov matrix Choesky factorization (upper)
   //?? the L matrix is a lower or upper triangular? If upper update the L_... variables below
   vec betas_HC(p_hc) = docall_rbindF(betas).rows(ind_FE_HC - 1);
-  /*??
-  I am declaring the variables outside the loop, because it seems to reduce the computation time. 
+  /*?? I am declaring the variables outside the loop, because it seems to reduce the computation time. 
   Seen here: https://gallery.rcpp.org/articles/dmvnorm_arma/. I am doing the same for the loop
-  in FE-nHC
- */
+  in FE-nHC. Do you have any thoughts on this? */
   
   uword patt_i; // outcome missing pattern for the i-th patient
   mat L_patt_inv; // inv cholesky factorization vcov matrix for the i-th (<patt_count) missing pattern
@@ -122,6 +118,15 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   mat XD_i; // aux var for the posterior parameters for the i-th patient
   mat XDX_i; // aux var for the posterior parameters for the i-th patient
   uvec ind_FE_i; // ind of the HC-FE for the i-th patient (patients reporting different outcomes will have different ind)
+  
+  vec logLik_long_prop; // all longitudinal outcomes contribution for the logLik (given the proposed nHC-FE). each k-th row reports to the k-th id
+  vec logLik_surv_prop; // survival contribution for the logLik (given the proposed nHC-FE). each k-th row reports to the k-th id
+  mat Wlong_H_prop;
+  vec WlongH_alphas_prop; 
+  mat Wlong_h_prop(Wlong_h.n_rows, Wlong_h.n_cols);
+  vec Wlongh_alphas_prop(Wlongh_alphas.n_rows);
+  mat Wlong_H2_prop(Wlong_H2.n_rows, Wlong_H2.n_cols);
+  vec WlongH2_alphas_prop(WlongH2_alphas.n_rows);
   
   for (uword i = 0; i < n; ++i) { // i-th patient
     
@@ -154,14 +159,60 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   mat U_1 = chol(Tau_1);
   
   res_betas.submat(it, ind_FE_HC - 1) = (propose_mvnorm_vec(1, U_1, 1) + mean_1).t(); // vec.t()
-  /* 
-  I am doing this here, because I need to the save the update the sampled FE_HC 
+  /* below: I am doing this here, because I need to the save the update the sampled FE_HC 
   on the betas field, and I need to add the current FE_nHC to avoid add zeros instead. 
-  Given I need the current values for the MCMC. I later update the FE_nHC on this 
-  same row with the M-H sample. By doing so we avoid a create new ind_variables
-  */
+  Given I need the current FE values for the MH. I later update the FE_nHC on this 
+  same row with the M-H sample. By doing so we avoid a create new ind_variables. */
   res_betas.submat(it, ind_FE_nHC - 1) = docall_rbindF(betas).rows(ind_FE_nHC - 1).t(); // vec.t()
   betas = vec2field(res_betas.row(it), ind_FE); // field<vec>
+  
+  //?? I believe I need to update the logLik_long, logik_surv, and Wlongh... after each iteration of the Gibbs sampler. Right?
+  
+  // logLik_long
+  eta_long = linpred_mixed(X, betas, Z, b, id); // field<vec>
+  logLik_long_prop = log_long(y, eta_long, sigmas, extra_parms,
+                              families, links, ids, unq_ids, n); // vec
+  /* there is no need to estimate the logLik_long_prop for all outcomes, the logLik its proportional to the contibution of outcome j. 
+  we could remove the raining outcomes from the posterior. But we are using all outcomes 
+  because if we accept we will need to update the (full) logLik_long variable */
+  
+  // logLik_surv
+  Wlong_H_prop = calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas, b, 
+                                 id_H_, FunForms, FunForms_ind); // mat
+  WlongH_alphas_prop = Wlong_H_prop * alphas; // vec
+  
+  if (any_event) {
+    Wlong_h_prop = calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas, b,
+                                   id_h, FunForms, FunForms_ind); // mat
+    Wlongh_alphas_prop = Wlong_h_prop * alphas; // vec
+  }
+  
+  if (any_interval) {
+    Wlong_H2_prop = calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas, b, 
+                                    id_H_, FunForms, FunForms_ind); // mat
+    WlongH2_alphas_prop = Wlong_H2_prop * alphas; // vec
+  }
+  
+  
+  logLik_surv_prop = log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, 
+                              WH_gammas, Wh_gammas, WH2_gammas, 
+                              WlongH_alphas_prop, Wlongh_alphas_prop,
+                              WlongH2_alphas_prop, log_Pwk, log_Pwk2, 
+                              indFast_H, indFast_h, which_event, which_right_event, 
+                              which_left, any_interval, which_interval); // vec
+  
+  Wlong_H = Wlong_H_prop;
+  WlongH_alphas = WlongH_alphas_prop;
+  
+  if (any_event) {
+    Wlong_h = Wlong_h_prop;
+    Wlongh_alphas = Wlongh_alphas_prop;
+  }
+  
+  if (any_interval) {
+    Wlong_H2 = Wlong_H2_prop;
+    WlongH2_alphas = WlongH2_alphas_prop;
+  }
   
   //////////////////////////////////////////////////////////////////////////////
   // FE not in HC - Metropolis-Hastings sampling
@@ -171,36 +222,26 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
   vec prior_mean_j; // prior mean for the nHC-FE in the j-th outcome
   mat prior_U_j; //  Chol-fact (upper) vcov matrix for the nHC-FE in the j-th outcome
   field<vec> eta_long; // eta for all longitudinal outcomes
-  vec logLik_long_prop; // all longitudinal outcomes contribution for the logLik (given the proposed nHC-FE). each k-th row reports to the k-th id
-  vec logLik_surv_prop; // survival contribution for the logLik (given the proposed nHC-FE). each k-th row reports to the k-th id
   double denominator; // log acceptance ratio denominator
   double numerator; // log acceptance ratio numerator 
   double log_ratio; // log acceptance ratio
   field<uvec> betas_prop; // all FE with the proposed nHC-FE for the j-th outcome
   double logLik_fe_nHC_prop; // prior contribution from the j-th outcome for the logLik (given the proposed nHC-FE)
-  mat Wlong_H_prop;
-  vec WlongH_alphas_prop; 
-  mat Wlong_h_prop(Wlong_h.n_rows, Wlong_h.n_cols);
-  vec Wlongh_alphas_prop(Wlongh_alphas.n_rows);
-  mat Wlong_H2_prop(Wlong_H2.n_rows, Wlong_H2.n_cols);
-  vec WlongH2_alphas_prop(WlongH2_alphas.n_rows);
-
+  
   for (uword j = 0; j < n_y; ++i) { // j-th outcome
     
     if (has_tilde_betas.rows(it)) { // skip the outcomes that don't have nHC-FE
       
       ind_j = indL_FE_nHC.at(j) - 1; // uvec
-      //!! the three lines below could be outside the function. They do not change accross iterations
+      //?? the three lines below could be outside the function. They do not change accross iterations
       prop_U_j = chol(prop_Sigma_FE_nHC.at(j).submat(ind_j, ind_j)); // mat
       prior_mean_j = prior_mean_FE.at(j).rows(ind_j);  // vec
       // below: log_dmvnrm_chol() expects a chol(Sigma) and not a chol(Tau). It assumes that prior_Tau_FE.at(j) is a diagonal matrix.
       prior_U_j = chol( inv(diagmat( prior_Tau_FE.at(j).submat(ind_j, ind_j) )) ); // mat 
-      /*!!
-      By using chol(.) we avoid uncessary chol(.) calculations. If we were 
+      /*?? By using chol(.) we avoid uncessary chol(.) calculations. If we were 
       using log_dmvnrm() instead, it will do a chol(Sigma) for each iteration 
       and outcome. By using log_dmvnrm_chol(), we require only one chol() per outcome. 
-      But this is only true if we create these variables outside this function.
-      */
+      But this is only true if we create these variables outside this function.*/
       
       if(it = 0) { //?? Greg seems to do this step outside. Check this with him.
         logLik_fe_nHC.rows(j) = log_dmvnrm_chol(betas.at(j).rows(ind_j) - prior_mean_j,
@@ -221,10 +262,12 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
       eta_long = linpred_mixed(X, betas_prop, Z, b, id); // field<vec>
       logLik_long_prop = log_long(y, eta_long, sigmas, extra_parms,
                                   families, links, ids, unq_ids, n); // vec
-      // there is no need to estimate the logLik_long_prop for all outcomes, the logLik its proportional to the contibution of outcome j. 
-      // We could remove the raining outcomes from the posterior. But we are using all outcomes 
-      // because if we accept we will need to update the (full) logLik_long variable
-
+      /* there is no need to estimate the logLik_long_prop for all outcomes, the 
+      logLik its proportional to the contibution of outcome j. 
+      We could remove the raining outcomes from the posterior. But we are using 
+      all outcomes because if we accept we will need to update the (full) 
+      logLik_long variable */
+      
       // logLik_surv
       Wlong_H_prop = calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas_prop, b, 
                                      id_H_, FunForms, FunForms_ind); // mat
@@ -241,8 +284,8 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
                                         id_H_, FunForms, FunForms_ind); // mat
         WlongH2_alphas_prop = Wlong_H2_prop * alphas; // vec
       }
-    
-    
+      
+      
       logLik_surv_prop = log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, 
                                   WH_gammas, Wh_gammas, WH2_gammas, 
                                   WlongH_alphas_prop, Wlongh_alphas_prop,
@@ -253,14 +296,11 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
       // numerator
       numerator = sum(logLik_long_prop) + sum(logLik_surv_prop) + logLik_fe_nHC_prop; // double
       
-      /*??
-      If I'm understanding Greg's code correctly, he samples all patients RE at the
+      /*?? If I'm understanding Greg's code correctly, he samples all patients RE at the
       same time and then updates the RE for those patients who are accepted. 
-      Hoewver, shouldn't it be iteratively? If I accept for patient i, I should update the log_Lik 
-      (in both numerator and denominator) before estimating the acceptance ratio for patient (i+1). 
-      What is the mistake in my reasoning? Or are we avoiding it to save computational time? 
-      If there is no difference, I could use the same approach for the betas.
-      */
+      He does it because in his case the posterior is proportional to one subject at a time.
+      That's why he can sample all at the same time, without the need to conditional on the previous update.
+      Did i understand it right? */ 
       
       log_ratio =  numerator - denominator; // double
       
@@ -273,9 +313,19 @@ void update_betas (field<vec> &betas, // it-th sampled fixed effects
         logLik_surv = logLik_surv_prop; // vec
         logLik_fe_nHC.rows(j) = logLik_fe_nHC_prop; // double
         
-        //?? there are some updates missing here <-------------------------------
+        //?? I would to cross-check the updates below
+        Wlong_H = Wlong_H_prop;
+        WlongH_alphas = WlongH_alphas_prop;
         
+        if (any_event) {
+          Wlong_h = Wlong_h_prop;
+          Wlongh_alphas = Wlongh_alphas_prop;
+        }
         
+        if (any_interval) {
+          Wlong_H2 = Wlong_H2_prop;
+          WlongH2_alphas = WlongH2_alphas_prop;
+        }
       }
       
       if(it > RMu_it_thld) {
