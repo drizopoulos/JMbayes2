@@ -195,7 +195,7 @@ fm2 <- lme(prothrombin ~ ns(year, 2) + sex, data = pbc2,
            random = ~ year + I(year^2)| id,
            na.action = na.exclude, control = lmeControl(opt = "optim"))
 
-fm3 <- mixed_model(ascites ~ year + sex, data = pbc2, random = ~ year | id,
+fm3 <- mixed_model(ascites ~ year, data = pbc2, random = ~ year | id,
                    family = binomial())
 Mixed <- list(fm1, fm2, fm3)
 Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
