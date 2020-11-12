@@ -515,7 +515,7 @@ create_X_dot <- function(Xbase, ids_unq, ids_out, nres){
 }
 
 create_X_dot2 <- function (nT, nres, ind_FE_HC, x_in_z, x_in_z_base, unq_idL,
-                           baseline, Xbase) {
+                           Xbase) {
     n_outcomes <- length (nres)
     ind_rows_subject <- rep(seq_len(nT), each = sum(nres))
     ind_rows_outcome <- rep(seq_len(n_outcomes), nres)
@@ -529,9 +529,9 @@ create_X_dot2 <- function (nT, nres, ind_FE_HC, x_in_z, x_in_z_base, unq_idL,
             if (check) {
                 rows <- which(ind_rows_subject == i)[ind_rows_outcome == j]
                 cols <- ind_cols[[j]][x_in_z[[j]]]
-                M[cbind(rows, cols)] <- 1
-                if (all(!is.na(baseline[[j]]))) {
-                    M[rows[1L], ind_cols[[j]][baseline[[j]]]] <-
+                M[cbind(rows[1:length(cols)], cols)] <- 1
+                if (length(ind_cols[[j]]) > length(cols)) {
+                    M[rows[1L], ind_cols[[j]][-x_in_z[[j]]]] <-
                         Xbase[[j]][as.character(i), ]
                 }
             }

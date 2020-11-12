@@ -419,7 +419,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ind_RE_patt <- apply(unique(out_in), 1L, find_patt, n = nres)
     ind_FE_patt <- apply(unique(out_in), 1L, find_patt, n = q_dot)
     X_dot <- create_X_dot2(nT, nres, ind_FE_HC, x_in_z, x_in_z_base, unq_idL,
-                           baseline, Xbase)
+                           Xbase)
     ############################################################################
     ############################################################################
     Data <- list(n = nY, idL = idL, idL_ind = idL_ind, idL_lp = idL_lp, unq_idL = unq_idL,
