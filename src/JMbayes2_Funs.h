@@ -587,6 +587,7 @@ vec docall_rbindF (const field<vec> &F) { // binds a field of vectors into one v
   return V;
 }
 
+// ?? The function below could be optimized to update in blocks, rather then element by element
 mat add_zero_colrows (const mat &M, // adds zero-rows and/or zero-cols to a matrix M
                       const uword &nrows, // n_rows in the target matrix
                       const uword &ncols, // n_cols in the target matrix
@@ -601,6 +602,19 @@ mat add_zero_colrows (const mat &M, // adds zero-rows and/or zero-cols to a matr
     for(uword j = 0; j < M_ncols; j++) { // by col
       Res.at(rows_ind.at(i), cols_ind.at(j)) = M.at(i, j);
     }
+  }
+  return Res;
+}
+
+mat add_zero_rows (const mat &M, // adds zero-rows to a matrix M
+                   const uword &nrows, // n_rows in the target matrix
+                   const uvec &rows_ind) { // ind where to place the M's rows (zero-rows will be 'added' to the absent ind). the number of ind must match the M's n_rows
+  
+  mat Res(nrows, M.n_cols, fill::zeros);
+  uword M_nrows = M.n_rows;
+  
+  for(uword j = 0; j < M_nrows; j++) {
+    Res.row(rows_ind.at(j)) = M.row(j);
   }
   return Res;
 }
