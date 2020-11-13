@@ -1155,7 +1155,9 @@ fit_stats <- function (lL, lL_mean_parms) {
 }
 
 get_betas_nHC <- function (v, ind) {
-    if (any(is.na(ind))) matrix(0.0) else {
+    if (any(is.na(ind))) {
+        if (is.matrix(v)) matrix(1.0) else 0.0
+    } else {
         if (is.matrix(v)) v[ind, ind, drop = FALSE] else v[ind]
     }
 }
