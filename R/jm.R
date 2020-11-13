@@ -584,6 +584,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                 "if their length is more than one.")
         priors$penalty_alphas <- "none"
     }
+    if (priors$penalty_gammas == "ridge") {
+        priors$A_lambda_gammas <- 1
+        priors$B_lambda_gammas <- 1
+    }
     ############################################################################
     ############################################################################
     # Fit the model
