@@ -226,6 +226,7 @@ print.summary.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) 
     cat("chains:", x$control$n_chains,
         "\niterations per chain:", x$control$n_iter,
         "\nburn-in per chain:", x$control$n_burnin,
+        "\nthinning:", x$control$n_thin,
         "\ntime:", if (tt > 60)
             round(tt/60, 1)
         else round(tt, 1), if (tt > 60)

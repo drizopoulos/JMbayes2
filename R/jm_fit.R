@@ -145,14 +145,15 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
         out[[i]][["mcmc"]][["sigmas"]] <-
             out[[i]][["mcmc"]][["sigmas"]][, has_sigmas, drop = FALSE]
     }
+    keep_its <- seq(1L, control$n_iter - control$n_burnin, by = control$n_thin)
     convert2_mcmclist <- function (name) {
         as.mcmc.list(lapply(out, function (x) {
             kk <- x$mcmc[[name]]
             if (length(d <- dim(kk)) > 2) {
                 m <- matrix(0.0, d[3L], d[1L] * d[2L])
                 for (j in seq_len(d[3L])) m[j, ] <- c(kk[, , j])
-                as.mcmc(m)
-            } else as.mcmc(kk)
+                as.mcmc(m[, , keep_its, drop = FALSE])
+            } else as.mcmc(kk[keep_its, , drop = FALSE])
         }))
     }
     get_acc_rates <- function (name_parm) {
@@ -188,7 +189,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
                                      'postvars_b' = postvars_b))
     }
     ########################
-    # Caclulate Statistics
+    # Calculate Statistics
     S <- lapply(mcmc_out$mcmc, summary)
     statistics <- list(
         Mean = lapply(S, get_statistic, "Mean"),

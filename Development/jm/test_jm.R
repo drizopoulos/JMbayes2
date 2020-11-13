@@ -200,7 +200,8 @@ fm3 <- mixed_model(ascites ~ year, data = pbc2, random = ~ year | id,
 Mixed <- list(fm1, fm2, fm3)
 Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
-system.time(obj <- jm(Cox, Mixed, time_var = "year"))
+system.time(obj <- jm(Cox, Mixed, time_var = "year", MALA = TRUE,
+                      n_iter = 55000, n_thin = 10))
 
 summary(obj)
 traceplot(obj)

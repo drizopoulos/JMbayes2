@@ -17,13 +17,17 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     #         of the Cholesky factor of the D matrix
     con <- list(GK_k = 15L, Bsplines_degree = 2, base_hazard_segments = 10,
                 diff = 2L, n_chains = 3L, n_burnin = 500L, n_iter = 3500L,
-                seed = 123L,  cores = max(parallel::detectCores() - 1, 1),
-                MALA = FALSE, save_random_effects = FALSE)
+                n_thin = 1L, seed = 123L, MALA = FALSE,
+                save_random_effects = FALSE,
+                cores = max(parallel::detectCores() - 1, 1))
     control <- c(control, list(...))
     namC <- names(con)
     con[(namc <- names(control))] <- control
     if (length(noNms <- namc[!namc %in% namC]) > 0)
         warning("unknown names in control: ", paste(noNms, collapse = ", "))
+    if (con$n_burnin > con$n_iter) {
+        stop("'n_burnin' cannot be larger than 'n_iter'.")
+    }
     # if a single mixed model has been provided put in a list
     if (!inherits(Mixed_objects, "list")) {
         Mixed_objects <- list(Mixed_objects)
