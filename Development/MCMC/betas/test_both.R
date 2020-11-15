@@ -678,16 +678,23 @@ control$n_chains <- 1
 
 ################################################################################
 
-control$n_iter <- 3000
+control$n_iter <- 10000
 
-test <- update_betas_MH (model_data,
-                         model_info,
-                         initial_values,
-                         priors, 
-                         control, 
-                         vcov_prop)
+test <- update_betas (model_data,
+                      model_info,
+                      initial_values,
+                      priors, 
+                      control, 
+                      vcov_prop)
 
 
-test$res_betas[1,]
-unlist(initial_values$betas, use.names = FALSE)
+#FE_HC
+test$res_betas[1,][ind_FE_HC]
+unlist(initial_values$betas, use.names = FALSE)[ind_FE_HC]
+
+#FE_nHC
+ind <- seq_along(test$res_betas[1,])
+test$res_betas[1,][!ind %in% ind_FE_HC]
+unlist(initial_values$betas, use.names = FALSE)[!ind %in% ind_FE_HC]
 colMeans(test$acceptance_betas)
+
