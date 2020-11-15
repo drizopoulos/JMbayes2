@@ -201,10 +201,10 @@ Mixed <- list(fm1, fm2, fm3)
 Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
 system.time(obj <- jm(Cox, Mixed, time_var = "year", MALA = TRUE,
-                      n_iter = 55000, n_thin = 10))
+                      n_iter = 15000L, n_thin = 10L))
 
 summary(obj)
-traceplot(obj)
+traceplot(obj, "alphas")
 gelman_diag(obj)
 
 Surv_object = Cox

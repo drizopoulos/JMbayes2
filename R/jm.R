@@ -527,8 +527,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     Tau_bs_gammas <- crossprod(diff(diag(ncol(W0_H) / n_strata),
                                     differences = con$diff))
     Tau_bs_gammas <- rep(list(Tau_bs_gammas), n_strata)
-    mean_betas <- lapply(betas, "*", 0.0)
-    Tau_betas <- lapply(betas, function (b) 0.01 * diag(length(b)))
+    mean_betas <- mapply2(weak_informative_mean, y, X,
+                          sapply(families, "[[", "family") == "gaussian")
+    Tau_betas <- mapply2(weak_informative_Tau, y, X,
+                         sapply(families, "[[", "family") == "gaussian")
     mean_betas_HC <- unlist(mean_betas, use.names = FALSE)[ind_FE_HC]
     Tau_betas_HC <- bdiag(Tau_betas)[ind_FE_HC, ind_FE_HC, drop = FALSE]
     mean_betas_nHC <- mapply2(get_betas_nHC, mean_betas, x_notin_z)

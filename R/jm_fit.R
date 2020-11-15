@@ -47,6 +47,26 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     model_data$Wlong_H2 <- mapply2(center_fun, model_data$Wlong_H2,
                                   model_data$Wlong_bar)
     model_data$Wlong_bar <- lapply(model_data$Wlong_bar, rbind)
+    # set weak informative Tau for gammas and alphas
+    n_outcomes <- length(model_data$y)
+    if (!is.null(colnames(model_data$W_H))) {
+        priors$Tau_gammas <- if (length(model_data$which_event)) {
+            weak_informative_Tau(rnorm(5L), model_data$W_h, FALSE)
+        } else {
+            keep <- seq(1L, nrow(model_data$Wlong_H[[1]]), by = control$GK_k)
+            weak_informative_Tau(rnorm(5L), model_data$W_H[keep, , drop = FALSE],
+                                 FALSE)
+        }
+    }
+    priors$Tau_alphas <- if (length(model_data$which_event)) {
+        mapply2(weak_informative_Tau, rep(list(rnorm(5L)), n_outcomes),
+                model_data$Wlong_h, rep(FALSE, n_outcomes))
+    } else {
+        keep <- seq(1L, nrow(model_data$Wlong_H[[1]]), by = control$GK_k)
+        mapply2(weak_informative_Tau, rep(list(rnorm(5L)), n_outcomes),
+                lapply(model_data$Wlong_H, function (m) m[keep, , drop = FALSE]),
+                rep(FALSE, n_outcomes))
+    }
     # unlist priors and initial values for alphas
     initial_values$alphas <- unlist(initial_values$alphas, use.names = FALSE)
     priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
