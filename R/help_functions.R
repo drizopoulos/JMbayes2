@@ -487,31 +487,33 @@ create_HC_X2 <- function (x, z, id) {
          Xbase = x[!duplicated(id), baseline, drop = FALSE])
 }
 
-create_X_dot <- function(Xbase, ids_unq, ids_out, nres){
-
-    # Xbase - a list of the baseline design matrices X per outcome
-    # ids_unq - a vector of unique ids
-    # ids_out - a list of ids present in each outcome
-    # nres - a vector of the number of random effects per outcome
-
-    do.call(rbind, lapply(ids_unq, function(id){
-
-        Xbase_i <- mapply2(function(out_Xbase, out_ids){
-
-            out_Xbase[match(id, unique(out_ids)), ]
-
-        }, Xbase, ids_out)
-
-        .bdiag(
-            mapply2(function(X_outc, diag1_ncol){
-
-                .bdiag(list(t(c(1, X_outc)), diag(diag1_ncol)))
-
-            }, Xbase_i, nres-1)
-        )
-
-    }))
-
+create_X_dot <- function(Xbase, nT, unq_idL, nres, nfes_HC, baseline, x_in_z_base, x_in_z) {
+    
+    n_outcomes <- length(nres) # number of outcomes
+    n_res <- sum(nres) # total number of RE
+    
+    rows <- split(seq_len(n_res), rep(seq_along(nres), nres)) # all rows (id= 1)
+    
+    base_rows <- sapply(rows, head, 1) # rows for baseline (id= 1)
+    base_cols <- mapply(function(xzb, b){ which(xzb %in% b)}, x_in_z_base, baseline) # cols for baseline
+    
+    RE_rows <- sapply(x_in_z, seq_along) # rows for RE (id= 1)
+    RE_cols <- x_in_z # cols for RE
+    
+    M <- matrix(0, nrow= n_res*nT, ncol= sum(nfes_HC))
+    
+    for (j in seq_len(n_outcomes)) {
+        
+        ids <- unq_idL[[j]] # ids present in outcome-j
+        ids_rows <- (ids-1) * n_res # 1st row for each id
+        
+        M[base_rows[j] + ids_rows, sum(nfes_HC[1:j-1]) + base_cols[[j]]] <- Xbase[[j]] # add baseline
+        
+        rows <- sum(nres[1:j-1]) + RE_rows[[j]] + rep(ids_rows, each= length(RE_rows[[j]]))
+        cols <- rep(sum(nfes_HC[1:j-1]) + RE_cols[[j]], times= length(ids))
+        M[cbind(rows, cols)] <- 1 # add 1 for each RE present in the FE
+    }
+    M
 }
 
 create_X_dot2 <- function (nT, nres, ind_FE_HC, x_in_z, x_in_z_base, unq_idL,
