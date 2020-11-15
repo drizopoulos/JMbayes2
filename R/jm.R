@@ -415,13 +415,13 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         W0_H2 <- W_H2 <- matrix(0.0)
         X_H2 <- Z_H2 <- U_H2 <- rep(list(matrix(0.0)), length(respVars))
     }
-    q_dot <- sapply(x_in_z_base, length)
+    nfes_HC <- sapply(x_in_z_base, length)
     out_in <- sapply(idL, "%in%", x = seq_len(nT))
     all_pat <- apply(out_in, 1L, paste0, collapse = "/")
     id_patt <- match(all_pat, unique(all_pat))
     find_patt <- function (patt, n) which(rep(patt, times = n))
     ind_RE_patt <- apply(unique(out_in), 1L, find_patt, n = nres)
-    ind_FE_patt <- apply(unique(out_in), 1L, find_patt, n = q_dot)
+    ind_FE_patt <- apply(unique(out_in), 1L, find_patt, n = nfes_HC)
     X_dot <- create_X_dot2(nT, nres, ind_FE_HC, x_in_z, x_in_z_base, unq_idL,
                            Xbase)
     ############################################################################
