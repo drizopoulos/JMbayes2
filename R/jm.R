@@ -128,7 +128,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ind_RE <- split(seq_len(sum(nres)), rep(seq_along(Z), nres))
     componentsHC <- mapply2(create_HC_X2, X, Z, idL)
     Xbase <- lapply(componentsHC, "[[", "Xbase")
-    #Xbase[] <- mapply2(function (m, nams) {rownames(m) <- nams; m}, Xbase, unq_idL)
+    Xbase[] <- mapply2(function (m, nams) {rownames(m) <- nams; m}, Xbase, unq_idL)
     baseline <- lapply(componentsHC, "[[", "baseline")
     x_in_z <- lapply(componentsHC, "[[", "x_in_z")
     x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
@@ -421,7 +421,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     find_patt <- function (patt, n) which(rep(patt, times = n))
     ind_RE_patt <- apply(unique(out_in), 1L, find_patt, n = nres)
     ind_FE_patt <- apply(unique(out_in), 1L, find_patt, n = nfes_HC)
-    X_dot <- create_X_dot(Xbase, nT, unq_idL, nres, nfes_HC, baseline, x_in_z_base, x_in_z)
+    #X_dot <- create_X_dot(Xbase, nT, unq_idL, nres, nfes_HC, baseline, x_in_z_base, x_in_z)
+    X_dot <- create_X_dot2(nT, nres, ind_FE_HC, x_in_z, x_in_z_base, unq_idL, Xbase)
     ############################################################################
     ############################################################################
     Data <- list(n = nY, idL = idL, idL_ind = idL_ind, idL_lp = idL_lp, unq_idL = unq_idL,

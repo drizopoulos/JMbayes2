@@ -197,11 +197,10 @@ fm2 <- lme(prothrombin ~ ns(year, 2) + sex, data = pbc2,
 
 fm3 <- mixed_model(ascites ~ year, data = pbc2, random = ~ year | id,
                    family = binomial())
-Mixed <- list(fm1, fm2, fm3)
+Mixed <- list(fm1, fm2)
 Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
-system.time(obj <- jm(Cox, Mixed, time_var = "year", MALA = TRUE,
-                      n_iter = 15000L, n_thin = 10L))
+system.time(obj <- jm(Cox, Mixed, time_var = "year"))
 
 summary(obj)
 traceplot(obj, "alphas")
@@ -263,18 +262,18 @@ control = NULL
 ################################################################################
 
 
-fm1 <- lme(log(serBilir) ~ year, data = pbc2, random = ~ year | id)
-CoxFit <- coxph(Surv(years, status2) ~ 1 + strata(sex), data = pbc2.id)
-#test <- jm(CoxFit, list(fm1), time_var = "year")
+fm <- lme(log(serBilir) ~ year * sex + I(year^2) + age + prothrombin,
+          data = pbc2, random = ~ year | id)
+CoxFit <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
 ff <- list("log(serBilir)" = ~ value(log(serBilir)):tv(year))
 
 ####
 
 Surv_object = CoxFit
-Mixed_objects = list(fm1)
+Mixed_objects = fm
 time_var = "year"
-functional_forms = ff
+functional_forms = NULL
 data_Surv = NULL
 id_var = NULL
 priors = NULL
