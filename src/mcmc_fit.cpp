@@ -425,21 +425,22 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     ////////////////////////////////////////////////////////////////////////
 
-    update_betas (betas, res_betas, acceptance_betas, scale_betas, eta,
-                  logLik_long, logLik_surv, Wlong_H, Wlong_h, Wlong_H2,
-                  WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                  prior_mean_betas_HC, prior_Tau_betas_HC, b_mat, L, sds, X_dot,
-                  ind_FE, ind_FE_HC, id_patt, ind_RE_patt, ind_FE_patt,
-                  it, has_tilde_betas, X, Z, b, idL, y, sigmas, extra_parms,
-                  families, links, idL_lp_fast, prior_mean_betas_nHC,
-                  prior_Tau_betas_nHC, chol_vcov_prop_betas, x_notin_z,
-                  X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
-                  Wlong_bar, id_H_, id_h, FunForms, FunForms_ind,
-                  alphas, any_event, any_interval,
-                  W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-                  WH_gammas, Wh_gammas, WH2_gammas,
-                  log_Pwk, log_Pwk2, id_H_fast, id_h_fast, which_event,
-                  which_right_event, which_left, which_interval, unq_idL);
+    /*
+    update_betas(betas, res_betas, acceptance_betas, scale_betas, eta,
+                 logLik_long, logLik_surv, Wlong_H, Wlong_h, Wlong_H2,
+                 WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+                 prior_mean_betas_HC, prior_Tau_betas_HC, b_mat, L, sds, X_dot,
+                 ind_FE, ind_FE_HC, id_patt, ind_RE_patt, ind_FE_patt,
+                 it, has_tilde_betas, X, Z, b, idL, y, sigmas, extra_parms,
+                 families, links, idL_lp_fast, prior_mean_betas_nHC,
+                 prior_Tau_betas_nHC, chol_vcov_prop_betas, x_notin_z,
+                 X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
+                 Wlong_bar, id_H_, id_h, FunForms, FunForms_ind,
+                 alphas, any_event, any_interval,
+                 W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                 WH_gammas, Wh_gammas, WH2_gammas,
+                 log_Pwk, log_Pwk2, id_H_fast, id_h_fast, which_event,
+                 which_right_event, which_left, which_interval, unq_idL);
 
     denominator_surv =
       sum(logLik_surv) +
@@ -449,7 +450,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     tau_gammas, shrink_gammas,
                     prior_mean_alphas, prior_Tau_alphas, lambda_alphas,
                     tau_alphas, shrink_alphas);
-
+*/
     ////////////////////////////////////////////////////////////////////
 
     res_logLik.row(it) = trans(logLik_long + logLik_surv + logLik_re);
