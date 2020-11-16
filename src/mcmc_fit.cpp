@@ -4,6 +4,7 @@
 #include "JMbayes2_LogDens.h"
 #include "JMbayes2_sigmas.h"
 #include "JMbayes2_RE.h"
+#include "JMbayes2_FE.h"
 #include "JMbayes2_penalties.h"
 
 
@@ -178,13 +179,13 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<mat> prior_Tau_betas_nHC = List2Field_mat(as<List>(priors["Tau_betas_nHC"]));
   /*
    * 1. Calculating the chol(vcov) avoids repetead (unnecessary) chol() calculations for each outcome
-   * at each iteration inside the update_betas(). 
-   * 2. When using log_dmvnrm_chol(), instead of log_dmvnrm(), we only require (up to) 
+   * at each iteration inside the update_betas().
+   * 2. When using log_dmvnrm_chol(), instead of log_dmvnrm(), we only require (up to)
    * one chol() per outcome.
    * 3. log_dmvnrm_chol() expects a chol(Sigma) and not a chol(Tau).
    * 4. When using inv(diagmat()) I am assuming that prior_Tau_FE.at(j) is diagonal.
    */
-  field<mat> prior_U_Sigma_betas_nHC(prior_Tau_betas_nHC.n_elem); 
+  field<mat> prior_U_Sigma_betas_nHC(prior_Tau_betas_nHC.n_elem);
   for (uword i = 0; i < prior_U_Sigma_betas_nHC.n_elem; ++i) {
     if (!has_tilde_betas.at(i)) {continue;}
     prior_U_Sigma_betas_nHC.at(i) = chol( inv(diagmat( prior_Tau_betas_nHC.at(i) )) );
@@ -422,6 +423,33 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
                            idL_lp_fast, unq_idL, n_b);
 
+    ////////////////////////////////////////////////////////////////////////
+
+    update_betas (betas, res_betas, acceptance_betas, scale_betas, eta,
+                  logLik_long, logLik_surv, Wlong_H, Wlong_h, Wlong_H2,
+                  WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+                  prior_mean_betas_HC, prior_Tau_betas_HC, b_mat, L, sds, X_dot,
+                  ind_FE, ind_FE_HC, id_patt, ind_RE_patt, ind_FE_patt,
+                  it, has_tilde_betas, X, Z, b, idL, y, sigmas, extra_parms,
+                  families, links, idL_lp_fast, prior_mean_betas_nHC,
+                  prior_Tau_betas_nHC, chol_vcov_prop_betas, x_notin_z,
+                  X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
+                  Wlong_bar, id_H_, id_h, FunForms, FunForms_ind,
+                  alphas, any_event, any_interval,
+                  W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                  WH_gammas, Wh_gammas, WH2_gammas,
+                  log_Pwk, log_Pwk2, id_H_fast, id_h_fast, which_event,
+                  which_right_event, which_left, which_interval, unq_idL);
+
+    denominator_surv =
+      sum(logLik_surv) +
+      logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
+                    prior_Tau_bs_gammas, tau_bs_gammas,
+                    prior_mean_gammas, prior_Tau_gammas, lambda_gammas,
+                    tau_gammas, shrink_gammas,
+                    prior_mean_alphas, prior_Tau_alphas, lambda_alphas,
+                    tau_alphas, shrink_alphas);
+
     ////////////////////////////////////////////////////////////////////
 
     res_logLik.row(it) = trans(logLik_long + logLik_surv + logLik_re);
@@ -444,7 +472,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("b") = res_b,
       Named("cumsum_b") = cumsum_b,
       Named("outprod_b") = outprod_b,
-      Named("sigmas") = res_sigmas.rows(n_burnin, n_iter - 1)
+      Named("sigmas") = res_sigmas.rows(n_burnin, n_iter - 1),
+      Named("betas") = res_betas.rows(n_burnin, n_iter - 1)
     ),
     Named("acc_rate") = List::create(
       Named("bs_gammas") = acceptance_bs_gammas.rows(n_burnin, n_iter - 1),
@@ -452,7 +481,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("alphas") = acceptance_alphas.rows(n_burnin, n_iter - 1),
       Named("sds") = acceptance_sds.rows(n_burnin, n_iter - 1),
       Named("L") = acceptance_L.rows(n_burnin, n_iter - 1),
-      Named("b") = acceptance_b.rows(n_burnin, n_iter - 1)
+      Named("b") = acceptance_b.rows(n_burnin, n_iter - 1),
+      Named("betas") = acceptance_betas.rows(n_burnin, n_iter - 1)
     ),
     Named("logLik") = res_logLik.rows(n_burnin, n_iter - 1)
   );
@@ -539,7 +569,8 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
 // [[Rcpp::export]]
 arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_vars,
                       List model_data, List model_info, List control) {
-  field<vec> betas = List2Field_vec(as<List>(res_thetas["betas"]));
+  field<mat> betas = List2Field_mat(as<List>(res_thetas["betas"]));
+  for (uword j = 0; j < betas.n_elem; ++j) betas.at(j) = trans(betas.at(j));
   mat sigmas = trans(as<mat>(res_thetas["sigmas"]));
   mat bs_gammas = trans(as<mat>(res_thetas["bs_gammas"]));
   mat gammas = trans(as<mat>(res_thetas["gammas"]));
@@ -611,11 +642,13 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   uvec id_H = as<uvec>(model_data["id_H"]) - 1;
   uvec id_H_fast = create_fast_ind(id_H + 1);
   uvec id_h_fast = create_fast_ind(id_h + 1);
-  /////////////
+  //////////////
   mat out(n, K);
+  field<vec> betas_i(betas.n_elem);
   for (uword i = 0; i < K; ++i) {
+    for (uword j = 0; j < betas.n_elem; ++j) betas_i.at(j) = betas.at(j).col(i);
     vec oo = logLik_jm_stripped(
-      betas, mean_b, sigmas.col(i), bs_gammas.col(i), gammas.col(i),
+      betas_i, mean_b, sigmas.col(i), bs_gammas.col(i), gammas.col(i),
       alphas.col(i), tau_bs_gammas.col(i), L.slice(i), sds.col(i),
       ///
       y, X, Z, extra_parms, families, links, idL, idL_lp_fast, unq_idL,

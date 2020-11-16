@@ -488,27 +488,27 @@ create_HC_X2 <- function (x, z, id) {
 }
 
 create_X_dot <- function(Xbase, nT, unq_idL, nres, nfes_HC, baseline, x_in_z_base, x_in_z) {
-    
+
     n_outcomes <- length(nres) # number of outcomes
     n_res <- sum(nres) # total number of RE
-    
+
     rows <- split(seq_len(n_res), rep(seq_along(nres), nres)) # all rows (id= 1)
-    
+
     base_rows <- sapply(rows, head, 1) # rows for baseline (id= 1)
     base_cols <- mapply(function(xzb, b){ which(xzb %in% b)}, x_in_z_base, baseline) # cols for baseline
-    
+
     RE_rows <- sapply(x_in_z, seq_along) # rows for RE (id= 1)
     RE_cols <- x_in_z # cols for RE
-    
+
     M <- matrix(0, nrow= n_res*nT, ncol= sum(nfes_HC))
-    
+
     for (j in seq_len(n_outcomes)) {
-        
+
         ids <- unq_idL[[j]] # ids present in outcome-j
         ids_rows <- (ids-1) * n_res # 1st row for each id
-        
+
         M[base_rows[j] + ids_rows, sum(nfes_HC[1:j-1]) + base_cols[[j]]] <- Xbase[[j]] # add baseline
-        
+
         rows <- sum(nres[1:j-1]) + RE_rows[[j]] + rep(ids_rows, each= length(RE_rows[[j]]))
         cols <- rep(sum(nfes_HC[1:j-1]) + RE_cols[[j]], times= length(ids))
         M[cbind(rows, cols)] <- 1 # add 1 for each RE present in the FE
@@ -1168,7 +1168,7 @@ weak_informative_Tau <- function (y, X, is_gaussian) {
     s_y <- if (is_gaussian) sd(y) else 1.0
     s_x <- apply(X, 2L, sd)
     if (colnames(X)[1L] == "(Intercept)") s_x[1L] <- 1
-    diag(s_x / s_y, length(s_x)) / 2.5
+    diag(s_x / s_y, length(s_x)) / 30
 }
 
 weak_informative_mean <- function (y, X, is_gaussian) {

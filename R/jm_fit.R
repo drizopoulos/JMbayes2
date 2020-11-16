@@ -108,15 +108,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
                              control, vcov_prop))
     }
     tok <- proc.time()
-    # create dummy betas
-    if (is.null(out[[1]][["mcmc"]][["betas"]])) {
-        for (i in seq_along(out)) {
-            M <- nrow(out[[i]][["mcmc"]][["bs_gammas"]])
-            K <- sum(sapply(model_data$X, ncol))
-            out[[i]][["mcmc"]][["betas"]] <-
-                matrix(unlist(initial_values$betas), M, K, byrow = TRUE) + runif(M*K, -0.5, 0.5)
-        }
-    }
     # split betas per outcome
     ind_FE <- model_data$ind_FE
     for (i in seq_along(out)) {
@@ -257,7 +248,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     # Fit statistics
     thetas <- statistics$Mean
     thetas[["betas"]] <- thetas[grep("^betas", names(thetas))]
-    thetas[["betas"]] <- initial_values$betas # <------------
     thetas[["D"]] <- nearPD(lowertri2mat(thetas[["D"]]))
     if (is.null(thetas[["gammas"]])) thetas[["gammas"]] <- 0.0
     if (is.null(thetas[["sigmas"]])) thetas[["sigmas"]] <- 0.0
@@ -279,11 +269,15 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     res_thetas$sigmas <- if (!is.null(mcmc_out$mcmc$sigmas)) {
         do.call("rbind", mcmc_out$mcmc$sigmas)
     } else matrix(0.0, nrow(res_thetas$bs_gammas), 1)
+    res_thetas[["betas"]] <-
+        lapply(mcmc_out$mcmc[grep("^betas", names(mcmc_out$mcmc))], function (m)
+            do.call("rbind", m))
     mcmc_out$mlogLik <- mlogLik_jm(res_thetas, statistics$Mean[["b"]],
                           statistics$post_vars, model_data, model_info, control)
     ind <- names(thetas) %in% c("sigmas", "bs_gammas", "gammas", "alphas",
                                 "tau_bs_gammas")
     thetas[ind] <- lapply(thetas[ind], rbind)
+    thetas$betas <- lapply(thetas$betas, rbind)
     dim(thetas[["D"]]) <- c(dim(thetas[["D"]]), 1L)
     mlogLik_mean_parms <-
         c(mlogLik_jm(thetas, statistics$Mean[["b"]], statistics$post_vars,
