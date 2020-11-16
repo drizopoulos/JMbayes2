@@ -473,8 +473,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("b") = res_b,
       Named("cumsum_b") = cumsum_b,
       Named("outprod_b") = outprod_b,
-      Named("sigmas") = res_sigmas.rows(n_burnin, n_iter - 1),
-      Named("betas") = res_betas.rows(n_burnin, n_iter - 1)
+      Named("sigmas") = res_sigmas.rows(n_burnin, n_iter - 1)
+      //Named("betas") = res_betas.rows(n_burnin, n_iter - 1)
     ),
     Named("acc_rate") = List::create(
       Named("bs_gammas") = acceptance_bs_gammas.rows(n_burnin, n_iter - 1),
