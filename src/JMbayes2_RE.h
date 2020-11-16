@@ -102,13 +102,13 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
       logLik_surv.at(i) = logLik_surv_proposed.at(i);
       logLik_re.at(i) = logLik_re_proposed.at(i);
       /////////////////// update eta with NAs
-      uvec outc_indx_i = unq_idL_outc_lst.at(i);
+      /*uvec outc_indx_i = unq_idL_outc_lst.at(i);
       uword n_j = outc_indx_i.n_elem;
       for (uword j = 0; j < n_j; j++) {
         uword k = outc_indx_i.at(j);
         uvec eta_indx = unique(as<uvec>(as<List>(as<List>(idL_LstOfLst)[k])[i]));
-        eta.at(k).rows(find(idL.at(k) == eta_indx.front())) = eta_proposed.at(k).rows(find(idL.at(k) == eta_indx.front()));
-      }
+        eta.at(k).rows(find(idL.at(k) == eta_indx.at(0))) = eta_proposed.at(k).rows(find(idL.at(k) == eta_indx.at(0)));
+      }*/
       ////////////////////////////////////////////////////////
       uword first_H = i * GK_k * n_strata;
       uword last_H = (i + 1) * GK_k * n_strata - 1;
