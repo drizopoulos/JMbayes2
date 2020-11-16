@@ -425,7 +425,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     ////////////////////////////////////////////////////////////////////////
 
-    /*
     update_betas(betas, res_betas, acceptance_betas, scale_betas, eta,
                  logLik_long, logLik_surv, Wlong_H, Wlong_h, Wlong_H2,
                  WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
@@ -450,7 +449,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     tau_gammas, shrink_gammas,
                     prior_mean_alphas, prior_Tau_alphas, lambda_alphas,
                     tau_alphas, shrink_alphas);
-*/
+
     ////////////////////////////////////////////////////////////////////
 
     res_logLik.row(it) = trans(logLik_long + logLik_surv + logLik_re);
@@ -473,8 +472,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("b") = res_b,
       Named("cumsum_b") = cumsum_b,
       Named("outprod_b") = outprod_b,
-      Named("sigmas") = res_sigmas.rows(n_burnin, n_iter - 1)
-      //Named("betas") = res_betas.rows(n_burnin, n_iter - 1)
+      Named("sigmas") = res_sigmas.rows(n_burnin, n_iter - 1),
+      Named("betas") = res_betas.rows(n_burnin, n_iter - 1)
     ),
     Named("acc_rate") = List::create(
       Named("bs_gammas") = acceptance_bs_gammas.rows(n_burnin, n_iter - 1),
@@ -483,6 +482,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("sds") = acceptance_sds.rows(n_burnin, n_iter - 1),
       Named("L") = acceptance_L.rows(n_burnin, n_iter - 1),
       Named("b") = acceptance_b.rows(n_burnin, n_iter - 1),
+      Named("sigmas") = acceptance_sigmas.rows(n_burnin, n_iter - 1),
       Named("betas") = acceptance_betas.rows(n_burnin, n_iter - 1)
     ),
     Named("logLik") = res_logLik.rows(n_burnin, n_iter - 1)

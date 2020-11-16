@@ -136,8 +136,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
       double sum_logLik_long_j =
         sum(log_long_i(y.at(j), eta.at(j), sigmas.at(j), extra_parms.at(j),
                        std::string(families[j]), std::string(links[j]),
-                       idL_lp_fast.at(j))
-      );
+                       idL_lp_fast.at(j)));
       vec ll(prior_mean_betas_nHC.at(j).n_rows, fill::ones);
       double prior =
         logPrior(betas.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
@@ -155,8 +154,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
       double sum_logLik_long_j_prop =
         sum(log_long_i(y.at(j), eta_prop.at(j), sigmas.at(j), extra_parms.at(j),
                        std::string(families[j]), std::string(links[j]),
-                       idL_lp_fast.at(j))
-      );
+                       idL_lp_fast.at(j)));
       // logLik_surv proposal
       mat Wlong_H_prop =
         calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas_prop, b, id_H_,

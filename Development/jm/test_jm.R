@@ -171,7 +171,7 @@ vcov_prop <- obj$vcov_prop
 control <- obj$control
 
 Surv_object = coxFit
-Mixed_objects = list(lmeFit)
+Mixed_objects = lmeFit
 time_var = "time"
 functional_forms = NULL
 data_Surv = NULL
