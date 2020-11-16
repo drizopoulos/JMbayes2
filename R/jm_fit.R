@@ -16,7 +16,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     unq_idL_outc_lst <- lapply(model_data$unq_idL, function(x) split(x, x))
     unq_idL_outc_names <- unique(unlist(lapply(unq_idL_outc_lst, names)))
     unq_idL_outc_lst <- setNames(unq_idL_outc_lst, 1:length(unq_idL_outc_lst))
-    unq_idL_outc_lst <- lapply(do.call(mapply, c(FUN = c, lapply(unq_idL_outc_lst, `[`, unq_idL_outc_lst))), 
+    unq_idL_outc_lst <- lapply(do.call(mapply, c(FUN = c, lapply(unq_idL_outc_lst, `[`, unq_idL_outc_names))), 
                                function(x) as.numeric(names(x)))
     model_data$unq_idL_outc_lst <- unq_idL_outc_lst
     # extract family names
