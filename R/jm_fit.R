@@ -277,7 +277,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     # Fit statistics
     thetas <- statistics$Mean
     thetas[["betas"]] <- thetas[grep("^betas", names(thetas))]
-    thetas[["betas"]] <- initial_values$betas
     thetas[["D"]] <- nearPD(lowertri2mat(thetas[["D"]]))
     if (is.null(thetas[["gammas"]])) thetas[["gammas"]] <- 0.0
     if (is.null(thetas[["sigmas"]])) thetas[["sigmas"]] <- 0.0
