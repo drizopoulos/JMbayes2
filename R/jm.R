@@ -530,7 +530,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     Tau_betas <- mapply2(weak_informative_Tau, y, X,
                          sapply(families, "[[", "family") == "gaussian")
     mean_betas <- lapply(betas, "*", 0.0)
-    Tau_betas <- lapply(betas, function (b) 100 * diag(length(b)))
+    Tau_betas <- lapply(betas, function (b) 0.01 * diag(length(b)))
     mean_betas_HC <- unlist(mean_betas, use.names = FALSE)[ind_FE_HC]
     Tau_betas_HC <- bdiag(Tau_betas)[ind_FE_HC, ind_FE_HC, drop = FALSE]
     mean_betas_nHC <- mapply2(get_betas_nHC, mean_betas, x_notin_z)
