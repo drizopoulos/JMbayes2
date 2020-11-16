@@ -84,6 +84,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
   field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
+  List idL_LstOfLst = as<List>(model_data["idL_LstOfLst"]);
+  field<uvec> unq_idL_outc_lst = List2Field_uvec(as<List>(model_data["unq_idL_outc_lst"]), true);
   //
   field<uvec> ind_FE = List2Field_uvec(as<List>(model_data["ind_FE"]), true);
   uvec ind_FE_HC = as<uvec>(model_data["ind_FE_HC"]) - 1;
@@ -401,8 +403,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2,
              id_H_fast, id_h_fast, which_event, which_right_event, which_left,
              which_interval, any_event, any_interval, n_strata_,
-             L, sds, it, idL, acceptance_b, res_b, save_random_effects,
-             n_burnin, GK_k, cumsum_b, outprod_b);
+             L, sds, it, acceptance_b, res_b, save_random_effects,
+             n_burnin, GK_k, cumsum_b, outprod_b, unq_idL_outc_lst, idL_LstOfLst);
 
     eta = linpred_mixed(X, betas, Z, b, idL);
     denominator_surv =
