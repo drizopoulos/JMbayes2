@@ -1,4 +1,24 @@
 jm_fit <- function (model_data, model_info, initial_values, priors, control, vcov_prop) {
+    # create List of Lists of uvec version of idL
+    # directly with c++ indexing 
+    # (as this is a List of Lists of uvec the List2Filed_ will not work)
+    model_data$idL_LstOfLst <- lapply(lapply(model_data$idL, function(x) x - 1), function(x) split(x, x))
+    # create a new list which
+    # has elements equal to the number of subjects and 
+    # each element is a uvec
+    # each uvec indicates for which longitudinal outcomes 
+    # does the corresponding subjects have observations for
+    # for example if we have 4 longitudinal outcome
+    # and 2 subjects
+    # and the 2nd subject has observations for outcomes 1, 3 and 4 but no observations for outcome 2
+    # the list will be:
+    # [[1]] = 1 2 3 4, [[2]] 1 3 4
+    unq_idL_outc_lst <- lapply(model_data$unq_idL, function(x) split(x, x))
+    unq_idL_outc_names <- unique(unlist(lapply(unq_idL_outc_lst, names)))
+    unq_idL_outc_lst <- setNames(unq_idL_outc_lst, 1:length(unq_idL_outc_lst))
+    unq_idL_outc_lst <- lapply(do.call(mapply, c(FUN = c, lapply(unq_idL_outc_lst, `[`, unq_idL_outc_lst))), 
+                               function(x) as.numeric(names(x)))
+    model_data$unq_idL_outc_lst <- unq_idL_outc_lst
     # extract family names
     model_info$family_names <- sapply(model_info$families, "[[", "family")
     # extract link names

@@ -24,7 +24,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const uvec &id_H_, const uvec &id_h,
                const field<uvec> &FunForms, const field<uvec> &FunForms_ind,
                const field<mat> &X, const field<mat> &Z,
-               const field<uvec> &id, const field<mat> &y,  const vec &sigmas,
+               const field<uvec> &idL, const field<mat> &y,  const vec &sigmas,
                const vec &extra_parms, const CharacterVector &families,
                const CharacterVector &links, const field<uvec> &ids,
                const field<uvec> &unq_ids, const vec &W0H_bs_gammas,
@@ -37,9 +37,9 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const uvec &which_interval, const bool &any_event,
                const bool &any_interval, const uword &n_strata,
                const mat &L, const vec &sds,
-               const uword &it, const field<uvec> &idL,
-               mat &acceptance_b, cube &res_b, const bool &save_random_effects,
-               const uword &n_burnin, const uword &GK_k, mat &cumsum_b, cube &outprod_b
+               const uword &it, mat &acceptance_b, cube &res_b, const bool &save_random_effects,
+               const uword &n_burnin, const uword &GK_k, mat &cumsum_b, cube &outprod_b, 
+               const field<uvec> &unq_idL_outc_lst, const List &idL_LstOfLst
                ) {
   // calculate denominator_b
   vec denominator_b = logLik_long + logLik_surv + logLik_re;
@@ -49,7 +49,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
 
   // calculate log_lik_long based on proposed_b_mat
   uword n = b_mat.n_rows;
-  field<vec> eta_proposed = linpred_mixed(X, betas, Z, proposed_b, id);
+  field<vec> eta_proposed = linpred_mixed(X, betas, Z, proposed_b, idL);
   vec logLik_long_proposed = log_long(y, eta_proposed, sigmas, extra_parms,
                                       families, links, ids, unq_ids, n);
   // calculate Wlong_H, Wlong_h and Wlong_H2 based on the proposed_b
@@ -101,11 +101,22 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
       logLik_long.at(i) = logLik_long_proposed.at(i);
       logLik_surv.at(i) = logLik_surv_proposed.at(i);
       logLik_re.at(i) = logLik_re_proposed.at(i);
+      /////////////////// update eta with NAs
+      uvec outc_indx_i = unq_idL_outc_lst.at(i);
+      uword n_j = outc_indx_i.n_elem;
+      for (uword j = 0; j < n_j; j++) {
+        uword k = outc_indx_i.at(j);
+        uvec eta_indx = unique(as<uvec>(as<List>(as<List>(idL_LstOfLst)[k])[i]));
+        eta.at(k).rows(find(idL.at(k) == eta_indx.front())) = eta_proposed.at(k).rows(find(idL.at(k) == eta_indx.front()));
+      }
+      ////////////// old
       //uword n_outcomes = eta.n_elem;
       //for (uword j = 0; j < n_outcomes; j++) {
       //  eta.at(j).rows(find(idL.at(i) == i)) =
       //    eta_proposed.at(j).rows(find(idL.at(i) == i));
       //}
+      ///////////////////////
+      ////////////////////////////////////////////////////////
       uword first_H = i * GK_k * n_strata;
       uword last_H = (i + 1) * GK_k * n_strata - 1;
       Wlong_H.rows(first_H, last_H) = Wlong_H_proposed.rows(first_H, last_H);
