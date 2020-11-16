@@ -109,13 +109,6 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
         uvec eta_indx = unique(as<uvec>(as<List>(as<List>(idL_LstOfLst)[k])[i]));
         eta.at(k).rows(find(idL.at(k) == eta_indx.front())) = eta_proposed.at(k).rows(find(idL.at(k) == eta_indx.front()));
       }
-      ////////////// old
-      //uword n_outcomes = eta.n_elem;
-      //for (uword j = 0; j < n_outcomes; j++) {
-      //  eta.at(j).rows(find(idL.at(i) == i)) =
-      //    eta_proposed.at(j).rows(find(idL.at(i) == i));
-      //}
-      ///////////////////////
       ////////////////////////////////////////////////////////
       uword first_H = i * GK_k * n_strata;
       uword last_H = (i + 1) * GK_k * n_strata - 1;
