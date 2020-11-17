@@ -29,7 +29,6 @@ src/*.so
 src/*.dll
 inst/doc
 
-
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf
@@ -47,3 +46,5 @@ vignettes/*.pdf
 
 # Local development folders (temporary)
 Dev_Local/
+
+Design
