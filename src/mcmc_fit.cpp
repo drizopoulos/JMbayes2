@@ -179,19 +179,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat prior_Tau_betas_HC = as<mat>(priors["Tau_betas_HC"]);
   field<vec> prior_mean_betas_nHC = List2Field_vec(as<List>(priors["mean_betas_nHC"]));
   field<mat> prior_Tau_betas_nHC = List2Field_mat(as<List>(priors["Tau_betas_nHC"]));
-  /*
-   * 1. Calculating the chol(vcov) avoids repetead (unnecessary) chol() calculations for each outcome
-   * at each iteration inside the update_betas().
-   * 2. When using log_dmvnrm_chol(), instead of log_dmvnrm(), we only require (up to)
-   * one chol() per outcome.
-   * 3. log_dmvnrm_chol() expects a chol(Sigma) and not a chol(Tau).
-   * 4. When using inv(diagmat()) I am assuming that prior_Tau_FE.at(j) is diagonal.
-   */
-  field<mat> prior_U_Sigma_betas_nHC(prior_Tau_betas_nHC.n_elem);
-  for (uword i = 0; i < prior_U_Sigma_betas_nHC.n_elem; ++i) {
-    if (!has_tilde_betas.at(i)) {continue;}
-    prior_U_Sigma_betas_nHC.at(i) = chol( inv(diagmat( prior_Tau_betas_nHC.at(i) )) );
-  }
   // store results
   uword n_outcomes = y.n_elem;
   uword n_b = b_mat.n_rows;
