@@ -267,13 +267,15 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     if (control$n_chains > 1) {
         no_b <- !names(mcmc_out$mcmc) %in% "b"
         calculate_Rhat <- function (theta) {
-            ntheta <- ncol(theta)
+            ntheta <- ncol(theta[[1]])
             tt <- try(coda::gelman.diag(theta)$psrf, silent = TRUE)
-            if (inherits(tt, "try-error")) rep(NA, ntheta) else tt
+            if (inherits(tt, "try-error"))
+                matrix(as.numeric(NA), ntheta, 2,
+                       dimnames = list(NULL, c("Point est.", "Upper C.I.")))
+            else tt
         }
         statistics <- c(statistics,
-                        Rhat = list(lapply(mcmc_out$mcmc[no_b], function (theta)
-                            coda::gelman.diag(theta)$psrf)))
+                        Rhat = list(lapply(mcmc_out$mcmc[no_b], calculate_Rhat)))
     }
     if (!control$save_random_effects) {
         statistics$Mean$b <- mcmc_out$postmeans_b
