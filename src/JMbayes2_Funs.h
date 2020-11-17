@@ -512,6 +512,19 @@ field<vec> linpred_mixed (const field<mat> &X, const field<vec> &betas,
   return out;
 }
 
+vec linpred_mixed_i (const field<mat> &X, const field<vec> &betas,
+                     const field<mat> &Z, const field<mat> &b,
+                     const field<uvec> &id, const uword &i) {
+  mat X_i = X.at(i);
+  vec betas_i = betas.at(i);
+  mat Z_i = Z.at(i);
+  mat b_i = b.at(i);
+  uvec id_i = id.at(i);
+  vec out = X_i * betas_i + arma::sum(Z_i % b_i.rows(id_i), 1);
+  return out;
+}
+
+
 field<vec> linpred_mixed_Zb (const field<mat>& Xbetas,
                              const field<mat> &Z, const field<mat> &b,
                              const field<uvec> &id) {
@@ -609,10 +622,10 @@ mat add_zero_colrows (const mat &M, // adds zero-rows and/or zero-cols to a matr
 mat add_zero_rows (const mat &M, // adds zero-rows to a matrix M
                    const uword &nrows, // n_rows in the target matrix
                    const uvec &rows_ind) { // ind where to place the M's rows (zero-rows will be 'added' to the absent ind). the number of ind must match the M's n_rows
-  
+
   mat Res(nrows, M.n_cols, fill::zeros);
   uword M_nrows = M.n_rows;
-  
+
   for(uword j = 0; j < M_nrows; j++) {
     Res.row(rows_ind.at(j)) = M.row(j);
   }
@@ -621,17 +634,17 @@ mat add_zero_rows (const mat &M, // adds zero-rows to a matrix M
 
 mat rank1_update (const mat &U, // performs rank-1 update. If U = chol(M), returns chol(M + v * v.t())
                   const vec &v) {
-  
+
   uword n = v.n_elem;
   mat Res = U;
   vec v2  = v;
-  
+
   for (uword i = 0; i < n; i++) {
     double r = pow( pow(Res.at(i, i), 2) + pow(v2.at(i), 2), 0.5);
     double c = r / Res.at(i, i);
     double s = v2.at(i) / Res.at(i, i);
     Res.at(i, i) = r;
-    
+
     if (i < n-1) {
       Res.submat(i, i + 1, i, n - 1) = (Res.submat(i, i + 1, i, n - 1) + s * v2.rows(i + 1, n - 1).t()) / c;
       v2.rows(i + 1, n - 1) = c * v2.rows(i + 1, n - 1) - s * Res.submat(i, i + 1, i, n - 1).t();
@@ -642,27 +655,27 @@ mat rank1_update (const mat &U, // performs rank-1 update. If U = chol(M), retur
 
 mat chol_update(const mat &U, // If U = chol(M), returns chol(M.submat(keep, keep))
                 const uvec &keep) { // keep must be a sorted vector, i.e, {2, 4, 5}, and counts from 0
-  
+
   // to improve: later we can try to extend this approach further to obtain inv(U) from the required inv(U_i)
-  
+
   uvec rem = regspace<uvec>(0,  U.n_cols - 1); rem.shed_rows(keep); // cols-rows to remove
   mat Res = U;
   uword n = rem.n_elem;
-  
+
   for (uword i = 0; i < n; i++) { // rank-1 update for each col-row to be removed
-    
+
     uword last_col = Res.n_cols - 1;
-    
+
     if(rem.at(i) < last_col) {
       Res.submat(rem.at(i) + 1, rem.at(i) + 1, last_col, last_col) = rank1_update(Res.submat(rem.at(i) + 1, rem.at(i) + 1, last_col, last_col),
                  Res.submat(rem.at(i), rem.at(i) + 1, rem.at(i), last_col).t());
     }
-    
+
     Res.shed_row(rem.at(i));
     Res.shed_col(rem.at(i));
     rem = rem - 1;
   }
   return Res;
-} 
+}
 
 #endif

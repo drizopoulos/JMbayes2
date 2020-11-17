@@ -9,15 +9,15 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     # add it to a list with true idL list
     complete_unq_idL <- c(complete_id, model_data$unq_idL)
     # create a new list which
-    # has elements equal to the number of subjects and 
+    # has elements equal to the number of subjects and
     # each element represents a subject
     # each element is a uvec
-    # each uvec indicates for which longitudinal outcomes 
+    # each uvec indicates for which longitudinal outcomes
     # does the corresponding subjects have observations for
     unq_idL_outc_lst <- lapply(complete_unq_idL, function(x) split(x, x))
     unq_idL_outc_names <- unique(unlist(lapply(unq_idL_outc_lst, names)))
     unq_idL_outc_lst <- setNames(unq_idL_outc_lst, 0:(length(unq_idL_outc_lst) - 1))
-    unq_idL_outc_lst <- lapply(do.call(mapply, c(FUN = c, lapply(unq_idL_outc_lst, `[`, unq_idL_outc_names))), 
+    unq_idL_outc_lst <- lapply(do.call(mapply, c(FUN = c, lapply(unq_idL_outc_lst, `[`, unq_idL_outc_names))),
                                function(x) as.numeric(names(x[which(names(x) != '0')])))
     model_data$unq_idL_outc_lst <- unq_idL_outc_lst
     # extract family names
@@ -266,8 +266,13 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     }
     if (control$n_chains > 1) {
         no_b <- !names(mcmc_out$mcmc) %in% "b"
+        calculate_Rhat <- function (theta) {
+            ntheta <- ncol(theta)
+            tt <- try(coda::gelman.diag(theta)$psrf, silent = TRUE)
+            if (inherits(tt, "try-error")) rep(NA, ntheta) else tt
+        }
         statistics <- c(statistics,
-                        Rhat = list(lapply(mcmc_out$mcm[no_b], function (theta)
+                        Rhat = list(lapply(mcmc_out$mcmc[no_b], function (theta)
                             coda::gelman.diag(theta)$psrf)))
     }
     if (!control$save_random_effects) {
