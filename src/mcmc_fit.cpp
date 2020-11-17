@@ -412,7 +412,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
                            idL_lp_fast, unq_idL, n_b);
 
-    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
 
     update_betas(betas, res_betas, acceptance_betas, scale_betas, eta,
                  logLik_long, logLik_surv, Wlong_H, Wlong_h, Wlong_H2,

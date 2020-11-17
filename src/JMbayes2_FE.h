@@ -78,7 +78,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
       /* obtain all unique vcov_inv matrices required for the sums in the posterior parameters
        * & jumps the pattern in which the patient misses all longitudinal outcomes
        */
-      mat U_patt_inv = inv(trimatu( chol_update(U, ind_RE_patt.at(i))));
+      mat U_patt_inv = inv(trimatu(chol_update(U, ind_RE_patt.at(i))));
       D_inv.at(i) =  U_patt_inv * U_patt_inv.t(); // mat
     }
     uword patt_i = id_patt.at(i); // id missing outcome pattern
@@ -98,7 +98,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
   mat Tau_1 = inv(prior_Tau_betas_HC + sum_JXDXJ); // improve via Cholesky decomposition
   vec mean_1 = Tau_1 * (prior_Tau_betas_HC * prior_mean_betas_HC + sum_JXDu);
   mat U_1 = chol(Tau_1);
-  betas_vec.rows(ind_FE_HC) = propose_mvnorm_vec(1, U_1, 1) + mean_1;
+  betas_vec.rows(ind_FE_HC) = propose_mvnorm_vec(1, U_1, 1.0) + mean_1;
   betas = vec2field(betas_vec, ind_FE);
   // update eta
   eta = linpred_mixed(X, betas, Z, b, idL);

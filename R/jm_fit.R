@@ -130,14 +130,14 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     }
     tok <- proc.time()
     # create dummy betas
-    if (is.null(out[[1]][["mcmc"]][["betas"]])) {
-        for (i in seq_along(out)) {
-            M <- nrow(out[[i]][["mcmc"]][["bs_gammas"]])
-            K <- sum(sapply(model_data$X, ncol))
-            out[[i]][["mcmc"]][["betas"]] <-
-                matrix(unlist(initial_values$betas), M, K, byrow = TRUE) + runif(M*K, -0.5, 0.5)
-        }
-    }
+    #if (is.null(out[[1]][["mcmc"]][["betas"]])) {
+    #    for (i in seq_along(out)) {
+    #        M <- nrow(out[[i]][["mcmc"]][["bs_gammas"]])
+    #        K <- sum(sapply(model_data$X, ncol))
+    #        out[[i]][["mcmc"]][["betas"]] <-
+    #            matrix(unlist(initial_values$betas), M, K, byrow = TRUE) + runif(M*K, -0.5, 0.5)
+    #    }
+    #}
     # split betas per outcome
     ind_FE <- model_data$ind_FE
     for (i in seq_along(out)) {
