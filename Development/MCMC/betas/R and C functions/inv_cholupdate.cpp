@@ -101,7 +101,7 @@ t(ramcmc::chol_update(L, v))
 rank1_update(U, v)
 chol(D + v %*% t(v))
 
-# chol_update
+# chol_update 1 
 keep <- c(1, 3, 5)
 chol_update(U, keep-1)
 chol(D[keep, keep])
@@ -109,5 +109,19 @@ chol(D[keep, keep])
 # inv_trimatu
 inv_trimatu(chol_update(U, keep-1))
 solve(chol(D[keep, keep]))
+
+# chol_update, all possible ind combinations
+all_keep <- lapply(seq_len(nres), combn, x = seq_len(nres), simplify = FALSE)
+all_keep <- unlist(all_keep, recursive = FALSE)
+
+for(keep in all_keep) {
+  
+  C <- chol_update(U, keep-1)
+  R <- chol(D[keep, keep])
+  
+  cat(paste0(all.equal(C, R), " "))
+  if(!all.equal(C, R)) print(paste0(keep, "\n"))
+  
+}
 
 */
