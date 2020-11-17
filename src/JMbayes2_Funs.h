@@ -619,12 +619,12 @@ mat add_zero_rows (const mat &M, // adds zero-rows to a matrix M
   return Res;
 }
 
-mat rank1_update(const mat &M, // performs rank-1 update: Res = M + v * u.t() 
-                 const vec &v) {
+mat rank1_update (const mat &U, // performs rank-1 update. If U = chol(M), returns chol(M + v * v.t())
+                  const vec &v) {
   
   uword n = v.n_elem;
-  mat Res = M;
-  vec v2   = v;
+  mat Res = U;
+  vec v2  = v;
   
   for (uword i = 0; i < n; i++) {
     double r = pow( pow(Res.at(i, i), 2) + pow(v2.at(i), 2), 0.5);
@@ -632,21 +632,21 @@ mat rank1_update(const mat &M, // performs rank-1 update: Res = M + v * u.t()
     double s = v2.at(i) / Res.at(i, i);
     Res.at(i, i) = r;
     
-    if (i < n - 1) {
-      Res.submat(i + 1, i, n - 1, i) = (Res.submat(i + 1, i, n - 1, i) + s * v2.rows(i + 1, n - 1)) / c;
-      v2.rows(i + 1, n - 1) = c * v2.rows(i + 1, n - 1) - s * Res.submat(i + 1, i, n - 1, i);
+    if (i < n-1) {
+      Res.submat(i, i + 1, i, n - 1) = (Res.submat(i, i + 1, i, n - 1) + s * v2.rows(i + 1, n - 1).t()) / c;
+      v2.rows(i + 1, n - 1) = c * v2.rows(i + 1, n - 1) - s * Res.submat(i, i + 1, i, n - 1).t();
     }
   }
   return Res;
 }
 
-mat chol_update(const mat &L, // If L = chol(M), returns chol(M.submat(keep, keep))
+mat chol_update(const mat &U, // If U = chol(M), returns chol(M.submat(keep, keep))
                 const uvec &keep) { // keep must be a sorted vector, i.e, {2, 4, 5}, and counts from 0
   
-  // later we can try to extend this approach further to obtain inv(L) from the required inv(L_i)
+  // to improve: later we can try to extend this approach further to obtain inv(U) from the required inv(U_i)
   
-  uvec rem = regspace<uvec>(0,  L.n_cols - 1); rem.shed_rows(keep); // cols-rows to remove
-  mat Res = L;
+  uvec rem = regspace<uvec>(0,  U.n_cols - 1); rem.shed_rows(keep); // cols-rows to remove
+  mat Res = U;
   uword n = rem.n_elem;
   
   for (uword i = 0; i < n; i++) { // rank-1 update for each col-row to be removed
@@ -655,7 +655,7 @@ mat chol_update(const mat &L, // If L = chol(M), returns chol(M.submat(keep, kee
     
     if(rem.at(i) < last_col) {
       Res.submat(rem.at(i) + 1, rem.at(i) + 1, last_col, last_col) = rank1_update(Res.submat(rem.at(i) + 1, rem.at(i) + 1, last_col, last_col),
-                 Res.submat(rem.at(i) + 1, rem.at(i), last_col, rem.at(i)));
+                 Res.submat(rem.at(i), rem.at(i) + 1, rem.at(i), last_col).t());
     }
     
     Res.shed_row(rem.at(i));
