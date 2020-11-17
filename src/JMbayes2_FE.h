@@ -144,7 +144,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
       double denominator_j = sum_logLik_long_j + sum(logLik_surv) + prior;
       // proposal
       field<vec> betas_prop = betas;
-      betas_prop.at(j).rows(ind_j) =+ propose_mvnorm_vec(1, chol_vcov_prop_betas.at(j),
+      betas_prop.at(j).rows(ind_j) += propose_mvnorm_vec(1, chol_vcov_prop_betas.at(j),
                     scale_betas.at(j));
       double prior_prop =
         logPrior(betas_prop.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
