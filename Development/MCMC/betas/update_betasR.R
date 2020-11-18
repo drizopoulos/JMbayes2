@@ -32,6 +32,9 @@ update_betasR <- function(betas,
   for(i in seq_len(n_b)) {
     
     patt_i <- id_patt[i]
+    
+    if(length(ind_RE_patt[[patt_i]])==0) next
+    
     ind_FE_i <- ind_FE_patt[[patt_i]]
     ind_RE_i <- ind_RE_patt[[patt_i]]
     
@@ -45,6 +48,7 @@ update_betasR <- function(betas,
     J_i <- diag(p_HC)[, ind_FE_i]
     sum_JXDu  = sum_JXDu  + J_i %*% (XD_i %*% u_i)
     sum_JXDXJ = sum_JXDXJ +  J_i %*% XDX_i %*% t(J_i)
+    
   }
 
   Sigma_1  = solve(prior_Tau_betas_HC + sum_JXDXJ)
@@ -74,6 +78,6 @@ testR <- update_betasR(betas,
                       it = 1,
                       y)
 
-testR$mean_1
+round(testR$mean_1, 4)
 testR$Sigma_1
 testR$D_inv
