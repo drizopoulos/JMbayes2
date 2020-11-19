@@ -245,7 +245,7 @@ field<vec> propose_field (const field<vec>& thetas,
   return proposed_thetas;
 }
 
-mat rnorm_mat (const uword& rows, const uword& cols) {
+mat rnorm_mat (const uword &rows, const uword &cols) {
   mat out(rows, cols);
   out.each_col([&](vec& x) {x = as<vec>(rnorm(rows)); } );
   return out;

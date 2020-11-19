@@ -200,7 +200,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
         Wlongh_alphas = Wlongh_alphas_prop;
         WlongH2_alphas = WlongH2_alphas_prop;
         logLik_surv = logLik_surv_prop;
-        if(it > 19) {
+        if (it > 19) {
           scale_betas.at(j) =
             robbins_monro(scale_betas.at(j), acceptance_betas.at(it, j), it,
                           0.25);
