@@ -1,25 +1,4 @@
 jm_fit <- function (model_data, model_info, initial_values, priors, control, vcov_prop) {
-    # create List of Lists of uvec version of idL
-    # directly with c++ indexing
-    model_data$idL_LstOfLst <- lapply(lapply(model_data$idL, function(x) x - 1), function(x) split(x, x))
-    # create vector of complete id
-    # this will act as a ghost
-    # it is going to be used to create what we need and then it will be removed
-    complete_id <- list(sort(unique(do.call(c, lapply(model_data$idL, unique)))))
-    # add it to a list with true idL list
-    complete_unq_idL <- c(complete_id, model_data$unq_idL)
-    # create a new list which
-    # has elements equal to the number of subjects and
-    # each element represents a subject
-    # each element is a uvec
-    # each uvec indicates for which longitudinal outcomes
-    # does the corresponding subjects have observations for
-    unq_idL_outc_lst <- lapply(complete_unq_idL, function(x) split(x, x))
-    unq_idL_outc_names <- unique(unlist(lapply(unq_idL_outc_lst, names)))
-    unq_idL_outc_lst <- setNames(unq_idL_outc_lst, 0:(length(unq_idL_outc_lst) - 1))
-    unq_idL_outc_lst <- lapply(do.call(mapply, c(FUN = c, lapply(unq_idL_outc_lst, `[`, unq_idL_outc_names))),
-                               function(x) as.numeric(names(x[which(names(x) != '0')])))
-    model_data$unq_idL_outc_lst <- unq_idL_outc_lst
     # extract family names
     model_info$family_names <- sapply(model_info$families, "[[", "family")
     # extract link names
@@ -129,15 +108,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
                              control, vcov_prop))
     }
     tok <- proc.time()
-    # create dummy betas
-    #if (is.null(out[[1]][["mcmc"]][["betas"]])) {
-    #    for (i in seq_along(out)) {
-    #        M <- nrow(out[[i]][["mcmc"]][["bs_gammas"]])
-    #        K <- sum(sapply(model_data$X, ncol))
-    #        out[[i]][["mcmc"]][["betas"]] <-
-    #            matrix(unlist(initial_values$betas), M, K, byrow = TRUE) + runif(M*K, -0.5, 0.5)
-    #    }
-    #}
     # split betas per outcome
     ind_FE <- model_data$ind_FE
     for (i in seq_along(out)) {
