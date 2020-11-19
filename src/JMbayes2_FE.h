@@ -63,7 +63,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
 
   // FE in HC - Gibbs sampling
   vec betas_vec = docall_rbindF(betas);
-  uword patt_count = id_patt.max() + 1; // number of unique outcome-missing patterns
+  uword patt_count = ind_RE_patt.n_elem; // number of unique outcome-missing patterns
   uword p_HC = ind_FE_HC.n_elem; // number of HC-FE
   uword q = b_mat.n_cols; // number of RE
   mat sum_JXDXJ(p_HC, p_HC, fill::zeros); // sum for the posterior's parameters
@@ -79,7 +79,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
        * & jumps the pattern in which the patient misses all longitudinal outcomes
        */
       mat U_patt_inv = inv(trimatu(chol_update(U, ind_RE_patt.at(i))));
-      D_inv.at(i) =  U_patt_inv * U_patt_inv.t(); // mat
+      D_inv.at(i) = U_patt_inv * U_patt_inv.t(); // mat
     }
     uword patt_i = id_patt.at(i); // id missing outcome pattern
     if (ind_FE_patt.at(patt_i).is_empty()) {continue;} // skip ids without longitudinal outcomes
@@ -92,7 +92,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
     mat D_inv_i = D_inv.at(patt_i);
     mat XD_i = X_dot_i.t() * D_inv_i;
     mat XDX_i = XD_i * X_dot_i;
-    sum_JXDu  += add_zero_rows(XD_i*u_i, p_HC, ind_FE_i);
+    sum_JXDu += add_zero_rows(XD_i * u_i, p_HC, ind_FE_i);
     sum_JXDXJ += add_zero_colrows(XDX_i, p_HC, p_HC, ind_FE_i, ind_FE_i);
   }
   mat Sigma_1 = inv(prior_Tau_betas_HC + sum_JXDXJ); // improve via Cholesky decomposition
