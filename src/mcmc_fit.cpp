@@ -341,7 +341,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       }
     }
 
-    //////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
 
     update_alphas(bs_gammas, gammas, alphas,
                   W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
