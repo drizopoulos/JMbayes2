@@ -1,5 +1,5 @@
 library("JMbayes2")
-simulateJoint <- function (alpha = 0.6, Dalpha = 0, n = 500,
+simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
                            mean.Cens = 7) {
     # if alpha = 0, mean.Cens = 35
     library("splines")
@@ -130,12 +130,13 @@ simulateJoint <- function (alpha = 0.6, Dalpha = 0, n = 500,
 ################################################################################
 ################################################################################
 
-M <- 200
+M <- 50
 Data <- simulateJoint()
 res_bs_gammas <- matrix(as.numeric(NA), M, 12)
 res_gammas <- matrix(as.numeric(NA), M, length(Data$trueValues$gammas))
 res_alphas <- matrix(as.numeric(NA), M, length(Data$trueValues$alphas))
 res_D <- matrix(as.numeric(NA), M, length(Data$trueValues$D))
+res_betas <- matrix(as.numeric(NA), M, length(Data$trueValues$betas))
 times <- matrix(as.numeric(NA), M, 3)
 
 for (m in seq_len(M)) {
@@ -153,6 +154,7 @@ for (m in seq_len(M)) {
         res_gammas[m, ] <- obj$statistics$Mean$gammas
         res_alphas[m, ] <- obj$statistics$Mean$alphas
         res_D[m, ] <- obj$statistics$Mean$D
+        res_betas[m, ] <- obj$statistics$Mean$betas
         times[m, ] <- obj$running_time[1:3L]
     }
     print(m)
@@ -163,6 +165,7 @@ for (m in seq_len(M)) {
 colMeans(res_gammas, na.rm = TRUE) - Data$trueValues$gammas
 colMeans(res_alphas, na.rm = TRUE) - Data$trueValues$alphas
 colMeans(res_D, na.rm = TRUE) - Data$trueValues$D
+colMeans(res_betas, na.rm = TRUE) - Data$trueValues$betas
 
 
 

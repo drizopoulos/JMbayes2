@@ -17,8 +17,8 @@ source("./R/create_Wlong_mats.R")
 source("./Development/jm/PBC_data.R")
 Rcpp::sourceCpp('src/mcmc_fit.cpp')
 
-simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
-                           mean.Cens = 7) {
+simulateJoint <- function (alpha = 0.0, Dalpha = 0, n = 500,
+                           mean.Cens = 35) {
     # if alpha = 0, mean.Cens = 35
     library("splines")
     K <- 15  # number of planned repeated measurements per subject, per outcome
