@@ -39,7 +39,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     model_data$W_h <- center_fun(model_data$W_h, model_data$W_bar)
     model_data$W_H2 <- center_fun(model_data$W_H2, model_data$W_bar)
 
-    model_data$Wlong_bar <- lapply(model_data$Wlong_H, colMeans)
+    model_data$Wlong_bar <- lapply(model_data$Wlong_H, function (x) 0 * colMeans(x))
     model_data$Wlong_H <- mapply2(center_fun, model_data$Wlong_H,
                                  model_data$Wlong_bar)
     model_data$Wlong_h <- mapply2(center_fun, model_data$Wlong_h,
@@ -47,6 +47,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     model_data$Wlong_H2 <- mapply2(center_fun, model_data$Wlong_H2,
                                   model_data$Wlong_bar)
     model_data$Wlong_bar <- lapply(model_data$Wlong_bar, rbind)
+    #model_data$X_dot <- scale(model_data$X_dot, scale = FALSE)
     # set weak informative Tau for gammas and alphas
     #n_outcomes <- length(model_data$y)
     #if (!is.null(colnames(model_data$W_H))) {

@@ -15,7 +15,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # - cores: the number of cores to use for running the chains in parallel
     # - MALA: if TRUE, the MALA algorithm is used when update the elements of
     #         of the Cholesky factor of the D matrix
-    con <- list(GK_k = 15L, Bsplines_degree = 2, base_hazard_segments = 10,
+    con <- list(GK_k = 15L, Bsplines_degree = 2L, base_hazard_segments = 10,
                 diff = 2L, n_chains = 3L, n_burnin = 500L, n_iter = 3500L,
                 n_thin = 1L, seed = 123L, MALA = FALSE,
                 save_random_effects = FALSE,
@@ -290,7 +290,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     sk <- GK$sk
     P <- c(Time_integration - trunc_Time) / 2
     st <- outer(P, sk) + (c(Time_integration + trunc_Time) / 2)
-    log_Pwk <- rep(log(P), each = length(sk)) + rep_len(log(GK$wk), length.out = length(st))
+    log_Pwk <- unname(rep(log(P), each = length(sk)) +
+        rep_len(log(GK$wk), length.out = length(st)))
     if (length(which_interval)) {
         # we take the absolute value because for the subjects for whom we do not have
         # interval censoring P2 will be negative and this will produce a NA when we take
@@ -498,14 +499,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         if (any(ind <- sapply(rr, is.null))) rr[ind] <- lapply(D_lis[ind], "*", 0.1)
         vcov_prop_RE[, , i] <- .bdiag(rr)
     }
-    vcov_prop_bs_gammas <- init_surv$vcov_prop_bs_gammas
-    vcov_prop_gammas <- init_surv$vcov_prop_gammas
-    vcov_prop_alphas <- init_surv$vcov_prop_alphas
     vcov_prop <- list(vcov_prop_betas = vcov_prop_betas,
-                      vcov_prop_RE = vcov_prop_RE,
-                      vcov_prop_bs_gammas = vcov_prop_bs_gammas,
-                      vcov_prop_gammas = vcov_prop_gammas,
-                      vcov_prop_alphas = vcov_prop_alphas)
+                      vcov_prop_RE = vcov_prop_RE)
     ############################################################################
     ############################################################################
     # Priors

@@ -5,7 +5,6 @@
 #include <RcppArmadillo.h>
 #include "JMbayes2_Funs.h"
 #include "JMbayes2_LogDens.h"
-#include "JMbayes2_Long.h"
 // [[Rcpp::depends("RcppArmadillo")]]
 
 using namespace Rcpp;

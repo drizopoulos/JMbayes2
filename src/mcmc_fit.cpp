@@ -18,10 +18,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                List priors, List control, List vcov_prop) {
   // outcome vectors and design matrices
   vec Time_right = as<vec>(model_data["Time_right"]);
-  vec Time_left = as<vec>(model_data["Time_left"]);
-  vec Time_start = as<vec>(model_data["Time_start"]);
-  vec delta = as<vec>(model_data["Time_start"]);
-  //
   uvec which_event = as<uvec>(model_data["which_event"]) - 1;
   uvec which_right = as<uvec>(model_data["which_right"]) - 1;
   uvec which_right_event = join_cols(which_event, which_right);
