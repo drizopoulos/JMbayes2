@@ -307,7 +307,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # knots for the log baseline hazard function
     if (is.null(con$knots)) {
         #qs <- quantile(c(Time_right, Time_left), probs = c(0.1, 0.9))
-        qs <- range(Time_right, Time_left)
+        qs <- quantile(Time_right, probs = c(0.05, 0.95))
         con$knots <- knots(qs[1L], qs[2L], con$base_hazard_segments,
                            con$Bsplines_degree)
     }
