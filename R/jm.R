@@ -306,7 +306,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
 
     # knots for the log baseline hazard function
     if (is.null(con$knots)) {
-        qs <- quantile(c(Time_right, Time_left), probs = c(0.1, 0.9))
+        #qs <- quantile(c(Time_right, Time_left), probs = c(0.1, 0.9))
+        qs <- range(Time_right, Time_left)
         con$knots <- knots(qs[1L], qs[2L], con$base_hazard_segments,
                            con$Bsplines_degree)
     }
@@ -519,8 +520,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     } else {
         c(unlist(alphas))
     }
-    A_tau <- rep(1, n_strata)
-    B_tau <- rep(0.1, n_strata)
+    A_tau <- rep(5, n_strata)
+    B_tau <- rep(0.5, n_strata)
     ind_thetas <- list(alphas = grep("tv(", unlist(lapply(U_H, colnames)),
                                      fixed = TRUE))
     Tau_bs_gammas <- crossprod(diff(diag(ncol(W0_H) / n_strata),
