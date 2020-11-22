@@ -512,18 +512,15 @@ field<vec> linpred_mixed (const field<mat> &X, const field<vec> &betas,
   return out;
 }
 
-vec linpred_mixed_i (const field<mat> &X, const field<vec> &betas,
-                     const field<mat> &Z, const field<mat> &b,
-                     const field<uvec> &id, const uword &i) {
-  mat X_i = X.at(i);
-  vec betas_i = betas.at(i);
-  mat Z_i = Z.at(i);
-  mat b_i = b.at(i);
-  uvec id_i = id.at(i);
-  vec out = X_i * betas_i + arma::sum(Z_i % b_i.rows(id_i), 1);
+field<vec> linpred_mixed_i (const field<vec> eta, const field<mat> &X,
+                            const field<vec> &betas, const field<mat> &Z,
+                            const field<mat> &b, const field<uvec> &id,
+                            const uword &i) {
+  field<vec> out = eta;
+  out.at(i) = X.at(i) * betas.at(i) +
+    arma::sum(Z.at(i) % b.at(i).rows(id.at(i)), 1);
   return out;
 }
-
 
 field<vec> linpred_mixed_Zb (const field<mat>& Xbetas,
                              const field<mat> &Z, const field<mat> &b,

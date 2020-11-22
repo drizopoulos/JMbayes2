@@ -14,7 +14,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
                    vec &scale_betas, field<vec> &eta, vec &logLik_long,
                    vec &logLik_surv, mat &Wlong_H, mat &Wlong_h, mat &Wlong_H2,
                    vec &WlongH_alphas, vec &Wlongh_alphas, vec &WlongH2_alphas,
-                   const vec &prior_mean_betas_HC, const mat &prior_Tau_betas_HC,
+                   const vec &Tau_mean_betas_HC, const mat &prior_Tau_betas_HC,
                    const mat &b_mat, const mat &L, const vec &sds, const mat &X_dot,
                    const field<uvec> &ind_FE, // indices for the FE in res_betas[it,] belonging to the field betas. E.g., {{1,2,3}, {4, 5}, {6}}
                    const uvec &ind_FE_HC, // indices for the FE present in the HC (cols in res_betas)
@@ -53,13 +53,8 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
                    const uvec &which_event, const uvec &which_right_event, const uvec &which_left,
                    const uvec &which_interval,
                    const field<uvec> &unq_idL) {
-  /*
-   * To improve: initialize variables outside loops, and check if it gets faster (applies for both Gibbs and MH)
-   */
-
   uword n_b = b_mat.n_rows;
   uword n_outcomes = y.n_elem;
-
   // FE in HC - Gibbs sampling
   vec betas_vec = docall_rbindF(betas);
   uword patt_count = ind_RE_patt.n_elem; // number of unique outcome-missing patterns
@@ -78,7 +73,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
        * & jumps the pattern in which the patient misses all longitudinal outcomes
        */
       mat U_patt_inv = inv(trimatu(chol_update(U, ind_RE_patt.at(i))));
-      D_inv.at(i) = U_patt_inv * U_patt_inv.t(); // mat
+      D_inv.at(i) = U_patt_inv * U_patt_inv.t();
     }
     uword patt_i = id_patt.at(i); // id missing outcome pattern
     if (ind_FE_patt.at(patt_i).is_empty()) {continue;} // skip ids without longitudinal outcomes
@@ -95,7 +90,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
     sum_JXDXJ += add_zero_colrows(XDX_i, p_HC, p_HC, ind_FE_i, ind_FE_i);
   }
   mat Sigma_1 = inv(prior_Tau_betas_HC + sum_JXDXJ); // improve via Cholesky decomposition
-  vec mean_1 = Sigma_1 * (prior_Tau_betas_HC * prior_mean_betas_HC + sum_JXDu);
+  vec mean_1 = Sigma_1 * (Tau_mean_betas_HC + sum_JXDu);
   mat U_1 = chol(Sigma_1);
   betas_vec.rows(ind_FE_HC) = propose_mvnorm_vec(1, U_1, 1.0) + mean_1;
   betas = vec2field(betas_vec, ind_FE);
@@ -149,7 +144,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
         logPrior(betas_prop.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
                  prior_Tau_betas_nHC.at(j), ll, 1.0, false);
       // logLik_long proposal
-      field<vec> eta_prop = linpred_mixed(X, betas_prop, Z, b, idL);
+      field<vec> eta_prop = linpred_mixed_i(eta, X, betas_prop, Z, b, idL, j);
       double sum_logLik_long_j_prop =
         sum(log_long_i(y.at(j), eta_prop.at(j), sigmas.at(j), extra_parms.at(j),
                        std::string(families[j]), std::string(links[j]),

@@ -45,6 +45,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<mat> X = List2Field_mat(as<List>(model_data["X"]));
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   field<mat> y = List2Field_mat(as<List>(model_data["y"]));
+  field<mat> Xcentered = List2Field_mat(as<List>(model_data["Xcentered"]));
+  field<mat> Xbar = List2Field_mat(as<List>(model_data["Xbar"]));
   //
   field<mat> vcov_prop_betas = List2Field_mat(as<List>(vcov_prop["vcov_prop_betas"]));
   field<mat> chol_vcov_prop_betas = vcov_prop_betas;
@@ -171,6 +173,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   double prior_sigmas_sigma = as<double>(priors["prior_sigmas_sigma"]);
   vec prior_mean_betas_HC = as<vec>(priors["mean_betas_HC"]);
   mat prior_Tau_betas_HC = as<mat>(priors["Tau_betas_HC"]);
+  vec Tau_mean_betas_HC = prior_Tau_betas_HC * prior_mean_betas_HC;
   field<vec> prior_mean_betas_nHC = List2Field_vec(as<List>(priors["mean_betas_nHC"]));
   field<mat> prior_Tau_betas_nHC = List2Field_mat(as<List>(priors["Tau_betas_nHC"]));
   // store results
@@ -411,7 +414,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     update_betas(betas, res_betas, acceptance_betas, scale_betas, eta,
                  logLik_long, logLik_surv, Wlong_H, Wlong_h, Wlong_H2,
                  WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                 prior_mean_betas_HC, prior_Tau_betas_HC, b_mat, L, sds, X_dot,
+                 Tau_mean_betas_HC, prior_Tau_betas_HC, b_mat, L, sds, X_dot,
                  ind_FE, ind_FE_HC, id_patt, ind_RE_patt, ind_FE_patt,
                  it, has_tilde_betas, X, Z, b, idL, y, sigmas, extra_parms,
                  families, links, idL_lp_fast, prior_mean_betas_nHC,

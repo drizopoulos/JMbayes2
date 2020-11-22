@@ -44,11 +44,19 @@ vec logPrior(const vec &x, const vec &mean) {
     return z.ones();
 }
 
+
 // [[Rcpp::export]]
-mat M_nas (const mat &L, const uvec &ind_RE_patt) {
-    mat L_patt_inv = inv(trimatu(chol_update(L, ind_RE_patt)));
-    mat D_inv =  L_patt_inv.t() * L_patt_inv;
-    return D_inv;
+vec test_chol1 (const mat &Tau, const vec &mu) {
+    mat U = chol(Tau);
+    vec m1 = solve(trimatl(U.t()), mu);
+    vec mean = solve(trimatu(U), m1);
+    return mean;
+}
+
+// [[Rcpp::export]]
+vec test_chol2 (const mat &Tau, const vec &mu) {
+    vec mean = solve(Tau, mu);
+    return mean;
 }
 
 
