@@ -18,7 +18,7 @@ create_X_dot3 <- function(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL, xbas
     
     for (k in z_in_x[[j]]) { # k-th RE in z_in_x
       
-      if(length(bas_cols[k, ])==0) next
+      if(sum(bas_cols[k, ])==0) next
       
       M[sum(nres[1:j-1]) + k + ids_rows, sum(nfes_HC[1:j-1]) + which(bas_cols[k, ])] <- X_HC[[j]][[k]]
     }
@@ -28,3 +28,13 @@ create_X_dot3 <- function(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL, xbas
 
 
 X_dot <- create_X_dot3(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL, xbas_in_z)
+
+#
+
+set.seed(2021)
+id <- sample(seq_len(nT), 1)
+id <- 2
+rows <- lapply(idL, match, x=id) 
+mapply(function(XX, r){XX[r,]}, X, rows)
+
+X_dot[seq_len(sum(nres)) + (id-1)*sum(nres),]
