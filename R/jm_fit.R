@@ -178,6 +178,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
                "Wlong_bar_alphas", "D", paste0("betas", seq_along(model_data$X)),
                "sigmas")
+    parms2 <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
+                "Wlong_bar_alphas", "D", "betas", "sigmas")
     if (control$save_random_effects) parms <- c(parms, "b")
     if (!length(attr(model_info$terms$terms_Surv_noResp, "term.labels")))
         parms <- parms[parms != "gammas"]
@@ -186,7 +188,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     mcmc_out <- lapply_nams(parms, convert2_mcmclist)
     mcmc_out <- list(
         "mcmc" = mcmc_out,
-        "acc_rates" = lapply_nams(parms, get_acc_rates),
+        "acc_rates" = lapply_nams(parms2, get_acc_rates),
         "logLik" = do.call("rbind", lapply(out, "[[", "logLik")),
         "running_time" = tok - tik
     )

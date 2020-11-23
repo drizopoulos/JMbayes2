@@ -131,7 +131,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
         sum(log_long_i(y.at(j), eta.at(j), sigmas.at(j), extra_parms.at(j),
                        std::string(families[j]), std::string(links[j]),
                        idL_lp_fast.at(j)));
-      vec ll(prior_mean_betas_nHC.at(j).n_rows, fill::ones);
+      vec ll(ind_j.n_rows, fill::ones);
       double prior =
         logPrior(betas.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
                  prior_Tau_betas_nHC.at(j), ll, 1.0, false);
@@ -154,16 +154,16 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
         calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas_prop, b, id_H_,
                         FunForms, FunForms_ind);
       vec WlongH_alphas_prop = Wlong_H_prop * alphas;
-      mat Wlong_h_prop;
-      vec Wlongh_alphas_prop;
+      mat Wlong_h_prop(Wlong_h.n_rows, Wlong_h.n_cols);
+      vec Wlongh_alphas_prop(Wlongh_alphas.n_rows);
       if (any_event) {
         Wlong_h_prop =
           calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas_prop, b, id_h,
                           FunForms, FunForms_ind);
         Wlongh_alphas_prop = Wlong_h_prop * alphas;
       }
-      mat Wlong_H2_prop;
-      vec WlongH2_alphas_prop;
+      mat Wlong_H2_prop(Wlong_H2.n_rows, Wlong_H2.n_cols);
+      vec WlongH2_alphas_prop(WlongH2_alphas.n_rows);
       if (any_interval) {
         Wlong_H2_prop =
           calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas_prop, b, id_H_,
@@ -194,11 +194,10 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
         Wlongh_alphas = Wlongh_alphas_prop;
         WlongH2_alphas = WlongH2_alphas_prop;
         logLik_surv = logLik_surv_prop;
-        if (it > 19) {
-          scale_betas.at(j) =
-            robbins_monro(scale_betas.at(j), acceptance_betas.at(it, j), it,
-                          0.25);
-        }
+      }
+      if (it > 19) {
+        scale_betas.at(j) =
+          robbins_monro(scale_betas.at(j), acceptance_betas.at(it, j), it, 0.25);
       }
     }
   }
