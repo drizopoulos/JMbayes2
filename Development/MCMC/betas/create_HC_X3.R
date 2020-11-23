@@ -50,7 +50,17 @@ create_HC_X3 <- function(x, z, id, form, data) {
     }
   }
   
-  list(mat_HC = mat_HC, X_HC = X_HC)
+  FE_in_HC = which(colSums(mat_HC>0) == 1)
+  
+  # return
+  list(mat_HC = mat_HC, 
+       X_HC = X_HC, 
+       FE_in_HC = FE_in_HC,
+       nfes_HC = length(FE_in_HC),
+       z_in_x = which(rowSums(mat_HC==1) == 1),
+       x_in_z = which(colSums(mat_HC==1) == 1),
+       xbas_in_z = mat_HC > 1
+       )
   
 }
 
@@ -66,4 +76,9 @@ formL <- lapply(Mixed_objects, formula) #?? not sure if there other variable in 
 
 components_HC <- mapply2(create_HC_X3, X, Z, idL, formL, rep(list(dataL), length(nres)))
 mat_HC <- lapply(components_HC, "[[", "mat_HC")
-X_HC <- lapply(components_HC, "[[", "mat_HC")
+X_HC <- lapply(components_HC, "[[", "X_HC")
+FE_in_HC <- lapply(components_HC, "[[", "FE_in_HC")
+nfes_HC <- sapply(components_HC, "[[", "nfes_HC")
+z_in_x <- sapply(components_HC, "[[", "z_in_x")
+x_in_z <- sapply(components_HC, "[[", "x_in_z")
+xbas_in_z <- sapply(components_HC, "[[", "xbas_in_z")
