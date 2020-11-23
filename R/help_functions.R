@@ -487,6 +487,64 @@ create_HC_X2 <- function (x, z, id) {
          Xbase = x[!duplicated(id), baseline, drop = FALSE])
 }
 
+create_HC_X3 <- function(x, z, id, form, data) {
+    
+    # functions
+    check_tv <- function (x, id) {
+        !all(sapply(split(x, id),
+                    function (z) all(z - z[1L] < .Machine$double.eps^0.5)))
+    }
+    
+    # local vars
+    cnams_x <- colnames(x)
+    cnams_z <- colnames(z)
+    n_res <- ncol(z)
+    
+    X_HC   <- vector("list", length = n_res)
+    mat_HC <- matrix(0, nrow= n_res, ncol = ncol(x), 
+                     dimnames = list(cnams_z, cnams_x))
+    mat_HC[cbind(which(cnams_z %in% cnams_x), which(cnams_x %in% cnams_z))] <- 1 # x_in_z
+    
+    # baseline (assumes every model has a random intercept)
+    x_notin_z <- which(!cnams_x %in% cnams_z)
+    baseline <- x_notin_z[!apply(x[, x_notin_z, drop = FALSE], 2L, check_tv, id= id)]
+    X_HC[[1]] <- x[!duplicated(id), baseline, drop = FALSE]
+    mat_HC[cbind(1, baseline)] <- 2 # baseline
+    
+    # remaining RE
+    if(n_res > 1){
+        for(i in seq_len(n_res)[-1]) {
+            
+            xint_in_z <- union(grep(paste0(cnams_z[i], ":"), cnams_x), grep(paste0(":", cnams_z[i]), cnams_x)) # interactions can be found as RE:var1, var1:RE, or var1:RE:var2
+            if(length(xint_in_z)==0) next
+            
+            data_temp <- data
+            data_temp[[ cnams_z[i] ]] <- 1
+            x_temp <- model.matrix(form, data= data_temp)
+            
+            baseline2 <- xint_in_z[!apply(x_temp[, xint_in_z, drop = FALSE], 2L, check_tv, id= id)]
+            X_HC[[i]] <- x_temp[!duplicated(id), baseline2]
+            mat_HC[cbind(i, baseline2)] <- 3 # xint_in_z
+            
+        }
+    }
+    
+    x_in_z_base = which(colSums(mat_HC>0) == 1)
+    
+    # return
+    list(mat_HC = mat_HC, 
+         X_HC = X_HC, 
+         x_in_z_base = x_in_z_base,
+         nfes_HC = length(x_in_z_base),
+         z_in_x = which(rowSums(mat_HC==1) == 1),
+         x_in_z = which(colSums(mat_HC==1) == 1),
+         x_notin_z = which(colSums(mat_HC) == 0),
+         xbas_in_z = mat_HC[, x_in_z_base] > 1,
+         baseline = baseline #?? I believe this will not be needed, remove later
+    )
+    
+}
+
 create_X_dot <- function(Xbase, nT, unq_idL, nres, nfes_HC, baseline, x_in_z_base, x_in_z) {
 
     n_outcomes <- length(nres) # number of outcomes
@@ -537,6 +595,34 @@ create_X_dot2 <- function (nT, nres, ind_FE_HC, x_in_z, x_in_z_base, unq_idL,
                         Xbase[[j]][as.character(i), ]
                 }
             }
+        }
+    }
+    M
+}
+
+create_X_dot3 <- function(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL, xbas_in_z) {
+    
+    n_outcomes <- length(nres) # number of outcomes
+    n_res <- sum(nres) # total number of RE
+    
+    M <- matrix(0, nrow= n_res*nT, ncol= sum(nfes_HC))
+    
+    for (j in seq_len(n_outcomes)) { # j-th outcome
+        
+        ids <- unq_idL[[j]] # ids present in outcome-j
+        ids_rows <- (ids-1) * n_res # 1st row for each id
+        
+        rows <- sum(nres[1:j-1]) + z_in_x[[j]] + rep(ids_rows, each= length(z_in_x[[j]]))
+        cols <- rep(sum(nfes_HC[1:j-1]) + x_in_z[[j]], times= length(ids))
+        M[cbind(rows, cols)] <- 1 # add 1 for each z_in_x
+        
+        bas_cols <- xbas_in_z[[j]]
+        
+        for (k in z_in_x[[j]]) { # k-th RE in z_in_x
+            
+            if(sum(bas_cols[k, ])==0) next
+            
+            M[sum(nres[1:j-1]) + k + ids_rows, sum(nfes_HC[1:j-1]) + which(bas_cols[k, ])] <- X_HC[[j]][[k]]
         }
     }
     M
