@@ -64,18 +64,18 @@ jm <- function (Surv_object, Mixed_objects, time_var,
              "in the database of the longitudinal models.")
     }
     dataL <- dataL[order(idL, dataL[[time_var]]), ]
-
+    
     # extract terms from mixed models
     terms_FE <- lapply(Mixed_objects, extract_terms, which = "fixed", data = dataL)
     respVars <- sapply(terms_FE, function (tt) all.vars(tt)[1L])
     respVars_form <- sapply(terms_FE, function (tt) as.character(attr(tt, "variables"))[2L])
     terms_FE_noResp <- lapply(terms_FE, delete.response)
     terms_RE <- lapply(Mixed_objects, extract_terms, which = "random", data = dataL)
-
+    
     # create model frames
     mf_FE_dataL <- lapply(terms_FE, model.frame.default, data = dataL)
     mf_RE_dataL <- lapply(terms_RE, model.frame.default, data = dataL)
-
+    
     # we need to account for missing data in the fixed and random effects model frames,
     # in parallel across outcomes (i.e., we will allow that some subjects may have no data
     # for some outcomes)
@@ -85,7 +85,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                           SIMPLIFY = FALSE)
     mf_RE_dataL <- mapply(fix_NAs_random, mf_RE_dataL, NAs_RE_dataL, NAs_FE_dataL,
                           SIMPLIFY = FALSE)
-
+    
     # create response vectors
     y <- lapply(mf_FE_dataL, model.response)
     y <- lapply(y, function (yy) {
@@ -94,7 +94,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     if (any(sapply(y, function (x) any(!is.finite(x))))) {
         stop("infite value detected in some longitudinal outcomes. These are not allowed.\n")
     }
-
+    
     # extract families
     families <- lapply(Mixed_objects, "[[", "family")
     families[sapply(families, is.null)] <- rep(list(gaussian()),
@@ -116,7 +116,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # this is relevant in the calculation of the log density / probability mass function
     # for the longitudinal outcomes
     unq_idL <- lapply(idL, unique)
-
+    
     # create design matrices for mixed models
     X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL, SIMPLIFY = FALSE)
     Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL, SIMPLIFY = FALSE)
@@ -126,21 +126,32 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     }
     nres <- sapply(Z, ncol)
     ind_RE <- split(seq_len(sum(nres)), rep(seq_along(Z), nres))
-    componentsHC <- mapply2(create_HC_X2, X, Z, idL)
-    Xbase <- lapply(componentsHC, "[[", "Xbase")
+    ##componentsHC <- mapply2(create_HC_X2, X, Z, idL)
+    forms <- lapply(Mixed_objects, formula)
+    componentsHC <- mapply2(create_HC_X3, X, Z, idL, forms, rep(list(dataL), length(nres)))
+    ##Xbase <- lapply(componentsHC, "[[", "Xbase")
+    X_HC <- lapply(componentsHC, "[[", "X_HC")
+    Xbase <- lapply(X_HC, function(l) l[[1]]) #?? I believe this variable is no longer needed. Do not forget to remove from the Data list below and mcmc_fit
     Xbase[] <- mapply2(function (m, nams) {rownames(m) <- nams; m}, Xbase, unq_idL)
-    baseline <- lapply(componentsHC, "[[", "baseline")
+    ##baseline <- lapply(componentsHC, "[[", "baseline")
+    baseline <- lapply(componentsHC, "[[", "baseline") #?? I believe this variable is no longer needed. Do not forget to remove from the Data list below and mcmc_fit
+    ##x_in_z <- lapply(componentsHC, "[[", "x_in_z")
     x_in_z <- lapply(componentsHC, "[[", "x_in_z")
+    ##x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
     x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
     nfes <- sapply(X, ncol)
     # 'ind_FE' is used in vec2field() to re-create the field of betas
     # from betas_vec
     ind_FE <- split(seq_len(sum(nfes)), rep(seq_along(X), nfes))
-    x_in_z_base <- mapply2(function (x, y) sort(c(x, y)), x_in_z, baseline)
+    ##x_in_z_base <- mapply2(function (x, y) sort(c(x, y)), x_in_z, baseline)
+    x_in_z_base <- lapply(componentsHC, "[[", "x_in_z_base")
+    #
     # 'ind_FE_HC' denotes which elements of betas_vec are in the HC formulation
     # this will be use to save the results in the corresponding columns
+    #
     ind_FE_HC <- unlist(mapply2(function (x, ind) x[ind], ind_FE, x_in_z_base),
                         use.names = FALSE)
+    #
     # 'ind_FE_HC' denotes which elements of betas_vec are not in the
     # HC formulation. It is a list, to be used in conjuction with
     # has_tilde_betas. That is, if has_tilde_betas = TRUE, we need to save
@@ -161,7 +172,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     } else {
         dataS <- data_Surv
     }
-
+    
     # if the longitudinal outcomes are not in dataS, we set a random value for
     # them. This is needed for the calculation of the matrix of interaction terms
     # between the longitudinal outcomes and other variables.
@@ -174,7 +185,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     terms_Surv <- Surv_object$terms
     terms_Surv_noResp <- delete.response(terms_Surv)
     mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
-
+    
     # survival times
     Surv_Response <- model.response(mf_surv_dataS)
     type_censoring <- attr(Surv_Response, "type")
@@ -194,7 +205,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         dataS <- dataS[-NAs_surv, ]
     }
     idT <- factor(idT, levels = unique(idT))
-
+    
     nT <- length(unique(idT))
     if (nY != nT) {
         stop("the number of groups/subjects in the longitudinal and survival datasets ",
@@ -262,7 +273,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         unclass(mf_surv_dataS[[ind_strata]])
     }
     n_strata <- length(unique(strata))
-
+    
     # 'Time_integration' is the upper limit of the integral in likelihood
     # of the survival model. For subjects with event (delta = 1), for subjects with
     # right censoring and for subjects with interval censoring we need to integrate
@@ -284,14 +295,14 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     if (length(which_interval)) {
         Time_integration2[which_interval] <- Time_right[which_interval]
     }
-
+    
     # create Gauss Kronrod points and weights
     GK <- gaussKronrod(con$GK_k)
     sk <- GK$sk
     P <- c(Time_integration - trunc_Time) / 2
     st <- outer(P, sk) + (c(Time_integration + trunc_Time) / 2)
     log_Pwk <- unname(rep(log(P), each = length(sk)) +
-        rep_len(log(GK$wk), length.out = length(st)))
+                          rep_len(log(GK$wk), length.out = length(st)))
     if (length(which_interval)) {
         # we take the absolute value because for the subjects for whom we do not have
         # interval censoring P2 will be negative and this will produce a NA when we take
@@ -303,7 +314,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     } else {
         P2 <- st2 <- log_Pwk2 <- rep(0.0, nT * con$GK_k)
     }
-
+    
     # knots for the log baseline hazard function
     if (is.null(con$knots)) {
         #qs <- quantile(c(Time_right, Time_left), probs = c(0.1, 0.9))
@@ -314,7 +325,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     .knots_base_hazard <- con$knots
     env <- new.env(parent = .GlobalEnv)
     assign(".knots_base_hazard", con$knots, envir = env)
-
+    
     # Extract functional forms per longitudinal outcome
     if (any(!names(functional_forms) %in% respVars_form)) {
         stop("unknown names in the list provided in the 'functional_forms' argument; as names ",
@@ -343,9 +354,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     FunForms_per_outcome <- lapply(FunForms_per_outcome,
                                    function (x) x[sapply(x, length) > 0])
     collapsed_functional_forms <- lapply(FunForms_per_outcome, names)
-
+    
     #####################################################
-
+    
     # design matrices for the survival submodel:
     #  - W0 is the design matrix for the log baseline hazard
     #  - W is the design matrix for the covariates in the Surv_object
@@ -429,7 +440,11 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         ind_FE_patt <- apply(unique(out_in), 1L, find_patt, n = nfes_HC)
     }
     #X_dot <- create_X_dot(Xbase, nT, unq_idL, nres, nfes_HC, baseline, x_in_z_base, x_in_z)
-    X_dot <- create_X_dot2(nT, nres, ind_FE_HC, x_in_z, x_in_z_base, unq_idL, Xbase)
+    ##X_dot <- create_X_dot2(nT, nres, ind_FE_HC, x_in_z, x_in_z_base, unq_idL, Xbase)
+    X_HC <- lapply(componentsHC, "[[", "X_HC")
+    xbas_in_z <- lapply(componentsHC, "[[", "xbas_in_z")
+    z_in_x <- lapply(componentsHC, "[[", "z_in_x")
+    X_dot <- create_X_dot3(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL, xbas_in_z)
     ############################################################################
     ############################################################################
     Data <- list(n = nY, idL = idL, idL_ind = idL_ind, idL_lp = idL_lp, unq_idL = unq_idL,
