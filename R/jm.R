@@ -129,8 +129,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     forms <- lapply(Mixed_objects, formula)
     componentsHC <- mapply2(create_HC_X3, X, Z, idL, forms,
                             rep(list(dataL), length(nres)))
-    #componentsHC <- mapply2(create_HC_X3, lapply(X, scale, scale = FALSE), Z,
-    #                        idL, forms, rep(list(dataL), length(nres)))
+    # componentsHC <- mapply2(create_HC_X3, lapply(X, scale, scale = FALSE), Z,
+    #                         idL, forms, rep(list(dataL), length(nres)),
+    #                         rep(TRUE, length(nres))) # center = TRUE
     X_HC <- lapply(componentsHC, "[[", "X_HC")
     x_in_z <- lapply(componentsHC, "[[", "x_in_z")
     x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")

@@ -487,7 +487,7 @@ create_HC_X2 <- function (x, z, id) {
          Xbase = x[!duplicated(id), baseline, drop = FALSE])
 }
 
-create_HC_X3 <- function(x, z, id, form, data) {
+create_HC_X3 <- function(x, z, id, form, data, center = FALSE) {
     
     # functions
     check_tv <- function (x, id) {
@@ -520,7 +520,7 @@ create_HC_X3 <- function(x, z, id, form, data) {
             
             data_temp <- data
             data_temp[[ cnams_z[i] ]] <- 1
-            x_temp <- model.matrix(form, data= data_temp)
+            x_temp <- scale(model.matrix(form, data= data_temp), center = center, scale = FALSE)
             
             baseline2 <- xint_in_z[!apply(x_temp[, xint_in_z, drop = FALSE], 2L, check_tv, id= id)]
             X_HC[[i]] <- x_temp[!duplicated(id), baseline2]
