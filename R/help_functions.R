@@ -530,6 +530,9 @@ create_HC_X3 <- function(x, z, id, form, data) {
     }
     
     x_in_z_base = which(colSums(mat_HC>0) == 1)
+    if (!length(baseline)) baseline <- as.integer(NA)
+    x_notin_z = which(colSums(mat_HC) == 0)
+    if (!length(x_notin_z)) x_notin_z <- as.integer(NA)
     
     # return
     list(mat_HC = mat_HC, 
@@ -538,8 +541,8 @@ create_HC_X3 <- function(x, z, id, form, data) {
          nfes_HC = length(x_in_z_base),
          z_in_x = which(rowSums(mat_HC==1) == 1),
          x_in_z = which(colSums(mat_HC==1) == 1),
-         x_notin_z = which(colSums(mat_HC) == 0),
-         xbas_in_z = mat_HC[, x_in_z_base] > 1,
+         x_notin_z = x_notin_z,
+         xbas_in_z = mat_HC[, x_in_z_base, drop = FALSE] > 1,
          baseline = baseline #?? I believe this will not be needed, remove later
     )
     
