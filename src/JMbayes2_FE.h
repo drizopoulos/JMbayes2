@@ -23,7 +23,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
                    const field<uvec> &ind_FE_patt, // indices for the FE (in HC) present in each outcome missi
                    const uword &it,
                    const uvec &has_tilde_betas,
-                   const field<mat> &X,
+                   const field<mat> &X, const field<mat> &Xcentered, const field<mat> &Xbar,
                    const field<mat> &Z,
                    const field<mat> &b,
                    const field<uvec> &idL,
@@ -126,6 +126,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
     for (uword j = 0; j < n_outcomes; ++j) { // j-th outcome
       if (!has_tilde_betas.at(j)) {continue;} // skip outcomes without nHC-FE
       uvec ind_j = x_notin_z.at(j);
+      //eta.at(j).each_row() += Xbar.at(j).cols(ind_j) * betas.at(j).rows(ind_j);
       // denominator
       double sum_logLik_long_j =
         sum(log_long_i(y.at(j), eta.at(j), sigmas.at(j), extra_parms.at(j),
@@ -138,8 +139,8 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
       double denominator_j = sum_logLik_long_j + sum(logLik_surv) + prior;
       // proposal
       field<vec> betas_prop = betas;
-      betas_prop.at(j).rows(ind_j) += propose_mvnorm_vec(1, chol_vcov_prop_betas.at(j),
-                    scale_betas.at(j));
+      betas_prop.at(j).rows(ind_j) += propose_mvnorm_vec(1,
+                    chol_vcov_prop_betas.at(j), scale_betas.at(j));
       double prior_prop =
         logPrior(betas_prop.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
                  prior_Tau_betas_nHC.at(j), ll, 1.0, false);
@@ -182,11 +183,12 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
         sum_logLik_long_j_prop + sum(logLik_surv_prop) + prior_prop;
       // Hastings ratio
       double log_ratio_j = numerator_j - denominator_j;
-      if(std::isfinite(log_ratio_j) &&
-         std::exp(log_ratio_j) > R::runif(0.0, 1.0)) {
+      if (std::isfinite(log_ratio_j) &&
+          std::exp(log_ratio_j) > R::runif(0.0, 1.0)) {
         acceptance_betas.at(it, j) = 1;
         betas.at(j) = betas_prop.at(j);
         eta = eta_prop;
+        //eta.at(j).each_row() -= Xbar.at(j).cols(ind_j) * betas.at(j).rows(ind_j);
         Wlong_H = Wlong_H_prop;
         Wlong_h = Wlong_h_prop;
         Wlong_H2 = Wlong_H2_prop;

@@ -431,7 +431,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     out_in <- sapply(idL, "%in%", x = seq_len(nT))
     all_pat <- apply(out_in, 1L, paste0, collapse = "/")
     id_patt <- match(all_pat, unique(all_pat))
-    if(length(unique(out_in))==1){
+    if (length(unique(out_in)) == 1){
         ind_RE_patt <- list(seq_len(nres))
         ind_FE_patt <- list(seq_len(nfes_HC))
     } else {

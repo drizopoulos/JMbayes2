@@ -1266,3 +1266,13 @@ weak_informative_mean <- function (y, X, is_gaussian) {
     out
 }
 
+vcov_center <- function (X, vcov) {
+    mean_v <- colMeans(X)
+    var_temp <- crossprod(mean_v, vcov) %*% mean_v
+    vcov[1L, -1L] <- vcov[-1L, 1L] <- c(vcov %*% mean_v)[-1L]
+    vcov[1L, 1L] <- var_temp
+    vcov
+}
+
+
+
