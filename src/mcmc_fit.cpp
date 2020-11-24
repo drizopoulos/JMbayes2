@@ -60,7 +60,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat Wlong_h = docall_cbindL(as<List>(model_data["Wlong_h"]));
   mat Wlong_H2 = docall_cbindL(as<List>(model_data["Wlong_H2"]));
   mat Wlong_bar = docall_cbindL(as<List>(model_data["Wlong_bar"]));
-  field<mat> Xbase = List2Field_mat(as<List>(model_data["Xbase"]));
   mat X_dot = as<mat>(model_data["X_dot"]);
   // other information
   uvec idT = as<uvec>(model_data["idT"]) - 1;
@@ -76,7 +75,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   bool any_interval = which_interval.n_rows > 0;
   field<uvec> FunForms = List2Field_uvec(as<List>(model_info["FunForms_cpp"]), true);
   field<uvec> FunForms_ind = List2Field_uvec(as<List>(model_info["FunForms_ind"]), true);
-  field<uvec> baseline = List2Field_uvec(as<List>(model_data["baseline"]), true);
   field<uvec> x_in_z = List2Field_uvec(as<List>(model_data["x_in_z"]), true);
   field<uvec> x_notin_z = List2Field_uvec(as<List>(model_data["x_notin_z"]), true);
   field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);

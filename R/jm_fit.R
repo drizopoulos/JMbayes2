@@ -32,6 +32,14 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     model_data$Z_H[] <- lapply(model_data$Z_H, docall_cbind)
     model_data$Z_h[] <- lapply(model_data$Z_h, docall_cbind)
     model_data$Z_H2[] <- lapply(model_data$Z_H2, docall_cbind)
+    # center design matrix fixed effects
+    model_data$Xbar <- lapply(model_data$X, colMeans)
+    model_data$Xcentered <- mapply2(center_fun, model_data$X, model_data$Xbar)
+    #model_data$X[] <- mapply2(center_fun, model_data$X, model_data$Xbar)
+    #model_data$X_H[] <- mapply2(center_fun, model_data$X_H, model_data$Xbar)
+    #model_data$X_h[] <- mapply2(center_fun, model_data$X_h, model_data$Xbar)
+    #model_data$X_H2[] <- mapply2(center_fun, model_data$X_H2, model_data$Xbar)
+    model_data$Xbar <- lapply(model_data$Xbar, rbind)
     # center the design matrices for the baseline covariates and
     # the longitudinal process
     model_data$W_bar <- rbind(colMeans(model_data$W_H))
@@ -47,10 +55,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     model_data$Wlong_H2 <- mapply2(center_fun, model_data$Wlong_H2,
                                   model_data$Wlong_bar)
     model_data$Wlong_bar <- lapply(model_data$Wlong_bar, rbind)
-    # center design matrix fixed effects for non-HC
-    model_data$Xbar <- lapply(model_data$X, colMeans)
-    model_data$Xcentered <- mapply2(center_fun, model_data$X, model_data$Xbar)
-    model_data$Xbar <- lapply(model_data$Xbar, rbind)
     # set weak informative Tau for gammas and alphas
     #n_outcomes <- length(model_data$y)
     #if (!is.null(colnames(model_data$W_H))) {
