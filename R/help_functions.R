@@ -621,7 +621,7 @@ create_X_dot3 <- function(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL, xbas
         
         bas_cols <- xbas_in_z[[j]]
         
-        for (k in z_in_x[[j]]) { # k-th RE in z_in_x
+        for (k in z_in_x[[j]]) { # k-th RE in z_in_x # improve: remove this loop here
             
             if(sum(bas_cols[k, ])==0) next
             

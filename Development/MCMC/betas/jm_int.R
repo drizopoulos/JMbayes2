@@ -126,29 +126,32 @@ jm <- function (Surv_object, Mixed_objects, time_var,
   }
   nres <- sapply(Z, ncol)
   ind_RE <- split(seq_len(sum(nres)), rep(seq_along(Z), nres))
-  #?? componentsHC <- mapply2(create_HC_X2, X, Z, idL)
-  formL <- lapply(Mixed_objects, formula) #?? not sure if we already have this variable in jm()
-  componentsHC <- mapply2(create_HC_X3, X, Z, idL, formL, rep(list(dataL), length(nres)))
-  #mat_HC <- lapply(componentsHC, "[[", "mat_HC")
-  #?? Xbase <- lapply(componentsHC, "[[", "Xbase")
-  #?? Xbase[] <- mapply2(function (m, nams) {rownames(m) <- nams; m}, Xbase, unq_idL)
+  ##componentsHC <- mapply2(create_HC_X2, X, Z, idL)
+  forms <- lapply(Mixed_objects, formula)
+  componentsHC <- mapply2(create_HC_X3, X, Z, idL, forms, rep(list(dataL), length(nres)))
+  ##Xbase <- lapply(componentsHC, "[[", "Xbase")
   X_HC <- lapply(componentsHC, "[[", "X_HC")
-  Xbase <- X_HC[[1]] #?? I believe this variable is no longer needed
-  xbas_in_z <- sapply(componentsHC, "[[", "xbas_in_z")
-  baseline <- lapply(componentsHC, "[[", "baseline") #?? I believe this variable is no longer needed
+  Xbase <- lapply(X_HC, function(l) l[[1]]) #?? I believe this variable is no longer needed. Do not forget to remove from the Data list below and mcmc_fit
+  Xbase[] <- mapply2(function (m, nams) {rownames(m) <- nams; m}, Xbase, unq_idL)
+  ##baseline <- lapply(componentsHC, "[[", "baseline")
+  baseline <- lapply(componentsHC, "[[", "baseline") #?? I believe this variable is no longer needed. Do not forget to remove from the Data list below and mcmc_fit
+  ##x_in_z <- lapply(componentsHC, "[[", "x_in_z")
   x_in_z <- lapply(componentsHC, "[[", "x_in_z")
+  ##x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
   x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
-  z_in_x <- sapply(componentsHC, "[[", "z_in_x")
   nfes <- sapply(X, ncol)
   # 'ind_FE' is used in vec2field() to re-create the field of betas
   # from betas_vec
   ind_FE <- split(seq_len(sum(nfes)), rep(seq_along(X), nfes))
-  #?? x_in_z_base <- mapply2(function (x, y) sort(c(x, y)), x_in_z, baseline)
+  ##x_in_z_base <- mapply2(function (x, y) sort(c(x, y)), x_in_z, baseline)
   x_in_z_base <- lapply(componentsHC, "[[", "x_in_z_base")
+  #
   # 'ind_FE_HC' denotes which elements of betas_vec are in the HC formulation
   # this will be use to save the results in the corresponding columns
+  #
   ind_FE_HC <- unlist(mapply2(function (x, ind) x[ind], ind_FE, x_in_z_base),
                       use.names = FALSE)
+  #
   # 'ind_FE_HC' denotes which elements of betas_vec are not in the
   # HC formulation. It is a list, to be used in conjuction with
   # has_tilde_betas. That is, if has_tilde_betas = TRUE, we need to save
@@ -424,8 +427,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     W0_H2 <- W_H2 <- matrix(0.0)
     X_H2 <- Z_H2 <- U_H2 <- rep(list(matrix(0.0)), length(respVars))
   }
-  #?? nfes_HC <- sapply(x_in_z_base, length)
-  nfes_HC <- sapply(componentsHC, "[[", "nfes_HC")
+  nfes_HC <- sapply(x_in_z_base, length)
   out_in <- sapply(idL, "%in%", x = seq_len(nT))
   all_pat <- apply(out_in, 1L, paste0, collapse = "/")
   id_patt <- match(all_pat, unique(all_pat))
@@ -438,12 +440,15 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ind_FE_patt <- apply(unique(out_in), 1L, find_patt, n = nfes_HC)
   }
   #X_dot <- create_X_dot(Xbase, nT, unq_idL, nres, nfes_HC, baseline, x_in_z_base, x_in_z)
-  #?? X_dot <- create_X_dot2(nT, nres, ind_FE_HC, x_in_z, x_in_z_base, unq_idL, Xbase)
+  ##X_dot <- create_X_dot2(nT, nres, ind_FE_HC, x_in_z, x_in_z_base, unq_idL, Xbase)
+  X_HC <- lapply(componentsHC, "[[", "X_HC")
+  xbas_in_z <- lapply(componentsHC, "[[", "xbas_in_z")
+  z_in_x <- lapply(componentsHC, "[[", "z_in_x")
   X_dot <- create_X_dot3(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL, xbas_in_z)
   ############################################################################
   ############################################################################
   Data <- list(n = nY, idL = idL, idL_ind = idL_ind, idL_lp = idL_lp, unq_idL = unq_idL,
-               y = y, X = X, Z = Z, Xbase = Xbase, baseline = baseline, X_dot = X_dot, #?? I believe some of these variables are not needed
+               y = y, X = X, Z = Z, Xbase = Xbase, baseline = baseline, X_dot = X_dot,
                x_in_z = x_in_z, x_notin_z = x_notin_z,
                has_tilde_betas = has_tilde_betas, ind_FE = ind_FE,
                ind_FE_HC = ind_FE_HC, ind_FE_nHC = ind_FE_nHC,
