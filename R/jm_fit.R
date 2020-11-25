@@ -33,9 +33,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     model_data$Z_h[] <- lapply(model_data$Z_h, docall_cbind)
     model_data$Z_H2[] <- lapply(model_data$Z_H2, docall_cbind)
     # center design matrix fixed effects
-    model_data$Xbar <- lapply(model_data$X, colMeans)
-    model_data$Xcentered <- mapply2(center_fun, model_data$X, model_data$Xbar)
-    #model_data$X[] <- mapply2(center_fun, model_data$X, model_data$Xbar)
+    model_data$X[] <- mapply2(center_fun, model_data$X, model_data$Xbar)
     #model_data$X_H[] <- mapply2(center_fun, model_data$X_H, model_data$Xbar)
     #model_data$X_h[] <- mapply2(center_fun, model_data$X_h, model_data$Xbar)
     #model_data$X_H2[] <- mapply2(center_fun, model_data$X_H2, model_data$Xbar)
@@ -181,8 +179,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
                "Wlong_bar_alphas", "D", paste0("betas", seq_along(model_data$X)),
                "sigmas")
-    parms2 <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
-                "Wlong_bar_alphas", "D", "betas", "sigmas")
+    parms2 <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "L", "sds",
+                "betas", "sigmas")
     if (control$save_random_effects) parms <- c(parms, "b")
     if (!length(attr(model_info$terms$terms_Surv_noResp, "term.labels")))
         parms <- parms[parms != "gammas"]

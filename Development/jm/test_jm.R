@@ -262,11 +262,12 @@ control = NULL
 ################################################################################
 
 
-fm <- lme(log(serBilir) ~ year * sex + I(year^2) + age + prothrombin,
-          data = pbc2, random = ~ year | id)
+fm <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
 CoxFit <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
+ff <- list("log(serBilir)" = ~ area(log(serBilir)))
+test <- jm(CoxFit, fm, time_var = "year", functional_forms = ff)
+summary(test)
 
-ff <- list("log(serBilir)" = ~ value(log(serBilir)):tv(year))
 
 ####
 

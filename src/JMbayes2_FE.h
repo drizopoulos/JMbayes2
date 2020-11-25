@@ -23,7 +23,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
                    const field<uvec> &ind_FE_patt, // indices for the FE (in HC) present in each outcome missi
                    const uword &it,
                    const uvec &has_tilde_betas,
-                   const field<mat> &X, const field<mat> &Xcentered, const field<mat> &Xbar,
+                   const field<mat> &X, const field<mat> &Xbar,
                    const field<mat> &Z,
                    const field<mat> &b,
                    const field<uvec> &idL,
@@ -124,9 +124,8 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
   // FE outside HC - Metropolis-Hastings sampling
   if (any(has_tilde_betas)) {
     for (uword j = 0; j < n_outcomes; ++j) { // j-th outcome
-      if (!has_tilde_betas.at(j)) {continue;} // skip outcomes without nHC-FE
+      if (!has_tilde_betas.at(j)) continue; // skip outcomes without nHC-FE
       uvec ind_j = x_notin_z.at(j);
-      //eta.at(j).each_row() += Xbar.at(j).cols(ind_j) * betas.at(j).rows(ind_j);
       // denominator
       double sum_logLik_long_j =
         sum(log_long_i(y.at(j), eta.at(j), sigmas.at(j), extra_parms.at(j),
@@ -188,7 +187,6 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
         acceptance_betas.at(it, j) = 1;
         betas.at(j) = betas_prop.at(j);
         eta = eta_prop;
-        //eta.at(j).each_row() -= Xbar.at(j).cols(ind_j) * betas.at(j).rows(ind_j);
         Wlong_H = Wlong_H_prop;
         Wlong_h = Wlong_h_prop;
         Wlong_H2 = Wlong_H2_prop;
@@ -204,8 +202,8 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
     }
   }
   // update logLik_long with all betas
-  logLik_long = log_long(y, eta, sigmas, extra_parms,
-                         families, links, idL_lp_fast, unq_idL, n_b);
+  logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
+                         idL_lp_fast, unq_idL, n_b);
   // save all results
   res_betas.row(it) = docall_rbindF(betas).t();
 }

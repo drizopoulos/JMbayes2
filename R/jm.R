@@ -119,6 +119,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
 
     # create design matrices for mixed models
     X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL, SIMPLIFY = FALSE)
+    Xbar <- lapply(X, colMeans)
     Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL, SIMPLIFY = FALSE)
     if (length(Z) == 1 && ncol(Z[[1]]) == 1) {
         stop("jm() does not currently work when you have a single ",
@@ -126,20 +127,22 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     }
     nres <- sapply(Z, ncol)
     ind_RE <- split(seq_len(sum(nres)), rep(seq_along(Z), nres))
-    forms <- lapply(Mixed_objects, formula)
-    componentsHC <- mapply2(create_HC_X3, X, Z, idL, forms,
-                            rep(list(dataL), length(nres)))
-    # componentsHC <- mapply2(create_HC_X3, lapply(X, scale, scale = FALSE), Z,
-    #                         idL, forms, rep(list(dataL), length(nres)),
-    #                         rep(TRUE, length(nres))) # center = TRUE
-    X_HC <- lapply(componentsHC, "[[", "X_HC")
+    componentsHC <- mapply2(create_HC_X3, x = X, z = Z, id = idL,
+                            terms = terms_FE_noResp, MoreArgs = list(data = dataL))
     x_in_z <- lapply(componentsHC, "[[", "x_in_z")
     x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
+    x_in_z_base <- lapply(componentsHC, "[[", "x_in_z_base")
+    xbas_in_z <- lapply(componentsHC, "[[", "xbas_in_z")
+    z_in_x <- lapply(componentsHC, "[[", "z_in_x")
+    Xbar[] <- mapply2(center_X, Xbar, x_notin_z)
+    componentsHC <- mapply2(create_HC_X3, x = X, z = Z, id = idL,
+                            terms = terms_FE_noResp, center = Xbar,
+                            MoreArgs = list(data = dataL))
+    X_HC <- lapply(componentsHC, "[[", "X_HC")
     nfes <- sapply(X, ncol)
     # 'ind_FE' is used in vec2field() to re-create the field of betas
     # from betas_vec
     ind_FE <- split(seq_len(sum(nfes)), rep(seq_along(X), nfes))
-    x_in_z_base <- lapply(componentsHC, "[[", "x_in_z_base")
     # 'ind_FE_HC' denotes which elements of betas_vec are in the HC formulation
     # this will be used to save the results in the corresponding columns
     ind_FE_HC <- unlist(mapply2(function (x, ind) x[ind], ind_FE, x_in_z_base),
@@ -432,15 +435,12 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         ind_RE_patt <- apply(unique(out_in), 1L, find_patt, n = nres)
         ind_FE_patt <- apply(unique(out_in), 1L, find_patt, n = nfes_HC)
     }
-    X_HC <- lapply(componentsHC, "[[", "X_HC")
-    xbas_in_z <- lapply(componentsHC, "[[", "xbas_in_z")
-    z_in_x <- lapply(componentsHC, "[[", "z_in_x")
     X_dot <- create_X_dot3(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL,
                            xbas_in_z)
     ############################################################################
     ############################################################################
     Data <- list(n = nY, idL = idL, idL_ind = idL_ind, idL_lp = idL_lp, unq_idL = unq_idL,
-                 y = y, X = X, Z = Z, X_dot = X_dot,
+                 y = y, X = X, Z = Z, X_dot = X_dot, Xbar = Xbar,
                  x_in_z = x_in_z, x_notin_z = x_notin_z,
                  has_tilde_betas = has_tilde_betas, ind_FE = ind_FE,
                  ind_FE_HC = ind_FE_HC, ind_FE_nHC = ind_FE_nHC,
@@ -512,25 +512,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ############################################################################
     ############################################################################
     # Priors
-    # we define as thetas = c(gammas, unlist(alphas))
-    # for some of these coefficients we place penalties/shrinkage priors
-    # 'Tau_thetas' is list of the prior precision matrices for thetas
-    # 'ind_thetas' is a list of position indicators specifying which of the
-    # thetas are involved in the calculation of the corresponding tau parameter,
-    # where tau is the penalty parameter. Hence, the number of taus we will need
-    # to estimate is the length of ind_thetas.
-    # For each of these taus we place a Gamma prior with parameters A_tau and
-    # B_tau. Thus, A_tau and B_tau are vectors with length equal to ind_thetas
-    #
-    thetas <- if (any_gammas) {
-        c(gammas, unlist(alphas))
-    } else {
-        c(unlist(alphas))
-    }
     A_tau <- rep(5, n_strata)
     B_tau <- rep(0.5, n_strata)
-    ind_thetas <- list(alphas = grep("tv(", unlist(lapply(U_H, colnames)),
-                                     fixed = TRUE))
     Tau_bs_gammas <- crossprod(diff(diag(ncol(W0_H) / n_strata),
                                     differences = con$diff))
     Tau_bs_gammas <- rep(list(Tau_bs_gammas), n_strata)
