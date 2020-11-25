@@ -400,7 +400,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     ////////////////////////////////////////////////////////////////////
 
     update_sigmas(sigmas, has_sigmas, y, eta, extra_parms, families, links,
-                  idL_lp_fast, unq_idL, prior_sigmas_df, prior_sigmas_sigma,
+                  idL_lp_fast, prior_sigmas_df, prior_sigmas_sigma,
                   it, res_sigmas, scale_sigmas, acceptance_sigmas);
 
     logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,

@@ -92,7 +92,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
   mat Sigma_1 = inv(prior_Tau_betas_HC + sum_JXDXJ); // improve via Cholesky decomposition
   vec mean_1 = Sigma_1 * (Tau_mean_betas_HC + sum_JXDu);
   mat U_1 = chol(Sigma_1);
-  betas_vec.rows(ind_FE_HC) = propose_mvnorm_vec(1, U_1, 1.0) + mean_1;
+  betas_vec.rows(ind_FE_HC) = propose_mvnorm_vec(U_1, 1.0) + mean_1;
   betas = vec2field(betas_vec, ind_FE);
   // update eta
   eta = linpred_mixed(X, betas, Z, b, idL);
@@ -138,8 +138,8 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
       double denominator_j = sum_logLik_long_j + sum(logLik_surv) + prior;
       // proposal
       field<vec> betas_prop = betas;
-      betas_prop.at(j).rows(ind_j) += propose_mvnorm_vec(1,
-                    chol_vcov_prop_betas.at(j), scale_betas.at(j));
+      betas_prop.at(j).rows(ind_j) +=
+        propose_mvnorm_vec(chol_vcov_prop_betas.at(j), scale_betas.at(j));
       double prior_prop =
         logPrior(betas_prop.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
                  prior_Tau_betas_nHC.at(j), ll, 1.0, false);

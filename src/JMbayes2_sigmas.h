@@ -14,7 +14,7 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
                     const field<mat> &y, const field<vec> &eta,
                     const vec &extra_parms, const CharacterVector &families,
                     const CharacterVector &links, const field<uvec> &idFast,
-                    const field<uvec> &unq_ids, const double &prior_sigmas_df,
+                    const double &prior_sigmas_df,
                     const double &prior_sigmas_sigma, const uword &it,
                     mat &res_sigmas, vec &scale_sigmas,
                     mat &acceptance_sigmas) {
