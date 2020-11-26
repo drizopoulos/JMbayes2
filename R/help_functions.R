@@ -513,7 +513,7 @@ create_HC_X3 <- function(x, z, id, terms_FE, data, center = FALSE) {
             col_name <- colnames(data)[sapply(colnames(data), grepl, cnams_z[i], fixed= TRUE)]
             dim <- dim(as.matrix(data_temp[[col_name]])) # not elegant :C
             data_temp[, col_name] <- matrix(1, nrow= dim[1], ncol= dim[2])
-            x_temp <- scale(model.matrix.default(terms_FE, data = data_temp), 
+            x_temp <- scale(model.matrix.default(terms_FE, data = data_temp),
                             center = center, scale = FALSE)
             ind <- !apply(x_temp[, xint_in_z, drop = FALSE], 2L, check_tv,
                           id = id)
@@ -1229,11 +1229,10 @@ get_betas_nHC <- function (v, ind) {
     }
 }
 
-weak_informative_Tau <- function (y, X, is_gaussian) {
-    s_y <- if (is_gaussian) sd(y) else 1.0
-    s_x <- apply(X, 2L, sd)
-    if (colnames(X)[1L] == "(Intercept)") s_x[1L] <- 1
-    diag(s_x / s_y, length(s_x)) / 2.5
+weak_informative_Tau <- function (model) {
+    V <- vcov2(model)
+    diags <- 5.0 * sqrt(diag(V))
+    diag(1 / diags, nrow(V), ncol(V))
 }
 
 weak_informative_mean <- function (y, X, is_gaussian) {

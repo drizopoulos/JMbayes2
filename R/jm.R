@@ -151,11 +151,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ind_FE_nHC <- mapply2(function (x, ind) x[-ind], ind_FE, x_in_z_base)
     has_tilde_betas <- as.integer(sapply(ind_FE_nHC, length) > 0)
     ind_FE_nHC[] <- lapply(ind_FE_nHC, function (x) if (length(x)) x else 0L)
-
-    if (!any(unlist(lapply(x_notin_z, is.na))) && !any(namc %in% "n_iter")) {
+    if (any(!unlist(lapply(x_notin_z, is.na))) && !any(namc %in% "n_iter")) {
         con$n_iter <- 12500L
+        if (!any(namc %in% "n_iter")) con$n_thin <- 4
     }
-
     ########################################################
     ########################################################
     # try to recover survival dataset
@@ -518,12 +517,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     Tau_bs_gammas <- crossprod(diff(diag(ncol(W0_H) / n_strata),
                                     differences = con$diff))
     Tau_bs_gammas <- rep(list(Tau_bs_gammas), n_strata)
-    mean_betas <- mapply2(weak_informative_mean, y, X,
-                          sapply(families, "[[", "family") == "gaussian")
-    Tau_betas <- mapply2(weak_informative_Tau, y, X,
-                         sapply(families, "[[", "family") == "gaussian")
-    mean_betas <- lapply(betas, "*", 0.0)
-    Tau_betas <- lapply(betas, function (b) 0.01 * diag(length(b)))
+    mean_betas <- lapply(betas, unname)
+    Tau_betas <- lapply(Mixed_objects, weak_informative_Tau)
+    #mean_betas <- lapply(betas, "*", 0.0)
+    #Tau_betas <- lapply(betas, function (b) 0.01 * diag(length(b)))
     mean_betas_HC <- unlist(mean_betas, use.names = FALSE)[ind_FE_HC]
     Tau_betas_HC <- bdiag(Tau_betas)[ind_FE_HC, ind_FE_HC, drop = FALSE]
     mean_betas_nHC <- mapply2(get_betas_nHC, mean_betas, x_notin_z)
