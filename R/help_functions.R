@@ -306,10 +306,6 @@ desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
     out
 }
 
-##########################################################################################
-# GP: ADDED ALTERNATIVE VERSION OF desing_matrices_functional_forms() THAT RETURNS ARRAY #
-# INSTEAD OF LIST ########################################################################
-
 desing_matrices_functional_forms_array <- function (time, terms, data, timeVar, idVar,
                                                     Fun_Forms) {
     desgn_matr <- function (time, terms) {
