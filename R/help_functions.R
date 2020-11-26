@@ -484,13 +484,12 @@ create_HC_X2 <- function (x, z, id) {
          Xbase = x[!duplicated(id), baseline, drop = FALSE])
 }
 
-create_HC_X3 <- function(x, z, id, terms, data, center = FALSE) {
-    # functions
+create_HC_X3 <- function(x, z, id, terms_FE, data, center = FALSE) {
     check_tv <- function (x, id) {
         !all(sapply(split(x, id),
                     function (z) all(z - z[1L] < .Machine$double.eps^0.5)))
     }
-    # local vars
+    x <- scale(x, center = center, scale = FALSE)
     cnams_x <- colnames(x)
     cnams_z <- colnames(z)
     n_res <- ncol(z)
@@ -507,13 +506,14 @@ create_HC_X3 <- function(x, z, id, terms, data, center = FALSE) {
     # remaining RE
     if (n_res > 1) {
         for (i in seq_len(n_res)[-1]) {
-            xint_in_z <- union(grep(paste0(cnams_z[i], ":"), cnams_x, fixed = TRUE),
-                               grep(paste0(":", cnams_z[i]), cnams_x, fixed = TRUE)) # interactions can be found as RE:var1, var1:RE, or var1:RE:var2
+            xint_in_z <- union(grep(paste0(cnams_z[i], ":"), cnams_x, fixed= TRUE),
+                               grep(paste0(":", cnams_z[i]), cnams_x, fixed= TRUE)) # interactions can be found as RE:var1, var1:RE, or var1:RE:var2
             if (!length(xint_in_z)) next
             data_temp <- data
-            data_temp[[cnams_z[i]]] <- 1
-            mf <- model.frame.default(terms, data = data_temp)
-            x_temp <- scale(model.matrix.default(terms, data = mf),
+            col_name <- colnames(data)[sapply(colnames(data), grepl, cnams_z[i], fixed= TRUE)]
+            dim <- dim(as.matrix(data_temp[[col_name]])) # not elegant :C
+            data_temp[, col_name] <- matrix(1, nrow= dim[1], ncol= dim[2])
+            x_temp <- scale(model.matrix.default(terms_FE, data = data_temp), 
                             center = center, scale = FALSE)
             ind <- !apply(x_temp[, xint_in_z, drop = FALSE], 2L, check_tv,
                           id = id)
@@ -529,9 +529,7 @@ create_HC_X3 <- function(x, z, id, terms, data, center = FALSE) {
     list(mat_HC = mat_HC, X_HC = X_HC, x_in_z_base = x_in_z_base,
          nfes_HC = length(x_in_z_base), z_in_x = which(rowSums(mat_HC == 1) == 1),
          x_in_z = which(colSums(mat_HC == 1) == 1), x_notin_z = x_notin_z,
-         xbas_in_z = mat_HC[, x_in_z_base, drop = FALSE] > 1,
-         baseline = baseline #?? I believe this will not be needed, remove later
-    )
+         xbas_in_z = mat_HC[, x_in_z_base, drop = FALSE] > 1)
 }
 
 create_X_dot <- function(Xbase, nT, unq_idL, nres, nfes_HC, baseline, x_in_z_base, x_in_z) {

@@ -127,13 +127,14 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     nres <- sapply(Z, ncol)
     ind_RE <- split(seq_len(sum(nres)), rep(seq_along(Z), nres))
     componentsHC <- mapply2(create_HC_X3, x = X, z = Z, id = idL,
-                            terms = terms_FE_noResp, MoreArgs = list(data = dataL))
+                            terms = terms_FE, data = mf_FE_dataL)
     x_in_z <- lapply(componentsHC, "[[", "x_in_z")
     x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
     x_in_z_base <- lapply(componentsHC, "[[", "x_in_z_base")
     xbas_in_z <- lapply(componentsHC, "[[", "xbas_in_z")
     z_in_x <- lapply(componentsHC, "[[", "z_in_x")
     X_HC <- lapply(componentsHC, "[[", "X_HC")
+    mat_HC <- lapply(componentsHC, "[[", "mat_HC")
     nfes <- sapply(X, ncol)
     # 'ind_FE' is used in vec2field() to re-create the field of betas
     # from betas_vec
@@ -588,6 +589,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     Fit <- jm_fit(Data, model_info, initial_values, priors, con, vcov_prop)
     out <- c(Fit, list(model_data = Data, model_info = model_info,
                        initial_values = initial_values, control = con,
+                       mat_HC = mat_HC, #?? remove later, for now is a easy way to check which FE the HC is pulling in
                        priors = priors, call = call, vcov_prop = vcov_prop))
     class(out) <- "jm"
     out
