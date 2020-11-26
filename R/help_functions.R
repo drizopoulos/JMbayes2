@@ -1235,12 +1235,12 @@ weak_informative_Tau <- function (y, X, is_gaussian) {
     s_y <- if (is_gaussian) sd(y) else 1.0
     s_x <- apply(X, 2L, sd)
     if (colnames(X)[1L] == "(Intercept)") s_x[1L] <- 1
-    diag(s_x / s_y, length(s_x)) / 30
+    diag(s_x / s_y, length(s_x)) / 2.5
 }
 
 weak_informative_mean <- function (y, X, is_gaussian) {
     out <- rep(0.0, ncol(X))
-    out[1L] <- if (is_gaussian) mean(y) else 0.0
+    #out[1L] <- if (is_gaussian) mean(y) else 0.0
     out
 }
 

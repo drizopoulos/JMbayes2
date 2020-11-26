@@ -45,7 +45,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<mat> X = List2Field_mat(as<List>(model_data["X"]));
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   field<mat> y = List2Field_mat(as<List>(model_data["y"]));
-  field<mat> Xbar = List2Field_mat(as<List>(model_data["Xbar"]));
   //
   field<mat> vcov_prop_betas = List2Field_mat(as<List>(vcov_prop["vcov_prop_betas"]));
   field<mat> chol_vcov_prop_betas = vcov_prop_betas;
@@ -388,14 +387,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              n_burnin, GK_k, cumsum_b, outprod_b);
 
     eta = linpred_mixed(X, betas, Z, b, idL);
-    denominator_surv =
-      sum(logLik_surv) +
-      logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
-                    prior_Tau_bs_gammas, tau_bs_gammas,
-                    prior_mean_gammas, prior_Tau_gammas, lambda_gammas,
-                    tau_gammas, shrink_gammas,
-                    prior_mean_alphas, prior_Tau_alphas, lambda_alphas,
-                    tau_alphas, shrink_alphas);
 
     ////////////////////////////////////////////////////////////////////
 
@@ -413,7 +404,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
                  Tau_mean_betas_HC, prior_Tau_betas_HC, b_mat, L, sds, X_dot,
                  ind_FE, ind_FE_HC, id_patt, ind_RE_patt, ind_FE_patt,
-                 it, has_tilde_betas, X, Xbar, Z, b, idL, y, sigmas,
+                 it, has_tilde_betas, X, Z, b, idL, y, sigmas,
                  extra_parms, families, links, idL_lp_fast, prior_mean_betas_nHC,
                  prior_Tau_betas_nHC, chol_vcov_prop_betas, x_notin_z,
                  X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,

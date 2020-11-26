@@ -119,7 +119,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
 
     # create design matrices for mixed models
     X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL, SIMPLIFY = FALSE)
-    Xbar <- lapply(X, colMeans)
     Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL, SIMPLIFY = FALSE)
     if (length(Z) == 1 && ncol(Z[[1]]) == 1) {
         stop("jm() does not currently work when you have a single ",
@@ -134,7 +133,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     x_in_z_base <- lapply(componentsHC, "[[", "x_in_z_base")
     xbas_in_z <- lapply(componentsHC, "[[", "xbas_in_z")
     z_in_x <- lapply(componentsHC, "[[", "z_in_x")
-    Xbar[] <- mapply2(center_X, Xbar, x_notin_z)
     X_HC <- lapply(componentsHC, "[[", "X_HC")
     nfes <- sapply(X, ncol)
     # 'ind_FE' is used in vec2field() to re-create the field of betas
@@ -152,6 +150,11 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ind_FE_nHC <- mapply2(function (x, ind) x[-ind], ind_FE, x_in_z_base)
     has_tilde_betas <- as.integer(sapply(ind_FE_nHC, length) > 0)
     ind_FE_nHC[] <- lapply(ind_FE_nHC, function (x) if (length(x)) x else 0L)
+
+    if (!any(unlist(lapply(x_notin_z, is.na))) && !any(namc %in% "n_iter")) {
+        con$n_iter <- 12500L
+    }
+
     ########################################################
     ########################################################
     # try to recover survival dataset
@@ -437,7 +440,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ############################################################################
     ############################################################################
     Data <- list(n = nY, idL = idL, idL_ind = idL_ind, idL_lp = idL_lp, unq_idL = unq_idL,
-                 y = y, X = X, Z = Z, X_dot = X_dot, Xbar = Xbar,
+                 y = y, X = X, Z = Z, X_dot = X_dot,
                  x_in_z = x_in_z, x_notin_z = x_notin_z,
                  has_tilde_betas = has_tilde_betas, ind_FE = ind_FE,
                  ind_FE_HC = ind_FE_HC, ind_FE_nHC = ind_FE_nHC,

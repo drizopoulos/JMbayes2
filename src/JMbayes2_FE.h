@@ -23,7 +23,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
                    const field<uvec> &ind_FE_patt, // indices for the FE (in HC) present in each outcome missi
                    const uword &it,
                    const uvec &has_tilde_betas,
-                   const field<mat> &X, const field<mat> &Xbar,
+                   const field<mat> &X,
                    const field<mat> &Z,
                    const field<mat> &b,
                    const field<uvec> &idL,
@@ -196,7 +196,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
         logLik_surv = logLik_surv_prop;
       }
       if (it > 19) {
-        double target = 0.45;
+        double target = 0.4;
         if (ind_j.n_rows > 1) target = 0.25;
         scale_betas.at(j) =
           robbins_monro(scale_betas.at(j), acceptance_betas.at(it, j),

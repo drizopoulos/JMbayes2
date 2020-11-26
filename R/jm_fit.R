@@ -32,12 +32,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     model_data$Z_H[] <- lapply(model_data$Z_H, docall_cbind)
     model_data$Z_h[] <- lapply(model_data$Z_h, docall_cbind)
     model_data$Z_H2[] <- lapply(model_data$Z_H2, docall_cbind)
-    # center design matrix fixed effects
-    #model_data$X[] <- mapply2(center_fun, model_data$X, model_data$Xbar)
-    #model_data$X_H[] <- mapply2(center_fun, model_data$X_H, model_data$Xbar)
-    #model_data$X_h[] <- mapply2(center_fun, model_data$X_h, model_data$Xbar)
-    #model_data$X_H2[] <- mapply2(center_fun, model_data$X_H2, model_data$Xbar)
-    model_data$Xbar <- lapply(model_data$Xbar, rbind)
     # center the design matrices for the baseline covariates and
     # the longitudinal process
     model_data$W_bar <- rbind(colMeans(model_data$W_H))
