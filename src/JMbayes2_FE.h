@@ -196,8 +196,11 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
         logLik_surv = logLik_surv_prop;
       }
       if (it > 19) {
+        double target = 0.45;
+        if (ind_j.n_rows > 1) target = 0.25;
         scale_betas.at(j) =
-          robbins_monro(scale_betas.at(j), acceptance_betas.at(it, j), it, 0.25);
+          robbins_monro(scale_betas.at(j), acceptance_betas.at(it, j),
+                        it, target);
       }
     }
   }

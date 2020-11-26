@@ -511,8 +511,8 @@ create_HC_X3 <- function(x, z, id, terms, data, center = FALSE) {
     # remaining RE
     if (n_res > 1) {
         for (i in seq_len(n_res)[-1]) {
-            xint_in_z <- union(grep(paste0(cnams_z[i], ":"), cnams_x),
-                               grep(paste0(":", cnams_z[i]), cnams_x)) # interactions can be found as RE:var1, var1:RE, or var1:RE:var2
+            xint_in_z <- union(grep(paste0(cnams_z[i], ":"), cnams_x, fixed = TRUE),
+                               grep(paste0(":", cnams_z[i]), cnams_x, fixed = TRUE)) # interactions can be found as RE:var1, var1:RE, or var1:RE:var2
             if (!length(xint_in_z)) next
             data_temp <- data
             data_temp[[cnams_z[i]]] <- 1

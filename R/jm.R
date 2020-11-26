@@ -135,9 +135,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     xbas_in_z <- lapply(componentsHC, "[[", "xbas_in_z")
     z_in_x <- lapply(componentsHC, "[[", "z_in_x")
     Xbar[] <- mapply2(center_X, Xbar, x_notin_z)
-    #componentsHC <- mapply2(create_HC_X3, x = X, z = Z, id = idL,
-    #                        terms = terms_FE_noResp, center = Xbar,
-    #                        MoreArgs = list(data = dataL))
     X_HC <- lapply(componentsHC, "[[", "X_HC")
     nfes <- sapply(X, ncol)
     # 'ind_FE' is used in vec2field() to re-create the field of betas
