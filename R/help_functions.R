@@ -500,9 +500,11 @@ create_HC_X3 <- function(x, z, id, terms_FE, data, center = FALSE) {
     # baseline (assumes every model has a random intercept)
     x_notin_z <- which(!cnams_x %in% cnams_z)
     ind <- !apply(x[, x_notin_z, drop = FALSE], 2L, check_tv, id = id)
-    baseline <- x_notin_z[ind]
-    X_HC[[1]] <- x[!duplicated(id), baseline, drop = FALSE]
-    mat_HC[cbind(1, baseline)] <- 2 # baseline
+    if(any(ind)) {
+        baseline <- x_notin_z[ind]
+        X_HC[[1]] <- x[!duplicated(id), baseline, drop = FALSE]
+        mat_HC[cbind(1, baseline)] <- 2 # baseline
+        }
     # remaining RE
     if (n_res > 1) {
         for (i in seq_len(n_res)[-1]) {
@@ -511,20 +513,19 @@ create_HC_X3 <- function(x, z, id, terms_FE, data, center = FALSE) {
             if (!length(xint_in_z)) next
             data_temp <- data
             col_name <- colnames(data)[sapply(colnames(data), grepl, cnams_z[i], fixed= TRUE)]
-            dim <- dim(as.matrix(data_temp[[col_name]])) # not elegant :C
-            data_temp[, col_name] <- matrix(1, nrow= dim[1], ncol= dim[2])
+            data_temp[, col_name][] <- 1
             x_temp <- scale(model.matrix.default(terms_FE, data = data_temp),
                             center = center, scale = FALSE)
             ind <- !apply(x_temp[, xint_in_z, drop = FALSE], 2L, check_tv,
                           id = id)
-            baseline2 <- xint_in_z[ind]
-            X_HC[[i]] <- x_temp[!duplicated(id), baseline2]
-            mat_HC[cbind(i, baseline2)] <- 3 # xint_in_z
+            if(any(ind)) {
+                baseline_i <- xint_in_z[ind]
+                X_HC[[i]] <- x_temp[!duplicated(id), baseline_i]
+                mat_HC[cbind(i, baseline_i)] <- 3 # xint_in_z
+            }
         }
     }
     x_in_z_base <- which(colSums(mat_HC > 0) == 1)
-    if (!length(baseline)) baseline <- as.integer(NA)
-    x_notin_z <- which(colSums(mat_HC) == 0)
     if (!length(x_notin_z)) x_notin_z <- as.integer(NA)
     list(mat_HC = mat_HC, X_HC = X_HC, x_in_z_base = x_in_z_base,
          nfes_HC = length(x_in_z_base), z_in_x = which(rowSums(mat_HC == 1) == 1),
