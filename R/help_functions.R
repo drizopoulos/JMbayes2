@@ -526,6 +526,7 @@ create_HC_X3 <- function(x, z, id, terms_FE, data, center = FALSE) {
         }
     }
     x_in_z_base <- which(colSums(mat_HC > 0) == 1)
+    x_notin_z <- which(colSums(mat_HC) == 0) # vars for MH
     if (!length(x_notin_z)) x_notin_z <- as.integer(NA)
     list(mat_HC = mat_HC, X_HC = X_HC, x_in_z_base = x_in_z_base,
          nfes_HC = length(x_in_z_base), z_in_x = which(rowSums(mat_HC == 1) == 1),
