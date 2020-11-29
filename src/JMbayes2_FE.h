@@ -35,7 +35,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
                    const field<uvec> &idL_lp_fast,
                    const field<vec> &prior_mean_betas_nHC,
                    field<mat> &prior_Tau_betas_nHC,
-                   const field<mat> &chol_vcov_prop_betas,
+                   const field<mat> &chol_vcov_prop_betas_nHC,
                    const field<uvec> &x_notin_z,
                    const field<mat> &X_H, const field<mat> &X_h, const field<mat> &X_H2,
                    const field<mat> &Z_H, const field<mat> &Z_h, const field<mat> &Z_H2,
@@ -54,7 +54,6 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
                    const uvec &which_interval,
                    const field<uvec> &unq_idL) {
   uword n_b = b_mat.n_rows;
-  uword n_outcomes = y.n_elem;
   // FE in HC - Gibbs sampling
   vec betas_vec = docall_rbindF(betas);
   uword patt_count = ind_RE_patt.n_elem; // number of unique outcome-missing patterns
@@ -124,6 +123,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
   ///////////////////////////////////////////////////////////////////////////////
   // FE outside HC - Metropolis-Hastings sampling
   if (any(has_tilde_betas)) {
+    uword n_outcomes = betas.n_elem;
     for (uword j = 0; j < n_outcomes; ++j) { // j-th outcome
       if (!has_tilde_betas.at(j)) continue; // skip outcomes without nHC-FE
       uvec ind_j = x_notin_z.at(j);
@@ -133,15 +133,19 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
                        std::string(families[j]), std::string(links[j]),
                        idL_lp_fast.at(j)));
       vec ll(ind_j.n_rows, fill::ones);
-      double prior =
+      /* improve: have input vec logPrior, and then use logPrior.at(j),
+       *  if we accept logPrior.at(j) = logPrior_j_prop. To avoid re-calculations 
+       *  at each iteration
+       */
+      double logPrior_j =
         logPrior(betas.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
                  prior_Tau_betas_nHC.at(j), ll, 1.0, false);
-      double denominator_j = sum_logLik_long_j + sum(logLik_surv) + prior;
+      double denominator_j = sum_logLik_long_j + sum(logLik_surv) + logPrior_j;
       // proposal
       field<vec> betas_prop = betas;
       betas_prop.at(j).rows(ind_j) +=
-        propose_mvnorm_vec(chol_vcov_prop_betas.at(j), scale_betas.at(j));
-      double prior_prop =
+        propose_mvnorm_vec(chol_vcov_prop_betas_nHC.at(j), scale_betas.at(j));
+      double logPrior_j_prop =
         logPrior(betas_prop.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
                  prior_Tau_betas_nHC.at(j), ll, 1.0, false);
       // logLik_long proposal
@@ -180,7 +184,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
                  any_interval, which_interval);
       // numerator
       double numerator_j =
-        sum_logLik_long_j_prop + sum(logLik_surv_prop) + prior_prop;
+        sum_logLik_long_j_prop + sum(logLik_surv_prop) + logPrior_j_prop;
       // Hastings ratio
       double log_ratio_j = numerator_j - denominator_j;
       if (std::isfinite(log_ratio_j) &&
