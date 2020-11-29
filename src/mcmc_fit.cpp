@@ -46,10 +46,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   field<mat> y = List2Field_mat(as<List>(model_data["y"]));
   //
-  field<mat> vcov_prop_betas = List2Field_mat(as<List>(vcov_prop["vcov_prop_betas"]));
-  field<mat> chol_vcov_prop_betas = vcov_prop_betas;
-  for (uword i = 0; i < chol_vcov_prop_betas.n_elem; ++i) {
-    chol_vcov_prop_betas.at(i) = chol(vcov_prop_betas.at(i));
+  field<mat> vcov_prop_betas_nHC = List2Field_mat(as<List>(vcov_prop["vcov_prop_betas_nHC"]));
+  field<mat> chol_vcov_prop_betas_nHC = vcov_prop_betas_nHC;
+  for (uword i = 0; i < chol_vcov_prop_betas_nHC.n_elem; ++i) {
+    chol_vcov_prop_betas_nHC.at(i) = chol(vcov_prop_betas_nHC.at(i));
   }
   cube S = as<cube>(vcov_prop["vcov_prop_RE"]);
   cube chol_S = chol_cube(S);
@@ -406,7 +406,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  ind_FE, ind_FE_HC, id_patt, ind_RE_patt, ind_FE_patt,
                  it, has_tilde_betas, X, Z, b, idL, y, sigmas,
                  extra_parms, families, links, idL_lp_fast, prior_mean_betas_nHC,
-                 prior_Tau_betas_nHC, chol_vcov_prop_betas, x_notin_z,
+                 prior_Tau_betas_nHC, chol_vcov_prop_betas_nHC, x_notin_z,
                  X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
                  Wlong_bar, id_H_, id_h, FunForms, FunForms_ind,
                  alphas, any_event, any_interval,

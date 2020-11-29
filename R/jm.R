@@ -498,8 +498,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     #  - betas the fixed effects that in the hierarchical centering part
     #  - tilde_betas the fixed effects that are not in the hierarchical
     #    centering part
-    vcov_prop_betas <- lapply(Mixed_objects, vcov2)
-    vcov_prop_betas <- mapply2(get_betas_nHC, vcov_prop_betas, x_notin_z)
+    vcov_prop_betas_nHC <- lapply(Mixed_objects, vcov2)
+    vcov_prop_betas_nHC <- mapply2(get_betas_nHC, vcov_prop_betas, x_notin_z)
     r <- mapply2(extract_vcov_prop_RE, Mixed_objects, Z, idL)
     vcov_prop_RE <- array(0.0, c(dim(D), nY))
     for (i in seq_len(nY)) {
@@ -507,7 +507,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         if (any(ind <- sapply(rr, is.null))) rr[ind] <- lapply(D_lis[ind], "*", 0.1)
         vcov_prop_RE[, , i] <- .bdiag(rr)
     }
-    vcov_prop <- list(vcov_prop_betas = vcov_prop_betas,
+    vcov_prop <- list(vcov_prop_betas_nHC = vcov_prop_betas_nHC,
                       vcov_prop_RE = vcov_prop_RE)
     ############################################################################
     ############################################################################
