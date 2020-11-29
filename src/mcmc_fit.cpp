@@ -203,7 +203,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   if (save_random_effects) {
     res_b.set_size(n_b, b_mat.n_cols, n_iter);
   }
-  mat acceptance_b(n_iter, n_b, fill::zeros);
+  mat acceptance_b(n_b, b_mat.n_cols, fill::zeros);
   mat cumsum_b(n_b, b_mat.n_cols);
   cube outprod_b(b_mat.n_cols, b_mat.n_cols, b_mat.n_rows);
   cube var_b(b_mat.n_cols, b_mat.n_cols, b_mat.n_rows);
@@ -218,7 +218,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec scale_alphas = create_init_scale(n_alphas);
   vec scale_sds = create_init_scale(n_sds);
   vec scale_L = create_init_scale(n_L);
-  vec scale_b = create_init_scale(n_b);
+  mat scale_b = mat(n_b,  b_mat.n_cols, fill::ones) * 0.1;
   vec scale_sigmas = create_init_scale(n_sigmas);
   vec scale_betas = create_init_scale(n_outcomes);
   // preliminaries
@@ -433,6 +433,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   } else {
     res_b.slice(0) = cumsum_b / (n_iter - n_burnin);
   }
+  acceptance_b = acceptance_b / (n_iter - n_burnin);
   return List::create(
     Named("mcmc") = List::create(
       Named("bs_gammas") = res_bs_gammas.rows(n_burnin, n_iter - 1),
@@ -455,7 +456,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("alphas") = mean(acceptance_alphas.rows(n_burnin, n_iter - 1)),
       Named("sds") = mean(acceptance_sds.rows(n_burnin, n_iter - 1)),
       Named("L") = mean(acceptance_L.rows(n_burnin, n_iter - 1)),
-      Named("b") = mean(acceptance_b.rows(n_burnin, n_iter - 1)),
+      Named("b") = acceptance_b,
       Named("sigmas") = mean(acceptance_sigmas.rows(n_burnin, n_iter - 1)),
       Named("betas") = mean(acceptance_betas.rows(n_burnin, n_iter - 1))
     ),

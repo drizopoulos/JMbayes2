@@ -152,8 +152,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     has_tilde_betas <- as.integer(sapply(ind_FE_nHC, length) > 0)
     ind_FE_nHC[] <- lapply(ind_FE_nHC, function (x) if (length(x)) x else 0L)
     if (any(!unlist(lapply(x_notin_z, is.na), use.names = FALSE)) && !any(namc %in% "n_iter")) {
-        con$n_iter <- 12500L
-        if (!any(namc %in% "n_iter")) con$n_thin <- 4
+        con$n_iter <- 6500L
     }
     ########################################################
     ########################################################

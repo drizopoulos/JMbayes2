@@ -254,7 +254,7 @@ mat rnorm_mat (const uword &rows, const uword &cols) {
 // S is the Cholesky factorisation of vcov_prep_RE which needs to be doen outside MCMC loop
 // currently with rnorm_mat but we need to check if sth changed with the seeds in Armadillo
 // maybe we can go back to randn() [faster]
-cube propose_mvnorm_cube (const int& n, const cube& S, const vec& scale) {
+cube propose_mvnorm_cube (const int &n, const cube &S, const vec &scale) {
   uword ncol_per_slice = S.n_cols;
   uword slices = S.n_slices;
   cube out(n, ncol_per_slice, slices);
@@ -262,6 +262,12 @@ cube propose_mvnorm_cube (const int& n, const cube& S, const vec& scale) {
     out.slice(i) = scale.at(i) * (rnorm_mat(n, ncol_per_slice) * S.slice(i));
   }
   return out;
+}
+
+mat propose_rnorm_mat (const mat &thetas, const mat &scale, const uword &i) {
+  mat proposed_thetas = thetas;
+  proposed_thetas.col(i) = scale.col(i) % randn(thetas.n_rows, 1) + thetas.col(i);
+  return proposed_thetas;
 }
 
 // returns a mat transposed version: same dimensions as b_mat
