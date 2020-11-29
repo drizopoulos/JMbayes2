@@ -76,7 +76,7 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
       D_inv.at(i) = U_patt_inv * U_patt_inv.t();
     }
     uword patt_i = id_patt.at(i); // id missing outcome pattern
-    if (ind_FE_patt.at(patt_i).is_empty()) {continue;} // skip ids without longitudinal outcomes
+    if (ind_FE_patt.at(patt_i).is_empty()) continue; // skip ids without longitudinal outcomes
     uvec ind_FE_i = ind_FE_patt.at(patt_i);
     uvec ind_RE_i = ind_RE_patt.at(patt_i);
     mat X_dot_i = X_dot.rows(i * q, (i + 1) * q - 1);
@@ -85,8 +85,9 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
     vec u_i = b_i.rows(ind_RE_i) + X_dot_i * betas_vec.rows(ind_FE_i);
     mat D_inv_i = D_inv.at(patt_i);
     mat XD_i = X_dot_i.t() * D_inv_i;
+    vec XDu = XD_i * u_i;
     mat XDX_i = XD_i * X_dot_i;
-    sum_JXDu += add_zero_rows(XD_i * u_i, p_HC, ind_FE_i);
+    sum_JXDu += add_zero_rows(XDu, p_HC, ind_FE_i);
     sum_JXDXJ += add_zero_colrows(XDX_i, p_HC, p_HC, ind_FE_i, ind_FE_i);
   }
   mat Sigma_1 = inv(prior_Tau_betas_HC + sum_JXDXJ); // improve via Cholesky decomposition

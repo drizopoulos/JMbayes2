@@ -30,7 +30,7 @@ cd_vec <- function (x, f, ..., eps = 0.001) {
     0.5 * (res + t(res))
 }
 
-jitter2 <- function (x, factor = 30) {
+jitter2 <- function (x, factor = 2) {
     if (is.list(x)) {
         x[] <- lapply(x, jitter, factor = factor)
     } else {
@@ -1231,7 +1231,7 @@ get_betas_nHC <- function (v, ind) {
 
 weak_informative_Tau <- function (model) {
     V <- vcov2(model)
-    diags <- 5.0 * sqrt(diag(V))
+    diags <- 4.0 * sqrt(diag(V))
     diag(1 / diags, nrow(V), ncol(V))
 }
 

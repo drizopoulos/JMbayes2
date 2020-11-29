@@ -195,9 +195,9 @@ fm2 <- lme(prothrombin ~ ns(year, 2, B = c(0, 9)) * sex, data = pbc2,
            random = ~ ns(year, 2, B = c(0, 9)) | id,
            na.action = na.exclude, control = lmeControl(opt = "optim"))
 
-fm3 <- mixed_model(ascites ~ year * sex, data = pbc2, random = ~ year | id,
+fm3 <- mixed_model(ascites ~ year * sex, data = pbc2, random = ~ 1 | id,
                    family = binomial())
-Mixed <- list(fm1, fm2)
+Mixed <- list(fm1, fm2, fm3)
 Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
 system.time(obj <- jm(Cox, Mixed, time_var = "year", MALA = TRUE))

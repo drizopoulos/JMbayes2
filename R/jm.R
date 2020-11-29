@@ -481,6 +481,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # initial values
     betas <- lapply(Mixed_objects, fixef)
     log_sigmas <- sapply(Mixed_objects, extract_log_sigmas)
+    Data$has_sigmas <- as.integer(log_sigmas > -20)
     D_lis <- lapply(Mixed_objects, extract_D)
     D <- bdiag(D_lis)
     b <- mapply2(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY))
@@ -532,14 +533,14 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                 A_tau_bs_gammas = rep(1, n_strata), B_tau_bs_gammas = rep(0.1, n_strata),
                 rank_Tau_bs_gammas =
                     sapply(lapply(Tau_bs_gammas, qr), "[[", 'rank'),
-                mean_gammas = gammas * 0.0, Tau_gammas = 0.1 * diag(length(gammas)),
+                mean_gammas = gammas * 0.0, Tau_gammas = 0.25 * diag(length(gammas)),
                 penalty_gammas = "none",
                 A_lambda_gammas = 0.5, B_lambda_gammas = 1,
                 A_tau_gammas = 0.5, B_tau_gammas = 1,
                 A_nu_gammas = 0.5, B_nu_gammas = 1,
                 A_xi_gammas = 0.5, B_xi_gammas = 1,
                 mean_alphas = lapply(alphas, "*", 0.0),
-                Tau_alphas = lapply(alphas, function (a) 0.1 * diag(length(a))),
+                Tau_alphas = lapply(alphas, function (a) 0.25 * diag(length(a))),
                 penalty_alphas = "none",
                 A_lambda_alphas = 0.5, B_lambda_alphas = 1,
                 A_tau_alphas = 0.5, B_tau_alphas = 1,

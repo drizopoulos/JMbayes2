@@ -83,7 +83,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
                                    priors, control, vcov_prop) {
             seed_ <- control$seed + chain
             set.seed(seed_)
-            not_D <- !names(initial_values) %in% c("betas", "D")
+            #not_D <- !names(initial_values) %in% c("betas", "D", "b")
+            not_D <- !names(initial_values) %in% c("D")
             initial_values[not_D] <- lapply(initial_values[not_D], jitter2)
             mcmc_cpp(model_data, model_info, initial_values, priors, control,
                      vcov_prop)
@@ -173,7 +174,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
                "Wlong_bar_alphas", "D", paste0("betas", seq_along(model_data$X)),
                "sigmas")
-    parms2 <- c("bs_gammas", "gammas", "alphas", "L", "sds", "betas", "sigmas")
+    parms2 <- c("bs_gammas", "gammas", "alphas", "L", "sds", "betas", "b",
+                "sigmas")
     if (control$save_random_effects) parms <- c(parms, "b")
     if (!length(attr(model_info$terms$terms_Surv_noResp, "term.labels")))
         parms <- parms[parms != "gammas"]
