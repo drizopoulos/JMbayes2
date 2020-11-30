@@ -284,3 +284,19 @@ model_data <- Data
 control <- con
 control$n_chains = 1
 
+################################################################################
+
+fm <- lme(CD4 ~ obstime * drug, data = aids, random = ~ obstime | patient)
+gm <- coxph(Surv(Time, death) ~ drug, data = aids.id)
+jmFit <- jm(gm, fm, time_var = "obstime")
+summary(jmFit)
+
+
+
+
+
+
+
+
+
+

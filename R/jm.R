@@ -512,8 +512,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ############################################################################
     ############################################################################
     # Priors
-    A_tau <- rep(5, n_strata)
-    B_tau <- rep(0.5, n_strata)
     Tau_bs_gammas <- crossprod(diff(diag(ncol(W0_H) / n_strata),
                                     differences = con$diff))
     Tau_bs_gammas <- rep(list(Tau_bs_gammas), n_strata)
@@ -529,7 +527,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                 mean_betas_nHC = mean_betas_nHC, Tau_betas_nHC = Tau_betas_nHC,
                 mean_bs_gammas = lapply(Tau_bs_gammas, function (x) x[, 1] * 0),
                 Tau_bs_gammas = Tau_bs_gammas,
-                A_tau_bs_gammas = rep(1, n_strata), B_tau_bs_gammas = rep(0.1, n_strata),
+                A_tau_bs_gammas = rep(5, n_strata), B_tau_bs_gammas = rep(0.5, n_strata),
                 rank_Tau_bs_gammas =
                     sapply(lapply(Tau_bs_gammas, qr), "[[", 'rank'),
                 mean_gammas = gammas * 0.0, Tau_gammas = 0.25 * diag(length(gammas)),
