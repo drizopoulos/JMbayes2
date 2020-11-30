@@ -59,4 +59,19 @@ vec test_chol2 (const mat &Tau, const vec &mu) {
     return mean;
 }
 
+// [[Rcpp::export]]
+field<mat> create_storage (const field<vec> &F, const uword &n_iter) {
+    uword n = F.size();
+    field<mat> out(n);
+    for (uword i = 0; i < n; ++i) {
+        vec aa = F.at(i);
+        uword n_i = aa.n_rows;
+        mat tt(n_iter, n_i, fill::zeros);
+        out.at(i) = tt;
+    }
+    return out;
+}
+
+
+
 

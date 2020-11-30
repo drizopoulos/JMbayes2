@@ -127,14 +127,15 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
     for (uword j = 0; j < n_outcomes; ++j) { // j-th outcome
       if (!has_tilde_betas.at(j)) continue; // skip outcomes without nHC-FE
       uvec ind_j = x_notin_z.at(j);
+      uword nbetas = ind_j.n_rows;
       // denominator
       double sum_logLik_long_j =
         sum(log_long_i(y.at(j), eta.at(j), sigmas.at(j), extra_parms.at(j),
                        std::string(families[j]), std::string(links[j]),
                        idL_lp_fast.at(j)));
-      vec ll(ind_j.n_rows, fill::ones);
+      vec ll(nbetas);
       /* improve: have input vec logPrior, and then use logPrior.at(j),
-       *  if we accept logPrior.at(j) = logPrior_j_prop. To avoid re-calculations 
+       *  if we accept logPrior.at(j) = logPrior_j_prop. To avoid re-calculations
        *  at each iteration
        */
       double logPrior_j =
