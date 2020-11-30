@@ -10,8 +10,8 @@
 using namespace Rcpp;
 using namespace arma;
 
-void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
-                   vec &scale_betas, field<vec> &eta, vec &logLik_long,
+void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_betas,
+                   field<vec> &scale_betas, field<vec> &eta, vec &logLik_long,
                    vec &logLik_surv, mat &Wlong_H, mat &Wlong_h, mat &Wlong_H2,
                    vec &WlongH_alphas, vec &Wlongh_alphas, vec &WlongH2_alphas,
                    const vec &Tau_mean_betas_HC, const mat &prior_Tau_betas_HC,
@@ -51,8 +51,8 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
                    const vec &log_Pwk, const vec &log_Pwk2,
                    const uvec &id_H_fast, const uvec &id_h_fast,
                    const uvec &which_event, const uvec &which_right_event, const uvec &which_left,
-                   const uvec &which_interval,
-                   const field<uvec> &unq_idL) {
+                   const uvec &which_interval, const field<uvec> &unq_idL,
+                   const uword &n_burnin) {
   uword n_b = b_mat.n_rows;
   // FE in HC - Gibbs sampling
   vec betas_vec = docall_rbindF(betas);
@@ -127,13 +127,13 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
     for (uword j = 0; j < n_outcomes; ++j) { // j-th outcome
       if (!has_tilde_betas.at(j)) continue; // skip outcomes without nHC-FE
       uvec ind_j = x_notin_z.at(j);
-      uword nbetas = ind_j.n_rows;
+      uword n_betas = ind_j.n_rows;
       // denominator
       double sum_logLik_long_j =
         sum(log_long_i(y.at(j), eta.at(j), sigmas.at(j), extra_parms.at(j),
                        std::string(families[j]), std::string(links[j]),
                        idL_lp_fast.at(j)));
-      vec ll(nbetas);
+      vec ll(n_betas);
       /* improve: have input vec logPrior, and then use logPrior.at(j),
        *  if we accept logPrior.at(j) = logPrior_j_prop. To avoid re-calculations
        *  at each iteration
@@ -142,71 +142,73 @@ void update_betas (field<vec> &betas, mat &res_betas, mat &acceptance_betas,
         logPrior(betas.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
                  prior_Tau_betas_nHC.at(j), ll, 1.0, false);
       double denominator_j = sum_logLik_long_j + sum(logLik_surv) + logPrior_j;
-      // proposal
-      field<vec> betas_prop = betas;
-      betas_prop.at(j).rows(ind_j) +=
-        propose_mvnorm_vec(chol_vcov_prop_betas_nHC.at(j), scale_betas.at(j));
-      double logPrior_j_prop =
-        logPrior(betas_prop.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
-                 prior_Tau_betas_nHC.at(j), ll, 1.0, false);
-      // logLik_long proposal
-      field<vec> eta_prop = linpred_mixed_i(eta, X, betas_prop, Z, b, idL, j);
-      double sum_logLik_long_j_prop =
-        sum(log_long_i(y.at(j), eta_prop.at(j), sigmas.at(j), extra_parms.at(j),
-                       std::string(families[j]), std::string(links[j]),
-                       idL_lp_fast.at(j)));
-      // logLik_surv proposal
-      mat Wlong_H_prop =
-        calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas_prop, b, id_H_,
-                        FunForms, FunForms_ind);
-      vec WlongH_alphas_prop = Wlong_H_prop * alphas;
-      mat Wlong_h_prop(Wlong_h.n_rows, Wlong_h.n_cols);
-      vec Wlongh_alphas_prop(Wlongh_alphas.n_rows);
-      if (any_event) {
-        Wlong_h_prop =
-          calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas_prop, b, id_h,
+      for (uword i = 0; i < n_betas; ++i) {
+        // proposal
+        field<vec> betas_prop = betas;
+        betas_prop.at(j).rows(ind_j) =
+          propose_norm(betas.at(j).rows(ind_j), scale_betas.at(j), i);
+        double logPrior_j_prop =
+          logPrior(betas_prop.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
+                   prior_Tau_betas_nHC.at(j), ll, 1.0, false);
+        // logLik_long proposal
+        field<vec> eta_prop = linpred_mixed_i(eta, X, betas_prop, Z, b, idL, j);
+        double sum_logLik_long_j_prop =
+          sum(log_long_i(y.at(j), eta_prop.at(j), sigmas.at(j), extra_parms.at(j),
+                         std::string(families[j]), std::string(links[j]),
+                         idL_lp_fast.at(j)));
+        // logLik_surv proposal
+        mat Wlong_H_prop =
+          calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas_prop, b, id_H_,
                           FunForms, FunForms_ind);
-        Wlongh_alphas_prop = Wlong_h_prop * alphas;
-      }
-      mat Wlong_H2_prop(Wlong_H2.n_rows, Wlong_H2.n_cols);
-      vec WlongH2_alphas_prop(WlongH2_alphas.n_rows);
-      if (any_interval) {
-        Wlong_H2_prop =
-          calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas_prop, b, id_H_,
-                          FunForms, FunForms_ind);
-        WlongH2_alphas_prop = Wlong_H2_prop * alphas;
-      }
-      vec logLik_surv_prop =
-        log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-                 WH_gammas, Wh_gammas, WH2_gammas,
-                 WlongH_alphas_prop, Wlongh_alphas_prop, WlongH2_alphas_prop,
-                 log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
-                 which_event, which_right_event, which_left,
-                 any_interval, which_interval);
-      // numerator
-      double numerator_j =
-        sum_logLik_long_j_prop + sum(logLik_surv_prop) + logPrior_j_prop;
-      // Hastings ratio
-      double log_ratio_j = numerator_j - denominator_j;
-      if (std::isfinite(log_ratio_j) &&
-          std::exp(log_ratio_j) > R::runif(0.0, 1.0)) {
-        acceptance_betas.at(it, j) = 1;
-        betas.at(j) = betas_prop.at(j);
-        eta = eta_prop;
-        Wlong_H = Wlong_H_prop;
-        Wlong_h = Wlong_h_prop;
-        Wlong_H2 = Wlong_H2_prop;
-        WlongH_alphas = WlongH_alphas_prop;
-        Wlongh_alphas = Wlongh_alphas_prop;
-        WlongH2_alphas = WlongH2_alphas_prop;
-        logLik_surv = logLik_surv_prop;
-      }
-      if (it > 19) {
-        double target = 0.4;
-        if (ind_j.n_rows > 1) target = 0.25;
-        scale_betas.at(j) =
-          robbins_monro(scale_betas.at(j), acceptance_betas.at(it, j),
-                        it, target);
+        vec WlongH_alphas_prop = Wlong_H_prop * alphas;
+        mat Wlong_h_prop(Wlong_h.n_rows, Wlong_h.n_cols);
+        vec Wlongh_alphas_prop(Wlongh_alphas.n_rows);
+        if (any_event) {
+          Wlong_h_prop =
+            calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas_prop, b, id_h,
+                            FunForms, FunForms_ind);
+          Wlongh_alphas_prop = Wlong_h_prop * alphas;
+        }
+        mat Wlong_H2_prop(Wlong_H2.n_rows, Wlong_H2.n_cols);
+        vec WlongH2_alphas_prop(WlongH2_alphas.n_rows);
+        if (any_interval) {
+          Wlong_H2_prop =
+            calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas_prop, b, id_H_,
+                            FunForms, FunForms_ind);
+          WlongH2_alphas_prop = Wlong_H2_prop * alphas;
+        }
+        vec logLik_surv_prop =
+          log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                   WH_gammas, Wh_gammas, WH2_gammas,
+                   WlongH_alphas_prop, Wlongh_alphas_prop, WlongH2_alphas_prop,
+                   log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
+                   which_event, which_right_event, which_left,
+                   any_interval, which_interval);
+        // numerator
+        double numerator_j =
+          sum_logLik_long_j_prop + sum(logLik_surv_prop) + logPrior_j_prop;
+        // Hastings ratio
+        double acc_i(0.0);
+        double log_ratio_j = numerator_j - denominator_j;
+        if (std::isfinite(log_ratio_j) &&
+            std::exp(log_ratio_j) > R::runif(0.0, 1.0)) {
+          acc_i = 1.0;
+          if (it > n_burnin - 1) acceptance_betas.at(j).at(i) += 1.0;
+          betas.at(j) = betas_prop.at(j);
+          eta = eta_prop;
+          Wlong_H = Wlong_H_prop;
+          Wlong_h = Wlong_h_prop;
+          Wlong_H2 = Wlong_H2_prop;
+          WlongH_alphas = WlongH_alphas_prop;
+          Wlongh_alphas = Wlongh_alphas_prop;
+          WlongH2_alphas = WlongH2_alphas_prop;
+          logLik_surv = logLik_surv_prop;
+          denominator_j = numerator_j;
+        }
+        if (it > 19) {
+          scale_betas.at(j).at(i) =
+            robbins_monro(scale_betas.at(j).at(i), acc_i, it);
+        }
       }
     }
   }

@@ -76,6 +76,19 @@ vec create_init_scale(const uword &n, const double &fill_val = 0.1) {
   return out;
 }
 
+field<vec> create_init_scaleF(const field<uvec> &x, const double &fill_val = 0.1) {
+  uword n = x.size();
+  field<vec> out(n);
+  for (uword i = 0; i < n; ++i) {
+    uvec x_i = x.at(i);
+    uword n_i = x_i.n_rows;
+    vec oo(n_i);
+    oo.fill(fill_val);
+    out.at(i) = oo;
+  }
+  return out;
+}
+
 field<mat> List2Field_mat (const List &Mats) {
   uword n_list = Mats.size();
   field<mat> res(n_list);
@@ -125,13 +138,11 @@ field<vec> vec2field (const vec &betas, const field<uvec> &ind_FE) {
   return out;
 }
 
-field<mat> create_storage (const field<vec> &F, const uword &n_iter) {
+field<vec> create_storage (const field<uvec> &F) {
   uword n = F.size();
-  field<mat> out(n);
+  field<vec> out(n);
   for (uword i = 0; i < n; ++i) {
-    vec aa = F.at(i);
-    uword n_i = aa.n_rows;
-    mat tt(n_iter, n_i, fill::zeros);
+    vec tt(F.at(i).n_rows, fill::zeros);
     out.at(i) = tt;
   }
   return out;
