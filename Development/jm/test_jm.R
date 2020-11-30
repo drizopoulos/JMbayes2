@@ -228,10 +228,10 @@ fm1 <- lme(log(serBilir) ~ year * sex + I(year^2) + age + prothrombin,
            data = pbc2, random = ~ year | id)
 fm2 <- lme(serChol ~ ns(year, 3) + sex + age, data = pbc2, random = ~ year | id,
            na.action = na.exclude)
-fm3 <- mixed_model(hepatomegaly ~ sex + age, data = pbc2,
-                   random = ~ 1 | id, family = binomial())
+fm3 <- mixed_model(hepatomegaly ~ sex + age + year, data = pbc2,
+                   random = ~ year | id, family = binomial())
 fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
-                   random = ~ 1 | id, family = binomial())
+                   random = ~ year | id, family = binomial())
 
 CoxFit <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
@@ -244,7 +244,8 @@ fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
                "hepatomegaly" = ~ value(hepatomegaly) + sex,
                "ascites" = ~ value(ascites) + area(ascites))
 
-test <- jm(CoxFit, list(fm1), time_var = "year")
+test <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
+           functional_forms = fForms)
 
 ####
 

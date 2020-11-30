@@ -584,7 +584,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     Fit <- jm_fit(Data, model_info, initial_values, priors, con, vcov_prop)
     out <- c(Fit, list(model_data = Data, model_info = model_info,
                        initial_values = initial_values, control = con,
-                       mat_HC = mat_HC, #?? remove later, for now is a easy way to check which FE the HC is pulling in
                        priors = priors, call = call, vcov_prop = vcov_prop))
     class(out) <- "jm"
     out

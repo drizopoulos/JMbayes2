@@ -51,19 +51,19 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control, vco
     #n_outcomes <- length(model_data$y)
     #if (!is.null(colnames(model_data$W_H))) {
     #    priors$Tau_gammas <- if (length(model_data$which_event)) {
-    #        weak_informative_Tau(rnorm(5L), model_data$W_h, FALSE)
+    #        weak_informative_Tau2(rnorm(5L), model_data$W_h, FALSE)
     #    } else {
     #        keep <- seq(1L, nrow(model_data$Wlong_H[[1]]), by = control$GK_k)
-    #        weak_informative_Tau(rnorm(5L), model_data$W_H[keep, , drop = FALSE],
+    #        weak_informative_Tau2(rnorm(5L), model_data$W_H[keep, , drop = FALSE],
     #                             FALSE)
     #    }
     #}
     #priors$Tau_alphas <- if (length(model_data$which_event)) {
-    #    mapply2(weak_informative_Tau, rep(list(rnorm(5L)), n_outcomes),
+    #    mapply2(weak_informative_Tau2, rep(list(rnorm(5L)), n_outcomes),
     #            model_data$Wlong_h, rep(FALSE, n_outcomes))
     #} else {
     #    keep <- seq(1L, nrow(model_data$Wlong_H[[1]]), by = control$GK_k)
-    #    mapply2(weak_informative_Tau, rep(list(rnorm(5L)), n_outcomes),
+    #    mapply2(weak_informative_Tau2, rep(list(rnorm(5L)), n_outcomes),
     #            lapply(model_data$Wlong_H, function (m) m[keep, , drop = FALSE]),
     #            rep(FALSE, n_outcomes))
     #}
