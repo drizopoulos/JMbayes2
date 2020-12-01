@@ -19,12 +19,8 @@ repos:
   CRAN: http://cran.rstudio.com
 
 r_packages:
-  - nlme
-  - GLMMadaptive
   - coda
   - matrixStats
   - splines
   - parallel
-  - ggplot2
-  - gridExtra
   - lattice
