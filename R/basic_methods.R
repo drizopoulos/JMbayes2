@@ -380,15 +380,15 @@ ranef.jm <- function(object, outcome = Inf, post_vars = FALSE, ...) {
     out
 }
 
-terms.jm <- function (x, process = c("longitudinal", "event"),
+terms.jm <- function (object, process = c("longitudinal", "event"),
                       type = c("fixed", "random"), ...) {
     process <- match.arg(process)
     type <- match.arg(type)
     combo <- paste(process, type, sep = "_")
     switch(combo,
-           "longitudinal_fixed" = x$model_info$terms$terms_FE,
-           "longitudinal_random" = x$model_info$terms$terms_RE,
-           "event_fixed" = , "event_random" = x$model_info$terms$terms_Surv)
+           "longitudinal_fixed" = object$model_info$terms$terms_FE,
+           "longitudinal_random" = object$model_info$terms$terms_RE,
+           "event_fixed" = , "event_random" = object$model_info$terms$terms_Surv)
 }
 
 model.frame.jm <- function (formula, process = c("longitudinal", "event"),
