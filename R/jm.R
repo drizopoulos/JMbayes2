@@ -119,6 +119,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
 
     # create design matrices for mixed models
     X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL, SIMPLIFY = FALSE)
+    Xbar <- lapply(X, colMeans)
     Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL, SIMPLIFY = FALSE)
     if (length(Z) == 1 && ncol(Z[[1]]) == 1) {
         stop("jm() does not currently work when you have a single ",
@@ -133,6 +134,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     x_in_z_base <- lapply(componentsHC, "[[", "x_in_z_base")
     xbas_in_z <- lapply(componentsHC, "[[", "xbas_in_z")
     z_in_x <- lapply(componentsHC, "[[", "z_in_x")
+    Xbar[] <- mapply2(center_X, Xbar, x_notin_z)
     X_HC <- lapply(componentsHC, "[[", "X_HC")
     mat_HC <- lapply(componentsHC, "[[", "mat_HC")
     nfes <- sapply(X, ncol)
@@ -374,10 +376,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     if (!any_gammas) {
         W_H <- matrix(0.0, nrow = nrow(W_H), ncol = 1L)
     }
-    X_H <- desing_matrices_functional_forms(st, terms_FE_noResp,
+    X_H <- design_matrices_functional_forms(st, terms_FE_noResp,
                                             dataL, time_var, idVar,
-                                            collapsed_functional_forms)
-    Z_H <- desing_matrices_functional_forms(st, terms_RE,
+                                            collapsed_functional_forms, Xbar)
+    Z_H <- design_matrices_functional_forms(st, terms_RE,
                                             dataL, time_var, idVar,
                                             collapsed_functional_forms)
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
@@ -390,10 +392,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         if (!any_gammas) {
             W_h <- matrix(0.0, nrow = nrow(W_h), ncol = 1L)
         }
-        X_h <- desing_matrices_functional_forms(Time_right, terms_FE_noResp,
+        X_h <- design_matrices_functional_forms(Time_right, terms_FE_noResp,
                                                 dataL, time_var, idVar,
-                                                collapsed_functional_forms)
-        Z_h <- desing_matrices_functional_forms(Time_right, terms_RE,
+                                                collapsed_functional_forms, Xbar)
+        Z_h <- design_matrices_functional_forms(Time_right, terms_RE,
                                                 dataL, time_var, idVar,
                                                 collapsed_functional_forms)
         U_h <- lapply(functional_forms, construct_Umat, dataS = dataS_h)
@@ -411,10 +413,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         if (!any_gammas) {
             W_H2 <- matrix(0.0, nrow = nrow(W_H2), ncol = 1L)
         }
-        X_H2 <- desing_matrices_functional_forms(st, terms_FE_noResp,
+        X_H2 <- design_matrices_functional_forms(st, terms_FE_noResp,
                                                  dataL, time_var, idVar,
-                                                 collapsed_functional_forms)
-        Z_H2 <- desing_matrices_functional_forms(st, terms_RE,
+                                                 collapsed_functional_forms, Xbar)
+        Z_H2 <- design_matrices_functional_forms(st, terms_RE,
                                                  dataL, time_var, idVar,
                                                  collapsed_functional_forms)
         U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
@@ -439,7 +441,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ############################################################################
     ############################################################################
     Data <- list(n = nY, idL = idL, idL_ind = idL_ind, idL_lp = idL_lp, unq_idL = unq_idL,
-                 y = y, X = X, Z = Z, X_dot = X_dot,
+                 y = y, X = X, Z = Z, X_dot = X_dot, Xbar = Xbar,
                  x_in_z = x_in_z, x_notin_z = x_notin_z,
                  has_tilde_betas = has_tilde_betas, ind_FE = ind_FE,
                  ind_FE_HC = ind_FE_HC, ind_FE_nHC = ind_FE_nHC,

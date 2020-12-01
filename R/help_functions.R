@@ -251,28 +251,31 @@ locf <- function (object, fromLast = FALSE, maxgap = Inf) {
     object
 }
 
-desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
-                                              Fun_Forms) {
+design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
+                                              Fun_Forms, Xbar = NULL) {
     data[] <- lapply(data, function (x) locf(locf(x), fromLast = TRUE))
-    desgn_matr <- function (time, terms) {
+    desgn_matr <- function (time, terms, Xbar) {
         D <- LongData_HazardModel(time, data, data[[timeVar]],
                                   data[[idVar]], timeVar)
         mf <- lapply(terms, model.frame.default, data = D)
-        mapply2(model.matrix.default, terms, mf)
+        X <- mapply2(model.matrix.default, terms, mf)
+        if (!is.null(Xbar))
+            X <- mapply2(function (m, mu) m - rep(mu, each = nrow(m)), X, Xbar)
+        X
     }
-    degn_matr_slp <- function (time, terms) {
+    degn_matr_slp <- function (time, terms, Xbar) {
         if (is.list(time)) {
             t1 <- lapply(time, function (t) t + 0.001)
             t2 <- lapply(time, function (t) t - 0.001)
-            M1 <- desgn_matr(t1, terms)
-            M2 <- desgn_matr(t2, terms)
+            M1 <- desgn_matr(t1, terms, Xbar)
+            M2 <- desgn_matr(t2, terms, Xbar)
         } else {
-            M1 <- desgn_matr(time + 0.001, terms)
-            M2 <- desgn_matr(time - 0.001, terms)
+            M1 <- desgn_matr(time + 0.001, terms, Xbar)
+            M2 <- desgn_matr(time - 0.001, terms, Xbar)
         }
         mapply2(function (x1, x2) (x1 - x2) / 0.002, M1, M2)
     }
-    degn_matr_area <- function (time, terms) {
+    degn_matr_area <- function (time, terms, Xbar) {
         if (!is.list(time)) {
             time <- if (is.matrix(time)) split(time, row(time))
             else split(time, seq_along(time))
@@ -288,7 +291,7 @@ desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         qp <- lapply(time, quadrature_points)
         ss <- lapply(qp, function (x) c(t(x[['sk']])))
         Pwk <- unlist(lapply(qp, '[[', 'P'), use.names = FALSE)
-        M <- desgn_matr(ss, terms)
+        M <- desgn_matr(ss, terms, Xbar)
         M <- lapply(M, "*", Pwk)
         sum_qp <- function (m) {
             n <- nrow(m)
@@ -298,56 +301,12 @@ desing_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         lapply(M, sum_qp)
     }
     ################
-    out <- list("value" = desgn_matr(time, terms),
-                "slope" = degn_matr_slp(time, terms),
-                "area" = degn_matr_area(time, terms))
+    out <- list("value" = desgn_matr(time, terms, Xbar),
+                "slope" = degn_matr_slp(time, terms, Xbar),
+                "area" = degn_matr_area(time, terms, Xbar))
     out <- lapply(seq_along(Fun_Forms), function (i) lapply(out[Fun_Forms[[i]]], "[[", i))
     names(out) <- names(Fun_Forms)
     out
-}
-
-desing_matrices_functional_forms_array <- function (time, terms, data, timeVar, idVar,
-                                                    Fun_Forms) {
-    desgn_matr <- function (time, terms) {
-        D <- LongData_HazardModel(time, data, data[[timeVar]],
-                                  data[[idVar]], timeVar)
-        mf <- lapply(terms, model.frame.default, data = D)
-        mapply(model.matrix.default, terms, mf)
-    }
-    degn_matr_slp <- function (time, terms) {
-        M1 <- desgn_matr(time + 0.001, terms)
-        M2 <- desgn_matr(time - 0.001, terms)
-        mapply(function (x1, x2) (x1 - x2) / 0.002, M1, M2)
-    }
-    degn_matr_area <- function (time, terms) {
-        if (is.matrix(time)) {
-            time <- c(t(time))
-        }
-        GK <- gaussKronrod(15L)
-        wk <- GK$wk
-        sk <- GK$sk
-        P <- unname(time / 2)
-        st <- outer(P, sk + 1)
-        P <- P / time
-        out <- vector("list", 15L)
-        for (i in seq_len(15L)) {
-            ss <- if (nrow(st) == length(unique(data[[idVar]]))) {
-                st[, i]
-            } else {
-                matrix(st[, i], ncol = 15, byrow = TRUE)
-            }
-            M <- desgn_matr(ss, terms)
-            out[[i]] <- lapply(M, "*", P * wk[i])
-        }
-        lapply(seq_along(M), function (i) Reduce("+", lapply(out, "[[", i)))
-    }
-    ################
-    out <- list("value" = desgn_matr(time, terms),
-                "slope" = degn_matr_slp(time, terms),
-                "area" = degn_matr_area(time, terms))
-    out <- lapply(seq_along(Fun_Forms), function (i) lapply(out[Fun_Forms[[i]]], "[[", i))
-    names(out) <- names(Fun_Forms)
-    lapply(out, function (x) array(unlist(x), dim = c(nrow(x[[1]]), ncol(x[[1]]), length(x))))
 }
 
 extract_D <- function (object) {
@@ -706,6 +665,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     FunForms_per_outcome <- model_info$FunForms_per_outcome
     collapsed_functional_forms <- model_info$collapsed_functional_forms
     ###
+    Xbar <- Data$Xbar
     X_H <- Data$X_H; Z_H <- Data$Z_H; U_H <- Data$U_H; W0_H <- Data$W0_H; W_H <- Data$W_H
     X_h <- Data$X_h; Z_h <- Data$Z_h; U_h <- Data$U_h; W0_h <- Data$W0_h; W_h <- Data$W_h
     X_H2 <- Data$X_H2; Z_H2 <- Data$Z_H2; U_H2 <- Data$U_H2; W0_H2 <- Data$W0_H2; W_H2 <- Data$W_H2
@@ -722,10 +682,10 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     if (!ncol(W_init)) {
         W_init <- cbind(W_init, rep(0, nrow(W_init)))
     }
-    X_init <- desing_matrices_functional_forms(times_long, terms_FE_noResp,
+    X_init <- design_matrices_functional_forms(times_long, terms_FE_noResp,
                                                dataL, time_var, idVar,
-                                               collapsed_functional_forms)
-    Z_init <- desing_matrices_functional_forms(times_long, terms_RE,
+                                               collapsed_functional_forms, Xbar)
+    Z_init <- design_matrices_functional_forms(times_long, terms_RE,
                                                dataL, time_var, idVar,
                                                collapsed_functional_forms)
     U_init <- lapply(functional_forms, construct_Umat, dataS = dataS_init)
@@ -1260,7 +1220,7 @@ vcov_center <- function (X, vcov) {
 
 center_X <- function (x, ind) {
     if (length(ind) > 1 || !is.na(ind)) x[-ind] <- 0.0 else x <- x * 0
-    x * 0
+    x
 }
 
 

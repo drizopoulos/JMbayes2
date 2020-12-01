@@ -43,6 +43,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<mat> U_H2 = List2Field_mat(as<List>(model_data["U_H2"]));
   //
   field<mat> X = List2Field_mat(as<List>(model_data["X"]));
+  field<mat> Xbar = List2Field_mat(as<List>(model_data["Xbar"]));
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   field<mat> y = List2Field_mat(as<List>(model_data["y"]));
   //
@@ -413,6 +414,11 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  WH_gammas, Wh_gammas, WH2_gammas,
                  log_Pwk, log_Pwk2, id_H_fast, id_h_fast, which_event,
                  which_right_event, which_left, which_interval, unq_idL, n_burnin);
+
+    // update intercepts
+    for (uword j = 0; j < y.n_elem; ++j) {
+      res_betas.at(it, ind_FE.at(j).at(0)) -= as_scalar(Xbar.at(j) * betas.at(j));
+    }
 
     denominator_surv =
       sum(logLik_surv) +
