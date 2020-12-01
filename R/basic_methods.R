@@ -371,7 +371,7 @@ ranef.jm <- function(object, outcome = Inf, post_vars = FALSE, ...) {
         if (post_vars)
             attr(out, "post_vars") <- object$statistics$post_vars
     } else {
-        ind <- object$model_data$ind_RE[outcome]
+        ind <- object$model_data$ind_RE[[outcome]]
         out <- object$statistics$Mean$b[, ind, drop = FALSE]
         if (post_vars)
             attr(out, "post_vars") <-
