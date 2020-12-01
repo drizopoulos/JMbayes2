@@ -38,14 +38,14 @@ gelman_diag.jm <- function (object,
         nams_parms <- c("betas", "sigmas", "D", "bs_gammas", "tau_bs_gammas",
                         "gammas", "alphas")
         nams_mcmc <- names(object$mcmc)
-        ind <- unlist(sapply(paste0("^", nams_parms), grep, nams_mcmc))
+        ind <- unlist(sapply(paste0("^", nams_parms), grep, nams_mcmc), use.names= FALSE)
         nams_mcmc <- nams_mcmc[ind]
         out <- vector("list", length(nams_mcmc))
         names(out) <- nams_mcmc
         for (i in seq_along(out)) {
             parms_i <- nams_mcmc[[i]]
             x <- object$mcmc[[parms_i]]
-            if (!is.null(x)) out[[i]] <- coda::gelman.diag(x)
+            if (!is.null(x)) out[[i]] <- coda::gelman.diag(x, ...)
         }
         out[!sapply(out, is.null)]
     } else {
