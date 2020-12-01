@@ -313,9 +313,9 @@ print.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) {
     invisible(x)
 }
 
-#' Estimated Coefficients for Survival Submodel within Joint Models
+#' Fixed Effects Estimates for Survival Submodel in Joint Models
 #' 
-#' Extracts estimated fixed effects for the event process from fitted joint models.
+#' Extracts estimated fixed effects for the event process from a fitted joint model.
 #' 
 #' @param object an object inheriting from class \code{"jm"}.
 #' @param ... additional arguments; currently none is used.
@@ -345,6 +345,38 @@ coef.jm <- function (object, ...) {
              "association" = object$statistics$Mean[["alphas"]])
 }
 
+#' Fixed Effects Estimates for Linear Mixed Submodels in Joint Models
+#' 
+#' Extracts estimated fixed effects for the longitudinal processes from a fitted joint model.
+#' 
+#' @param object an object inheriting from class \code{"jm"}.
+#' @param outcome the linear mixed submodel to extract the estimated fixed effects. 
+#' If greater than the total number of linear mixed submodels, extracts from all 
+#' of them.
+#' @param ... additional arguments; currently none is used.
+#' @return a numeric vector of the estimated fixed effects for the \code{outcome} selected.
+#' If \code{outcome} is greater than the total number linear mixed submodels, 
+#' returns a list of the estimated fixed effects for all.
+#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
+#' @seealso \code{\link{coef}}, \code{\link{ranef}}, \code{\link{jm}}.
+#' @examples
+#' \dontrun{
+#' # linear mixed model fit
+#' fit_lme1 <- lme\(log(serBilir) ~ year:sex + age,
+#'                 random = ~ year | id, data = pbc2)
+#' 
+#' fit_lme2 <- lme(prothrombin ~ sex, 
+#'                 random = ~ year | id, data = pbc2)
+#' 
+#' # cox model fit
+#' fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
+#' 
+#' # joint model fit
+#' fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year")
+#' 
+#' # fixed effects for all linear mixed submodels 
+#' fixef(fit_jm, outcome = 3)
+#' }
 fixef.jm <- function(object, outcome = 1, ...) {
     if (!is.numeric(outcome) || outcome < 0) {
         stop("'outcome' should be a positive integer.")
@@ -361,6 +393,40 @@ fixef.jm <- function(object, outcome = 1, ...) {
     }
 }
 
+#' Random Effects Estimates for Linear Mixed Submodels in Joint Models
+#' 
+#' Extracts estimated random effects for the longitudinal processes from a fitted joint model.
+#' 
+#' @param object an object inheriting from class \code{"jm"}.
+#' @param outcome the linear mixed submodel to extract the estimated fixed effects.
+#' If greater than the total number of linear mixed submodels, extracts from all 
+#' of them.
+#' @post_vars logical; if TRUE returns the variance of the posterior distribution.
+#' @param ... additional arguments; currently none is used.
+#' @return a numeric matrix with rows denoting the individuals and columns the random 
+#' effects. If \code{postVar = TRUE}, the numeric matrix has an extra attribute 
+#' “postVar".
+#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
+#' @seealso \code{\link{coef}}, \code{\link{fixef}}, \code{\link{jm}}.
+#' @examples
+#' \dontrun{
+#' # linear mixed model fit 1
+#' fit_lme1 <- lme\(log(serBilir) ~ year:sex + age,
+#'                 random = ~ year | id, data = pbc2)
+#' 
+#' # linear mixed model fit 2
+#' fit_lme2 <- lme(prothrombin ~ sex, 
+#'                 random = ~ year | id, data = pbc2)
+#' 
+#' # cox model fit
+#' fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
+#' 
+#' # joint model fit
+#' fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year")
+#' 
+#' # random effects from all linear mixed submodels 
+#' ranef(fit_jm)
+#' }
 ranef.jm <- function(object, outcome = Inf, post_vars = FALSE, ...) {
     if (!is.numeric(outcome) || outcome < 0) {
         stop("'outcome' should be a positive integer.")
@@ -380,6 +446,35 @@ ranef.jm <- function(object, outcome = Inf, post_vars = FALSE, ...) {
     out
 }
 
+#' Joint Model Terms
+#' 
+#' Extracts the terms objects from a fitted joint model.
+#' 
+#' @param object an object inheriting from class \code{"jm"}.
+#' @param process which submodel (i.e., linear mixed model(s) or survival 
+#' model) to extract the estimated coefficients.
+#' @param type which effects (i.e., fixed effects or random effects) to extract, 
+#' when \code{process=longitudinal}.
+#' @param ... additional arguments; currently none is used.
+#' @return if \code{process = "longitudinal"} a list of the terms object(s) from the linear 
+#' mixed model(s). If \code{process = "event"} the terms object from the survival model.
+#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
+#' @seealso \code{\link{model.frame}}, \code{\link{jm}}.
+#' @examples
+#' \dontrun{
+#' # linear mixed model fit
+#' fit_lme <- lme(log(serBilir) ~ year * sex,
+#' random = ~ year | id, data = pbc2)
+#' 
+#' # cox model fit3
+#' fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
+#' 
+#' # joint model fit
+#' fit_jm <- jm(fit_cox, fit_lme, time_var = "year")
+#' 
+#' # fixed effects terms in the linear mixed model
+#' terms(fit_jm, process = "longitudinal", type = "random")
+#' }
 terms.jm <- function (object, process = c("longitudinal", "event"),
                       type = c("fixed", "random"), ...) {
     process <- match.arg(process)
@@ -413,6 +508,35 @@ model.matrix.jm <- function (object, process = c("longitudinal", "event"),
     }
 }
 
+#' Family Objects for Joint Models
+#' 
+#' Extracts the error distribution and link function used in the linear
+#' mixed submodels from a fitted joint model.
+#' 
+#' @param object an object inheriting from class \code{"jm"}.
+#' @param ... additional arguments; currently none is used.
+#' @return a list of \code{family} objects.
+#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
+#' @seealso \code{\link[stats]{family}}, \code{\link{jm}}.
+#' @examples
+#' \dontrun{
+#' # linear mixed model fit 1
+#' fit_lme <- lme(log(serBilir) ~ year * sex,
+#'                random = ~ year | id, data = pbc2)
+#' 
+#' # linear mixed model fit 2
+#' fit_mm <- mixed_model(ascites ~ year * sex,
+#'                       random = ~ 1 | id, family = binomial(), data = pbc2)
+#' 
+#' # cox model fit
+#' fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
+#' 
+#' # joint model fit
+#' fit_jm <- jm(fit_cox, list(fit_lme, fit_mm), time_var = "year")
+#' 
+#' # family objects for all linear mixed submodels
+#' family(fit_jm)
+#' }
 family.jm <- function (object, ...) {
     object$model_info$families
 }
