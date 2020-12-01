@@ -29,6 +29,41 @@ traceplot.jm <- function (object,
 
 gelman_diag <- function (object, ...) UseMethod("gelman_diag")
 
+#' Gelman and Rubin's Convergence Diagnostic for Joint Models
+#' 
+#' Calculates the potential scale reduction factor for the estimated parameters
+#' in a fitted joint model, together with the upper confidence limits.
+#' 
+#' @param object an object inheriting from class \code{"jm"}.
+#' @param param  either all or one joint model parameter of interest.
+#' @param ... further arguments passed to \code{\link[coda]{gelman.diag}}.
+#' @return a list of \code{gelman.diag} objects. An object of class 
+#' \code{gelman.diag} is a list with the elements:
+#' \tabular{ll}{
+#' \code{psrf} \tab A list containing the point estimates of the potential 
+#' scale reduction 
+#' factor (labelled \code{Point est.}) and their upper confidence limits 
+#' (labelled \code{Upper C.I.}). \cr
+#' \code{mpsrf} \tab The point estimate of the multivariate potential scale 
+#' reduction factor. This is NULL if the parameter is univariate.
+#' }
+#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
+#' @seealso \code{\link[coda]{gelman.diag}}, \code{\link{jm}}.
+#' @examples
+#' \dontrun{
+#' # linear mixed model fit
+#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, 
+#' random = ~ 1 + obstime | patient, data = aids)
+#' 
+#' # cox model fit
+#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
+#' 
+#' # joint model fit
+#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
+#' 
+#' # joint model convergence diagnostic
+#' gelman_diag(fit_jm, "all")
+#' }
 gelman_diag.jm <- function (object,
                           parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                    "tau_bs_gammas", "gammas", "alphas"),
@@ -38,14 +73,14 @@ gelman_diag.jm <- function (object,
         nams_parms <- c("betas", "sigmas", "D", "bs_gammas", "tau_bs_gammas",
                         "gammas", "alphas")
         nams_mcmc <- names(object$mcmc)
-        ind <- unlist(sapply(paste0("^", nams_parms), grep, nams_mcmc))
+        ind <- unlist(sapply(paste0("^", nams_parms), grep, nams_mcmc), use.names= FALSE)
         nams_mcmc <- nams_mcmc[ind]
         out <- vector("list", length(nams_mcmc))
         names(out) <- nams_mcmc
         for (i in seq_along(out)) {
             parms_i <- nams_mcmc[[i]]
             x <- object$mcmc[[parms_i]]
-            if (!is.null(x)) out[[i]] <- coda::gelman.diag(x)
+            if (!is.null(x)) out[[i]] <- coda::gelman.diag(x, ...)
         }
         out[!sapply(out, is.null)]
     } else {
@@ -278,6 +313,31 @@ print.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) {
     invisible(x)
 }
 
+#' Estimated Coefficients for Survival Submodel within Joint Models
+#' 
+#' Extracts estimated fixed effects for the event process from fitted joint models.
+#' 
+#' @param object an object inheriting from class \code{"jm"}.
+#' @param ... additional arguments; currently none is used.
+#' @return a list of the estimated fixed effects for the event process from 
+#' fitted model.
+#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
+#' @seealso \code{\link{fixef}}, \code{\ink{ranef}}, \code{\link{jm}}.
+#' @examples 
+#' \dontrun{
+#' # linear mixed model fit
+#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, 
+#' random = ~ 1 + obstime | patient, data = aids)
+#' 
+#' # cox model fit
+#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
+#' 
+#' # joint model fit
+#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
+#' 
+#' # fixed effects for the event process 
+#' coef(fit_jm)
+#' }
 coef.jm <- function (object, ...) {
     gammas <- object$statistics$Mean[["gammas"]]
     if (is.null(gammas)) object$statistics$Mean[["alphas"]] else
@@ -464,6 +524,42 @@ effectPlotData.jm <- function (object, newdata, level = 0.95, ...) {
     cbind(newdata, do.call("cbind", pred), do.call("cbind", Qs))
 }
 
+#' Criteria to compare Joint Models
+#' 
+#' Compares two or more fitted joint models using the criteria WAIC, DIC, and LPML.
+#' 
+#' @param ... two or more objects inheriting from class \code{"jm"}.
+#' @param type  the log-likelihood function to calculate the criteria.  
+#' @param order the criteria to sort the models in the output.
+#' @return An object of class \code{compare_jm}. This is a list with the elements: 
+#' \tabular{ll}{
+#' \code{table} \tab a table with the criteria calculted to each joint model. \cr
+#' \code{type} \tab the log-likelihood function used to calculate the criteria.   
+#' }
+#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
+#' @seealso \code{\link{jm}}.
+#' @examples 
+#' \dontrun{
+#' # linear mixed model fit 1
+#' fit_lme1 <- lme(sqrt(CD4) ~ obstime, 
+#' random = ~ 1 + obstime | patient, data = aids)
+#' 
+#' # linear mixed model fit 2
+#' fit_lme2 <- lme(sqrt(CD4) ~ obstime + drug, 
+#' random = ~ 1 + obstime | patient, data = aids)
+#' 
+#' # cox model fit
+#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
+#' 
+#' # joint model fit 1
+#' fit_jm1 <- jm(fit_cox, fit_lme1, time_var = "obstime")
+#' 
+#' # joint model fit 2
+#' fit_jm2 <- jm(fit_cox, fit_lme2, time_var = "obstime")
+#' 
+#' # compare the two fittd joint models
+#' compare_jm(fit_jm1, fit_jm2)
+#' }
 compare_jm <- function (..., type = c("marginal", "conditional"),
                         order = c("WAIC", "DIC", "LPML", "none")) {
     model_names <- sapply(substitute(list(...)), deparse)[-1L]
