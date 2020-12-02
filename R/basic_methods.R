@@ -2,13 +2,15 @@ traceplot <- function (object, ...) UseMethod("traceplot")
 
 #' Trace plot of MCMC output for Joint Models
 #' 
-#' Displays a plot of iterations vs. sampled values for the model parameter.
+#' Plots the evolution of the estimated parameters vs. iterations in a 
+#' fitted joint model.
 #' 
 #' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  either all or one joint model parameter of interest.
+#' @param parm  either \code{"all"} or one joint model parameter of interest.
 #' @param ... further arguments passed to \code{\link[coda]{traceplot}}.
 #' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link[coda]{traceplot}}, \code{\link{jm}}.
+#' @seealso \code{\link[coda]{traceplot}}, \code{\link{ggtraceplot}}, 
+#' \code{\link{jm}}.
 #' @examples
 #' \dontrun{
 #' # linear mixed model fit
@@ -59,15 +61,14 @@ gelman_diag <- function (object, ...) UseMethod("gelman_diag")
 #' in a fitted joint model, together with the upper confidence limits.
 #' 
 #' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  either all or one joint model parameter of interest.
+#' @param parm  either \code{"all"} or one joint model parameter of interest.
 #' @param ... further arguments passed to \code{\link[coda]{gelman.diag}}.
 #' @return a list of \code{gelman.diag} objects. An object of class 
 #' \code{gelman.diag} is a list with the elements:
 #' \tabular{ll}{
 #' \code{psrf} \tab A list containing the point estimates of the potential 
-#' scale reduction 
-#' factor (labelled \code{Point est.}) and their upper confidence limits 
-#' (labelled \code{Upper C.I.}). \cr
+#' scale reduction factor (labelled \code{Point est.}) and their upper 
+#' confidence limits (labelled \code{Upper C.I.}). \cr
 #' \code{mpsrf} \tab The point estimate of the multivariate potential scale 
 #' reduction factor. This is NULL if the parameter is univariate.
 #' }
@@ -122,6 +123,32 @@ gelman_diag.jm <- function (object,
 
 densplot <- function (object, ...) UseMethod("densityplot")
 
+#' Probability density plot for Joint Models
+#' 
+#' Plots the density estimate for the estimated parameters
+#' in a fitted joint model.
+#' 
+#' @param object an object inheriting from class \code{"jm"}.
+#' @param parm  either \code{"all"} or one joint model parameter of interest.
+#' @param ... further arguments passed to \code{\link[coda]{densplot}}.
+#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
+#' @seealso \code{\link[coda]{densplot}}, \code{\link{ggdensityplot}}, 
+#' \code{\link{jm}}.
+#' @examples
+#' \dontrun{
+#' # linear mixed model fit
+#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, 
+#' random = ~ 1 + obstime | patient, data = aids)
+#' 
+#' # cox model fit
+#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
+#' 
+#' # joint model fit
+#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
+#' 
+#' # density plot for the fixed effects in all linear mixed submodels 
+#' densplot.jm(fit_jm, parm = "betas")
+#' }
 densplot.jm <- function (object,
                           parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                    "tau_bs_gammas", "gammas", "alphas"),
@@ -151,6 +178,31 @@ densplot.jm <- function (object,
 
 cumuplot <- function (object, ...) UseMethod("cumuplot")
 
+#' Cumulative Quantile Plot for Joint Models
+#' 
+#' Plots the evolution of the sample quantiles vs. iterations in a fitted joint 
+#' model.
+#' 
+#' @param object an object inheriting from class \code{"jm"}.
+#' @param parm  either \code{"all"} or one joint model parameter of interest.
+#' @param ... further arguments passed to \code{\link[coda]{cumuplot}}.
+#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
+#' @seealso \code{\link[coda]{cumuplot}}, \code{\link{jm}}.
+#' @examples
+#' \dontrun{
+#' # linear mixed model fit
+#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, 
+#' random = ~ 1 + obstime | patient, data = aids)
+#' 
+#' # cox model fit
+#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
+#' 
+#' # joint model fit
+#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
+#' 
+#' # cumulative quantile plot for the fixed effects in all linear mixed submodels 
+#' cumuplot(fit_jm, parm = "betas")
+#' }
 cumuplot.jm <- function (object,
                          parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                   "tau_bs_gammas", "gammas", "alphas"), ...) {
