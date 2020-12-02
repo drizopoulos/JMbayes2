@@ -1,5 +1,29 @@
 traceplot <- function (object, ...) UseMethod("traceplot")
 
+#' Trace plot of MCMC output for Joint Models
+#' 
+#' Displays a plot of iterations vs. sampled values for the model parameter.
+#' 
+#' @param object an object inheriting from class \code{"jm"}.
+#' @param parm  either all or one joint model parameter of interest.
+#' @param ... further arguments passed to \code{\link[coda]{traceplot}}.
+#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
+#' @seealso \code{\link[coda]{traceplot}}, \code{\link{jm}}.
+#' @examples
+#' \dontrun{
+#' # linear mixed model fit
+#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, 
+#' random = ~ 1 + obstime | patient, data = aids)
+#' 
+#' # cox model fit
+#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
+#' 
+#' # joint model fit
+#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
+#' 
+#' # trace plot for the fixed effects in all linear mixed submodels 
+#' traceplot(fit_jm, parm = "betas")
+#' }
 traceplot.jm <- function (object,
                           parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                    "tau_bs_gammas", "gammas", "alphas"),
@@ -35,7 +59,7 @@ gelman_diag <- function (object, ...) UseMethod("gelman_diag")
 #' in a fitted joint model, together with the upper confidence limits.
 #' 
 #' @param object an object inheriting from class \code{"jm"}.
-#' @param param  either all or one joint model parameter of interest.
+#' @param parm  either all or one joint model parameter of interest.
 #' @param ... further arguments passed to \code{\link[coda]{gelman.diag}}.
 #' @return a list of \code{gelman.diag} objects. An object of class 
 #' \code{gelman.diag} is a list with the elements:
