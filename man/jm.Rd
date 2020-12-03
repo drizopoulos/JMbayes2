@@ -55,18 +55,20 @@ tv(x, knots = NULL, ord = 2L)
         \item{\code{B_tau_bs_gammas}}{the prior rate parameter of the Gamma prior for the
             precision parameter of the penalty term for the B-splines coefficients for
             the baseline hazard.}
-        \item{\code{rank_Tau_bs_gammas}}{}
+        \item{\code{rank_Tau_bs_gammas}}{The prior rank parameter for the precision matrix of the normal prior for the B-splines coefficients used to approximate the baseline hazard.}
         \item{\code{mean_gammas}}{the prior mean vector of the normal prior for the regression 
             coefficients of baseline covariates.}
         \item{\code{Tau_gammas}}{the prior precision matrix of the normal prior for the regression 
             coefficients of baseline covariates.}
         \item{\code{penalty_gammas}}{a character string with value: 'none', 'ridge', 'horseshoe' indicating whether the coefficients of the baseline covariates included in the survival submodel should not be shrinked, shrinked using ridge prior or shrinked using horseshoe prior respectively.}
         \item{\code{A_lambda_gammas}}{the prior shape parameter of the Gamma prior for the
-            precision parameters of each baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+            precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{B_lambda_gammas}}{the prior rate parameter of the Gamma prior for the
-            precision parameters of each baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
-        \item{\code{A_tau_gammas}}{}
-        \item{\code{B_tau_gammas}}{}
+            precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{A_tau_gammas}}{the prior shape parameter of the Gamma prior for the
+            precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{B_tau_gammas}}{the prior rate parameter of the Gamma prior for the
+            precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{A_nu_gammas}}{}
         \item{\code{B_nu_gammas}}{}
         \item{\code{A_xi_gammas}}{}
@@ -76,10 +78,14 @@ tv(x, knots = NULL, ord = 2L)
         \item{\code{Tau_alphas}}{the prior mean vector of the normal prior for the association
             parameters.}
         \item{\code{penalty_alphas}}{a character string with value: 'none', 'ridge', 'horseshoe' indicating whether the coefficients association parameters should not be shrinked, shrinked using ridge prior or shrinked using horseshoe prior respectively.}
-        \item{\code{A_lambda_alphas}}{}
-        \item{\code{B_lambda_alphas}}{}
-        \item{\code{A_tau_alphas}}{}
-        \item{\code{B_tau_alphas}}{}
+        \item{\code{A_lambda_alphas}}{the prior shape parameter of the Gamma prior for the
+            precision parameter of the local penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{B_lambda_alphas}}{the prior rate parameter of the Gamma prior for the
+            precision parameter of the local penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{A_tau_alphas}}{the prior shape parameter of the Gamma prior for the
+            precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{B_tau_alphas}}{the prior rate parameter of the Gamma prior for the
+            precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{A_nu_alphas}}{}
         \item{\code{B_nu_alphas}}{}
         \item{\code{A_xi_alphas}}{}
