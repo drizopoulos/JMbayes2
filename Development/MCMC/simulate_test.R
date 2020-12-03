@@ -119,7 +119,7 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
     #summary(dat$time)
 
     # true values for parameters and random effects
-    trueValues <- list(betas = betas, tau = 1/sigma.y^2, gammas = gammas[-1L],
+    trueValues <- list(betas = betas, sigmas = sigma.y, gammas = gammas[-1L],
                        alphas = alpha, Dalphas = Dalpha, sigma.t = phi,
                        D = D[lower.tri(D, TRUE)], b = b)
 
@@ -130,13 +130,14 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
 ################################################################################
 ################################################################################
 
-M <- 300
+M <- 30
 Data <- simulateJoint()
 res_bs_gammas <- matrix(as.numeric(NA), M, 12)
 res_gammas <- matrix(as.numeric(NA), M, length(Data$trueValues$gammas))
 res_alphas <- matrix(as.numeric(NA), M, length(Data$trueValues$alphas))
 res_D <- matrix(as.numeric(NA), M, length(Data$trueValues$D))
 res_betas <- matrix(as.numeric(NA), M, length(Data$trueValues$betas))
+res_sigmas <- matrix(as.numeric(NA), M, length(Data$trueValues$sigmas))
 times <- matrix(as.numeric(NA), M, 3)
 
 for (m in seq_len(M)) {
@@ -155,6 +156,7 @@ for (m in seq_len(M)) {
         res_alphas[m, ] <- obj$statistics$Mean$alphas
         res_D[m, ] <- obj$statistics$Mean$D
         res_betas[m, ] <- obj$statistics$Mean$betas
+        res_sigmas[m, ] <- obj$statistics$Mean$sigmas
         times[m, ] <- obj$running_time[1:3L]
     }
     print(m)
@@ -166,7 +168,7 @@ colMeans(res_gammas, na.rm = TRUE) - Data$trueValues$gammas
 colMeans(res_alphas, na.rm = TRUE) - Data$trueValues$alphas
 colMeans(res_D, na.rm = TRUE) - Data$trueValues$D
 colMeans(res_betas, na.rm = TRUE) - Data$trueValues$betas
-
+colMeans(res_sigmas, na.rm = TRUE) - Data$trueValues$sigmas
 
 
 
