@@ -47,15 +47,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   field<mat> y = List2Field_mat(as<List>(model_data["y"]));
   //
-  field<mat> vcov_prop_betas_nHC =
-    List2Field_mat(as<List>(vcov_prop["vcov_prop_betas_nHC"]));
-  field<mat> chol_vcov_prop_betas_nHC = vcov_prop_betas_nHC;
-  for (uword i = 0; i < chol_vcov_prop_betas_nHC.n_elem; ++i) {
-    chol_vcov_prop_betas_nHC.at(i) = chol(vcov_prop_betas_nHC.at(i));
-  }
-  cube S = as<cube>(vcov_prop["vcov_prop_RE"]);
-  cube chol_S = chol_cube(S);
-  //
   mat Wlong_H = docall_cbindL(as<List>(model_data["Wlong_H"]));
   mat Wlong_h = docall_cbindL(as<List>(model_data["Wlong_h"]));
   mat Wlong_H2 = docall_cbindL(as<List>(model_data["Wlong_H2"]));
@@ -375,7 +366,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     update_b(b, b_mat, eta, logLik_long, logLik_surv, logLik_re,
              Wlong_H, Wlong_h, Wlong_H2, WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-             chol_S, scale_b, ind_RE,
+             scale_b, ind_RE,
              X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
              Wlong_bar, betas, alphas, id_H_, id_h,
              FunForms, FunForms_ind, X, Z, idL, y, sigmas,
@@ -405,7 +396,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  ind_FE, ind_FE_HC, id_patt, ind_RE_patt, ind_FE_patt,
                  it, has_tilde_betas, X, Z, b, idL, y, sigmas,
                  extra_parms, families, links, idL_lp_fast, prior_mean_betas_nHC,
-                 prior_Tau_betas_nHC, chol_vcov_prop_betas_nHC, x_notin_z,
+                 prior_Tau_betas_nHC, x_notin_z,
                  X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
                  Wlong_bar, id_H_, id_h, FunForms, FunForms_ind,
                  alphas, any_event, any_interval,
