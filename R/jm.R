@@ -546,7 +546,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                 A_tau_alphas = 0.5, B_tau_alphas = 1.0,
                 A_nu_alphas = 0.5, B_nu_alphas = 1.0,
                 A_xi_alphas = 0.5, B_xi_alphas = 1.0,
-                prior_D_sds_df = 3.0, prior_D_sds_sigma = 3.0,
+                prior_D_sds_df = 3.0, prior_D_sds_sigma = 2.5,
                 prior_D_L_etaLKJ = 3.0,
                 prior_sigmas_df = 3.0, prior_sigmas_sigma = 10.0)
     if (is.null(priors) || !is.list(priors)) {
