@@ -138,6 +138,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     }
   }
   b = mat2field(b_mat, ind_RE);
+  eta = linpred_mixed(X, betas, Z, b, idL);
 }
 
 #endif

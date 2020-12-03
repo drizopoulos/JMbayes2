@@ -47,7 +47,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   field<mat> y = List2Field_mat(as<List>(model_data["y"]));
   //
-  field<mat> vcov_prop_betas_nHC = List2Field_mat(as<List>(vcov_prop["vcov_prop_betas_nHC"]));
+  field<mat> vcov_prop_betas_nHC =
+    List2Field_mat(as<List>(vcov_prop["vcov_prop_betas_nHC"]));
   field<mat> chol_vcov_prop_betas_nHC = vcov_prop_betas_nHC;
   for (uword i = 0; i < chol_vcov_prop_betas_nHC.n_elem; ++i) {
     chol_vcov_prop_betas_nHC.at(i) = chol(vcov_prop_betas_nHC.at(i));
@@ -385,8 +386,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              which_interval, any_event, any_interval, n_strata_,
              L, sds, it, acceptance_b, res_b, save_random_effects,
              n_burnin, GK_k, cumsum_b, outprod_b);
-
-    eta = linpred_mixed(X, betas, Z, b, idL);
 
     ////////////////////////////////////////////////////////////////////
 

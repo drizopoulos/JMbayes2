@@ -314,7 +314,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
 
     # knots for the log baseline hazard function
     if (is.null(con$knots)) {
-        #qs <- quantile(c(Time_right, Time_left), probs = c(0.1, 0.9))
         qs <- quantile(Time_right, probs = c(0.05, 0.95))
         con$knots <- knots(qs[1L], qs[2L], con$base_hazard_segments,
                            con$Bsplines_degree)
@@ -518,7 +517,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                                     differences = con$diff))
     Tau_bs_gammas <- rep(list(Tau_bs_gammas), n_strata)
     mean_betas <- lapply(betas, unname)
-    Tau_betas <- lapply(Mixed_objects, weak_informative_Tau)
+    mean_betas <- mapply2(function (b, m) {b[1] <- b[1] + m; b},
+                          mean_betas, mapply2("%*%", Xbar, betas))
+    Tau_betas <- mapply2(weak_informative_Tau, Mixed_objects, Xbar)
     #mean_betas <- lapply(betas, "*", 0.0)
     #Tau_betas <- lapply(betas, function (b) 0.01 * diag(length(b)))
     mean_betas_HC <- unlist(mean_betas, use.names = FALSE)[ind_FE_HC]
