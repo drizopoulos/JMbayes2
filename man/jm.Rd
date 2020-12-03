@@ -37,9 +37,9 @@ tv(x, knots = NULL, ord = 2L)
     }}
 \item{time_var}{a \code{character} string indicating the time variable in the mixed effects model.}
 \item{functional_forms}{a \code{list} of formulas. Each formula corresponds to one longitudinal outcome and specifies the association structure between that outcome and the survival submodel as well as any interaction terms between the components of the longitudinal outcome and the survival submodel. See \bold{Examples}.}
-\item{data_Surv}{the data.frame used to fit the Cox/AFT survival submodel.}
-\item{id_var}{a character string indicating the id variable in the survival submodel.}
-\item{priors}{a named list of user-specified prior parameters:
+\item{data_Surv}{the \code{data.frame} used to fit the Cox/AFT survival submodel.}
+\item{id_var}{a \code{character} string indicating the id variable in the survival submodel.}
+\item{priors}{a named \code{list} of user-specified prior parameters:
   \describe{
         \item{\code{mean_betas_HC}}{the prior mean vectors of the normal prior for the regression coefficients of the covariates of the longitudinal model(s) which were Hierarchically Centered}
         \item{\code{Tau_betas_HC}}{the prior precision matrix of the normal prior for the regression coefficients of the longitudinal model(s) which were Hierarchically Centered}
@@ -69,10 +69,10 @@ tv(x, knots = NULL, ord = 2L)
             precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{B_tau_gammas}}{the prior rate parameter of the Gamma prior for the
             precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
-        \item{\code{A_nu_gammas}}{}
-        \item{\code{B_nu_gammas}}{}
-        \item{\code{A_xi_gammas}}{}
-        \item{\code{B_xi_gammas}}{}
+        \item{\code{A_nu_gammas}}{the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{B_nu_gammas}}{the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{A_xi_gammas}}{the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{B_xi_gammas}}{the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{mean_alphas}}{the prior mean vector of the normal prior for the association
             parameters.}
         \item{\code{Tau_alphas}}{the prior mean vector of the normal prior for the association
@@ -86,10 +86,10 @@ tv(x, knots = NULL, ord = 2L)
             precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{B_tau_alphas}}{the prior rate parameter of the Gamma prior for the
             precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
-        \item{\code{A_nu_alphas}}{}
-        \item{\code{B_nu_alphas}}{}
-        \item{\code{A_xi_alphas}}{}
-        \item{\code{B_xi_alphas}}{}
+        \item{\code{A_nu_alphas}}{the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{B_nu_alphas}}{the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{A_xi_alphas}}{the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{B_xi_alphas}}{the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{prior_D_sds_df}}{}
         \item{\code{prior_D_sds_sigma}}{}
         \item{\code{prior_D_L_etaLKJ}}{}
@@ -97,7 +97,23 @@ tv(x, knots = NULL, ord = 2L)
         \item{\code{prior_sigmas_sigma}}{}
     }
 }
-\item{control}{.}
+\item{control}{a list of control values with components:
+    \describe{        
+        \item{\code{GK_k}}{number of quadrature points for the Gauss Kronrod rule; options 15 and 7.}
+        \item{\code{Bsplines_degree}}{the degree of the splines in each basis; default quadratic splines.}
+        \item{\code{base_hazard_segments}}{number of segments to split the follow-up period; default is 10.}
+        \item{\code{diff}}{the order of the difference used in the penalty matrix for the B-splines for h_0; default is 2.}
+        \item{\code{n_chains}}{integer specifying the number of chains for the MCMC. default is 3.}
+        \item{\code{n_burnin}}{integer specifying the number of burn-in iterations. default is 500.}
+        \item{\code{n_iter}}{integer specifying the number of total iterations per chain. default is 3500.}
+        \item{\code{seed}}{the seed used in the sampling procedures; default is 123.}
+        \item{\code{MALA}}{\code{logical}; if TRUE, the MALA algorithm is used when update the elements of the Cholesky factor of the D matrix. default is \code{FALSE}.}
+        \item{\code{save_random_effects}}{\code{logical}; if TRUE, the full MCMC rsults of the random effects will be saved and returned with the \code{jm} object. default is \code{FALSE}.}
+        \item{\code{cores}}{an integer specifying the number of cores to use. Default is the
+            the available cores minus one.}
+    }
+  }
+  \item{\dots}{options passed to the \code{control} argument.}}
 \item{x}{.}
 \item{knots, ord}{.}
 \item{\dots}{arguments passed to \code{control}.}
