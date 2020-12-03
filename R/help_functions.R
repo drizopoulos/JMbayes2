@@ -1191,8 +1191,8 @@ get_betas_nHC <- function (v, ind) {
     }
 }
 
-weak_informative_Tau <- function (model) {
-    V <- vcov2(model)
+weak_informative_Tau <- function (model, Xbar) {
+    V <- vcov_center(vcov2(model), Xbar)
     diags <- 6.25 * diag(V)
     diag(1 / diags, nrow(V), ncol(V))
 }
@@ -1210,11 +1210,13 @@ weak_informative_mean <- function (y, X, is_gaussian) {
     out
 }
 
-vcov_center <- function (X, vcov) {
-    mean_v <- colMeans(X)
-    var_temp <- crossprod(mean_v, vcov) %*% mean_v
-    vcov[1L, -1L] <- vcov[-1L, 1L] <- c(vcov %*% mean_v)[-1L]
-    vcov[1L, 1L] <- var_temp
+vcov_center <- function (vcov, Xbar) {
+    if (!all(abs(Xbar) < sqrt(.Machine$double.eps))) {
+        Xbar[1L] <- 1
+        var_temp <- crossprod(Xbar, vcov) %*% Xbar
+        vcov[1L, -1L] <- vcov[-1L, 1L] <- c(vcov %*% Xbar)[-1L]
+        vcov[1L, 1L] <- var_temp
+    }
     vcov
 }
 

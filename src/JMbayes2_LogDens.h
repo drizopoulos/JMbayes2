@@ -157,7 +157,7 @@ vec logLik_jm_stripped (
     const vec &bs_gammas, const vec &gammas, const vec &alphas, const vec &tau_bs_gammas,
     const mat &L, const vec &sds,
     /////////////
-    const field<mat> &y, const field<mat> &X, const field<mat> &Z,
+    const field<mat> &y, const field<mat> &X, const field<mat> &Xbar, const field<mat> &Z,
     const vec &extra_parms, const CharacterVector &families, const CharacterVector &links,
     const field<uvec> &idL, const field<uvec> &idL_lp_fast, const field<uvec> &unq_idL,
     /////////////
@@ -175,7 +175,13 @@ vec logLik_jm_stripped (
     const uvec &which_event, const uvec &which_right_event,
     const uvec &which_left, const uvec &which_interval) {
   uword n = b.at(0).n_rows;
-  field<vec> eta = linpred_mixed(X, betas, Z, b, idL);
+  /////////////
+  field<vec> betas_ = betas;
+  // set intercept to centered covariates
+  for (uword j = 0; j < Xbar.n_elem; ++j) {
+    betas_.at(j).at(0) += as_scalar(Xbar.at(j) * betas.at(j));
+  }
+  field<vec> eta = linpred_mixed(X, betas_, Z, b, idL);
   vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
                              idL_lp_fast, unq_idL, n);
   /////////////
@@ -201,14 +207,14 @@ vec logLik_jm_stripped (
     WH2_gammas = WH2_gammas * gammas;
   }
   mat Wlong_H =
-    calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas, b, id_H_, FunForms,
+    calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas_, b, id_H_, FunForms,
                     FunForms_ind);
   vec WlongH_alphas = Wlong_H * alphas;
   mat Wlong_h(W0_h.n_rows, alphas.n_rows);
   vec Wlongh_alphas(W0_h.n_rows);
   if (any_event) {
     Wlong_h =
-      calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas, b, id_h,
+      calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas_, b, id_h,
                       FunForms, FunForms_ind);
     Wlongh_alphas = Wlong_h * alphas;
   }
@@ -216,7 +222,7 @@ vec logLik_jm_stripped (
   vec WlongH2_alphas(W0_H2.n_rows);
   if (any_interval) {
     Wlong_H2 =
-      calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas, b, id_H_,
+      calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas_, b, id_H_,
                       FunForms, FunForms_ind);
     WlongH2_alphas = Wlong_H2 * alphas;
   }

@@ -47,14 +47,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   field<mat> y = List2Field_mat(as<List>(model_data["y"]));
   //
-  field<mat> vcov_prop_betas_nHC = List2Field_mat(as<List>(vcov_prop["vcov_prop_betas_nHC"]));
-  field<mat> chol_vcov_prop_betas_nHC = vcov_prop_betas_nHC;
-  for (uword i = 0; i < chol_vcov_prop_betas_nHC.n_elem; ++i) {
-    chol_vcov_prop_betas_nHC.at(i) = chol(vcov_prop_betas_nHC.at(i));
-  }
-  cube S = as<cube>(vcov_prop["vcov_prop_RE"]);
-  cube chol_S = chol_cube(S);
-  //
   mat Wlong_H = docall_cbindL(as<List>(model_data["Wlong_H"]));
   mat Wlong_h = docall_cbindL(as<List>(model_data["Wlong_h"]));
   mat Wlong_H2 = docall_cbindL(as<List>(model_data["Wlong_H2"]));
@@ -374,7 +366,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     update_b(b, b_mat, eta, logLik_long, logLik_surv, logLik_re,
              Wlong_H, Wlong_h, Wlong_H2, WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-             chol_S, scale_b, ind_RE,
+             scale_b, ind_RE,
              X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
              Wlong_bar, betas, alphas, id_H_, id_h,
              FunForms, FunForms_ind, X, Z, idL, y, sigmas,
@@ -385,8 +377,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              which_interval, any_event, any_interval, n_strata_,
              L, sds, it, acceptance_b, res_b, save_random_effects,
              n_burnin, GK_k, cumsum_b, outprod_b);
-
-    eta = linpred_mixed(X, betas, Z, b, idL);
 
     ////////////////////////////////////////////////////////////////////
 
@@ -406,7 +396,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  ind_FE, ind_FE_HC, id_patt, ind_RE_patt, ind_FE_patt,
                  it, has_tilde_betas, X, Z, b, idL, y, sigmas,
                  extra_parms, families, links, idL_lp_fast, prior_mean_betas_nHC,
-                 prior_Tau_betas_nHC, chol_vcov_prop_betas_nHC, x_notin_z,
+                 prior_Tau_betas_nHC, x_notin_z,
                  X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
                  Wlong_bar, id_H_, id_h, FunForms, FunForms_ind,
                  alphas, any_event, any_interval,
@@ -491,6 +481,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   /////////////
   field<mat> y = List2Field_mat(as<List>(model_data["y"]));
   field<mat> X = List2Field_mat(as<List>(model_data["X"]));
+  field<mat> Xbar = List2Field_mat(as<List>(model_data["Xbar"]));
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   vec extra_parms = as<vec>(model_data["extra_parms"]);
   CharacterVector families = as<CharacterVector>(model_info["family_names"]);
@@ -541,7 +532,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
     logLik_jm_stripped(
       betas, b, sigmas, bs_gammas, gammas, alphas, tau_bs_gammas, L, sds,
       ///
-      y, X, Z, extra_parms, families, links, idL, idL_lp_fast, unq_idL,
+      y, X, Xbar, Z, extra_parms, families, links, idL, idL_lp_fast, unq_idL,
       ///
       W0_H, W0_h, W0_H2, W_H, W_h, W_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
       U_H, U_h, U_H2, Wlong_bar, any_event, any_interval, any_gammas,
@@ -578,9 +569,9 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   vec det_post_vars(n);
   for (uword i = 0; i < n; ++i) det_post_vars.at(i) = det(post_vars.slice(i));
   /////////////
-
   field<mat> y = List2Field_mat(as<List>(model_data["y"]));
   field<mat> X = List2Field_mat(as<List>(model_data["X"]));
+  field<mat> Xbar = List2Field_mat(as<List>(model_data["Xbar"]));
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   vec extra_parms = as<vec>(model_data["extra_parms"]);
   CharacterVector families = as<CharacterVector>(model_info["family_names"]);
@@ -592,6 +583,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
     idL_lp_fast.at(i) = create_fast_ind(idL_lp.at(i) + 1);
   }
   field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
+  field<uvec> ind_FE = List2Field_uvec(as<List>(model_data["ind_FE"]), true);
   /////////////
   mat W0_H = as<mat>(model_data["W0_H"]);
   mat W0_h = as<mat>(model_data["W0_h"]);
@@ -626,7 +618,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   uvec id_H = as<uvec>(model_data["id_H"]) - 1;
   uvec id_H_fast = create_fast_ind(id_H + 1);
   uvec id_h_fast = create_fast_ind(id_h + 1);
-  //////////////
+  /////////////
   mat out(n, K);
   field<vec> betas_i(betas.n_elem);
   for (uword i = 0; i < K; ++i) {
@@ -635,7 +627,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
       betas_i, mean_b, sigmas.col(i), bs_gammas.col(i), gammas.col(i),
       alphas.col(i), tau_bs_gammas.col(i), L.slice(i), sds.col(i),
       ///
-      y, X, Z, extra_parms, families, links, idL, idL_lp_fast, unq_idL,
+      y, X, Xbar, Z, extra_parms, families, links, idL, idL_lp_fast, unq_idL,
       ///
       W0_H, W0_h, W0_H2, W_H, W_h, W_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
       U_H, U_h, U_H2, Wlong_bar, any_event, any_interval, any_gammas,

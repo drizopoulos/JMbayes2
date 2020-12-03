@@ -35,7 +35,6 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    const field<uvec> &idL_lp_fast,
                    const field<vec> &prior_mean_betas_nHC,
                    field<mat> &prior_Tau_betas_nHC,
-                   const field<mat> &chol_vcov_prop_betas_nHC,
                    const field<uvec> &x_notin_z,
                    const field<mat> &X_H, const field<mat> &X_h, const field<mat> &X_H2,
                    const field<mat> &Z_H, const field<mat> &Z_h, const field<mat> &Z_H2,
