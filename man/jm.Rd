@@ -113,7 +113,7 @@ tv(x, knots = NULL, ord = 2L)
             the available cores minus one.}
     }
   }
-  \item{\dots}{options passed to the \code{control} argument.}}
+\item{\dots}{options passed to the \code{control} argument.}
 \item{x}{.}
 \item{knots, ord}{.}
 \item{\dots}{arguments passed to \code{control}.}
@@ -139,7 +139,6 @@ A list of class \code{jm} with components:
 \item{control}{a copy of the \code{control} values used to fit the model.}
 \item{priors}{a copy of the \code{priors} used to fit the model.}
 \item{call}{the matched call}
-\item{vcov_prop}{}
 }
 
 \author{
