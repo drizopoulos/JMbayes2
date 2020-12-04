@@ -90,11 +90,11 @@ tv(x, knots = NULL, ord = 2L)
         \item{\code{B_nu_alphas}}{the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{A_xi_alphas}}{the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{B_xi_alphas}}{the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
-        \item{\code{prior_D_sds_df}}{}
-        \item{\code{prior_D_sds_sigma}}{}
-        \item{\code{prior_D_L_etaLKJ}}{}
-        \item{\code{prior_sigmas_df}}{}
-        \item{\code{prior_sigmas_sigma}}{}
+        \item{\code{prior_D_sds_df}}{the prior degrees of freedom parameter for the half-t prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).}
+        \item{\code{prior_D_sds_sigma}}{the prior sigma parameter for the half-t prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).}
+        \item{\code{prior_D_L_etaLKJ}}{the prior eta parameter for the LKJ prior for the correlation matrix of the random effects).}
+        \item{\code{prior_sigmas_df}}{the prior degrees of freedom parmeter for the half-t prior for the error term(s).}
+        \item{\code{prior_sigmas_sigma}}{the prior sigma parmeter for the half-t prior for the error term(s).}
     }
 }
 \item{control}{a list of control values with components:
@@ -152,5 +152,26 @@ Dimitris Rizopoulos \email{d.rizopoulos@erasmusmc.nl}
 
 
 \examples{
-x <- 5L
+\dontrun{
+##########################################################################################
+
+##############################################
+# Univariate joint model for serum bilirubin #
+# 1 continuous outcome                       #                       
+##############################################
+
+# [1] Fit the mixed model using lme(). 
+mixed_model_fit_1 <- lme(fixed = log(serBilir) ~ year * sex, random =  ~ year | id, data = pbc2)
+
+# [2] Fit a Cox model, specifying the baseline covariates to be included in the joint
+# model; 
+Cox_fit_1 <- coxph(Surv(years, status2) ~ drug + age, data = pbc2.id)
+
+# [3] The basic joint model is fitted using a call to jm() i.e.,
+joint_model_fit_1 <- jm(Cox_fit_1, mixed_model_fit_1, time_var = "year")
+summary(joint_model_fit_1)
+traceplot(joint_model_fit_1)
+
+##########################################################################################
+}
 }
