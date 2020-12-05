@@ -37,9 +37,9 @@ tv(x, knots = NULL, ord = 2L)
     }}
 \item{time_var}{a \code{character} string indicating the time variable in the mixed effects model.}
 \item{functional_forms}{a \code{list} of formulas. Each formula corresponds to one longitudinal outcome and specifies the association structure between that outcome and the survival submodel as well as any interaction terms between the components of the longitudinal outcome and the survival submodel. See \bold{Examples}.}
-\item{data_Surv}{the data.frame used to fit the Cox/AFT survival submodel.}
-\item{id_var}{a character string indicating the id variable in the survival submodel.}
-\item{priors}{a named list of user-specified prior parameters:
+\item{data_Surv}{the \code{data.frame} used to fit the Cox/AFT survival submodel.}
+\item{id_var}{a \code{character} string indicating the id variable in the survival submodel.}
+\item{priors}{a named \code{list} of user-specified prior parameters:
   \describe{
         \item{\code{mean_betas_HC}}{the prior mean vectors of the normal prior for the regression coefficients of the covariates of the longitudinal model(s) which were Hierarchically Centered}
         \item{\code{Tau_betas_HC}}{the prior precision matrix of the normal prior for the regression coefficients of the longitudinal model(s) which were Hierarchically Centered}
@@ -69,10 +69,10 @@ tv(x, knots = NULL, ord = 2L)
             precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{B_tau_gammas}}{the prior rate parameter of the Gamma prior for the
             precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
-        \item{\code{A_nu_gammas}}{}
-        \item{\code{B_nu_gammas}}{}
-        \item{\code{A_xi_gammas}}{}
-        \item{\code{B_xi_gammas}}{}
+        \item{\code{A_nu_gammas}}{the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{B_nu_gammas}}{the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{A_xi_gammas}}{the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{B_xi_gammas}}{the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{mean_alphas}}{the prior mean vector of the normal prior for the association
             parameters.}
         \item{\code{Tau_alphas}}{the prior mean vector of the normal prior for the association
@@ -86,18 +86,34 @@ tv(x, knots = NULL, ord = 2L)
             precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{B_tau_alphas}}{the prior rate parameter of the Gamma prior for the
             precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
-        \item{\code{A_nu_alphas}}{}
-        \item{\code{B_nu_alphas}}{}
-        \item{\code{A_xi_alphas}}{}
-        \item{\code{B_xi_alphas}}{}
-        \item{\code{prior_D_sds_df}}{}
-        \item{\code{prior_D_sds_sigma}}{}
-        \item{\code{prior_D_L_etaLKJ}}{}
-        \item{\code{prior_sigmas_df}}{}
-        \item{\code{prior_sigmas_sigma}}{}
+        \item{\code{A_nu_alphas}}{the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{B_nu_alphas}}{the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{A_xi_alphas}}{the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{B_xi_alphas}}{the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
+        \item{\code{prior_D_sds_df}}{the prior degrees of freedom parameter for the half-t prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).}
+        \item{\code{prior_D_sds_sigma}}{the prior sigma parameter for the half-t prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).}
+        \item{\code{prior_D_L_etaLKJ}}{the prior eta parameter for the LKJ prior for the correlation matrix of the random effects).}
+        \item{\code{prior_sigmas_df}}{the prior degrees of freedom parmeter for the half-t prior for the error term(s).}
+        \item{\code{prior_sigmas_sigma}}{the prior sigma parmeter for the half-t prior for the error term(s).}
     }
 }
-\item{control}{.}
+\item{control}{a list of control values with components:
+    \describe{        
+        \item{\code{GK_k}}{number of quadrature points for the Gauss Kronrod rule; options 15 and 7.}
+        \item{\code{Bsplines_degree}}{the degree of the splines in each basis; default quadratic splines.}
+        \item{\code{base_hazard_segments}}{number of segments to split the follow-up period; default is 10.}
+        \item{\code{diff}}{the order of the difference used in the penalty matrix for the B-splines for h_0; default is 2.}
+        \item{\code{n_chains}}{integer specifying the number of chains for the MCMC. default is 3.}
+        \item{\code{n_burnin}}{integer specifying the number of burn-in iterations. default is 500.}
+        \item{\code{n_iter}}{integer specifying the number of total iterations per chain. default is 3500.}
+        \item{\code{seed}}{the seed used in the sampling procedures; default is 123.}
+        \item{\code{MALA}}{\code{logical}; if TRUE, the MALA algorithm is used when update the elements of the Cholesky factor of the D matrix. default is \code{FALSE}.}
+        \item{\code{save_random_effects}}{\code{logical}; if TRUE, the full MCMC rsults of the random effects will be saved and returned with the \code{jm} object. default is \code{FALSE}.}
+        \item{\code{cores}}{an integer specifying the number of cores to use. Default is the
+            the available cores minus one.}
+    }
+  }
+\item{\dots}{options passed to the \code{control} argument.}
 \item{x}{.}
 \item{knots, ord}{.}
 \item{\dots}{arguments passed to \code{control}.}
@@ -123,7 +139,6 @@ A list of class \code{jm} with components:
 \item{control}{a copy of the \code{control} values used to fit the model.}
 \item{priors}{a copy of the \code{priors} used to fit the model.}
 \item{call}{the matched call}
-\item{vcov_prop}{}
 }
 
 \author{
@@ -136,5 +151,52 @@ Dimitris Rizopoulos \email{d.rizopoulos@erasmusmc.nl}
 
 
 \examples{
-x <- 5L
+\dontrun{
+##########################################################################################
+
+##############################################
+# Univariate joint model for serum bilirubin #
+# 1 continuous outcome                       #                       
+##############################################
+
+# [1] Fit the mixed model using lme(). 
+fm1 <- lme(fixed = log(serBilir) ~ year * sex + I(year^2) + age + prothrombin, random =  ~ year | id, data = pbc2)
+
+# [2] Fit a Cox model, specifying the baseline covariates to be included in the joint
+# model; 
+fCox1 <- coxph(Surv(years, status2) ~ drug + age, data = pbc2.id)
+
+# [3] The basic joint model is fitted using a call to jm() i.e.,
+joint_model_fit_1 <- jm(fCox1, fm1, time_var = "year")
+summary(joint_model_fit_1)
+traceplot(joint_model_fit_1)
+
+##########################################################################################
+
+#############################################################################################
+# Multivariate joint model for serum bilirubin, serum cholesterol,                          #
+# hepatomegaly and ascites                                                                  #
+#############################################################################################
+
+# [1] Fit the mixed-effects models using lme() for continuous outcomes and mixed_model() for categorical outcomes. 
+fm1 <- lme(fixed = log(serBilir) ~ year * sex, random =  ~ year | id, data = pbc2)
+fm2 <- lme(serChol ~ ns(year, 3) + sex + age, data = pbc2, random = ~ year | id, na.action = na.exclude)
+fm3 <- mixed_model(hepatomegaly ~ sex + age + year, data = pbc2, 
+random = ~ year | id, family = binomial())
+fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
+                   random = ~ year | id, family = binomial())
+# [2] Save all the fitted mixed-effects models in a list
+Mixed <- list(fm1, fm2, fm3, fm4)
+
+# [2] Fit a Cox model, specifying the baseline covariates to be included in the joint
+# model; 
+fCox1 <- coxph(Surv(years, status2) ~ drug + age, data = pbc2.id)
+
+# [3] The joint model is fitted using a call to jm() i.e.,
+joint_model_fit_2 <- jm(fCox1, Mixed, time_var = "year")
+summary(joint_model_fit_2)
+traceplot(joint_model_fit_2)
+
+
+}
 }
