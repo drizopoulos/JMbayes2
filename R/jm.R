@@ -494,25 +494,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                            alphas = alphas, tau_bs_gammas = rep(20, n_strata))
     ############################################################################
     ############################################################################
-    # variance covariance matrices for proposal distributions in
-    # the Metropolis-Hastings algorithm
-    #  - betas the fixed effects that in the hierarchical centering part
-    #  - tilde_betas the fixed effects that are not in the hierarchical
-    #    centering part
-    vcov_prop_betas_nHC <- lapply(Mixed_objects, vcov2)
-    vcov_prop_betas_nHC <- mapply2(get_betas_nHC, vcov_prop_betas_nHC, x_notin_z)
-    r <- mapply2(extract_vcov_prop_RE, Mixed_objects, Z, idL)
-    vcov_prop_RE <- array(0.0, c(dim(D), nY))
-    for (i in seq_len(nY)) {
-        rr <- lapply(r, function (m, i) m[[as.character(i)]], i = i)
-        if (any(ind <- sapply(rr, is.null))) rr[ind] <- lapply(D_lis[ind], "*", 0.1)
-        vcov_prop_RE[, , i] <- .bdiag(rr)
-    }
-    vcov_prop <- list(vcov_prop_betas_nHC = vcov_prop_betas_nHC,
-                      vcov_prop_RE = vcov_prop_RE)
-    ############################################################################
-    ############################################################################
-    # Priors
+   # Priors
     Tau_bs_gammas <- crossprod(diff(diag(ncol(W0_H) / n_strata),
                                     differences = con$diff))
     Tau_bs_gammas <- rep(list(Tau_bs_gammas), n_strata)
@@ -584,10 +566,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     ############################################################################
     ############################################################################
     # Fit the model
-    Fit <- jm_fit(Data, model_info, initial_values, priors, con, vcov_prop)
+    Fit <- jm_fit(Data, model_info, initial_values, priors, con)
     out <- c(Fit, list(model_data = Data, model_info = model_info,
                        initial_values = initial_values, control = con,
-                       priors = priors, call = call, vcov_prop = vcov_prop))
+                       priors = priors, call = call))
     class(out) <- "jm"
     out
 }

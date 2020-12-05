@@ -15,7 +15,7 @@ using namespace arma;
 
 // [[Rcpp::export]]
 List mcmc_cpp (List model_data, List model_info, List initial_values,
-               List priors, List control, List vcov_prop) {
+               List priors, List control) {
   // outcome vectors and design matrices
   vec Time_right = as<vec>(model_data["Time_right"]);
   uvec which_event = as<uvec>(model_data["which_event"]) - 1;

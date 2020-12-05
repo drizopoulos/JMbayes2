@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // mcmc_cpp
-List mcmc_cpp(List model_data, List model_info, List initial_values, List priors, List control, List vcov_prop);
-RcppExport SEXP _JMbayes2_mcmc_cpp(SEXP model_dataSEXP, SEXP model_infoSEXP, SEXP initial_valuesSEXP, SEXP priorsSEXP, SEXP controlSEXP, SEXP vcov_propSEXP) {
+List mcmc_cpp(List model_data, List model_info, List initial_values, List priors, List control);
+RcppExport SEXP _JMbayes2_mcmc_cpp(SEXP model_dataSEXP, SEXP model_infoSEXP, SEXP initial_valuesSEXP, SEXP priorsSEXP, SEXP controlSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -17,8 +17,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type initial_values(initial_valuesSEXP);
     Rcpp::traits::input_parameter< List >::type priors(priorsSEXP);
     Rcpp::traits::input_parameter< List >::type control(controlSEXP);
-    Rcpp::traits::input_parameter< List >::type vcov_prop(vcov_propSEXP);
-    rcpp_result_gen = Rcpp::wrap(mcmc_cpp(model_data, model_info, initial_values, priors, control, vcov_prop));
+    rcpp_result_gen = Rcpp::wrap(mcmc_cpp(model_data, model_info, initial_values, priors, control));
     return rcpp_result_gen;
 END_RCPP
 }
