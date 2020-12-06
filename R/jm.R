@@ -528,9 +528,11 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                 A_tau_alphas = 0.5, B_tau_alphas = 1.0,
                 A_nu_alphas = 0.5, B_nu_alphas = 1.0,
                 A_xi_alphas = 0.5, B_xi_alphas = 1.0,
-                prior_D_sds_df = 3.0, prior_D_sds_sigma = 2.5,
-                prior_D_L_etaLKJ = 3.0,
-                prior_sigmas_df = 3.0, prior_sigmas_sigma = 10.0)
+                gamma_prior_D_sds = TRUE,
+                D_sds_df = 3.0, D_sds_sigma = rep(2.5, nrow(D)),
+                D_sds_shape = 1.0, D_sds_mean = sqrt(diag(D)),
+                D_L_etaLKJ = 3.0, sigmas_df = 3.0,
+                sigmas_sigma = rep(5, length(log_sigmas)))
     if (is.null(priors) || !is.list(priors)) {
         priors <- prs
     } else {

@@ -10,23 +10,35 @@
 using namespace Rcpp;
 using namespace arma;
 
-double logPrior_LKJ (const mat &L, const double &prior_D_L_etaLKJ) {
+vec logPrior_D_sds(const vec &sigmas, const vec &D_sds_sigmas, const double &D_sds_df,
+                   const vec &D_sds_mean, const double &D_sds_shape,
+                   const bool &gamma_prior = true) {
+  vec out(sigmas.n_rows);
+  if (gamma_prior) {
+    out = log_dgamma(sigmas, D_sds_shape, D_sds_mean / D_sds_shape);
+  } else {
+    out = log_dht(sigmas, D_sds_sigmas, D_sds_df);
+  }
+  return out;
+}
+
+double logPrior_LKJ (const mat &L, const double &D_L_etaLKJ) {
   uword p = L.n_rows;
   double out(0.0);
   for (uword i = 1; i < p; ++i) {
-    out += (p - i - 1.0 + 2.0 * prior_D_L_etaLKJ - 2.0) * std::log(L.at(i, i));
+    out += (p - i - 1.0 + 2.0 * D_L_etaLKJ - 2.0) * std::log(L.at(i, i));
   }
   return out;
 }
 
 double logPC_D_L (const mat &L, const vec &sds, const mat &b,
-                  const double &prior_D_L_etaLKJ) {
+                  const double &D_L_etaLKJ) {
   uword p = L.n_rows;
   mat chol_Sigma = L.each_row() % sds.t();
   double log_p_b = sum(log_dmvnrm_chol(b, chol_Sigma));
   double log_p_L(0.0);
   for (unsigned i = 1; i < p; ++i) {
-    log_p_L += (p - i - 1.0 + 2.0 * prior_D_L_etaLKJ - 2.0) * log(L.at(i, i));
+    log_p_L += (p - i - 1.0 + 2.0 * D_L_etaLKJ - 2.0) * log(L.at(i, i));
   }
   double out = log_p_b + log_p_L;
   return out;
@@ -35,7 +47,7 @@ double logPC_D_L (const mat &L, const vec &sds, const mat &b,
 double deriv_L (const mat &L, const vec &sds, const mat &b,
                 const double &log_target, const uword &i,
                 const uvec &upper_part,
-                const double &prior_D_L_etaLKJ,
+                const double &D_L_etaLKJ,
                 const char &direction = 'b', const double &eps = 1e-06) {
   uword n = L.n_rows;
   uword upper_part_i = upper_part.at(i);
@@ -52,9 +64,9 @@ double deriv_L (const mat &L, const vec &sds, const mat &b,
   L_eps.at(column, column) = sqrt(1 - ss);
   double out(0.0);
   if (direction == 'f') {
-    out = (logPC_D_L(L_eps, sds, b, prior_D_L_etaLKJ) - log_target) / eps;
+    out = (logPC_D_L(L_eps, sds, b, D_L_etaLKJ) - log_target) / eps;
   } else {
-    out = (log_target - logPC_D_L(L_eps, sds, b, prior_D_L_etaLKJ)) / eps;
+    out = (log_target - logPC_D_L(L_eps, sds, b, D_L_etaLKJ)) / eps;
   }
   return out;
 }
@@ -85,9 +97,12 @@ mat propose_L (const mat &L, const vec &scale, const uvec &upper_part,
 
 void update_D (mat &L, vec &sds, const mat &b,
                const uvec &upper_part,
-               const double &prior_D_sds_df,
-               const double &prior_D_sds_sigma,
-               const double &prior_D_L_etaLKJ,
+               const double &D_sds_df,
+               const vec &D_sds_sigma,
+               const double &D_sds_shape,
+               const vec &D_sds_mean,
+               const bool &gamma_prior,
+               const double &D_L_etaLKJ,
                const int &it, const bool &MALA,
                vec &logLik_re,
                mat &res_sds, mat &res_L,
@@ -96,14 +111,14 @@ void update_D (mat &L, vec &sds, const mat &b,
   uword n_sds = sds.n_rows;
   uword n_L = upper_part.n_rows;
   double denominator_sds = sum(logLik_re) +
-    sum(log_dht(sds, prior_D_sds_sigma, prior_D_sds_df));
+    sum(logPrior_D_sds(sds, D_sds_sigma, D_sds_df, D_sds_mean, D_sds_shape, gamma_prior));
   for (uword i = 0; i < n_sds; ++i) {
     double SS = 0.5 * pow(scale_sds.at(i), 2.0);
     double log_mu_current = log(sds.at(i)) - SS;
     vec proposed_sds = propose_lnorm(sds, log_mu_current, scale_sds, i);
     vec logLik_re_proposed = log_re(b, L, proposed_sds);
     double numerator_sds = sum(logLik_re_proposed) +
-      sum(log_dht(proposed_sds, prior_D_sds_sigma, prior_D_sds_df));
+      sum(logPrior_D_sds(proposed_sds, D_sds_sigma, D_sds_df, D_sds_mean, D_sds_shape, gamma_prior));
     double log_mu_proposed = log(proposed_sds.at(i)) - SS;
     double log_ratio_sds = numerator_sds - denominator_sds +
       R::dlnorm(sds.at(i), log_mu_proposed, scale_sds.at(i), true) -
@@ -120,7 +135,7 @@ void update_D (mat &L, vec &sds, const mat &b,
     }
     res_sds.at(it, i) = sds.at(i);
   }
-  double denominator_L = sum(logLik_re) + logPrior_LKJ(L, prior_D_L_etaLKJ);
+  double denominator_L = sum(logLik_re) + logPrior_LKJ(L, D_L_etaLKJ);
   for (uword i = 0; i < n_L; ++i) {
     uword upper_part_i = upper_part.at(i);
     double deriv_current(0.0);
@@ -128,7 +143,7 @@ void update_D (mat &L, vec &sds, const mat &b,
     mat proposed_L = L;
     if (MALA) {
       deriv_current = deriv_L(L, sds, b, denominator_L, i, upper_part,
-                              prior_D_L_etaLKJ);
+                              D_L_etaLKJ);
       mu_current = L.at(upper_part_i) + 0.5 * scale_L.at(i) * deriv_current;
       proposed_L = propose_L(L, scale_L, upper_part, deriv_current, i, true);
     } else {
@@ -143,10 +158,10 @@ void update_D (mat &L, vec &sds, const mat &b,
     if (finite_L) {
       logLik_re_proposed = log_re(b, proposed_L, sds);
       numerator_L = sum(logLik_re_proposed) +
-        logPrior_LKJ(proposed_L, prior_D_L_etaLKJ);
+        logPrior_LKJ(proposed_L, D_L_etaLKJ);
       if (MALA) {
         deriv_proposed = deriv_L(proposed_L, sds, b, numerator_L,
-                                 i, upper_part, prior_D_L_etaLKJ);
+                                 i, upper_part, D_L_etaLKJ);
         mu_proposed = proposed_L.at(upper_part_i) +
           0.5 * scale_L.at(i) * deriv_proposed;
         log_ratio_L = numerator_L - denominator_L +
@@ -170,5 +185,6 @@ void update_D (mat &L, vec &sds, const mat &b,
     res_L.at(it, i) = L.at(upper_part_i);
   }
 }
+
 
 #endif

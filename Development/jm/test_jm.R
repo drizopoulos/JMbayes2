@@ -200,7 +200,7 @@ fm3 <- mixed_model(ascites ~ year * sex, data = pbc2, random = ~ year | id,
 Mixed <- list(fm1, fm2, fm3)
 Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
-system.time(obj <- jm(Cox, Mixed, time_var = "year", MALA = TRUE))
+system.time(obj <- jm(Cox, Mixed, time_var = "year"))
 
 summary(obj)
 traceplot(obj, "alphas")

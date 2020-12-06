@@ -400,15 +400,14 @@ vec log_dt (const vec &x, const double &df) {
   return out;
 }
 
-vec log_dht (const vec &x, const double &sigma = 10.0,
-             const double &df = 3.0) {
+vec log_dht (const vec &x, const vec &sigma, const double &df = 3.0) {
   // log density of half Student's t with scale sigma and df degrees of freedom
   // https://en.m.wikipedia.org/wiki/Folded-t_and_half-t_distributions
   uword n = x.n_rows;
   vec out(n);
-  double log_const = std::log(2.0) + lgamma(0.5 * (df + 1)) - lgamma(0.5 * df) -
-    0.5 * (std::log(df) + std::log(M_PI)) - std::log(sigma);
-  vec log_kernel = - 0.5 * (df + 1.0) * log(1.0 + square(x) / (df * pow(sigma, 2.0)));
+  vec log_const = std::log(2.0) + lgamma(0.5 * (df + 1.0)) - lgamma(0.5 * df) -
+    0.5 * (std::log(df) + std::log(M_PI)) - log(sigma);
+  vec log_kernel = - 0.5 * (df + 1.0) * log(1.0 + square(x) / (df * square(sigma)));
   out = log_const + log_kernel;
   return out;
 }
