@@ -90,11 +90,14 @@ tv(x, knots = NULL, ord = 2L)
         \item{\code{B_nu_alphas}}{the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{A_xi_alphas}}{the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
         \item{\code{B_xi_alphas}}{the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}}
-        \item{\code{prior_D_sds_df}}{the prior degrees of freedom parameter for the half-t prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).}
-        \item{\code{prior_D_sds_sigma}}{the prior sigma parameter for the half-t prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).}
-        \item{\code{prior_D_L_etaLKJ}}{the prior eta parameter for the LKJ prior for the correlation matrix of the random effects).}
-        \item{\code{prior_sigmas_df}}{the prior degrees of freedom parmeter for the half-t prior for the error term(s).}
-        \item{\code{prior_sigmas_sigma}}{the prior sigma parmeter for the half-t prior for the error term(s).}
+        \item{\code{gamma_prior_D_sds}}{logical; if \code{TRUE} a Gamma prior will be used for the standard deviations of the D matrix (variance-covariance matrix of the random effects). Deafult is \code{TRUE}}
+        \item{\code{D_sds_df}}{the prior degrees of freedom parameter for the half-t prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).}
+        \item{\code{D_sds_sigma}}{the prior sigma parameter vector for the half-t prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).}
+        \item{\code{D_sds_shape}}{the prior shape parameter for the Gamma prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).}
+        \item{\code{D_sds_mean}}{the prior mean parameter vector for the Gamma prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).}
+        \item{\code{D_L_etaLKJ}}{the prior eta parameter for the LKJ prior for the correlation matrix of the random effects).}
+        \item{\code{sigmas_df}}{the prior degrees of freedom parmeter for the half-t prior for the error term(s).}
+        \item{\code{sigmas_sigma}}{the prior sigma parmeter for the half-t prior for the error term(s).}
     }
 }
 \item{control}{a list of control values with components:
@@ -113,7 +116,6 @@ tv(x, knots = NULL, ord = 2L)
             the available cores minus one.}
     }
   }
-\item{\dots}{options passed to the \code{control} argument.}
 \item{x}{.}
 \item{knots, ord}{.}
 \item{\dots}{arguments passed to \code{control}.}
@@ -174,28 +176,66 @@ traceplot(joint_model_fit_1)
 ##########################################################################################
 
 #############################################################################################
-# Multivariate joint model for serum bilirubin, serum cholesterol,                          #
-# hepatomegaly and ascites                                                                  #
+# Multivariate joint model for serum bilirubin, hepatomegaly and ascites                    # 
 #############################################################################################
 
 # [1] Fit the mixed-effects models using lme() for continuous outcomes and mixed_model() for categorical outcomes. 
 fm1 <- lme(fixed = log(serBilir) ~ year * sex, random =  ~ year | id, data = pbc2)
-fm2 <- lme(serChol ~ ns(year, 3) + sex + age, data = pbc2, random = ~ year | id, na.action = na.exclude)
-fm3 <- mixed_model(hepatomegaly ~ sex + age + year, data = pbc2, 
+fm2 <- mixed_model(hepatomegaly ~ sex + age + year, data = pbc2, 
 random = ~ year | id, family = binomial())
-fm4 <- mixed_model(ascites ~ year + age, data = pbc2,
+fm3 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ year | id, family = binomial())
-# [2] Save all the fitted mixed-effects models in a list
-Mixed <- list(fm1, fm2, fm3, fm4)
 
-# [2] Fit a Cox model, specifying the baseline covariates to be included in the joint
+# [2] Save all the fitted mixed-effects models in a list
+Mixed <- list(fm1, fm2, fm3)
+
+# [3] Fit a Cox model, specifying the baseline covariates to be included in the joint
 # model; 
 fCox1 <- coxph(Surv(years, status2) ~ drug + age, data = pbc2.id)
 
-# [3] The joint model is fitted using a call to jm() i.e.,
+# [4] The joint model is fitted using a call to jm() i.e.,
 joint_model_fit_2 <- jm(fCox1, Mixed, time_var = "year")
 summary(joint_model_fit_2)
 traceplot(joint_model_fit_2)
+
+##########################################################################################
+
+#############################################################################################
+# Slopes & Area Terms                                                                       # 
+#############################################################################################
+
+# We extend model 'joint_model_fit_2' by including the value and slope term for bilirubin, the
+# the area term for hepatomegaly (in the log-odds scale) and the value and 
+# area term for spiders (in the log-odds scale). 
+# To include these terms into the model we specify the 'functional_forms' argument. This should be 
+# a list of right side formulas. Each component of the list should have as name the name of the corresponding
+# outcome variable. In the right side formula we specify the functional form of the association using
+# functions 'value()', 'slope()' and 'area()'.
+# Notes: (1) For terms not specified in the 'functional_forms' list, the default value functional
+# form is used. 
+
+# [1] Fit the mixed-effects models using lme() for continuous outcomes and mixed_model() for categorical outcomes. 
+fm1 <- lme(fixed = log(serBilir) ~ year * sex, random =  ~ year | id, data = pbc2)
+fm2 <- mixed_model(hepatomegaly ~ sex + age + year, data = pbc2, 
+random = ~ year | id, family = binomial())
+fm3 <- mixed_model(ascites ~ year + age, data = pbc2,
+                   random = ~ year | id, family = binomial())
+
+# [2] Save all the fitted mixed-effects models in a list
+Mixed <- list(fm1, fm2, fm3)
+
+# [3] Fit a Cox model, specifying the baseline covariates to be included in the joint
+# model; 
+fCox1 <- coxph(Surv(years, status2) ~ drug + age, data = pbc2.id)
+
+# [4] Specify the list of formulas to be passed to the functional_forms argument of jm()
+fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)),
+               "hepatomegaly" = ~ area(hepatomegaly),
+               "ascites" = ~ value(ascites) + area(ascites))
+               
+# [5] The joint model is fitted using a call to jm() and passing the list to the functional_forms argument
+joint_model_fit_2 <- jm(fCox1, Mixed, time_var = "year", functional_forms = fForms)
+summary(joint_model_fit_2)
 
 
 }
