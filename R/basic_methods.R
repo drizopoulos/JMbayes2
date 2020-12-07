@@ -480,7 +480,7 @@ fixef.jm <- function(object, outcome = 1, ...) {
 #' @param outcome the linear mixed submodel to extract the estimated fixed effects.
 #' If greater than the total number of linear mixed submodels, extracts from all 
 #' of them.
-#' @post_vars logical; if TRUE returns the variance of the posterior distribution.
+#' @param post_vars logical; if TRUE returns the variance of the posterior distribution.
 #' @param ... additional arguments; currently none is used.
 #' @return A numeric matrix with rows denoting the individuals and columns the random 
 #' effects. If \code{postVar = TRUE}, the numeric matrix has an extra attribute 
@@ -685,19 +685,54 @@ family.jm <- function (object, ...) {
 # ggplot mcmc diagnostics need ggplot2 and gridExtra
 ggtraceplot <- function (object, ...) UseMethod("ggtraceplot")
 
+
+#' Trace plot of MCMC output for Joint Models using ggplot2
+#' 
+#' Plots the evolution of the estimated parameter vs. iterations in a 
+#' fitted joint model using ggplot2.
+#' 
+#' @param object an object inheriting from class \code{"jm"}.
+#' @param parm  a character string with either the value \code{"all"} or one specific joint model group of parameters of interest. Defaults to \code{'all'}. \cr
+#' @param size  the width of the traceplot line in mm. Defaults to 1.
+#' @param alpha the opacity level of the traceplot line. Defaults to 0.8.
+#' @param theme a character string specifying the color theme to be used. Possible options are \code{'standard'}, \code{'catalog'}, \code{'metro'}, \code{'pastel'}, \code{'beach'}, \code{'moonlight'}, \code{'goo'}, \code{'sunset'}. \cr
+#' @param grid  logical; defaults to \code{FALSE}. If \code{TRUE} the plots are returned in grids split over multiple pages. For more details see the documentation for \code{\link[gridExtra]{marrangeGrob}}. \cr  
+#' @param gridrows number of rows per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 3.
+#' @param gridcols number of columns per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 1. 
+#' @param ... additional arguments; currently none is used.
+#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
+#' @seealso \code{\link{traceplot}}, 
+#' \code{\link{jm}}.
+#' @examples
+#' \dontrun{
+#' # linear mixed model fit
+#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, random = ~ 1 + obstime | patient, 
+#'                data = aids)
+#' 
+#' # cox model fit
+#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
+#' 
+#' # joint model fit
+#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
+#' 
+#' # trace plot for the fixed effects in the linear mixed submodel 
+#' ggtraceplot(fit_jm, parm = "betas")
+#' ggtraceplot(fit_jm, parm = "betas", grid = TRUE)
+#' }
+
 # traceplot with ggplot
 ggtraceplot.jm <- function(object,
                         parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                  "tau_bs_gammas", "gammas", "alphas"),
                         size = 1, alpha = 0.8,
-                        chaincols = c('standard', 'catalog', 'metro',
+                        theme = c('standard', 'catalog', 'metro',
                                       'pastel', 'beach', 'moonlight', 'goo',
-                                      'sunset'),
-                        gridrow = 3, gridcol = 1, grid = FALSE,
+                                      'sunset'), grid = FALSE,
+                        gridrows = 3, gridcols = 1, 
                         ...) {
     chain <- iteration <- NULL
     parm <- match.arg(parm)
-    coltheme <- match.arg(chaincols)
+    coltheme <- match.arg(theme)
     ggdata <- ggprepare(object, parm)
     n_parms <- length(unique(ggdata$parm))
     n_chains <- object$control$n_chains
@@ -711,7 +746,7 @@ ggtraceplot.jm <- function(object,
                 scale_color_manual(values = ggcolthemes[[coltheme]]) +
                 guides(color = guide_legend(override.aes = list(alpha = 1)))
         }
-        marrangeGrob(grobs = gplots, nrow = gridrow, ncol = gridcol)
+        marrangeGrob(grobs = gplots, nrow = gridrows, ncol = gridcols)
     } else {
         for (i in seq_len(n_parms)) {
             g <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
@@ -727,19 +762,53 @@ ggtraceplot.jm <- function(object,
 
 ggdensityplot <- function (object, ...) UseMethod("ggdensityplot")
 
+#' Probability Density Plot for Joint Models using ggplot2
+#' 
+#' Plots the density estimate for the estimated parameters
+#' in a fitted joint model using ggplot2.
+#' 
+#' @param object an object inheriting from class \code{"jm"}.
+#' @param parm  a character string with either the value \code{"all"} or one specific joint model group of parameters of interest. Defaults to \code{'all'}. \cr
+#' @param size  the width of the density outline in mm. Defaults to 1.
+#' @param alpha the opacity level of the density plot. Defaults to 0.6.
+#' @param theme a character string specifying the color theme to be used. Possible options are \code{'standard'}, \code{'catalog'}, \code{'metro'}, \code{'pastel'}, \code{'beach'}, \code{'moonlight'}, \code{'goo'}, \code{'sunset'}. \cr
+#' @param grid  logical; defaults to \code{FALSE}. If \code{TRUE} the plots are returned in grids split over multiple pages. For more details see the documentation for \code{\link[gridExtra]{marrangeGrob}}. \cr  
+#' @param gridrows number of rows per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 3.
+#' @param gridcols number of columns per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 1. 
+#' @param ... additional arguments; currently none is used.
+#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
+#' @seealso \code{\link{densplot}}, 
+#' \code{\link{jm}}.
+#' @examples
+#' \dontrun{
+#' # linear mixed model fit
+#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, random = ~ 1 + obstime | patient, 
+#'                data = aids)
+#' 
+#' # cox model fit
+#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
+#' 
+#' # joint model fit
+#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
+#' 
+#' # trace plot for the fixed effects in the linear mixed submodel 
+#' ggdensityplot(fit_jm, parm = "betas")
+#' ggdensityplot(fit_jm, parm = "betas", grid = TRUE)
+#' }
+
 # density plot with ggplot
 ggdensityplot.jm <- function(object,
                       parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                "tau_bs_gammas", "gammas", "alphas"),
                       size = 1, alpha = 0.6,
-                      chaincols = c('standard', 'catalog', 'metro',
+                      theme = c('standard', 'catalog', 'metro',
                                     'pastel', 'beach', 'moonlight', 'goo',
-                                    'sunset'),
-                      gridrow = 3, gridcol = 1, grid = FALSE,
+                                    'sunset'), grid = FALSE,
+                      gridrows = 3, gridcols = 1, 
                       ...) {
     chain <- NULL
     parm <- match.arg(parm)
-    coltheme <- match.arg(chaincols)
+    coltheme <- match.arg(theme)
     ggdata <- ggprepare(object, parm)
     n_parms <- length(unique(ggdata$parm))
     n_chains <- object$control$n_chains
@@ -754,7 +823,7 @@ ggdensityplot.jm <- function(object,
                 scale_fill_manual(values = ggcolthemes[[coltheme]]) +
                 guides(color = guide_legend(override.aes = list(alpha = 1)))
         }
-        marrangeGrob(grobs = gplots, nrow = gridrow, ncol = gridcol)
+        marrangeGrob(grobs = gplots, nrow = gridrows, ncol = gridcols)
     } else {
         for (i in seq_len(n_parms)) {
             g <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
