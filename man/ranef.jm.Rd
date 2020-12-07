@@ -13,6 +13,8 @@
 If greater than the total number of linear mixed submodels, extracts from all 
 of them.}
 
+\item{post_vars}{logical; if TRUE returns the variance of the posterior distribution.}
+
 \item{...}{additional arguments; currently none is used.}
 }
 \value{
