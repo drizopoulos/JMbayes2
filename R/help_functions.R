@@ -1180,7 +1180,7 @@ fit_stats <- function (lL, lL_mean_parms) {
     CC <- log(nrow(lL))
     LPML <- sum(- colLogSumExps(-lL, na.rm = TRUE) + CC)
     LPPD <- - 2.0 * sum(colLogSumExps(lL, na.rm = TRUE) - CC)
-    pWAIC2 <- 2.0 * sum(colVars(lL))
+    pWAIC2 <- 2.0 * sum(colVars(lL, na.rm = TRUE))
     list(DIC = pD + D_bar, pD = pD, LPML = LPML,
          CPO = CPO, WAIC = LPPD + pWAIC2)
 }
