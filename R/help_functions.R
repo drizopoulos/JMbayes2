@@ -660,6 +660,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     terms_RE <- model_info$terms$terms_RE
     terms_RE <- model_info$terms$terms_RE
     terms_Surv_noResp <- model_info$terms$terms_Surv_noResp
+    dataL[[idVar]] <- dataL[[idVar]][drop = TRUE]
     ###
     functional_forms <- model_info$functional_forms
     FunForms_per_outcome <- model_info$FunForms_per_outcome
@@ -675,6 +676,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     ######################################################################################
     ######################################################################################
     times_long <- split(dataL[[time_var]], dataL[[idVar]])
+    times_long <- times_long[sapply(times_long, length) > 0]
     dataS_init <- SurvData_HazardModel(times_long, dataS, Time_start,
                                          paste(idT, "_", strata), time_var)
     mf <- model.frame.default(terms_Surv_noResp, data = dataS_init)
