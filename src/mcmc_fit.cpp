@@ -161,8 +161,11 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   double D_sds_shape = as<double>(priors["D_sds_shape"]);
   vec D_sds_mean = as<vec>(priors["D_sds_mean"]);
   double D_L_etaLKJ = as<double>(priors["D_L_etaLKJ"]);
+  bool gamma_prior_sigmas = as<bool>(priors["gamma_prior_sigmas"]);
   double sigmas_df = as<double>(priors["sigmas_df"]);
-  vec sigmas_sigma = as<vec>(priors["sigmas_sigma"]);
+  vec sigmas_sigmas = as<vec>(priors["sigmas_sigmas"]);
+  double sigmas_shape = as<double>(priors["sigmas_shape"]);
+  vec sigmas_mean = as<vec>(priors["sigmas_mean"]);
   vec mean_betas_HC = as<vec>(priors["mean_betas_HC"]);
   mat Tau_betas_HC = as<mat>(priors["Tau_betas_HC"]);
   vec Tau_mean_betas_HC = Tau_betas_HC * mean_betas_HC;
@@ -385,8 +388,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     ////////////////////////////////////////////////////////////////////
 
     update_sigmas(sigmas, has_sigmas, y, eta, extra_parms, families, links,
-                  idL_lp_fast, sigmas_df, sigmas_sigma,
-                  it, res_sigmas, scale_sigmas, acceptance_sigmas);
+                  idL_lp_fast, gamma_prior_sigmas, sigmas_df, sigmas_sigmas,
+                  sigmas_shape, sigmas_mean, it, res_sigmas, scale_sigmas,
+                  acceptance_sigmas);
 
     logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
                            idL_lp_fast, unq_idL, n_b);
