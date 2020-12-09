@@ -123,7 +123,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
       }
       if (it > 19) {
         scale_b.at(i, j) =
-          robbins_monro(scale_b.at(i, j), acc_i, it, 0.42);
+          robbins_monro(scale_b.at(i, j), acc_i, it);
       }
     }
   }

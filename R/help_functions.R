@@ -735,8 +735,8 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     alphas <- split(alphas, rep(seq_along(U_H), sapply(U_H, ncol)))
     V <- vcov(fm)
     if (any_gammas) {
-        vcov_prop_gammas <- V[1:ncol(W_init), 1:ncol(W_init)]
-        vcov_prop_alphas <- V[-(1:ncol(W_init)), -(1:ncol(W_init))]
+        vcov_prop_gammas <- V[1:ncol(W_init), 1:ncol(W_init), drop = FALSE]
+        vcov_prop_alphas <- V[-(1:ncol(W_init)), -(1:ncol(W_init)), drop = FALSE]
     } else {
         vcov_prop_gammas <- matrix(0.0, 1, 1)
         vcov_prop_alphas <- V
@@ -1195,7 +1195,7 @@ get_betas_nHC <- function (v, ind) {
 
 weak_informative_Tau <- function (model, Xbar) {
     V <- vcov_center(vcov2(model), Xbar)
-    diags <- 6.25 * diag(V)
+    diags <- 9 * diag(V)
     diag(1 / diags, nrow(V), ncol(V))
 }
 

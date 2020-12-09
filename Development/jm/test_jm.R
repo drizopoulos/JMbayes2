@@ -151,7 +151,7 @@ lmeFit <- lme(y ~ ns(time, 3), data = Data$DF,
               control = lmeControl(opt = "optim", niterEM = 45))
 coxFit <- coxph(Surv(Time, event) ~ group + age, data = Data$DF.id)
 
-obj <- jm(coxFit, list(lmeFit), time_var = "time")
+obj <- jm(coxFit, list(lmeFit), time_var = "time", priors = list(sigmas_shape = 0.1))
 
 summary(obj)
 #coda::traceplot(obj$mcmc$D)
