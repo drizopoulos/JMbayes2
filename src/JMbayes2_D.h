@@ -129,9 +129,9 @@ void update_D (mat &L, vec &sds, const mat &b,
       denominator_sds = numerator_sds;
       acceptance_sds.at(it, i) = 1;
     }
-    if (it > 19) {
+    if (it > 119) {
       scale_sds.at(i) =
-        robbins_monro(scale_sds.at(i), acceptance_sds.at(it, i), it);
+        robbins_monro(scale_sds.at(i), acceptance_sds.at(it, i), it - 100);
     }
     res_sds.at(it, i) = sds.at(i);
   }
@@ -178,9 +178,9 @@ void update_D (mat &L, vec &sds, const mat &b,
       denominator_L = numerator_L;
       acceptance_L.at(it, i) = 1;
     }
-    if (it > 19) {
+    if (it > 119) {
       scale_L.at(i) =
-        robbins_monro(scale_L.at(i), acceptance_L.at(it, i), it);
+        robbins_monro(scale_L.at(i), acceptance_L.at(it, i), it - 100);
     }
     res_L.at(it, i) = L.at(upper_part_i);
   }

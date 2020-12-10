@@ -1195,7 +1195,7 @@ get_betas_nHC <- function (v, ind) {
 
 weak_informative_Tau <- function (model, Xbar) {
     V <- vcov_center(vcov2(model), Xbar)
-    diags <- 9 * diag(V)
+    diags <- 9.0 * diag(V)
     diag(1 / diags, nrow(V), ncol(V))
 }
 

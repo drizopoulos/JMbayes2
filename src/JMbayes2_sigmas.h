@@ -59,9 +59,9 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
       sigmas = proposed_sigmas;
       acceptance_sigmas.at(it, i) = 1;
     }
-    if (it > 19) {
+    if (it > 119) {
       scale_sigmas.at(i) =
-        robbins_monro(scale_sigmas.at(i), acceptance_sigmas.at(it, i), it);
+        robbins_monro(scale_sigmas.at(i), acceptance_sigmas.at(it, i), it - 100);
     }
     res_sigmas.at(it, i) = sigmas.at(i);
   }

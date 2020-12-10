@@ -121,9 +121,9 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
             WlongH2_alphas_proposed.rows(first_H, last_H);
         }
       }
-      if (it > 19) {
+      if (it > 119) {
         scale_b.at(i, j) =
-          robbins_monro(scale_b.at(i, j), acc_i, it);
+          robbins_monro(scale_b.at(i, j), acc_i, it - 100);
       }
     }
   }

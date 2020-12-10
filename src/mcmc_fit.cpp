@@ -362,6 +362,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     }
 
     ////////////////////////////////////////////////////////////////////////
+    if (it > 99) {
 
     update_D(L, sds, b_mat, upper_part,
              D_sds_df, D_sds_sigma, D_sds_shape, D_sds_mean, gamma_prior_D_sds,
@@ -426,7 +427,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     tau_gammas, shrink_gammas,
                     mean_alphas, Tau_alphas, lambda_alphas,
                     tau_alphas, shrink_alphas);
-
+    }
     ////////////////////////////////////////////////////////////////////
 
     res_logLik.row(it) = trans(logLik_long + logLik_surv + logLik_re);

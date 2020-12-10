@@ -204,9 +204,9 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
           logLik_surv = logLik_surv_prop;
           denominator_j = numerator_j;
         }
-        if (it > 19) {
+        if (it > 119) {
           scale_betas.at(j).at(i) =
-            robbins_monro(scale_betas.at(j).at(i), acc_i, it);
+            robbins_monro(scale_betas.at(j).at(i), acc_i, it - 100);
         }
       }
     }
