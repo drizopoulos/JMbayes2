@@ -1,31 +1,5 @@
 traceplot <- function (object, ...) UseMethod("traceplot")
 
-#' Trace plot of MCMC output for Joint Models
-#' 
-#' Plots the evolution of the estimated parameter vs. iterations in a 
-#' fitted joint model.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  either \code{"all"} or one specific joint model parameter of interest.
-#' @param ... further arguments passed to \code{\link[coda]{traceplot}}.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link[coda]{traceplot}}, \code{\link{ggtraceplot}}, 
-#' \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, random = ~ 1 + obstime | patient, 
-#'                data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
-#' 
-#' # trace plot for the fixed effects in the linear mixed submodel 
-#' traceplot(fit_jm, parm = "betas")
-#' }
 traceplot.jm <- function (object,
                           parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                    "tau_bs_gammas", "gammas", "alphas"),
@@ -55,40 +29,6 @@ traceplot.jm <- function (object,
 
 gelman_diag <- function (object, ...) UseMethod("gelman_diag")
 
-#' Gelman and Rubin's Convergence Diagnostic for Joint Models
-#' 
-#' Calculates the potential scale reduction factor for the estimated parameters
-#' in a fitted joint model, together with the upper confidence limits.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  either \code{"all"} or one specific joint model parameter of interest.
-#' @param ... further arguments passed to \code{\link[coda]{gelman.diag}}.
-#' @return A list of \code{gelman.diag} objects. An object of class 
-#' \code{gelman.diag} is a list with the elements:
-#' \tabular{ll}{
-#' \code{psrf} \tab a list containing the point estimates of the potential 
-#' scale reduction factor (labelled \code{Point est.}) and their upper 
-#' confidence limits (labelled \code{Upper C.I.}). \cr
-#' \code{mpsrf} \tab the point estimate of the multivariate potential scale 
-#' reduction factor. This is NULL if the parameter is univariate.
-#' }
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link[coda]{gelman.diag}}, \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, 
-#' random = ~ 1 + obstime | patient, data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
-#' 
-#' # joint model convergence diagnostic
-#' gelman_diag(fit_jm, "all")
-#' }
 gelman_diag.jm <- function (object,
                           parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                    "tau_bs_gammas", "gammas", "alphas"),
@@ -123,32 +63,6 @@ gelman_diag.jm <- function (object,
 
 densplot <- function (object, ...) UseMethod("densityplot")
 
-#' Probability Density Plot for Joint Models
-#' 
-#' Plots the density estimate for the estimated parameters
-#' in a fitted joint model.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  either \code{"all"} or one specific joint model parameter of interest.
-#' @param ... further arguments passed to \code{\link[coda]{densplot}}.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link[coda]{densplot}}, \code{\link{ggdensityplot}}, 
-#' \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, random = ~ 1 + obstime | patient,
-#'                data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
-#' 
-#' # density plot for the fixed effects in all linear mixed submodels 
-#' densplot.jm(fit_jm, parm = "betas")
-#' }
 densplot.jm <- function (object,
                           parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                    "tau_bs_gammas", "gammas", "alphas"),
@@ -178,31 +92,6 @@ densplot.jm <- function (object,
 
 cumuplot <- function (object, ...) UseMethod("cumuplot")
 
-#' Cumulative Quantile Plot for Joint Models
-#' 
-#' Plots the evolution of the sample quantiles vs. iterations in a fitted joint 
-#' model.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  either \code{"all"} or one specific joint model parameter of interest.
-#' @param ... further arguments passed to \code{\link[coda]{cumuplot}}.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link[coda]{cumuplot}}, \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, random = ~ 1 + obstime | patient, 
-#'                data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
-#' 
-#' # cumulative quantile plot for the fixed effects in all linear mixed submodels 
-#' cumuplot(fit_jm, parm = "betas")
-#' }
 cumuplot.jm <- function (object,
                          parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                   "tau_bs_gammas", "gammas", "alphas"), ...) {
@@ -467,45 +356,8 @@ family.jm <- function (object, ...) {
     object$model_info$families
 }
 
-# ggplot mcmc diagnostics need ggplot2 and gridExtra
 ggtraceplot <- function (object, ...) UseMethod("ggtraceplot")
 
-
-#' Trace plot of MCMC output for Joint Models using ggplot2
-#' 
-#' Plots the evolution of the estimated parameter vs. iterations in a 
-#' fitted joint model using ggplot2.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  a character string with either the value \code{"all"} or one specific joint model group of parameters of interest. Defaults to \code{'all'}. \cr
-#' @param size  the width of the traceplot line in mm. Defaults to 1.
-#' @param alpha the opacity level of the traceplot line. Defaults to 0.8.
-#' @param theme a character string specifying the color theme to be used. Possible options are \code{'standard'}, \code{'catalog'}, \code{'metro'}, \code{'pastel'}, \code{'beach'}, \code{'moonlight'}, \code{'goo'}, \code{'sunset'}. \cr
-#' @param grid  logical; defaults to \code{FALSE}. If \code{TRUE} the plots are returned in grids split over multiple pages. For more details see the documentation for \code{\link[gridExtra:arrangeGrob]{gridExtra::marrangeGrob()}}. \cr  
-#' @param gridrows number of rows per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 3.
-#' @param gridcols number of columns per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 1. 
-#' @param ... additional arguments; currently none is used.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link{traceplot}}, 
-#' \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, random = ~ 1 + obstime | patient, 
-#'                data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
-#' 
-#' # trace plot for the fixed effects in the linear mixed submodel 
-#' ggtraceplot(fit_jm, parm = "betas")
-#' ggtraceplot(fit_jm, parm = "betas", grid = TRUE)
-#' }
-
-# traceplot with ggplot
 ggtraceplot.jm <- function(object,
                         parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                  "tau_bs_gammas", "gammas", "alphas"),
@@ -547,41 +399,6 @@ ggtraceplot.jm <- function(object,
 
 ggdensityplot <- function (object, ...) UseMethod("ggdensityplot")
 
-#' Probability Density Plot for Joint Models using ggplot2
-#' 
-#' Plots the density estimate for the estimated parameters
-#' in a fitted joint model using ggplot2.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  a character string with either the value \code{"all"} or one specific joint model group of parameters of interest. Defaults to \code{'all'}. \cr
-#' @param size  the width of the density outline in mm. Defaults to 1.
-#' @param alpha the opacity level of the density plot. Defaults to 0.6.
-#' @param theme a character string specifying the color theme to be used. Possible options are \code{'standard'}, \code{'catalog'}, \code{'metro'}, \code{'pastel'}, \code{'beach'}, \code{'moonlight'}, \code{'goo'}, \code{'sunset'}. \cr
-#' @param grid  logical; defaults to \code{FALSE}. If \code{TRUE} the plots are returned in grids split over multiple pages. For more details see the documentation for \code{\link[gridExtra:arrangeGrob]{gridExtra::marrangeGrob()}}. \cr  
-#' @param gridrows number of rows per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 3.
-#' @param gridcols number of columns per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 1. 
-#' @param ... additional arguments; currently none is used.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link{densplot}}, 
-#' \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, random = ~ 1 + obstime | patient, 
-#'                data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
-#' 
-#' # trace plot for the fixed effects in the linear mixed submodel 
-#' ggdensityplot(fit_jm, parm = "betas")
-#' ggdensityplot(fit_jm, parm = "betas", grid = TRUE)
-#' }
-
-# density plot with ggplot
 ggdensityplot.jm <- function(object,
                       parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                "tau_bs_gammas", "gammas", "alphas"),

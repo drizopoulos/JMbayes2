@@ -126,7 +126,7 @@ Dimitris Rizopoulos \email{d.rizopoulos@erasmusmc.nl}
 }
 
 \examples{
-\donttest{
+\dontrun{
 # linear mixed model fits
 fit_lme1 <- lme(log(serBilir) ~ year:sex + age,
                 random = ~ year | id, data = pbc2)

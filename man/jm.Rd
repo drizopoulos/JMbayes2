@@ -162,7 +162,8 @@ Dimitris Rizopoulos \email{d.rizopoulos@erasmusmc.nl}
 ##############################################
 
 # [1] Fit the mixed model using lme(). 
-fm1 <- lme(fixed = log(serBilir) ~ year * sex + I(year^2) + age + prothrombin, random =  ~ year | id, data = pbc2)
+fm1 <- lme(fixed = log(serBilir) ~ year * sex + I(year^2) + 
+           age + prothrombin, random =  ~ year | id, data = pbc2)
 
 # [2] Fit a Cox model, specifying the baseline covariates to be included in the joint
 # model; 
@@ -179,10 +180,14 @@ traceplot(joint_model_fit_1)
 # Multivariate joint model for serum bilirubin, hepatomegaly and ascites                    # 
 #############################################################################################
 
-# [1] Fit the mixed-effects models using lme() for continuous outcomes and mixed_model() for categorical outcomes. 
-fm1 <- lme(fixed = log(serBilir) ~ year * sex, random =  ~ year | id, data = pbc2)
+# [1] Fit the mixed-effects models using lme() for continuous 
+# outcomes and mixed_model() for categorical outcomes. 
+fm1 <- lme(fixed = log(serBilir) ~ year * sex, 
+           random =  ~ year | id, data = pbc2)
+
 fm2 <- mixed_model(hepatomegaly ~ sex + age + year, data = pbc2, 
-random = ~ year | id, family = binomial())
+                   random = ~ year | id, family = binomial())
+
 fm3 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ year | id, family = binomial())
 
@@ -208,16 +213,21 @@ traceplot(joint_model_fit_2)
 # the area term for hepatomegaly (in the log-odds scale) and the value and 
 # area term for spiders (in the log-odds scale). 
 # To include these terms into the model we specify the 'functional_forms' argument. This should be 
-# a list of right side formulas. Each component of the list should have as name the name of the corresponding
-# outcome variable. In the right side formula we specify the functional form of the association using
+# a list of right side formulas. Each component of the list should 
+# have as name the name of the corresponding
+# outcome variable. In the right side formula we specify the functional form 
+# of the association using
 # functions 'value()', 'slope()' and 'area()'.
 # Notes: (1) For terms not specified in the 'functional_forms' list, the default value functional
 # form is used. 
 
-# [1] Fit the mixed-effects models using lme() for continuous outcomes and mixed_model() for categorical outcomes. 
+# [1] Fit the mixed-effects models using lme() for continuous outcomes 
+# and mixed_model() for categorical outcomes. 
 fm1 <- lme(fixed = log(serBilir) ~ year * sex, random =  ~ year | id, data = pbc2)
+
 fm2 <- mixed_model(hepatomegaly ~ sex + age + year, data = pbc2, 
-random = ~ year | id, family = binomial())
+                   random = ~ year | id, family = binomial())
+
 fm3 <- mixed_model(ascites ~ year + age, data = pbc2,
                    random = ~ year | id, family = binomial())
 
@@ -233,7 +243,8 @@ fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)),
                "hepatomegaly" = ~ area(hepatomegaly),
                "ascites" = ~ value(ascites) + area(ascites))
                
-# [5] The joint model is fitted using a call to jm() and passing the list to the functional_forms argument
+# [5] The joint model is fitted using a call to jm() and passing the list 
+# to the functional_forms argument
 joint_model_fit_2 <- jm(fCox1, Mixed, time_var = "year", functional_forms = fForms)
 summary(joint_model_fit_2)
 

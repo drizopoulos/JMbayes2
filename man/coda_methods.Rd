@@ -35,9 +35,9 @@ ggtraceplot(object, \dots)
   parm = c("all", "betas", "sigmas", "D", "bs_gammas",
            "tau_bs_gammas", "gammas", "alphas"),
   size = 1, alpha = 0.8,
-  chaincols = c('standard', 'catalog', 'metro',
+  theme = c('standard', 'catalog', 'metro',
                 'pastel', 'beach', 'moonlight', 'goo', 'sunset'),
-  gridrow = 3, gridcol = 1, grid = FALSE, \dots)
+  grid = FALSE, gridrows = 3, gridcols = 1, \dots)
 
 gelman_diag(object, \dots)
 
@@ -57,9 +57,9 @@ ggdensityplot(object, \dots)
   parm = c("all", "betas", "sigmas", "D", "bs_gammas",
            "tau_bs_gammas", "gammas", "alphas"),
   size = 1, alpha = 0.6,
-  chaincols = c('standard', 'catalog', 'metro', 'pastel',
+  theme = c('standard', 'catalog', 'metro', 'pastel',
                 'beach', 'moonlight', 'goo', 'sunset'),
-  gridrow = 3, gridcol = 1, grid = FALSE, \dots)
+  grid = FALSE, gridrows = 3, gridcols = 1, \dots)
 
 cumuplot(object, \dots)
 
@@ -83,7 +83,19 @@ cumuplot(object, \dots)
 }
 
 \details{
-XXX
+\describe{
+\item{\code{traceplot()}}{Plots the evolution of the estimated parameter vs. iterations in a fitted joint model.}
+
+\item{\code{ggtraceplot()}}{Plots the evolution of the estimated parameter vs. iterations in a fitted joint model using \pkg{ggplot2}.}
+
+\item{\code{gelman_diag()}}{Calculates the potential scale reduction factor for the estimated parameters in a fitted joint model, together with the upper confidence limits.}
+
+\item{\code{densplot()}}{Plots the density estimate for the estimated parameters in a fitted joint model.}
+
+\item{\code{ggdensityplot()}}{Plots the evolution of the estimated parameter vs. iterations in a fitted joint model using \pkg{ggplot2}.}
+
+\item{\code{cumuplot()}}{Plots the evolution of the sample quantiles vs. iterations in a fitted joint model.}
+}
 }
 
 
@@ -100,7 +112,39 @@ Dimitris Rizopoulos \email{d.rizopoulos@erasmusmc.nl}
 }
 
 \examples{
-\donttest{
-x <- rnorm(5L)
+\dontrun{
+# linear mixed model fits
+fit_lme1 <- lme(log(serBilir) ~ year:sex + age,
+                random = ~ year | id, data = pbc2)
+
+fit_lme2 <- lme(prothrombin ~ sex,
+                random = ~ year | id, data = pbc2)
+
+# cox model fit
+fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
+ 
+# joint model fit
+fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year")
+
+# trace plot for the fixed effects in the linear mixed submodel 
+traceplot(fit_jm, parm = "betas")
+
+# joint model convergence diagnostic
+gelman_diag(fit_jm, "all")
+
+# density plot for the fixed effects in all linear mixed submodels 
+densplot.jm(fit_jm, parm = "betas")
+
+# cumulative quantile plot for the fixed effects in all linear mixed submodels 
+cumuplot(fit_jm, parm = "betas")
+
+# trace plot for the fixed effects in the linear mixed submodel 
+ggtraceplot(fit_jm, parm = "betas")
+ggtraceplot(fit_jm, parm = "betas", grid = TRUE)
+
+# trace plot for the fixed effects in the linear mixed submodel 
+ggdensityplot(fit_jm, parm = "betas")
+ggdensityplot(fit_jm, parm = "betas", grid = TRUE)
 }
 }
+
