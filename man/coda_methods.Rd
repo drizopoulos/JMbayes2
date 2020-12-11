@@ -70,14 +70,14 @@ cumuplot(object, \dots)
 }
 
 \arguments{
-\item{object}{objects inheriting from class \code{"jm"}.}
-\item{parm}{.}
-\item{size}{.}
-\item{alpha}{.}
-\item{chaincols}{.}
-\item{gridrow}{.}
-\item{gridcol}{.}
-\item{grid}{.}
+\item{object}{an object inheriting from class \code{"jm"}.}
+\item{parm}{a character string specifying which parameters of the joint model to plot. Possible values are:  Defaults to \code{'all'}, \code{'betas'}, \code{'alphas'}, \code{'sigmas'}, \code{'D'}, \code{'bs_gammas'}, \code{'tau_bs_gammas'}, \code{'gammas'}.\cr}
+\item{size}{the width of the traceplot line in mm. Defaults to 1.}
+\item{alpha}{the opacity level of the traceplot line. Defaults to 0.8.}
+\item{theme}{a character string specifying the color theme to be used. Possible options are \code{'standard'}, \code{'catalog'}, \code{'metro'}, \code{'pastel'}, \code{'beach'}, \code{'moonlight'}, \code{'goo'}, \code{'sunset'}. \cr}
+\item{grid}{logical; defaults to \code{FALSE}. If \code{TRUE} the plots are returned in grids split over multiple pages. For more details see the documentation for \code{\link[gridExtra:arrangeGrob]{gridExtra::marrangeGrob()}}. \cr}
+\item{gridrows}{number of rows per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 3.}
+\item{gridcols}{number of columns per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 1.}
 \item{\dots}{further arguments passed to the corresponding function from the
   the \bold{coda} package.}
 }
