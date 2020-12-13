@@ -287,10 +287,39 @@ control$n_chains = 1
 
 ################################################################################
 
-fm <- lme(CD4 ~ obstime * drug, data = aids, random = ~ obstime | patient)
+fm <- lme(sqrt(CD4) ~ obstime * drug, data = aids, random = ~ obstime | patient)
 gm <- coxph(Surv(Time, death) ~ drug, data = aids.id)
 jmFit <- jm(gm, fm, time_var = "obstime")
 summary(jmFit)
+
+traceplot(jmFit)
+################################################################################
+
+# Univariate joint model continuous longitudinal outcome
+fm1 <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
+
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
+CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
+
+jointFit1 <- jm(CoxFit, fm1, time_var = "year")
+summary(jointFit1)
+
+
+# three-variate joint model with two continuous and two binary longitudinal outcomes
+fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
+fm3 <- mixed_model(ascites ~ year + sex, data = pbc2,
+                   random = ~ year | id, family = binomial())
+
+jointFit2 <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year")
+summary(jointFit2)
+
+
+# functional forms
+fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)),
+               "prothrombin" = ~ area(prothrombin) + area(prothrombin):sex)
+
+jointFit3 <- update(jointFit2, functional_forms = fForms, n_iter = 10000)
+summary(jointFit3)
 
 
 

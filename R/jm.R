@@ -494,6 +494,12 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                            alphas = alphas, tau_bs_gammas = rep(20, n_strata))
     ############################################################################
     ############################################################################
+    # Limits
+    b_mat <- docall_cbind(b)
+    Data$limit_b_low <- b_mat - rep(25 * sqrt(diag(D)), each = nrow(b_mat))
+    Data$limit_b_upp <- b_mat + rep(25 * sqrt(diag(D)), each = nrow(b_mat))
+    ############################################################################
+    ############################################################################
     # Priors
     Tau_bs_gammas <- crossprod(diff(diag(ncol(W0_H) / n_strata),
                                     differences = con$diff))

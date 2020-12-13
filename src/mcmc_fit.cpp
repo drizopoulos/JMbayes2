@@ -106,8 +106,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   double xi_alphas = 1.0;
   field<mat> b = List2Field_mat(as<List>(initial_values["b"]));
   mat b_mat = docall_cbindF(b);
-  field<mat> mean_u(b.n_elem);
-  for (uword i = 0; i < b.n_elem; ++i) mean_u.at(i) = zeros<mat>(size(b.at(i)));
   mat D = as<mat>(initial_values["D"]);
   vec sds = sqrt(D.diag());
   mat R = cov2cor(D);
@@ -362,6 +360,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     }
 
     ////////////////////////////////////////////////////////////////////////
+
     if (it > 99) {
 
     update_D(L, sds, b_mat, upper_part,
