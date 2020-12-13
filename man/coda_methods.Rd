@@ -35,9 +35,9 @@ ggtraceplot(object, \dots)
   parm = c("all", "betas", "sigmas", "D", "bs_gammas",
            "tau_bs_gammas", "gammas", "alphas"),
   size = 1, alpha = 0.8,
-  chaincols = c('standard', 'catalog', 'metro',
+  theme = c('standard', 'catalog', 'metro',
                 'pastel', 'beach', 'moonlight', 'goo', 'sunset'),
-  gridrow = 3, gridcol = 1, grid = FALSE, \dots)
+  grid = FALSE, gridrows = 3, gridcols = 1, \dots)
 
 gelman_diag(object, \dots)
 
@@ -57,9 +57,9 @@ ggdensityplot(object, \dots)
   parm = c("all", "betas", "sigmas", "D", "bs_gammas",
            "tau_bs_gammas", "gammas", "alphas"),
   size = 1, alpha = 0.6,
-  chaincols = c('standard', 'catalog', 'metro', 'pastel',
+  theme = c('standard', 'catalog', 'metro', 'pastel',
                 'beach', 'moonlight', 'goo', 'sunset'),
-  gridrow = 3, gridcol = 1, grid = FALSE, \dots)
+  grid = FALSE, gridrows = 3, gridcols = 1, \dots)
 
 cumuplot(object, \dots)
 
@@ -70,20 +70,32 @@ cumuplot(object, \dots)
 }
 
 \arguments{
-\item{object}{objects inheriting from class \code{"jm"}.}
-\item{parm}{.}
-\item{size}{.}
-\item{alpha}{.}
-\item{chaincols}{.}
-\item{gridrow}{.}
-\item{gridcol}{.}
-\item{grid}{.}
+\item{object}{an object inheriting from class \code{"jm"}.}
+\item{parm}{a character string specifying which parameters of the joint model to plot. Possible values are:  Defaults to \code{'all'}, \code{'betas'}, \code{'alphas'}, \code{'sigmas'}, \code{'D'}, \code{'bs_gammas'}, \code{'tau_bs_gammas'}, \code{'gammas'}.\cr}
+\item{size}{the width of the traceplot line in mm. Defaults to 1.}
+\item{alpha}{the opacity level of the traceplot line. Defaults to 0.8.}
+\item{theme}{a character string specifying the color theme to be used. Possible options are \code{'standard'}, \code{'catalog'}, \code{'metro'}, \code{'pastel'}, \code{'beach'}, \code{'moonlight'}, \code{'goo'}, \code{'sunset'}. \cr}
+\item{grid}{logical; defaults to \code{FALSE}. If \code{TRUE} the plots are returned in grids split over multiple pages. For more details see the documentation for \code{\link[gridExtra:arrangeGrob]{gridExtra::marrangeGrob()}}. \cr}
+\item{gridrows}{number of rows per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 3.}
+\item{gridcols}{number of columns per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 1.}
 \item{\dots}{further arguments passed to the corresponding function from the
   the \bold{coda} package.}
 }
 
 \details{
-XXX
+\describe{
+\item{\code{traceplot()}}{Plots the evolution of the estimated parameter vs. iterations in a fitted joint model.}
+
+\item{\code{ggtraceplot()}}{Plots the evolution of the estimated parameter vs. iterations in a fitted joint model using \pkg{ggplot2}.}
+
+\item{\code{gelman_diag()}}{Calculates the potential scale reduction factor for the estimated parameters in a fitted joint model, together with the upper confidence limits.}
+
+\item{\code{densplot()}}{Plots the density estimate for the estimated parameters in a fitted joint model.}
+
+\item{\code{ggdensityplot()}}{Plots the evolution of the estimated parameter vs. iterations in a fitted joint model using \pkg{ggplot2}.}
+
+\item{\code{cumuplot()}}{Plots the evolution of the sample quantiles vs. iterations in a fitted joint model.}
+}
 }
 
 
@@ -100,7 +112,39 @@ Dimitris Rizopoulos \email{d.rizopoulos@erasmusmc.nl}
 }
 
 \examples{
-\donttest{
-x <- rnorm(5L)
+\dontrun{
+# linear mixed model fits
+fit_lme1 <- lme(log(serBilir) ~ year:sex + age,
+                random = ~ year | id, data = pbc2)
+
+fit_lme2 <- lme(prothrombin ~ sex,
+                random = ~ year | id, data = pbc2)
+
+# cox model fit
+fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
+ 
+# joint model fit
+fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year")
+
+# trace plot for the fixed effects in the linear mixed submodel 
+traceplot(fit_jm, parm = "betas")
+
+# joint model convergence diagnostic
+gelman_diag(fit_jm, "all")
+
+# density plot for the fixed effects in all linear mixed submodels 
+densplot.jm(fit_jm, parm = "betas")
+
+# cumulative quantile plot for the fixed effects in all linear mixed submodels 
+cumuplot(fit_jm, parm = "betas")
+
+# trace plot for the fixed effects in the linear mixed submodel 
+ggtraceplot(fit_jm, parm = "betas")
+ggtraceplot(fit_jm, parm = "betas", grid = TRUE)
+
+# trace plot for the fixed effects in the linear mixed submodel 
+ggdensityplot(fit_jm, parm = "betas")
+ggdensityplot(fit_jm, parm = "betas", grid = TRUE)
 }
 }
+

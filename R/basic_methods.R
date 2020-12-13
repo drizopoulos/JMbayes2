@@ -1,31 +1,5 @@
 traceplot <- function (object, ...) UseMethod("traceplot")
 
-#' Trace plot of MCMC output for Joint Models
-#' 
-#' Plots the evolution of the estimated parameter vs. iterations in a 
-#' fitted joint model.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  either \code{"all"} or one specific joint model parameter of interest.
-#' @param ... further arguments passed to \code{\link[coda]{traceplot}}.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link[coda]{traceplot}}, \code{\link{ggtraceplot}}, 
-#' \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, random = ~ 1 + obstime | patient, 
-#'                data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
-#' 
-#' # trace plot for the fixed effects in the linear mixed submodel 
-#' traceplot(fit_jm, parm = "betas")
-#' }
 traceplot.jm <- function (object,
                           parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                    "tau_bs_gammas", "gammas", "alphas"),
@@ -55,40 +29,6 @@ traceplot.jm <- function (object,
 
 gelman_diag <- function (object, ...) UseMethod("gelman_diag")
 
-#' Gelman and Rubin's Convergence Diagnostic for Joint Models
-#' 
-#' Calculates the potential scale reduction factor for the estimated parameters
-#' in a fitted joint model, together with the upper confidence limits.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  either \code{"all"} or one specific joint model parameter of interest.
-#' @param ... further arguments passed to \code{\link[coda]{gelman.diag}}.
-#' @return A list of \code{gelman.diag} objects. An object of class 
-#' \code{gelman.diag} is a list with the elements:
-#' \tabular{ll}{
-#' \code{psrf} \tab a list containing the point estimates of the potential 
-#' scale reduction factor (labelled \code{Point est.}) and their upper 
-#' confidence limits (labelled \code{Upper C.I.}). \cr
-#' \code{mpsrf} \tab the point estimate of the multivariate potential scale 
-#' reduction factor. This is NULL if the parameter is univariate.
-#' }
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link[coda]{gelman.diag}}, \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, 
-#' random = ~ 1 + obstime | patient, data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
-#' 
-#' # joint model convergence diagnostic
-#' gelman_diag(fit_jm, "all")
-#' }
 gelman_diag.jm <- function (object,
                           parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                    "tau_bs_gammas", "gammas", "alphas"),
@@ -123,32 +63,6 @@ gelman_diag.jm <- function (object,
 
 densplot <- function (object, ...) UseMethod("densityplot")
 
-#' Probability Density Plot for Joint Models
-#' 
-#' Plots the density estimate for the estimated parameters
-#' in a fitted joint model.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  either \code{"all"} or one specific joint model parameter of interest.
-#' @param ... further arguments passed to \code{\link[coda]{densplot}}.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link[coda]{densplot}}, \code{\link{ggdensityplot}}, 
-#' \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, random = ~ 1 + obstime | patient,
-#'                data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
-#' 
-#' # density plot for the fixed effects in all linear mixed submodels 
-#' densplot.jm(fit_jm, parm = "betas")
-#' }
 densplot.jm <- function (object,
                           parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                    "tau_bs_gammas", "gammas", "alphas"),
@@ -178,31 +92,6 @@ densplot.jm <- function (object,
 
 cumuplot <- function (object, ...) UseMethod("cumuplot")
 
-#' Cumulative Quantile Plot for Joint Models
-#' 
-#' Plots the evolution of the sample quantiles vs. iterations in a fitted joint 
-#' model.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  either \code{"all"} or one specific joint model parameter of interest.
-#' @param ... further arguments passed to \code{\link[coda]{cumuplot}}.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link[coda]{cumuplot}}, \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, random = ~ 1 + obstime | patient, 
-#'                data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
-#' 
-#' # cumulative quantile plot for the fixed effects in all linear mixed submodels 
-#' cumuplot(fit_jm, parm = "betas")
-#' }
 cumuplot.jm <- function (object,
                          parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                   "tau_bs_gammas", "gammas", "alphas"), ...) {
@@ -389,34 +278,6 @@ print.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) {
     invisible(x)
 }
 
-#' Fixed Effects Estimates for Survival Submodel in Joint Models
-#' 
-#' Extracts estimated fixed effects for the event process from a fitted joint model.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param ... additional arguments; currently none is used.
-#' @return A list with the elements: 
-#' \tabular{ll}{
-#' \code{gammas} \tab estimated baseline fixed effects. \cr
-#' \code{association} \tab estimated association parameters.   
-#' }
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link{fixef}}, \code{\link{ranef}}, \code{\link{jm}}.
-#' @examples 
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, random = ~ 1 + obstime | patient, 
-#'                data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
-#' 
-#' # fixed effects for the event process 
-#' coef(fit_jm)
-#' }
 coef.jm <- function (object, ...) {
     gammas <- object$statistics$Mean[["gammas"]]
     if (is.null(gammas)) object$statistics$Mean[["alphas"]] else
@@ -424,39 +285,7 @@ coef.jm <- function (object, ...) {
              "association" = object$statistics$Mean[["alphas"]])
 }
 
-#' Fixed Effects Estimates for Linear Mixed Submodels in Joint Models
-#' 
-#' Extracts estimated fixed effects for the longitudinal processes from a fitted joint model.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param outcome the linear mixed submodel to extract the estimated fixed effects. 
-#' If greater than the total number of linear mixed submodels, extracts from all 
-#' of them.
-#' @param ... additional arguments; currently none is used.
-#' @return A numeric vector of the estimated fixed effects for the 
-#' \code{outcome} selected. If \code{outcome} is greater than the number of 
-#' linear mixed submodels, returns a list of numeric vectors for all outcomes.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link{coef}}, \code{\link{ranef}}, \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme1 <- lme\(log(serBilir) ~ year:sex + age,
-#'                 random = ~ year | id, data = pbc2)
-#' 
-#' fit_lme2 <- lme(prothrombin ~ sex, 
-#'                 random = ~ year | id, data = pbc2)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year")
-#' 
-#' # fixed effects for all linear mixed submodels 
-#' fixef(fit_jm, outcome = 3)
-#' }
-fixef.jm <- function(object, outcome = 1, ...) {
+fixef.jm <- function(object, outcome = Inf, ...) {
     if (!is.numeric(outcome) || outcome < 0) {
         stop("'outcome' should be a positive integer.")
     }
@@ -472,38 +301,6 @@ fixef.jm <- function(object, outcome = 1, ...) {
     }
 }
 
-#' Random Effects Estimates for Linear Mixed Submodels in Joint Models
-#' 
-#' Extracts estimated random effects for the longitudinal processes from a fitted joint model.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param outcome the linear mixed submodel to extract the estimated fixed effects.
-#' If greater than the total number of linear mixed submodels, extracts from all 
-#' of them.
-#' @param post_vars logical; if TRUE returns the variance of the posterior distribution.
-#' @param ... additional arguments; currently none is used.
-#' @return A numeric matrix with rows denoting the individuals and columns the random 
-#' effects. If \code{postVar = TRUE}, the numeric matrix has an extra attribute 
-#' “postVar".
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link{coef}}, \code{\link{fixef}}, \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fits
-#' fit_lme1 <- lme(log(serBilir) ~ year:sex + age, random = ~ year | id, 
-#'                 data = pbc2)
-#' 
-#' fit_lme2 <- lme(prothrombin ~ sex, random = ~ year | id, data = pbc2)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year")
-#' 
-#' # random effects from all linear mixed submodels 
-#' ranef(fit_jm)
-#' }
 ranef.jm <- function(object, outcome = Inf, post_vars = FALSE, ...) {
     if (!is.numeric(outcome) || outcome < 0) {
         stop("'outcome' should be a positive integer.")
@@ -523,123 +320,28 @@ ranef.jm <- function(object, outcome = Inf, post_vars = FALSE, ...) {
     out
 }
 
-#' Joint Model Terms
-#' 
-#' Extracts the terms objects from a fitted joint model.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param process which submodel to extract the terms, i.e.,
-#' \tabular{ll}{
-#' \code{longitudinal} \tab linear mixed model(s). \cr
-#' \code{survival} \tab survival model.   
-#' }
-#' @param type which effects, fixed or random, to select, when 
-#' \code{process = "longitudinal"}.
-#' @param ... additional arguments; currently none is used.
-#' @return If \code{process = "longitudinal"}, a list of the terms object(s) for
-#'  the linear mixed model(s). If \code{process = "event"}, the terms object 
-#'  for the survival model.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link{model.frame}}, \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(log(serBilir) ~ year * sex, random = ~ year | id, data = pbc2)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "year")
-#' 
-#' # fixed effects terms in the linear mixed model
-#' terms(fit_jm, process = "longitudinal", type = "random")
-#' }
-terms.jm <- function (object, process = c("longitudinal", "event"),
+terms.jm <- function (x, process = c("longitudinal", "event"),
                       type = c("fixed", "random"), ...) {
     process <- match.arg(process)
     type <- match.arg(type)
     combo <- paste(process, type, sep = "_")
     switch(combo,
-           "longitudinal_fixed" = object$model_info$terms$terms_FE,
-           "longitudinal_random" = object$model_info$terms$terms_RE,
-           "event_fixed" = , "event_random" = object$model_info$terms$terms_Surv)
+           "longitudinal_fixed" = x$model_info$terms$terms_FE,
+           "longitudinal_random" = x$model_info$terms$terms_RE,
+           "event_fixed" = , "event_random" = x$model_info$terms$terms_Surv)
 }
 
-#' Model.frame method for Joint Models
-#' 
-#' Creates the model frame from a fitted joint model.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param process which submodel to recreate the model frame, i.e.,
-#' \tabular{ll}{
-#' \code{longitudinal} \tab linear mixed model(s). \cr
-#' \code{survival} \tab survival model.   
-#' }
-#' @param type which effects, fixed or random, to select, when 
-#' \code{process = longitudinal}.
-#' @param ... additional arguments; currently none is used.
-#' @return If \code{process = "longitudinal"}, a list of the model frames used 
-#' in the linear mixed model(s). If \code{process = "event"}, the model frame 
-#' used in the survival model.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link[stats]{model.frame}}, \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme1 <- lme(log(serBilir) ~ year:sex + age, random = ~ year | id, 
-#'                 data = pbc2)
-#'
-#' fit_lme2 <- lme(prothrombin ~ sex, random = ~ year | id, data = pbc2)
-#'
-#' # cox model fit
-#' fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
-#'
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year")
-#'
-#' # model frame for the fixed effects terms in the linear mixed submodels
-#' model.frame(fit_jm, process = "longitudinal", type = "fixed")
-#' }
-model.frame.jm <- function (object, process = c("longitudinal", "event"),
+model.frame.jm <- function (formula, process = c("longitudinal", "event"),
                             type = c("fixed", "random"), ...) {
     process <- match.arg(process)
     type <- match.arg(type)
     combo <- paste(process, type, sep = "_")
     switch(combo,
-           "longitudinal_fixed" = object$model_info$frames$mf_FE,
-           "longitudinal_random" = object$model_info$frames$mf_RE,
-           "event_fixed" = , "event_random" = object$model_info$frames$mf_Surv)
+           "longitudinal_fixed" = formula$model_info$frames$mf_FE,
+           "longitudinal_random" = formula$model_info$frames$mf_RE,
+           "event_fixed" = , "event_random" = formula$model_info$frames$mf_Surv)
 }
 
-#' Design Matrices for Linear Mixed Submodels in Joint Models
-#' 
-#' Creates the design matrices for linear mixed submodels from a fitted joint 
-#' model.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param ... additional arguments; currently none is used.
-#' @return A list of the design matrices for the linear mixed submodels.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link[stats]{model.matrix}}, \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme1 <- lme(log(serBilir) ~ year:sex + age, random = ~ year | id, 
-#'                 data = pbc2)
-#'
-#' fit_lme2 <- lme(prothrombin ~ sex, random = ~ year | id, 
-#'                 data = pbc2)
-#'
-#' # cox model fit
-#' fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
-#'
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year")
-#'
-#' # linear mixed models design matrices
-#' model.matrix(fit_jm)
-#' }
 model.matrix.jm <- function (object, ...) {
     tr <- terms(object)
     mf <- model.frame(object)
@@ -650,77 +352,12 @@ model.matrix.jm <- function (object, ...) {
     }
 }
 
-#' Family Objects for Joint Models
-#' 
-#' Extracts the error distribution and link function used in the linear
-#' mixed submodel(s) from a fitted joint model.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param ... additional arguments; currently none is used.
-#' @return A list of \code{family} objects.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link[stats]{family}}, \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fits
-#' fit_lme <- lme(log(serBilir) ~ year * sex, random = ~ year | id, 
-#'                data = pbc2)
-#'
-#' fit_mm <- mixed_model(ascites ~ year * sex, random = ~ 1 | id, 
-#'                       family = binomial(), data = pbc2)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, list(fit_lme, fit_mm), time_var = "year")
-#' 
-#' # family objects from all linear mixed submodels
-#' family(fit_jm)
-#' }
 family.jm <- function (object, ...) {
     object$model_info$families
 }
 
-# ggplot mcmc diagnostics need ggplot2 and gridExtra
 ggtraceplot <- function (object, ...) UseMethod("ggtraceplot")
 
-
-#' Trace plot of MCMC output for Joint Models using ggplot2
-#' 
-#' Plots the evolution of the estimated parameter vs. iterations in a 
-#' fitted joint model using ggplot2.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  a character string with either the value \code{"all"} or one specific joint model group of parameters of interest. Defaults to \code{'all'}. \cr
-#' @param size  the width of the traceplot line in mm. Defaults to 1.
-#' @param alpha the opacity level of the traceplot line. Defaults to 0.8.
-#' @param theme a character string specifying the color theme to be used. Possible options are \code{'standard'}, \code{'catalog'}, \code{'metro'}, \code{'pastel'}, \code{'beach'}, \code{'moonlight'}, \code{'goo'}, \code{'sunset'}. \cr
-#' @param grid  logical; defaults to \code{FALSE}. If \code{TRUE} the plots are returned in grids split over multiple pages. For more details see the documentation for \code{\link[gridExtra:arrangeGrob]{gridExtra::marrangeGrob()}}. \cr  
-#' @param gridrows number of rows per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 3.
-#' @param gridcols number of columns per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 1. 
-#' @param ... additional arguments; currently none is used.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link{traceplot}}, 
-#' \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, random = ~ 1 + obstime | patient, 
-#'                data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
-#' 
-#' # trace plot for the fixed effects in the linear mixed submodel 
-#' ggtraceplot(fit_jm, parm = "betas")
-#' ggtraceplot(fit_jm, parm = "betas", grid = TRUE)
-#' }
-
-# traceplot with ggplot
 ggtraceplot.jm <- function(object,
                         parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                  "tau_bs_gammas", "gammas", "alphas"),
@@ -762,41 +399,6 @@ ggtraceplot.jm <- function(object,
 
 ggdensityplot <- function (object, ...) UseMethod("ggdensityplot")
 
-#' Probability Density Plot for Joint Models using ggplot2
-#' 
-#' Plots the density estimate for the estimated parameters
-#' in a fitted joint model using ggplot2.
-#' 
-#' @param object an object inheriting from class \code{"jm"}.
-#' @param parm  a character string with either the value \code{"all"} or one specific joint model group of parameters of interest. Defaults to \code{'all'}. \cr
-#' @param size  the width of the density outline in mm. Defaults to 1.
-#' @param alpha the opacity level of the density plot. Defaults to 0.6.
-#' @param theme a character string specifying the color theme to be used. Possible options are \code{'standard'}, \code{'catalog'}, \code{'metro'}, \code{'pastel'}, \code{'beach'}, \code{'moonlight'}, \code{'goo'}, \code{'sunset'}. \cr
-#' @param grid  logical; defaults to \code{FALSE}. If \code{TRUE} the plots are returned in grids split over multiple pages. For more details see the documentation for \code{\link[gridExtra:arrangeGrob]{gridExtra::marrangeGrob()}}. \cr  
-#' @param gridrows number of rows per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 3.
-#' @param gridcols number of columns per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 1. 
-#' @param ... additional arguments; currently none is used.
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link{densplot}}, 
-#' \code{\link{jm}}.
-#' @examples
-#' \dontrun{
-#' # linear mixed model fit
-#' fit_lme <- lme(sqrt(CD4) ~ obstime * drug, random = ~ 1 + obstime | patient, 
-#'                data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit
-#' fit_jm <- jm(fit_cox, fit_lme, time_var = "obstime")
-#' 
-#' # trace plot for the fixed effects in the linear mixed submodel 
-#' ggdensityplot(fit_jm, parm = "betas")
-#' ggdensityplot(fit_jm, parm = "betas", grid = TRUE)
-#' }
-
-# density plot with ggplot
 ggdensityplot.jm <- function(object,
                       parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                "tau_bs_gammas", "gammas", "alphas"),
@@ -858,42 +460,6 @@ effectPlotData.jm <- function (object, newdata, level = 0.95, ...) {
     cbind(newdata, do.call("cbind", pred), do.call("cbind", Qs))
 }
 
-#' Criteria to compare Joint Models
-#' 
-#' Compares two or more fitted joint models using the criteria WAIC, DIC, and LPML.
-#' 
-#' @param ... two or more objects inheriting from class \code{"jm"}.
-#' @param type  which log-likelihood function use to calculate the criteria 
-#' (marginal or conditional).  
-#' @param order which criteria use to sort the models in the output.
-#' @return An object of class \code{compare_jm}. This is a list with the elements: 
-#' \tabular{ll}{
-#' \code{table} \tab a table with the criteria calculted to each joint model. \cr
-#' \code{type} \tab the log-likelihood function used to calculate the criteria.   
-#' }
-#' @author Dimitris Rizopoulos, \email{d.rizopoulos@@erasmusmc.nl}.
-#' @seealso \code{\link{jm}}.
-#' @examples 
-#' \dontrun{
-#' # linear mixed model fits
-#' fit_lme1 <- lme(sqrt(CD4) ~ obstime, random = ~ 1 + obstime | patient, 
-#'                 data = aids)
-#' 
-#' fit_lme2 <- lme(sqrt(CD4) ~ obstime + drug, random = ~ 1 + obstime | patient, 
-#'                 data = aids)
-#' 
-#' # cox model fit
-#' fit_cox <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-#' 
-#' # joint model fit 1
-#' fit_jm <- jm(fit_cox, fit_lme1, time_var = "obstime")
-#' 
-#' # joint model fit 2
-#' fit_jm2 <- jm(fit_cox, fit_lme2, time_var = "obstime")
-#' 
-#' # compare the two fitted joint models
-#' compare_jm(fit_jm1, fit_jm2)
-#' }
 compare_jm <- function (..., type = c("marginal", "conditional"),
                         order = c("WAIC", "DIC", "LPML", "none")) {
     model_names <- sapply(substitute(list(...)), deparse)[-1L]
