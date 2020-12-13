@@ -318,11 +318,12 @@ summary(jointFit2)
 fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)),
                "prothrombin" = ~ area(prothrombin) + area(prothrombin):sex)
 
-jointFit3 <- update(jointFit2, functional_forms = fForms, n_iter = 10000)
+jointFit3 <- update(jointFit2, functional_forms = fForms,
+                    n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)
 summary(jointFit3)
 
 
-
+traceplot(jointFit3, "alphas")
 
 
 
