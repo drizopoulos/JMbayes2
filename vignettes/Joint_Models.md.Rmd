@@ -1,0 +1,63 @@
+---
+title: "Basic Univariate and Multivariate Joint Models"
+author: "Dimitris Rizopoulos"
+date: "`r Sys.Date()`"
+resource_files:
+  - man/figures/JMbayes2_square.png
+opengraph:
+  image: 
+    src: "https://nerler.github.io/JointAI/reference/figures/JointAI_square.png"
+    alt: "JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data"
+  twitter:
+    card: summary
+    creator: "@drizopoulos"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Multivariate Joint Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("JMbayes2")
+```
+
+# Joint Models - Theory
+## Univariate
+The function that fits joint models in **JMbayes2** is called `jm()`. It has three required arguments, `Surv_object` a Cox model fitted by `coxph()` or an Accelerated Failure time model fitted by `survreg()`, 
+`Mixed_objects` a single or a list of mixed models fitted either by the `lme()` or `mixed_model()` functions, and `time_var` a character string indicating the name of the time variable in the specification of the mixed-effects models. We will illustrate the basic use of the package in the PBC dataset. We start by fitting a Cox model for the composite event transplantation or death, including sex as a baseline covariate:
+```{r}
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
+CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
+```
+
+Our aim is to assess the strength of the association be the risk of the composite event and the levels of serum bilirubin that has been collected during follow-up. We will describe the patient-specific profiles over time for this biomarker using a linear mixed model, with fixed-effects, time, sex, and their interaction, and as random effects random intercepts and random slopes. The syntax to fit this model with `lme()` is:
+```{r}
+fm1 <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
+```
+
+The joint model that links the survival and longitudinal submodels is fitted with the following call to the `jm()` function:
+```{r, cache = TRUE}
+jointFit1 <- jm(CoxFit, fm1, time_var = "year")
+summary(jointFit1)
+```
+
+## Multivariate
+
+```{r, cache = TRUE}
+fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
+fm3 <- mixed_model(ascites ~ year + sex, data = pbc2,
+                   random = ~ year | id, family = binomial())
+
+jointFit2 <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year",
+                n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)
+summary(jointFit2)
+```
+
+ 

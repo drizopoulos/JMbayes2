@@ -305,12 +305,14 @@ jointFit1 <- jm(CoxFit, fm1, time_var = "year")
 summary(jointFit1)
 
 
-# three-variate joint model with two continuous and two binary longitudinal outcomes
+# three-variate joint model with two continuous and one binary
+# longitudinal outcomes
 fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
 fm3 <- mixed_model(ascites ~ year + sex, data = pbc2,
                    random = ~ year | id, family = binomial())
 
-jointFit2 <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year")
+jointFit2 <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year",
+                n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)
 summary(jointFit2)
 
 
@@ -318,8 +320,7 @@ summary(jointFit2)
 fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)),
                "prothrombin" = ~ area(prothrombin) + area(prothrombin):sex)
 
-jointFit3 <- update(jointFit2, functional_forms = fForms,
-                    n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)
+jointFit3 <- update(jointFit2, functional_forms = fForms)
 summary(jointFit3)
 
 
