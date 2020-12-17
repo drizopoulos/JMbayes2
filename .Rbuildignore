@@ -9,6 +9,7 @@
 ^Devel
 ^README\.Rmd$
 ^README-.*\.png$
+^\.github$
 
 ^inst/WORDLIST$
 ^inst/Ideas\.*$

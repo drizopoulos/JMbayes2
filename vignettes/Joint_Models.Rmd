@@ -2,20 +2,11 @@
 title: "Basic Univariate and Multivariate Joint Models"
 author: "Dimitris Rizopoulos"
 date: "`r Sys.Date()`"
-resource_files:
-  - man/figures/JMbayes2_square.png
-opengraph:
-  image: 
-    src: "https://nerler.github.io/JointAI/reference/figures/JointAI_square.png"
-    alt: "JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data"
-  twitter:
-    card: summary
-    creator: "@drizopoulos"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Multivariate Joint Models}
+  %\VignetteIndexEntry{Univariate and Multivariate Joint Models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -43,14 +34,14 @@ fm1 <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
 ```
 
 The joint model that links the survival and longitudinal submodels is fitted with the following call to the `jm()` function:
-```{r, cache = TRUE}
+```{r}
 jointFit1 <- jm(CoxFit, fm1, time_var = "year")
 summary(jointFit1)
 ```
 
 ## Multivariate
 
-```{r, cache = TRUE}
+```{r}
 fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
 fm3 <- mixed_model(ascites ~ year + sex, data = pbc2,
                    random = ~ year | id, family = binomial())
