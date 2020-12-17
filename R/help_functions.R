@@ -30,14 +30,6 @@ cd_vec <- function (x, f, ..., eps = 0.001) {
     0.5 * (res + t(res))
 }
 
-jitter2 <- function (x, factor = 2) {
-    if (is.list(x)) {
-        x[] <- lapply(x, jitter, factor = factor)
-    } else {
-        jitter(x, factor = factor)
-    }
-}
-
 symm_mat <- function (M) {
     0.5 * (M + t(M))
 }
