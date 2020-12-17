@@ -1,13 +1,13 @@
 ---
-title: "Basic Univariate and Multivariate Joint Models"
+title: "Minimal Example"
 author: "Dimitris Rizopoulos"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Univariate and Multivariate Joint Models}
-  %\VignetteEngine{rmarkdown::render}
+  %\VignetteIndexEntry{Minimal Example}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
