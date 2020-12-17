@@ -21,10 +21,8 @@
 ^_pkgdown\.yml$
 ^pkgdown$
 
-^vignettes/Joint_Models_cache$
-^vignettes/Joint_Models_files$
-
 
 ## Exclude (large) vignettes
 ^vignettes/Theoretical_Background.Rmd$
+^vignettes/Joint_Models.Rmd$
 

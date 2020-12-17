@@ -2,15 +2,6 @@
 output: github_document
 ---
 
-```{r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  fig.align = 'center'
-)
-```
-
 # JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data <img src="man/figures/logo.png" align="right" alt="" width="160" />
 
 
@@ -19,7 +10,7 @@ knitr::opts_chunk$set(
 [![](https://cranlogs.r-pkg.org/badges/grand-total/JMbayes2)](https://cran.r-project.org/package=JMbayes2)
 [![Download counter](https://cranlogs.r-pkg.org/badges/JMbayes2)](https://cran.r-project.org/package=JMbayes2)
 [![Rdoc](https://www.rdocumentation.org/badges/version/JMbayes2)](https://www.rdocumentation.org/packages/JMbayes2)
-[![R build status](https://github.com/drizopoulos/JMbayes2/workflows/R-CMD-check/badge.svg)](https://github.com/drizopoulos/JMbayes/actions)
+[![R build status](https://github.com/drizopoulos/JMbayes2/workflows/R_CMD_check/badge.svg)](https://github.com/drizopoulos/JMbayes/actions)
 <!-- badges: end -->
 
 The package **JMbayes2** fits joint models for longitudinal and time-to-event data. It can accommodate multiple longitudinal outcomes of different type (e.g., continuous, dichotomous, ordinal, counts), and assuming different distributions, i.e., Gaussian, Student's-t, Gamma, Beta, unit Lindley, censored Normal, Binomial, Poisson, Negative Binomial, and Beta-Binomial. For the event time process, right, left and interval censored data can be handled, while competing risks and multi-sate processes are also covered.
