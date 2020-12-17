@@ -1219,5 +1219,12 @@ center_X <- function (x, ind) {
     x
 }
 
+jitter2 <- function (x, factor = 2) {
+    if (is.list(x)) {
+        x[] <- lapply(x, jitter, factor = factor)
+    } else {
+        jitter(x, factor = factor)
+    }
+}
 
 

@@ -87,13 +87,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
             seed_ <- control$seed + chain
             set.seed(seed_)
             not_D <- !names(initial_values) %in% c("D")
-            jitter2 <- function (x, factor = 2) {
-                if (is.list(x)) {
-                    x[] <- lapply(x, jitter, factor = factor)
-                } else {
-                    jitter(x, factor = factor)
-                }
-            }
             initial_values[not_D] <- lapply(initial_values[not_D], jitter2)
             mcmc_cpp(model_data, model_info, initial_values, priors, control)
         }
