@@ -1,12 +1,12 @@
 ---
-title: "Minimal Example"
+title: "Univariate and Multivariate Joint Models"
 author: "Dimitris Rizopoulos"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Minimal Example}
+  %\VignetteIndexEntry{Univariate and Multivariate Joint Models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 library("JMbayes2")
 ```
 
-# Joint Models - Theory
+# Fitting Joint Models with JMbayes2
 ## Univariate
 The function that fits joint models in **JMbayes2** is called `jm()`. It has three required arguments, `Surv_object` a Cox model fitted by `coxph()` or an Accelerated Failure time model fitted by `survreg()`, 
 `Mixed_objects` a single or a list of mixed models fitted either by the `lme()` or `mixed_model()` functions, and `time_var` a character string indicating the name of the time variable in the specification of the mixed-effects models. We will illustrate the basic use of the package in the PBC dataset. We start by fitting a Cox model for the composite event transplantation or death, including sex as a baseline covariate:
@@ -39,8 +39,22 @@ jointFit1 <- jm(CoxFit, fm1, time_var = "year")
 summary(jointFit1)
 ```
 
-## Multivariate
+The output of the `summary()` method provides some descriptive statistics of the sample at hand, followed by some fit statistics based on the marginal (random effects are integrated out using the Laplace approximation) and conditional on the random effects log-likelihood functions, followed by the estimated variance-covariance matrix for the random effects, followed by the estimates for the survival submodel, followed by the estimates for the longitudinal submodel(s), and finally some information for the MCMC.
 
+By default, `jm()` adds the subject-specific linear predictor of the mixed model as time-varying covariate in the survival relative risk model. In the output this is named as `value(log(serBilir))` to denote that, be default, the current value functional form is used. That is, we assume that the risk at a specific time $t$ is associate with the value of the linear predictor of the longitudinal outcome at the same time point $t$.
+
+Standard MCMC diagnostics are available to evaluate convergence. For example, the traceplot for the association coefficient `value(log(serBilir))` is produced with the following syntax:
+```{r, fig.align='center'}
+ggtraceplot(jointFit1, "alphas")
+```
+
+and the density plot with the call:
+```{r, fig.align='center'}
+ggdensityplot(jointFit1, "alphas")
+```
+
+## Multivariate
+To fit a joint model with multiple longitudinal outcomes, we simply provide a list of mixed models as the second argument of `jm()`. In the following example, we extend the joint model we fitted above by also including the prothrombin time and the log odds for the presence or not of ascites as time-varying covariate in the relative risk model for the composite event:
 ```{r}
 fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
 fm3 <- mixed_model(ascites ~ year + sex, data = pbc2,
@@ -51,4 +65,16 @@ jointFit2 <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year",
 summary(jointFit2)
 ```
 
- 
+The output for the survival submodel contains now the estimated coefficients for `value(prothrombin)` and `value(ascites)`, and parameter estimates for all three longitudinal submodels.
+
+## Functional Forms
+```{r}
+fForms <- list(
+  "log(serBilir)" = ~ slope(log(serBilir)) + slope(log(serBilir)):sex,
+  "prothrombin" = ~ area(prothrombin)
+)
+
+jointFit3 <- update(jointFit2, functional_forms = fForms)
+summary(jointFit3)
+```
+

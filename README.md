@@ -30,7 +30,7 @@ provides a number of functions to summarize and visualize the results.
 **JMbayes2** can be installed from [CRAN](https://cran.r-project.org/):
 
 ``` r
-install.packages('JMbayes2')
+install.packages("JMbayes2")
 ```
 
 The developments version can be installed from GitHub:

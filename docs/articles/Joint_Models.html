@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Minimal Example • JMbayes2</title>
+<title>Univariate and Multivariate Joint Models • JMbayes2</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -17,7 +17,7 @@
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Minimal Example">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Univariate and Multivariate Joint Models">
 <meta property="og:description" content="JMbayes2">
 <meta property="og:image" content="/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -61,7 +61,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/Joint_Models.html">Minimal Example</a>
+      <a href="../articles/Joint_Models.html">Univariate and Multivariate Joint Models</a>
     </li>
   </ul>
 </li>
@@ -86,7 +86,7 @@
       </header><script src="Joint_Models_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Minimal Example</h1>
+      <h1 data-toc-skip>Univariate and Multivariate Joint Models</h1>
                         <h4 class="author">Dimitris Rizopoulos</h4>
             
             <h4 class="date">2020-12-18</h4>
@@ -98,9 +98,9 @@
 
     
     
-<div id="joint-models---theory" class="section level1">
+<div id="fitting-joint-models-with-jmbayes2" class="section level1">
 <h1 class="hasAnchor">
-<a href="#joint-models---theory" class="anchor"></a>Joint Models - Theory</h1>
+<a href="#fitting-joint-models-with-jmbayes2" class="anchor"></a>Fitting Joint Models with JMbayes2</h1>
 <div id="univariate" class="section level2">
 <h2 class="hasAnchor">
 <a href="#univariate" class="anchor"></a>Univariate</h2>
@@ -153,11 +153,22 @@
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
 <span class="co">#&gt; time: 0.2 min</span></code></pre></div>
+<p>The output of the <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code> method provides some descriptive statistics of the sample at hand, followed by some fit statistics based on the marginal (random effects are integrated out using the Laplace approximation) and conditional on the random effects log-likelihood functions, followed by the estimated variance-covariance matrix for the random effects, followed by the estimates for the survival submodel, followed by the estimates for the longitudinal submodel(s), and finally some information for the MCMC.</p>
+<p>By default, <code><a href="../reference/jm.html">jm()</a></code> adds the subject-specific linear predictor of the mixed model as time-varying covariate in the survival relative risk model. In the output this is named as <code><a href="../reference/jm.html">value(log(serBilir))</a></code> to denote that, be default, the current value functional form is used. That is, we assume that the risk at a specific time <span class="math inline">\(t\)</span> is associate with the value of the linear predictor of the longitudinal outcome at the same time point <span class="math inline">\(t\)</span>.</p>
+<p>Standard MCMC diagnostics are available to evaluate convergence. For example, the traceplot for the association coefficient <code><a href="../reference/jm.html">value(log(serBilir))</a></code> is produced with the following syntax:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/jm%20coda%20Methods.html">ggtraceplot</a></span><span class="op">(</span><span class="va">jointFit1</span>, <span class="st">"alphas"</span><span class="op">)</span></code></pre></div>
+<p><img src="Joint_Models_files/figure-html/unnamed-chunk-4-1.png" width="700" style="display: block; margin: auto;"></p>
+<p>and the density plot with the call:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/jm%20coda%20Methods.html">ggdensityplot</a></span><span class="op">(</span><span class="va">jointFit1</span>, <span class="st">"alphas"</span><span class="op">)</span></code></pre></div>
+<p><img src="Joint_Models_files/figure-html/unnamed-chunk-5-1.png" width="700" style="display: block; margin: auto;"></p>
 </div>
 <div id="multivariate" class="section level2">
 <h2 class="hasAnchor">
 <a href="#multivariate" class="anchor"></a>Multivariate</h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<p>To fit a joint model with multiple longitudinal outcomes, we simply provide a list of mixed models as the second argument of <code><a href="../reference/jm.html">jm()</a></code>. In the following example, we extend the joint model we fitted above by also including the prothrombin time and the log odds for the presence or not of ascites as time-varying covariate in the relative risk model for the composite event:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span>
 <span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,
                    random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
@@ -225,7 +236,83 @@
 <span class="co">#&gt; iterations per chain: 12000 </span>
 <span class="co">#&gt; burn-in per chain: 2000 </span>
 <span class="co">#&gt; thinning: 5 </span>
-<span class="co">#&gt; time: 1.5 min</span></code></pre></div>
+<span class="co">#&gt; time: 1.4 min</span></code></pre></div>
+<p>The output for the survival submodel contains now the estimated coefficients for <code><a href="../reference/jm.html">value(prothrombin)</a></code> and <code><a href="../reference/jm.html">value(ascites)</a></code>, and parameter estimates for all three longitudinal submodels.</p>
+</div>
+<div id="functional-forms" class="section level2">
+<h2 class="hasAnchor">
+<a href="#functional-forms" class="anchor"></a>Functional Forms</h2>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">fForms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+  <span class="st">"log(serBilir)"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">slope</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/jm.html">slope</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span><span class="op">)</span><span class="op">:</span><span class="va">sex</span>,
+  <span class="st">"prothrombin"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">area</a></span><span class="op">(</span><span class="va">prothrombin</span><span class="op">)</span>
+<span class="op">)</span>
+
+<span class="va">jointFit3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">jointFit2</span>, functional_forms <span class="op">=</span> <span class="va">fForms</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">jointFit3</span><span class="op">)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Call:</span>
+<span class="co">#&gt; jm(Surv_object = CoxFit, Mixed_objects = list(fm1, fm2, fm3), </span>
+<span class="co">#&gt;     time_var = "year", functional_forms = fForms, n_iter = 12000L, </span>
+<span class="co">#&gt;     n_burnin = 2000L, n_thin = 5L)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Data Descriptives:</span>
+<span class="co">#&gt; Number of Groups: 312        Number of events: 169 (54.2%)</span>
+<span class="co">#&gt; Number of Observations:</span>
+<span class="co">#&gt;   log(serBilir): 1945</span>
+<span class="co">#&gt;   prothrombin: 1945</span>
+<span class="co">#&gt;   ascites: 1885</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;                  DIC      WAIC      LPML</span>
+<span class="co">#&gt; marginal    20419.54  64475.12 -24347.49</span>
+<span class="co">#&gt; conditional 33262.27 154884.32 -54123.91</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Random-effects covariance matrix:</span>
+<span class="co">#&gt;                                                    </span>
+<span class="co">#&gt;        StdDev   Corr                               </span>
+<span class="co">#&gt; (Intr) 1.2188 (Intr)    year (Intr)    year (Intr) </span>
+<span class="co">#&gt; year   0.2602 -0.1928                              </span>
+<span class="co">#&gt; (Intr) 1.5205 0.2388  0.0841                       </span>
+<span class="co">#&gt; year   0.4392 0.1210  0.1118 -0.4268               </span>
+<span class="co">#&gt; (Intr) 9.0454 0.2646  0.1242 0.1891  0.0459        </span>
+<span class="co">#&gt; year   2.1414 0.2649  0.2801 0.1143  0.1719 -0.3091</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Survival Outcome:</span>
+<span class="co">#&gt;                                   Mean  StDev    2.5%  97.5%      P   Rhat</span>
+<span class="co">#&gt; sexfemale                      -0.5311 0.5415 -1.5402 0.5876 0.3173 1.0058</span>
+<span class="co">#&gt; slope(log(serBilir))            1.0283 1.2343 -1.2696 3.5583 0.4007 1.0533</span>
+<span class="co">#&gt; slope(log(serBilir)):sexfemale -0.3698 1.2590 -3.0343 1.8528 0.8093 1.0490</span>
+<span class="co">#&gt; area(prothrombin)               0.2199 0.1172 -0.0035 0.4591 0.0533 1.0061</span>
+<span class="co">#&gt; value(ascites)                  0.1295 0.0281  0.0760 0.1867 0.0000 1.0007</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)</span>
+<span class="co">#&gt;                   Mean  StDev    2.5%  97.5%      P   Rhat</span>
+<span class="co">#&gt; (Intercept)     0.7146 0.3480  0.0335 1.3834 0.0400 1.0002</span>
+<span class="co">#&gt; year            0.2397 0.1090  0.0214 0.4540 0.0347 1.0009</span>
+<span class="co">#&gt; sexfemale      -0.2808 0.5490 -1.3731 0.8025 0.6167 1.0014</span>
+<span class="co">#&gt; year:sexfemale -0.0722 0.1162 -0.3069 0.1480 0.5500 1.0001</span>
+<span class="co">#&gt; sigma           0.9928 0.1563  0.7292 1.3373 0.0000 1.0022</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Longitudinal Outcome: prothrombin (family = gaussian, link = identity)</span>
+<span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span>
+<span class="co">#&gt; (Intercept)    10.9835 0.5024  9.9725 11.9519 0.0000 1.0007</span>
+<span class="co">#&gt; year            0.2043 0.2302 -0.2430  0.6682 0.3703 1.0008</span>
+<span class="co">#&gt; sexfemale      -0.4282 0.5278 -1.4807  0.5823 0.4240 0.9996</span>
+<span class="co">#&gt; year:sexfemale  0.0413 0.2439 -0.4372  0.5238 0.8697 1.0003</span>
+<span class="co">#&gt; sigma           1.8452 0.2512  1.4468  2.4100 0.0000 1.0024</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Longitudinal Outcome: ascites (family = binomial, link = logit)</span>
+<span class="co">#&gt;                Mean  StDev    2.5%  97.5%      P   Rhat</span>
+<span class="co">#&gt; (Intercept) -4.3441 2.3264 -8.9196 0.2581 0.0640 1.0001</span>
+<span class="co">#&gt; year         0.1913 0.2497 -0.2977 0.6841 0.4410 1.0005</span>
+<span class="co">#&gt; sexfemale    0.1936 2.0345 -3.8465 4.1767 0.9237 0.9999</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; MCMC summary:</span>
+<span class="co">#&gt; chains: 3 </span>
+<span class="co">#&gt; iterations per chain: 12000 </span>
+<span class="co">#&gt; burn-in per chain: 2000 </span>
+<span class="co">#&gt; thinning: 5 </span>
+<span class="co">#&gt; time: 1.6 min</span></code></pre></div>
 </div>
 </div>
   </div>

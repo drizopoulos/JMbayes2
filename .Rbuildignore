@@ -22,7 +22,6 @@
 ^pkgdown$
 
 
-## Exclude (large) vignettes
-^vignettes/Theoretical_Background.Rmd$
-^vignettes/Joint_Models.Rmd$
+## Exclude vignettes
+^vignettes$
 

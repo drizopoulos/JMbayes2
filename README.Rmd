@@ -20,7 +20,7 @@ The package **JMbayes2** fits joint models for longitudinal and time-to-event da
 ## Installation
 **JMbayes2** can be installed from [CRAN](https://cran.r-project.org/):
 ```{r CRAN-instalation, eval = FALSE}
-install.packages('JMbayes2')
+install.packages("JMbayes2")
 ```
 
 The developments version can be installed from GitHub:
