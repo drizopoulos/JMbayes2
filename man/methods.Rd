@@ -70,52 +70,68 @@ than the total number of submodels, extracts from all of them.}
 \item{process}{which submodel(s) to extract the terms:
 \tabular{ll}{
 \code{"longitudinal"} \tab linear mixed model(s), \cr
-\code{"survival"} \tab survival model.}
+\code{"survival"} \tab survival model.
+}
 }
 \item{type}{in \code{compare_jm()}, which effects to select in the longitudinal process:
 \tabular{ll}{
 \code{"fixed"} \tab fixed-effects, \cr
-\code{"random"} \tab random-efects.} \cr
+\code{"random"} \tab random-efects.
+}
 in \code{terms()}, which log-likelihood function use to calculate the criteria:
 \tabular{ll}{
 \code{"marginal"} \tab marginal log-likelihood, \cr
-\code{"conditional"} \tab conditional log-likelihood.} \cr
+\code{"conditional"} \tab conditional log-likelihood.
 }
-\item{\dots}{further arguments; currently none is used. \cr\cr in \code{compare_jm()}, a series of \code{jm} objects.}
+}
+\item{\dots}{further arguments; currently none is used. \cr in \code{compare_jm()}, a series of \code{jm} objects.}
 \item{order}{which criteria use to sort the models in the output.}
 }
 
+\details{
+\describe{
+\item{\code{coef()}}{Extracts estimated fixed effects for the event process from a fitted joint model.}
+\item{\code{fixef()}}{Extracts estimated fixed effects for the longitudinal processes from a fitted joint model.}
+\item{\code{ranef()}}{Extracts estimated random effects from a fitted joint model.}
+\item{\code{terms()}}{Extracts the terms objects from a fitted joint model.}
+\item{\code{model.frame()}}{Creates the model frame from a fitted joint model.}
+\item{\code{model.matrix()}}{Creates the design matrices for linear mixed submodels from a fitted joint model.}
+\item{\code{family()}}{Extracts the error distribution and link function used in the linear mixed submodel(s) from a fitted joint model.}
+\item{\code{compare_jm()}}{Compares two or more fitted joint models using the criteria WAIC, DIC, and LPML.}
+}
+}
+
+
 \value{
-\tabular{ll}{
-
-\code{coef()} \tab a list with the elements: 
-  \tabular{ll}{
-  \code{gammas} \tab estimated baseline fixed effects. \cr
-  \code{association} \tab estimated association parameters.} \cr
-
-\code{fixef()} \tab a numeric vector of the estimated fixed effects for the \code{outcome} selected. If \code{outcome} is greater than the number of linear mixed submodels, returns a list of numeric vectors for all outcomes. \cr
-
-\code{ranef()} \tab a numeric matrix with rows denoting the individuals and columns the random effects. If \code{postVar = TRUE}, the numeric matrix has an extra attribute "postVar". \cr
-
-\code{terms()} \tab 
+\describe{
+\item{\code{coef()}}{
+\tabular{lll}{
+A list with the elements: \tab \code{gammas} \tab estimated baseline fixed effects. \cr
+\tab \code{association} \tab estimated association parameters.
+}
+}
+\item{\code{fixef()}}{A numeric vector of the estimated fixed effects for the \code{outcome} selected. If \code{outcome} is greater than the number of linear mixed submodels, returns a list of numeric vectors for all outcomes.}
+\item{\code{ranef()}}{A numeric matrix with rows denoting the individuals and columns the random effects. If \code{postVar = TRUE}, the numeric matrix has the extra attribute "postVar".}
+\item{\code{terms()}}{
 \tabular{ll}{ 
-if \code{process = "longitudinal"}, a list of the terms object(s) for the linear mixed model(s). \cr if \code{process = "event"}, the terms object for the survival model.} \cr
-
-\code{model.frame()} \tab 
-\tabular{ll}{
-if \code{process = "longitudinal"}, a list of the model frames used in the linear mixed model(s). \cr If \code{process = "event"}, the model frame used in the survival model.} \cr
-
-\code{model.matrix()} \tab a list of the design matrices for the linear mixed submodels. \cr
-
-\code{family()} \tab a list of \code{family} objects. \cr
-
-\code{compare_jm()} \tab an object of class \code{compare_jm}. This is a list with the elements: 
-\tabular{ll}{
-\code{table} \tab a table with the criteria calculted to each joint model. \cr
-\code{type} \tab the log-likelihood function used to calculate the criteria.   
-} \cr
+If \code{process = "longitudinal"}, a list of the terms object(s) for the linear mixed model(s). \cr If \code{process = "event"}, the terms object for the survival model.
 }
 }
+\item{\code{model.frame()}}{\tabular{ll}{
+If \code{process = "longitudinal"}, a list of the model frames used in the linear mixed model(s). \cr If \code{process = "event"}, the model frame used in the survival model.
+}
+}
+\item{\code{model.matrix()}}{A list of the design matrices for the linear mixed submodels.}
+\item{\code{family()}}{A list of \code{family} objects.}
+\item{\code{compare_jm()}}{
+\tabular{lll}{
+A list with the elements: \tab \code{table} \tab a table with the criteria calculted to each joint model. \cr
+\tab \code{type} \tab the log-likelihood function used to calculate the criteria.   
+}
+}
+}
+}
+
 
 \author{
 Dimitris Rizopoulos \email{d.rizopoulos@erasmusmc.nl}
