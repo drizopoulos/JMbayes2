@@ -6,7 +6,7 @@ on:
     branches:
       - master
 
-name: R_CMD_check
+name: R-CMD-check
 
 jobs:
   R-CMD-check:

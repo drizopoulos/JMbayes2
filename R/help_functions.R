@@ -278,7 +278,8 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         quadrature_points <- function (x) {
             P <- unname(x / 2)
             sk <- outer(P, sk + 1)
-            list(P = c(t(outer(P, wk))), sk = sk)
+            # we divide with x to obtain the standardized area
+            list(P = c(t(outer(P / x, wk))), sk = sk)
         }
         qp <- lapply(time, quadrature_points)
         ss <- lapply(qp, function (x) c(t(x[['sk']])))
