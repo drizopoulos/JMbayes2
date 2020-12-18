@@ -208,16 +208,16 @@ than the total number of submodels, extracts from all of them.</p></td>
 <tr><td><code>"fixed"</code></td><td>fixed-effects,</td></tr>
 <tr><td><code>"random"</code></td><td>random-efects.</td></tr>
 </table>
-<p><br />
-in <code>terms()</code>, which log-likelihood function use to calculate the criteria:</p><table class='table'>
+<p>in <code>terms()</code>, which log-likelihood function use to calculate the criteria:</p><table class='table'>
 <tr><td><code>"marginal"</code></td><td>marginal log-likelihood,</td></tr>
 <tr><td><code>"conditional"</code></td><td>conditional log-likelihood.</td></tr>
 </table>
-<p><br /></p></td>
+
+</td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>further arguments; currently none is used. <br /><br /> in <code>compare_jm()</code>, a series of <code>jm</code> objects.</p></td>
+      <td><p>further arguments; currently none is used. <br /> in <code>compare_jm()</code>, a series of <code>jm</code> objects.</p></td>
     </tr>
     <tr>
       <th>order</th>
@@ -225,32 +225,45 @@ in <code>terms()</code>, which log-likelihood function use to calculate the crit
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    
+<dl>
+<dt><code>coef()</code></dt><dd><p>Extracts estimated fixed effects for the event process from a fitted joint model.</p></dd>
+<dt><code>fixef()</code></dt><dd><p>Extracts estimated fixed effects for the longitudinal processes from a fitted joint model.</p></dd>
+<dt><code>ranef()</code></dt><dd><p>Extracts estimated random effects from a fitted joint model.</p></dd>
+<dt><code>terms()</code></dt><dd><p>Extracts the terms objects from a fitted joint model.</p></dd>
+<dt><code>model.frame()</code></dt><dd><p>Creates the model frame from a fitted joint model.</p></dd>
+<dt><code>model.matrix()</code></dt><dd><p>Creates the design matrices for linear mixed submodels from a fitted joint model.</p></dd>
+<dt><code>family()</code></dt><dd><p>Extracts the error distribution and link function used in the linear mixed submodel(s) from a fitted joint model.</p></dd>
+<dt><code>compare_jm()</code></dt><dd><p>Compares two or more fitted joint models using the criteria WAIC, DIC, and LPML.</p></dd>
+
+</dl>
+
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     
-<table class='table'>
-<tr><td><code>coef()</code></td><td>a list with the elements: 
-  <table class='table'>
-<tr><td><code>gammas</code></td><td>estimated baseline fixed effects.</td></tr>
-<tr><td><code>association</code></td><td>estimated association parameters.</td></tr>
-</table></td></tr>
-<tr><td><code>fixef()</code></td><td>a numeric vector of the estimated fixed effects for the <code>outcome</code> selected. If <code>outcome</code> is greater than the number of linear mixed submodels, returns a list of numeric vectors for all outcomes.</td></tr>
-<tr><td><code>ranef()</code></td><td>a numeric matrix with rows denoting the individuals and columns the random effects. If <code>postVar = TRUE</code>, the numeric matrix has an extra attribute "postVar".</td></tr>
-<tr><td><code>terms()</code></td><td><table class='table'>
-<tr><td>if <code>process = "longitudinal"</code>, a list of the terms object(s) for the linear mixed model(s).</td><td>if <code>process = "event"</code>, the terms object for the survival model.</td></tr>
-</table></td></tr>
-<tr><td><code>model.frame()</code></td><td><table class='table'>
-<tr><td>if <code>process = "longitudinal"</code>, a list of the model frames used in the linear mixed model(s).</td><td>If <code>process = "event"</code>, the model frame used in the survival model.</td></tr>
-</table></td></tr>
-<tr><td><code>model.matrix()</code></td><td>a list of the design matrices for the linear mixed submodels.</td></tr>
-<tr><td><code>family()</code></td><td>a list of <code>family</code> objects.</td></tr>
-<tr><td><code>compare_jm()</code></td><td>an object of class <code>compare_jm</code>. This is a list with the elements: 
-<table class='table'>
-<tr><td><code>table</code></td><td>a table with the criteria calculted to each joint model.</td></tr>
-<tr><td><code>type</code></td><td>the log-likelihood function used to calculate the criteria.</td></tr>
-</table></td></tr>
-</table>
+<dl>
+<dt><code>coef()</code></dt><dd><p><table class='table'>
+<tr><td>A list with the elements:</td><td><code>gammas</code></td><td>estimated baseline fixed effects.</td></tr>
+<tr><td></td><td><code>association</code></td><td>estimated association parameters.</td></tr>
+</table></p></dd>
+<dt><code>fixef()</code></dt><dd><p>A numeric vector of the estimated fixed effects for the <code>outcome</code> selected. If <code>outcome</code> is greater than the number of linear mixed submodels, returns a list of numeric vectors for all outcomes.</p></dd>
+<dt><code>ranef()</code></dt><dd><p>A numeric matrix with rows denoting the individuals and columns the random effects. If <code>postVar = TRUE</code>, the numeric matrix has the extra attribute "postVar".</p></dd>
+<dt><code>terms()</code></dt><dd><p><table class='table'>
+<tr><td>If <code>process = "longitudinal"</code>, a list of the terms object(s) for the linear mixed model(s).</td><td>If <code>process = "event"</code>, the terms object for the survival model.</td></tr>
+</table></p></dd>
+<dt><code>model.frame()</code></dt><dd><p><table class='table'>
+<tr><td>If <code>process = "longitudinal"</code>, a list of the model frames used in the linear mixed model(s).</td><td>If <code>process = "event"</code>, the model frame used in the survival model.</td></tr>
+</table></p></dd>
+<dt><code>model.matrix()</code></dt><dd><p>A list of the design matrices for the linear mixed submodels.</p></dd>
+<dt><code>family()</code></dt><dd><p>A list of <code>family</code> objects.</p></dd>
+<dt><code>compare_jm()</code></dt><dd><p><table class='table'>
+<tr><td>A list with the elements:</td><td><code>table</code></td><td>a table with the criteria calculted to each joint model.</td></tr>
+<tr><td></td><td><code>type</code></td><td>the log-likelihood function used to calculate the criteria.</td></tr>
+</table></p></dd>
 
+</dl>
 
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
@@ -316,7 +329,7 @@ in <code>terms()</code>, which log-likelihood function use to calculate the crit
 
       <footer>
       <div class="copyright">
-  <p>Developed by <a href='http://www.drizopoulos.com/'>Dimitris Rizopoulos</a>, Grigorios Papageorgiou, Pedro Miranda Afonso.</p>
+  <p>Developed by <a href='http://www.drizopoulos.com/'>Dimitris Rizopoulos</a>, <a href='https://gregpapageorgiou.com/'>Grigorios Papageorgiou</a>, Pedro Miranda Afonso.</p>
 </div>
 
 <div class="pkgdown">
