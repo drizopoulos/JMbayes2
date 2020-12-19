@@ -23,5 +23,5 @@
 
 
 ## Exclude vignettes
-^vignettes$
+^vignettes/Joint_Models.Rmd$
 
