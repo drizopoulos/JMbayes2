@@ -689,14 +689,14 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     fid <- factor(fid, levels = unique(fid))
     ind_multipl_events <-
         unlist(mapply2(rep.int,
-                       x = lapply(split(fid, fid), unclass),
+                       x = lapply(split(fid, fid), function (x) as.numeric(unclass(x))),
                        times = tapply(idT, idT, length)), use.names = FALSE)
-
     id_init <- rep(list(dataL[[idVar]]), length.out = length(X_init))
     eta_init <- linpred_surv(X_init, betas, Z_init, b, id_init)
-    Wlong_init <- create_Wlong(lapply(eta_init,
-                                      function (x) x[ind_multipl_events, , drop = FALSE]),
-                               FunForms_per_outcome, U_init)
+    eta_init[] <- mapply2(function (eta, ind) {
+        if (length(ind) > length(eta)) eta[ind, , drop = FALSE] else eta
+    }, eta_init, ind_multipl_events)
+    Wlong_init <- create_Wlong(eta_init, FunForms_per_outcome, U_init)
     Wlong_init <- do.call("cbind", Wlong_init)
     ######################################################################################
     ######################################################################################

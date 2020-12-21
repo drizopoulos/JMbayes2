@@ -365,7 +365,7 @@ ggtraceplot.jm <- function(object,
                         theme = c('standard', 'catalog', 'metro',
                                       'pastel', 'beach', 'moonlight', 'goo',
                                       'sunset'), grid = FALSE,
-                        gridrows = 3, gridcols = 1, 
+                        gridrows = 3, gridcols = 1,
                         ...) {
     chain <- iteration <- NULL
     parm <- match.arg(parm)
@@ -406,7 +406,7 @@ ggdensityplot.jm <- function(object,
                       theme = c('standard', 'catalog', 'metro',
                                     'pastel', 'beach', 'moonlight', 'goo',
                                     'sunset'), grid = FALSE,
-                      gridrows = 3, gridcols = 1, 
+                      gridrows = 3, gridcols = 1,
                       ...) {
     chain <- NULL
     parm <- match.arg(parm)
@@ -509,5 +509,18 @@ print.compare_jm <- function (x, ...) {
     cat("\nThe criteria are calculated based on the", x$type, "log-likelihood.")
 }
 
-
+crLong <- function (data, statusVar, censLevel, nameStrata = "strata",
+          nameStatus = "status2") {
+    n <- nrow(data)
+    status <- data[[statusVar]]
+    unqLevs <- unique(status)
+    unqLevs <- unqLevs[unqLevs != censLevel]
+    ncr <- length(unqLevs)
+    dataOut <- data[rep(seq_len(n), each = ncr), , drop = FALSE]
+    dataOut[[nameStrata]] <- rep(unqLevs, n)
+    dataOut[[nameStatus]] <- as.numeric(dataOut[[statusVar]] ==
+                                            dataOut[[nameStrata]])
+    dataOut[[nameStrata]] <- factor(dataOut[[nameStrata]])
+    dataOut
+}
 

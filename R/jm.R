@@ -245,7 +245,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         Time_right <- tapply(Time_stop, idT, tail, n = 1) # time of event
         trunc_Time <- tapply(Time_start, idT, head, n = 1) # possible left truncation time
         Time_left <- rep(0.0, nrow(dataS))
-        delta <- tapply(delta, idT, tail, n = 1) # event indicator at Time_right
+        delta <- tapply(delta, idT, tail, n = 1L) # event indicator at Time_right
     } else if (type_censoring == "interval") {
         Time1 <-  unname(Surv_Response[, "time1"])
         Time2 <-  unname(Surv_Response[, "time2"])
@@ -257,7 +257,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         Time_left <- Time1
         Time_left[delta <= 1] <- 0.0
     }
-    names(Time_right) <- names(Time_left) <- names(Time_start) <- idT
+    if (type_censoring != "counting") {
+        names(Time_right) <- names(Time_left) <- names(Time_start) <- idT
+    }
     which_event <- which(delta == 1)
     which_right <- which(delta == 0)
     which_left <- which(delta == 2)
@@ -268,6 +270,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         rep(1, nrow(mf_surv_dataS))
     } else {
         unclass(mf_surv_dataS[[ind_strata]])
+    }
+    if (type_censoring == "counting") {
+        strata <- tapply(strata, idT, tail, n = 1L)
+        idT <- tapply(idT, idT, tail, n = 1L)
     }
     n_strata <- length(unique(strata))
 
@@ -383,7 +389,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                                             collapsed_functional_forms)
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
     if (length(which_event)) {
-        W0_h <- create_W0(Time_right, con$knots, con$Bsplines_degree + 1, strata)
+        W0_h <- create_W0(Time_right, con$knots, con$Bsplines_degree + 1,
+                          strata)
         dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start,
                                         paste0(idT, "_", strata), time_var)
         mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
@@ -485,10 +492,11 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     D_lis <- lapply(Mixed_objects, extract_D)
     D <- bdiag(D_lis)
     b <- mapply2(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY))
-    init_surv <- init_vals_surv(Data, model_info, data, betas, b, con)
-    bs_gammas <- init_surv$bs_gammas
-    gammas <- init_surv$gammas
-    alphas <- init_surv$alphas
+    #init_surv <- init_vals_surv(Data, model_info, data, betas, b, con)
+    bs_gammas <- rep(-0.1, ncol(W0_H))
+    gammas <- if (inherits(Surv_object, "coxph")) coef(Surv_object) else
+        -coef(Surv_object) / Surv_object$scale
+    alphas <- rep(0.0, sum(sapply(U_H, ncol)))
     initial_values <- list(betas = betas, log_sigmas = log_sigmas, D = D,
                            b = b, bs_gammas = bs_gammas, gammas = gammas,
                            alphas = alphas, tau_bs_gammas = rep(20, n_strata))
@@ -522,15 +530,14 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                 rank_Tau_bs_gammas =
                     sapply(lapply(Tau_bs_gammas, qr), "[[", 'rank'),
                 mean_gammas = gammas,
-                Tau_gammas = diag(c(1 / (16 * diag(init_surv$vcov_prop_gammas))),
-                                  length(gammas)),
+                Tau_gammas = diag(0.25, length(gammas)),
                 penalty_gammas = "none",
                 A_lambda_gammas = 0.5, B_lambda_gammas = 1,
                 A_tau_gammas = 0.5, B_tau_gammas = 1,
                 A_nu_gammas = 0.5, B_nu_gammas = 1,
                 A_xi_gammas = 0.5, B_xi_gammas = 1,
                 mean_alphas = lapply(alphas, "*", 0.0),
-                Tau_alphas = lapply(alphas, function (a) 0.25 * diag(length(a))),
+                Tau_alphas = lapply(alphas, function (a) diag(0.25, length(a))),
                 penalty_alphas = "none",
                 A_lambda_alphas = 0.5, B_lambda_alphas = 1.0,
                 A_tau_alphas = 0.5, B_tau_alphas = 1.0,

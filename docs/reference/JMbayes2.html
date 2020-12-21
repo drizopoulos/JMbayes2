@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Didanosine versus Zalcitabine in HIV Patients — aids • JMbayes2</title>
+<title>Extended Joint Models for Longitudinal and Time-to-Event Data — JMbayes2 • JMbayes2</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,9 +46,8 @@
 
 
 
-<meta property="og:title" content="Didanosine versus Zalcitabine in HIV Patients — aids" />
-<meta property="og:description" content="A randomized clinical trial in which both longitudinal and survival data were collected to compare the efficacy and 
-  safety of two antiretroviral drugs in treating patients who had failed or were intolerant of zidovudine (AZT) therapy." />
+<meta property="og:title" content="Extended Joint Models for Longitudinal and Time-to-Event Data — JMbayes2" />
+<meta property="og:description" content="Fit joint models for longitudinal and time-to-event data under the Bayesian approach. Multiple longitudinal outcomes of mixed type (continuous/categorical) and multiple event times (competing risks and multi-state processes) are accommodated." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -129,46 +128,45 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Didanosine versus Zalcitabine in HIV Patients</h1>
+    <h1>Extended Joint Models for Longitudinal and Time-to-Event Data</h1>
     
-    <div class="hidden name"><code>aids.Rd</code></div>
+    <div class="hidden name"><code>JMbayes2.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>A randomized clinical trial in which both longitudinal and survival data were collected to compare the efficacy and 
-  safety of two antiretroviral drugs in treating patients who had failed or were intolerant of zidovudine (AZT) therapy.</p>
+    <p>Fit joint models for longitudinal and time-to-event data under the Bayesian approach. Multiple longitudinal outcomes of mixed type (continuous/categorical) and multiple event times (competing risks and multi-state processes) are accommodated.</p>
     </div>
 
 
 
-    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>A data frame with 1408 observations on the following 9 variables.</p><dl>
-    <dt><code>patient</code></dt><dd><p>patients identifier; in total there are 467 patients.</p></dd>
-    <dt><code>Time</code></dt><dd><p>the time to death or censoring.</p></dd>
-    <dt><code>death</code></dt><dd><p>a numeric vector with 0 denoting censoring and 1 death.</p></dd>
-    <dt><code>CD4</code></dt><dd><p>the CD4 cells count.</p></dd>
-    <dt><code>obstime</code></dt><dd><p>the time points at which the CD4 cells count was recorded.</p></dd>
-    <dt><code>drug</code></dt><dd><p>a factor with levels <code>ddC</code> denoting zalcitabine and <code>ddI</code> denoting didanosine.</p></dd>
-    <dt><code>gender</code></dt><dd><p>a factor with levels <code>female</code> and <code>male</code>.</p></dd>
-    <dt><code>prevOI</code></dt><dd><p>a factor with levels <code>AIDS</code> denoting previous opportunistic infection (AIDS 
-        diagnosis) at study entry, and <code>noAIDS</code> denoting no previous infection.</p></dd>
-    <dt><code>AZT</code></dt><dd><p>a factor with levels <code>intolerance</code> and <code>failure</code> denoting AZT intolerance and 
-        AZT failure, respectively.</p></dd>
-  
-</dl>
+    
+<table class='table'>
+<tr><td>Package:</td><td>JMbayes2</td></tr>
+<tr><td>Type:</td><td>Package</td></tr>
+<tr><td>Version:</td><td>0.1-0</td></tr>
+<tr><td>Date:</td><td>2021-01-05</td></tr>
+<tr><td>License:</td><td>GPL (&gt;=3)</td></tr>
+</table>
 
+
+<p>This package fits joint models for longitudinal and time-to-event data. It can accommodate multiple longitudinal outcomes of different type (e.g., continuous, dichotomous, ordinal, counts), and assuming different distributions, i.e., Gaussian, Student's-t, Gamma, Beta, unit Lindley, censored Normal, Binomial, Poisson, Negative Binomial, and Beta-Binomial. For the event time process, right, left and interval censored data can be handled, while competing risks and multi-sate processes are also covered.</p>
+<p><span class="pkg">JMbayes2</span> fits joint models using Markov chain Monte Carlo algorithms implemented in C++. The package also offers several utility functions that can extract useful information from
+fitted joint models. The most important of those are included in the
+<b>See also</b> Section below.</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Dimitris Rizopoulos, Grigorios Papageorgiou, Pedro Miranda Afonso</p>
+<p>Maintainer: Dimitris Rizopoulos &lt;d.rizopoulos@erasmusmc.nl&gt;</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
-    <p>Goldman, A., Carlin, B., Crane, L., Launer, C., Korvick, J., Deyton, L. and Abrams, D. (1996) Response of CD4+ and
-clinical consequences to treatment using ddI or ddC in patients with advanced HIV infection. <em>Journal of Acquired
-Immune Deficiency Syndromes and Human Retrovirology</em> <b>11</b>, 161--169.</p>
-<p>Guo, X. and Carlin, B. (2004) Separate and joint modeling of longitudinal and event time data using standard
-computer packages. <em>The American Statistician</em> <b>58</b>, 16--24.</p>
-    <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
+    <p>Rizopoulos, D. (2012). Joint Models for Longitudinal and Time-to-Event Data With Applications in R. Boca Raton: Chapman &amp; Hall/CRC.</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p>The data frame <code>aids.id</code> contains the first CD4 cell count measurement for each patient. This data frame is used to 
-fit the survival model.</p>
+    <div class='dont-index'><p><code><a href='jm.html'>jm</a></code>,
+    <code><a href='jm Methods.html'>methods.jm</a></code>,
+    <code><a href='jm coda Methods.html'>coda_methods.jm</a></code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

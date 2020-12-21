@@ -1,4 +1,4 @@
-export(area, cumuplot, coef, compare_jm, densplot, family, fixef, gelman_diag,
+export(area, cumuplot, coef, compare_jm, crLong, densplot, family, fixef, gelman_diag,
        ggdensityplot, ggtraceplot, jm, model.frame, model.matrix, ranef, slope,
        terms, traceplot, tv, value)
 
