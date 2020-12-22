@@ -548,8 +548,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                 D_sds_shape = 5.0, D_sds_mean = sqrt(diag(D)),
                 D_L_etaLKJ = 3.0, gamma_prior_sigmas = TRUE,
                 sigmas_df = 3.0,
-                sigmas_sigmas = rep(5, length(log_sigmas)),
-                sigmas_shape = 1.0, sigmas_mean = exp(log_sigmas))
+                sigmas_sigmas = rep(5.0, length(log_sigmas)),
+                sigmas_shape = 5.0, sigmas_mean = exp(log_sigmas))
     if (is.null(priors) || !is.list(priors)) {
         priors <- prs
     } else {
