@@ -5,7 +5,7 @@
 
 \description{
   In a competing risks setting this function expands the data frame with a
-  single row per subject to the a data frame in long format in which each
+  single row per subject to a data frame in the long format in which each
   subject has as many rows as the number of competing events.
 }
 

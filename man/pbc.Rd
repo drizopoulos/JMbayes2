@@ -8,7 +8,7 @@
 \title{Mayo Clinic Primary Biliary Cirrhosis Data}
 
 \description{
-Followup of 312 randomised patients with primary biliary cirrhosis, a rare autoimmune liver disease, at Mayo Clinic.
+Follow up of 312 randomised patients with primary biliary cirrhosis, a rare autoimmune liver disease, at Mayo Clinic.
 }
 
 \format{
@@ -31,7 +31,7 @@ Followup of 312 randomised patients with primary biliary cirrhosis, a rare autoi
         \code{edema despite diuretics} (i.e., edema despite diuretic therapy).}
     \item{\code{serBilir}}{serum bilirubin in mg/dl.}
     \item{\code{serChol}}{serum cholesterol in mg/dl.}
-    \item{\code{albumin}}{albumin in gm/dl.}
+    \item{\code{albumin}}{albumin in g/dl.}
     \item{\code{alkaline}}{alkaline phosphatase in U/liter.}
     \item{\code{SGOT}}{SGOT in U/ml.}
     \item{\code{platelets}}{platelets per cubic ml / 1000.}

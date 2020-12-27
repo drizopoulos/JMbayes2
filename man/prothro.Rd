@@ -7,11 +7,11 @@
 \title{Prednisone versus Placebo in Liver Cirrhosis Patients}
 
 \description{
-  A randomized trial on 488 liver cirrhosis patients
+  A randomized trial on 488 liver cirrhosis patients.
 }
 
 \format{
-  Two data frames with the following variable.
+  Two data frames with the following variables.
   \describe{
     \item{\code{id}}{patients identifier; in total there are 467 patients.}
     \item{\code{pro}}{prothrobin measurements.}
@@ -23,7 +23,7 @@
 }
 
 \source{
-  \url{http://www.gllamm.org/books/readme.html#14.6}, 
+  \url{http://www.gllamm.org/books/readme.html#14.6}.
 }
 
 \references{
