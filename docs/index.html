@@ -94,7 +94,7 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>The package <strong>JMbayes2</strong> fits joint models for longitudinal and time-to-event data. It can accommodate multiple longitudinal outcomes of different type (e.g., continuous, dichotomous, ordinal, counts), and assuming different distributions, i.e., Gaussian, Student’s-t, Gamma, Beta, unit Lindley, censored Normal, Binomial, Poisson, Negative Binomial, and Beta-Binomial. For the event time process, right, left and interval censored data can be handled, while competing risks and multi-sate processes are also covered.</p>
+<p>The package <strong>JMbayes2</strong> fits joint models for longitudinal and time-to-event data. It can accommodate multiple longitudinal outcomes of different type (e.g., continuous, dichotomous, ordinal, counts), and assuming different distributions, i.e., Gaussian, Student’s-t, Gamma, Beta, unit Lindley, censored Normal, Binomial, Poisson, Negative Binomial, and Beta-Binomial. For the event time process, right, left and interval censored data can be handled, while competing risks and multi-state processes are also covered.</p>
 <p><strong>JMbayes2</strong> fits joint models using Markov chain Monte Carlo algorithms implemented in C++. Besides the main modeling function, the package also provides a number of functions to summarize and visualize the results.</p>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
@@ -102,7 +102,7 @@
 <p><strong>JMbayes2</strong> can be installed from <a href="https://cran.r-project.org/">CRAN</a>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"JMbayes2"</span><span class="op">)</span></code></pre></div>
-<p>The developments version can be installed from GitHub:</p>
+<p>The development version can be installed from GitHub:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># install.packages("remotes")</span>
 <span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span><span class="op">(</span><span class="st">"drizopoulos/jmbayes2"</span><span class="op">)</span></code></pre></div>
@@ -122,7 +122,7 @@
 <span class="co"># a linear mixed model for the prothrombin time</span>
 <span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span>
 
-<span class="co"># a mixed effects logistic regression for ascites</span>
+<span class="co"># a mixed effects logistic regression model for ascites</span>
 <span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,
                    random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
 

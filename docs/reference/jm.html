@@ -155,20 +155,20 @@
     <tr>
       <th>Surv_object</th>
       <td><p>an object: <br /></p><ul>
-<li><p>of class 'coxph' fitted by function <code>coxph()</code> from package <b>survival</b> or</p></li>
-<li><p>of class 'survreg' fitted by function <code>survreg()</code> from package <b>survival</b></p></li>
+<li><p>of class 'coxph' fitted by function <code>coxph()</code> from package <b>survival</b>, or</p></li>
+<li><p>of class 'survreg' fitted by function <code>survreg()</code> from package <b>survival</b>.</p></li>
 </ul></td>
     </tr>
     <tr>
       <th>Mixed_objects</th>
       <td><p>a <code>list</code> of objects or a single object. Objects may be: <br /></p><ul>
-<li><p>of class 'lme' fitted by function <code>lme()</code> from package <b>nlme</b> or</p></li>
-<li><p>of class 'MixMod' fitted by function <code>mixed_model()</code> from package <b>GLMMadaptive</b></p></li>
+<li><p>of class 'lme' fitted by function <code>lme()</code> from package <b>nlme</b>, or</p></li>
+<li><p>of class 'MixMod' fitted by function <code>mixed_model()</code> from package <b>GLMMadaptive</b>.</p></li>
 </ul></td>
     </tr>
     <tr>
       <th>time_var</th>
-      <td><p>a <code>character</code> string indicating the time variable in the mixed effects model.</p></td>
+      <td><p>a <code>character</code> string indicating the time variable in the mixed-effects model(s).</p></td>
     </tr>
     <tr>
       <th>functional_forms</th>
@@ -185,63 +185,63 @@
     <tr>
       <th>priors</th>
       <td><p>a named <code>list</code> of user-specified prior parameters:</p><dl>
-        <dt><code>mean_betas_HC</code></dt><dd><p>the prior mean vectors of the normal prior for the regression coefficients of the covariates of the longitudinal model(s) which were Hierarchically Centered</p></dd>
-        <dt><code>Tau_betas_HC</code></dt><dd><p>the prior precision matrix of the normal prior for the regression coefficients of the longitudinal model(s) which were Hierarchically Centered</p></dd>
-        <dt><code>mean_betas_nHC</code></dt><dd><p>the prior mean vectors of the normal prior for the regression coefficients of the covariates of the longitudinal model(s) which were not Hierarchically Centered</p></dd>
-        <dt><code>Tau_betas_nHC</code></dt><dd><p>the prior precision matrix of the normal prior for the regression coefficients of the longitudinal model(s) which were not Hierarchically Centered</p></dd>
+        <dt><code>mean_betas_HC</code></dt><dd><p>the prior mean vector of the normal prior for the regression coefficients of the covariates of the longitudinal model(s), which were hierarchically centered.</p></dd>
+        <dt><code>Tau_betas_HC</code></dt><dd><p>the prior precision matrix of the normal prior for the regression coefficients of the longitudinal model(s), which were hierarchically centered.</p></dd>
+        <dt><code>mean_betas_nHC</code></dt><dd><p>a <code>list</code> of the prior mean vector(s) of the normal prior(s) for the regression coefficients of the covariates of the longitudinal model(s), which were not hierarchically centered.</p></dd>
+        <dt><code>Tau_betas_nHC</code></dt><dd><p>a <code>list</code> of the prior precision matrix(ces) of the normal prior(s) for the regression coefficients of the longitudinal model(s), which were not Hierarchically Centered.</p></dd>
         <dt><code>mean_bs_gammas</code></dt><dd><p>the prior mean vector of the normal prior for the B-splines 
             coefficients used to approximate the baseline hazard.</p></dd>
         <dt><code>Tau_bs_gammas</code></dt><dd><p>the prior precision matrix of the normal prior for the B-splines 
             coefficients used to approximate the baseline hazard.</p></dd>
-        <dt><code>A_tau_bs_gammas</code></dt><dd><p>the prior shape parameter of the Gamma prior for the
+        <dt><code>A_tau_bs_gammas</code></dt><dd><p>the prior shape parameter of the gamma prior for the
             precision parameter of the penalty term for the B-splines coefficients for
             the baseline hazard.</p></dd>
-        <dt><code>B_tau_bs_gammas</code></dt><dd><p>the prior rate parameter of the Gamma prior for the
+        <dt><code>B_tau_bs_gammas</code></dt><dd><p>the prior rate parameter of the gamma prior for the
             precision parameter of the penalty term for the B-splines coefficients for
             the baseline hazard.</p></dd>
-        <dt><code>rank_Tau_bs_gammas</code></dt><dd><p>The prior rank parameter for the precision matrix of the normal prior for the B-splines coefficients used to approximate the baseline hazard.</p></dd>
+        <dt><code>rank_Tau_bs_gammas</code></dt><dd><p>the prior rank parameter for the precision matrix of the normal prior for the B-splines coefficients used to approximate the baseline hazard.</p></dd>
         <dt><code>mean_gammas</code></dt><dd><p>the prior mean vector of the normal prior for the regression 
             coefficients of baseline covariates.</p></dd>
         <dt><code>Tau_gammas</code></dt><dd><p>the prior precision matrix of the normal prior for the regression 
             coefficients of baseline covariates.</p></dd>
-        <dt><code>penalty_gammas</code></dt><dd><p>a character string with value: 'none', 'ridge', 'horseshoe' indicating whether the coefficients of the baseline covariates included in the survival submodel should not be shrinked, shrinked using ridge prior or shrinked using horseshoe prior respectively.</p></dd>
-        <dt><code>A_lambda_gammas</code></dt><dd><p>the prior shape parameter of the Gamma prior for the
-            precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>B_lambda_gammas</code></dt><dd><p>the prior rate parameter of the Gamma prior for the
-            precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>A_tau_gammas</code></dt><dd><p>the prior shape parameter of the Gamma prior for the
-            precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>B_tau_gammas</code></dt><dd><p>the prior rate parameter of the Gamma prior for the
-            precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>A_nu_gammas</code></dt><dd><p>the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>B_nu_gammas</code></dt><dd><p>the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>A_xi_gammas</code></dt><dd><p>the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>B_xi_gammas</code></dt><dd><p>the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
+        <dt><code>penalty_gammas</code></dt><dd><p>a character string with value 'none', 'ridge', or 'horseshoe' indicating whether the coefficients of the baseline covariates included in the survival submodel should not be shrunk, shrank using ridge prior, or shrank using horseshoe prior, respectively.</p></dd>
+        <dt><code>A_lambda_gammas</code></dt><dd><p>the prior shape parameter of the gamma prior for the
+            precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>B_lambda_gammas</code></dt><dd><p>the prior rate parameter of the gamma prior for the
+            precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>A_tau_gammas</code></dt><dd><p>the prior shape parameter of the gamma prior for the
+            precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>B_tau_gammas</code></dt><dd><p>the prior rate parameter of the gamma prior for the
+            precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>A_nu_gammas</code></dt><dd><p>the prior shape parameter of the gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>B_nu_gammas</code></dt><dd><p>the prior rate parameter of the gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>A_xi_gammas</code></dt><dd><p>the prior shape parameter of the gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>B_xi_gammas</code></dt><dd><p>the prior rate parameter of the gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the baseline regression coefficients. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
         <dt><code>mean_alphas</code></dt><dd><p>the prior mean vector of the normal prior for the association
-            parameters.</p></dd>
+            parameter(s).</p></dd>
         <dt><code>Tau_alphas</code></dt><dd><p>the prior mean vector of the normal prior for the association
-            parameters.</p></dd>
-        <dt><code>penalty_alphas</code></dt><dd><p>a character string with value: 'none', 'ridge', 'horseshoe' indicating whether the coefficients association parameters should not be shrinked, shrinked using ridge prior or shrinked using horseshoe prior respectively.</p></dd>
-        <dt><code>A_lambda_alphas</code></dt><dd><p>the prior shape parameter of the Gamma prior for the
-            precision parameter of the local penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>B_lambda_alphas</code></dt><dd><p>the prior rate parameter of the Gamma prior for the
-            precision parameter of the local penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>A_tau_alphas</code></dt><dd><p>the prior shape parameter of the Gamma prior for the
-            precision parameter of the global penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>B_tau_alphas</code></dt><dd><p>the prior rate parameter of the Gamma prior for the
-            precision parameter of the global penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>A_nu_alphas</code></dt><dd><p>the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>B_nu_alphas</code></dt><dd><p>the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>A_xi_alphas</code></dt><dd><p>the prior shape parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>B_xi_alphas</code></dt><dd><p>the prior rate parameter of the Gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code></p></dd>
-        <dt><code>gamma_prior_D_sds</code></dt><dd><p>logical; if <code>TRUE</code> a Gamma prior will be used for the standard deviations of the D matrix (variance-covariance matrix of the random effects). Deafult is <code>TRUE</code></p></dd>
+            parameter(s).</p></dd>
+        <dt><code>penalty_alphas</code></dt><dd><p>a character string with value 'none', 'ridge', 'horseshoe' indicating whether the coefficients association parameters should not be shrunk, shrank using ridge prior, or shrank using horseshoe prior, respectively.</p></dd>
+        <dt><code>A_lambda_alphas</code></dt><dd><p>the prior shape parameter of the gamma prior for the
+            precision parameter of the local penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>B_lambda_alphas</code></dt><dd><p>the prior rate parameter of the gamma prior for the
+            precision parameter of the local penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>A_tau_alphas</code></dt><dd><p>the prior shape parameter of the gamma prior for the
+            precision parameter of the global penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>B_tau_alphas</code></dt><dd><p>the prior rate parameter of the gamma prior for the
+            precision parameter of the global penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>A_nu_alphas</code></dt><dd><p>the prior shape parameter of the gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code>, or <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>B_nu_alphas</code></dt><dd><p>the prior rate parameter of the gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>A_xi_alphas</code></dt><dd><p>the prior shape parameter of the gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>B_xi_alphas</code></dt><dd><p>the prior rate parameter of the gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when <code>penalty_gammas = 'ridge'</code> or when <code>penalty_gammas = 'horseshoe'</code>.</p></dd>
+        <dt><code>gamma_prior_D_sds</code></dt><dd><p>logical; if <code>TRUE</code>, a gamma prior will be used for the standard deviations of the D matrix (variance-covariance matrix of the random effects). Defaults to <code>TRUE</code></p></dd>
         <dt><code>D_sds_df</code></dt><dd><p>the prior degrees of freedom parameter for the half-t prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).</p></dd>
         <dt><code>D_sds_sigma</code></dt><dd><p>the prior sigma parameter vector for the half-t prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).</p></dd>
-        <dt><code>D_sds_shape</code></dt><dd><p>the prior shape parameter for the Gamma prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).</p></dd>
-        <dt><code>D_sds_mean</code></dt><dd><p>the prior mean parameter vector for the Gamma prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).</p></dd>
-        <dt><code>D_L_etaLKJ</code></dt><dd><p>the prior eta parameter for the LKJ prior for the correlation matrix of the random effects).</p></dd>
-        <dt><code>sigmas_df</code></dt><dd><p>the prior degrees of freedom parmeter for the half-t prior for the error term(s).</p></dd>
-        <dt><code>sigmas_sigma</code></dt><dd><p>the prior sigma parmeter for the half-t prior for the error term(s).</p></dd>
+        <dt><code>D_sds_shape</code></dt><dd><p>the prior shape parameter for the gamma prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).</p></dd>
+        <dt><code>D_sds_mean</code></dt><dd><p>the prior mean parameter vector for the gamma prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).</p></dd>
+        <dt><code>D_L_etaLKJ</code></dt><dd><p>the prior eta parameter for the LKJ prior for the correlation matrix of the random effects.</p></dd>
+        <dt><code>sigmas_df</code></dt><dd><p>the prior degrees of freedom parameter for the half-t prior for the error term(s).</p></dd>
+        <dt><code>sigmas_sigma</code></dt><dd><p>the prior sigma parameter for the half-t prior for the error term(s).</p></dd>
     
 </dl>
 </td>
@@ -249,18 +249,17 @@
     <tr>
       <th>control</th>
       <td><p>a list of control values with components:</p><dl>
-        <dt><code>GK_k</code></dt><dd><p>number of quadrature points for the Gauss Kronrod rule; options 15 and 7.</p></dd>
+        <dt><code>GK_k</code></dt><dd><p>the number of quadrature points for the Gauss Kronrod rule; options 15 and 7.</p></dd>
         <dt><code>Bsplines_degree</code></dt><dd><p>the degree of the splines in each basis; default quadratic splines.</p></dd>
-        <dt><code>base_hazard_segments</code></dt><dd><p>number of segments to split the follow-up period; default is 10.</p></dd>
-        <dt><code>diff</code></dt><dd><p>the order of the difference used in the penalty matrix for the B-splines for h_0; default is 2.</p></dd>
-        <dt><code>n_chains</code></dt><dd><p>integer specifying the number of chains for the MCMC. default is 3.</p></dd>
-        <dt><code>n_burnin</code></dt><dd><p>integer specifying the number of burn-in iterations. default is 500.</p></dd>
-        <dt><code>n_iter</code></dt><dd><p>integer specifying the number of total iterations per chain. default is 3500.</p></dd>
-        <dt><code>seed</code></dt><dd><p>the seed used in the sampling procedures; default is 123.</p></dd>
-        <dt><code>MALA</code></dt><dd><p><code>logical</code>; if TRUE, the MALA algorithm is used when update the elements of the Cholesky factor of the D matrix. default is <code>FALSE</code>.</p></dd>
-        <dt><code>save_random_effects</code></dt><dd><p><code>logical</code>; if TRUE, the full MCMC rsults of the random effects will be saved and returned with the <code>jm</code> object. default is <code>FALSE</code>.</p></dd>
-        <dt><code>cores</code></dt><dd><p>an integer specifying the number of cores to use. Default is the
-            the available cores minus one.</p></dd>
+        <dt><code>base_hazard_segments</code></dt><dd><p>the number of segments to split the follow-up period. Defaults to 10.</p></dd>
+        <dt><code>diff</code></dt><dd><p>the order of the difference used in the penalty matrix for the B-splines for h_0. Defaults to 2.</p></dd>
+        <dt><code>n_chains</code></dt><dd><p>an integer specifying the number of chains for the MCMC. Defaults to 3.</p></dd>
+        <dt><code>n_burnin</code></dt><dd><p>an integer specifying the number of burn-in iterations. Defaults to 500.</p></dd>
+        <dt><code>n_iter</code></dt><dd><p>an integer specifying the number of total iterations per chain. Defaults to 3500.</p></dd>
+        <dt><code>seed</code></dt><dd><p>the seed used in the sampling procedures. Defaults to 123.</p></dd>
+        <dt><code>MALA</code></dt><dd><p>a <code>logical</code>; if TRUE, the MALA algorithm is used when updating the elements of the Cholesky factor of the D matrix. Defaults to <code>FALSE</code>.</p></dd>
+        <dt><code>save_random_effects</code></dt><dd><p>a <code>logical</code>; if TRUE, the full MCMC results of the random effects will be saved and returned with the <code>jm</code> object. Defaults to <code>FALSE</code>.</p></dd>
+        <dt><code>cores</code></dt><dd><p>an integer specifying the number of cores to use. Defaults to the available cores minus one.</p></dd>
     
 </dl><p></p></td>
     </tr>
@@ -284,19 +283,19 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A list of class <code>jm</code> with components:</p>
-<dt>mcmc</dt><dd><p>a <code>list</code> with the MCMC samples for each parameter.</p></dd>
-<dt>acc_rates</dt><dd><p>a <code>list</code> with the acceptance rates for each parameter.</p></dd>
-<dt>logLik</dt><dd><p>a <code>matrix</code> of dimensions [<code>((n_iter - n_burnin)/n_thin)*n_thin</code>, number of individuals] with element [i, j] the conditional log-Likelihood value of the \(i^{th}\) iteration for the \(j^{th}\) individual.</p></dd>
-<dt>mlogLik</dt><dd><p>a <code>matrix</code> of dimensions [<code>((n_iter - n_burnin)/n_thin)*n_thin</code>, number of individuals] with element [i, j] the marginal log-Likelihood value of the \(i^{th}\) iteration for the \(j^{th}\) individual.</p></dd>
-<dt>running_time</dt><dd><p>an object of class <code>proc_time</code> with the time used to run <code>jm</code></p></dd>
+<dt>mcmc</dt><dd><p>a <code>list</code> of the MCMC samples for each parameter.</p></dd>
+<dt>acc_rates</dt><dd><p>a <code>list</code> of the acceptance rates for each parameter.</p></dd>
+<dt>logLik</dt><dd><p>a <code>matrix</code> of dimensions [<code>((n_iter - n_burnin)/n_thin)*n_thin</code>, number of individuals], with element [i, j] being the conditional log-Likelihood value of the \(i^{th}\) iteration for the \(j^{th}\) individual.</p></dd>
+<dt>mlogLik</dt><dd><p>a <code>matrix</code> of dimensions [<code>((n_iter - n_burnin)/n_thin)*n_thin</code>, number of individuals], with element [i, j] being the marginal log-Likelihood value of the \(i^{th}\) iteration for the \(j^{th}\) individual.</p></dd>
+<dt>running_time</dt><dd><p>an object of class <code>proc_time</code> with the time used to run <code>jm</code>.</p></dd>
 <dt>statistics</dt><dd><p>a <code>list</code> with posterior estimates of the parameters (means, medians, standard deviations, standard errors, effective sample sizes, tail probabilities, upper and lower bounds of credible intervals, etc.).</p></dd>
-<dt>fit_stats</dt><dd><p>a <code>list</code> of lists with fit statistics (DIC, pD, LPML, CPO, WAIC) for both conditional and marginal formulation.</p></dd>
+<dt>fit_stats</dt><dd><p>a <code>list</code> of lists with fit statistics (DIC, pD, LPML, CPO, WAIC) for both conditional and marginal formulations.</p></dd>
 <dt>model_data</dt><dd><p>a <code>list</code> of data used to fit the model.</p></dd>
 <dt>model_info</dt><dd><p>a <code>list</code> of components of the fit useful to other functions.</p></dd>
 <dt>initial_values</dt><dd><p>a <code>list</code> with the initial values of the parameters.</p></dd>
 <dt>control</dt><dd><p>a copy of the <code>control</code> values used to fit the model.</p></dd>
 <dt>priors</dt><dd><p>a copy of the <code>priors</code> used to fit the model.</p></dd>
-<dt>call</dt><dd><p>the matched call</p></dd>
+<dt>call</dt><dd><p>the matched call.</p></dd>
 
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
@@ -307,7 +306,7 @@
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='co'>##########################################################################################</span>
+<span class='co'>################################################################################</span>
 
 <span class='co'>##############################################</span>
 <span class='co'># Univariate joint model for serum bilirubin #</span>
@@ -318,8 +317,8 @@
 <span class='va'>fm1</span> <span class='op'>&lt;-</span> <span class='fu'>lme</span><span class='op'>(</span>fixed <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>serBilir</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>*</span> <span class='va'>sex</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/base/AsIs.html'>I</a></span><span class='op'>(</span><span class='va'>year</span><span class='op'>^</span><span class='fl'>2</span><span class='op'>)</span> <span class='op'>+</span> 
            <span class='va'>age</span> <span class='op'>+</span> <span class='va'>prothrombin</span>, random <span class='op'>=</span>  <span class='op'>~</span> <span class='va'>year</span> <span class='op'>|</span> <span class='va'>id</span>, data <span class='op'>=</span> <span class='va'>pbc2</span><span class='op'>)</span>
 
-<span class='co'># [2] Fit a Cox model, specifying the baseline covariates to be included in the joint</span>
-<span class='co'># model; </span>
+<span class='co'># [2] Fit a Cox model, specifying the baseline covariates to be included in the</span>
+<span class='co'># joint model.</span>
 <span class='va'>fCox1</span> <span class='op'>&lt;-</span> <span class='fu'>coxph</span><span class='op'>(</span><span class='fu'>Surv</span><span class='op'>(</span><span class='va'>years</span>, <span class='va'>status2</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>drug</span> <span class='op'>+</span> <span class='va'>age</span>, data <span class='op'>=</span> <span class='va'>pbc2.id</span><span class='op'>)</span>
 
 <span class='co'># [3] The basic joint model is fitted using a call to jm() i.e.,</span>
@@ -327,16 +326,17 @@
 <span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>joint_model_fit_1</span><span class='op'>)</span>
 <span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_1</span><span class='op'>)</span>
 
-<span class='co'>##########################################################################################</span>
+<span class='co'>################################################################################</span>
 
-<span class='co'>#############################################################################################</span>
-<span class='co'># Multivariate joint model for serum bilirubin, hepatomegaly and ascites                    # </span>
-<span class='co'>#############################################################################################</span>
+<span class='co'>##########################################################################</span>
+<span class='co'># Multivariate joint model for serum bilirubin, hepatomegaly and ascites # </span>
+<span class='co'># 1 continuous outcome, 2 categorical outcomes                           #</span>
+<span class='co'>##########################################################################</span>
 
 <span class='co'># [1] Fit the mixed-effects models using lme() for continuous </span>
 <span class='co'># outcomes and mixed_model() for categorical outcomes. </span>
 <span class='va'>fm1</span> <span class='op'>&lt;-</span> <span class='fu'>lme</span><span class='op'>(</span>fixed <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>serBilir</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>*</span> <span class='va'>sex</span>, 
-           random <span class='op'>=</span>  <span class='op'>~</span> <span class='va'>year</span> <span class='op'>|</span> <span class='va'>id</span>, data <span class='op'>=</span> <span class='va'>pbc2</span><span class='op'>)</span>
+           random <span class='op'>=</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>|</span> <span class='va'>id</span>, data <span class='op'>=</span> <span class='va'>pbc2</span><span class='op'>)</span>
 
 <span class='va'>fm2</span> <span class='op'>&lt;-</span> <span class='fu'>mixed_model</span><span class='op'>(</span><span class='va'>hepatomegaly</span> <span class='op'>~</span> <span class='va'>sex</span> <span class='op'>+</span> <span class='va'>age</span> <span class='op'>+</span> <span class='va'>year</span>, data <span class='op'>=</span> <span class='va'>pbc2</span>, 
                    random <span class='op'>=</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>|</span> <span class='va'>id</span>, family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>binomial</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
@@ -344,11 +344,11 @@
 <span class='va'>fm3</span> <span class='op'>&lt;-</span> <span class='fu'>mixed_model</span><span class='op'>(</span><span class='va'>ascites</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>+</span> <span class='va'>age</span>, data <span class='op'>=</span> <span class='va'>pbc2</span>,
                    random <span class='op'>=</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>|</span> <span class='va'>id</span>, family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>binomial</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
 
-<span class='co'># [2] Save all the fitted mixed-effects models in a list</span>
+<span class='co'># [2] Save all the fitted mixed-effects models in a list.</span>
 <span class='va'>Mixed</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>fm1</span>, <span class='va'>fm2</span>, <span class='va'>fm3</span><span class='op'>)</span>
 
-<span class='co'># [3] Fit a Cox model, specifying the baseline covariates to be included in the joint</span>
-<span class='co'># model; </span>
+<span class='co'># [3] Fit a Cox model, specifying the baseline covariates to be included in the</span>
+<span class='co'># joint model. </span>
 <span class='va'>fCox1</span> <span class='op'>&lt;-</span> <span class='fu'>coxph</span><span class='op'>(</span><span class='fu'>Surv</span><span class='op'>(</span><span class='va'>years</span>, <span class='va'>status2</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>drug</span> <span class='op'>+</span> <span class='va'>age</span>, data <span class='op'>=</span> <span class='va'>pbc2.id</span><span class='op'>)</span>
 
 <span class='co'># [4] The joint model is fitted using a call to jm() i.e.,</span>
@@ -356,27 +356,26 @@
 <span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>joint_model_fit_2</span><span class='op'>)</span>
 <span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_2</span><span class='op'>)</span>
 
-<span class='co'>##########################################################################################</span>
+<span class='co'>################################################################################</span>
 
-<span class='co'>#############################################################################################</span>
-<span class='co'># Slopes &amp; Area Terms                                                                       # </span>
-<span class='co'>#############################################################################################</span>
+<span class='co'>######################</span>
+<span class='co'># Slope &amp; Area Terms # </span>
+<span class='co'>######################</span>
 
-<span class='co'># We extend model 'joint_model_fit_2' by including the value and slope term for bilirubin, the</span>
-<span class='co'># the area term for hepatomegaly (in the log-odds scale) and the value and </span>
-<span class='co'># area term for spiders (in the log-odds scale). </span>
-<span class='co'># To include these terms into the model we specify the 'functional_forms' argument. This should be </span>
-<span class='co'># a list of right side formulas. Each component of the list should </span>
-<span class='co'># have as name the name of the corresponding</span>
-<span class='co'># outcome variable. In the right side formula we specify the functional form </span>
-<span class='co'># of the association using</span>
+<span class='co'># We extend model 'joint_model_fit_2' by including the value and slope term for</span>
+<span class='co'># bilirubin, the area term for hepatomegaly (in the log-odds scale), and the</span>
+<span class='co'># value and area term for spiders (in the log-odds scale). </span>
+<span class='co'># To include these terms into the model, we specify the 'functional_forms' </span>
+<span class='co'># argument. This should be a list of right side formulas. Each component of the</span>
+<span class='co'># list should have as name the name of the corresponding outcome variable. In</span>
+<span class='co'># the right side formula we specify the functional form of the association using </span>
 <span class='co'># functions 'value()', 'slope()' and 'area()'.</span>
-<span class='co'># Notes: (1) For terms not specified in the 'functional_forms' list, the default value functional</span>
-<span class='co'># form is used. </span>
+<span class='co'># Notes: (1) For terms not specified in the 'functional_forms' list, the default</span>
+<span class='co'># value functional form is used. </span>
 
 <span class='co'># [1] Fit the mixed-effects models using lme() for continuous outcomes </span>
 <span class='co'># and mixed_model() for categorical outcomes. </span>
-<span class='va'>fm1</span> <span class='op'>&lt;-</span> <span class='fu'>lme</span><span class='op'>(</span>fixed <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>serBilir</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>*</span> <span class='va'>sex</span>, random <span class='op'>=</span>  <span class='op'>~</span> <span class='va'>year</span> <span class='op'>|</span> <span class='va'>id</span>, data <span class='op'>=</span> <span class='va'>pbc2</span><span class='op'>)</span>
+<span class='va'>fm1</span> <span class='op'>&lt;-</span> <span class='fu'>lme</span><span class='op'>(</span>fixed <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>serBilir</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>*</span> <span class='va'>sex</span>, random <span class='op'>=</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>|</span> <span class='va'>id</span>, data <span class='op'>=</span> <span class='va'>pbc2</span><span class='op'>)</span>
 
 <span class='va'>fm2</span> <span class='op'>&lt;-</span> <span class='fu'>mixed_model</span><span class='op'>(</span><span class='va'>hepatomegaly</span> <span class='op'>~</span> <span class='va'>sex</span> <span class='op'>+</span> <span class='va'>age</span> <span class='op'>+</span> <span class='va'>year</span>, data <span class='op'>=</span> <span class='va'>pbc2</span>, 
                    random <span class='op'>=</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>|</span> <span class='va'>id</span>, family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>binomial</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
@@ -384,23 +383,24 @@
 <span class='va'>fm3</span> <span class='op'>&lt;-</span> <span class='fu'>mixed_model</span><span class='op'>(</span><span class='va'>ascites</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>+</span> <span class='va'>age</span>, data <span class='op'>=</span> <span class='va'>pbc2</span>,
                    random <span class='op'>=</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>|</span> <span class='va'>id</span>, family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>binomial</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
 
-<span class='co'># [2] Save all the fitted mixed-effects models in a list</span>
+<span class='co'># [2] Save all the fitted mixed-effects models in a list.</span>
 <span class='va'>Mixed</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>fm1</span>, <span class='va'>fm2</span>, <span class='va'>fm3</span><span class='op'>)</span>
 
-<span class='co'># [3] Fit a Cox model, specifying the baseline covariates to be included in the joint</span>
-<span class='co'># model; </span>
+<span class='co'># [3] Fit a Cox model, specifying the baseline covariates to be included in the</span>
+<span class='co'># joint model.</span>
 <span class='va'>fCox1</span> <span class='op'>&lt;-</span> <span class='fu'>coxph</span><span class='op'>(</span><span class='fu'>Surv</span><span class='op'>(</span><span class='va'>years</span>, <span class='va'>status2</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>drug</span> <span class='op'>+</span> <span class='va'>age</span>, data <span class='op'>=</span> <span class='va'>pbc2.id</span><span class='op'>)</span>
 
-<span class='co'># [4] Specify the list of formulas to be passed to the functional_forms argument of jm()</span>
+<span class='co'># [4] Specify the list of formulas to be passed to the functional_forms argument </span>
+<span class='co'># of jm().</span>
 <span class='va'>fForms</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='st'>"log(serBilir)"</span> <span class='op'>=</span> <span class='op'>~</span> <span class='fu'>value</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>serBilir</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>slope</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>serBilir</span><span class='op'>)</span><span class='op'>)</span>,
                <span class='st'>"hepatomegaly"</span> <span class='op'>=</span> <span class='op'>~</span> <span class='fu'>area</span><span class='op'>(</span><span class='va'>hepatomegaly</span><span class='op'>)</span>,
                <span class='st'>"ascites"</span> <span class='op'>=</span> <span class='op'>~</span> <span class='fu'>value</span><span class='op'>(</span><span class='va'>ascites</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>area</span><span class='op'>(</span><span class='va'>ascites</span><span class='op'>)</span><span class='op'>)</span>
                
 <span class='co'># [5] The joint model is fitted using a call to jm() and passing the list </span>
-<span class='co'># to the functional_forms argument</span>
-<span class='va'>joint_model_fit_2</span> <span class='op'>&lt;-</span> <span class='fu'>jm</span><span class='op'>(</span><span class='va'>fCox1</span>, <span class='va'>Mixed</span>, time_var <span class='op'>=</span> <span class='st'>"year"</span>, functional_forms <span class='op'>=</span> <span class='va'>fForms</span><span class='op'>)</span>
+<span class='co'># to the functional_forms argument.</span>
+<span class='va'>joint_model_fit_2</span> <span class='op'>&lt;-</span> <span class='fu'>jm</span><span class='op'>(</span><span class='va'>fCox1</span>, <span class='va'>Mixed</span>, time_var <span class='op'>=</span> <span class='st'>"year"</span>, 
+                        functional_forms <span class='op'>=</span> <span class='va'>fForms</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>joint_model_fit_2</span><span class='op'>)</span>
-
 
 <span class='op'>}</span>
 </div></pre>

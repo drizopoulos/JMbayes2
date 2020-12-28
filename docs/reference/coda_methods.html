@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Various Methods for Functions from the coda package — jm coda Methods • JMbayes2</title>
+<title>Various Methods for Functions from the coda Package — jm coda Methods • JMbayes2</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="Various Methods for Functions from the coda package — jm coda Methods" />
-<meta property="og:description" content="Methods for object of class &quot;jm&quot; for standard generic functions." />
+<meta property="og:title" content="Various Methods for Functions from the coda Package — jm coda Methods" />
+<meta property="og:description" content="Methods for an object of class &quot;jm&quot; for diagnostic functions." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -131,13 +131,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Various Methods for Functions from the coda package</h1>
+    <h1>Various Methods for Functions from the <em>coda</em> Package</h1>
     
     <div class="hidden name"><code>coda_methods.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Methods for object of class <code>"jm"</code> for standard generic functions.</p>
+    <p>Methods for an object of class <code>"jm"</code> for diagnostic functions.</p>
     </div>
 
     <pre class="usage"><span class='fu'>traceplot</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>...</span><span class='op'>)</span>
@@ -199,7 +199,7 @@
     </tr>
     <tr>
       <th>parm</th>
-      <td><p>a character string specifying which parameters of the joint model to plot. Possible values are:  Defaults to <code>'all'</code>, <code>'betas'</code>, <code>'alphas'</code>, <code>'sigmas'</code>, <code>'D'</code>, <code>'bs_gammas'</code>, <code>'tau_bs_gammas'</code>, <code>'gammas'</code>.<br /></p></td>
+      <td><p>a character string specifying which parameters of the joint model to plot. Possible options are <code>'all'</code>, <code>'betas'</code>, <code>'alphas'</code>, <code>'sigmas'</code>, <code>'D'</code>, <code>'bs_gammas'</code>, <code>'tau_bs_gammas'</code>, or <code>'gammas'</code>.<br /></p></td>
     </tr>
     <tr>
       <th>size</th>
@@ -211,11 +211,11 @@
     </tr>
     <tr>
       <th>theme</th>
-      <td><p>a character string specifying the color theme to be used. Possible options are <code>'standard'</code>, <code>'catalog'</code>, <code>'metro'</code>, <code>'pastel'</code>, <code>'beach'</code>, <code>'moonlight'</code>, <code>'goo'</code>, <code>'sunset'</code>. <br /></p></td>
+      <td><p>a character string specifying the color theme to be used. Possible options are <code>'standard'</code>, <code>'catalog'</code>, <code>'metro'</code>, <code>'pastel'</code>, <code>'beach'</code>, <code>'moonlight'</code>, <code>'goo'</code>, or <code>'sunset'</code>. <br /></p></td>
     </tr>
     <tr>
       <th>grid</th>
-      <td><p>logical; defaults to <code>FALSE</code>. If <code>TRUE</code> the plots are returned in grids split over multiple pages. For more details see the documentation for <code><a href='https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html'>gridExtra::marrangeGrob()</a></code>. <br /></p></td>
+      <td><p>logical; defaults to <code>FALSE</code>. If <code>TRUE</code>, the plots are returned in grids split over multiple pages. For more details see the documentation for <code><a href='https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html'>gridExtra::marrangeGrob()</a></code>. <br /></p></td>
     </tr>
     <tr>
       <th>gridrows</th>
@@ -227,8 +227,7 @@
     </tr>
     <tr>
       <th>...</th>
-      <td><p>further arguments passed to the corresponding function from the
-  the <b>coda</b> package.</p></td>
+      <td><p>further arguments passed to the corresponding function from the <b>coda</b> package.</p></td>
     </tr>
     </table>
 
@@ -275,23 +274,23 @@
 <span class='co'># joint model fit</span>
 <span class='va'>fit_jm</span> <span class='op'>&lt;-</span> <span class='fu'><a href='jm.html'>jm</a></span><span class='op'>(</span><span class='va'>fit_cox</span>, <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>fit_lme1</span>, <span class='va'>fit_lme2</span><span class='op'>)</span>, time_var <span class='op'>=</span> <span class='st'>"year"</span><span class='op'>)</span>
 
-<span class='co'># trace plot for the fixed effects in the linear mixed submodel </span>
+<span class='co'># trace plot for the fixed effects in the linear mixed submodels</span>
 <span class='fu'>traceplot</span><span class='op'>(</span><span class='va'>fit_jm</span>, parm <span class='op'>=</span> <span class='st'>"betas"</span><span class='op'>)</span>
 
 <span class='co'># joint model convergence diagnostic</span>
 <span class='fu'>gelman_diag</span><span class='op'>(</span><span class='va'>fit_jm</span>, <span class='st'>"all"</span><span class='op'>)</span>
 
-<span class='co'># density plot for the fixed effects in all linear mixed submodels </span>
+<span class='co'># density plot for the fixed effects in the linear mixed submodels </span>
 <span class='fu'>densplot.jm</span><span class='op'>(</span><span class='va'>fit_jm</span>, parm <span class='op'>=</span> <span class='st'>"betas"</span><span class='op'>)</span>
 
-<span class='co'># cumulative quantile plot for the fixed effects in all linear mixed submodels </span>
+<span class='co'># cumulative quantile plot for the fixed effects in the linear mixed submodels </span>
 <span class='fu'>cumuplot</span><span class='op'>(</span><span class='va'>fit_jm</span>, parm <span class='op'>=</span> <span class='st'>"betas"</span><span class='op'>)</span>
 
-<span class='co'># trace plot for the fixed effects in the linear mixed submodel </span>
+<span class='co'># trace plot for the fixed effects in the linear mixed submodels</span>
 <span class='fu'>ggtraceplot</span><span class='op'>(</span><span class='va'>fit_jm</span>, parm <span class='op'>=</span> <span class='st'>"betas"</span><span class='op'>)</span>
 <span class='fu'>ggtraceplot</span><span class='op'>(</span><span class='va'>fit_jm</span>, parm <span class='op'>=</span> <span class='st'>"betas"</span>, grid <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
 
-<span class='co'># trace plot for the fixed effects in the linear mixed submodel </span>
+<span class='co'># trace plot for the fixed effects in the linear mixed submodels </span>
 <span class='fu'>ggdensityplot</span><span class='op'>(</span><span class='va'>fit_jm</span>, parm <span class='op'>=</span> <span class='st'>"betas"</span><span class='op'>)</span>
 <span class='fu'>ggdensityplot</span><span class='op'>(</span><span class='va'>fit_jm</span>, parm <span class='op'>=</span> <span class='st'>"betas"</span>, grid <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
 <span class='op'>}</span>
