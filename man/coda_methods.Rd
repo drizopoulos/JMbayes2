@@ -14,7 +14,7 @@
 \alias{cumuplot.jm}
 
 \title{
-Various Methods for Functions from the \bold{coda} Package
+Various Methods for Functions from the \emph{coda} Package
 }
 
 \description{
