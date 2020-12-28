@@ -64,27 +64,27 @@ compare_jm(\dots, type = c("marginal", "conditional"),
 
 \arguments{
 \item{object, x, formula}{object inheriting from class \code{"jm"}.}
-\item{outcome}{the linear mixed submodel to extract the estimated fixed effects. If greater
+\item{outcome}{the index of the linear mixed submodel to extract the estimated fixed effects. If greater
 than the total number of submodels, extracts from all of them.}
-\item{post_vars}{logical; if \code{TRUE} returns the variance of the posterior distribution.}
-\item{process}{which submodel(s) to extract the terms:
-\tabular{ll}{
-\code{"longitudinal"} \tab linear mixed model(s), \cr
-\code{"survival"} \tab survival model.
+\item{post_vars}{logical; if \code{TRUE}, returns the variance of the posterior distribution.}
+\item{process}{which submodel(s) to extract the terms: \cr
+\itemize{
+    \item if \code{"longitudinal"}, the linear mixed model(s), or
+    \item if \code{"survival"}, the survival model.
 }
 }
-\item{type}{in \code{compare_jm()}, which effects to select in the longitudinal process:
-\tabular{ll}{
-\code{"fixed"} \tab fixed-effects, \cr
-\code{"random"} \tab random-efects.
+\item{type}{in \code{compare_jm()}, which effects to select in the longitudinal process: \cr
+\itemize{
+    \item if \code{"fixed"}, the fixed-effects, or
+    \item if \code{"random"}, the random-efects.
 }
-in \code{terms()}, which log-likelihood function use to calculate the criteria:
-\tabular{ll}{
-\code{"marginal"} \tab marginal log-likelihood, \cr
-\code{"conditional"} \tab conditional log-likelihood.
+in \code{terms()}, which log-likelihood function use to calculate the criteria: \cr
+\itemize{
+    \item if \code{"marginal"}, the marginal log-likelihood, or
+    \item if \code{"conditional"}, the conditional log-likelihood.
 }
 }
-\item{\dots}{further arguments; currently none is used. \cr in \code{compare_jm()}, a series of \code{jm} objects.}
+\item{\dots}{further arguments; currently, none is used. \cr in \code{compare_jm()}, a series of \code{jm} objects.}
 \item{order}{which criteria use to sort the models in the output.}
 }
 
@@ -93,7 +93,7 @@ in \code{terms()}, which log-likelihood function use to calculate the criteria:
 \item{\code{coef()}}{Extracts estimated fixed effects for the event process from a fitted joint model.}
 \item{\code{fixef()}}{Extracts estimated fixed effects for the longitudinal processes from a fitted joint model.}
 \item{\code{ranef()}}{Extracts estimated random effects from a fitted joint model.}
-\item{\code{terms()}}{Extracts the terms objects from a fitted joint model.}
+\item{\code{terms()}}{Extracts the terms object(s) from a fitted joint model.}
 \item{\code{model.frame()}}{Creates the model frame from a fitted joint model.}
 \item{\code{model.matrix()}}{Creates the design matrices for linear mixed submodels from a fitted joint model.}
 \item{\code{family()}}{Extracts the error distribution and link function used in the linear mixed submodel(s) from a fitted joint model.}
@@ -104,29 +104,25 @@ in \code{terms()}, which log-likelihood function use to calculate the criteria:
 
 \value{
 \describe{
-\item{\code{coef()}}{
-\tabular{lll}{
-A list with the elements: \tab \code{gammas} \tab estimated baseline fixed effects. \cr
-\tab \code{association} \tab estimated association parameters.
+\item{\code{coef()}}{a list with the elements: \cr
+\itemize{
+    \item \code{gammas}: estimated baseline fixed effects, and
+    \item \code{association}: estimated association parameters.
 }
 }
-\item{\code{fixef()}}{A numeric vector of the estimated fixed effects for the \code{outcome} selected. If \code{outcome} is greater than the number of linear mixed submodels, returns a list of numeric vectors for all outcomes.}
-\item{\code{ranef()}}{A numeric matrix with rows denoting the individuals and columns the random effects. If \code{postVar = TRUE}, the numeric matrix has the extra attribute "postVar".}
-\item{\code{terms()}}{
-\tabular{ll}{ 
-If \code{process = "longitudinal"}, a list of the terms object(s) for the linear mixed model(s). \cr If \code{process = "event"}, the terms object for the survival model.
+\item{\code{fixef()}}{a numeric vector of the estimated fixed effects for the \code{outcome} selected. If the \code{outcome} is greater than the number of linear mixed submodels, it returns a list of numeric vectors for all outcomes.}
+\item{\code{ranef()}}{a numeric matrix with rows denoting the individuals and columns the random effects. If \code{postVar = TRUE}, the numeric matrix has the extra attribute "postVar".}
+\item{\code{terms()}}{if \code{process = "longitudinal"}, a list of the terms object(s) for the linear mixed model(s).
+\cr if \code{process = "event"}, the terms object for the survival model.
 }
+\item{\code{model.frame()}}{if \code{process = "longitudinal"}, a list of the model frames used in the linear mixed model(s). \cr if \code{process = "event"}, the model frame used in the survival model.
 }
-\item{\code{model.frame()}}{\tabular{ll}{
-If \code{process = "longitudinal"}, a list of the model frames used in the linear mixed model(s). \cr If \code{process = "event"}, the model frame used in the survival model.
-}
-}
-\item{\code{model.matrix()}}{A list of the design matrices for the linear mixed submodels.}
-\item{\code{family()}}{A list of \code{family} objects.}
-\item{\code{compare_jm()}}{
-\tabular{lll}{
-A list with the elements: \tab \code{table} \tab a table with the criteria calculted to each joint model. \cr
-\tab \code{type} \tab the log-likelihood function used to calculate the criteria.   
+\item{\code{model.matrix()}}{a list of the design matrix(ces) for the linear mixed submodel(s).}
+\item{\code{family()}}{a list of \code{family} objects.}
+\item{\code{compare_jm()}}{a list with the elements: \cr
+\itemize{
+    \item \code{table}: a table with the criteria calculated for each joint model, and
+    \item \code{type}: the log-likelihood function used to calculate the criteria.
 }
 }
 }
@@ -159,7 +155,7 @@ fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year")
 # coef(): fixed effects for the event process 
 coef(fit_jm)
 
-# fixef(): fixed effects for the first linear mixed submodels
+# fixef(): fixed effects for the first linear mixed submodel
 fixef(fit_jm, outcome = 1)
 
 # ranef(): random effects from all linear mixed submodels

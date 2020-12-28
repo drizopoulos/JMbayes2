@@ -90,7 +90,7 @@ tv(x, knots = NULL, ord = 2L)
         \item{\code{B_nu_alphas}}{the prior rate parameter of the gamma prior for the variance hyperparameter for the precision parameter of the local penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}.}
         \item{\code{A_xi_alphas}}{the prior shape parameter of the gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}.}
         \item{\code{B_xi_alphas}}{the prior rate parameter of the gamma prior for the variance hyperparameter for the precision parameter of the global penalty term for the association parameters. Only relevant when \code{penalty_gammas = 'ridge'} or when \code{penalty_gammas = 'horseshoe'}.}
-        \item{\code{gamma_prior_D_sds}}{logical; if \code{TRUE}, a gamma prior will be used for the standard deviations of the D matrix (variance-covariance matrix of the random effects); default is \code{TRUE}}
+        \item{\code{gamma_prior_D_sds}}{logical; if \code{TRUE}, a gamma prior will be used for the standard deviations of the D matrix (variance-covariance matrix of the random effects). Defaults to \code{TRUE}}
         \item{\code{D_sds_df}}{the prior degrees of freedom parameter for the half-t prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).}
         \item{\code{D_sds_sigma}}{the prior sigma parameter vector for the half-t prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).}
         \item{\code{D_sds_shape}}{the prior shape parameter for the gamma prior for the standard deviations of the D matrix (variance-covariance matrix of the random effects).}
@@ -104,15 +104,15 @@ tv(x, knots = NULL, ord = 2L)
     \describe{        
         \item{\code{GK_k}}{the number of quadrature points for the Gauss Kronrod rule; options 15 and 7.}
         \item{\code{Bsplines_degree}}{the degree of the splines in each basis; default quadratic splines.}
-        \item{\code{base_hazard_segments}}{the number of segments to split the follow-up period; default is 10.}
-        \item{\code{diff}}{the order of the difference used in the penalty matrix for the B-splines for h_0; default is 2.}
-        \item{\code{n_chains}}{an integer specifying the number of chains for the MCMC; default is 3.}
-        \item{\code{n_burnin}}{an integer specifying the number of burn-in iterations; default is 500.}
-        \item{\code{n_iter}}{an integer specifying the number of total iterations per chain; default is 3500.}
-        \item{\code{seed}}{the seed used in the sampling procedures; default is 123.}
-        \item{\code{MALA}}{a \code{logical}; if TRUE, the MALA algorithm is used when updating the elements of the Cholesky factor of the D matrix; default is \code{FALSE}.}
-        \item{\code{save_random_effects}}{a \code{logical}; if TRUE, the full MCMC results of the random effects will be saved and returned with the \code{jm} object; default is \code{FALSE}.}
-        \item{\code{cores}}{an integer specifying the number of cores to use; default is the available cores minus one.}
+        \item{\code{base_hazard_segments}}{the number of segments to split the follow-up period. Defaults to 10.}
+        \item{\code{diff}}{the order of the difference used in the penalty matrix for the B-splines for h_0. Defaults to 2.}
+        \item{\code{n_chains}}{an integer specifying the number of chains for the MCMC. Defaults to 3.}
+        \item{\code{n_burnin}}{an integer specifying the number of burn-in iterations. Defaults to 500.}
+        \item{\code{n_iter}}{an integer specifying the number of total iterations per chain. Defaults to 3500.}
+        \item{\code{seed}}{the seed used in the sampling procedures. Defaults to 123.}
+        \item{\code{MALA}}{a \code{logical}; if TRUE, the MALA algorithm is used when updating the elements of the Cholesky factor of the D matrix. Defaults to \code{FALSE}.}
+        \item{\code{save_random_effects}}{a \code{logical}; if TRUE, the full MCMC results of the random effects will be saved and returned with the \code{jm} object. Defaults to \code{FALSE}.}
+        \item{\code{cores}}{an integer specifying the number of cores to use. Defaults to the available cores minus one.}
     }
   }
 \item{x}{.}
