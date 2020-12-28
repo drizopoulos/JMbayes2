@@ -14,11 +14,11 @@
 \alias{cumuplot.jm}
 
 \title{
-Various Methods for Functions from the coda package
+Various Methods for Functions from the \bold{coda} Package
 }
 
 \description{
-Methods for object of class \code{"jm"} for standard generic functions.
+Methods for an object of class \code{"jm"} for diagnostic functions.
 }
 
 \usage{
@@ -71,15 +71,14 @@ cumuplot(object, \dots)
 
 \arguments{
 \item{object}{an object inheriting from class \code{"jm"}.}
-\item{parm}{a character string specifying which parameters of the joint model to plot. Possible values are:  Defaults to \code{'all'}, \code{'betas'}, \code{'alphas'}, \code{'sigmas'}, \code{'D'}, \code{'bs_gammas'}, \code{'tau_bs_gammas'}, \code{'gammas'}.\cr}
+\item{parm}{a character string specifying which parameters of the joint model to plot. Possible options are \code{'all'}, \code{'betas'}, \code{'alphas'}, \code{'sigmas'}, \code{'D'}, \code{'bs_gammas'}, \code{'tau_bs_gammas'}, or \code{'gammas'}.\cr}
 \item{size}{the width of the traceplot line in mm. Defaults to 1.}
 \item{alpha}{the opacity level of the traceplot line. Defaults to 0.8.}
-\item{theme}{a character string specifying the color theme to be used. Possible options are \code{'standard'}, \code{'catalog'}, \code{'metro'}, \code{'pastel'}, \code{'beach'}, \code{'moonlight'}, \code{'goo'}, \code{'sunset'}. \cr}
-\item{grid}{logical; defaults to \code{FALSE}. If \code{TRUE} the plots are returned in grids split over multiple pages. For more details see the documentation for \code{\link[gridExtra:arrangeGrob]{gridExtra::marrangeGrob()}}. \cr}
+\item{theme}{a character string specifying the color theme to be used. Possible options are \code{'standard'}, \code{'catalog'}, \code{'metro'}, \code{'pastel'}, \code{'beach'}, \code{'moonlight'}, \code{'goo'}, or \code{'sunset'}. \cr}
+\item{grid}{logical; defaults to \code{FALSE}. If \code{TRUE}, the plots are returned in grids split over multiple pages. For more details see the documentation for \code{\link[gridExtra:arrangeGrob]{gridExtra::marrangeGrob()}}. \cr}
 \item{gridrows}{number of rows per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 3.}
 \item{gridcols}{number of columns per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 1.}
-\item{\dots}{further arguments passed to the corresponding function from the
-  the \bold{coda} package.}
+\item{\dots}{further arguments passed to the corresponding function from the \bold{coda} package.}
 }
 
 \details{
@@ -126,23 +125,23 @@ fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 # joint model fit
 fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year")
 
-# trace plot for the fixed effects in the linear mixed submodel 
+# trace plot for the fixed effects in the linear mixed submodels
 traceplot(fit_jm, parm = "betas")
 
 # joint model convergence diagnostic
 gelman_diag(fit_jm, "all")
 
-# density plot for the fixed effects in all linear mixed submodels 
+# density plot for the fixed effects in the linear mixed submodels 
 densplot.jm(fit_jm, parm = "betas")
 
-# cumulative quantile plot for the fixed effects in all linear mixed submodels 
+# cumulative quantile plot for the fixed effects in the linear mixed submodels 
 cumuplot(fit_jm, parm = "betas")
 
-# trace plot for the fixed effects in the linear mixed submodel 
+# trace plot for the fixed effects in the linear mixed submodels
 ggtraceplot(fit_jm, parm = "betas")
 ggtraceplot(fit_jm, parm = "betas", grid = TRUE)
 
-# trace plot for the fixed effects in the linear mixed submodel 
+# trace plot for the fixed effects in the linear mixed submodels 
 ggdensityplot(fit_jm, parm = "betas")
 ggdensityplot(fit_jm, parm = "betas", grid = TRUE)
 }
