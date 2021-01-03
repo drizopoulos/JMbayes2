@@ -146,15 +146,19 @@ summary.jm <- function (object, ...) {
         out
     }
     fam_names <- sapply(families, "[[", "family")
-    has_sigma <- c("gaussian", "Student-t", "beta", "Gamma",
+    has_sigma_fam <- c("gaussian", "Student-t", "beta", "Gamma",
                    "negative binomial", "beta binomial")
+    has_sigmas <- object$model_data$has_sigmas
+    has_sigmas[has_sigmas > 0] <- which(has_sigmas > 0)
     tab_sigmas <- tab_f("sigmas")
     for (i in seq_len(n_outcomes)) {
         nam_outcome <- paste0("Outcome", i)
         out[[nam_outcome]] <- tab_f(paste0("betas", i))
-        if (fam_names[i] %in% has_sigma) {
+        if (fam_names[i] %in% has_sigma_fam) {
             k <- nrow(out[[nam_outcome]])
-            out[[nam_outcome]] <- rbind(out[[nam_outcome]], tab_sigmas[i, ])
+            out[[nam_outcome]] <-
+                rbind(out[[nam_outcome]],
+                      tab_sigmas[paste0("sigmas_", has_sigmas[i]), ])
             row.names(out[[nam_outcome]])[k + 1] <- "sigma"
         }
     }
