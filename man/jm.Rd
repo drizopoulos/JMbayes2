@@ -115,13 +115,14 @@ tv(x, knots = NULL, ord = 2L)
         \item{\code{cores}}{an integer specifying the number of cores to use. Defaults to the available cores minus one.}
     }
   }
-\item{x}{.}
-\item{knots, ord}{.}
+\item{x}{a numeric input variable.}
+\item{knots}{a numeric vector of knots.}
+\item{ord}{an integer denoting the order of the spline.}
 \item{\dots}{arguments passed to \code{control}.}
 }
 
 \details{
-XXX
+The mathematical details regarding the definition of the multivariate joint model, and the capabilities of the package can be found in the vignette in the doc directory.
 }
 
 \value{

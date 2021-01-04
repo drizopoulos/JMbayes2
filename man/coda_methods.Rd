@@ -97,11 +97,6 @@ cumuplot(object, \dots)
 }
 }
 
-
-\value{
-XXX.
-}
-
 \author{
 Dimitris Rizopoulos \email{d.rizopoulos@erasmusmc.nl}
 }
