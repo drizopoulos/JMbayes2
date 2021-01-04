@@ -106,7 +106,7 @@ Dimitris Rizopoulos \email{d.rizopoulos@erasmusmc.nl}
 }
 
 \examples{
-\dontrun{
+\donttest{
 # linear mixed model fits
 fit_lme1 <- lme(log(serBilir) ~ year:sex + age,
                 random = ~ year | id, data = pbc2)
@@ -116,27 +116,27 @@ fit_lme2 <- lme(prothrombin ~ sex,
 
 # cox model fit
 fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
- 
+
 # joint model fit
-fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year")
+fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year", n_chains = 1L)
 
 # trace plot for the fixed effects in the linear mixed submodels
 traceplot(fit_jm, parm = "betas")
 
 # joint model convergence diagnostic
-gelman_diag(fit_jm, "all")
+# gelman_diag(fit_jm, "all")
 
-# density plot for the fixed effects in the linear mixed submodels 
-densplot.jm(fit_jm, parm = "betas")
+# density plot for the fixed effects in the linear mixed submodels
+densplot(fit_jm, parm = "betas")
 
-# cumulative quantile plot for the fixed effects in the linear mixed submodels 
+# cumulative quantile plot for the fixed effects in the linear mixed submodels
 cumuplot(fit_jm, parm = "betas")
 
 # trace plot for the fixed effects in the linear mixed submodels
 ggtraceplot(fit_jm, parm = "betas")
 ggtraceplot(fit_jm, parm = "betas", grid = TRUE)
 
-# trace plot for the fixed effects in the linear mixed submodels 
+# trace plot for the fixed effects in the linear mixed submodels
 ggdensityplot(fit_jm, parm = "betas")
 ggdensityplot(fit_jm, parm = "betas", grid = TRUE)
 }

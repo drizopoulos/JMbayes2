@@ -25,12 +25,12 @@ tv(x, knots = NULL, ord = 2L)
 }
 
 \arguments{
-\item{Surv_object}{an object: \cr 
+\item{Surv_object}{an object: \cr
 \itemize{
     \item of class 'coxph' fitted by function \code{coxph()} from package \bold{survival}, or
     \item of class 'survreg' fitted by function \code{survreg()} from package \bold{survival}.
     }}
-\item{Mixed_objects}{a \code{list} of objects or a single object. Objects may be: \cr 
+\item{Mixed_objects}{a \code{list} of objects or a single object. Objects may be: \cr
 \itemize{
     \item of class 'lme' fitted by function \code{lme()} from package \bold{nlme}, or
     \item of class 'MixMod' fitted by function \code{mixed_model()} from package \bold{GLMMadaptive}.
@@ -45,9 +45,9 @@ tv(x, knots = NULL, ord = 2L)
         \item{\code{Tau_betas_HC}}{the prior precision matrix of the normal prior for the regression coefficients of the longitudinal model(s), which were hierarchically centered.}
         \item{\code{mean_betas_nHC}}{a \code{list} of the prior mean vector(s) of the normal prior(s) for the regression coefficients of the covariates of the longitudinal model(s), which were not hierarchically centered.}
         \item{\code{Tau_betas_nHC}}{a \code{list} of the prior precision matrix(ces) of the normal prior(s) for the regression coefficients of the longitudinal model(s), which were not Hierarchically Centered.}
-        \item{\code{mean_bs_gammas}}{the prior mean vector of the normal prior for the B-splines 
+        \item{\code{mean_bs_gammas}}{the prior mean vector of the normal prior for the B-splines
             coefficients used to approximate the baseline hazard.}
-        \item{\code{Tau_bs_gammas}}{the prior precision matrix of the normal prior for the B-splines 
+        \item{\code{Tau_bs_gammas}}{the prior precision matrix of the normal prior for the B-splines
             coefficients used to approximate the baseline hazard.}
         \item{\code{A_tau_bs_gammas}}{the prior shape parameter of the gamma prior for the
             precision parameter of the penalty term for the B-splines coefficients for
@@ -56,9 +56,9 @@ tv(x, knots = NULL, ord = 2L)
             precision parameter of the penalty term for the B-splines coefficients for
             the baseline hazard.}
         \item{\code{rank_Tau_bs_gammas}}{the prior rank parameter for the precision matrix of the normal prior for the B-splines coefficients used to approximate the baseline hazard.}
-        \item{\code{mean_gammas}}{the prior mean vector of the normal prior for the regression 
+        \item{\code{mean_gammas}}{the prior mean vector of the normal prior for the regression
             coefficients of baseline covariates.}
-        \item{\code{Tau_gammas}}{the prior precision matrix of the normal prior for the regression 
+        \item{\code{Tau_gammas}}{the prior precision matrix of the normal prior for the regression
             coefficients of baseline covariates.}
         \item{\code{penalty_gammas}}{a character string with value 'none', 'ridge', or 'horseshoe' indicating whether the coefficients of the baseline covariates included in the survival submodel should not be shrunk, shrank using ridge prior, or shrank using horseshoe prior, respectively.}
         \item{\code{A_lambda_gammas}}{the prior shape parameter of the gamma prior for the
@@ -101,7 +101,7 @@ tv(x, knots = NULL, ord = 2L)
     }
 }
 \item{control}{a list of control values with components:
-    \describe{        
+    \describe{
         \item{\code{GK_k}}{the number of quadrature points for the Gauss Kronrod rule; options 15 and 7.}
         \item{\code{Bsplines_degree}}{the degree of the splines in each basis; default quadratic splines.}
         \item{\code{base_hazard_segments}}{the number of segments to split the follow-up period. Defaults to 10.}
@@ -148,21 +148,22 @@ Dimitris Rizopoulos \email{d.rizopoulos@erasmusmc.nl}
 }
 
 \seealso{
-\code{\link{methods.jm}}
+\code{\link{methods.jm}},
+\code{\link{coda_methods.jm}}
 }
 
 
 \examples{
-\dontrun{
+\donttest{
 ################################################################################
 
 ##############################################
 # Univariate joint model for serum bilirubin #
-# 1 continuous outcome                       #                       
+# 1 continuous outcome                       #
 ##############################################
 
-# [1] Fit the mixed model using lme(). 
-fm1 <- lme(fixed = log(serBilir) ~ year * sex + I(year^2) + 
+# [1] Fit the mixed model using lme().
+fm1 <- lme(fixed = log(serBilir) ~ year * sex + I(year^2) +
            age + prothrombin, random =  ~ year | id, data = pbc2)
 
 # [2] Fit a Cox model, specifying the baseline covariates to be included in the
@@ -170,62 +171,23 @@ fm1 <- lme(fixed = log(serBilir) ~ year * sex + I(year^2) +
 fCox1 <- coxph(Surv(years, status2) ~ drug + age, data = pbc2.id)
 
 # [3] The basic joint model is fitted using a call to jm() i.e.,
-joint_model_fit_1 <- jm(fCox1, fm1, time_var = "year")
+joint_model_fit_1 <- jm(fCox1, fm1, time_var = "year", n_chains = 1L)
 summary(joint_model_fit_1)
 traceplot(joint_model_fit_1)
 
 ################################################################################
 
 ##########################################################################
-# Multivariate joint model for serum bilirubin, hepatomegaly and ascites # 
+# Multivariate joint model for serum bilirubin, hepatomegaly and ascites #
 # 1 continuous outcome, 2 categorical outcomes                           #
 ##########################################################################
 
-# [1] Fit the mixed-effects models using lme() for continuous 
-# outcomes and mixed_model() for categorical outcomes. 
-fm1 <- lme(fixed = log(serBilir) ~ year * sex, 
+# [1] Fit the mixed-effects models using lme() for continuous
+# outcomes and mixed_model() for categorical outcomes.
+fm1 <- lme(fixed = log(serBilir) ~ year * sex,
            random = ~ year | id, data = pbc2)
 
-fm2 <- mixed_model(hepatomegaly ~ sex + age + year, data = pbc2, 
-                   random = ~ year | id, family = binomial())
-
-fm3 <- mixed_model(ascites ~ year + age, data = pbc2,
-                   random = ~ year | id, family = binomial())
-
-# [2] Save all the fitted mixed-effects models in a list.
-Mixed <- list(fm1, fm2, fm3)
-
-# [3] Fit a Cox model, specifying the baseline covariates to be included in the
-# joint model. 
-fCox1 <- coxph(Surv(years, status2) ~ drug + age, data = pbc2.id)
-
-# [4] The joint model is fitted using a call to jm() i.e.,
-joint_model_fit_2 <- jm(fCox1, Mixed, time_var = "year")
-summary(joint_model_fit_2)
-traceplot(joint_model_fit_2)
-
-################################################################################
-
-######################
-# Slope & Area Terms # 
-######################
-
-# We extend model 'joint_model_fit_2' by including the value and slope term for
-# bilirubin, the area term for hepatomegaly (in the log-odds scale), and the
-# value and area term for spiders (in the log-odds scale). 
-# To include these terms into the model, we specify the 'functional_forms' 
-# argument. This should be a list of right side formulas. Each component of the
-# list should have as name the name of the corresponding outcome variable. In
-# the right side formula we specify the functional form of the association using 
-# functions 'value()', 'slope()' and 'area()'.
-# Notes: (1) For terms not specified in the 'functional_forms' list, the default
-# value functional form is used. 
-
-# [1] Fit the mixed-effects models using lme() for continuous outcomes 
-# and mixed_model() for categorical outcomes. 
-fm1 <- lme(fixed = log(serBilir) ~ year * sex, random = ~ year | id, data = pbc2)
-
-fm2 <- mixed_model(hepatomegaly ~ sex + age + year, data = pbc2, 
+fm2 <- mixed_model(hepatomegaly ~ sex + age + year, data = pbc2,
                    random = ~ year | id, family = binomial())
 
 fm3 <- mixed_model(ascites ~ year + age, data = pbc2,
@@ -238,16 +200,55 @@ Mixed <- list(fm1, fm2, fm3)
 # joint model.
 fCox1 <- coxph(Surv(years, status2) ~ drug + age, data = pbc2.id)
 
-# [4] Specify the list of formulas to be passed to the functional_forms argument 
+# [4] The joint model is fitted using a call to jm() i.e.,
+joint_model_fit_2 <- jm(fCox1, Mixed, time_var = "year", n_chains = 1L)
+summary(joint_model_fit_2)
+traceplot(joint_model_fit_2)
+
+################################################################################
+
+######################
+# Slope & Area Terms #
+######################
+
+# We extend model 'joint_model_fit_2' by including the value and slope term for
+# bilirubin, the area term for hepatomegaly (in the log-odds scale), and the
+# value and area term for spiders (in the log-odds scale).
+# To include these terms into the model, we specify the 'functional_forms'
+# argument. This should be a list of right side formulas. Each component of the
+# list should have as name the name of the corresponding outcome variable. In
+# the right side formula we specify the functional form of the association using
+# functions 'value()', 'slope()' and 'area()'.
+# Notes: (1) For terms not specified in the 'functional_forms' list, the default
+# value functional form is used.
+
+# [1] Fit the mixed-effects models using lme() for continuous outcomes
+# and mixed_model() for categorical outcomes.
+fm1 <- lme(fixed = log(serBilir) ~ year * sex, random = ~ year | id, data = pbc2)
+
+fm2 <- mixed_model(hepatomegaly ~ sex + age + year, data = pbc2,
+                   random = ~ year | id, family = binomial())
+
+fm3 <- mixed_model(ascites ~ year + age, data = pbc2,
+                   random = ~ year | id, family = binomial())
+
+# [2] Save all the fitted mixed-effects models in a list.
+Mixed <- list(fm1, fm2, fm3)
+
+# [3] Fit a Cox model, specifying the baseline covariates to be included in the
+# joint model.
+fCox1 <- coxph(Surv(years, status2) ~ drug + age, data = pbc2.id)
+
+# [4] Specify the list of formulas to be passed to the functional_forms argument
 # of jm().
 fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)),
                "hepatomegaly" = ~ area(hepatomegaly),
                "ascites" = ~ value(ascites) + area(ascites))
-               
-# [5] The joint model is fitted using a call to jm() and passing the list 
+
+# [5] The joint model is fitted using a call to jm() and passing the list
 # to the functional_forms argument.
-joint_model_fit_2 <- jm(fCox1, Mixed, time_var = "year", 
-                        functional_forms = fForms)
+joint_model_fit_2 <- jm(fCox1, Mixed, time_var = "year",
+                        functional_forms = fForms, n_chains = 1L)
 summary(joint_model_fit_2)
 
 }

@@ -138,7 +138,7 @@ Dimitris Rizopoulos \email{d.rizopoulos@erasmusmc.nl}
 }
 
 \examples{
-\dontrun{
+\donttest{
 # linear mixed model fits
 fit_lme1 <- lme(log(serBilir) ~ year:sex + age,
                 random = ~ year | id, data = pbc2)
@@ -150,9 +150,9 @@ fit_lme2 <- lme(prothrombin ~ sex,
 fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
 # joint model fit
-fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year")
+fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year", n_chains = 1L)
 
-# coef(): fixed effects for the event process 
+# coef(): fixed effects for the event process
 coef(fit_jm)
 
 # fixef(): fixed effects for the first linear mixed submodel
@@ -164,7 +164,7 @@ ranef(fit_jm)
 # terms(): fixed effects terms in the linear mixed models
 terms(fit_jm, process = "longitudinal", type = "random")
 
-# mode.frame(): model frame for the fixed effects terms in the linear mixed 
+# mode.frame(): model frame for the fixed effects terms in the linear mixed
 # submodels
 model.frame(fit_jm, process = "longitudinal", type = "fixed")
 
@@ -178,7 +178,7 @@ family(fit_jm)
 fit_lme1_b <- lme(log(serBilir) ~ year:sex,
                  random = ~ year | id, data = pbc2)
 
-fit_jm_b <- jm(fit_cox, list(fit_lme1_b, fit_lme2), time_var = "year")
+fit_jm_b <- jm(fit_cox, list(fit_lme1_b, fit_lme2), time_var = "year", n_chains = 1L)
 
 compare_jm(fit_jm, fit_jm_b)
 }
