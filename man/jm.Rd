@@ -153,7 +153,7 @@ Dimitris Rizopoulos \email{d.rizopoulos@erasmusmc.nl}
 
 
 \examples{
-\dontrun{
+\donttest{
 ################################################################################
 
 ##############################################
