@@ -109,7 +109,7 @@ jointFit.MS <-
 fforms <- list("log(serBilir)" = ~ value(log(serBilir)) + value(log(serBilir)):(strata(trans) - 1))
 
 fitjm2 <- jm(Surv_object = coxFit.MS, Mixed_objects = lmeFit.CR, time_var = 'year', 
-             id_var = 'id')
+             data_Surv = pbc2.idMS, id_var = 'id', functional_forms = fforms)
 
 
 ## similar:
