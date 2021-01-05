@@ -73,12 +73,12 @@ than the total number of submodels, extracts from all of them.}
     \item if \code{"survival"}, the survival model.
 }
 }
-\item{type}{in \code{compare_jm()}, which effects to select in the longitudinal process: \cr
+\item{type}{in \code{terms()} and \code{model.frame()}, which effects to select in the longitudinal process: \cr
 \itemize{
     \item if \code{"fixed"}, the fixed-effects, or
     \item if \code{"random"}, the random-efects.
 }
-in \code{terms()}, which log-likelihood function use to calculate the criteria: \cr
+in \code{compare_jm()}, which log-likelihood function use to calculate the criteria: \cr
 \itemize{
     \item if \code{"marginal"}, the marginal log-likelihood, or
     \item if \code{"conditional"}, the conditional log-likelihood.
@@ -150,36 +150,37 @@ fit_lme2 <- lme(prothrombin ~ sex,
 fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
 # joint model fit
-fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year")
+fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year", n_chains = 1L)
 
-# coef(): fixed effects for the event process 
+# coef(): fixed effects for the event process
 coef(fit_jm)
 
 # fixef(): fixed effects for the first linear mixed submodel
 fixef(fit_jm, outcome = 1)
 
 # ranef(): random effects from all linear mixed submodels
-ranef(fit_jm)
+head(ranef(fit_jm))
 
-# terms(): fixed effects terms in the linear mixed models
-terms(fit_jm, process = "longitudinal", type = "random")
+# terms(): random effects terms for the first linear mixed submodel
+terms(fit_jm, process = "longitudinal", type = "random")[[1]]
 
-# mode.frame(): model frame for the fixed effects terms in the linear mixed 
-# submodels
-model.frame(fit_jm, process = "longitudinal", type = "fixed")
+# mode.frame(): model frame for the fixed effects in the second
+# linear mixed submodel
+head(model.frame(fit_jm, process = "longitudinal", type = "fixed")[[2]])
 
-# model.matrix(): linear mixed models' design matrices
-model.matrix(fit_jm)
+# model.matrix(): fixed effects design matrix for the first linear 
+# mixed submodel
+head(model.matrix(fit_jm)[[1]])
 
-# family(): family objects from all linear mixed submodels
+# family(): family objects from both linear mixed submodels
 family(fit_jm)
 
 # compare_jm(): compare two fitted joint models
-fit_lme1_b <- lme(log(serBilir) ~ year:sex,
-                 random = ~ year | id, data = pbc2)
+fit_lme1b <- lme(log(serBilir) ~ 1,
+                  random = ~ year | id, data = pbc2)
 
-fit_jm_b <- jm(fit_cox, list(fit_lme1_b, fit_lme2), time_var = "year")
+fit_jm2 <- jm(fit_cox, list(fit_lme1b, fit_lme2), time_var = "year", n_chains = 1L)
 
-compare_jm(fit_jm, fit_jm_b)
+compare_jm(fit_jm, fit_jm2)
 }
 }

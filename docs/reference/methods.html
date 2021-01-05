@@ -206,10 +206,10 @@ than the total number of submodels, extracts from all of them.</p></td>
     </tr>
     <tr>
       <th>type</th>
-      <td><p>in <code>compare_jm()</code>, which effects to select in the longitudinal process: <br /></p><ul>
+      <td><p>in <code>terms()</code> and <code>model.frame()</code>, which effects to select in the longitudinal process: <br /></p><ul>
 <li><p>if <code>"fixed"</code>, the fixed-effects, or</p></li>
 <li><p>if <code>"random"</code>, the random-efects.</p></li>
-</ul><p>in <code>terms()</code>, which log-likelihood function use to calculate the criteria: <br /></p><ul>
+</ul><p>in <code>compare_jm()</code>, which log-likelihood function use to calculate the criteria: <br /></p><ul>
 <li><p>if <code>"marginal"</code>, the marginal log-likelihood, or</p></li>
 <li><p>if <code>"conditional"</code>, the conditional log-likelihood.</p></li>
 </ul>
@@ -272,7 +272,7 @@ than the total number of submodels, extracts from all of them.</p></td>
     <div class='dont-index'><p><code><a href='jm.html'>jm</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+    <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
 <span class='co'># linear mixed model fits</span>
 <span class='va'>fit_lme1</span> <span class='op'>&lt;-</span> <span class='fu'>lme</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>serBilir</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>year</span><span class='op'>:</span><span class='va'>sex</span> <span class='op'>+</span> <span class='va'>age</span>,
                 random <span class='op'>=</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>|</span> <span class='va'>id</span>, data <span class='op'>=</span> <span class='va'>pbc2</span><span class='op'>)</span>
@@ -284,38 +284,101 @@ than the total number of submodels, extracts from all of them.</p></td>
 <span class='va'>fit_cox</span> <span class='op'>&lt;-</span> <span class='fu'>coxph</span><span class='op'>(</span><span class='fu'>Surv</span><span class='op'>(</span><span class='va'>years</span>, <span class='va'>status2</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>age</span>, data <span class='op'>=</span> <span class='va'>pbc2.id</span><span class='op'>)</span>
 
 <span class='co'># joint model fit</span>
-<span class='va'>fit_jm</span> <span class='op'>&lt;-</span> <span class='fu'><a href='jm.html'>jm</a></span><span class='op'>(</span><span class='va'>fit_cox</span>, <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>fit_lme1</span>, <span class='va'>fit_lme2</span><span class='op'>)</span>, time_var <span class='op'>=</span> <span class='st'>"year"</span><span class='op'>)</span>
+<span class='va'>fit_jm</span> <span class='op'>&lt;-</span> <span class='fu'><a href='jm.html'>jm</a></span><span class='op'>(</span><span class='va'>fit_cox</span>, <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>fit_lme1</span>, <span class='va'>fit_lme2</span><span class='op'>)</span>, time_var <span class='op'>=</span> <span class='st'>"year"</span>, n_chains <span class='op'>=</span> <span class='fl'>1L</span><span class='op'>)</span>
 
-<span class='co'># coef(): fixed effects for the event process </span>
+<span class='co'># coef(): fixed effects for the event process</span>
 <span class='fu'>coef</span><span class='op'>(</span><span class='va'>fit_jm</span><span class='op'>)</span>
-
+</div><div class='output co'>#&gt; $gammas
+#&gt;       Mean 
+#&gt; 0.04309299 
+#&gt; 
+#&gt; $association
+#&gt; value(log(serBilir))   value(prothrombin) 
+#&gt;            0.6633206            0.1732005 
+#&gt; </div><div class='input'>
 <span class='co'># fixef(): fixed effects for the first linear mixed submodel</span>
 <span class='fu'>fixef</span><span class='op'>(</span><span class='va'>fit_jm</span>, outcome <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
-
+</div><div class='output co'>#&gt;    (Intercept)            age   year:sexmale year:sexfemale 
+#&gt;    0.430282627    0.001091189    0.232717712    0.169234147 </div><div class='input'>
 <span class='co'># ranef(): random effects from all linear mixed submodels</span>
-<span class='fu'>ranef</span><span class='op'>(</span><span class='va'>fit_jm</span><span class='op'>)</span>
-
-<span class='co'># terms(): fixed effects terms in the linear mixed models</span>
-<span class='fu'>terms</span><span class='op'>(</span><span class='va'>fit_jm</span>, process <span class='op'>=</span> <span class='st'>"longitudinal"</span>, type <span class='op'>=</span> <span class='st'>"random"</span><span class='op'>)</span>
-
-<span class='co'># mode.frame(): model frame for the fixed effects terms in the linear mixed </span>
-<span class='co'># submodels</span>
-<span class='fu'>model.frame</span><span class='op'>(</span><span class='va'>fit_jm</span>, process <span class='op'>=</span> <span class='st'>"longitudinal"</span>, type <span class='op'>=</span> <span class='st'>"fixed"</span><span class='op'>)</span>
-
-<span class='co'># model.matrix(): linear mixed models' design matrices</span>
-<span class='fu'>model.matrix</span><span class='op'>(</span><span class='va'>fit_jm</span><span class='op'>)</span>
-
-<span class='co'># family(): family objects from all linear mixed submodels</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='fu'>ranef</span><span class='op'>(</span><span class='va'>fit_jm</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;            [,1]        [,2]        [,3]        [,4]
+#&gt; [1,]  1.8887719  0.02151262  0.82718828  0.01289249
+#&gt; [2,] -0.3619319 -0.01905881  0.12302776  0.06464758
+#&gt; [3,] -0.2506057  0.13671009  0.68282935  0.14610620
+#&gt; [4,]  0.1367959  0.08275015  1.37027782  0.43388440
+#&gt; [5,]  0.3442722  0.17939940 -0.02258490  0.40351899
+#&gt; [6,] -0.9283139 -0.06733693  0.05131139 -0.01961268</div><div class='input'>
+<span class='co'># terms(): random effects terms for the first linear mixed submodel</span>
+<span class='fu'>terms</span><span class='op'>(</span><span class='va'>fit_jm</span>, process <span class='op'>=</span> <span class='st'>"longitudinal"</span>, type <span class='op'>=</span> <span class='st'>"random"</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>
+</div><div class='output co'>#&gt; ~year
+#&gt; attr(,"variables")
+#&gt; list(year)
+#&gt; attr(,"factors")
+#&gt;      year
+#&gt; year    1
+#&gt; attr(,"term.labels")
+#&gt; [1] "year"
+#&gt; attr(,"order")
+#&gt; [1] 1
+#&gt; attr(,"intercept")
+#&gt; [1] 1
+#&gt; attr(,"response")
+#&gt; [1] 0
+#&gt; attr(,".Environment")
+#&gt; &lt;environment: 0x000000005f256650&gt;
+#&gt; attr(,"predvars")
+#&gt; list(year)
+#&gt; attr(,"dataClasses")
+#&gt;      year 
+#&gt; "numeric" </div><div class='input'>
+<span class='co'># mode.frame(): model frame for the fixed effects in the second</span>
+<span class='co'># linear mixed submodel</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='fu'>model.frame</span><span class='op'>(</span><span class='va'>fit_jm</span>, process <span class='op'>=</span> <span class='st'>"longitudinal"</span>, type <span class='op'>=</span> <span class='st'>"fixed"</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>2</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;   prothrombin    sex
+#&gt; 1        12.2 female
+#&gt; 2        11.2 female
+#&gt; 3        10.6 female
+#&gt; 4        11.0 female
+#&gt; 5        11.6 female
+#&gt; 6        10.6 female</div><div class='input'>
+<span class='co'># model.matrix(): fixed effects design matrix for the first linear </span>
+<span class='co'># mixed submodel</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='fu'>model.matrix</span><span class='op'>(</span><span class='va'>fit_jm</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;   (Intercept)      age year:sexmale year:sexfemale
+#&gt; 1           1 58.76684            0      0.0000000
+#&gt; 2           1 58.76684            0      0.5256817
+#&gt; 3           1 56.44782            0      0.0000000
+#&gt; 4           1 56.44782            0      0.4983025
+#&gt; 5           1 56.44782            0      0.9993429
+#&gt; 6           1 56.44782            0      2.1027270</div><div class='input'>
+<span class='co'># family(): family objects from both linear mixed submodels</span>
 <span class='fu'>family</span><span class='op'>(</span><span class='va'>fit_jm</span><span class='op'>)</span>
-
+</div><div class='output co'>#&gt; [[1]]
+#&gt; 
+#&gt; Family: gaussian 
+#&gt; Link function: identity 
+#&gt; 
+#&gt; 
+#&gt; [[2]]
+#&gt; 
+#&gt; Family: gaussian 
+#&gt; Link function: identity 
+#&gt; 
+#&gt; </div><div class='input'>
 <span class='co'># compare_jm(): compare two fitted joint models</span>
-<span class='va'>fit_lme1_b</span> <span class='op'>&lt;-</span> <span class='fu'>lme</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>serBilir</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>year</span><span class='op'>:</span><span class='va'>sex</span>,
-                 random <span class='op'>=</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>|</span> <span class='va'>id</span>, data <span class='op'>=</span> <span class='va'>pbc2</span><span class='op'>)</span>
+<span class='va'>fit_lme1b</span> <span class='op'>&lt;-</span> <span class='fu'>lme</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>serBilir</span><span class='op'>)</span> <span class='op'>~</span> <span class='fl'>1</span>,
+                  random <span class='op'>=</span> <span class='op'>~</span> <span class='va'>year</span> <span class='op'>|</span> <span class='va'>id</span>, data <span class='op'>=</span> <span class='va'>pbc2</span><span class='op'>)</span>
 
-<span class='va'>fit_jm_b</span> <span class='op'>&lt;-</span> <span class='fu'><a href='jm.html'>jm</a></span><span class='op'>(</span><span class='va'>fit_cox</span>, <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>fit_lme1_b</span>, <span class='va'>fit_lme2</span><span class='op'>)</span>, time_var <span class='op'>=</span> <span class='st'>"year"</span><span class='op'>)</span>
+<span class='va'>fit_jm2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='jm.html'>jm</a></span><span class='op'>(</span><span class='va'>fit_cox</span>, <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>fit_lme1b</span>, <span class='va'>fit_lme2</span><span class='op'>)</span>, time_var <span class='op'>=</span> <span class='st'>"year"</span>, n_chains <span class='op'>=</span> <span class='fl'>1L</span><span class='op'>)</span>
 
-<span class='fu'>compare_jm</span><span class='op'>(</span><span class='va'>fit_jm</span>, <span class='va'>fit_jm_b</span><span class='op'>)</span>
-<span class='op'>}</span>
+<span class='fu'>compare_jm</span><span class='op'>(</span><span class='va'>fit_jm</span>, <span class='va'>fit_jm2</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; 
+#&gt;               DIC     WAIC       LPML
+#&gt;  fit_jm2 11424.83 12792.59  -7214.944
+#&gt;   fit_jm 16667.08 39894.67 -21812.468
+#&gt; 
+#&gt; The criteria are calculated based on the marginal log-likelihood.</div><div class='input'><span class='co'># }</span>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

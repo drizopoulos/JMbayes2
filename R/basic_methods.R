@@ -61,7 +61,7 @@ gelman_diag.jm <- function (object,
     }
 }
 
-densplot <- function (object, ...) UseMethod("densityplot")
+densplot <- function (object, ...) UseMethod("densplot")
 
 densplot.jm <- function (object,
                           parm = c("all", "betas", "sigmas", "D", "bs_gammas",
