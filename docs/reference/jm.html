@@ -253,7 +253,7 @@
         <dt><code>Bsplines_degree</code></dt><dd><p>the degree of the splines in each basis; default quadratic splines.</p></dd>
         <dt><code>base_hazard_segments</code></dt><dd><p>the number of segments to split the follow-up period. Defaults to 10.</p></dd>
         <dt><code>diff</code></dt><dd><p>the order of the difference used in the penalty matrix for the B-splines for h_0. Defaults to 2.</p></dd>
-        <dt><code>n_chains</code></dt><dd><p>an integer specifying the number of chains for the MCMC. Defaults to 3.</p></dd>
+        <dt><code>n_chains</code></dt><dd><p>an integer specifying the number of chains for the MCMC. Defaults to 1.</p></dd>
         <dt><code>n_burnin</code></dt><dd><p>an integer specifying the number of burn-in iterations. Defaults to 500.</p></dd>
         <dt><code>n_iter</code></dt><dd><p>an integer specifying the number of total iterations per chain. Defaults to 3500.</p></dd>
         <dt><code>seed</code></dt><dd><p>the seed used in the sampling procedures. Defaults to 123.</p></dd>
@@ -339,9 +339,9 @@
 #&gt; Number of Observations:
 #&gt;   log(serBilir): 1945
 #&gt; 
-#&gt;                  DIC     WAIC      LPML
-#&gt; marginal    8964.685 45537.25 -19306.38
-#&gt; conditional 8841.408 26871.91 -21194.16
+#&gt;                    DIC     WAIC      LPML
+#&gt; marginal      141.1588       NA       Inf
+#&gt; conditional 12210.9344 26871.91 -21194.16
 #&gt; 
 #&gt; Random-effects covariance matrix:
 #&gt;                     
