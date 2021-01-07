@@ -81,7 +81,7 @@ cumuplot(object, \dots)
 \item{\dots}{further arguments passed to the corresponding function from the \bold{coda} package.}
 }
 
-\details{
+\value{
 \describe{
 \item{\code{traceplot()}}{Plots the evolution of the estimated parameter vs. iterations in a fitted joint model.}
 
@@ -122,9 +122,6 @@ fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year", n_chains = 1L
 
 # trace plot for the fixed effects in the linear mixed submodels
 traceplot(fit_jm, parm = "betas")
-
-# joint model convergence diagnostic
-# gelman_diag(fit_jm, "all")
 
 # density plot for the fixed effects in the linear mixed submodels
 densplot(fit_jm, parm = "betas")

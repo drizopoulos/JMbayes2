@@ -324,9 +324,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         con$knots <- knots(qs[1L], qs[2L], con$base_hazard_segments,
                            con$Bsplines_degree)
     }
-    .knots_base_hazard <- con$knots
-    env <- new.env(parent = .GlobalEnv)
-    assign(".knots_base_hazard", con$knots, envir = env)
 
     # Extract functional forms per longitudinal outcome
     if (any(!names(functional_forms) %in% respVars_form)) {
@@ -349,8 +346,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # One list component per association structure per outcome
     # List components vectors of integers corresponding to the term
     # each association structure corresponds to
-    set_env <- function (form, env) {environment(form) <- env; form}
-    functional_forms[] <- lapply(functional_forms, set_env, env = env)
     FunForms_per_outcome <- lapply(functional_forms, extract_functional_forms,
                                    data = dataS)
     FunForms_per_outcome <- lapply(FunForms_per_outcome,
