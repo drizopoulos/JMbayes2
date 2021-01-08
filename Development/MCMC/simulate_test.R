@@ -1,10 +1,7 @@
 library("JMbayes2")
-simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
-                           mean.Cens = 7) {
-    # if alpha = 0, mean.Cens = 35
-    library("splines")
+simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500, upp_Cens = 7) {
     K <- 15  # number of planned repeated measurements per subject, per outcome
-    t.max <- 10 # maximum follow-up time
+    t.max <- upp_Cens # maximum follow-up time
 
     ################################################
 
@@ -13,7 +10,7 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
     sigma.y <- 0.6 # measurement error standard deviation
 
     # parameters for the survival model
-    gammas <- c("(Intercept)" = -9.2, "Group" = 0.5, "Age" = 0.05)
+    gammas <- c("(Intercept)" = -9, "Group" = 0.5, "Age" = 0.05)
     phi <- 2
 
     D <- matrix(0, 4, 4)
@@ -23,11 +20,11 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
 
     ################################################
 
-    Bkn <- c(0, 9)
-    kn <- c(2.1, 3.5)
+    Bkn <- c(0, 10)
+    kn <- c(1, 3)
 
     # design matrices for the longitudinal measurement model
-    times <- c(replicate(n, c(0, 0.5, 1, sort(runif(K - 3, 1, t.max)))))
+    times <- c(replicate(n, c(0, sort(runif(K - 1, 1, t.max)))))
     group <- rep(0:1, each = n/2)
     age <- runif(n, 30, 70)
     DF <- data.frame(time = times)
@@ -87,7 +84,7 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
     DF <- DF[long.na.ind, , drop = FALSE]
     n <- length(trueTimes)
 
-    Ctimes <- runif(n, 0, 2 * mean.Cens)
+    Ctimes <- upp_Cens
     Time <- pmin(trueTimes, Ctimes)
     event <- as.numeric(trueTimes <= Ctimes) # event indicator
 
@@ -130,24 +127,25 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500,
 ################################################################################
 ################################################################################
 
-M <- 300
+M <- 200
 Data <- simulateJoint()
 res_bs_gammas <- matrix(as.numeric(NA), M, 12)
 res_gammas <- matrix(as.numeric(NA), M, length(Data$trueValues$gammas))
 res_alphas <- matrix(as.numeric(NA), M, length(Data$trueValues$alphas))
 res_D <- matrix(as.numeric(NA), M, length(Data$trueValues$D))
 res_betas <- matrix(as.numeric(NA), M, length(Data$trueValues$betas))
+res_betas_lme <- matrix(as.numeric(NA), M, length(Data$trueValues$betas))
 res_sigmas <- matrix(as.numeric(NA), M, length(Data$trueValues$sigmas))
 times <- matrix(as.numeric(NA), M, 3)
 
 for (m in seq_len(M)) {
     try_run <- try({
         Data <- simulateJoint()
-        lmeFit <- lme(y ~ ns(time, knots = c(2.1, 3.5), Boundary.knots = c(0, 9)),
+        lmeFit <- lme(y ~ ns(time, knots = c(1, 3), Boundary.knots = c(0, 10)),
                       data = Data$DF,
                       random =
-                          list(id = pdDiag(form = ~ ns(time, knots = c(2.1, 3.5),
-                                                       Boundary.knots = c(0, 9)))),
+                          list(id = pdDiag(form =
+                            ~ ns(time, knots = c(1, 3), Boundary.knots = c(0, 10)))),
                       control = lmeControl(opt = "optim", niterEM = 45))
         coxFit <- coxph(Surv(Time, event) ~ group + age, data = Data$DF.id)
 
@@ -159,6 +157,7 @@ for (m in seq_len(M)) {
         res_alphas[m, ] <- obj$statistics$Mean$alphas
         res_D[m, ] <- obj$statistics$Mean$D
         res_betas[m, ] <- obj$statistics$Mean$betas
+        res_betas_lme[m, ] <- fixef(lmeFit)
         res_sigmas[m, ] <- obj$statistics$Mean$sigmas
         times[m, ] <- obj$running_time[1:3L]
     }
@@ -171,6 +170,7 @@ colMeans(res_gammas, na.rm = TRUE) - Data$trueValues$gammas
 colMeans(res_alphas, na.rm = TRUE) - Data$trueValues$alphas
 colMeans(res_D, na.rm = TRUE) - Data$trueValues$D
 colMeans(res_betas, na.rm = TRUE) - Data$trueValues$betas
+colMeans(res_betas_lme, na.rm = TRUE) - Data$trueValues$betas
 colMeans(res_sigmas, na.rm = TRUE) - Data$trueValues$sigmas
 
 
