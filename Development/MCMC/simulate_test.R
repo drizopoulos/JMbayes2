@@ -20,7 +20,7 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500, upp_Cens = 7) {
 
     ################################################
 
-    Bkn <- c(0, 10)
+    Bkn <- c(0, 7)
     kn <- c(1, 3)
 
     # design matrices for the longitudinal measurement model
@@ -127,7 +127,7 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500, upp_Cens = 7) {
 ################################################################################
 ################################################################################
 
-M <- 200
+M <- 20
 Data <- simulateJoint()
 res_bs_gammas <- matrix(as.numeric(NA), M, 12)
 res_gammas <- matrix(as.numeric(NA), M, length(Data$trueValues$gammas))
@@ -141,11 +141,11 @@ times <- matrix(as.numeric(NA), M, 3)
 for (m in seq_len(M)) {
     try_run <- try({
         Data <- simulateJoint()
-        lmeFit <- lme(y ~ ns(time, knots = c(1, 3), Boundary.knots = c(0, 10)),
+        lmeFit <- lme(y ~ ns(time, knots = c(1, 3), Boundary.knots = c(0, 7)),
                       data = Data$DF,
                       random =
                           list(id = pdDiag(form =
-                            ~ ns(time, knots = c(1, 3), Boundary.knots = c(0, 10)))),
+                            ~ ns(time, knots = c(1, 3), Boundary.knots = c(0, 7)))),
                       control = lmeControl(opt = "optim", niterEM = 45))
         coxFit <- coxph(Surv(Time, event) ~ group + age, data = Data$DF.id)
 
