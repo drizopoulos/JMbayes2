@@ -127,7 +127,7 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500, upp_Cens = 7) {
 ################################################################################
 ################################################################################
 
-M <- 20
+M <- 30
 Data <- simulateJoint()
 res_bs_gammas <- matrix(as.numeric(NA), M, 12)
 res_gammas <- matrix(as.numeric(NA), M, length(Data$trueValues$gammas))
@@ -146,7 +146,7 @@ for (m in seq_len(M)) {
                       random =
                           list(id = pdDiag(form =
                             ~ ns(time, knots = c(1, 3), Boundary.knots = c(0, 7)))),
-                      control = lmeControl(opt = "optim", niterEM = 45))
+                      control = lmeControl(opt = "optim"))
         coxFit <- coxph(Surv(Time, event) ~ group + age, data = Data$DF.id)
 
         obj <- jm(coxFit, list(lmeFit), time_var = "time")

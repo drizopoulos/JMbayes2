@@ -92,7 +92,7 @@
       <h1 data-toc-skip>Univariate and Multivariate Joint Models</h1>
                         <h4 class="author">Dimitris Rizopoulos</h4>
             
-            <h4 class="date">2021-01-07</h4>
+            <h4 class="date">2021-01-10</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/master/vignettes/Joint_Models.Rmd"><code>vignettes/Joint_Models.Rmd</code></a></small>
       <div class="hidden name"><code>Joint_Models.Rmd</code></div>
@@ -128,27 +128,27 @@
 <span class="co">#&gt;   log(serBilir): 1945</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    4522.864 5978.167 -3096.175</span>
-<span class="co">#&gt; conditional 4797.696 7781.494 -5097.892</span>
+<span class="co">#&gt; marginal    4795.292 10493.86 -4927.820</span>
+<span class="co">#&gt; conditional 5104.769 12870.96 -6839.291</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                     </span>
 <span class="co">#&gt;        StdDev   Corr</span>
-<span class="co">#&gt; (Intr) 1.0109 (Intr)</span>
-<span class="co">#&gt; year   0.1816 0.3799</span>
+<span class="co">#&gt; (Intr) 1.0104 (Intr)</span>
+<span class="co">#&gt; year   0.1820 0.3687</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
 <span class="co">#&gt;                         Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; sexfemale            -0.1157 0.4013 -0.9118 0.6554 0.7687 1.0020</span>
-<span class="co">#&gt; value(log(serBilir))  1.2336 0.1158  1.0187 1.4725 0.0000 1.0188</span>
+<span class="co">#&gt; sexfemale            -0.0839 0.4441 -0.9413 0.7772 0.8313 1.0003</span>
+<span class="co">#&gt; value(log(serBilir))  1.2242 0.1145  1.0023 1.4426 0.0000 1.0340</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)</span>
 <span class="co">#&gt;                   Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)     0.7312 0.2323  0.2856 1.1881 0.0013 1.0008</span>
-<span class="co">#&gt; year            0.2584 0.0668  0.1259 0.3892 0.0000 1.0002</span>
-<span class="co">#&gt; sexfemale      -0.2708 0.2425 -0.7468 0.2002 0.2684 1.0008</span>
-<span class="co">#&gt; year:sexfemale -0.0821 0.0692 -0.2144 0.0536 0.2313 1.0003</span>
-<span class="co">#&gt; sigma           0.3927 0.0168  0.3649 0.4313 0.0000 1.0088</span>
+<span class="co">#&gt; (Intercept)     0.7335 0.3192  0.1027 1.3575 0.0231 1.0007</span>
+<span class="co">#&gt; year            0.2619 0.1032  0.0619 0.4636 0.0116 1.0007</span>
+<span class="co">#&gt; sexfemale      -0.2730 0.3324 -0.9179 0.3722 0.4164 1.0005</span>
+<span class="co">#&gt; year:sexfemale -0.0862 0.1068 -0.2963 0.1233 0.4242 1.0002</span>
+<span class="co">#&gt; sigma           0.4063 0.0225  0.3715 0.4613 0.0000 1.0028</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
@@ -191,55 +191,55 @@
 <span class="co">#&gt;   prothrombin: 1945</span>
 <span class="co">#&gt;   ascites: 1885</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt;                  DIC      WAIC      LPML</span>
-<span class="co">#&gt; marginal    20275.73  59898.83 -20275.11</span>
-<span class="co">#&gt; conditional 33160.47 163924.99 -80846.30</span>
+<span class="co">#&gt;                  DIC   WAIC      LPML</span>
+<span class="co">#&gt; marginal    16002.25 281996 -53045.92</span>
+<span class="co">#&gt; conditional      Inf    NaN      -Inf</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
-<span class="co">#&gt;                                                    </span>
-<span class="co">#&gt;        StdDev   Corr                               </span>
-<span class="co">#&gt; (Intr) 1.2521 (Intr)    year (Intr)    year (Intr) </span>
-<span class="co">#&gt; year   0.2659 -0.2125                              </span>
-<span class="co">#&gt; (Intr) 1.5037 0.2349  0.0680                       </span>
-<span class="co">#&gt; year   0.4356 0.1223  0.1187 -0.4276               </span>
-<span class="co">#&gt; (Intr) 8.6267 0.2614  0.0938 0.2000  0.0341        </span>
-<span class="co">#&gt; year   2.0208 0.2357  0.2658 0.1059  0.1622 -0.3167</span>
+<span class="co">#&gt;                                                     </span>
+<span class="co">#&gt;        StdDev    Corr                               </span>
+<span class="co">#&gt; (Intr) 1.3625  (Intr)    year  (Intr)    year (Intr)</span>
+<span class="co">#&gt; year   0.3782  -0.5282                              </span>
+<span class="co">#&gt; (Intr) 1.9281  0.1497  -0.0842                      </span>
+<span class="co">#&gt; year   0.4932  -0.0363 0.2612  -0.5584              </span>
+<span class="co">#&gt; (Intr) 11.4675 0.2421  0.0676  0.1438  0.1568       </span>
+<span class="co">#&gt; year   4.1282  0.1612  0.1855  0.0594  0.0869 0.0520</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
 <span class="co">#&gt;                         Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; sexfemale            -0.5332 0.4773 -1.4436 0.4353 0.2593 1.0013</span>
-<span class="co">#&gt; value(log(serBilir))  0.4497 0.1465  0.1678 0.7561 0.0017 1.0118</span>
-<span class="co">#&gt; value(prothrombin)    0.1242 0.0843 -0.0421 0.2920 0.1350 1.0066</span>
-<span class="co">#&gt; value(ascites)        0.0976 0.0284  0.0452 0.1556 0.0003 1.0166</span>
+<span class="co">#&gt; sexfemale            -0.7744 0.4632 -1.6566 0.1497 0.0980 1.0116</span>
+<span class="co">#&gt; value(log(serBilir))  0.0902 0.0673 -0.0373 0.2291 0.1683 1.0103</span>
+<span class="co">#&gt; value(prothrombin)    0.0296 0.0467 -0.0585 0.1260 0.5207 1.0883</span>
+<span class="co">#&gt; value(ascites)        0.0357 0.0100  0.0153 0.0555 0.0050 1.0287</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)</span>
 <span class="co">#&gt;                   Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)     0.7085 0.3440  0.0361 1.3955 0.0387 1.0001</span>
-<span class="co">#&gt; year            0.2377 0.1069  0.0230 0.4493 0.0323 1.0006</span>
-<span class="co">#&gt; sexfemale      -0.2774 0.5447 -1.3193 0.8017 0.6113 1.0009</span>
-<span class="co">#&gt; year:sexfemale -0.0699 0.1164 -0.2988 0.1566 0.5547 0.9998</span>
-<span class="co">#&gt; sigma           0.9897 0.1504  0.7404 1.3271 0.0000 1.0061</span>
+<span class="co">#&gt; (Intercept)     0.9900 1.9533 -2.7727 5.4681 0.5467 1.1223</span>
+<span class="co">#&gt; year            0.2402 0.4393 -0.6083 1.1072 0.5773 1.0000</span>
+<span class="co">#&gt; sexfemale      -0.3113 2.2316 -4.5992 3.9993 0.9097 1.0001</span>
+<span class="co">#&gt; year:sexfemale -0.0761 0.4642 -0.9852 0.8259 0.8787 0.9997</span>
+<span class="co">#&gt; sigma           3.1958 1.0039  1.8929 5.8022 0.0000 1.0771</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: prothrombin (family = gaussian, link = identity)</span>
 <span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)    10.9842 0.5125  9.9846 11.9993 0.0000 0.9999</span>
-<span class="co">#&gt; year            0.1982 0.2308 -0.2541  0.6468 0.3910 1.0011</span>
-<span class="co">#&gt; sexfemale      -0.4251 0.5265 -1.4384  0.6115 0.4283 1.0006</span>
-<span class="co">#&gt; year:sexfemale  0.0368 0.2430 -0.4334  0.5100 0.8787 1.0006</span>
-<span class="co">#&gt; sigma           1.8339 0.2296  1.4520  2.3507 0.0000 1.0052</span>
+<span class="co">#&gt; (Intercept)    10.9702 2.0819  6.8793 15.0751 0.0000 1.0011</span>
+<span class="co">#&gt; year            0.2082 0.9386 -1.6254  2.0443 0.8247 1.0004</span>
+<span class="co">#&gt; sexfemale      -0.4668 2.1968 -4.7296  3.7881 0.8230 1.0004</span>
+<span class="co">#&gt; year:sexfemale  0.0453 1.0021 -1.9134  1.9894 0.9510 1.0002</span>
+<span class="co">#&gt; sigma           5.0948 1.2093  3.1727  7.8856 0.0000 1.0065</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: ascites (family = binomial, link = logit)</span>
-<span class="co">#&gt;                Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept) -4.3602 2.3084 -9.0002 0.1098 0.0560 1.0000</span>
-<span class="co">#&gt; year         0.1877 0.2483 -0.2960 0.6779 0.4433 0.9999</span>
-<span class="co">#&gt; sexfemale    0.2015 2.0374 -3.7611 4.1936 0.9223 1.0013</span>
+<span class="co">#&gt;                Mean  StDev     2.5%   97.5%      P   Rhat</span>
+<span class="co">#&gt; (Intercept) -4.2425 9.4248 -22.3310 14.0456 0.6540 1.0010</span>
+<span class="co">#&gt; year         0.1851 1.0234  -1.8223  2.1806 0.8557 0.9997</span>
+<span class="co">#&gt; sexfemale    0.2331 8.3962 -15.6794 16.8689 0.9927 1.0007</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 12000 </span>
 <span class="co">#&gt; burn-in per chain: 2000 </span>
 <span class="co">#&gt; thinning: 5 </span>
-<span class="co">#&gt; time: 1.6 min</span></code></pre></div>
+<span class="co">#&gt; time: 1.5 min</span></code></pre></div>
 <p>The output for the survival submodel contains now the estimated coefficients for <code><a href="../reference/jm.html">value(prothrombin)</a></code> and <code><a href="../reference/jm.html">value(ascites)</a></code>, and parameter estimates for all three longitudinal submodels.</p>
 </div>
 <div id="functional-forms" class="section level2">
@@ -268,56 +268,56 @@
 <span class="co">#&gt;   prothrombin: 1945</span>
 <span class="co">#&gt;   ascites: 1885</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt;                  DIC      WAIC      LPML</span>
-<span class="co">#&gt; marginal    20380.29  59716.99 -18258.96</span>
-<span class="co">#&gt; conditional 33273.36 152248.39 -46117.48</span>
+<span class="co">#&gt;                  DIC     WAIC      LPML</span>
+<span class="co">#&gt; marginal    4897.968 359367.4 -59023.39</span>
+<span class="co">#&gt; conditional      Inf      NaN      -Inf</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                                                    </span>
-<span class="co">#&gt;        StdDev   Corr                               </span>
-<span class="co">#&gt; (Intr) 1.2270 (Intr)    year (Intr)    year (Intr) </span>
-<span class="co">#&gt; year   0.2615 -0.2003                              </span>
-<span class="co">#&gt; (Intr) 1.5192 0.2334  0.0830                       </span>
-<span class="co">#&gt; year   0.4410 0.1239  0.1125 -0.4294               </span>
-<span class="co">#&gt; (Intr) 8.9852 0.2589  0.1184 0.1845  0.0470        </span>
-<span class="co">#&gt; year   2.1324 0.2618  0.2729 0.1133  0.1679 -0.3235</span>
+<span class="co">#&gt;        StdDev    Corr                              </span>
+<span class="co">#&gt; (Intr) 1.4199  (Intr)    year (Intr)    year (Intr)</span>
+<span class="co">#&gt; year   0.3264  -0.5015                             </span>
+<span class="co">#&gt; (Intr) 2.0051  0.0643  0.1164                      </span>
+<span class="co">#&gt; year   0.5701  -0.0024 0.0329 -0.6226              </span>
+<span class="co">#&gt; (Intr) 13.1703 0.2171  0.1280 0.1952  0.0786       </span>
+<span class="co">#&gt; year   4.5973  0.2860  0.1384 0.1119  0.0415 0.0876</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
 <span class="co">#&gt;                                   Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; sexfemale                      -0.6480 0.5640 -1.7439 0.4609 0.2483 1.0071</span>
-<span class="co">#&gt; slope(log(serBilir))            0.6371 1.3177 -2.2162 2.9278 0.5943 1.0190</span>
-<span class="co">#&gt; slope(log(serBilir)):sexfemale  0.0316 1.4050 -2.5253 2.8972 0.9577 1.0203</span>
-<span class="co">#&gt; area(prothrombin)               0.2236 0.1220 -0.0123 0.4685 0.0633 1.0048</span>
-<span class="co">#&gt; value(ascites)                  0.1300 0.0296  0.0770 0.1925 0.0000 1.0047</span>
+<span class="co">#&gt; sexfemale                      -0.7502 0.5012 -1.6959 0.2618 0.1393 1.0478</span>
+<span class="co">#&gt; slope(log(serBilir))            0.2874 0.7116 -1.1774 1.6887 0.6637 1.0253</span>
+<span class="co">#&gt; slope(log(serBilir)):sexfemale -0.2238 0.8140 -1.7473 1.4244 0.7890 1.1135</span>
+<span class="co">#&gt; area(prothrombin)               0.0451 0.0597 -0.0708 0.1653 0.4357 1.0676</span>
+<span class="co">#&gt; value(ascites)                  0.0316 0.0078  0.0165 0.0469 0.0003 1.1075</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)</span>
-<span class="co">#&gt;                   Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)     0.7035 0.3484  0.0303 1.3942 0.0400 0.9997</span>
-<span class="co">#&gt; year            0.2406 0.1090  0.0320 0.4522 0.0273 1.0006</span>
-<span class="co">#&gt; sexfemale      -0.2676 0.5394 -1.3216 0.7742 0.6260 1.0011</span>
-<span class="co">#&gt; year:sexfemale -0.0730 0.1120 -0.2918 0.1458 0.5123 1.0000</span>
-<span class="co">#&gt; sigma           0.9947 0.1588  0.7381 1.3636 0.0000 1.0034</span>
+<span class="co">#&gt;                   Mean  StDev     2.5%   97.5%      P   Rhat</span>
+<span class="co">#&gt; (Intercept)     3.7377 8.4709 -12.9637 21.4178 0.6387 2.1845</span>
+<span class="co">#&gt; year            0.2341 0.4441  -0.6406  1.1234 0.5930 1.0004</span>
+<span class="co">#&gt; sexfemale      -0.2706 2.2249  -4.5533  4.1615 0.8913 1.0012</span>
+<span class="co">#&gt; year:sexfemale -0.0618 0.4735  -0.9802  0.8490 0.8960 1.0000</span>
+<span class="co">#&gt; sigma           6.7242 5.6828   2.0640 21.3343 0.0000 1.9380</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: prothrombin (family = gaussian, link = identity)</span>
 <span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)    10.9726 0.4992 10.0043 11.9443 0.0000 1.0016</span>
-<span class="co">#&gt; year            0.2000 0.2311 -0.2591  0.6505 0.3937 1.0011</span>
-<span class="co">#&gt; sexfemale      -0.4378 0.5394 -1.5070  0.6367 0.4107 1.0000</span>
-<span class="co">#&gt; year:sexfemale  0.0373 0.2464 -0.4549  0.5247 0.8777 0.9999</span>
-<span class="co">#&gt; sigma           1.8500 0.2392  1.4574  2.4037 0.0000 1.0074</span>
+<span class="co">#&gt; (Intercept)    10.9654 2.0950  6.7834 15.0263 0.0000 0.9996</span>
+<span class="co">#&gt; year            0.1906 0.9203 -1.5850  1.9915 0.8367 1.0010</span>
+<span class="co">#&gt; sexfemale      -0.4407 2.1675 -4.7145  3.8338 0.8463 1.0000</span>
+<span class="co">#&gt; year:sexfemale  0.0624 0.9901 -1.8823  2.0234 0.9480 0.9998</span>
+<span class="co">#&gt; sigma           5.1466 1.3183  3.1053  8.2206 0.0000 1.0140</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: ascites (family = binomial, link = logit)</span>
-<span class="co">#&gt;                Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept) -4.3573 2.2860 -8.8728 0.1245 0.0613 1.0002</span>
-<span class="co">#&gt; year         0.1893 0.2494 -0.2909 0.6821 0.4497 1.0002</span>
-<span class="co">#&gt; sexfemale    0.2025 2.0502 -3.8216 4.2848 0.9280 1.0006</span>
+<span class="co">#&gt;                Mean  StDev     2.5%   97.5%      P   Rhat</span>
+<span class="co">#&gt; (Intercept) -4.0442 9.5423 -22.8377 14.4118 0.6723 1.0000</span>
+<span class="co">#&gt; year         0.1927 1.0222  -1.8246  2.2169 0.8480 1.0003</span>
+<span class="co">#&gt; sexfemale    0.0977 8.3269 -15.9359 16.5840 0.9957 0.9997</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 12000 </span>
 <span class="co">#&gt; burn-in per chain: 2000 </span>
 <span class="co">#&gt; thinning: 5 </span>
-<span class="co">#&gt; time: 1.7 min</span></code></pre></div>
+<span class="co">#&gt; time: 1.6 min</span></code></pre></div>
 <p>As seen above, the <code>functional_forms</code> argument is a named list with elements corresponding to the longitudinal outcomes. If a longitudinal outcome is not specified in this list, then the default, value functional form, is used for that outcome. Each element of the list should be a one-sided R formula in which the functions <code><a href="../reference/jm.html">value()</a></code>, <code><a href="../reference/jm.html">slope()</a></code> and <code><a href="../reference/jm.html">area()</a></code> can be used. Interaction terms between the functional forms and other (baseline) covariates are also allowed.</p>
 </div>
 <div id="penalized-coefficients-using-shrinkage-priors" class="section level2">
@@ -328,12 +328,12 @@
 <code class="sourceCode R"><span class="va">jointFit4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">jointFit3</span>, priors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">"penalty_alphas"</span> <span class="op">=</span> <span class="st">"horseshoe"</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="st">"un-penalized"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span><span class="op">(</span><span class="fu"><a href="../reference/jm%20Methods.html">coef</a></span><span class="op">(</span><span class="va">jointFit3</span><span class="op">)</span><span class="op">)</span>, 
       <span class="st">"penalized"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html">unlist</a></span><span class="op">(</span><span class="fu"><a href="../reference/jm%20Methods.html">coef</a></span><span class="op">(</span><span class="va">jointFit4</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-<span class="co">#&gt;                                            un-penalized    penalized</span>
-<span class="co">#&gt; gammas.Mean                                 -0.64796963 -0.657487300</span>
-<span class="co">#&gt; association.slope(log(serBilir))             0.63706659  0.484750578</span>
-<span class="co">#&gt; association.slope(log(serBilir)):sexfemale   0.03159901  0.008351972</span>
-<span class="co">#&gt; association.area(prothrombin)                0.22359528  0.210188080</span>
-<span class="co">#&gt; association.value(ascites)                   0.12999083  0.130088905</span></code></pre></div>
+<span class="co">#&gt;                                            un-penalized   penalized</span>
+<span class="co">#&gt; gammas.Mean                                 -0.75020996 -0.79940639</span>
+<span class="co">#&gt; association.slope(log(serBilir))             0.28742833  0.02627142</span>
+<span class="co">#&gt; association.slope(log(serBilir)):sexfemale  -0.22376050  0.17109741</span>
+<span class="co">#&gt; association.area(prothrombin)                0.04514692  0.03083350</span>
+<span class="co">#&gt; association.value(ascites)                   0.03158965  0.03805740</span></code></pre></div>
 <p>Apart from the Horseshoe prior, the ridge prior is also provided.</p>
 </div>
 </div>
