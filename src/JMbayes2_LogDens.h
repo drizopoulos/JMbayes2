@@ -13,7 +13,7 @@ vec log_long_i (const mat &y_i, const vec &eta_i, const double &sigma_i,
                 const double &extr_prm_i, const std::string &fam_i,
                 const std::string &link_i, const uvec &idFast_i) {
   uword N = y_i.n_rows;
-  vec log_contr(N);
+  vec log_contr(N, fill::zeros);
   vec mu_i = mu_fun(eta_i, link_i);
   if (fam_i == "gaussian") {
     log_contr = log_dnorm(y_i, mu_i, sigma_i);

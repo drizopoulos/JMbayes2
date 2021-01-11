@@ -1188,7 +1188,8 @@ get_betas_nHC <- function (v, ind) {
 
 weak_informative_Tau <- function (model, Xbar) {
     V <- vcov_center(vcov2(model), Xbar)
-    diags <- 150.0 * diag(V)
+    diags <- pmin(100.0 * diag(V), 10)
+    #diags <- rep(100, length(diags))
     diag(1 / diags, nrow(V), ncol(V))
 }
 

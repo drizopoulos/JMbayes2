@@ -436,6 +436,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         find_patt <- function (patt, n) which(rep(patt, times = n))
         ind_RE_patt <- apply(unique(out_in), 1L, find_patt, n = nres)
         ind_FE_patt <- apply(unique(out_in), 1L, find_patt, n = nfes_HC)
+        if (!is.list(ind_RE_patt)) ind_RE_patt <- list(ind_RE_patt)
+        if (!is.list(ind_FE_patt)) ind_FE_patt <- list(ind_FE_patt)
     }
     X_dot <- create_X_dot3(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL,
                            xbas_in_z)

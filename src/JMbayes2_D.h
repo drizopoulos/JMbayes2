@@ -51,7 +51,7 @@ double deriv_L (const mat &L, const vec &sds, const mat &b,
                 const char &direction = 'b', const double &eps = 1e-06) {
   uword n = L.n_rows;
   uword upper_part_i = upper_part.at(i);
-  uword column = floor(upper_part_i / n);
+  uword column = upper_part_i / n;
   mat L_eps = L;
   if (direction == 'f') {
     L_eps(upper_part_i) += L_eps(upper_part_i) * eps;
@@ -87,7 +87,7 @@ mat propose_L (const mat &L, const vec &scale, const uvec &upper_part,
   }
   proposed_L(upper_part) = proposed_l;
   uword n = L.n_rows;
-  uword column = floor(upper_part.at(i) / n);
+  uword column = upper_part.at(i) / n;
   vec ll = proposed_L.submat(0, column, column - 1, column);
   double ss = dot(ll, ll);
   if (ss > 1) return proposed_L.fill(datum::nan);

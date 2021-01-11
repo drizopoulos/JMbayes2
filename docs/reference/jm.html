@@ -339,32 +339,32 @@
 #&gt; Number of Observations:
 #&gt;   log(serBilir): 1945
 #&gt; 
-#&gt;                  DIC       WAIC       LPML
-#&gt; marginal    15629.25 4433729.31 -253146.27
-#&gt; conditional 11908.63   43796.03  -31315.95
+#&gt;                   DIC     WAIC      LPML
+#&gt; marginal     9402.316       NA       Inf
+#&gt; conditional 12580.720 68141.64 -44963.09
 #&gt; 
 #&gt; Random-effects covariance matrix:
 #&gt;                      
 #&gt;        StdDev   Corr 
-#&gt; (Intr) 1.8447 (Intr) 
-#&gt; year   0.3122 -0.1547
+#&gt; (Intr) 1.4157 (Intr) 
+#&gt; year   0.2681 -0.1205
 #&gt; 
 #&gt; Survival Outcome:
 #&gt;                         Mean  StDev    2.5%  97.5%      P
-#&gt; drugD-penicil        -0.1692 0.3377 -0.8227 0.5190 0.6083
-#&gt; age                   0.0581 0.0172  0.0253 0.0965 0.0003
-#&gt; value(log(serBilir))  0.8416 0.2293  0.4009 1.3051 0.0000
+#&gt; drugD-penicil        -0.1541 0.3601 -0.8590 0.5904 0.6523
+#&gt; age                   0.0605 0.0165  0.0304 0.0950 0.0003
+#&gt; value(log(serBilir))  1.0208 0.2155  0.6263 1.4189 0.0000
 #&gt; 
 #&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)
 #&gt;                   Mean  StDev    2.5%  97.5%      P
-#&gt; (Intercept)    -0.3694 1.4346 -3.3283 2.4897 0.7730
-#&gt; year            0.2317 0.5087 -0.7779 1.2400 0.5917
-#&gt; sexfemale      -0.2270 0.5673 -1.3626 0.8991 0.6380
-#&gt; I(year^2)       0.0017 0.0524 -0.1008 0.1011 0.9650
-#&gt; age             0.0004 0.0296 -0.0588 0.0591 0.9907
-#&gt; prothrombin     0.1046 0.0996 -0.1012 0.3059 0.2293
-#&gt; year:sexfemale -0.0453 0.0802 -0.2086 0.1109 0.5460
-#&gt; sigma           1.0401 0.3645  0.6306 2.0355 0.0000
+#&gt; (Intercept)    -0.2997 1.0381 -2.3946 1.8278 0.7490
+#&gt; year            0.2442 0.3454 -0.4290 0.9139 0.4510
+#&gt; sexfemale      -0.2300 0.4519 -1.1257 0.6695 0.5890
+#&gt; I(year^2)       0.0003 0.0311 -0.0593 0.0648 0.9667
+#&gt; age            -0.0001 0.0192 -0.0366 0.0397 0.9727
+#&gt; prothrombin     0.0940 0.0741 -0.0564 0.2454 0.1847
+#&gt; year:sexfemale -0.0431 0.0664 -0.1767 0.0837 0.5087
+#&gt; sigma           0.8505 0.2100  0.5727 1.4125 0.0000
 #&gt; 
 #&gt; MCMC summary:
 #&gt; chains: 1 
@@ -413,55 +413,55 @@
 #&gt;   hepatomegaly: 1884
 #&gt;   ascites: 1885
 #&gt; 
-#&gt;                  DIC    WAIC      LPML
-#&gt; marginal    13345.20 5755615 -211450.9
-#&gt; conditional 11828.52 6607874 -222716.4
+#&gt;                   DIC      WAIC      LPML
+#&gt; marginal     7064.078  8085.004 -4295.341
+#&gt; conditional 10741.300 11846.294 -6923.246
 #&gt; 
 #&gt; Random-effects covariance matrix:
-#&gt;                                                    
-#&gt;        StdDev   Corr                               
-#&gt; (Intr) 1.1219 (Intr)    year (Intr)    year  (Intr)
-#&gt; year   0.2948 -0.0627                              
-#&gt; (Intr) 5.3802 0.3003  0.2469                       
-#&gt; year   2.5732 0.0618  0.2542 0.6386                
-#&gt; (Intr) 3.0688 0.4160  0.3163 -0.0026 -0.2754       
-#&gt; year   1.3551 0.4085  0.2816 0.1722  -0.0833 0.7145
+#&gt;                                                   
+#&gt;        StdDev   Corr                              
+#&gt; (Intr) 0.9927 (Intr)   year (Intr)    year (Intr) 
+#&gt; year   0.1757 0.3695                              
+#&gt; (Intr) 3.3884 0.5232 0.3330                       
+#&gt; year   0.6373 0.0905 0.3701 -0.2958               
+#&gt; (Intr) 3.3202 0.5734 0.4680 0.4980  0.0106        
+#&gt; year   0.4997 0.3938 0.5694 0.3657  0.3095 -0.0698
 #&gt; 
 #&gt; Survival Outcome:
 #&gt;                         Mean  StDev    2.5%  97.5%      P
-#&gt; drugD-penicil        -0.2144 0.3498 -0.9295 0.4447 0.5387
-#&gt; age                   0.0455 0.0193  0.0107 0.0870 0.0153
-#&gt; value(log(serBilir))  0.1950 0.1256 -0.0247 0.4678 0.0893
-#&gt; value(hepatomegaly)   0.0232 0.0239 -0.0265 0.0686 0.2960
-#&gt; value(ascites)        0.0159 0.0243 -0.0312 0.0648 0.5113
+#&gt; drugD-penicil        -0.1640 0.2705 -0.7022 0.3476 0.5667
+#&gt; age                   0.0401 0.0130  0.0146 0.0649 0.0040
+#&gt; value(log(serBilir))  0.8038 0.1706  0.4421 1.1406 0.0000
+#&gt; value(hepatomegaly)   0.0036 0.0967 -0.1970 0.1837 0.9500
+#&gt; value(ascites)        0.3565 0.1066  0.1731 0.5870 0.0000
 #&gt; 
 #&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)
 #&gt;                   Mean  StDev    2.5%  97.5%      P
-#&gt; (Intercept)    -0.6365 3.1161 -4.6543 5.3200 0.6000
-#&gt; year            0.2324 0.4471 -0.6357 1.1266 0.5967
-#&gt; sexfemale      -0.3198 2.2403 -4.6840 4.1828 0.8733
-#&gt; year:sexfemale -0.0686 0.4624 -0.9983 0.8396 0.8693
-#&gt; sigma           3.9377 1.2477  1.9911 6.7256 0.0000
+#&gt; (Intercept)     0.7008 0.2420  0.2265 1.1824 0.0033
+#&gt; year            0.2495 0.0636  0.1293 0.3744 0.0000
+#&gt; sexfemale      -0.2377 0.2489 -0.7284 0.2357 0.3400
+#&gt; year:sexfemale -0.0720 0.0627 -0.1957 0.0461 0.2340
+#&gt; sigma           0.3811 0.0144  0.3570 0.4120 0.0000
 #&gt; 
 #&gt; Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)
-#&gt;                Mean   StDev     2.5%   97.5%      P
-#&gt; (Intercept)  1.2318 14.9014 -28.0041 31.4356 0.9493
-#&gt; sexfemale   -1.2882  7.7826 -16.8077 14.0322 0.8673
-#&gt; age          0.0080  0.2367  -0.4544  0.4659 0.9673
-#&gt; year         0.1261  0.7932  -1.4339  1.6729 0.8707
+#&gt;                Mean  StDev    2.5%  97.5%      P
+#&gt; (Intercept)  0.3288 1.3462 -2.2980 2.9530 0.8140
+#&gt; sexfemale   -0.9668 0.7046 -2.3508 0.4222 0.1633
+#&gt; age          0.0132 0.0218 -0.0290 0.0566 0.5340
+#&gt; year         0.2772 0.1431  0.0109 0.5547 0.0380
 #&gt; 
 #&gt; Longitudinal Outcome: ascites (family = binomial, link = logit)
-#&gt;                Mean   StDev     2.5%   97.5%      P
-#&gt; (Intercept) -7.6359 15.2037 -37.7014 22.4478 0.5947
-#&gt; year         0.2068  1.0055  -1.7513  2.1689 0.8400
-#&gt; age          0.0678  0.2532  -0.4194  0.5627 0.8100
+#&gt;                Mean  StDev     2.5%   97.5% P
+#&gt; (Intercept) -9.7635 1.7343 -13.4150 -6.7681 0
+#&gt; year         0.6325 0.1834   0.2895  1.0297 0
+#&gt; age          0.0858 0.0247   0.0378  0.1367 0
 #&gt; 
 #&gt; MCMC summary:
 #&gt; chains: 1 
 #&gt; iterations per chain: 3500 
 #&gt; burn-in per chain: 500 
 #&gt; thinning: 1 
-#&gt; time: 0.3 min</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_2</span><span class='op'>)</span>
+#&gt; time: 0.4 min</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_2</span><span class='op'>)</span>
 </div><div class='img'><img src='jm-28.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-29.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-30.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-31.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-32.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-33.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-34.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-35.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-36.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-37.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-38.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-39.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-40.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-41.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-42.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-43.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-44.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-45.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-46.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-47.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-48.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-49.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-50.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-51.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-52.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-53.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-54.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-55.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-56.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-57.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-58.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-59.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-60.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-61.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-62.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-63.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-64.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-65.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-66.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-67.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-68.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-69.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-70.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-71.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-72.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-73.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-74.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-75.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-76.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-77.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-78.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>################################################################################</span>
 
@@ -520,50 +520,50 @@
 #&gt;   hepatomegaly: 1884
 #&gt;   ascites: 1885
 #&gt; 
-#&gt;                   DIC    WAIC      LPML
-#&gt; marginal     207.9404      NA       Inf
-#&gt; conditional 6041.9022 1206630 -90158.91
+#&gt;                   DIC     WAIC      LPML
+#&gt; marginal     7063.581 10014.68 -5599.031
+#&gt; conditional 10721.969 12157.33 -7100.733
 #&gt; 
 #&gt; Random-effects covariance matrix:
-#&gt;                                                    
-#&gt;        StdDev   Corr                               
-#&gt; (Intr) 1.0661 (Intr)    year  (Intr)   year  (Intr)
-#&gt; year   0.2559 -0.0810                              
-#&gt; (Intr) 5.6430 0.2545  0.2425                       
-#&gt; year   2.4660 0.1525  -0.0883 0.6311               
-#&gt; (Intr) 3.4820 0.3838  0.4656  0.0636 -0.2259       
-#&gt; year   1.1247 0.2700  0.5489  0.2063 -0.0290 0.7059
+#&gt;                                                  
+#&gt;        StdDev   Corr                             
+#&gt; (Intr) 0.9888 (Intr)   year (Intr)    year (Intr)
+#&gt; year   0.1817 0.3810                             
+#&gt; (Intr) 3.6664 0.5027 0.3494                      
+#&gt; year   0.6780 0.0812 0.3351 -0.3433              
+#&gt; (Intr) 2.8664 0.5680 0.4986 0.4964  0.0066       
+#&gt; year   0.4812 0.4416 0.6365 0.4099  0.2653 0.0855
 #&gt; 
 #&gt; Survival Outcome:
 #&gt;                         Mean  StDev    2.5%  97.5%      P
-#&gt; drugD-penicil        -0.1480 0.3312 -0.8347 0.5351 0.6300
-#&gt; age                   0.0402 0.0225 -0.0009 0.0871 0.0673
-#&gt; value(log(serBilir))  0.1955 0.1621 -0.1054 0.5445 0.1840
-#&gt; slope(log(serBilir))  0.0939 0.8026 -1.6347 1.6844 0.9100
-#&gt; area(hepatomegaly)    0.0276 0.0303 -0.0275 0.0897 0.3700
-#&gt; value(ascites)       -0.0670 0.0794 -0.2073 0.1080 0.4033
-#&gt; area(ascites)         0.0998 0.0946 -0.0949 0.2965 0.3100
+#&gt; drugD-penicil        -0.1379 0.3097 -0.7093 0.4948 0.6500
+#&gt; age                   0.0469 0.0132  0.0215 0.0732 0.0000
+#&gt; value(log(serBilir))  0.8566 0.2067  0.4298 1.2409 0.0000
+#&gt; slope(log(serBilir))  1.1657 1.1897 -1.2538 3.3440 0.3480
+#&gt; area(hepatomegaly)    0.0281 0.0842 -0.1416 0.1849 0.6727
+#&gt; value(ascites)        0.3731 0.4603 -0.2523 1.4372 0.5973
+#&gt; area(ascites)        -0.0828 0.3963 -0.9004 0.5685 0.9353
 #&gt; 
 #&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)
 #&gt;                   Mean  StDev    2.5%  97.5%      P
-#&gt; (Intercept)    -2.7724 3.4223 -7.5137 2.6726 0.5193
-#&gt; year            0.2403 0.4449 -0.6214 1.1019 0.5913
-#&gt; sexfemale      -0.2243 2.2089 -4.5070 4.1350 0.9127
-#&gt; year:sexfemale -0.0821 0.4717 -1.0041 0.8194 0.8440
-#&gt; sigma           4.7845 2.1068  2.1036 9.4814 0.0000
+#&gt; (Intercept)     0.7008 0.2324  0.2401 1.1485 0.0027
+#&gt; year            0.2561 0.0624  0.1357 0.3821 0.0000
+#&gt; sexfemale      -0.2383 0.2395 -0.6835 0.2400 0.3127
+#&gt; year:sexfemale -0.0732 0.0632 -0.1999 0.0452 0.2453
+#&gt; sigma           0.3805 0.0150  0.3568 0.4124 0.0000
 #&gt; 
 #&gt; Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)
-#&gt;                Mean   StDev     2.5%   97.5%      P
-#&gt; (Intercept)  0.9662 14.7640 -27.8042 29.7156 0.9680
-#&gt; sexfemale   -1.1842  7.7088 -16.1179 14.0552 0.8913
-#&gt; age          0.0085  0.2362  -0.4624  0.4747 0.9700
-#&gt; year         0.1367  0.7971  -1.3959  1.7055 0.8687
+#&gt;                Mean  StDev    2.5%  97.5%      P
+#&gt; (Intercept)  0.4622 1.4116 -2.3242 3.2091 0.7420
+#&gt; sexfemale   -1.0087 0.7638 -2.5097 0.5306 0.1813
+#&gt; age          0.0118 0.0237 -0.0341 0.0577 0.6227
+#&gt; year         0.2829 0.1560 -0.0271 0.6064 0.0773
 #&gt; 
 #&gt; Longitudinal Outcome: ascites (family = binomial, link = logit)
-#&gt;                Mean   StDev     2.5%   97.5%      P
-#&gt; (Intercept) -7.5031 14.9485 -36.4794 22.3206 0.6160
-#&gt; year         0.1657  1.0468  -1.8560  2.2409 0.8707
-#&gt; age          0.0593  0.2512  -0.4450  0.5446 0.8000
+#&gt;                Mean  StDev     2.5%   97.5%     P
+#&gt; (Intercept) -9.0007 1.6872 -12.5230 -5.8664 0e+00
+#&gt; year         0.5536 0.1796   0.2229  0.9106 0e+00
+#&gt; age          0.0803 0.0246   0.0322  0.1292 7e-04
 #&gt; 
 #&gt; MCMC summary:
 #&gt; chains: 1 
