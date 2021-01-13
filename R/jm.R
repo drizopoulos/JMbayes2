@@ -429,16 +429,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     out_in <- sapply(idL, "%in%", x = seq_len(nT))
     all_pat <- apply(out_in, 1L, paste0, collapse = "/")
     id_patt <- match(all_pat, unique(all_pat))
-    if (length(unique(out_in)) == 1){
-        ind_RE_patt <- list(seq_len(nres))
-        ind_FE_patt <- list(seq_len(nfes_HC))
-    } else {
-        find_patt <- function (patt, n) which(rep(patt, times = n))
-        ind_RE_patt <- apply(unique(out_in), 1L, find_patt, n = nres)
-        ind_FE_patt <- apply(unique(out_in), 1L, find_patt, n = nfes_HC)
-        if (!is.list(ind_RE_patt)) ind_RE_patt <- list(ind_RE_patt)
-        if (!is.list(ind_FE_patt)) ind_FE_patt <- list(ind_FE_patt)
-    }
+    find_patt <- function (patt, n) which(rep(patt, times = n))
+    unq_out_in <- split(unique(out_in), seq_len(nrow(unique(out_in))))
+    ind_RE_patt <- lapply(unq_out_in, find_patt, n = nres)
+    ind_FE_patt <- lapply(unq_out_in, find_patt, n = nfes_HC)
     X_dot <- create_X_dot3(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL,
                            xbas_in_z)
     ############################################################################
