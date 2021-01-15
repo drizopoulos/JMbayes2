@@ -1,3 +1,9 @@
+# JMbayes2 0.1.3
+
+## Minor
+* Used `parallel::clusterSetRNGStream()` in `jm_fit()` for distributing the seed in the workers.
+
+
 # JMbayes2 0.1.2
 
 ## Minor

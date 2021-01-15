@@ -64,8 +64,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     if (n_chains > 1) {
         mcmc_parallel <- function (chain, model_data, model_info, initial_values,
                                    priors, control) {
-            seed_ <- control$seed + chain
-            set.seed(seed_)
             not_D <- !names(initial_values) %in% c("D")
             initial_values[not_D] <- lapply(initial_values[not_D], jitter2)
             mcmc_cpp(model_data, model_info, initial_values, priors, control)
@@ -76,6 +74,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
                             length.out = n_chains))
         cores <- min(cores, length(chains))
         cl <- parallel::makeCluster(cores)
+        parallel::clusterSetRNGStream(cl = cl, iseed = control$seed)
         out <- parallel::parLapply(cl, chains, mcmc_parallel,
                                    model_data = model_data, model_info = model_info,
                                    initial_values = initial_values,

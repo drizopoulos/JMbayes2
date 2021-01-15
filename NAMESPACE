@@ -9,7 +9,8 @@ importFrom("stats", "coef", "terms", "model.frame", "model.frame.default",
            "ar", "var", "vcov", "optim", "delete.response", "model.response",
            "rnorm", "quantile", "runif", "rlnorm", "cov2cor", "as.formula",
            "gaussian", ".getXlevels", "makepredictcall")
-importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply")
+importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
+           "clusterSetRNGStream")
 importFrom("nlme", "fixef", "ranef", "pdMatrix")
 importFrom("GLMMadaptive", "effectPlotData")
 importFrom("survival", "coxph", "untangle.specials", "strata")
