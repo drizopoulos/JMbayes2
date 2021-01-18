@@ -327,51 +327,51 @@
 <span class='va'>fCox1</span> <span class='op'>&lt;-</span> <span class='fu'>coxph</span><span class='op'>(</span><span class='fu'>Surv</span><span class='op'>(</span><span class='va'>years</span>, <span class='va'>status2</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>drug</span> <span class='op'>+</span> <span class='va'>age</span>, data <span class='op'>=</span> <span class='va'>pbc2.id</span><span class='op'>)</span>
 
 <span class='co'># [3] The basic joint model is fitted using a call to jm() i.e.,</span>
-<span class='va'>joint_model_fit_1</span> <span class='op'>&lt;-</span> <span class='fu'>jm</span><span class='op'>(</span><span class='va'>fCox1</span>, <span class='va'>fm1</span>, time_var <span class='op'>=</span> <span class='st'>"year"</span>, n_chains <span class='op'>=</span> <span class='fl'>1L</span><span class='op'>)</span>
+<span class='va'>joint_model_fit_1</span> <span class='op'>&lt;-</span> <span class='fu'>jm</span><span class='op'>(</span><span class='va'>fCox1</span>, <span class='va'>fm1</span>, time_var <span class='op'>=</span> <span class='st'>"year"</span>, n_chains <span class='op'>=</span> <span class='fl'>2L</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>joint_model_fit_1</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; 
 #&gt; Call:
 #&gt; jm(Surv_object = fCox1, Mixed_objects = fm1, time_var = "year", 
-#&gt;     n_chains = 1L)
+#&gt;     n_chains = 2L)
 #&gt; 
 #&gt; Data Descriptives:
 #&gt; Number of Groups: 312		Number of events: 140 (44.9%)
 #&gt; Number of Observations:
 #&gt;   log(serBilir): 1945
 #&gt; 
-#&gt;                  DIC        WAIC       LPML
-#&gt; marginal    14484.08 25240952.19 -755914.91
-#&gt; conditional 10886.33    39013.06  -31666.28
+#&gt;                  DIC       WAIC       LPML
+#&gt; marginal    14147.99 1714934.26 -253120.51
+#&gt; conditional 11186.74   38874.52  -36198.83
 #&gt; 
 #&gt; Random-effects covariance matrix:
 #&gt;                      
 #&gt;        StdDev   Corr 
-#&gt; (Intr) 1.5280 (Intr) 
-#&gt; year   0.2726 -0.1404
+#&gt; (Intr) 1.5651 (Intr) 
+#&gt; year   0.2803 -0.1358
 #&gt; 
 #&gt; Survival Outcome:
-#&gt;                         Mean  StDev    2.5%  97.5%      P
-#&gt; drugD-penicil        -0.1769 0.3379 -0.8340 0.4811 0.5953
-#&gt; age                   0.0603 0.0161  0.0281 0.0917 0.0000
-#&gt; value(log(serBilir))  0.9913 0.2326  0.4845 1.4444 0.0000
+#&gt;                         Mean  StDev    2.5%  97.5%     P   Rhat
+#&gt; drugD-penicil        -0.1682 0.3462 -0.8367 0.5259 0.608 1.0041
+#&gt; age                   0.0593 0.0174  0.0264 0.0954 0.000 1.0003
+#&gt; value(log(serBilir))  0.9584 0.2161  0.5154 1.3979 0.000 1.1025
 #&gt; 
 #&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)
-#&gt;                   Mean  StDev    2.5%  97.5%      P
-#&gt; (Intercept)    -0.3652 1.0809 -2.6102 1.7615 0.7287
-#&gt; year            0.2732 0.3935 -0.5522 1.1474 0.4240
-#&gt; sexfemale      -0.2369 0.4865 -1.1770 0.7181 0.5853
-#&gt; I(year^2)      -0.0046 0.0400 -0.0941 0.0740 0.8673
-#&gt; age            -0.0029 0.0239 -0.0568 0.0445 0.8817
-#&gt; prothrombin     0.1006 0.0783 -0.0558 0.2542 0.1757
-#&gt; year:sexfemale -0.0446 0.0686 -0.1834 0.0880 0.4963
-#&gt; sigma           0.8946 0.2868  0.5681 1.6740 0.0000
+#&gt;                   Mean  StDev    2.5%  97.5%      P   Rhat
+#&gt; (Intercept)    -0.2735 1.1907 -2.6316 2.1510 0.7823 1.0750
+#&gt; year            0.2262 0.4113 -0.6850 1.0203 0.5033 1.0760
+#&gt; sexfemale      -0.2430 0.4887 -1.2263 0.7221 0.5943 1.0039
+#&gt; I(year^2)       0.0017 0.0403 -0.0736 0.0875 0.9842 1.1715
+#&gt; age             0.0002 0.0235 -0.0447 0.0499 0.9675 1.1367
+#&gt; prothrombin     0.0980 0.0873 -0.0838 0.2736 0.2240 1.1027
+#&gt; year:sexfemale -0.0423 0.0704 -0.1824 0.0994 0.5218 1.0057
+#&gt; sigma           0.9233 0.2659  0.5844 1.6094 0.0000 1.1585
 #&gt; 
 #&gt; MCMC summary:
-#&gt; chains: 1 
+#&gt; chains: 2 
 #&gt; iterations per chain: 6500 
 #&gt; burn-in per chain: 500 
 #&gt; thinning: 1 
-#&gt; time: 0.3 min</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_1</span><span class='op'>)</span>
+#&gt; time: 0.4 min</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_1</span><span class='op'>)</span>
 </div><div class='img'><img src='jm-1.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-2.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-3.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-4.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-5.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-6.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-7.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-8.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-9.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-10.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-11.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-12.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-13.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-14.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-15.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-16.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-17.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-18.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-19.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-20.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-21.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-22.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-23.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-24.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-25.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-26.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-27.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>################################################################################</span>
 
@@ -461,7 +461,7 @@
 #&gt; iterations per chain: 3500 
 #&gt; burn-in per chain: 500 
 #&gt; thinning: 1 
-#&gt; time: 0.4 min</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_2</span><span class='op'>)</span>
+#&gt; time: 0.3 min</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_2</span><span class='op'>)</span>
 </div><div class='img'><img src='jm-28.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-29.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-30.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-31.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-32.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-33.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-34.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-35.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-36.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-37.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-38.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-39.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-40.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-41.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-42.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-43.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-44.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-45.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-46.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-47.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-48.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-49.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-50.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-51.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-52.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-53.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-54.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-55.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-56.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-57.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-58.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-59.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-60.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-61.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-62.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-63.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-64.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-65.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-66.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-67.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-68.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-69.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-70.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-71.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-72.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-73.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-74.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-75.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-76.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-77.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-78.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>################################################################################</span>
 
@@ -506,12 +506,12 @@
 <span class='co'># [5] The joint model is fitted using a call to jm() and passing the list</span>
 <span class='co'># to the functional_forms argument.</span>
 <span class='va'>joint_model_fit_2</span> <span class='op'>&lt;-</span> <span class='fu'>jm</span><span class='op'>(</span><span class='va'>fCox1</span>, <span class='va'>Mixed</span>, time_var <span class='op'>=</span> <span class='st'>"year"</span>,
-                        functional_forms <span class='op'>=</span> <span class='va'>fForms</span>, n_chains <span class='op'>=</span> <span class='fl'>1L</span><span class='op'>)</span>
+                        functional_forms <span class='op'>=</span> <span class='va'>fForms</span>, n_chains <span class='op'>=</span> <span class='fl'>2L</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>joint_model_fit_2</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; 
 #&gt; Call:
 #&gt; jm(Surv_object = fCox1, Mixed_objects = Mixed, time_var = "year", 
-#&gt;     functional_forms = fForms, n_chains = 1L)
+#&gt;     functional_forms = fForms, n_chains = 2L)
 #&gt; 
 #&gt; Data Descriptives:
 #&gt; Number of Groups: 312		Number of events: 140 (44.9%)
@@ -521,56 +521,56 @@
 #&gt;   ascites: 1885
 #&gt; 
 #&gt;                   DIC      WAIC      LPML
-#&gt; marginal     7064.148  8797.809 -4683.050
-#&gt; conditional 10758.996 12383.860 -7183.043
+#&gt; marginal     7187.974  9914.244 -5585.940
+#&gt; conditional 10743.441 12283.594 -7501.124
 #&gt; 
 #&gt; Random-effects covariance matrix:
-#&gt;                                                  
-#&gt;        StdDev   Corr                             
-#&gt; (Intr) 0.9927 (Intr)   year (Intr)    year (Intr)
-#&gt; year   0.1828 0.3743                             
-#&gt; (Intr) 3.7607 0.5162 0.3368                      
-#&gt; year   0.6830 0.0323 0.3235 -0.3859              
-#&gt; (Intr) 2.5311 0.5909 0.5218 0.4736  0.0080       
-#&gt; year   0.5134 0.4564 0.6053 0.4951  0.1637 0.1828
+#&gt;                                                   
+#&gt;        StdDev   Corr                              
+#&gt; (Intr) 0.9959 (Intr)   year (Intr)    year  (Intr)
+#&gt; year   0.1778 0.3950                              
+#&gt; (Intr) 3.6414 0.5214 0.3469                       
+#&gt; year   0.6567 0.0437 0.3248 -0.3690               
+#&gt; (Intr) 3.4075 0.5665 0.4943 0.4897  -0.0018       
+#&gt; year   0.5238 0.4433 0.5804 0.3874  0.2317  0.0072
 #&gt; 
 #&gt; Survival Outcome:
-#&gt;                         Mean  StDev    2.5%  97.5%      P
-#&gt; drugD-penicil        -0.1242 0.2851 -0.6918 0.4232 0.7067
-#&gt; age                   0.0476 0.0145  0.0181 0.0741 0.0020
-#&gt; value(log(serBilir))  0.9020 0.1868  0.5151 1.2417 0.0000
-#&gt; slope(log(serBilir))  2.0005 0.9646  0.1944 3.8607 0.0347
-#&gt; area(hepatomegaly)    0.0836 0.0774 -0.0650 0.2288 0.2600
-#&gt; value(ascites)       -0.1878 0.1502 -0.4323 0.1879 0.2387
-#&gt; area(ascites)         0.4647 0.2148 -0.0403 0.8597 0.0633
+#&gt;                         Mean  StDev    2.5%  97.5%      P   Rhat
+#&gt; drugD-penicil        -0.1427 0.3248 -0.7834 0.4722 0.6913 1.0108
+#&gt; age                   0.0401 0.0195 -0.0044 0.0738 0.0727 1.0877
+#&gt; value(log(serBilir))  0.7847 0.3025  0.2177 1.3776 0.0067 1.1221
+#&gt; slope(log(serBilir))  0.9890 1.3017 -1.7573 3.4983 0.4283 1.0271
+#&gt; area(hepatomegaly)    0.0104 0.1006 -0.1824 0.2148 0.9213 1.7855
+#&gt; value(ascites)        0.4644 0.6316 -0.7151 1.3118 0.5397 4.0875
+#&gt; area(ascites)        -0.0576 0.5858 -0.7914 1.2611 0.6413 3.5113
 #&gt; 
 #&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)
-#&gt;                   Mean  StDev    2.5%  97.5%      P
-#&gt; (Intercept)     0.7158 0.2392  0.2495 1.1863 0.0027
-#&gt; year            0.2563 0.0690  0.1189 0.3913 0.0000
-#&gt; sexfemale      -0.2536 0.2481 -0.7324 0.2291 0.3153
-#&gt; year:sexfemale -0.0725 0.0695 -0.2067 0.0659 0.2913
-#&gt; sigma           0.3833 0.0161  0.3581 0.4202 0.0000
+#&gt;                   Mean  StDev    2.5%  97.5%      P   Rhat
+#&gt; (Intercept)     0.6944 0.2458  0.2176 1.1799 0.0053 1.0132
+#&gt; year            0.2514 0.0674  0.1151 0.3851 0.0000 1.0021
+#&gt; sexfemale      -0.2280 0.2555 -0.7250 0.2748 0.3717 1.0149
+#&gt; year:sexfemale -0.0679 0.0677 -0.2010 0.0638 0.3047 1.0034
+#&gt; sigma           0.3810 0.0153  0.3564 0.4162 0.0000 1.0091
 #&gt; 
 #&gt; Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)
-#&gt;                Mean  StDev    2.5%  97.5%      P
-#&gt; (Intercept)  0.5430 1.4335 -2.1794 3.4509 0.7207
-#&gt; sexfemale   -1.0744 0.7481 -2.5411 0.3627 0.1620
-#&gt; age          0.0121 0.0239 -0.0330 0.0584 0.6167
-#&gt; year         0.2677 0.1602 -0.0407 0.5838 0.0913
+#&gt;                Mean  StDev    2.5%  97.5%      P   Rhat
+#&gt; (Intercept)  0.4379 1.3664 -2.2366 3.0489 0.7463 1.0027
+#&gt; sexfemale   -0.9839 0.7526 -2.4740 0.5171 0.1873 1.0310
+#&gt; age          0.0121 0.0222 -0.0302 0.0561 0.6067 1.0000
+#&gt; year         0.2696 0.1575 -0.0427 0.5753 0.0940 1.0658
 #&gt; 
 #&gt; Longitudinal Outcome: ascites (family = binomial, link = logit)
-#&gt;                Mean  StDev     2.5%   97.5%      P
-#&gt; (Intercept) -8.5009 1.5764 -11.7693 -5.6387 0.0000
-#&gt; year         0.4611 0.1672   0.1515  0.8197 0.0107
-#&gt; age          0.0774 0.0251   0.0288  0.1307 0.0000
+#&gt;                 Mean  StDev     2.5%   97.5%      P   Rhat
+#&gt; (Intercept) -10.1878 2.2102 -14.5942 -5.9981 0.0000 1.0100
+#&gt; year          0.6709 0.2266   0.2181  1.0983 0.0010 1.0864
+#&gt; age           0.0916 0.0291   0.0369  0.1532 0.0013 0.9998
 #&gt; 
 #&gt; MCMC summary:
-#&gt; chains: 1 
+#&gt; chains: 2 
 #&gt; iterations per chain: 3500 
 #&gt; burn-in per chain: 500 
 #&gt; thinning: 1 
-#&gt; time: 0.4 min</div><div class='input'>
+#&gt; time: 0.6 min</div><div class='input'>
 <span class='co'># }</span>
 </div></pre>
   </div>

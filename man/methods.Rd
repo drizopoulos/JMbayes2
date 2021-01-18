@@ -150,7 +150,8 @@ fit_lme2 <- lme(prothrombin ~ sex,
 fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
 # joint model fit
-fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year", n_chains = 1L)
+fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year",
+    n_chains = 2L)
 
 # coef(): fixed effects for the event process
 coef(fit_jm)
@@ -168,7 +169,7 @@ terms(fit_jm, process = "longitudinal", type = "random")[[1]]
 # linear mixed submodel
 head(model.frame(fit_jm, process = "longitudinal", type = "fixed")[[2]])
 
-# model.matrix(): fixed effects design matrix for the first linear 
+# model.matrix(): fixed effects design matrix for the first linear
 # mixed submodel
 head(model.matrix(fit_jm)[[1]])
 
@@ -179,7 +180,8 @@ family(fit_jm)
 fit_lme1b <- lme(log(serBilir) ~ 1,
                   random = ~ year | id, data = pbc2)
 
-fit_jm2 <- jm(fit_cox, list(fit_lme1b, fit_lme2), time_var = "year", n_chains = 1L)
+fit_jm2 <- jm(fit_cox, list(fit_lme1b, fit_lme2), time_var = "year",
+    n_chains = 2L)
 
 compare_jm(fit_jm, fit_jm2)
 }
