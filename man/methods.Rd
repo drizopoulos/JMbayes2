@@ -151,7 +151,7 @@ fit_cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
 # joint model fit
 fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year",
-    n_chains = 2L)
+    n_chains = 1L, n_iter = 11000L, n_burnin = 1000L)
 
 # coef(): fixed effects for the event process
 coef(fit_jm)
@@ -181,7 +181,7 @@ fit_lme1b <- lme(log(serBilir) ~ 1,
                   random = ~ year | id, data = pbc2)
 
 fit_jm2 <- jm(fit_cox, list(fit_lme1b, fit_lme2), time_var = "year",
-    n_chains = 2L)
+    n_chains = 1L, n_iter = 11000L, n_burnin = 1000L)
 
 compare_jm(fit_jm, fit_jm2)
 }

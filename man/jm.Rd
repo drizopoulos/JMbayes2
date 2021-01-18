@@ -171,7 +171,8 @@ fm1 <- lme(fixed = log(serBilir) ~ year * sex + I(year^2) +
 fCox1 <- coxph(Surv(years, status2) ~ drug + age, data = pbc2.id)
 
 # [3] The basic joint model is fitted using a call to jm() i.e.,
-joint_model_fit_1 <- jm(fCox1, fm1, time_var = "year", n_chains = 2L)
+joint_model_fit_1 <- jm(fCox1, fm1, time_var = "year",
+        n_chains = 1L, n_iter = 11000L, n_burnin = 1000L)
 summary(joint_model_fit_1)
 traceplot(joint_model_fit_1)
 
@@ -201,7 +202,8 @@ Mixed <- list(fm1, fm2, fm3)
 fCox1 <- coxph(Surv(years, status2) ~ drug + age, data = pbc2.id)
 
 # [4] The joint model is fitted using a call to jm() i.e.,
-joint_model_fit_2 <- jm(fCox1, Mixed, time_var = "year", n_chains = 1L)
+joint_model_fit_2 <- jm(fCox1, Mixed, time_var = "year",
+      n_chains = 1L, n_iter = 11000L, n_burnin = 1000L)
 summary(joint_model_fit_2)
 traceplot(joint_model_fit_2)
 
@@ -248,7 +250,8 @@ fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)),
 # [5] The joint model is fitted using a call to jm() and passing the list
 # to the functional_forms argument.
 joint_model_fit_2 <- jm(fCox1, Mixed, time_var = "year",
-                        functional_forms = fForms, n_chains = 2L)
+                        functional_forms = fForms, n_chains = 1L,
+                        n_iter = 11000L, n_burnin = 1000L)
 summary(joint_model_fit_2)
 
 }
