@@ -55,8 +55,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     }
     idVar <- id_names[1L]
     idL <- dataL[[idVar]]
-    idL_ind <- lapply(idL, function (x) seq_along(x))
-    idL_ind <- mapply2(function (x, y) split(x, y), idL_ind, idL)
     nY <- length(unique(idL))
     # order data by idL and time_var
     if (is.null(dataL[[time_var]])) {
@@ -437,7 +435,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                            xbas_in_z)
     ############################################################################
     ############################################################################
-    Data <- list(n = nY, idL = idL, idL_ind = idL_ind, idL_lp = idL_lp, unq_idL = unq_idL,
+    Data <- list(n = nY, idL = idL, idL_lp = idL_lp, unq_idL = unq_idL,
                  y = y, X = X, Z = Z, X_dot = X_dot, Xbar = Xbar,
                  x_in_z = x_in_z, x_notin_z = x_notin_z,
                  has_tilde_betas = has_tilde_betas, ind_FE = ind_FE,

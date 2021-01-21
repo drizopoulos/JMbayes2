@@ -15,8 +15,12 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     model_data$y[binomial_data] <-
         lapply(model_data$y[binomial_data], trials_fun)
     idT <- model_data$idT
+    # When we have competing risks we have the same idT for the different strata
+    # id_H below distinguishes between the different risks per subject. Then for
+    # each unique idT & strata/risk combination we have the quadrature points.
     id_H <- rep(paste0(idT, "_", model_data$strata), each = control$GK_k)
     id_H <- match(id_H, unique(id_H))
+    # id_H_ repeats each unique idT the number of quadrature points
     id_H_ <- rep(idT, each = control$GK_k)
     id_H_ <- match(id_H_, unique(id_H_))
     id_h <- unclass(idT)
@@ -273,6 +277,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
         c(mlogLik_jm(thetas, statistics$Mean[["b"]], statistics$post_vars,
                      model_data, model_info, control))
     marginal_fit_stats <- fit_stats(mcmc_out$mlogLik, mlogLik_mean_parms)
+    mcmc_out$logLik <- mcmc_out$mlogLik <- NULL
     c(mcmc_out, list(statistics = statistics,
                      fit_stats = list(conditional = conditional_fit_stats,
                                       marginal = marginal_fit_stats)))

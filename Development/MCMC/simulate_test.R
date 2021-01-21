@@ -127,7 +127,7 @@ simulateJoint <- function (alpha = 0.5, Dalpha = 0, n = 500, upp_Cens = 7) {
 ################################################################################
 ################################################################################
 
-M <- 200
+M <- 20
 Data <- simulateJoint()
 res_bs_gammas <- matrix(as.numeric(NA), M, 12)
 res_gammas <- matrix(as.numeric(NA), M, length(Data$trueValues$gammas))
