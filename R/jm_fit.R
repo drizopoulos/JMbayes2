@@ -7,7 +7,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     model_data$y[] <- lapply(model_data$y, as.matrix)
     # for family = binomial and when y has two columns, set the second column
     # to the number of trials instead the number of failures
-    binomial_data <- model_info$family_names == "binomial"
+    binomial_data <- model_info$family_names %in% c("binomial", "beta binomial")
     trials_fun <- function (y) {
         if (NCOL(y) == 2L) y[, 2L] <- y[, 1L] + y[, 2L]
         y

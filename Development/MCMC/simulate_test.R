@@ -173,9 +173,13 @@ colMeans(res_betas, na.rm = TRUE) - Data$trueValues$betas
 colMeans(res_betas_lme, na.rm = TRUE) - Data$trueValues$betas
 colMeans(res_sigmas, na.rm = TRUE) - Data$trueValues$sigmas
 
+################################################################################
+################################################################################
 
-################################################################################
-################################################################################
+####################
+# Beta mixed model #
+####################
+
 
 library("JMbayes2")
 set.seed(1234)
@@ -203,11 +207,179 @@ b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
 # linear predictor
 eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
 # mean
-mu <- plogis(eta_y)
+mu_y <- plogis(eta_y) # exp(eta_y) / (1 + exp(eta_y))
 # we simulate beta longitudinal data
-DF$y <- rbeta(n * K, shape1 = mu * phi, shape2 = phi * (1 - mu))
+DF$y <- rbeta(n * K, shape1 = mu_y * phi, shape2 = phi * (1 - mu_y))
 # we transform to (0, 1)
 DF$y <- (DF$y * (nrow(DF) - 1) + 0.5) / nrow(DF)
+
+# simulate event times
+upp_Cens <- 15 # fixed Type I censoring time
+shape_wb <- 5 # shape Weibull
+alpha <- 0.8 # association coefficients
+gammas <- c("(Intercept)" = -9, "sex" = 0.5)
+W <- model.matrix(~ sex, data = DF[!duplicated(DF$id), ])
+eta_t <- as.vector(W %*% gammas)
+invS <- function (t, i) {
+    sex_i <- W[i, 2L]
+    h <- function (s) {
+        X_at_s <- cbind(1, sex_i, s, sex_i * s)
+        Z_at_s <- cbind(1, s)
+        f <- as.vector(X_at_s %*% betas +
+                           rowSums(Z_at_s * b[rep(i, nrow(Z_at_s)), ]))
+        exp(log(shape_wb) + (shape_wb - 1) * log(s) + eta_t[i] + f * alpha)
+    }
+    integrate(h, lower = 0, upper = t)$value + log(u[i])
+}
+u <- runif(n)
+trueTimes <- numeric(n)
+for (i in seq_len(n)) {
+    Up <- 100
+    Root <- try(uniroot(invS, interval = c(1e-05, Up), i = i)$root, TRUE)
+    trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
+}
+
+Ctimes <- upp_Cens
+Time <- pmin(trueTimes, Ctimes)
+event <- as.numeric(trueTimes <= Ctimes) # event indicator
+
+# we keep the longitudinal measurements before the event times
+DF$Time <- Time[DF$id]
+DF$event <- event[DF$id]
+DF <- DF[DF$time <= DF$Time, ]
+
+# Fit the joint model
+DF_id <- DF[!duplicated(DF$id), ]
+Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
+Beta_MixMod <- mixed_model(y ~ sex * time, random = ~ time | id, data = DF,
+                           family = beta.fam())
+
+jointFit <- jm(Cox_fit, Beta_MixMod, time_var = "time")
+summary(jointFit)
+
+################################################################################
+################################################################################
+
+#############################
+# Beta-binomial mixed model #
+#############################
+
+library("JMbayes2")
+set.seed(1234)
+n <- 500 # number of subjects
+K <- 8 # number of measurements per subject
+t_max <- 10 # maximum follow-up time
+
+# we construct a data frame with the design:
+# everyone has a baseline measurement, and then measurements at random follow-up times
+DF <- data.frame(id = rep(seq_len(n), each = K),
+                 time = c(replicate(n, c(0, sort(runif(K - 1, 0, t_max))))),
+                 sex = rep(gl(2, n/2, labels = c("male", "female")), each = K))
+
+# design matrices for the fixed and random effects
+X <- model.matrix(~ sex * time, data = DF)
+Z <- model.matrix(~ time, data = DF)
+
+betas <- c(-2.2, -0.25, 0.24, -0.05) # fixed effects coefficients
+phi <- 5 # precision parameter of the Beta distribution
+D11 <- 1.0 # variance of random intercepts
+D22 <- 0.5 # variance of random slopes
+
+# we simulate random effects
+b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
+# linear predictor
+eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
+# mean
+mu_y <- plogis(eta_y) # exp(eta_y) / (1 + exp(eta_y))
+# we simulate probabilities from the Beta distribution
+probs <- rbeta(n * K, shape1 = mu_y * phi, shape2 = phi * (1 - mu_y))
+# we transform to (0, 1)
+probs <- (probs * (nrow(DF) - 1) + 0.5) / nrow(DF)
+# we simulate binomial data use the probs
+DF$y <- rbinom(n * K, size = 20, prob = probs)
+
+# simulate event times
+upp_Cens <- 15 # fixed Type I censoring time
+shape_wb <- 5 # shape Weibull
+alpha <- 0.8 # association coefficients
+gammas <- c("(Intercept)" = -9, "sex" = 0.5)
+W <- model.matrix(~ sex, data = DF[!duplicated(DF$id), ])
+eta_t <- as.vector(W %*% gammas)
+invS <- function (t, i) {
+    sex_i <- W[i, 2L]
+    h <- function (s) {
+        X_at_s <- cbind(1, sex_i, s, sex_i * s)
+        Z_at_s <- cbind(1, s)
+        f <- as.vector(X_at_s %*% betas +
+                           rowSums(Z_at_s * b[rep(i, nrow(Z_at_s)), ]))
+        exp(log(shape_wb) + (shape_wb - 1) * log(s) + eta_t[i] + f * alpha)
+    }
+    integrate(h, lower = 0, upper = t)$value + log(u[i])
+}
+u <- runif(n)
+trueTimes <- numeric(n)
+for (i in seq_len(n)) {
+    Up <- 100
+    Root <- try(uniroot(invS, interval = c(1e-05, Up), i = i)$root, TRUE)
+    trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
+}
+
+Ctimes <- upp_Cens
+Time <- pmin(trueTimes, Ctimes)
+event <- as.numeric(trueTimes <= Ctimes) # event indicator
+
+# we keep the longitudinal measurements before the event times
+DF$Time <- Time[DF$id]
+DF$event <- event[DF$id]
+DF <- DF[DF$time <= DF$Time, ]
+
+# Fit the joint model
+DF_id <- DF[!duplicated(DF$id), ]
+Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
+BetaBinom_MixMod <-
+    mixed_model(cbind(y, 20 - y) ~ sex * time, random = ~ time | id, data = DF,
+                family = beta.binomial())
+
+jointFit <- jm(Cox_fit, BetaBinom_MixMod, time_var = "time")
+summary(jointFit)
+
+################################################################################
+################################################################################
+
+#####################
+# Gamma mixed model #
+#####################
+
+library("JMbayes2")
+set.seed(1234)
+n <- 200 # number of subjects
+K <- 8 # number of measurements per subject
+t_max <- 10 # maximum follow-up time
+
+# we construct a data frame with the design:
+# everyone has a baseline measurement, and then measurements at random follow-up times
+DF <- data.frame(id = rep(seq_len(n), each = K),
+                 time = c(replicate(n, c(0, sort(runif(K - 1, 0, t_max))))),
+                 sex = rep(gl(2, n/2, labels = c("male", "female")), each = K))
+
+# design matrices for the fixed and random effects
+X <- model.matrix(~ sex * time, data = DF)
+Z <- model.matrix(~ time, data = DF)
+
+betas <- c(2, -0.25, 0.24, -0.05) # fixed effects coefficients
+phi <- 2 # scale of Gamma is mu_y / phi
+D11 <- 1.0 # variance of random intercepts
+D22 <- 0.5 # variance of random slopes
+
+# we simulate random effects
+b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
+# linear predictor
+eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
+# mean
+mu_y <- exp(eta_y)
+# we simulate beta longitudinal data
+DF$y <- rgamma(n * K, shape = mu_y, scale = mu_y / phi)
+DF$y[DF$y < sqrt(.Machine$double.eps)] <- 1e-05
 
 # simulate event times
 upp_Cens <- 15 # fixed Type I censoring time
@@ -246,11 +418,184 @@ DF <- DF[DF$time <= DF$Time, ]
 # Fit the joint model
 DF_id <- DF[!duplicated(DF$id), ]
 Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
-Beta_MixMod <- mixed_model(y ~ sex * time, random = ~ time | id, data = DF,
-                           family = beta.fam())
+Gamma_MixMod <- mixed_model(y ~ sex * time, random = ~ time | id, data = DF,
+                           family = Gamma.fam())
 
-jointFit <- jm(Cox_fit, Beta_MixMod, time_var = "time")
+jointFit <- jm(Cox_fit, Gamma_MixMod, time_var = "time")
 summary(jointFit)
 
+
+################################################################################
+################################################################################
+
+#################################
+# Negative Binomial mixed model #
+#################################
+
+library("JMbayes2")
+set.seed(1234)
+n <- 500 # number of subjects
+K <- 10 # number of measurements per subject
+t_max <- 5 # maximum follow-up time
+
+# we construct a data frame with the design:
+# everyone has a baseline measurement, and then measurements at random follow-up times
+DF <- data.frame(id = rep(seq_len(n), each = K),
+                 time = c(replicate(n, c(0, sort(runif(K - 1, 0, t_max))))),
+                 sex = rep(gl(2, n/2, labels = c("male", "female")), each = K))
+
+# design matrices for the fixed and random effects non-zero part
+X <- model.matrix(~ sex * time, data = DF)
+Z <- model.matrix(~ time, data = DF)
+
+betas <- c(0.8, -0.5, 0.8, -0.5) # fixed effects coefficients
+shape <- 2 # shape/size parameter of the negative binomial distribution
+D11 <- 1.0 # variance of random intercepts
+D22 <- 0.3 # variance of random slopes
+
+# we simulate random effects
+b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
+# linear predictor non-zero part
+eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
+# we simulate negative binomial longitudinal data
+DF$y <- rnbinom(n * K, size = shape, mu = exp(eta_y))
+
+# simulate event times
+upp_Cens <- 5 # fixed Type I censoring time
+shape_wb <- 5 # shape Weibull
+alpha <- 0.8 # association coefficients
+gammas <- c("(Intercept)" = -9, "sex" = 0.5)
+W <- model.matrix(~ sex, data = DF[!duplicated(DF$id), ])
+eta_t <- as.vector(W %*% gammas)
+invS <- function (t, i) {
+    sex_i <- W[i, 2L]
+    h <- function (s) {
+        X_at_s <- cbind(1, sex_i, s, sex_i * s)
+        Z_at_s <- cbind(1, s)
+        f <- as.vector(X_at_s %*% betas +
+                           rowSums(Z_at_s * b[rep(i, nrow(Z_at_s)), ]))
+        exp(log(shape_wb) + (shape_wb - 1) * log(s) + eta_t[i] + f * alpha)
+    }
+    integrate(h, lower = 0, upper = t)$value + log(u[i])
+}
+u <- runif(n)
+trueTimes <- numeric(n)
+for (i in seq_len(n)) {
+    Up <- 100
+    Root <- try(uniroot(invS, interval = c(1e-05, Up), i = i)$root, TRUE)
+    trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
+}
+
+Ctimes <- upp_Cens
+Time <- pmin(trueTimes, Ctimes)
+event <- as.numeric(trueTimes <= Ctimes) # event indicator
+
+# we keep the longitudinal measurements before the event times
+DF$Time <- Time[DF$id]
+DF$event <- event[DF$id]
+DF <- DF[DF$time <= DF$Time, ]
+
+# Fit the joint model
+DF_id <- DF[!duplicated(DF$id), ]
+Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
+NB_MixMod <- mixed_model(y ~ sex * time, random = ~ time | id, data = DF,
+                         family = negative.binomial())
+
+jointFit <- jm(Cox_fit, NB_MixMod, time_var = "time")
+summary(jointFit)
+
+################################################################################
+################################################################################
+
+###############################
+# Censored normal mixed model #
+###############################
+
+library("JMbayes2")
+set.seed(1234)
+n <- 200 # number of subjects
+K <- 12 # number of measurements per subject
+t_max <- 14 # maximum follow-up time
+
+# we construct a data frame with the design:
+# everyone has a baseline measurement, and then measurements at random follow-up times
+DF <- data.frame(id = rep(seq_len(n), each = K),
+                 time = c(replicate(n, c(0, sort(runif(K - 1, 0, t_max))))),
+                 sex = rep(gl(2, n/2, labels = c("male", "female")), each = K))
+
+# design matrices for the fixed and random effects
+X <- model.matrix(~ sex * time, data = DF)
+Z <- model.matrix(~ time, data = DF)
+
+betas <- c(-2.2, -0.25, 0.24, -0.05) # fixed effects coefficients
+sigma <- 0.5 # error standard deviation
+D11 <- 1.0 # variance of random intercepts
+D22 <- 0.5 # variance of random slopes
+
+# we simulate random effects
+b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
+# linear predictor
+eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
+# mean
+mu_y <- eta_y
+# we simulate normal longitudinal data
+DF$y <- rnorm(n * K, mean = mu_y, sd = sigma)
+# we assume that values below -4 are not observed, and set equal to -4
+DF$ind <- as.numeric(DF$y < -4)
+DF$y <- pmax(DF$y, -4)
+
+# simulate event times
+upp_Cens <- 15 # fixed Type I censoring time
+shape_wb <- 5 # shape Weibull
+alpha <- 0.8 # association coefficients
+gammas <- c("(Intercept)" = -9, "sex" = 0.5)
+W <- model.matrix(~ sex, data = DF[!duplicated(DF$id), ])
+eta_t <- as.vector(W %*% gammas)
+invS <- function (t, i) {
+    sex_i <- W[i, 2L]
+    h <- function (s) {
+        X_at_s <- cbind(1, sex_i, s, sex_i * s)
+        Z_at_s <- cbind(1, s)
+        f <- as.vector(X_at_s %*% betas +
+                           rowSums(Z_at_s * b[rep(i, nrow(Z_at_s)), ]))
+        exp(log(shape_wb) + (shape_wb - 1) * log(s) + eta_t[i] + f * alpha)
+    }
+    integrate(h, lower = 0, upper = t)$value + log(u[i])
+}
+u <- runif(n)
+trueTimes <- numeric(n)
+for (i in seq_len(n)) {
+    Up <- 100
+    Root <- try(uniroot(invS, interval = c(1e-05, Up), i = i)$root, TRUE)
+    trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
+}
+
+Ctimes <- upp_Cens
+Time <- pmin(trueTimes, Ctimes)
+event <- as.numeric(trueTimes <= Ctimes) # event indicator
+
+# we keep the longitudinal measurements before the event times
+DF$Time <- Time[DF$id]
+DF$event <- event[DF$id]
+DF <- DF[DF$time <= DF$Time, ]
+
+# Fit the joint model
+DF_id <- DF[!duplicated(DF$id), ]
+Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
+CensNorm_MixMod <-
+    mixed_model(cbind(y, ind) ~ sex * time, random = ~ time | id, data = DF,
+                family = censored.normal())
+
+jointFit <- jm(Cox_fit, CensNorm_MixMod, time_var = "time")
+summary(jointFit)
+
+Surv_object = Cox_fit
+Mixed_objects = CensNorm_MixMod
+time_var = "time"
+functional_forms = NULL
+data_Surv = NULL
+id_var = NULL
+priors = NULL
+control = NULL
 
 

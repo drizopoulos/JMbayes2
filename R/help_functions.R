@@ -367,7 +367,7 @@ extract_log_sigmas <- function (object) {
     out
 }
 
-value <- slope <- area <- function (x) rep(1, length(x))
+value <- slope <- area <- function (x) rep(1, NROW(x))
 
 create_HC_X <- function (TermsX, TermsZ, x, z, id, mfHC) {
     # function that creates the hierarchical centering version of the
