@@ -95,7 +95,7 @@
       <h1 data-toc-skip>Joint Models with Non-Gaussian Mixed Models</h1>
                         <h4 class="author">Dimitris Rizopoulos</h4>
             
-            <h4 class="date">2021-01-22</h4>
+            <h4 class="date">2021-01-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/master/vignettes/Non_Gaussian_Mixed_Models.Rmd"><code>vignettes/Non_Gaussian_Mixed_Models.Rmd</code></a></small>
       <div class="hidden name"><code>Non_Gaussian_Mixed_Models.Rmd</code></div>
@@ -107,9 +107,12 @@
 <div id="non-gaussian-joint-models-with-jmbayes2" class="section level1">
 <h1 class="hasAnchor">
 <a href="#non-gaussian-joint-models-with-jmbayes2" class="anchor"></a>Non-Gaussian Joint Models with JMbayes2</h1>
-<div id="bounded-longitudinal-outcomes" class="section level2">
+<div id="bounded-longitudinal-outcomes" class="section level2 tabset tabset-fade tabset-pills">
 <h2 class="hasAnchor">
 <a href="#bounded-longitudinal-outcomes" class="anchor"></a>Bounded longitudinal outcomes</h2>
+<div id="data" class="section level3">
+<h3 class="hasAnchor">
+<a href="#data" class="anchor"></a>Data</h3>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span>
 <span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">200</span> <span class="co"># number of subjects</span>
@@ -189,6 +192,10 @@
 <span class="va">DF</span><span class="op">$</span><span class="va">Time</span> <span class="op">&lt;-</span> <span class="va">Time</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span>
 <span class="va">DF</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="va">event</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span>
 <span class="va">DF</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="va">DF</span><span class="op">$</span><span class="va">Time</span>, <span class="op">]</span></code></pre></div>
+</div>
+<div id="model" class="section level3">
+<h3 class="hasAnchor">
+<a href="#model" class="anchor"></a>Model</h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">DF_id</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html">duplicated</a></span><span class="op">(</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span>
 <span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span>
@@ -237,6 +244,7 @@
 <span class="co">#&gt; time: 0.3 min</span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
+</div>
 </div>
 </div>
 <div id="censored-longitudinal-outcomes" class="section level2">

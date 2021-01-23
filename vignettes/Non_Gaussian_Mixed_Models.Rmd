@@ -20,7 +20,8 @@ library("JMbayes2")
 ```
 
 # Non-Gaussian Joint Models with JMbayes2
-## Bounded longitudinal outcomes
+## Bounded longitudinal outcomes {.tabset .tabset-fade .tabset-pills}
+### Data
 ```{r, "simulate_Beta"}
 set.seed(1234)
 n <- 200 # number of subjects
@@ -102,6 +103,7 @@ DF$event <- event[DF$id]
 DF <- DF[DF$time <= DF$Time, ]
 ```
 
+### Model
 ```{r, "fit_Beta"}
 DF_id <- DF[!duplicated(DF$id), ]
 Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)

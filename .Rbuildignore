@@ -21,7 +21,6 @@
 ^_pkgdown\.yml$
 ^pkgdown$
 
-
 ## Exclude vignettes
 ^vignettes/Joint_Models.Rmd$
-
+^vignettes/Non_Gaussian_Mixed_Models.Rmd$
