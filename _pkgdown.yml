@@ -1,6 +1,7 @@
 template:
   params:
-    bootswatch: cosmo
+    bootswatch: yeti
+    noindex: true
 
 authors:
   Dimitris Rizopoulos:

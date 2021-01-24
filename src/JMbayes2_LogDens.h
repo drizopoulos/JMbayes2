@@ -17,7 +17,7 @@ vec log_long_i (const mat &y_i, const vec &eta_i, const double &sigma_i,
   vec mu_i = mu_fun(eta_i, link_i);
   if (fam_i == "gaussian") {
     log_contr = log_dnorm(y_i, mu_i, sigma_i);
-  } else if (fam_i == "Student-t") {
+  } else if (fam_i == "Student's-t") {
     log_contr = log_dt((y_i - mu_i) / sigma_i, extr_prm_i) - std::log(sigma_i);
   } else if (fam_i == "beta") {
     log_contr = log_dbeta(y_i, mu_i * sigma_i, sigma_i * (1.0 - mu_i));
