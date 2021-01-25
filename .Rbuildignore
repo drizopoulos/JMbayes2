@@ -22,5 +22,5 @@
 ^pkgdown$
 
 ## Exclude vignettes
-^vignettes/Joint_Models.Rmd$
+^vignettes/JMbayes2.Rmd$
 ^vignettes/Non_Gaussian_Mixed_Models.Rmd$
