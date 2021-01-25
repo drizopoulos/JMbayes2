@@ -108,9 +108,12 @@
 <div id="non-gaussian-joint-models-with-jmbayes2" class="section level1">
 <h1 class="hasAnchor">
 <a href="#non-gaussian-joint-models-with-jmbayes2" class="anchor"></a>Non-Gaussian Joint Models with JMbayes2</h1>
+<p>Taking advantage of the versatility of the <a href="https://drizopoulos.github.io/GLMMadaptive/"><strong>GLMMadaptive</strong></a> package, <strong>JMbayes2</strong> can fit joint models with several different types of mixed-effects models. The following examples illustrate these capabilities. All examples have the same structure, namely, first, a short motivation for each mixed-model is give, followed by a piece of R code simulating data from a joint model with the respective mixed-effect sub-model, closing by the syntax to fit the joint model. In this last part, the main difference per example is the call to <code>mixed_model()</code>.</p>
 <div id="beta-mixed-models" class="section level2">
 <h2 class="hasAnchor">
 <a href="#beta-mixed-models" class="anchor"></a>Beta mixed models</h2>
+<p>With very few exceptions, continuous outcomes that we wish to analyze have some natural bounds. For example, the levels of blood biomarker for a set of patients. However, often, the majority of the observations are located far away from these natural bounds, and an assumption of a normal distribution for the outcome can be safely done. In some settings though, we can have outcomes for which a substantial percentage of the observations are located near the boundaries leading to skewed or U-shaped distributions. For such longitudinal outcomes, a linear mixed model with normal error terms often does not provide a good fit. A natural alternative is to select a distribution that respects the bounded nature of the outcome. The most well-known distribution for such outcomes is the Beta distribution defined in the <span class="math inline">\((0, 1)\)</span> interval (<em>note:</em> a bounded outcome <span class="math inline">\(Y^*\)</span> in the <span class="math inline">\((a, b)\)</span> interval can be transformed to the <span class="math inline">\(Y = (Y^* - a) / (b - a)\)</span> in the <span class="math inline">\((0, 1)\)</span> interval).</p>
+<p>The following piece of code illustrates how to simulate data from a joint model with a Beta mixed effects model. The default functional form is assumed, i.e., that the linear predictor <span class="math inline">\(\eta(t)\)</span> of the mixed model is associated with the hazard of an event at time <span class="math inline">\(t\)</span>. The linear predictor is related to the mean <span class="math inline">\(\mu(t)\)</span> of the Beta distribution under the logit link function, i.e., <span class="math inline">\(\log[\mu(t) / \{1 - \mu(t)\}] = \eta(t)\)</span>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span>
 <span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">200</span> <span class="co"># number of subjects</span>
@@ -190,6 +193,7 @@
 <span class="va">DF</span><span class="op">$</span><span class="va">Time</span> <span class="op">&lt;-</span> <span class="va">Time</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span>
 <span class="va">DF</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="va">event</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span>
 <span class="va">DF</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="va">DF</span><span class="op">$</span><span class="va">Time</span>, <span class="op">]</span></code></pre></div>
+<p>To fit the corresponding joint model, we fit first a Beta mixed model using the <code>beta.fam()</code> family object into the call of <code>mixed_model()</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">DF_id</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html">duplicated</a></span><span class="op">(</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span>
 <span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span>
@@ -243,6 +247,8 @@
 <div id="censored-linear-mixed-models" class="section level2">
 <h2 class="hasAnchor">
 <a href="#censored-linear-mixed-models" class="anchor"></a>Censored linear mixed models</h2>
+<p>Some continuous longitudinal outcomes may have a censored nature. A typical example of such outcomes is when we have limit of detection issues. That is, the values of the outcome cannot be detected below a specified threshold having to do with the (laboratory) equipment used to determine the measurements. In these settings and even if the complete data follow a normal distribution the observed censored data cannot be analyzed with a standard mixed model. The <code>mixed_model()</code> function can accommodate such outcomes using the <code>censored.normal()</code> family object.</p>
+<p>The following piece of code simulates data from a joint model with a linear mixed model for the longitudinal outcomes, but applies censoring in the realized longitudinal observations.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span>
 <span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">200</span> <span class="co"># number of subjects</span>
@@ -321,6 +327,7 @@
 <span class="va">DF</span><span class="op">$</span><span class="va">Time</span> <span class="op">&lt;-</span> <span class="va">Time</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span>
 <span class="va">DF</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="va">event</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span>
 <span class="va">DF</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="va">DF</span><span class="op">$</span><span class="va">Time</span>, <span class="op">]</span></code></pre></div>
+<p>The corresponding joint model is fitted with the following syntax:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">DF_id</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html">duplicated</a></span><span class="op">(</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span>
 <span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span>
@@ -371,6 +378,8 @@
 <div id="studentss-t-mixed-models" class="section level2">
 <h2 class="hasAnchor">
 <a href="#studentss-t-mixed-models" class="anchor"></a>Students’s-t mixed models</h2>
+<p>Outlying observations is common occurring issue in practice. Several methods have been proposed in the literature for identifying such observations in the context of longitudinal data. However, removing such values from the analysis is in general not recommended unless we also have external information why these values are outlying. Hence, in these settings we would need to fit mixed models to accommodate these observations. A well-known approach to achieve this is to replace the normal distribution for the error terms in the linear mixed model with a Student’s-t distribution that has heavier tails and allows for such values.</p>
+<p>The following syntax simulates data from a joint model with a Student’s-t mixed effects model:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span>
 <span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">200</span> <span class="co"># number of subjects</span>
@@ -446,6 +455,7 @@
 <span class="va">DF</span><span class="op">$</span><span class="va">Time</span> <span class="op">&lt;-</span> <span class="va">Time</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span>
 <span class="va">DF</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="va">event</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span>
 <span class="va">DF</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="va">DF</span><span class="op">$</span><span class="va">Time</span>, <span class="op">]</span></code></pre></div>
+<p>To fit the corresponding joint model we use the <code>students.t()</code> family object in the call to <code>mixed_model()</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">DF_id</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html">duplicated</a></span><span class="op">(</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span>
 <span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span>
@@ -499,7 +509,8 @@
 <div id="negative-binomial-mixed-models" class="section level2">
 <h2 class="hasAnchor">
 <a href="#negative-binomial-mixed-models" class="anchor"></a>Negative binomial mixed models</h2>
-<p>over-dispersed count longitudinal outcomes</p>
+<p>Count longitudinal outcomes are typically modeled with the Poisson distribution. However, often these outcomes exhibit more variance than what is allowed from the Poisson distribution leading to the well-known problem of over-dispersion. To accommodate this over-dispersion typically the Negative Binomial distribution is used.</p>
+<p>The following piece of code simulates data from a joint model for count longitudinal data that follow the Negative Binomial distribution:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span>
 <span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">500</span> <span class="co"># number of subjects</span>
@@ -578,6 +589,7 @@
 <span class="va">DF</span><span class="op">$</span><span class="va">Time</span> <span class="op">&lt;-</span> <span class="va">Time</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span>
 <span class="va">DF</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="va">event</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span>
 <span class="va">DF</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="va">DF</span><span class="op">$</span><span class="va">Time</span>, <span class="op">]</span></code></pre></div>
+<p>The corresponding joint model is the fitted using the following syntax:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">DF_id</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html">duplicated</a></span><span class="op">(</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span>
 <span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span>
@@ -631,6 +643,8 @@
 <div id="beta-binomial-longitudinal-outcomes" class="section level2">
 <h2 class="hasAnchor">
 <a href="#beta-binomial-longitudinal-outcomes" class="anchor"></a>Beta-binomial longitudinal outcomes</h2>
+<p>As for count data also for Binomial data we may have the over-dispersion problem. In this case, we can change to standard Binomial distribution to a Beta-Binomial one to accommodate this.</p>
+<p>The following piece of code simulates data from a joint model for binomial longitudinal data that follow the Beta-Binomial distribution:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span>
 <span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">500</span> <span class="co"># number of subjects</span>
@@ -712,6 +726,7 @@
 <span class="va">DF</span><span class="op">$</span><span class="va">Time</span> <span class="op">&lt;-</span> <span class="va">Time</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span>
 <span class="va">DF</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="va">event</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span>
 <span class="va">DF</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="va">DF</span><span class="op">$</span><span class="va">Time</span>, <span class="op">]</span></code></pre></div>
+<p>The corresponding joint model is then fitted with the syntax:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">DF_id</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html">duplicated</a></span><span class="op">(</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span>
 <span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span>

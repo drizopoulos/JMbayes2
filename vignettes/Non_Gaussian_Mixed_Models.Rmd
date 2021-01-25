@@ -20,7 +20,13 @@ library("JMbayes2")
 ```
 
 # Non-Gaussian Joint Models with JMbayes2
+Taking advantage of the versatility of the [**GLMMadaptive**](https://drizopoulos.github.io/GLMMadaptive/) package, **JMbayes2** can fit joint models with several different types of mixed-effects models. The following examples illustrate these capabilities. All examples have the same structure, namely, first, a short motivation for each mixed-model is give, followed by a piece of R code simulating data from a joint model with the respective mixed-effect sub-model, closing by the syntax to fit the joint model. In this last part, the main difference per example is the call to `mixed_model()`.
+
+
 ## Beta mixed models
+With very few exceptions, continuous outcomes that we wish to analyze have some natural bounds. For example, the levels of blood biomarker for a set of patients. However, often, the majority of the observations are located far away from these natural bounds, and an assumption of a normal distribution for the outcome can be safely done. In some settings though, we can have outcomes for which a substantial percentage of the observations are located near the boundaries leading to skewed or U-shaped distributions. For such longitudinal outcomes, a linear mixed model with normal error terms often does not provide a good fit. A natural alternative is to select a distribution that respects the bounded nature of the outcome. The most well-known distribution for such outcomes is the Beta distribution defined in the $(0, 1)$ interval (*note:* a bounded outcome $Y^*$ in the $(a, b)$ interval can be transformed to the $Y = (Y^* - a) / (b - a)$ in the $(0, 1)$ interval). 
+
+The following piece of code illustrates how to simulate data from a joint model with a Beta mixed effects model. The default functional form is assumed, i.e., that the linear predictor $\eta(t)$ of the mixed model is associated with the hazard of an event at time $t$. The linear predictor is related to the mean $\mu(t)$ of the Beta distribution under the logit link function, i.e., $\log[\mu(t) / \{1 - \mu(t)\}] = \eta(t)$.
 ```{r, "simulate_Beta"}
 set.seed(1234)
 n <- 200 # number of subjects
@@ -102,6 +108,7 @@ DF$event <- event[DF$id]
 DF <- DF[DF$time <= DF$Time, ]
 ```
 
+To fit the corresponding joint model, we fit first a Beta mixed model using the `beta.fam()` family object into the call of `mixed_model()`:
 ```{r, "fit_Beta"}
 DF_id <- DF[!duplicated(DF$id), ]
 Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
@@ -114,7 +121,11 @@ summary(jointFit)
 
 <div align="right"><a href="#top">Back to top</a></div>
 
+
 ## Censored linear mixed models
+Some continuous longitudinal outcomes may have a censored nature. A typical example of such outcomes is when we have limit of detection issues. That is, the values of the outcome cannot be detected below a specified threshold having to do with the (laboratory) equipment used to determine the measurements. In these settings and even if the complete data follow a normal distribution the observed censored data cannot be analyzed with a standard mixed model. The `mixed_model()` function can accommodate such outcomes using the `censored.normal()` family object.
+
+The following piece of code simulates data from a joint model with a linear mixed model for the longitudinal outcomes, but applies censoring in the realized longitudinal observations.
 ```{r, "simulate_CensNorm"}
 set.seed(1234)
 n <- 200 # number of subjects
@@ -195,6 +206,7 @@ DF$event <- event[DF$id]
 DF <- DF[DF$time <= DF$Time, ]
 ```
 
+The corresponding joint model is fitted with the following syntax:
 ```{r, "fit_CensNorm"}
 DF_id <- DF[!duplicated(DF$id), ]
 Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
@@ -206,7 +218,11 @@ jointFit <- jm(Cox_fit, CensNorm_MixMod, time_var = "time")
 summary(jointFit)
 ```
 
+
 ## Students's-t mixed models
+Outlying observations is common occurring issue in practice. Several methods have been proposed in the literature for identifying such observations in the context of longitudinal data. However, removing such values from the analysis is in general not recommended unless we also have external information why these values are outlying. Hence, in these settings we would need to fit mixed models to accommodate these observations. A well-known approach to achieve this is to replace the normal distribution for the error terms in the linear mixed model with a Student's-t distribution that has heavier tails and allows for such values.
+
+The following syntax simulates data from a joint model with a Student's-t mixed effects model:
 ```{r, "simulate_Std-t"}
 set.seed(1234)
 n <- 200 # number of subjects
@@ -284,6 +300,7 @@ DF$event <- event[DF$id]
 DF <- DF[DF$time <= DF$Time, ]
 ```
 
+To fit the corresponding joint model we use the `students.t()` family object in the call to `mixed_model()`:
 ```{r, "fit_Std-t"}
 DF_id <- DF[!duplicated(DF$id), ]
 Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
@@ -299,7 +316,9 @@ summary(jointFit)
 
 
 ## Negative binomial mixed models
-over-dispersed count longitudinal outcomes
+Count longitudinal outcomes are typically modeled with the Poisson distribution. However, often these outcomes exhibit more variance than what is allowed from the Poisson distribution leading to the well-known problem of over-dispersion. To accommodate this over-dispersion typically the Negative Binomial distribution is used. 
+
+The following piece of code simulates data from a joint model for count longitudinal data that follow the Negative Binomial distribution:
 ```{r, "simulate_NB"}
 set.seed(1234)
 n <- 500 # number of subjects
@@ -380,6 +399,7 @@ DF$event <- event[DF$id]
 DF <- DF[DF$time <= DF$Time, ]
 ```
 
+The corresponding joint model is the fitted using the following syntax:
 ```{r, "fit_NB"}
 DF_id <- DF[!duplicated(DF$id), ]
 Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
@@ -392,7 +412,11 @@ summary(jointFit)
 
 <div align="right"><a href="#top">Back to top</a></div>
 
+
 ## Beta-binomial longitudinal outcomes
+As for count data also for Binomial data we may have the over-dispersion problem. In this case, we can change to standard Binomial distribution to a Beta-Binomial one to accommodate this.
+
+The following piece of code simulates data from a joint model for binomial longitudinal data that follow the Beta-Binomial distribution:
 ```{r, "simulate_BetaBinom"}
 set.seed(1234)
 n <- 500 # number of subjects
@@ -476,6 +500,7 @@ DF$event <- event[DF$id]
 DF <- DF[DF$time <= DF$Time, ]
 ```
 
+The corresponding joint model is then fitted with the syntax:
 ```{r, "fit_BetaBinom"}
 DF_id <- DF[!duplicated(DF$id), ]
 Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
