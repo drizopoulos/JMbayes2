@@ -24,3 +24,4 @@
 ## Exclude vignettes
 ^vignettes/JMbayes2.Rmd$
 ^vignettes/Non_Gaussian_Mixed_Models.Rmd$
+^vignettes/Competing_Risks.Rmd$

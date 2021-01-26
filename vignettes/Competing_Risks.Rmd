@@ -1,0 +1,69 @@
+---
+title: "Joint Models with Competing Risks"
+author: "Dimitris Rizopoulos"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Joint Models with with Competing Risks}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("JMbayes2")
+```
+
+# Competing Risks
+## Prepare data
+The first step to fit a joint model for competing events in **JMbaye2** is to prepare the data for the event process. If there are $K$ competing events, then each subject has $K$ rows, one for each possible cause. The
+observed event time $T_i$ of each subject is repeated $K$ times, and there are two indicator variables, namely one identifying the cause, and one indicating whether the corresponding event type is the one that occurred. Standard survival datasets that included a single row
+per patient, can be easily transformed to the competing risks long format using function `crLong()`. This function accepts as main arguments the survival data in the standard format that has a single row per patient, the name of the status variable, and the level in this status variable that corresponds to censoring. We illustrate this using as an example the PBC data, in which we treat as competing risks transplantation and death:
+```{r, "prepare_data"}
+pbc2.id[pbc2.id$id %in% c(1, 2, 5), c("id", "years", "status")]
+
+pbc2.idCR <- crLong(pbc2.id, statusVar = "status", censLevel = "alive", 
+                    nameStrata = "CR")
+
+pbc2.idCR[pbc2.idCR$id %in% c(1, 2, 5), c("id", "years", "status", "status2", "CR")]
+```
+
+Note that each patient is now represented by two rows (we have two possible causes of
+discontinuation from the study, death and transplantation), the time variable `years` is identical in both rows of each patient, variable `CR` denotes the cause for the specific line of the long dataset, and variable `status2` equals 1 if the corresponding event occurred. 
+
+## Fit models
+For the event process, we specify cause-specific relative risks models. Using dataset `pbc2.idCR`, we fit the corresponding cause-specific Cox regressions by including the interaction terms of age and treatment with variable `CR`, which is treated as a stratification variable using the `strata()` function:
+```{r, "CR Cox model"}
+CoxFit_CR <- coxph(Surv(years, status2) ~ (age + drug) * strata(CR),
+                     data = pbc2.idCR)
+```
+
+For the longitudinal process, we include two longitudinal outcomes, namely serum bilirubin and the prothrombin time. For the former we use quadratic orthogonal polynomials in the fixed- and random-effects parts. and for the latter linear evolutions:
+```{r, "mixed models"}
+fm1 <- lme(log(serBilir) ~ poly(year, 2) * drug, data = pbc2, 
+           random = ~ poly(year, 2) | id)
+fm2 <- lme(prothrombin ~ year * drug, data = pbc2, random = ~ year | id)
+```
+
+To specify that each longitudinal outcome has a separate association coefficient per competing risk, we 
+define the corresponding functional forms:
+```{r, "functional forms"}
+CR_forms <- list(
+    "log(serBilir)" = ~ value(log(serBilir)):CR,
+    "prothrombin" = ~ value(prothrombin):CR
+)
+```
+
+Finally, the competing risks joint model is fitted with the following call to `jm()` (due to the complexity of the model we have increased the number of MCMC iterations and the burn-in period per chain):
+```{r, "joint model"}
+jFit_CR <- jm(CoxFit_CR, list(fm1, fm2), time_var = "year", 
+              functional_forms = CR_forms, 
+              n_iter = 25000L, n_burnin = 5000L, n_thin = 5L)
+
+summary(jFit_CR)
+```
