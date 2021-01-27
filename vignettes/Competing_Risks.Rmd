@@ -67,3 +67,4 @@ jFit_CR <- jm(CoxFit_CR, list(fm1, fm2), time_var = "year",
 
 summary(jFit_CR)
 ```
+

@@ -1,4 +1,11 @@
+home:
+  title: JMbayes2
+  description: Extended joint models for longitudinal and time-to-event data.
+
 template:
+  twitter:
+    creator: "@drizopoulos"
+    card: summary_large_image
   params:
     bootswatch: yeti
     noindex: true
