@@ -63,6 +63,16 @@
 <![endif]-->
 
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YDBZ5DBBSP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YDBZ5DBBSP');
+</script>
+
 
   </head>
 
@@ -309,13 +319,13 @@ than the total number of submodels, extracts from all of them.</p></td>
 #&gt;    0.621579626   -0.003720325    0.235283196    0.168512357 </div><div class='input'>
 <span class='co'># ranef(): random effects from all linear mixed submodels</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='fu'>ranef</span><span class='op'>(</span><span class='va'>fit_jm</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;             [,1]         [,2]        [,3]        [,4]
-#&gt; [1,]  1.99928139  0.052496618  0.87631585  0.05829482
-#&gt; [2,] -0.36430164  0.001423893 -0.01610999  0.08676565
-#&gt; [3,] -0.09951743  0.157935576  0.60996701  0.24436017
-#&gt; [4,]  0.14027526  0.124207775  1.04221100  0.53568283
-#&gt; [5,]  0.38275782  0.156504019 -0.05382368  0.42119692
-#&gt; [6,] -0.72106966 -0.081427819 -0.00941857 -0.01831676</div><div class='input'>
+</div><div class='output co'>#&gt;             [,1]         [,2]         [,3]        [,4]
+#&gt; [1,]  1.99938139  0.052596618  0.882192534  0.05834958
+#&gt; [2,] -0.36420164  0.001523893 -0.010465207  0.08747326
+#&gt; [3,] -0.09941743  0.157935576  0.616974455  0.24449871
+#&gt; [4,]  0.14037526  0.124307775  1.047685212  0.53594635
+#&gt; [5,]  0.38285782  0.156604019 -0.050013033  0.42140295
+#&gt; [6,] -0.72096966 -0.081327819 -0.002792516 -0.01797410</div><div class='input'>
 <span class='co'># terms(): random effects terms for the first linear mixed submodel</span>
 <span class='fu'>terms</span><span class='op'>(</span><span class='va'>fit_jm</span>, process <span class='op'>=</span> <span class='st'>"longitudinal"</span>, type <span class='op'>=</span> <span class='st'>"random"</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>
 </div><div class='output co'>#&gt; ~year
@@ -333,7 +343,7 @@ than the total number of submodels, extracts from all of them.</p></td>
 #&gt; attr(,"response")
 #&gt; [1] 0
 #&gt; attr(,".Environment")
-#&gt; &lt;environment: 0x00000000454df7d8&gt;
+#&gt; &lt;environment: 0x0000000004fca618&gt;
 #&gt; attr(,"predvars")
 #&gt; list(year)
 #&gt; attr(,"dataClasses")
@@ -383,8 +393,8 @@ than the total number of submodels, extracts from all of them.</p></td>
 <span class='fu'>compare_jm</span><span class='op'>(</span><span class='va'>fit_jm</span>, <span class='va'>fit_jm2</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; 
 #&gt;               DIC WAIC LPML
-#&gt;   fit_jm 8916.045   NA  Inf
-#&gt;  fit_jm2 5533.250   NA  Inf
+#&gt;   fit_jm 3932.643   NA  Inf
+#&gt;  fit_jm2 5476.110   NA  Inf
 #&gt; 
 #&gt; The criteria are calculated based on the marginal log-likelihood.</div><div class='input'><span class='co'># }</span>
 </div></pre>

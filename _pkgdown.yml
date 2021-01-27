@@ -9,6 +9,7 @@ template:
   params:
     bootswatch: yeti
     noindex: true
+    ganalytics: G-YDBZ5DBBSP
 
 authors:
   Dimitris Rizopoulos:

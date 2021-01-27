@@ -24,7 +24,13 @@
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<![endif]--><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=G-YDBZ5DBBSP"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YDBZ5DBBSP');
+</script>
 </head>
 <body data-spy="scroll" data-target="#toc">
     <div class="container template-article">
@@ -246,7 +252,7 @@
 <span class="co">#&gt; iterations per chain: 12000 </span>
 <span class="co">#&gt; burn-in per chain: 2000 </span>
 <span class="co">#&gt; thinning: 5 </span>
-<span class="co">#&gt; time: 1.9 min</span></code></pre></div>
+<span class="co">#&gt; time: 1.7 min</span></code></pre></div>
 <p>The output for the survival submodel contains now the estimated coefficients for <code><a href="../reference/jm.html">value(prothrombin)</a></code> and <code><a href="../reference/jm.html">value(ascites)</a></code>, and parameter estimates for all three longitudinal submodels.</p>
 </div>
 <div id="functional-forms" class="section level2">
@@ -324,7 +330,7 @@
 <span class="co">#&gt; iterations per chain: 12000 </span>
 <span class="co">#&gt; burn-in per chain: 2000 </span>
 <span class="co">#&gt; thinning: 5 </span>
-<span class="co">#&gt; time: 2.8 min</span></code></pre></div>
+<span class="co">#&gt; time: 1.7 min</span></code></pre></div>
 <p>As seen above, the <code>functional_forms</code> argument is a named list with elements corresponding to the longitudinal outcomes. If a longitudinal outcome is not specified in this list, then the default, value functional form, is used for that outcome. Each element of the list should be a one-sided R formula in which the functions <code><a href="../reference/jm.html">value()</a></code>, <code><a href="../reference/jm.html">slope()</a></code> and <code><a href="../reference/jm.html">area()</a></code> can be used. Interaction terms between the functional forms and other (baseline) covariates are also allowed.</p>
 </div>
 <div id="penalized-coefficients-using-shrinkage-priors" class="section level2">
