@@ -3,9 +3,13 @@ home:
   description: Extended joint models for longitudinal and time-to-event data.
 
 template:
-  twitter:
-    creator: "@drizopoulos"
-    card: summary_large_image
+  opengraph:
+    image:
+      src: man/figures/square_logo.png
+      alt: "JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data"
+    twitter:
+      creator: "@drizopoulos"
+      card: summary_large_image
   params:
     bootswatch: yeti
     noindex: true
