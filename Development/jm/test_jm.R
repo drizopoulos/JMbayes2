@@ -304,10 +304,11 @@ fm <- mixed_model(ascites ~ year + age, data = pbc2,
                   random = ~ year | id, family = binomial())
 Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
-expit <- function (x) exp(x) / (1 + exp(x))
+vexpit <- vexp <- value
 
-fForms <- list("ascites" = ~ expit(value(ascites)))
-fForms <- list("ascites" = ~ expit(value(ascites)):slope(ascites))
+fForms <- list("ascites" = ~ vexpit(value(ascites)))
+fForms <- list("ascites" = ~ vexpit(value(ascites)):slope(ascites) +
+                   value(ascites)*sex + area(ascites) + slope(ascites))
 
 
 Surv_object = Cox
@@ -324,8 +325,6 @@ control <- con
 control$n_chains = 1
 
 extractFuns_FunForms <- function (Form, data) {
-    # Form = fForms[[1]]
-    # data = dataS
     tr <- terms(Form)
     mF <- model.frame(tr, data = data)
     M <- model.matrix(tr, mF)
@@ -333,17 +332,29 @@ extractFuns_FunForms <- function (Form, data) {
     possible_forms <- c("value(", "slope(", "area(")
     ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
     M <- M[1, cnams %in% cnams[unique(ind)], drop = FALSE]
-    f <- function (nam_term, nam_colmns) {
-        v <- nam_colmns[grep(pattern = nam_term, nam_colmns, fixed = TRUE)]
-        possible_funs <- c("exp(", "expit(")
-        i <- lapply(possible_funs, grep, x = v, fixed = TRUE)
-        i <- i[sapply(i, length) > 0]
-        if (length(i)) possible_funs[]
+    FForms <- sapply(c("value", "slope", "area"), grep, x = colnames(M),
+                     fixed = TRUE)
+    FForms <- FForms[sapply(FForms, length) > 0]
+    get_fun <- function (FForm, nam) {
+        cnams <- colnames(M)[FForm]
+        out <- rep("identity", length(cnams))
+        f <- function (fun_nam) {
+            grep(paste0(fun_nam, "(", nam), cnams, fixed = TRUE)
+        }
+        out[f("expit")] <- "expit"
+        out[f("dexpit")] <- "dexpit"
+        out[f("exp")] <- "exp"
+        out[f("dexp")] <- "exp"
+        out[f("log")] <- "log"
+        out[f("log2")] <- "log2"
+        out[f("log10")] <- "log10"
+        out[f("sqrt")] <- "sqrt"
+        out
     }
-    sapply(possible_forms, f, nam_colmns = colnames(M))
+    mapply(get_fun, FForms, names(FForms))
 }
 
-
+lapply(functional_forms, extractFuns_FunForms, data = dataS)
 
 
 
