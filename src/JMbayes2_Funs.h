@@ -493,22 +493,6 @@ field<mat> linpred_surv (const field<mat> &X, const field<vec> &betas,
   return out;
 }
 
-field<mat> create_Wlong (const field<mat> &eta, const field<uvec> &FunForms,
-                         const field<mat> &U, const field<uvec> &ind) {
-  uword n_outcomes = eta.n_elem;
-  field<mat> out(n_outcomes);
-  for (uword i = 0; i < n_outcomes; ++i) {
-    mat eta_i = eta.at(i);
-    uvec FF_i = FunForms.at(i);
-    mat U_i = U.at(i);
-    uvec ind_i = ind.at(i);
-    mat Wlong_i(eta_i.n_rows, U_i.n_cols, fill::ones);
-    Wlong_i.cols(FF_i) %= eta_i.cols(ind_i);
-    out.at(i) = U_i % Wlong_i;
-  }
-  return out;
-}
-
 field<vec> linpred_mixed (const field<mat> &X, const field<vec> &betas,
                           const field<mat> &Z, const field<mat> &b,
                           const field<uvec> &id) {
@@ -562,6 +546,36 @@ field<mat> Xbeta_calc (const field<mat> &X, const field<vec> &betas) {
 cube chol_cube (const cube &S) {
   cube out = S;
   out.each_slice([](mat &X){X = chol(X);});
+  return out;
+}
+
+void transf_eta (field<mat> &eta, const CharacterVector &fun_nams) {
+  uword n = eta.n_elem;
+  for (uword i = 0; i < n; i++) {
+    if (fun_nams[i] == "expit") {
+      eta.at(i) = 1.0 / (1.0 + trunc_exp(- eta.at(i)));
+    } else if (fun_nams[i] == "exp" || fun_nams[i] == "dexp") {
+      eta.at(i) = trunc_exp(eta.at(i));
+    } else if (fun_nams[i] == "dexpit") {
+      mat pp = 1.0 / (1.0 + trunc_exp(- eta.at(i)));
+      eta.at(i) = pp * (1.0 - pp);
+    }
+  }
+}
+
+field<mat> create_Wlong (const field<mat> &eta, const field<uvec> &FunForms,
+                         const field<mat> &U, const field<uvec> &ind) {
+  uword n_outcomes = eta.n_elem;
+  field<mat> out(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+    mat eta_i = eta.at(i);
+    uvec FF_i = FunForms.at(i);
+    mat U_i = U.at(i);
+    uvec ind_i = ind.at(i);
+    mat Wlong_i(eta_i.n_rows, U_i.n_cols, fill::ones);
+    Wlong_i.cols(FF_i) %= eta_i.cols(ind_i);
+    out.at(i) = U_i % Wlong_i;
+  }
   return out;
 }
 

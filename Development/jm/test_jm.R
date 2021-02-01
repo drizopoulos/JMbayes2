@@ -206,10 +206,14 @@ summary(obj)
 traceplot(obj, "alphas")
 gelman_diag(obj)
 
+fForms <- list("ascites" = ~ expit(value(ascites)) + slope(expit(ascites)))
+
+expit <- value
+
 Surv_object = Cox
 Mixed_objects = Mixed
 time_var = 'year'
-functional_forms = NULL
+functional_forms = fForms
 data_Surv = NULL
 id_var = NULL
 priors = NULL
@@ -293,40 +297,51 @@ jmFit <- jm(gm, fm, time_var = "obstime")
 summary(jmFit)
 
 traceplot(jmFit)
+
 ################################################################################
 
-# Univariate joint model continuous longitudinal outcome
-fm1 <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
+fm <- mixed_model(ascites ~ year + age, data = pbc2,
+                  random = ~ year | id, family = binomial())
+Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
-pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
-CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
+expit <- function (x) exp(x) / (1 + exp(x))
 
-jointFit1 <- jm(CoxFit, fm1, time_var = "year")
-summary(jointFit1)
-
-
-# three-variate joint model with two continuous and one binary
-# longitudinal outcomes
-fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
-fm3 <- mixed_model(ascites ~ year + sex, data = pbc2,
-                   random = ~ year | id, family = binomial())
-
-jointFit2 <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year",
-                n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)
-summary(jointFit2)
+fForms <- list("ascites" = ~ expit(value(ascites)))
+fForms <- list("ascites" = ~ expit(value(ascites)):slope(ascites))
 
 
-# functional forms
-fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)),
-               "prothrombin" = ~ area(prothrombin) + area(prothrombin):sex)
+Surv_object = Cox
+Mixed_objects = fm
+time_var = 'year'
+functional_forms = fForms
+data_Surv = NULL
+id_var = NULL
+priors = NULL
+control = NULL
+#
+model_data <- Data
+control <- con
+control$n_chains = 1
 
-jointFit3 <- update(jointFit2, functional_forms = fForms)
-summary(jointFit3)
-
-
-traceplot(jointFit3, "alphas")
-
-
+extractFuns_FunForms <- function (Form, data) {
+    # Form = fForms[[1]]
+    # data = dataS
+    tr <- terms(Form)
+    mF <- model.frame(tr, data = data)
+    M <- model.matrix(tr, mF)
+    cnams <- colnames(M)
+    possible_forms <- c("value(", "slope(", "area(")
+    ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
+    M <- M[1, cnams %in% cnams[unique(ind)], drop = FALSE]
+    f <- function (nam_term, nam_colmns) {
+        v <- nam_colmns[grep(pattern = nam_term, nam_colmns, fixed = TRUE)]
+        possible_funs <- c("exp(", "expit(")
+        i <- lapply(possible_funs, grep, x = v, fixed = TRUE)
+        i <- i[sapply(i, length) > 0]
+        if (length(i)) possible_funs[]
+    }
+    sapply(possible_forms, f, nam_colmns = colnames(M))
+}
 
 
 

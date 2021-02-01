@@ -1,3 +1,5 @@
+url: https://drizopoulos.github.io/JMbayes2/
+
 home:
   title: JMbayes2
   description: Extended joint models for longitudinal and time-to-event data.
@@ -14,6 +16,9 @@ template:
     bootswatch: yeti
     noindex: true
     ganalytics: G-YDBZ5DBBSP
+    docsearch:
+      api_key: 66a8ef39105517ba1ce2f07aa1c70890
+      index_name: drizopoulos
 
 authors:
   Dimitris Rizopoulos:

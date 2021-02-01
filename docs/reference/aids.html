@@ -44,12 +44,18 @@
 <script src="../pkgdown.js"></script>
 
 
+<!-- docsearch -->
+<script src="../docsearch.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.3/docsearch.min.css" integrity="sha256-QOSRU/ra9ActyXkIBbiIB144aDBdtvXBcNc3OTNuX/Q=" crossorigin="anonymous" />
+<link href="../docsearch.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+
 
 
 <meta property="og:title" content="Didanosine versus Zalcitabine in HIV Patients — aids" />
 <meta property="og:description" content="A randomized clinical trial in which both longitudinal and survival data were collected to compare the efficacy and 
   safety of two antiretroviral drugs in treating patients who had failed or were intolerant of zidovudine (AZT) therapy." />
-<meta property="og:image" content="/reference/figures/square_logo.png" />
+<meta property="og:image" content="https://drizopoulos.github.io/JMbayes2/reference/figures/square_logo.png" />
 <meta property="og:image:alt" content="JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:creator" content="@drizopoulos" />
@@ -141,6 +147,12 @@
 </li>
       </ul>
       
+      <form class="navbar-form navbar-right hidden-xs hidden-sm" role="search">
+        <div class="form-group">
+          <input type="search" class="form-control" name="search-input" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off">
+        </div>
+      </form>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -215,6 +227,23 @@ fit the survival model.</p>
    </div>
 
   
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.1/docsearch.min.js" integrity="sha256-GKvGqXDznoRYHCwKXGnuchvKSwmx9SRMrZOTh2g4Sb0=" crossorigin="anonymous"></script>
+<script>
+  docsearch({
+    
+    
+    apiKey: '66a8ef39105517ba1ce2f07aa1c70890',
+    indexName: 'drizopoulos',
+    inputSelector: 'input#search-input.form-control',
+    transformData: function(hits) {
+      return hits.map(function (hit) {
+        hit.url = updateHitURL(hit);
+        return hit;
+      });
+    }
+  });
+</script>
+
 
 
   </body>

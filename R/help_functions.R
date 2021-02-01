@@ -142,17 +142,6 @@ extract_functional_forms <- function (Form, data) {
     sapply(c("value", "slope", "area"), grep, x = colnames(M), fixed = TRUE)
 }
 
-construct_Umat <- function (fForms, dataS) {
-    tt <- terms(fForms)
-    m <- model.matrix(tt, model.frame(tt, data = dataS))
-    cnams <- colnames(m)
-    ind_value <- grep("value(", cnams, fixed = TRUE)
-    ind_slope <- grep("slope(", cnams, fixed = TRUE)
-    ind_area <- grep("area(", cnams, fixed = TRUE)
-    ind <- unique(c(ind_value, ind_slope, ind_area))
-    m[, cnams %in% cnams[ind], drop = FALSE]
-}
-
 LongData_HazardModel <- function (time_points, data, times, ids, timeVar) {
     unq_ids <- unique(ids)
     fids <- factor(ids, levels = unq_ids)
@@ -1074,6 +1063,7 @@ create_W0 <- function (times, knots, ord, strata) {
 }
 
 construct_Umat <- function (fForms, dataS) {
+    #expit <- exp <- log <- log2 <- log10 <- sqrt <- function (x) rep(1, NROW(x))
     tt <- terms(fForms)
     m <- model.matrix(tt, model.frame(tt, data = dataS))
     cnams <- colnames(m)
