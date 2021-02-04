@@ -549,26 +549,30 @@ cube chol_cube (const cube &S) {
   return out;
 }
 
-void transf_eta (field<mat> &eta, const CharacterVector &fun_nams) {
-  uword n = eta.n_elem;
+void transf_eta (mat &eta, const CharacterVector &fun_nams) {
+  uword n = eta.n_cols;
   for (uword i = 0; i < n; i++) {
+    if (fun_nams[i] == "identity") continue;
     if (fun_nams[i] == "expit") {
-      eta.at(i) = 1.0 / (1.0 + trunc_exp(- eta.at(i)));
+      eta.col(i) = 1.0 / (1.0 + trunc_exp(- eta.col(i)));
     } else if (fun_nams[i] == "exp" || fun_nams[i] == "dexp") {
-      eta.at(i) = trunc_exp(eta.at(i));
+      eta.col(i) = trunc_exp(eta.col(i));
     } else if (fun_nams[i] == "dexpit") {
-      mat pp = 1.0 / (1.0 + trunc_exp(- eta.at(i)));
-      eta.at(i) = pp * (1.0 - pp);
+      mat pp = 1.0 / (1.0 + trunc_exp(- eta.col(i)));
+      eta.col(i) = pp * (1.0 - pp);
     }
   }
 }
 
 field<mat> create_Wlong (const field<mat> &eta, const field<uvec> &FunForms,
-                         const field<mat> &U, const field<uvec> &ind) {
+                         const field<mat> &U, const field<uvec> &ind,
+                         const List &Funs_FunForms) {
   uword n_outcomes = eta.n_elem;
   field<mat> out(n_outcomes);
   for (uword i = 0; i < n_outcomes; ++i) {
+    CharacterVector Funs_i = Funs_FunForms[i];
     mat eta_i = eta.at(i);
+    transf_eta(eta_i, Funs_i);
     uvec FF_i = FunForms.at(i);
     mat U_i = U.at(i);
     uvec ind_i = ind.at(i);
@@ -583,9 +587,11 @@ mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
                      const field<mat> &U, const mat &Wlong_bar,
                      const field<vec> &betas, const field<mat> &b,
                      const uvec &id, const field<uvec> &FunForms,
-                     const field<uvec> &FunForms_ind) {
+                     const field<uvec> &FunForms_ind,
+                     const List &Funs_FunForms) {
   field<mat> eta = linpred_surv(X, betas, Z, b, id);
-  mat Wlong = docall_cbindF(create_Wlong(eta, FunForms, U, FunForms_ind));
+  mat Wlong =
+    docall_cbindF(create_Wlong(eta, FunForms, U, FunForms_ind, Funs_FunForms));
   Wlong.each_row() -= Wlong_bar;
   return Wlong;
 }

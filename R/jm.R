@@ -40,6 +40,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # and check whether the same data have been used;
     # otherwise an error
     datas <- lapply(Mixed_objects, "[[", "data")
+    datas[] <- lapply(datas, function (d)
+        if (inherits(d, "tbl_df") || inherits(d, "tbl")) as.data.frame(d) else d)
     if (!all(sapply(datas[-1L], function (x) isTRUE(all.equal(x, datas[[1L]]))))) {
         stop("It seems that some of the mixed models have been fitted to different versions ",
              "of the dataset. Use the same exact dataset in the calls to lme() ",
@@ -172,7 +174,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     } else {
         dataS <- data_Surv
     }
-
+    if (inherits(dataS, "tbl_df") || inherits(dataS, "tbl"))
+        dataS <- as.data.frame(dataS)
     # if the longitudinal outcomes are not in dataS, we set a random value for
     # them. This is needed for the calculation of the matrix of interaction terms
     # between the longitudinal outcomes and other variables.
@@ -329,6 +332,14 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     }
 
     # Extract functional forms per longitudinal outcome
+    if (is.language(functional_forms)) {
+        term_labels <- attr(terms(functional_forms), "term.labels")
+        ind_tlabs <- lapply(respVars_form, grep, term_labels, fixed = TRUE)
+        functional_forms <- lapply(ind_tlabs, function (ind, tlabs)
+            if (length(ind)) reformulate(tlabs[ind]), tlabs = term_labels)
+        names(functional_forms) <- respVars_form
+        functional_forms <- functional_forms[!sapply(functional_forms, is.null)]
+    }
     if (any(!names(functional_forms) %in% respVars_form)) {
         stop("unknown names in the list provided in the 'functional_forms' argument; as names ",
              "of the elements of this list you need to use the response variables from ",
@@ -344,6 +355,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     }
     functional_forms <- functional_forms[order(match(names(functional_forms),
                                                      respVars_form))]
+    functional_forms <- mapply2(expand_Dexps, functional_forms, respVars_form)
     ###################################################################
     # List of lists
     # One list component per association structure per outcome
@@ -354,7 +366,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     FunForms_per_outcome <- lapply(FunForms_per_outcome,
                                    function (x) x[sapply(x, length) > 0])
     collapsed_functional_forms <- lapply(FunForms_per_outcome, names)
-
+    Funs_FunForms <- lapply(functional_forms, extractFuns_FunForms,
+                             data = dataS)
     #####################################################
 
     # design matrices for the survival submodel:
@@ -475,7 +488,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         FunForms_per_outcome = FunForms_per_outcome,
         collapsed_functional_forms = collapsed_functional_forms,
         FunForms_cpp = lapply(FunForms_per_outcome, unlist),
-        FunForms_ind = FunForms_ind(FunForms_per_outcome)
+        FunForms_ind = FunForms_ind(FunForms_per_outcome),
+        Funs_FunForms = Funs_FunForms
     )
     ############################################################################
     ############################################################################

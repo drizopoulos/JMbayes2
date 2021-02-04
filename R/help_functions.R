@@ -142,6 +142,18 @@ extract_functional_forms <- function (Form, data) {
     sapply(c("value", "slope", "area"), grep, x = colnames(M), fixed = TRUE)
 }
 
+expand_Dexps <- function (Form, respVar) {
+    tlabs <- attr(terms(Form), "term.labels")
+    dexps_ind <- grep("Dexp", tlabs)
+    dexps <- tlabs[dexps_ind]
+    dexps <- gsub("slope", "value", dexps)
+    p1 <- paste0(respVar, "))")
+    p2 <- paste0(respVar, ")):slope(", respVar, ")")
+    dexps <- gsub(p1, p2, dexps, fixed = TRUE)
+    tlabs[dexps_ind] <- dexps
+    reformulate(tlabs)
+}
+
 LongData_HazardModel <- function (time_points, data, times, ids, timeVar) {
     unq_ids <- unique(ids)
     fids <- factor(ids, levels = unq_ids)
@@ -357,6 +369,7 @@ extract_log_sigmas <- function (object) {
 }
 
 value <- slope <- area <- function (x) rep(1, NROW(x))
+vexpit <- Dexpit <- vexp <- Dexp <- function (x) rep(1, NROW(x))
 
 create_HC_X <- function (TermsX, TermsZ, x, z, id, mfHC) {
     # function that creates the hierarchical centering version of the
@@ -647,6 +660,7 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     functional_forms <- model_info$functional_forms
     FunForms_per_outcome <- model_info$FunForms_per_outcome
     collapsed_functional_forms <- model_info$collapsed_functional_forms
+    Funs_FunsForms <- model_info$Funs_FunsForms
     ###
     Xbar <- Data$Xbar
     X_H <- Data$X_H; Z_H <- Data$Z_H; U_H <- Data$U_H; W0_H <- Data$W0_H; W_H <- Data$W_H
@@ -685,7 +699,8 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     eta_init[] <- mapply2(function (eta, ind) {
         if (length(ind) > length(eta)) eta[ind, , drop = FALSE] else eta
     }, eta_init, ind_multipl_events)
-    Wlong_init <- create_Wlong(eta_init, FunForms_per_outcome, U_init)
+    Wlong_init <- create_Wlong(eta_init, FunForms_per_outcome, U_init,
+                               Funs_FunsForms)
     Wlong_init <- do.call("cbind", Wlong_init)
     ######################################################################################
     ######################################################################################
@@ -730,17 +745,17 @@ init_vals_surv <- function(Data, model_info, data, betas, b, control) {
     ######################################################################################
     id_H <- rep(list(rep(unclass(Data$idT), each = control$GK_k)), length(X_H))
     eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
-    Wlong_H <- create_Wlong(eta_H, FunForms_per_outcome, U_H)
+    Wlong_H <- create_Wlong(eta_H, FunForms_per_outcome, U_H, Funs_FunsForms)
     if (length(which_event)) {
         id_h <- rep(list(unclass(Data$idT)), length(X_h))
         eta_h <- linpred_surv(X_h, betas, Z_h, b, id_h)
-        Wlong_h <- create_Wlong(eta_h, FunForms_per_outcome, U_h)
+        Wlong_h <- create_Wlong(eta_h, FunForms_per_outcome, U_h, Funs_FunsForms)
     } else {
         Wlong_h <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
     }
     if (length(which_interval)) {
         eta_H2 <- linpred_surv(X_H2, betas, Z_H, b, id_H)
-        Wlong_H2 <- create_Wlong(eta_H2, FunForms_per_outcome, U_H2)
+        Wlong_H2 <- create_Wlong(eta_H2, FunForms_per_outcome, U_H2, Funs_FunsForms)
     } else {
         Wlong_H2 <- rep(list(matrix(0.0, length(Time_right), 1)), length(W_H))
     }
@@ -826,35 +841,64 @@ FunForms_ind <- function (FunForms) {
     lapply(FunForms, f)
 }
 
-create_Wlong <- function (eta, functional_forms, U) {
+extractFuns_FunForms <- function (Form, data) {
+    tr <- terms(Form)
+    mF <- model.frame(tr, data = data)
+    M <- model.matrix(tr, mF)
+    cnams <- colnames(M)
+    possible_forms <- c("value(", "slope(", "area(")
+    ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
+    M <- M[1, cnams %in% cnams[unique(ind)], drop = FALSE]
+    FForms <- sapply(c("value", "slope", "area"), grep, x = colnames(M),
+                     fixed = TRUE)
+    FForms <- FForms[sapply(FForms, length) > 0]
+    get_fun <- function (FForm, nam) {
+        cnams <- colnames(M)[FForm]
+        out <- rep("identity", length(cnams))
+        f <- function (fun_nam) {
+            grep(paste0(fun_nam, "(", nam), cnams, fixed = TRUE)
+        }
+        out[f("expit")] <- "expit"
+        out[f("dexpit")] <- "dexpit"
+        out[f("exp")] <- "exp"
+        out[f("dexp")] <- "dexp"
+        out[f("log")] <- "log"
+        out[f("log2")] <- "log2"
+        out[f("log10")] <- "log10"
+        out[f("sqrt")] <- "sqrt"
+        out[1L] # <- to change: if the same term different functions
+    }
+    mapply(get_fun, FForms, names(FForms))
+}
+
+transf_eta <- function (eta, fun_nams) {
+    for (j in seq_along(fun_nams)) {
+        if (fun_nams[j] == "expit") {
+            eta[, j] <- plogis(eta[, j])
+        } else if (fun_nams[j] == "dexpit") {
+            eta[, j] <- plogis(eta[, j]) * plogis(eta[, j], lower.tail = FALSE)
+        } else if (fun_nams[j] == "exp") {
+            eta[, j] <- exp(eta[, j])
+        } else if (fun_nams[j] == "log") {
+            eta[, j] <- log(eta[, j])
+        } else if (fun_nams[j] == "sqrt") {
+            eta[, j] <- sqrt(eta[, j])
+        }
+    }
+    eta
+}
+
+create_Wlong <- function (eta, functional_forms, U, Funs_FunsForms) {
     Wlong <- vector("list", length(eta))
     for (i in seq_along(functional_forms)) {
         FF_i <- functional_forms[[i]]
-        eta_i <- eta[[i]]
+        eta_i <- transf_eta(eta[[i]], Funs_FunsForms[[i]])
         U_i <- U[[i]]
         Wlong_i <- matrix(1.0, nrow(eta_i), max(unlist(FF_i)))
         for (j in seq_along(FF_i)) {
             ind <- FF_i[[j]]
             Wlong_i[, ind] <- Wlong_i[, ind] * eta_i[, j]
         }
-        Wlong[[i]] <- U_i * Wlong_i
-    }
-    Wlong
-}
-
-create_Wlong2 <- function (eta, FunForms, U, ind) {
-    Wlong <- vector("list", length(eta))
-    for (i in seq_along(FunForms)) {
-        FF_i <- FunForms[[i]]
-        eta_i <- eta[[i]]
-        U_i <- U[[i]]
-        ind_i <- ind[[i]]
-        Wlong_i <- matrix(1.0, nrow(eta_i), max(unlist(FF_i)))
-        for (j in unique(ind_i)) {
-            kk <- FF_i[ind_i == j]
-            Wlong_i[, kk] <- Wlong_i[, kk] * eta_i[, j]
-        }
-
         Wlong[[i]] <- U_i * Wlong_i
     }
     Wlong

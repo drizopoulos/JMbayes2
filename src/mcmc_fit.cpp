@@ -66,6 +66,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   bool any_interval = which_interval.n_rows > 0;
   field<uvec> FunForms = List2Field_uvec(as<List>(model_info["FunForms_cpp"]), true);
   field<uvec> FunForms_ind = List2Field_uvec(as<List>(model_info["FunForms_ind"]), true);
+  List Funs_FunForms = as<List>(model_info["Funs_FunForms"]);
   field<uvec> x_in_z = List2Field_uvec(as<List>(model_data["x_in_z"]), true);
   field<uvec> x_notin_z = List2Field_uvec(as<List>(model_data["x_notin_z"]), true);
   field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
@@ -376,7 +377,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              scale_b, ind_RE,
              X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
              Wlong_bar, betas, alphas, id_H_, id_h,
-             FunForms, FunForms_ind, X, Z, idL, y, sigmas,
+             FunForms, FunForms_ind, Funs_FunForms, X, Z, idL, y, sigmas,
              extra_parms, families, links, idL_lp_fast, unq_idL,
              W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas,
              Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2,
@@ -406,7 +407,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  extra_parms, families, links, idL_lp_fast, mean_betas_nHC,
                  Tau_betas_nHC, x_notin_z,
                  X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
-                 Wlong_bar, id_H_, id_h, FunForms, FunForms_ind,
+                 Wlong_bar, id_H_, id_h, FunForms, FunForms_ind, Funs_FunForms,
                  alphas, any_event, any_interval,
                  W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                  WH_gammas, Wh_gammas, WH2_gammas,
@@ -528,6 +529,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   bool any_interval = which_interval.n_rows > 0;
   field<uvec> FunForms = List2Field_uvec(as<List>(model_info["FunForms_cpp"]), true);
   field<uvec> FunForms_ind = List2Field_uvec(as<List>(model_info["FunForms_ind"]), true);
+  List Funs_FunForms = as<List>(model_info["Funs_FunForms"]);
   uvec id_H_ = as<uvec>(model_data["id_H_"]) - 1;
   uvec id_h = as<uvec>(model_data["id_h"]) - 1;
   vec log_Pwk = as<vec>(model_data["log_Pwk"]);
@@ -544,8 +546,9 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
       ///
       W0_H, W0_h, W0_H2, W_H, W_h, W_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
       U_H, U_h, U_H2, Wlong_bar, any_event, any_interval, any_gammas,
-      FunForms, FunForms_ind, id_H_, id_h, log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
-      which_event, which_right_event, which_left, which_interval);
+      FunForms, FunForms_ind, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2,
+      id_H_fast, id_h_fast, which_event, which_right_event, which_left,
+      which_interval);
   return out;
 }
 
@@ -619,6 +622,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   bool any_interval = which_interval.n_rows > 0;
   field<uvec> FunForms = List2Field_uvec(as<List>(model_info["FunForms_cpp"]), true);
   field<uvec> FunForms_ind = List2Field_uvec(as<List>(model_info["FunForms_ind"]), true);
+  List Funs_FunForms = as<List>(model_info["Funs_FunForms"]);
   uvec id_H_ = as<uvec>(model_data["id_H_"]) - 1;
   uvec id_h = as<uvec>(model_data["id_h"]) - 1;
   vec log_Pwk = as<vec>(model_data["log_Pwk"]);
@@ -639,8 +643,9 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
       ///
       W0_H, W0_h, W0_H2, W_H, W_h, W_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
       U_H, U_h, U_H2, Wlong_bar, any_event, any_interval, any_gammas,
-      FunForms, FunForms_ind, id_H_, id_h, log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
-      which_event, which_right_event, which_left, which_interval);
+      FunForms, FunForms_ind, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2,
+      id_H_fast, id_h_fast, which_event, which_right_event, which_left,
+      which_interval);
     oo += 0.5 * ((double)mean_b_mat.n_cols * log2pi + log(det_post_vars));
     out.col(i) = oo;
   }
