@@ -132,7 +132,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     }
     nres <- sapply(Z, ncol)
     ind_RE <- split(seq_len(sum(nres)), rep(seq_along(Z), nres))
-    componentsHC <- mapply2(create_HC_X3, x = X, z = Z, id = idL,
+    componentsHC <- mapply2(create_HC_X, x = X, z = Z, id = idL,
                             terms = terms_FE, data = mf_FE_dataL)
     x_in_z <- lapply(componentsHC, "[[", "x_in_z")
     x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
@@ -449,8 +449,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     unq_out_in <- split(unique(out_in), seq_len(nrow(unique(out_in))))
     ind_RE_patt <- lapply(unq_out_in, find_patt, n = nres)
     ind_FE_patt <- lapply(unq_out_in, find_patt, n = nfes_HC)
-    X_dot <- create_X_dot3(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL,
-                           xbas_in_z)
+    X_dot <- create_X_dot(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL,
+                          xbas_in_z)
     ############################################################################
     ############################################################################
     Data <- list(n = nY, idL = idL, idL_lp = idL_lp, unq_idL = unq_idL,
@@ -534,18 +534,19 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                 mean_betas_nHC = mean_betas_nHC, Tau_betas_nHC = Tau_betas_nHC,
                 mean_bs_gammas = lapply(Tau_bs_gammas, function (x) x[, 1] * 0),
                 Tau_bs_gammas = Tau_bs_gammas,
-                A_tau_bs_gammas = rep(5, n_strata), B_tau_bs_gammas = rep(0.5, n_strata),
+                A_tau_bs_gammas = rep(5, n_strata),
+                B_tau_bs_gammas = rep(0.5, n_strata),
                 rank_Tau_bs_gammas =
                     sapply(lapply(Tau_bs_gammas, qr), "[[", 'rank'),
                 mean_gammas = gammas,
-                Tau_gammas = diag(0.4, length(gammas)),
+                Tau_gammas = diag(1, length(gammas)),
                 penalty_gammas = "none",
                 A_lambda_gammas = 0.5, B_lambda_gammas = 1,
                 A_tau_gammas = 0.5, B_tau_gammas = 1,
                 A_nu_gammas = 0.5, B_nu_gammas = 1,
                 A_xi_gammas = 0.5, B_xi_gammas = 1,
                 mean_alphas = lapply(alphas, "*", 0.0),
-                Tau_alphas = lapply(alphas, function (a) diag(0.4, length(a))),
+                Tau_alphas = lapply(alphas, function (a) diag(1, length(a))),
                 penalty_alphas = "none",
                 A_lambda_alphas = 0.5, B_lambda_alphas = 1.0,
                 A_tau_alphas = 0.5, B_tau_alphas = 1.0,

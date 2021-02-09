@@ -41,19 +41,29 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     model_data$Xbar <- lapply(model_data$Xbar, rbind)
     # center the design matrices for the baseline covariates and
     # the longitudinal process
+    colSds <- function (m) apply(m, 2L, sd)
     model_data$W_bar <- rbind(colMeans(model_data$W_H))
-    model_data$W_H <- center_fun(model_data$W_H, model_data$W_bar)
-    model_data$W_h <- center_fun(model_data$W_h, model_data$W_bar)
-    model_data$W_H2 <- center_fun(model_data$W_H2, model_data$W_bar)
+    model_data$W_sds <- rbind(colSds(model_data$W_H))
+    model_data$W_std <- model_data$W_bar / model_data$W_sds
+    model_data$W_H <- center_fun(model_data$W_H, model_data$W_bar,
+                                 model_data$W_sds)
+    model_data$W_h <- center_fun(model_data$W_h, model_data$W_bar,
+                                 model_data$W_sds)
+    model_data$W_H2 <- center_fun(model_data$W_H2, model_data$W_bar,
+                                  model_data$W_sds)
 
     model_data$Wlong_bar <- lapply(model_data$Wlong_H, colMeans)
+    model_data$Wlong_sds <- lapply(model_data$Wlong_H, colSds)
     model_data$Wlong_H <- mapply2(center_fun, model_data$Wlong_H,
-                                 model_data$Wlong_bar)
+                                 model_data$Wlong_bar, model_data$Wlong_sds)
     model_data$Wlong_h <- mapply2(center_fun, model_data$Wlong_h,
-                                 model_data$Wlong_bar)
+                                 model_data$Wlong_bar, model_data$Wlong_sds)
     model_data$Wlong_H2 <- mapply2(center_fun, model_data$Wlong_H2,
-                                  model_data$Wlong_bar)
+                                  model_data$Wlong_bar, model_data$Wlong_sds)
+    model_data$Wlong_std <- mapply2("/", model_data$Wlong_bar, model_data$Wlong_sds)
     model_data$Wlong_bar <- lapply(model_data$Wlong_bar, rbind)
+    model_data$Wlong_sds <- lapply(model_data$Wlong_sds, rbind)
+    model_data$Wlong_std <- lapply(model_data$Wlong_std, rbind)
     # unlist priors and initial values for alphas
     initial_values$alphas <- unlist(initial_values$alphas, use.names = FALSE)
     priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
@@ -155,8 +165,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     get_acc_rates <- function (name_parm) {
         do.call("rbind", lapply(out, function (x) x[["acc_rate"]][[name_parm]]))
     }
-    parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_bar_gammas",
-               "Wlong_bar_alphas", "D", paste0("betas", seq_along(model_data$X)),
+    parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_std_gammas",
+               "Wlong_std_alphas", "D", paste0("betas", seq_along(model_data$X)),
                "sigmas")
     parms2 <- c("bs_gammas", "gammas", "alphas", "L", "sds", "betas", "b",
                 "sigmas")

@@ -371,74 +371,7 @@ extract_log_sigmas <- function (object) {
 value <- slope <- area <- function (x) rep(1, NROW(x))
 vexpit <- Dexpit <- vexp <- Dexp <- function (x) rep(1, NROW(x))
 
-create_HC_X <- function (TermsX, TermsZ, x, z, id, mfHC) {
-    # function that creates the hierarchical centering version of the
-    # design matrix for the fixed effects
-    find_positions <- function (nams1, nams2) {
-        nams1 <- gsub("^", "\\^", nams1, fixed = TRUE)
-        vals <- c(glob2rx(nams1), glob2rx(paste0(nams1, ":*")),
-                  glob2rx(paste0("*:", nams1)))
-        out <- sort(unique(unlist(lapply(vals, grep, x = nams2))))
-        out
-    }
-    check_td <- function (x, id) {
-        !all(sapply(split(x, id), function (z) all(z - z[1L] < .Machine$double.eps^0.5)))
-    }
-    grep2 <- function (x, nams) grep(x, nams, fixed = TRUE)
-    terms.labs_X <- attr(TermsX, "term.labels")
-    terms.labs_Z <- attr(TermsZ, "term.labels")
-    # check for time-varying covariates
-    timeTerms <- if (length(terms.labs_Z)) {
-        unlist(lapply(terms.labs_Z, grep2, nams = colnames(x)))
-    }
-    which_td <- unname(which(apply(x, 2, check_td, id = id)))
-    all_TDterms <- unique(c(timeTerms, which_td))
-    baseline <- if (length(all_TDterms)) seq_len(ncol(x))[-all_TDterms] else seq_len(ncol(x))
-    ind_colmns <- c(list(baseline), lapply(colnames(z)[-1L], find_positions,
-                                           nams2 = colnames(x)))
-    ind_colmns2 <- seq_len(ncol(x))
-    ind_colmns2 <- ind_colmns2[!ind_colmns2 %in% unlist(ind_colmns)]
-    mfHC <- mfHC[!duplicated(id), ]
-    Xhc <- if (length(terms.labs_Z)) {
-        which.timevar <- unique(unlist(lapply(terms.labs_Z, grep2, nams = names(mfHC))))
-        mfHC[which.timevar] <- lapply(mfHC[which.timevar],
-                                      function (x) { x[] <- 1; x })
-        model.matrix(TermsX, mfHC)
-    } else {
-        model.matrix(TermsX, mfHC)
-    }
-    index <- numeric(ncol(Xhc))
-    for (i in seq_along(ind_colmns)) {
-        index[ind_colmns[[i]]] <- i
-    }
-    list(Xhc = Xhc, columns_HC = index, columns_nHC = ind_colmns2)
-}
-
-create_HC_X2 <- function (x, z, id) {
-    check_tv <- function (x, id) {
-        !all(sapply(split(x, id),
-                    function (z) all(z - z[1L] < .Machine$double.eps^0.5)))
-    }
-
-    cnams_x <- colnames(x)
-    cnams_z <- colnames(z)
-    if (!"(Intercept)" %in% cnams_x || !"(Intercept)" %in% cnams_z) {
-        stop("cannot perform hierarchical centering in the absense of an ",
-             "intercept term in both the fixed and random effects design ",
-             "matrices.")
-    }
-
-    x_in_z <- which(cnams_x %in% cnams_z)
-    x_notin_z <- which(!cnams_x %in% cnams_z)
-    baseline <- x_notin_z[!apply(x[, x_notin_z, drop = FALSE], 2L, check_tv, id= id)]
-    x_notin_z <- setdiff(x_notin_z, baseline)
-    if (!length(baseline)) baseline <- as.integer(NA)
-    if (!length(x_notin_z)) x_notin_z <- as.integer(NA)
-    list(baseline = baseline, x_in_z = x_in_z, x_notin_z = x_notin_z,
-         Xbase = x[!duplicated(id), baseline, drop = FALSE])
-}
-
-create_HC_X3 <- function(x, z, id, terms_FE, data, center = FALSE) {
+create_HC_X <- function(x, z, id, terms_FE, data, center = FALSE) {
     check_tv <- function (x, id) {
         !all(sapply(split(x, id),
                     function (z) all(z - z[1L] < .Machine$double.eps^0.5)))
@@ -488,62 +421,7 @@ create_HC_X3 <- function(x, z, id, terms_FE, data, center = FALSE) {
          xbas_in_z = mat_HC[, x_in_z_base, drop = FALSE] > 1)
 }
 
-create_X_dot <- function(Xbase, nT, unq_idL, nres, nfes_HC, baseline, x_in_z_base, x_in_z) {
-
-    n_outcomes <- length(nres) # number of outcomes
-    n_res <- sum(nres) # total number of RE
-
-    rows <- split(seq_len(n_res), rep(seq_along(nres), nres)) # all rows (id= 1)
-
-    base_rows <- sapply(rows, head, 1) # rows for baseline (id= 1)
-    base_cols <- mapply(function(xzb, b){ which(xzb %in% b)}, x_in_z_base, baseline) # cols for baseline
-
-    RE_rows <- sapply(x_in_z, seq_along) # rows for RE (id= 1)
-    RE_cols <- x_in_z # cols for RE
-
-    M <- matrix(0, nrow= n_res*nT, ncol= sum(nfes_HC))
-
-    for (j in seq_len(n_outcomes)) {
-
-        ids <- unq_idL[[j]] # ids present in outcome-j
-        ids_rows <- (ids-1) * n_res # 1st row for each id
-
-        M[base_rows[j] + ids_rows, sum(nfes_HC[1:j-1]) + base_cols[[j]]] <- Xbase[[j]] # add baseline
-
-        rows <- sum(nres[1:j-1]) + RE_rows[[j]] + rep(ids_rows, each= length(RE_rows[[j]]))
-        cols <- rep(sum(nfes_HC[1:j-1]) + RE_cols[[j]], times= length(ids))
-        M[cbind(rows, cols)] <- 1 # add 1 for each RE present in the FE
-    }
-    M
-}
-
-create_X_dot2 <- function (nT, nres, ind_FE_HC, x_in_z, x_in_z_base, unq_idL,
-                           Xbase) {
-    n_outcomes <- length (nres)
-    ind_rows_subject <- rep(seq_len(nT), each = sum(nres))
-    ind_rows_outcome <- rep(seq_len(n_outcomes), nres)
-    ind_cols <- split(seq_along(ind_FE_HC),
-                      rep(seq_len(n_outcomes), sapply(x_in_z_base, length)))
-
-    M <- matrix(0.0, sum(nT * nres), length(ind_FE_HC))
-    for (i in seq_len(nT)) {
-        for (j in seq_len(n_outcomes)) {
-            check <- i %in% unq_idL[[j]]
-            if (check) {
-                rows <- which(ind_rows_subject == i)[ind_rows_outcome == j]
-                cols <- ind_cols[[j]][x_in_z[[j]]]
-                M[cbind(rows[1:length(cols)], cols)] <- 1
-                if (length(ind_cols[[j]]) > length(cols)) {
-                    M[rows[1L], ind_cols[[j]][-x_in_z[[j]]]] <-
-                        Xbase[[j]][as.character(i), ]
-                }
-            }
-        }
-    }
-    M
-}
-
-create_X_dot3 <- function(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL, xbas_in_z) {
+create_X_dot <- function(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL, xbas_in_z) {
     n_outcomes <- length(nres) # number of outcomes
     n_res <- sum(nres) # total number of RE
     M <- matrix(0, nrow = n_res * nT, ncol = sum(nfes_HC))
@@ -866,6 +744,7 @@ extractFuns_FunForms <- function (Form, data) {
         out[f("log2")] <- "log2"
         out[f("log10")] <- "log10"
         out[f("sqrt")] <- "sqrt"
+        out[f("square")] <- "square"
         out[1L] # <- to change: if the same term different functions
     }
     mapply(get_fun, FForms, names(FForms))
@@ -883,6 +762,8 @@ transf_eta <- function (eta, fun_nams) {
             eta[, j] <- log(eta[, j])
         } else if (fun_nams[j] == "sqrt") {
             eta[, j] <- sqrt(eta[, j])
+        } else if (fun_nams[j] == "square") {
+            eta[, j] <- eta[, j] * eta[, j]
         }
     }
     eta
@@ -988,8 +869,14 @@ get_statistic <- function (s, stat) {
     }
 }
 
-center_fun <- function (M, means) {
-    if (!all(M == 0)) as.matrix(M - rep(means, each = nrow(M))) else M
+center_fun <- function (M, means, sds = NULL) {
+    if (!all(M == 0)) {
+        if (is.null(sds)) {
+            scale(x = M, center = means, scale = FALSE)
+        } else {
+            scale(x = M, center = means, scale = sds)
+        }
+    } else M
 }
 
 docall_cbind <- function (l) {

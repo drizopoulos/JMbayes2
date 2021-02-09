@@ -560,6 +560,16 @@ void transf_eta (mat &eta, const CharacterVector &fun_nams) {
     } else if (fun_nams[i] == "dexpit") {
       mat pp = 1.0 / (1.0 + trunc_exp(- eta.col(i)));
       eta.col(i) = pp * (1.0 - pp);
+    } else if (fun_nams[i] == "log") {
+      eta.col(i) = trunc_log(eta.col(i));
+    } else if (fun_nams[i] == "log2") {
+      eta.col(i) = log2(eta.col(i));
+    } else if (fun_nams[i] == "log10") {
+      eta.col(i) = log10(eta.col(i));
+    } else if (fun_nams[i] == "sqrt") {
+      eta.col(i) = sqrt(eta.col(i));
+    } else if (fun_nams[i] == "square") {
+      eta.col(i) = square(eta.col(i));
     }
   }
 }
@@ -585,6 +595,7 @@ field<mat> create_Wlong (const field<mat> &eta, const field<uvec> &FunForms,
 
 mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
                      const field<mat> &U, const mat &Wlong_bar,
+                     const mat &Wlong_sds,
                      const field<vec> &betas, const field<mat> &b,
                      const uvec &id, const field<uvec> &FunForms,
                      const field<uvec> &FunForms_ind,
@@ -593,6 +604,7 @@ mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
   mat Wlong =
     docall_cbindF(create_Wlong(eta, FunForms, U, FunForms_ind, Funs_FunForms));
   Wlong.each_row() -= Wlong_bar;
+  Wlong.each_row() /= Wlong_sds;
   return Wlong;
 }
 

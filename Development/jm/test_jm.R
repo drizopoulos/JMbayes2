@@ -107,7 +107,7 @@ control = NULL
 fm <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
 CoxFit <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 ff <- list("log(serBilir)" = ~ area(log(serBilir)))
-test <- jm(CoxFit, fm, time_var = "year", functional_forms = ff)
+test <- jm(CoxFit, fm, time_var = "year")
 summary(test)
 
 
@@ -130,24 +130,50 @@ control$n_chains = 1
 
 fm <- lme(sqrt(CD4) ~ obstime * drug, data = aids, random = ~ obstime | patient)
 gm <- coxph(Surv(Time, death) ~ drug, data = aids.id)
-jmFit <- jm(gm, fm, time_var = "obstime")
+jmFit <- jm(gm, fm, time_var = "obstime",
+            functional_forms = ~ value(sqrt(CD4)) + square(value(sqrt(CD4))))
 summary(jmFit)
 
 traceplot(jmFit)
 
+Surv_object = gm
+Mixed_objects = fm
+time_var = "obstime"
+functional_forms = ~ value(sqrt(CD4)) + square(value(sqrt(CD4)))
+data_Surv = NULL
+id_var = NULL
+priors = NULL
+control = NULL
+#
+model_data <- Data
+control <- con
+
+
+
+
 ################################################################################
 
-fm <- mixed_model(ascites ~ year + age, data = pbc2,
+pbc2$serCholD <- as.numeric(pbc2$serChol > 250)
+fm <- mixed_model(serCholD ~ year + age, data = pbc2,
                   random = ~ year | id, family = binomial())
 Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
-jFit <- jm(Cox, fm, time_var = "year", n_iter = 12500L, n_burnin = 2500L,
-           functional_forms = ~ vexpit(value(ascites)),
-           priors = list(Tau_alphas = list(cbind(4))))
-summary(jFit)
+jFit1 <- jm(Cox, fm, time_var = "year", n_iter = 6500L, n_burnin = 2000L,
+            functional_forms = ~ value(serCholD))
 
-traceplot(jFit, "alphas")
+jFit2 <- jm(Cox, fm, time_var = "year", n_iter = 6500L, n_burnin = 2000L,
+            functional_forms = ~ vexpit(value(serCholD)))
 
+jFit3 <- jm(Cox, fm, time_var = "year", n_iter = 6500L, n_burnin = 2000L,
+            functional_forms = ~ vexpit(value(serCholD)) + Dexpit(slope(serCholD)))
+
+summary(jFit1)
+summary(jFit2)
+summary(jFit3)
+
+traceplot(jFit1, "alphas")
+traceplot(jFit2, "alphas")
+traceplot(jFit3, "alphas")
 
 
 fForms <- list("ascites" = ~ vexpit(value(ascites)))

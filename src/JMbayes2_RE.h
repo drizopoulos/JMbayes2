@@ -19,8 +19,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const field<mat> &X_H, const field<mat> &X_h, const field<mat> &X_H2,
                const field<mat> &Z_H, const field<mat> &Z_h, const field<mat> &Z_H2,
                const field<mat> &U_H, const field<mat> &U_h, const field<mat> &U_H2,
-               const mat &Wlong_bar, const field<vec> &betas, const vec &alphas,
-               const uvec &id_H_, const uvec &id_h,
+               const mat &Wlong_bar, const mat &Wlong_sds, const field<vec> &betas,
+               const vec &alphas, const uvec &id_H_, const uvec &id_h,
                const field<uvec> &FunForms, const field<uvec> &FunForms_ind,
                const List Funs_FunForms,
                const field<mat> &X, const field<mat> &Z,
@@ -55,24 +55,24 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     // calculate Wlong_H, Wlong_h and Wlong_H2 based on the proposed_b
     // and calculate Wlong * alphas
     mat Wlong_H_proposed =
-      calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas, proposed_b, id_H_, FunForms,
-                      FunForms_ind, Funs_FunForms);
+      calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas, proposed_b,
+                      id_H_, FunForms, FunForms_ind, Funs_FunForms);
     vec WlongH_alphas_proposed = Wlong_H_proposed * alphas;
 
     mat Wlong_h_proposed(Wlong_h.n_rows, Wlong_h.n_cols);
     vec Wlongh_alphas_proposed(Wlongh_alphas.n_rows);
     if (any_event) {
       Wlong_h_proposed =
-        calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas, proposed_b, id_h, FunForms,
-                        FunForms_ind, Funs_FunForms);
+        calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas, proposed_b,
+                        id_h, FunForms, FunForms_ind, Funs_FunForms);
       Wlongh_alphas_proposed = Wlong_h_proposed * alphas;
     }
     mat Wlong_H2_proposed(Wlong_H2.n_rows, Wlong_H2.n_cols);
     vec WlongH2_alphas_proposed(WlongH2_alphas.n_rows);
     if (any_interval) {
       Wlong_H2_proposed =
-        calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas, proposed_b, id_H_,
-                        FunForms, FunForms_ind, Funs_FunForms);
+        calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas,
+                        proposed_b, id_H_, FunForms, FunForms_ind, Funs_FunForms);
       WlongH2_alphas_proposed = Wlong_H2_proposed * alphas;
     }
     // calculate logLik_Surv_proposed

@@ -39,7 +39,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    const field<mat> &X_H, const field<mat> &X_h, const field<mat> &X_H2,
                    const field<mat> &Z_H, const field<mat> &Z_h, const field<mat> &Z_H2,
                    const field<mat> &U_H, const field<mat> &U_h, const field<mat> &U_H2,
-                   const mat &Wlong_bar,
+                   const mat &Wlong_bar, const mat &Wlong_sds,
                    const uvec &id_H_, const uvec &id_h,
                    const field<uvec> &FunForms,
                    const field<uvec> &FunForms_ind,
@@ -98,19 +98,19 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
   eta = linpred_mixed(X, betas, Z, b, idL);
   // update logLik_surv
   Wlong_H =
-    calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas, b, id_H_, FunForms,
-                    FunForms_ind, Funs_FunForms);
+    calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas, b, id_H_,
+                    FunForms, FunForms_ind, Funs_FunForms);
   WlongH_alphas = Wlong_H * alphas;
   if (any_event) {
     Wlong_h =
-      calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas, b, id_h, FunForms,
-                      FunForms_ind, Funs_FunForms);
+      calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas, b, id_h,
+                      FunForms, FunForms_ind, Funs_FunForms);
     Wlongh_alphas = Wlong_h * alphas;
   }
   if (any_interval) {
     Wlong_H2 =
-      calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas, b, id_H_, FunForms,
-                      FunForms_ind, Funs_FunForms);
+      calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas, b,
+                      id_H_, FunForms, FunForms_ind, Funs_FunForms);
     WlongH2_alphas = Wlong_H2 * alphas;
   }
   logLik_surv = log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
@@ -158,23 +158,23 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                          idL_lp_fast.at(j)));
         // logLik_surv proposal
         mat Wlong_H_prop =
-          calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, betas_prop, b, id_H_,
-                          FunForms, FunForms_ind, Funs_FunForms);
+          calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas_prop, b,
+                          id_H_, FunForms, FunForms_ind, Funs_FunForms);
         vec WlongH_alphas_prop = Wlong_H_prop * alphas;
         mat Wlong_h_prop(Wlong_h.n_rows, Wlong_h.n_cols);
         vec Wlongh_alphas_prop(Wlongh_alphas.n_rows);
         if (any_event) {
           Wlong_h_prop =
-            calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, betas_prop, b, id_h,
-                            FunForms, FunForms_ind, Funs_FunForms);
+            calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas_prop,
+                            b, id_h, FunForms, FunForms_ind, Funs_FunForms);
           Wlongh_alphas_prop = Wlong_h_prop * alphas;
         }
         mat Wlong_H2_prop(Wlong_H2.n_rows, Wlong_H2.n_cols);
         vec WlongH2_alphas_prop(WlongH2_alphas.n_rows);
         if (any_interval) {
           Wlong_H2_prop =
-            calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, betas_prop, b, id_H_,
-                            FunForms, FunForms_ind, Funs_FunForms);
+            calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas_prop,
+                            b, id_H_, FunForms, FunForms_ind, Funs_FunForms);
           WlongH2_alphas_prop = Wlong_H2_prop * alphas;
         }
         vec logLik_surv_prop =
