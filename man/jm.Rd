@@ -7,6 +7,12 @@
 \alias{Dexpit}
 \alias{vexp}
 \alias{Dexp}
+\alias{vlog}
+\alias{vlog2}
+\alias{vlog10}
+\alias{vsqrt}
+
+
 \alias{tv}
 
 \title{
@@ -24,10 +30,18 @@ jm(Surv_object, Mixed_objects, time_var, functional_forms = NULL,
 value(x)
 slope(x)
 area(x)
+
 vexpit(x)
 Dexpit(x)
+
 vexp(x)
 Dexp(x)
+
+vlog(x)
+vlog2(x)
+vlog10(x)
+
+vsqrt(x)
 
 tv(x, knots = NULL, ord = 2L)
 }

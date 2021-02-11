@@ -187,7 +187,7 @@ fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
 fm3 <- mixed_model(ascites ~ year + sex, data = pbc2,
                    random = ~ year | id, family = binomial())
 
-fForms <- ~ slope(log(serBilir)) + slope(log(serBilir)):sex + area(prothrombin)
+fForms <- ~ log(value(log(serBilir)))
 
 jointFit3 <- update(jointFit2, functional_forms = fForms)
 summary(jointFit3)

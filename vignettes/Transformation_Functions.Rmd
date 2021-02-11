@@ -1,0 +1,62 @@
+---
+title: "Transformation Functions for Functional Forms"
+author: "Dimitris Rizopoulos"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Transformation Functions for Functional Forms}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("JMbayes2")
+```
+
+# Functional Forms
+## Simplified Syntax
+We have [previously seen](https://drizopoulos.github.io/JMbayes2/articles/JMbayes2.html#functional-forms-1) that function `jm()` via its `functional_forms` argument allows the specification of different functional forms to link the longitudinal and event time outcomes. This argument accepts either single formula or a list of formulas per longitudinal outcome with the terms we wish to include.
+
+We will illustrate some of these possibilities using the PBC dataset. We start by fitting a Cox model for the composite event transplantation or death, including sex as a baseline covariate:
+```{r}
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
+CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
+```
+
+Our aim is to assess the strength of the association between the risk of the composite event and whether the patients experienced hepatomegaly during follow-up. We will describe the patient-specific profiles over time for this biomarker using a mixed-effects logistic model, where both in the fixed- and random-effects we include an intercept and the time effect. The syntax to fit this model with `mixed_model()` is:
+```{r}
+fm <- mixed_model(hepatomegaly ~ year, data = pbc2, random = ~ year | id, 
+                  family = binomial())
+```
+
+The default call to `jm()`adds the subject-specific linear predictor of the mixed-effects logistic regression as a time-varying covariate in the survival relative risk model:
+```{r}
+jointFit1 <- jm(CoxFit, fm, time_var = "year")
+summary(jointFit1)
+```
+
+In the output this is named as `value(hepatomegaly)` to denote that the current value functional form is used. That is, we assume that the risk at a specific time $t$ is associated with the value of the linear predictor of the longitudinal outcome at the same time point $t$. In this particular case, the subject-specific linear predictor denotes the log odds of experiencing hepatomegaly at time $t$.
+
+## Transformation Functions
+The fact that the default version of the current value functional form is on the linear predictor scale of the mixed model may be problematic to interpret when this linear predictor is connected with a nonlinear link function to mean of the longitudinal outcome. In these situations we may want to transform the subject-specific linear predictor back to the scale of the outcome. To achieve this we can use a transformation function. Continuing on the previous example, we update `jointFit1` by now linking the expit transformation of the linear predictor (i.e., $\mbox{expit}(x) = \exp(x) / \{1 + \exp(x)\}$) with the risk of an event. This is done using the `vexpit()` function:
+```{r}
+jointFit2 <- update(jointFit1, functional_forms = ~ vexpit(value(hepatomegaly)))
+summary(jointFit2)
+```
+
+Other available functions to use in the definition of the `functional_forms` argument are `vexp()` for calculating the exponent, `vlog()` for calculating the natural logarithm, and `vsqrt()` for calculating the square root.
+
+If we want to include the time-varying slope of the transformed linear predictor, we also have the `Dexpit()` and `Dexp()` functions available. As an example, we extend `jointFit2` by including the derivative of the $\mbox{expit}()$ transformation:
+```{r}
+forms <- ~ vexpit(value(hepatomegaly)) + Dexpit(slope(hepatomegaly))
+jointFit3 <- update(jointFit1, functional_forms = forms)
+summary(jointFit3)
+```
+
+The call to `Dexpit(slope(hepatomegaly))` is internally transformed to `Dexpit(value(hepatomegaly)):slope(hepatomegaly)`, which calculates the derivative of the $\mbox{expit}()$ evaluated at the linear predictor times the derivative of the linear predictor. This is because $$\frac{d}{dt} \mbox{expit}\{\eta(t)\} = \mbox{expit}\{\eta(t)\} \, \Bigl [ 1 - \mbox{expit}\{\eta(t)\} \Bigr ] \times \frac{d}{dt}\eta(t)$$

@@ -370,6 +370,8 @@ extract_log_sigmas <- function (object) {
 
 value <- slope <- area <- function (x) rep(1, NROW(x))
 vexpit <- Dexpit <- vexp <- Dexp <- function (x) rep(1, NROW(x))
+vsqrt <- vlog <- vlog2 <- vlog10 <- function (x) rep(1, NROW(x))
+
 
 create_HC_X <- function(x, z, id, terms_FE, data, center = FALSE) {
     check_tv <- function (x, id) {
