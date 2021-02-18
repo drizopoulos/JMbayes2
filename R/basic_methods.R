@@ -147,7 +147,7 @@ summary.jm <- function (object, ...) {
     }
     fam_names <- sapply(families, "[[", "family")
     has_sigma_fam <- c("gaussian", "Student-t", "beta", "Gamma",
-                   "negative binomial", "beta binomial")
+                   "negative binomial", "beta binomial", "censored normal")
     has_sigmas <- object$model_data$has_sigmas
     has_sigmas[has_sigmas > 0] <- which(has_sigmas > 0)
     tab_sigmas <- tab_f("sigmas")
