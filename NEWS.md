@@ -5,6 +5,8 @@
 
 * Simplified syntax and additional options for specifying [transformation functions of functional forms](https://drizopoulos.github.io/JMbayes2/articles/Transformation_Functions.html).
 
+* The `slope()` function has gained two new arguments, `eps` and `direction`. This allows calculating the difference of the longitudinal profile over a user-specified interval.
+
 
 # JMbayes2 0.1.3
 

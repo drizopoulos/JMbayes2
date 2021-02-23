@@ -31,13 +31,33 @@ pred_type <- "response"
 #############################################################
 #############################################################
 
+# check for tibbles
+if (inherits(newdata, "tbl_df") || inherits(newdata, "tbl")) {
+    newdata <- as.data.frame(newdata)
+}
+
+# extract idVar and time_var
+idVar <- object$model_info$var_names$idVar
+time_var <- object$model_info$var_names$time_var
+
+# set dataL as newdata; almost the same code as in jm()
+dataL <- newdata
+idL <- dataL[[idVar]]
+nY <- length(unique(idL))
+# order data by idL and time_var
+if (is.null(dataL[[time_var]])) {
+    stop("the variable specified in agument 'time_var' cannot be found ",
+         "in the database of the longitudinal models.")
+}
+dataL <- dataL[order(idL, dataL[[time_var]]), ]
+
 # extract terms
 terms_FE <- object$model_info$terms$terms_FE
 terms_RE <- object$model_info$terms$terms_RE
 terms_Surv <- object$model_info$terms$terms_Surv_noResp
 # create model frames
-mf_FE_dataL <- lapply(terms_FE, model.frame.default, data = newdata)
-mf_RE_dataL <- lapply(terms_RE, model.frame.default, data = newdata)
+mf_FE_dataL <- lapply(terms_FE, model.frame.default, data = dataL)
+mf_RE_dataL <- lapply(terms_RE, model.frame.default, data = dataL)
 
 # we need to account for missing data in the fixed and random effects model frames,
 # in parallel across outcomes (i.e., we will allow that some subjects may have no data
@@ -60,14 +80,12 @@ family_names <- sapply(families, "[[", "family")
 links <- sapply(families, "[[", "link")
 # for family = binomial and when y has two columns, set the second column
 # to the number of trials instead the number of failures
-binomial_data <- family_names == "binomial"
+binomial_data <- family_names %in% c("binomial", "beta binomial")
 trials_fun <- function (y) {
     if (NCOL(y) == 2L) y[, 2L] <- y[, 1L] + y[, 2L]
     y
 }
 y[binomial_data] <- lapply(y[binomial_data], trials_fun)
-idVar <- object$model_info$var_names$idVar
-idL <- newdata[[idVar]] # error if not present
 unq_id <- unique(idL)
 idL <- mapply(exclude_NAs, NAs_FE_dataL, NAs_RE_dataL,
               MoreArgs = list(id = idL), SIMPLIFY = FALSE)
@@ -77,6 +95,52 @@ unq_idL <- lapply(idL, unique)
 X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL, SIMPLIFY = FALSE)
 Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL, SIMPLIFY = FALSE)
 
+################################
+
+# extract terms
+terms_Surv <- object$model_info$terms$terms_Surv
+terms_Surv_noResp <- object$model_info$terms$terms_Surv_noResp
+type_censoring <- object$model_info$type_censoring
+dataS <- newdata
+idT <- dataS[[idVar]]
+mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
+if (!is.null(NAs_surv <- attr(mf_surv_dataS, "na.action"))) {
+    idT <- idT[-NAs_surv]
+    dataS <- dataS[-NAs_surv, ]
+}
+idT <- factor(idT, levels = unique(idT))
+nT <- length(unique(idT))
+if (nY != nT) {
+    stop("the number of groups/subjects in the longitudinal and survival datasets ",
+         "do not seem to match. A potential reason why this may be happening is ",
+         "missing data in some covariates used in the individual models.")
+}
+if (!all(idT %in% dataL[[idVar]])) {
+    stop("it seems that some of the levels of the id variable in the survival dataset",
+         "cannot be found in the dataset of the Mixed_objects. Please check that ",
+         "the same subjects/groups are used in the datasets used to fit the mixed ",
+         "and survival models. Also, the name of the subjects/groups variable ",
+         "in the different datasets used to fit the individual models ",
+         "needs to be the same in all of the datasets.")
+}
+# we need to check that the ordering of the subjects in the same in dataL and dataS.
+# If not, then a warning and do it internally
+if (!all(order(unique(idT)) == order(unique(dataL[[idVar]])))) {
+    warning("It seems that the ordering of the subjects in the dataset used to fit the ",
+            "mixed models and the dataset used for the survival model is not the same. ",
+            "We set internally the datasets in the same order, but it would be best ",
+            "that you do it beforehand on your own.")
+    dataS <- dataS[order(idT), ]
+    mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
+    Surv_Response <- model.response(mf_surv_dataS)
+}
+
+nT <- length(unique(idT))
+if (nY != nT) {
+    stop("the number of groups/subjects in the longitudinal and survival datasets ",
+         "do not seem to match. A potential reason why this may be happening is ",
+         "missing data in some covariates used in the individual models.")
+}
 
 
 

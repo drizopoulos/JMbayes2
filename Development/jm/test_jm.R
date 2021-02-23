@@ -77,10 +77,10 @@ CoxFit <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 #                  data = pbc2.id, model = TRUE)
 
 fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
-                   value(log(serBilir)):sex,
+                   slope(log(serBilir)):sex,
                "serChol" = ~ value(serChol) + slope(serChol),
                "hepatomegaly" = ~ vexpit(value(hepatomegaly)) + sex,
-               "ascites" = ~ dexpit(value(ascites)):slope(ascites) + area(ascites))
+               "ascites" = ~ Dexpit(value(ascites)):slope(ascites) + area(ascites))
 
 test <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
            functional_forms = fForms)

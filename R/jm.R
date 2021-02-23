@@ -392,12 +392,17 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     if (!any_gammas) {
         W_H <- matrix(0.0, nrow = nrow(W_H), ncol = 1L)
     }
+    attr <- lapply(functional_forms, extract_attributes, data = dataS_H)
+    eps <- lapply(attr, "[[", 1L)
+    direction <- lapply(attr, "[[", 2L)
     X_H <- design_matrices_functional_forms(st, terms_FE_noResp,
                                             dataL, time_var, idVar,
-                                            collapsed_functional_forms, Xbar)
+                                            collapsed_functional_forms, Xbar,
+                                            eps, direction)
     Z_H <- design_matrices_functional_forms(st, terms_RE,
                                             dataL, time_var, idVar,
-                                            collapsed_functional_forms)
+                                            collapsed_functional_forms, NULL,
+                                            eps, direction)
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
     if (length(which_event)) {
         W0_h <- create_W0(Time_right, con$knots, con$Bsplines_degree + 1,
@@ -411,10 +416,12 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         }
         X_h <- design_matrices_functional_forms(Time_right, terms_FE_noResp,
                                                 dataL, time_var, idVar,
-                                                collapsed_functional_forms, Xbar)
+                                                collapsed_functional_forms, Xbar,
+                                                eps, direction)
         Z_h <- design_matrices_functional_forms(Time_right, terms_RE,
                                                 dataL, time_var, idVar,
-                                                collapsed_functional_forms)
+                                                collapsed_functional_forms, NULL,
+                                                eps, direction)
         U_h <- lapply(functional_forms, construct_Umat, dataS = dataS_h)
     } else {
         W0_h <- W_h <- matrix(0.0)
@@ -432,10 +439,12 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         }
         X_H2 <- design_matrices_functional_forms(st, terms_FE_noResp,
                                                  dataL, time_var, idVar,
-                                                 collapsed_functional_forms, Xbar)
+                                                 collapsed_functional_forms, Xbar,
+                                                 eps, direction)
         Z_H2 <- design_matrices_functional_forms(st, terms_RE,
                                                  dataL, time_var, idVar,
-                                                 collapsed_functional_forms)
+                                                 collapsed_functional_forms, NULL,
+                                                 eps, direction)
         U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
     } else {
         W0_H2 <- W_H2 <- matrix(0.0)

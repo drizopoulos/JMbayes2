@@ -28,7 +28,7 @@ jm(Surv_object, Mixed_objects, time_var, functional_forms = NULL,
   data_Surv = NULL, id_var = NULL, priors = NULL, control = NULL, \dots)
 
 value(x)
-slope(x)
+slope(x, eps = 0.001, direction = "both")
 area(x)
 
 vexpit(x)
@@ -140,6 +140,9 @@ tv(x, knots = NULL, ord = 2L)
 \item{x}{a numeric input variable.}
 \item{knots}{a numeric vector of knots.}
 \item{ord}{an integer denoting the order of the spline.}
+\item{eps}{numeric scalar denoting the step-size for the finite difference approximation.}
+\item{direction}{character string for the direction of the numerical derivative, options are \code{"both"},
+and \code{"backward"}.}
 \item{\dots}{arguments passed to \code{control}.}
 }
 

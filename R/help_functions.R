@@ -244,6 +244,14 @@ locf <- function (object, fromLast = FALSE, maxgap = Inf) {
     object
 }
 
+extract_attributes <- function (form, data) {
+    mf <- model.frame(terms(form), data = data)
+    eps <- lapply(mf, function (v, name) attr(v, name), name = "eps")
+    direction <- lapply(mf, function (v, name) attr(v, name), name = "direction")
+    list(eps = eps[!sapply(eps, is.null)],
+         direction = direction[!sapply(direction, is.null)])
+}
+
 design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                                               Fun_Forms, Xbar = NULL) {
     data[] <- lapply(data, function (x) locf(locf(x), fromLast = TRUE))
@@ -257,15 +265,8 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         X
     }
     degn_matr_slp <- function (time, terms, Xbar) {
-        if (is.list(time)) {
-            t1 <- lapply(time, function (t) t + 0.001)
-            t2 <- lapply(time, function (t) t - 0.001)
-            M1 <- desgn_matr(t1, terms, Xbar)
-            M2 <- desgn_matr(t2, terms, Xbar)
-        } else {
-            M1 <- desgn_matr(time + 0.001, terms, Xbar)
-            M2 <- desgn_matr(time - 0.001, terms, Xbar)
-        }
+        M1 <- desgn_matr(time + 0.001, terms, Xbar)
+        M2 <- desgn_matr(time - 0.001, terms, Xbar)
         mapply2(function (x1, x2) (x1 - x2) / 0.002, M1, M2)
     }
     degn_matr_area <- function (time, terms, Xbar) {
@@ -279,7 +280,8 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         quadrature_points <- function (x) {
             P <- unname(x / 2)
             sk <- outer(P, sk + 1)
-            # we divide with x to obtain the standardized area
+            # we divide with x to obtain the area up to time t, divided by t
+            # to account for the length of the interval
             list(P = c(t(outer(P / x, wk))), sk = sk)
         }
         qp <- lapply(time, quadrature_points)
@@ -301,6 +303,85 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
     out <- lapply(seq_along(Fun_Forms), function (i) lapply(out[Fun_Forms[[i]]], "[[", i))
     names(out) <- names(Fun_Forms)
     out
+}
+
+design_matrices_functional_forms <-
+    function (time, terms, data, timeVar, idVar, Fun_Forms, Xbar = NULL, eps,
+              direction) {
+        data[] <- lapply(data, function (x) locf(locf(x), fromLast = TRUE))
+        desgn_matr <- function (time, terms, Xbar) {
+            D <- LongData_HazardModel(time, data, data[[timeVar]],
+                                      data[[idVar]], timeVar)
+            mf <- lapply(terms, model.frame.default, data = D)
+            X <- mapply2(model.matrix.default, terms, mf)
+            if (!is.null(Xbar))
+                X <- mapply2(function (m, mu) m - rep(mu, each = nrow(m)), X, Xbar)
+            X
+        }
+        degn_matr_slp <- function (time, terms, Xbar, eps, direction) {
+            K <- length(terms)
+            out <- vector("list", K)
+            for (i in seq_len(K)) {
+                direction_i <- if (length(direction[[i]])) direction[[i]][[1L]] else "both"
+                eps_i <- if (length(eps[[i]])) eps[[i]][[1L]] else 0.001
+                if (direction_i == "both") {
+                    t1 <- time + eps_i
+                    t2 <- pmax(time - eps_i, 0)
+                } else {
+                    t1 <- time
+                    t2 <- pmax(time - eps_i, 0)
+                }
+                terms_i <- terms[[i]]
+                D1 <- LongData_HazardModel(t1, data, data[[timeVar]],
+                                           data[[idVar]], timeVar)
+                mf1 <- model.frame.default(terms_i, data = D1)
+                X1 <- model.matrix.default(terms_i, mf1)
+                D2 <- LongData_HazardModel(t2, data, data[[timeVar]],
+                                           data[[idVar]], timeVar)
+                mf2 <- model.frame.default(terms_i, data = D2)
+                X2 <- model.matrix.default(terms_i, mf2)
+                if (!is.null(Xbar)) {
+                    X1 <- X1 - rep(Xbar[[i]], each = nrow(X1))
+                    X2 <- X2 - rep(Xbar[[i]], each = nrow(X2))
+                }
+                out[[i]] <- (X1 - X2) / c(t1 - t2)
+            }
+            out
+        }
+        degn_matr_area <- function (time, terms, Xbar) {
+            if (!is.list(time)) {
+                time <- if (is.matrix(time)) split(time, row(time))
+                else split(time, seq_along(time))
+            }
+            GK <- gaussKronrod(15L)
+            wk <- GK$wk
+            sk <- GK$sk
+            quadrature_points <- function (x) {
+                P <- unname(x / 2)
+                sk <- outer(P, sk + 1)
+                # we divide with x to obtain the area up to time t, divided by t
+                # to account for the length of the interval
+                list(P = c(t(outer(P / x, wk))), sk = sk)
+            }
+            qp <- lapply(time, quadrature_points)
+            ss <- lapply(qp, function (x) c(t(x[['sk']])))
+            Pwk <- unlist(lapply(qp, '[[', 'P'), use.names = FALSE)
+            M <- desgn_matr(ss, terms, Xbar)
+            M <- lapply(M, "*", Pwk)
+            sum_qp <- function (m) {
+                n <- nrow(m)
+                grp <- rep(seq_len(round(n / 15)), each = 15L)
+                rowsum(m, grp, reorder = FALSE)
+            }
+            lapply(M, sum_qp)
+        }
+        ################
+        out <- list("value" = desgn_matr(time, terms, Xbar),
+                    "slope" = degn_matr_slp(time, terms, Xbar, eps, direction),
+                    "area" = degn_matr_area(time, terms, Xbar))
+        out <- lapply(seq_along(Fun_Forms), function (i) lapply(out[Fun_Forms[[i]]], "[[", i))
+        names(out) <- names(Fun_Forms)
+        out
 }
 
 extract_D <- function (object) {
@@ -368,10 +449,15 @@ extract_log_sigmas <- function (object) {
     out
 }
 
-value <- slope <- area <- function (x) rep(1, NROW(x))
+value <- area <- function (x) rep(1, NROW(x))
 vexpit <- Dexpit <- vexp <- Dexp <- function (x) rep(1, NROW(x))
 vsqrt <- vlog <- vlog2 <- vlog10 <- function (x) rep(1, NROW(x))
-
+slope <- function (x, eps = 0.001, direction = "both") {
+    out <- rep(1, NROW(x))
+    temp <- list(eps = eps, direction = direction)
+    attributes(out) <- c(attributes(out), temp)
+    out
+}
 
 create_HC_X <- function(x, z, id, terms_FE, data, center = FALSE) {
     check_tv <- function (x, id) {
