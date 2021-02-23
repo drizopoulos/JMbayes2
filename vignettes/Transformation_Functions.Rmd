@@ -60,3 +60,32 @@ summary(jointFit3)
 ```
 
 The call to `Dexpit(slope(hepatomegaly))` is internally transformed to `Dexpit(value(hepatomegaly)):slope(hepatomegaly)`, which calculates the derivative of the $\mbox{expit}()$ evaluated at the linear predictor times the derivative of the linear predictor. This is because $$\frac{d}{dt} \mbox{expit}\{\eta(t)\} = \mbox{expit}\{\eta(t)\} \, \Bigl [ 1 - \mbox{expit}\{\eta(t)\} \Bigr ] \times \frac{d}{dt}\eta(t)$$
+
+## The Slope Functional Form
+As we have seen in previous examples, the `slope()` function is used to specify the slope functional form $d \eta(t)/dt$. According to the [definition of the derivative](https://en.wikipedia.org/wiki/Derivative#Rigorous_definition), this corresponds to the change in the longitudinal profile $\{\eta(t + \varepsilon) - \eta(t)\}/ \varepsilon$ as $\varepsilon$ approaches zero. However, the interpretation of this term may be challenging in some settings. A possible alternative would be to increase the value of $\varepsilon$, e.g., $\varepsilon = 1$. For example, if the time scale is years, this would quantify the change of the longitudinal profile in the last year before $t$.
+
+To fit a joint model with such a term, we can use the `eps` and `direction` arguments of the `slope()` function. We illustrate this in the following example, in which we use the serum bilirubin
+```{r}
+gm <- lme(log(serBilir) ~ ns(year, 2), data = pbc2, random = ~ ns(year, 2) | id,
+          control = lmeControl(opt = "optim"))
+```
+
+We first fit the joint model with time-varying slope term:
+```{r}
+jFit1 <- jm(CoxFit, gm, time_var = "year",
+            functional_forms = ~ value(log(serBilir)) + slope(log(serBilir)))
+```
+
+To specify that we want to include the change in the log serum bilirubin levels during the last year before $t$, we specify `eps = 1` and `direction = "back"` in the call to `slope()`:
+```{r}
+jFit2 <- jm(CoxFit, gm, time_var = "year",
+            functional_forms = ~ value(log(serBilir)) + 
+              slope(log(serBilir), eps = 1, direction = "back"))
+```
+
+We compare the two fits
+```{r}
+summary(jFit1)$Survival
+
+summary(jFit2)$Survival
+```
