@@ -51,7 +51,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-5</span>
       </span>
     </div>
 
@@ -114,13 +114,13 @@
 
       
 
-      </header><script src="Non_Gaussian_Mixed_Models_files/header-attrs-2.6/header-attrs.js"></script><div class="row">
+      </header><script src="Non_Gaussian_Mixed_Models_files/header-attrs-2.7/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Joint Models with Non-Gaussian Mixed Models</h1>
                         <h4 class="author">Dimitris Rizopoulos</h4>
             
-            <h4 class="date">2021-02-11</h4>
+            <h4 class="date">2021-03-02</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/master/vignettes/Non_Gaussian_Mixed_Models.Rmd"><code>vignettes/Non_Gaussian_Mixed_Models.Rmd</code></a></small>
       <div class="hidden name"><code>Non_Gaussian_Mixed_Models.Rmd</code></div>
@@ -263,7 +263,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 20 sec</span></code></pre></div>
+<span class="co">#&gt; time: 24 sec</span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -371,33 +371,34 @@
 <span class="co">#&gt;   cbind(y, ind): 1346</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    4313.883 5411.353 -3927.236</span>
-<span class="co">#&gt; conditional 4593.213 8105.431 -7438.646</span>
+<span class="co">#&gt; marginal    4300.289 5365.911 -4051.293</span>
+<span class="co">#&gt; conditional 4575.354 7931.816 -7258.435</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                     </span>
 <span class="co">#&gt;        StdDev   Corr</span>
-<span class="co">#&gt; (Intr) 1.0193 (Intr)</span>
-<span class="co">#&gt; time   0.6839 0.1136</span>
+<span class="co">#&gt; (Intr) 1.0180 (Intr)</span>
+<span class="co">#&gt; time   0.6821 0.1155</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
 <span class="co">#&gt;                        Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; sexfemale            0.4767 0.4453 -0.3729 1.3481 0.2931 1.0112</span>
-<span class="co">#&gt; value(cbind(y, ind)) 0.7438 0.0735  0.6046 0.8978 0.0000 1.0365</span>
+<span class="co">#&gt; sexfemale            0.4799 0.4525 -0.3913 1.3614 0.2911 1.0062</span>
+<span class="co">#&gt; value(cbind(y, ind)) 0.7467 0.0743  0.6066 0.8990 0.0000 1.0559</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: cbind(y, ind) (family = censored normal, link = identity)</span>
 <span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)    -2.2818 0.3402 -2.9604 -1.6132 0.0000 0.9999</span>
-<span class="co">#&gt; sexfemale      -0.0282 0.4664 -0.9934  0.8697 0.9742 1.0004</span>
-<span class="co">#&gt; time            0.3366 0.1358  0.0712  0.6000 0.0149 1.0005</span>
-<span class="co">#&gt; sexfemale:time -0.1246 0.1892 -0.5030  0.2518 0.5029 1.0004</span>
+<span class="co">#&gt; (Intercept)    -2.2812 0.3339 -2.9589 -1.6340 0.0000 1.0021</span>
+<span class="co">#&gt; sexfemale      -0.0272 0.4592 -0.9457  0.8880 0.9447 1.0026</span>
+<span class="co">#&gt; time            0.3360 0.1337  0.0755  0.5998 0.0142 1.0036</span>
+<span class="co">#&gt; sexfemale:time -0.1241 0.1856 -0.4972  0.2373 0.5029 1.0014</span>
+<span class="co">#&gt; sigma           0.6828 0.0626  0.5803  0.8287 0.0000 1.0345</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 15 sec</span></code></pre></div>
+<span class="co">#&gt; time: 17 sec</span></code></pre></div>
 </div>
 <div id="studentss-t-mixed-models" class="section level2">
 <h2 class="hasAnchor">
@@ -525,7 +526,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 14 sec</span></code></pre></div>
+<span class="co">#&gt; time: 15 sec</span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -659,7 +660,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 24 sec</span></code></pre></div>
+<span class="co">#&gt; time: 35 sec</span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -797,7 +798,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 47 sec</span></code></pre></div>
+<span class="co">#&gt; time: 55 sec</span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>

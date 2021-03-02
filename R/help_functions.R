@@ -1048,9 +1048,6 @@ ggcolthemes <- list(
 )
 
 tv <- function (x, knots = NULL, ord = 2L) {
-    if (is.null(knots)) {
-        knots <- .knots_base_hazard
-    }
     out <- splines::splineDesign(knots, x, ord = ord, outer.ok = TRUE)
     attr(out, "knots") <- knots
     attr(out, "ord") <- ord
