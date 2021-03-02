@@ -253,7 +253,7 @@ extract_attributes <- function (form, data) {
 }
 
 design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
-                                              Fun_Forms, Xbar = NULL) {
+                                              idT, Fun_Forms, Xbar = NULL) {
     data[] <- lapply(data, function (x) locf(locf(x), fromLast = TRUE))
     desgn_matr <- function (time, terms, Xbar) {
         D <- LongData_HazardModel(time, data, data[[timeVar]],
@@ -306,12 +306,12 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
 }
 
 design_matrices_functional_forms <-
-    function (time, terms, data, timeVar, idVar, Fun_Forms, Xbar = NULL, eps,
-              direction) {
+    function (time, terms, data, timeVar, idVar, idT, Fun_Forms, Xbar = NULL,
+              eps, direction) {
         data[] <- lapply(data, function (x) locf(locf(x), fromLast = TRUE))
         desgn_matr <- function (time, terms, Xbar) {
             D <- LongData_HazardModel(time, data, data[[timeVar]],
-                                      data[[idVar]], timeVar)
+                                      data[[idVar]], idT, timeVar)
             mf <- lapply(terms, model.frame.default, data = D)
             X <- mapply2(model.matrix.default, terms, mf)
             if (!is.null(Xbar))
@@ -333,11 +333,11 @@ design_matrices_functional_forms <-
                 }
                 terms_i <- terms[[i]]
                 D1 <- LongData_HazardModel(t1, data, data[[timeVar]],
-                                           data[[idVar]], timeVar)
+                                           data[[idVar]], idT, timeVar)
                 mf1 <- model.frame.default(terms_i, data = D1)
                 X1 <- model.matrix.default(terms_i, mf1)
                 D2 <- LongData_HazardModel(t2, data, data[[timeVar]],
-                                           data[[idVar]], timeVar)
+                                           data[[idVar]], idT, timeVar)
                 mf2 <- model.frame.default(terms_i, data = D2)
                 X2 <- model.matrix.default(terms_i, mf2)
                 if (!is.null(Xbar)) {
@@ -1238,4 +1238,51 @@ jitter2 <- function (x, factor = 2) {
     }
 }
 
+SurvData_HazardModel <- function (time_points, data, times, ids, time_var) {
+    unq_ids <- unique(ids)
+    fids <- factor(ids, levels = unq_ids)
+    if (!is.matrix(time_points)) {
+        time_points <- as.matrix(time_points)
+    }
+    tt <- split(time_points, row(time_points))
+    spl_times <- split(times, fids)[unclass(fids)]
+    rownams_id <- split(row.names(data), fids)[unclass(fids)]
+    ind <- mapply2(findInterval, tt, spl_times)
+    ind[] <- lapply(ind, function (x) {x[x < 1] <- 1; x})
+    ind <- mapply2(`[`, rownams_id, ind)
+    data <- data[unlist(ind, use.names = FALSE), ]
+    data[[time_var]] <- c(t(time_points))
+    row.names(data) <- seq_len(nrow(data))
+    data
+}
 
+LongData_HazardModel <- function (time_points, data, times, ids, idT, time_var) {
+    unq_ids <- unique(ids)
+    fids <- factor(ids, levels = unq_ids)
+    idT. <- match(idT, unique(idT))
+    tt <- if (is.list(time_points)) {
+        time_points
+    } else {
+        if (!is.matrix(time_points)) {
+            time_points <- as.matrix(time_points)
+        }
+        split(time_points, row(time_points))
+    }
+    spl_times <- split(times, fids)
+    rownams_id <- split(row.names(data), fids)
+    if (length(spl_times) < length(tt)) {
+        spl_times <- spl_times[idT.]
+        rownams_id <- rownams_id[idT.]
+    }
+    ind <- mapply2(findInterval, tt, spl_times)
+    ind[] <- lapply(ind, function (x) {x[x < 1] <- 1; x})
+    ind <- mapply2(`[`, rownams_id, ind)
+    data <- data[unlist(ind, use.names = FALSE), ]
+    data[[time_var]] <- if (is.matrix(time_points)) {
+        c(t(time_points))
+    } else {
+        unlist(time_points, use.names = FALSE)
+    }
+    row.names(data) <- seq_len(nrow(data))
+    data
+}

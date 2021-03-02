@@ -248,10 +248,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         Time_start <- unname(Surv_Response[, "start"])
         Time_stop <- unname(Surv_Response[, "stop"])
         delta <-  unname(Surv_Response[, "status"])
-        Time_right <- tapply(Time_stop, idT, tail, n = 1) # time of event
-        trunc_Time <- tapply(Time_start, idT, head, n = 1) # possible left truncation time
+        Time_right <- Time_stop
+        trunc_Time <- Time_start # possible left truncation time
         Time_left <- rep(0.0, nrow(dataS))
-        delta <- tapply(delta, idT, tail, n = 1L) # event indicator at Time_right
     } else if (type_censoring == "interval") {
         Time1 <-  unname(Surv_Response[, "time1"])
         Time2 <-  unname(Surv_Response[, "time2"])
@@ -277,10 +276,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     } else {
         unclass(mf_surv_dataS[[ind_strata]])
     }
-    if (type_censoring == "counting") {
-        strata <- tapply(strata, idT, tail, n = 1L)
-        idT <- tapply(idT, idT, tail, n = 1L)
-    }
+    #if (type_censoring == "counting") {
+    #    strata <- tapply(strata, idT, tail, n = 1L)
+    #    idT <- tapply(idT, idT, tail, n = 1L)
+    #}
     n_strata <- length(unique(strata))
 
     # 'Time_integration' is the upper limit of the integral in likelihood
@@ -396,11 +395,11 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     eps <- lapply(attr, "[[", 1L)
     direction <- lapply(attr, "[[", 2L)
     X_H <- design_matrices_functional_forms(st, terms_FE_noResp,
-                                            dataL, time_var, idVar,
+                                            dataL, time_var, idVar, idT,
                                             collapsed_functional_forms, Xbar,
                                             eps, direction)
     Z_H <- design_matrices_functional_forms(st, terms_RE,
-                                            dataL, time_var, idVar,
+                                            dataL, time_var, idVar, idT,
                                             collapsed_functional_forms, NULL,
                                             eps, direction)
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
@@ -415,11 +414,11 @@ jm <- function (Surv_object, Mixed_objects, time_var,
             W_h <- matrix(0.0, nrow = nrow(W_h), ncol = 1L)
         }
         X_h <- design_matrices_functional_forms(Time_right, terms_FE_noResp,
-                                                dataL, time_var, idVar,
+                                                dataL, time_var, idVar, idT,
                                                 collapsed_functional_forms, Xbar,
                                                 eps, direction)
         Z_h <- design_matrices_functional_forms(Time_right, terms_RE,
-                                                dataL, time_var, idVar,
+                                                dataL, time_var, idVar, idT,
                                                 collapsed_functional_forms, NULL,
                                                 eps, direction)
         U_h <- lapply(functional_forms, construct_Umat, dataS = dataS_h)
@@ -438,11 +437,11 @@ jm <- function (Surv_object, Mixed_objects, time_var,
             W_H2 <- matrix(0.0, nrow = nrow(W_H2), ncol = 1L)
         }
         X_H2 <- design_matrices_functional_forms(st, terms_FE_noResp,
-                                                 dataL, time_var, idVar,
+                                                 dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, Xbar,
                                                  eps, direction)
         Z_H2 <- design_matrices_functional_forms(st, terms_RE,
-                                                 dataL, time_var, idVar,
+                                                 dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, NULL,
                                                  eps, direction)
         U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
@@ -610,5 +609,3 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     class(out) <- "jm"
     out
 }
-
-if(getRversion() >= "2.15.1") utils::globalVariables(c(".knots_base_hazard"))

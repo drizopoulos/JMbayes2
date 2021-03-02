@@ -76,7 +76,7 @@ jFit1 <- jm(CoxFit, gm, time_var = "year",
             functional_forms = ~ value(log(serBilir)) + slope(log(serBilir)))
 ```
 
-To specify that we want to include the change in the log serum bilirubin levels during the last year before $t$, we specify `eps = 1` and `direction = "back"` in the call to `slope()`:
+To specify that we want to include the change in the log serum bilirubin levels during the last year before $t$, we specify `eps = 1` and `direction = "back"` in the call to `slope()`. This calculates the term $\{\eta(t) - \eta(t - \varepsilon)\} / \varepsilon$ for $\varepsilon$ set equal to `eps = 1`:
 ```{r}
 jFit2 <- jm(CoxFit, gm, time_var = "year",
             functional_forms = ~ value(log(serBilir)) + 
