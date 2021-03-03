@@ -35,7 +35,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const uvec &indFast_H, const uvec &indFast_h, const uvec &which_event,
                const uvec &which_right_event, const uvec &which_left,
                const uvec &which_interval, const bool &any_event,
-               const bool &any_interval, const uword &n_strata,
+               const bool &any_interval, const umat &ni_event,
                const mat &L, const vec &sds,
                const uword &it, mat &acceptance_b, cube &res_b, const bool &save_random_effects,
                const uword &n_burnin, const uword &GK_k, mat &cumsum_b, cube &outprod_b) {
@@ -104,14 +104,14 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
         logLik_long.at(i) = logLik_long_proposed.at(i);
         logLik_surv.at(i) = logLik_surv_proposed.at(i);
         logLik_re.at(i) = logLik_re_proposed.at(i);
-        uword first_H = i * GK_k * n_strata;
-        uword last_H = (i + 1) * GK_k * n_strata - 1;
+        uword first_H = GK_k * ni_event.at(i, 0);
+        uword last_H = GK_k * ni_event.at(i, 1) - 1;
         Wlong_H.rows(first_H, last_H) = Wlong_H_proposed.rows(first_H, last_H);
         WlongH_alphas.rows(first_H, last_H) =
           WlongH_alphas_proposed.rows(first_H, last_H);
         if (any_event) {
-          uword fitst_h = i * n_strata;
-          uword last_h = (i + 1) * n_strata - 1;
+          uword fitst_h = ni_event.at(i, 0);
+          uword last_h = ni_event.at(i, 1) - 1;
           Wlong_h.rows(fitst_h, last_h) = Wlong_h_proposed.rows(fitst_h, last_h);
           Wlongh_alphas.rows(fitst_h, last_h) =
             Wlongh_alphas_proposed.rows(fitst_h, last_h);

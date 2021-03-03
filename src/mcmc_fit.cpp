@@ -121,6 +121,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   // indexes or other useful things
   uvec upper_part = trimatu_ind(size(R),  1);
   uword GK_k = as<uword>(control["GK_k"]);
+  umat ni_event = as<umat>(model_data["ni_event"]);
   // MCMC settings
   uword n_iter = as<uword>(control["n_iter"]);
   uword n_burnin = as<uword>(control["n_burnin"]);
@@ -177,8 +178,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uword n_b = b_mat.n_rows;
   uword n_bs_gammas = bs_gammas.n_rows;
   uword n_strata = tau_bs_gammas.n_rows;
-  uword n_strata_ = n_strata;
-  if (Time_right.n_rows == n_b) n_strata_ = 1;
   uword n_per_stratum = n_bs_gammas / n_strata;
   uword n_gammas = gammas.n_rows;
   uword n_alphas = alphas.n_rows;
@@ -385,7 +384,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas,
              Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2,
              id_H_fast, id_h_fast, which_event, which_right_event, which_left,
-             which_interval, any_event, any_interval, n_strata_,
+             which_interval, any_event, any_interval, ni_event,
              L, sds, it, acceptance_b, res_b, save_random_effects,
              n_burnin, GK_k, cumsum_b, outprod_b);
 

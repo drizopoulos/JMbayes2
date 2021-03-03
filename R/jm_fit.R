@@ -18,6 +18,9 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     # When we have competing risks we have the same idT for the different strata
     # id_H below distinguishes between the different risks per subject. Then for
     # each unique idT & strata/risk combination we have the quadrature points.
+    ni_event <- tapply(idT, idT, length)
+    model_data$ni_event <- cbind(c(0, head(cumsum(ni_event), -1)),
+                                 cumsum(ni_event))
     id_H <- rep(paste0(idT, "_", unlist(tapply(idT, idT, seq_along))),
                 each = control$GK_k)
     id_H <- match(id_H, unique(id_H))
