@@ -110,6 +110,7 @@ data_mstate$trans <- factor(data_mstate$trans)
 CoxFit_DR <- coxph(Surv(Tstart, Tstop, status) ~ X * strata(trans),
                    data = data_mstate)
 
+
 jmFit_DR <- jm(CoxFit_DR, lmeFit_DR, time_var = "times",
                functional_forms = ~ value(Y):trans)
 
@@ -117,6 +118,43 @@ summary(jmFit_DR)
 traceplot(jmFit_DR)
 
 
+################# COMPARE wih JMstateModel
+CoxFit_DR_adj <- coxph(Surv(Tstart, Tstop, status) ~ X * strata(trans),
+                       data = data_mstate, method = "breslow", x = TRUE, model = TRUE)
 
 
+jointFit_1step_GHk3_adj <-
+  JMstateModel(lmeObject = lmeFit_DR,
+               survObject = CoxFit_DR_adj,
+               timeVar = "times",
+               parameterization = "value",
+               method = "spline-PH-aGH",
+               interFact = list(value = ~ strata(trans) - 1,
+                                data = data_mstate),
+               Mstate = TRUE,
+               data.Mstate = data_mstate,
+               ID.Mstate = "id",
+               control = list(GHk = 3, lng.in.kn = 1),
+               verbose = TRUE)
 
+summary(jointFit_1step_GHk3_adj)
+
+mixed_model_adj <- mvglmer(list(Y ~ times * X + (times | id)),
+                       families = list(gaussian),
+                       data = data_long)
+
+CoxFit_DR_adj <- coxph(Surv(Tstart, Tstop, status) ~ X * strata(trans) + cluster(id),
+                   data = data_mstate, model = TRUE, x = TRUE)
+
+interacts_adj <- list("Y" = ~ strata(trans) - 1)
+
+jm_mstate_model_adj <- mvJointModelBayes(mixed_model_adj, CoxFit_DR_adj, timeVar = 'times',
+                                     Interactions = interacts_adj,
+                                     multiState = TRUE,
+                                     data_MultiState = data_mstate,
+                                     idVar_MultiState = 'id')
+
+
+jointFit_1step_GHk3_adj$coefficients$alpha
+jmFit_DR$statistics$Mean$alphas
+jm_mstate_model_adj$statistics$postMeans$alphas
