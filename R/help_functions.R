@@ -462,7 +462,7 @@ slope <- function (x, eps = 0.001, direction = "both") {
 create_HC_X <- function(x, z, id, terms_FE, data, center = FALSE) {
     check_tv <- function (x, id) {
         !all(sapply(split(x, id),
-                    function (z) all(z - z[1L] < .Machine$double.eps^0.5)))
+                    function (z) all(abs(z - z[1L]) < .Machine$double.eps^0.5)))
     }
     x <- scale(x, center = center, scale = FALSE)
     cnams_x <- colnames(x)
