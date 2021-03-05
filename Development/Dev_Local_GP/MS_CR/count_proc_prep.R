@@ -1,4 +1,4 @@
-count_proc_prep <- function (data, timevars, statusvars, transitionmat, id) {
+count_proc_prep <- function (data, timevars, statusvars, transitionmat, id, covs = NULL) {
   # setup times matrix with NAs
   # First row is NA as this is starting state 
   timesmat <- matrix(NA, nrow(data), length(timevars))
@@ -27,6 +27,7 @@ count_proc_prep <- function (data, timevars, statusvars, transitionmat, id) {
   starting_time <- rep(0, n_subj)
   idnam <- id
   id <- data[[id]]
+  order_id <- order(id)
   out <- prepdat(timesmat = timesmat, statusmat = statusmat, id = id, 
                  starting_time = starting_time, starting_state = starting_state, 
                  transitionmat = transitionmat, 
@@ -39,6 +40,29 @@ count_proc_prep <- function (data, timevars, statusvars, transitionmat, id) {
   ord <- order(out[, 1], out[, 5], out[, 2], out[, 3])
   out <- out[ord, ]
   row.names(out) <- 1:nrow(out)
+  # Covariates
+  if (!is.null(covs)) {
+    n_covs <- length(covs)
+    cov_cols <- match(covs, names(data))
+    cov_names <- covs
+    covs <- data[, cov_cols]
+    if (!is.factor(out[, 1])) 
+      out[, 1] <- factor(out[, 1])
+    n_per_subject <- tapply(out[, 1], out[, 1], length)
+    if (n_covs > 1) 
+      covs <- covs[ord1, , drop = FALSE]
+    if (n_covs == 1) {
+      longcovs <- rep(covs, n_per_subject)
+      longcovs <- longcovs[ord]
+      longcovs <- as.data.frame(longcovs)
+      names(longcovs) <- cov_names
+    } else {
+      longcovs <- lapply(1:nkeep, function(i) rep(covs[, i], n_per_subject))
+      longcovs <- as.data.frame(longcovs)
+      names(longcovs) <- cov_names
+    }
+    out <- cbind(out, longcovs)
+  }
   # add attributes maybe
   # add specific class maybe
   # need to add functionality for covariates (e.g. like keep in mstate)
