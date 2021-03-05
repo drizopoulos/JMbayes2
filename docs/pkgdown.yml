@@ -1,4 +1,4 @@
-pandoc: 2.11.2
+pandoc: 2.7.3
 pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
@@ -6,7 +6,8 @@ articles:
   JMbayes2: JMbayes2.html
   Non_Gaussian_Mixed_Models: Non_Gaussian_Mixed_Models.html
   Transformation_Functions: Transformation_Functions.html
-last_built: 2021-03-04T13:59Z
+  Multi_State_Processes: Multi_State_Processes.html
+last_built: 2021-03-05T18:32Z
 urls:
   reference: https://drizopoulos.github.io/JMbayes2//reference
   article: https://drizopoulos.github.io/JMbayes2//articles

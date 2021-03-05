@@ -108,7 +108,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -134,6 +134,9 @@
     <li>
       <a href="../articles/Transformation_Functions.html">Transformation Functions for Functional Forms</a>
     </li>
+    <li>
+      <a href="../articles/Multi_State_Processes.html">Joint Models with Multi-state processes</a>
+    </li>
   </ul>
 </li>
 <li>
@@ -143,7 +146,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/drizopoulos/JMbayes2/">
-    <span class="fab fa-github fa-lg"></span>
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -300,7 +303,7 @@
         <dt><code>Bsplines_degree</code></dt><dd><p>the degree of the splines in each basis; default quadratic splines.</p></dd>
         <dt><code>base_hazard_segments</code></dt><dd><p>the number of segments to split the follow-up period. Defaults to 10.</p></dd>
         <dt><code>diff</code></dt><dd><p>the order of the difference used in the penalty matrix for the B-splines for h_0. Defaults to 2.</p></dd>
-        <dt><code>n_chains</code></dt><dd><p>an integer specifying the number of chains for the MCMC. Defaults to 1.</p></dd>
+        <dt><code>n_chains</code></dt><dd><p>an integer specifying the number of chains for the MCMC. Defaults to 3.</p></dd>
         <dt><code>n_burnin</code></dt><dd><p>an integer specifying the number of burn-in iterations. Defaults to 500.</p></dd>
         <dt><code>n_iter</code></dt><dd><p>an integer specifying the number of total iterations per chain. Defaults to 3500.</p></dd>
         <dt><code>seed</code></dt><dd><p>the seed used in the sampling procedures. Defaults to 123.</p></dd>
@@ -397,7 +400,7 @@ and <code>"backward"</code>.</p></td>
 #&gt;   log(serBilir): 1945
 #&gt; 
 #&gt;                  DIC      WAIC      LPML
-#&gt; marginal    11679.47 106629.15 -40561.02
+#&gt; marginal    11693.99 106643.66 -40568.28
 #&gt; conditional 10628.49  35400.49 -30794.04
 #&gt; 
 #&gt; Random-effects covariance matrix:
@@ -428,7 +431,7 @@ and <code>"backward"</code>.</p></td>
 #&gt; iterations per chain: 11000 
 #&gt; burn-in per chain: 1000 
 #&gt; thinning: 1 
-#&gt; time: 32 sec</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_1</span><span class='op'>)</span>
+#&gt; time: 45 sec</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_1</span><span class='op'>)</span>
 </div><div class='img'><img src='jm-1.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-2.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-3.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-4.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-5.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-6.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-7.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-8.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-9.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-10.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-11.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-12.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-13.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-14.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-15.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-16.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-17.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-18.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-19.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-20.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-21.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-22.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-23.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-24.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-25.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-26.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-27.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>################################################################################</span>
 
@@ -519,7 +522,7 @@ and <code>"backward"</code>.</p></td>
 #&gt; iterations per chain: 11000 
 #&gt; burn-in per chain: 1000 
 #&gt; thinning: 1 
-#&gt; time: 1.1 min</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_2</span><span class='op'>)</span>
+#&gt; time: 1.7 min</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_2</span><span class='op'>)</span>
 </div><div class='img'><img src='jm-28.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-29.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-30.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-31.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-32.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-33.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-34.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-35.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-36.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-37.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-38.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-39.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-40.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-41.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-42.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-43.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-44.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-45.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-46.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-47.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-48.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-49.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-50.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-51.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-52.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-53.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-54.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-55.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-56.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-57.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-58.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-59.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-60.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-61.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-62.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-63.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-64.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-65.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-66.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-67.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-68.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-69.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-70.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-71.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-72.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-73.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-74.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-75.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-76.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-77.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-78.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>################################################################################</span>
 
@@ -581,8 +584,8 @@ and <code>"backward"</code>.</p></td>
 #&gt;   ascites: 1885
 #&gt; 
 #&gt;                   DIC         WAIC          LPML
-#&gt; marginal    321986.68 1.442962e+12 -77594738.438
-#&gt; conditional  10585.65 1.229713e+04     -7652.645
+#&gt; marginal    322614.56 1.448896e+12 -77753289.624
+#&gt; conditional  10585.55 1.229713e+04     -7652.645
 #&gt; 
 #&gt; Random-effects covariance matrix:
 #&gt;                                                  
@@ -630,7 +633,7 @@ and <code>"backward"</code>.</p></td>
 #&gt; iterations per chain: 11000 
 #&gt; burn-in per chain: 1000 
 #&gt; thinning: 1 
-#&gt; time: 1.4 min</div><div class='input'>
+#&gt; time: 1.9 min</div><div class='input'>
 <span class='co'># }</span>
 </div></pre>
   </div>

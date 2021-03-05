@@ -59,7 +59,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -85,6 +85,9 @@
     <li>
       <a href="../articles/Transformation_Functions.html">Transformation Functions for Functional Forms</a>
     </li>
+    <li>
+      <a href="../articles/Multi_State_Processes.html">Joint Models with Multi-state processes</a>
+    </li>
   </ul>
 </li>
 <li>
@@ -94,7 +97,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/drizopoulos/JMbayes2/">
-    <span class="fab fa-github fa-lg"></span>
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -114,13 +117,14 @@
 
       
 
-      </header><script src="Competing_Risks_files/header-attrs-2.7/header-attrs.js"></script><div class="row">
+      </header><script src="Competing_Risks_files/accessible-code-block-0.0.1/empty-anchor.js"></script><link href="Competing_Risks_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
+<script src="Competing_Risks_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Joint Models with Competing Risks</h1>
                         <h4 class="author">Dimitris Rizopoulos</h4>
             
-            <h4 class="date">2021-03-04</h4>
+            <h4 class="date">2021-03-05</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/master/vignettes/Competing_Risks.Rmd"><code>vignettes/Competing_Risks.Rmd</code></a></small>
       <div class="hidden name"><code>Competing_Risks.Rmd</code></div>
@@ -135,7 +139,7 @@
 <div id="prepare-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#prepare-data" class="anchor"></a>Prepare data</h2>
-<p>The first step to fit a joint model for competing events in <strong>JMbaye2</strong> is to prepare the data for the event process. If there are <span class="math inline">\(K\)</span> competing events, then each subject has <span class="math inline">\(K\)</span> rows, one for each possible cause. The observed event time <span class="math inline">\(T_i\)</span> of each subject is repeated <span class="math inline">\(K\)</span> times, and there are two indicator variables, namely one identifying the cause, and one indicating whether the corresponding event type is the one that occurred. Standard survival datasets that included a single row per patient, can be easily transformed to the competing risks long format using function <code><a href="../reference/crLong.html">crLong()</a></code>. This function accepts as main arguments the survival data in the standard format that has a single row per patient, the name of the status variable, and the level in this status variable that corresponds to censoring. We illustrate this using as an example the PBC data, in which we treat as competing risks transplantation and death:</p>
+<p>The first step to fit a joint model for competing events in <strong>JMbayes2</strong> is to prepare the data for the event process. If there are <span class="math inline">\(K\)</span> competing events, then each subject has <span class="math inline">\(K\)</span> rows, one for each possible cause. The observed event time <span class="math inline">\(T_i\)</span> of each subject is repeated <span class="math inline">\(K\)</span> times, and there are two indicator variables, namely one identifying the cause, and one indicating whether the corresponding event type is the one that occurred. Standard survival datasets that included a single row per patient, can be easily transformed to the competing risks long format using function <code><a href="../reference/crLong.html">crLong()</a></code>. This function accepts as main arguments the survival data in the standard format that has a single row per patient, the name of the status variable, and the level in this status variable that corresponds to censoring. We illustrate this using as an example the PBC data, in which we treat as competing risks transplantation and death:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pbc2.id</span><span class="op">[</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">id</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"years"</span>, <span class="st">"status"</span><span class="op">)</span><span class="op">]</span>
 <span class="co">#&gt;   id     years       status</span>
@@ -240,7 +244,7 @@
 <span class="co">#&gt; iterations per chain: 25000 </span>
 <span class="co">#&gt; burn-in per chain: 5000 </span>
 <span class="co">#&gt; thinning: 5 </span>
-<span class="co">#&gt; time: 8 min</span></code></pre></div>
+<span class="co">#&gt; time: 18.1 min</span></code></pre></div>
 </div>
 </div>
   </div>
