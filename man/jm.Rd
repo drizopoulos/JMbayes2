@@ -128,7 +128,7 @@ tv(x, knots = NULL, ord = 2L)
         \item{\code{Bsplines_degree}}{the degree of the splines in each basis; default quadratic splines.}
         \item{\code{base_hazard_segments}}{the number of segments to split the follow-up period. Defaults to 10.}
         \item{\code{diff}}{the order of the difference used in the penalty matrix for the B-splines for h_0. Defaults to 2.}
-        \item{\code{n_chains}}{an integer specifying the number of chains for the MCMC. Defaults to 1.}
+        \item{\code{n_chains}}{an integer specifying the number of chains for the MCMC. Defaults to 3.}
         \item{\code{n_burnin}}{an integer specifying the number of burn-in iterations. Defaults to 500.}
         \item{\code{n_iter}}{an integer specifying the number of total iterations per chain. Defaults to 3500.}
         \item{\code{seed}}{the seed used in the sampling procedures. Defaults to 123.}

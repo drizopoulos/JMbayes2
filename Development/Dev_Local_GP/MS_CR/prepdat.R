@@ -1,4 +1,4 @@
-prepdat <- function (timesmat, statusmat, id, starting_time, starting_state, transitionmat, 
+ms_prepdat <- function (timesmat, statusmat, id, starting_time, starting_state, transitionmat, 
                      original_states, longmat) {
   if (is.null(nrow(timesmat))) 
     return(longmat)

@@ -1,4 +1,4 @@
-count_proc_prep <- function (data, timevars, statusvars, transitionmat, id, covs = NULL) {
+ms_setup <- function (data, timevars, statusvars, transitionmat, id, covs = NULL) {
   # setup times matrix with NAs
   # First row is NA as this is starting state 
   timesmat <- matrix(NA, nrow(data), length(timevars))

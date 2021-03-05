@@ -1283,3 +1283,188 @@ LongData_HazardModel <- function (time_points, data, times, ids, idT, time_var) 
     row.names(data) <- seq_len(nrow(data))
     data
 }
+
+ms_setup <- function (data, timevars, statusvars, transitionmat, id, covs = NULL) {
+    # setup times matrix with NAs
+    # First row is NA as this is starting state 
+    timesmat <- matrix(NA, nrow(data), length(timevars))
+    timecols_data <- which(colnames(data) %in% timevars[!is.na(timevars)])
+    timesmat[, -which(is.na(timevars))] <- as.matrix(data[, timecols_data]) 
+    # setup status matrix with NAs
+    # First row is NA as this is starting state 
+    statusmat <- matrix(NA, nrow(data), length(statusvars))
+    statuscols_data <- which(colnames(data) %in% statusvars[!is.na(statusvars)])
+    statusmat[, -which(is.na(statusvars))] <- as.matrix(data[, statuscols_data]) 
+    # ensure convert to matrices
+    timesmat <- as.matrix(timesmat)
+    statusmat <- as.matrix(statusmat)
+    # check dimesnions are the same
+    if (any(dim(timesmat) != dim(statusmat))) 
+        stop("Dimensions of \"time\" and \"status\" data should be equal")
+    # components
+    # number of unique subjects
+    n_subj <- nrow(timesmat)
+    # number of states
+    n_states <- dim(transitionmat)[1]
+    # set start state to 1 and start time to 0 for all subjects
+    # ATTENTION: this needs to be adjusted to more flexible to allow subjects starting at different states
+    # this could be achieved by a requesting a separate argument (vector with starting state)
+    starting_state <- rep(1, n_subj)
+    starting_time <- rep(0, n_subj)
+    idnam <- id
+    id <- data[[id]]
+    order_id <- order(id)
+    out <- ms_prepdat(timesmat = timesmat, statusmat = statusmat, id = id, 
+                   starting_time = starting_time, starting_state = starting_state, 
+                   transitionmat = transitionmat, 
+                   original_states = (1:nrow(transitionmat)), longmat = NULL)
+    out <- as.data.frame(out)
+    names(out) <- c(idnam, "from_state", "to_state", "transition", 
+                    "Tstart", "Tstop", "status")
+    out$time <- out$Tstop - out$Tstart
+    out <- out[, c(1:6, 8, 7)]
+    ord <- order(out[, 1], out[, 5], out[, 2], out[, 3])
+    out <- out[ord, ]
+    row.names(out) <- 1:nrow(out)
+    # Covariates
+    if (!is.null(covs)) {
+        n_covs <- length(covs)
+        cov_cols <- match(covs, names(data))
+        cov_names <- covs
+        covs <- data[, cov_cols]
+        if (!is.factor(out[, 1])) 
+            out[, 1] <- factor(out[, 1])
+        n_per_subject <- tapply(out[, 1], out[, 1], length)
+        if (n_covs > 1) 
+            covs <- covs[order_id, , drop = FALSE]
+        if (n_covs == 1) {
+            longcovs <- rep(covs, n_per_subject)
+            longcovs <- longcovs[ord]
+            longcovs <- as.data.frame(longcovs)
+            names(longcovs) <- cov_names
+        } else {
+            longcovs <- lapply(1:n_covs, function(i) rep(covs[, i], n_per_subject))
+            longcovs <- as.data.frame(longcovs)
+            names(longcovs) <- cov_names
+        }
+        out <- cbind(out, longcovs)
+    }
+    # add attributes maybe
+    # add specific class maybe
+    # need to add functionality for covariates (e.g. like keep in mstate)
+    return(out)
+} 
+
+ms_prepdat <- function (timesmat, statusmat, id, starting_time, starting_state, transitionmat, 
+                        original_states, longmat) {
+    if (is.null(nrow(timesmat))) 
+        return(longmat)
+    if (nrow(timesmat) == 0) 
+        return(longmat)
+    from_states <- apply(!is.na(transitionmat), 2, sum)
+    to_states <- apply(!is.na(transitionmat), 1, sum)
+    absorbing_states <- which(to_states == 0)
+    starts <- which(from_states == 0)
+    new_states <- starting_state
+    new_times <- starting_time
+    rmv <- NULL
+    for (i in 1:starts) {
+        subjects <- which(starting_state == starts)
+        n_start <- length(subjects)
+        to_states_2 <- which(!is.na(transitionmat[starts, ]))
+        trans_states <- transitionmat[starts, to_states_2]
+        n_trans_states <- length(to_states_2)
+        if (all(n_start > 0, n_trans_states > 0)) {
+            Tstart <- starting_time[subjects]
+            Tstop <- timesmat[subjects, to_states_2, drop = FALSE]
+            Tstop[Tstop <= Tstart] <- Inf
+            state_status <- statusmat[subjects, to_states_2, drop = FALSE]
+            mintime <- apply(Tstop, 1, min)
+            hlp <- Tstop * 1 / state_status
+            hlp[Tstop == 0 & state_status == 0] <- Inf
+            next_time <- apply(hlp, 1, min)
+            censored <- which(is.infinite(apply(hlp, 1, min)))
+            wh <- which(mintime < next_time)
+            whminc <- setdiff(wh, censored)
+            if (length(whminc) > 0) {
+                whsubjs <- id[subjects[whminc]]
+                whsubjs <- paste(whsubjs, collapse = " ")
+                warning("Subjects ", whsubjs, " Have smaller transition time with status = 0, larger transition time with status = 1, 
+                from starting state ", original_states[starts])
+            }
+            next_time[censored] <- mintime[censored]
+            if (ncol(hlp) > 1) {
+                hlpsrt <- t(apply(hlp, 1, sort))
+                warn1 <- which(hlpsrt[, 1] - hlpsrt[, 2] == 0)
+                if (length(warn1) > 0) {
+                    isw <- id[subjects[warn1]]
+                    isw <- paste(isw, collapse = " ")
+                    hsw <- hlpsrt[warn1, 1]
+                    hsw <- paste(hsw, collapse = " ")
+                    warning("simultaneous transitions possible for subjects ", isw, " at times ", hsw, 
+                            " -> Smallest receiving state will be used")
+                }
+            }
+            if (length(censored) > 0) {
+                next_state <- apply(hlp[-censored, , drop = FALSE], 
+                                    1, which.min)
+                absorbed <- (1:n_start)[-censored][which(to_states_2[next_state] %in% absorbing_states)]
+            } else {
+                next_state <- apply(hlp, 1, which.min)
+                absorbed <- (1:n_start)[which(to_states_2[next_state] %in% absorbing_states)]
+            }
+            states_matrix <- matrix(0, n_start, n_trans_states)
+            if (length(censored) > 0) {
+                states_matrix_min <- states_matrix[-censored, , drop = FALSE]
+            } else {
+                states_matrix_min <- states_matrix
+            }
+            if (nrow(states_matrix_min) > 0) 
+                states_matrix_min <- t(sapply(1:nrow(states_matrix_min), function(i) {
+                    x <- states_matrix_min[i, ]
+                    x[next_state[i]] <- 1
+                    return(x)
+                }))
+            if (length(censored) > 0) {
+                states_matrix[-censored, ] <- states_matrix_min
+            } else {
+                states_matrix <- states_matrix_min
+            }
+            mm <- matrix(c(rep(id[subjects], rep(n_trans_states, n_start)), 
+                           rep(original_states[starts], n_trans_states * n_start), 
+                           rep(original_states[to_states_2], n_start), 
+                           rep(trans_states, n_start), rep(Tstart, rep(n_trans_states, n_start)), 
+                           rep(next_time, rep(n_trans_states, n_start)), as.vector(t(states_matrix))), 
+                         n_trans_states * n_start, 7)
+            longmat <- rbind(longmat, mm)
+            rmv <- c(rmv, subjects[c(censored, absorbed)])
+            if (length(censored) > 0) {
+                new_states[subjects[-censored]] <- to_states_2[next_state]
+            } else {
+                new_states[subjects] <- to_states_2[next_state]
+            }
+            if (length(censored) > 0)  {
+                new_times[subjects[-censored]] <- next_time[-censored]
+            } else {
+                new_times[subjects] <- next_time
+            }
+        }
+    }
+    if (length(rmv) > 0) {
+        timesmat <- timesmat[-rmv, ]
+        statusmat <- statusmat[-rmv, ]
+        new_times <- new_times[-rmv]
+        new_states <- new_states[-rmv]
+        id <- id[-rmv]
+    }
+    n_states <- nrow(transitionmat)
+    idx <- rep(1, n_states)
+    idx[starts] <- 0
+    idx <- cumsum(idx)
+    new_states <- idx[new_states]
+    Recall(timesmat = timesmat[, -starts], statusmat = statusmat[, -starts], 
+           id = id, starting_time = new_times, starting_state = new_states, 
+           transitionmat = transitionmat[-starts, -starts], original_states = original_states[-starts], 
+           longmat = longmat)
+}
+
