@@ -64,8 +64,6 @@ ggplot() + geom_rect(data = d, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax =
 where all subjects start from state "Healthy" and then can transition to either state "Illness" and then state "Death" or directly to state "Death". In this case, states "Healthy" and "Illness" are *transient* states as the subject, when occupying these states, can still transition to other states whereas "Death" is an absorbing state as when a subject reaches this state then no further transitions can occur. This means that three transitions are possible: $1 \rightarrow 2$, $1 \rightarrow 3$ and $2 \rightarrow 3$ with transition intensities $h_{12}\left(t\right)$, $h_{13}\left(t\right)$ and $h_{23}\left(t\right)$ respectively. 
 
 For our example the default functional form is assumed, i.e., that the linear predictor $\eta(t)$ of the mixed model is associated with the each transition intensity at time $t$. The following piece of code simulates the data:
-<<<<<<< Updated upstream
-
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 # function ms_setup needs to be sourced to be used in the simulation
 ms_setup <- function (data, timevars, statusvars, transitionmat, id, covs = NULL) {
@@ -490,7 +488,7 @@ Finally, to fit the joint model we simply run:
 ```{r, "jm_fit"}
 jm_ms_model <- jm(msmodel, mixedmodel, time_var = "times", 
                   functional_forms = ~ value(Y):transition, 
-                  n_iter = 10000L)
+                  n_iter = 10000L, GK_k = 7L)
 
 summary(jm_ms_model)
 ```
