@@ -255,9 +255,6 @@ ms_prepdat <- function (timesmat, statusmat, id, starting_time, starting_state, 
 ```
 
 ```{r "simulate_Multi_State"}
-=======
-```{r, "simulate_Multi_State"}
->>>>>>> Stashed changes
 set.seed(1234)
 # number of subjects
 N <- 500
