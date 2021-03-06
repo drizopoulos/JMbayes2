@@ -276,10 +276,6 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     } else {
         unclass(mf_surv_dataS[[ind_strata]])
     }
-    #if (type_censoring == "counting") {
-    #    strata <- tapply(strata, idT, tail, n = 1L)
-    #    idT <- tapply(idT, idT, tail, n = 1L)
-    #}
     n_strata <- length(unique(strata))
 
     # 'Time_integration' is the upper limit of the integral in likelihood

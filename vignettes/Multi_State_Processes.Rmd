@@ -29,11 +29,15 @@ We will consider a simple case with one longitudinal outcome and a three-state (
 First we will simulate data from a joint model with a single linear mixed effects model and a multi-state process with three possible states. The multi-state process can be visualized as:
 
 ```{r ms_figure, echo = FALSE, warning = FALSE, message = FALSE}
-library(ggplot2)
+library("ggplot2")
 
-d <- data.frame("xmin" = c(0, 45, 22.5), "xmax" = c(15, 60, 37.5), "ymin" = c(50, 50, 0), "ymax" = c(60, 60, 15))
+d <- data.frame("xmin" = c(0, 45, 22.5), "xmax" = c(15, 60, 37.5), 
+                "ymin" = c(50, 50, 0), "ymax" = c(60, 60, 15))
+
 dline <- data.frame("x1" = c(15), "y1" = c(55), "xend" = c(45), "yend" = c(55))
-dcurve <- data.frame("x1" = c(7.5, 52.5), "y1" = c(50, 50), "xend" = c(22.4, 37.4), "yend" = c(7.5, 7.5), 
+
+dcurve <- data.frame("x1" = c(7.5, 52.5), "y1" = c(50, 50), 
+                     "xend" = c(22.4, 37.4), "yend" = c(7.5, 7.5), 
                      "curvature" = c(1, -1))
 
 ggplot() + geom_rect(data = d, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax), 
@@ -55,12 +59,12 @@ ggplot() + geom_rect(data = d, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax =
              arrow = arrow(length = unit(0.02, "npc"))) +
   ylim(0, 60) + xlim(0, 60) + 
   theme_void()
-
 ```
 
 where all subjects start from state "Healthy" and then can transition to either state "Illness" and then state "Death" or directly to state "Death". In this case, states "Healthy" and "Illness" are *transient* states as the subject, when occupying these states, can still transition to other states whereas "Death" is an absorbing state as when a subject reaches this state then no further transitions can occur. This means that three transitions are possible: $1 \rightarrow 2$, $1 \rightarrow 3$ and $2 \rightarrow 3$ with transition intensities $h_{12}\left(t\right)$, $h_{13}\left(t\right)$ and $h_{23}\left(t\right)$ respectively. 
 
 For our example the default functional form is assumed, i.e., that the linear predictor $\eta(t)$ of the mixed model is associated with the each transition intensity at time $t$. The following piece of code simulates the data:
+<<<<<<< Updated upstream
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 # function ms_setup needs to be sourced to be used in the simulation
@@ -251,6 +255,9 @@ ms_prepdat <- function (timesmat, statusmat, id, starting_time, starting_state, 
 ```
 
 ```{r "simulate_Multi_State"}
+=======
+```{r, "simulate_Multi_State"}
+>>>>>>> Stashed changes
 set.seed(1234)
 # number of subjects
 N <- 500
@@ -311,7 +318,7 @@ invS01 <- function(t, u, i) {
     f1 <- as.vector(XX %*% true.betas + rowSums(ZZ * b[rep(i, nrow(ZZ)), ]))
     exp(log(phi["phi.01"]) + (phi["phi.01"] - 1)*log(s) + eta.t1[i] + f1*alpha["alpha.01"])
   }
-  integrate(h, lower = 0, upper = t, subdivisions = 10000)$value + log(u)
+  integrate(h, lower = 0, upper = t, subdivisions = 10000L)$value + log(u)
 }
 
 invS02 <- function(t, u, i) {
@@ -324,12 +331,13 @@ invS02 <- function(t, u, i) {
   integrate(h, lower = 0, upper = t, subdivisions = 10000)$value + log(u)
 }
 
-invS12 <- function(t, u, i) {
-  h <- function(s) {
+invS12 <- function (t, u, i) {
+  h <- function (s) {
     XX <- cbind(1, s, Xcov[i])
     ZZ <- cbind(1, s)
     f1 <- as.vector(XX %*% true.betas + rowSums(ZZ * b[rep(i, nrow(ZZ)), ]))
-    exp(log(phi["phi.12"]) + (phi["phi.12"] - 1)*log(s) + eta.t3[i] + f1*alpha["alpha.12"])
+    exp(log(phi["phi.12"]) + (phi["phi.12"] - 1) * log(s) + 
+          eta.t3[i] + f1 * alpha["alpha.12"])
   }
   integrate(h, lower = 0, upper = t, subdivisions = 10000)$value + log(u)
 }
@@ -483,12 +491,14 @@ msmodel <- coxph(Surv(Tstart, Tstop, status) ~ X + strata(transition), data = ou
 Finally, to fit the joint model we simply run:
 
 ```{r, "jm_fit"}
-jm_ms_model <- jm(msmodel, mixedmodel, time_var = "times", functional_forms = ~ value(Y):transition, 
-                  control = list(n_iter = 10000))
+jm_ms_model <- jm(msmodel, mixedmodel, time_var = "times", 
+                  functional_forms = ~ value(Y):transition, 
+                  n_iter = 10000L)
+
 summary(jm_ms_model)
 ```
 
-which differs from a basic call to `jm()` by the addition of the `functional_forms` argument by which we specify that we want an "interaction" between the value marker and each transition which translates to a separate association parameter for the longitudinal marker and each transition.
+which differs from a default call to `jm()` by the addition of the `functional_forms` argument by which we specify that we want an "interaction" between the value of the marker and each transition which translates into a separate association parameter for the longitudinal marker and each transition.
 
 
 

@@ -9,9 +9,7 @@ if (FALSE) {
 
     jointFit1 <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year")
 
-    fix_NAs_fixed <- JMbayes2:::fix_NAs_fixed
-    fix_NAs_random <- JMbayes2:::fix_NAs_random
-    exclude_NAs <- JMbayes2:::exclude_NAs
+    source("./R/help_functions.R")
 }
 
 
@@ -30,6 +28,9 @@ pred_type <- "response"
 
 #############################################################
 #############################################################
+
+# control
+control <- object$control
 
 # check for tibbles
 if (inherits(newdata, "tbl_df") || inherits(newdata, "tbl")) {
@@ -115,32 +116,171 @@ if (nY != nT) {
          "do not seem to match. A potential reason why this may be happening is ",
          "missing data in some covariates used in the individual models.")
 }
-if (!all(idT %in% dataL[[idVar]])) {
-    stop("it seems that some of the levels of the id variable in the survival dataset",
-         "cannot be found in the dataset of the Mixed_objects. Please check that ",
-         "the same subjects/groups are used in the datasets used to fit the mixed ",
-         "and survival models. Also, the name of the subjects/groups variable ",
-         "in the different datasets used to fit the individual models ",
-         "needs to be the same in all of the datasets.")
+Surv_Response <- model.response(mf_surv_dataS)
+if (type_censoring == "right") {
+    Time_right <- unname(Surv_Response[, "time"])
+    Time_left <- Time_start <- trunc_Time <- rep(0.0, nrow(dataS))
+    delta <-  unname(Surv_Response[, "status"])
+} else if (type_censoring == "counting") {
+    Time_start <- unname(Surv_Response[, "start"])
+    Time_stop <- unname(Surv_Response[, "stop"])
+    delta <-  unname(Surv_Response[, "status"])
+    Time_right <- Time_stop
+    trunc_Time <- Time_start # possible left truncation time
+    Time_left <- rep(0.0, nrow(dataS))
+} else if (type_censoring == "interval") {
+    Time1 <-  unname(Surv_Response[, "time1"])
+    Time2 <-  unname(Surv_Response[, "time2"])
+    trunc_Time <- Time_start <- rep(0.0, nrow(dataS))
+    delta <- unname(Surv_Response[, "status"])
+    Time_right <- Time1
+    Time_right[delta == 3] <- Time2[delta == 3]
+    Time_right[delta == 2] <- 0.0
+    Time_left <- Time1
+    Time_left[delta <= 1] <- 0.0
 }
-# we need to check that the ordering of the subjects in the same in dataL and dataS.
-# If not, then a warning and do it internally
-if (!all(order(unique(idT)) == order(unique(dataL[[idVar]])))) {
-    warning("It seems that the ordering of the subjects in the dataset used to fit the ",
-            "mixed models and the dataset used for the survival model is not the same. ",
-            "We set internally the datasets in the same order, but it would be best ",
-            "that you do it beforehand on your own.")
-    dataS <- dataS[order(idT), ]
-    mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
-    Surv_Response <- model.response(mf_surv_dataS)
+if (type_censoring != "counting") {
+    names(Time_right) <- names(Time_left) <- names(Time_start) <- idT
+}
+which_event <- which(delta == 1)
+which_right <- which(delta == 0)
+which_left <- which(delta == 2)
+which_interval <- which(delta == 3)
+# extract strata if present otherwise all subjects in one stratum
+ind_strata <- attr(terms_Surv, "specials")$strata
+strata <- if (is.null(ind_strata)) {
+    rep(1, nrow(mf_surv_dataS))
+} else {
+    unclass(mf_surv_dataS[[ind_strata]])
+}
+Time_integration <- Time_right
+Time_integration[which_left] <- Time_left[which_left]
+Time_integration[which_interval] <- Time_left[which_interval]
+Time_integration2 <- rep(0.0, length(Time_integration))
+if (length(which_interval)) {
+    Time_integration2[which_interval] <- Time_right[which_interval]
 }
 
-nT <- length(unique(idT))
-if (nY != nT) {
-    stop("the number of groups/subjects in the longitudinal and survival datasets ",
-         "do not seem to match. A potential reason why this may be happening is ",
-         "missing data in some covariates used in the individual models.")
+# create Gauss Kronrod points and weights
+GK <- gaussKronrod(control$GK_k)
+sk <- GK$sk
+P <- c(Time_integration - trunc_Time) / 2
+st <- outer(P, sk) + (c(Time_integration + trunc_Time) / 2)
+log_Pwk <- unname(rep(log(P), each = length(sk)) +
+                      rep_len(log(GK$wk), length.out = length(st)))
+if (length(which_interval)) {
+    # we take the absolute value because for the subjects for whom we do not have
+    # interval censoring P2 will be negative and this will produce a NA when we take
+    # the log in 'log_Pwk2'
+    P2 <- abs(Time_integration2 - Time_integration) / 2
+    st2 <- outer(P2, sk) + (c(Time_integration2 + Time_integration) / 2)
+    log_Pwk2 <- rep(log(P2), each = length(sk)) +
+        rep_len(log(GK$wk), length.out = length(st2))
+} else {
+    P2 <- st2 <- log_Pwk2 <- rep(0.0, nT * control$GK_k)
 }
+
+# knots for the log baseline hazard function
+knots <- control$knots
+
+# indices
+idT <- model_data$idT
+ni_event <- tapply(idT, idT, length)
+model_data$ni_event <- cbind(c(0, head(cumsum(ni_event), -1)),
+                             cumsum(ni_event))
+id_H <- rep(paste0(idT, "_", unlist(tapply(idT, idT, seq_along))),
+            each = control$GK_k)
+id_H <- match(id_H, unique(id_H))
+# id_H_ repeats each unique idT the number of quadrature points
+id_H_ <- rep(idT, each = control$GK_k)
+id_H_ <- match(id_H_, unique(id_H_))
+id_h <- unclass(idT)
+
+
+# Functional forms
+FunForms_per_outcome <- object$model_info$FunForms_per_outcome
+collapsed_functional_forms <- object$model_info$collapsed_functional_forms
+FunForms_cpp <- object$model_info$FunForms_cpp
+FunForms_ind <- object$model_info$FunForms_ind
+Funs_FunForms <- object$model_info$Funs_FunForms
+
+# Design matrices
+strata_H <- rep(strata, each = control$GK_k)
+W0_H <- create_W0(c(t(st)), knots, control$Bsplines_degree + 1, strata_H)
+dataS_H <- SurvData_HazardModel(st, dataS, Time_start,
+                                paste0(idT, "_", strata), time_var)
+mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
+W_H <- construct_Wmat(terms_Surv_noResp, mf)
+any_gammas <- as.logical(ncol(W_H))
+if (!any_gammas) {
+    W_H <- matrix(0.0, nrow = nrow(W_H), ncol = 1L)
+}
+attr <- lapply(functional_forms, extract_attributes, data = dataS_H)
+eps <- lapply(attr, "[[", 1L)
+direction <- lapply(attr, "[[", 2L)
+X_H <- design_matrices_functional_forms(st, terms_FE_noResp,
+                                        dataL, time_var, idVar, idT,
+                                        collapsed_functional_forms, Xbar,
+                                        eps, direction)
+Z_H <- design_matrices_functional_forms(st, terms_RE,
+                                        dataL, time_var, idVar, idT,
+                                        collapsed_functional_forms, NULL,
+                                        eps, direction)
+U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
+if (length(which_event)) {
+    W0_h <- create_W0(Time_right, con$knots, con$Bsplines_degree + 1,
+                      strata)
+    dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start,
+                                    paste0(idT, "_", strata), time_var)
+    mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
+    W_h <- construct_Wmat(terms_Surv_noResp, mf)
+    if (!any_gammas) {
+        W_h <- matrix(0.0, nrow = nrow(W_h), ncol = 1L)
+    }
+    X_h <- design_matrices_functional_forms(Time_right, terms_FE_noResp,
+                                            dataL, time_var, idVar, idT,
+                                            collapsed_functional_forms, Xbar,
+                                            eps, direction)
+    Z_h <- design_matrices_functional_forms(Time_right, terms_RE,
+                                            dataL, time_var, idVar, idT,
+                                            collapsed_functional_forms, NULL,
+                                            eps, direction)
+    U_h <- lapply(functional_forms, construct_Umat, dataS = dataS_h)
+} else {
+    W0_h <- W_h <- matrix(0.0)
+    X_h <- Z_h <- U_h <- rep(list(matrix(0.0)), length(respVars))
+}
+if (length(which_interval)) {
+    W0_H2 <- create_W0(c(t(st2)), con$knots, con$Bsplines_degree + 1,
+                       strata_H)
+    dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start,
+                                     paste0(idT, "_", strata), time_var)
+    mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
+    W_h <- construct_Wmat(terms_Surv_noResp, mf2)
+    if (!any_gammas) {
+        W_H2 <- matrix(0.0, nrow = nrow(W_H2), ncol = 1L)
+    }
+    X_H2 <- design_matrices_functional_forms(st, terms_FE_noResp,
+                                             dataL, time_var, idVar, idT,
+                                             collapsed_functional_forms, Xbar,
+                                             eps, direction)
+    Z_H2 <- design_matrices_functional_forms(st, terms_RE,
+                                             dataL, time_var, idVar, idT,
+                                             collapsed_functional_forms, NULL,
+                                             eps, direction)
+    U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
+} else {
+    W0_H2 <- W_H2 <- matrix(0.0)
+    X_H2 <- Z_H2 <- U_H2 <- rep(list(matrix(0.0)), length(respVars))
+}
+
+
+# MCMC sample
+
+# Priors
+priors <- object$priors
+
+
 
 
 
