@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Joint Models with Multi-state processes • JMbayes2</title>
+<title>Joint Models with Multi-State Processes • JMbayes2</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -19,7 +19,7 @@
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><!-- docsearch --><script src="../docsearch.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.3/docsearch.min.css" integrity="sha256-QOSRU/ra9ActyXkIBbiIB144aDBdtvXBcNc3OTNuX/Q=" crossorigin="anonymous">
 <link href="../docsearch.css" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script><meta property="og:title" content="Joint Models with Multi-state processes">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script><meta property="og:title" content="Joint Models with Multi-State Processes">
 <meta property="og:description" content="JMbayes2">
 <meta property="og:image" content="https://drizopoulos.github.io/JMbayes2/reference/figures/square_logo.png">
 <meta property="og:image:alt" content="JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data">
@@ -59,7 +59,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -80,13 +80,13 @@
       <a href="../articles/Competing_Risks.html">Joint Models with Competing Risks</a>
     </li>
     <li>
+      <a href="../articles/Multi_State_Processes.html">Joint Models with Multi-State Processes</a>
+    </li>
+    <li>
       <a href="../articles/Non_Gaussian_Mixed_Models.html">Joint Models with Non-Gaussian Mixed Models</a>
     </li>
     <li>
       <a href="../articles/Transformation_Functions.html">Transformation Functions for Functional Forms</a>
-    </li>
-    <li>
-      <a href="../articles/Multi_State_Processes.html">Joint Models with Multi-state processes</a>
     </li>
   </ul>
 </li>
@@ -97,7 +97,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/drizopoulos/JMbayes2/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -117,11 +117,10 @@
 
       
 
-      </header><script src="Multi_State_Processes_files/accessible-code-block-0.0.1/empty-anchor.js"></script><link href="Multi_State_Processes_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
-<script src="Multi_State_Processes_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
+      </header><script src="Multi_State_Processes_files/header-attrs-2.7/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Joint Models with Multi-state processes</h1>
+      <h1 data-toc-skip>Joint Models with Multi-State Processes</h1>
                         <h4 class="author">Grigorios Papageorgiou</h4>
             
             <h4 class="date">2021-03-08</h4>
@@ -331,19 +330,19 @@
 <code class="sourceCode R"><span class="va">mixedmodel</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">X</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">DF</span><span class="op">)</span></code></pre></div>
 <p>then we fit a multi-state model using function <code>coxph()</code> from package <strong>survival</strong> making sure we use the counting process specification and that we add <code>strata(transition)</code> to stratify by the transition indicator variable in the dataset. Furthermore we add an interaction between covariate <code>X</code> and each transition to allow the effect of this covariate to vary across transitions.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">msmodel</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Tstart</span>, <span class="va">Tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X</span> <span class="op">*</span> <span class="fu">strata</span><span class="op">(</span><span class="va">transition</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">data_mstate</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">msmodel</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Tstart</span>, <span class="va">Tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X</span> <span class="op">*</span> <span class="fu">strata</span><span class="op">(</span><span class="va">transition</span><span class="op">)</span>, 
+                 data <span class="op">=</span> <span class="va">data_mstate</span><span class="op">)</span></code></pre></div>
 <p>Finally, to fit the joint model we simply run:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">jm_ms_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">msmodel</span>, <span class="va">mixedmodel</span>, time_var <span class="op">=</span> <span class="st">"time"</span>, 
                   functional_forms <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">:</span><span class="va">transition</span>, 
-                  n_iter <span class="op">=</span> <span class="fl">10000L</span>, GK_k <span class="op">=</span> <span class="fl">7L</span><span class="op">)</span>
+                  n_iter <span class="op">=</span> <span class="fl">10000L</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">jm_ms_model</span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Call:</span>
 <span class="co">#&gt; jm(Surv_object = msmodel, Mixed_objects = mixedmodel, time_var = "time", </span>
-<span class="co">#&gt;     functional_forms = ~value(y):transition, n_iter = 10000L, </span>
-<span class="co">#&gt;     GK_k = 7L)</span>
+<span class="co">#&gt;     functional_forms = ~value(y):transition, n_iter = 10000L)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Data Descriptives:</span>
 <span class="co">#&gt; Number of Groups: 500        Number of events: 514 (39.1%)</span>
@@ -379,7 +378,7 @@
 <span class="co">#&gt; iterations per chain: 10000 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 4.2 min</span></code></pre></div>
+<span class="co">#&gt; time: 3.1 min</span></code></pre></div>
 <p>which differs from a default call to <code><a href="../reference/jm.html">jm()</a></code> by the addition of the <code>functional_forms</code> argument by which we specify that we want an “interaction” between the value of the marker and each transition which translates into a separate association parameter for the longitudinal marker and each transition.</p>
 </div>
 </div>

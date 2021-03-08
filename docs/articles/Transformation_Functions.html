@@ -59,7 +59,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -80,13 +80,13 @@
       <a href="../articles/Competing_Risks.html">Joint Models with Competing Risks</a>
     </li>
     <li>
+      <a href="../articles/Multi_State_Processes.html">Joint Models with Multi-State Processes</a>
+    </li>
+    <li>
       <a href="../articles/Non_Gaussian_Mixed_Models.html">Joint Models with Non-Gaussian Mixed Models</a>
     </li>
     <li>
       <a href="../articles/Transformation_Functions.html">Transformation Functions for Functional Forms</a>
-    </li>
-    <li>
-      <a href="../articles/Multi_State_Processes.html">Joint Models with Multi-state processes</a>
     </li>
   </ul>
 </li>
@@ -97,7 +97,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/drizopoulos/JMbayes2/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -117,8 +117,7 @@
 
       
 
-      </header><script src="Transformation_Functions_files/accessible-code-block-0.0.1/empty-anchor.js"></script><link href="Transformation_Functions_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
-<script src="Transformation_Functions_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
+      </header><script src="Transformation_Functions_files/header-attrs-2.7/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Transformation Functions for Functional Forms</h1>
@@ -186,7 +185,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 20 sec</span></code></pre></div>
+<span class="co">#&gt; time: 14 sec</span></code></pre></div>
 <p>In the output this is named as <code><a href="../reference/jm.html">value(hepatomegaly)</a></code> to denote that the current value functional form is used. That is, we assume that the risk at a specific time <span class="math inline">\(t\)</span> is associated with the value of the linear predictor of the longitudinal outcome at the same time point <span class="math inline">\(t\)</span>. In this particular case, the subject-specific linear predictor denotes the log odds of experiencing hepatomegaly at time <span class="math inline">\(t\)</span>.</p>
 </div>
 <div id="transformation-functions" class="section level2">
@@ -231,7 +230,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 22 sec</span></code></pre></div>
+<span class="co">#&gt; time: 17 sec</span></code></pre></div>
 <p>Other available functions to use in the definition of the <code>functional_forms</code> argument are <code><a href="../reference/jm.html">vexp()</a></code> for calculating the exponent, <code><a href="../reference/jm.html">vlog()</a></code> for calculating the natural logarithm, and <code><a href="../reference/jm.html">vsqrt()</a></code> for calculating the square root.</p>
 <p>If we want to include the time-varying slope of the transformed linear predictor, we also have the <code><a href="../reference/jm.html">Dexpit()</a></code> and <code><a href="../reference/jm.html">Dexp()</a></code> functions available. As an example, we extend <code>jointFit2</code> by including the derivative of the <span class="math inline">\(\mbox{expit}()\)</span> transformation:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -278,7 +277,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 24 sec</span></code></pre></div>
+<span class="co">#&gt; time: 18 sec</span></code></pre></div>
 <p>The call to <code><a href="../reference/jm.html">Dexpit(slope(hepatomegaly))</a></code> is internally transformed to <code>Dexpit(value(hepatomegaly)):slope(hepatomegaly)</code>, which calculates the derivative of the <span class="math inline">\(\mbox{expit}()\)</span> evaluated at the linear predictor times the derivative of the linear predictor. This is because <span class="math display">\[\frac{d}{dt} \mbox{expit}\{\eta(t)\} = \mbox{expit}\{\eta(t)\} \, \Bigl [ 1 - \mbox{expit}\{\eta(t)\} \Bigr ] \times \frac{d}{dt}\eta(t)\]</span></p>
 </div>
 <div id="the-slope-functional-form" class="section level2">

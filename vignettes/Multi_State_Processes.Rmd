@@ -1,12 +1,12 @@
 ---
-title: "Joint Models with Multi-state processes"
+title: "Joint Models with Multi-State Processes"
 author: "Grigorios Papageorgiou"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Joint Models with Multi-state processes}
+  %\VignetteIndexEntry{Joint Models with Multi-State Processes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -249,7 +249,8 @@ mixedmodel <- lme(y ~ time + X, random = ~ time | id, data = DF)
 then we fit a multi-state model using function `coxph()` from package **survival** making sure we use the counting process specification and that we add `strata(transition)` to stratify by the transition indicator variable in the dataset. Furthermore we add an interaction between covariate `X` and each transition to allow the effect of this covariate to vary across transitions.
 
 ```{r, "multi_state_model_fit"}
-msmodel <- coxph(Surv(Tstart, Tstop, status) ~ X * strata(transition), data = data_mstate)
+msmodel <- coxph(Surv(Tstart, Tstop, status) ~ X * strata(transition), 
+                 data = data_mstate)
 ```
 
 Finally, to fit the joint model we simply run:
@@ -257,7 +258,7 @@ Finally, to fit the joint model we simply run:
 ```{r, "jm_fit"}
 jm_ms_model <- jm(msmodel, mixedmodel, time_var = "time", 
                   functional_forms = ~ value(y):transition, 
-                  n_iter = 10000L, GK_k = 7L)
+                  n_iter = 10000L)
 
 summary(jm_ms_model)
 ```
