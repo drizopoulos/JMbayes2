@@ -77,13 +77,13 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/Competing_Risks.html">Joint Models with Competing Risks</a>
+      <a href="../articles/Competing_Risks.html">Competing Risks</a>
     </li>
     <li>
-      <a href="../articles/Multi_State_Processes.html">Joint Models with Multi-State Processes</a>
+      <a href="../articles/Multi_State_Processes.html">Multi-State Processes</a>
     </li>
     <li>
-      <a href="../articles/Non_Gaussian_Mixed_Models.html">Joint Models with Non-Gaussian Mixed Models</a>
+      <a href="../articles/Non_Gaussian_Mixed_Models.html">Non-Gaussian Mixed Models</a>
     </li>
     <li>
       <a href="../articles/Transformation_Functions.html">Transformation Functions for Functional Forms</a>
@@ -186,7 +186,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 16 sec</span></code></pre></div>
+<span class="co">#&gt; time: 13 sec</span></code></pre></div>
 <p>The output of the <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code> method provides some descriptive statistics of the sample at hand, followed by some fit statistics based on the marginal (random effects are integrated out using the Laplace approximation) and conditional on the random effects log-likelihood functions, followed by the estimated variance-covariance matrix for the random effects, followed by the estimates for the survival submodel, followed by the estimates for the longitudinal submodel(s), and finally some information for the MCMC.</p>
 <p>By default, <code><a href="../reference/jm.html">jm()</a></code> adds the subject-specific linear predictor of the mixed model as a time-varying covariate in the survival relative risk model. In the output this is named as <code><a href="../reference/jm.html">value(log(serBilir))</a></code> to denote that, by default, the current value functional form is used. That is, we assume that the risk at a specific time <span class="math inline">\(t\)</span> is associated with the value of the linear predictor of the longitudinal outcome at the same time point <span class="math inline">\(t\)</span>.</p>
 <p>Standard MCMC diagnostics are available to evaluate convergence. For example, the traceplot for the association coefficient <code><a href="../reference/jm.html">value(log(serBilir))</a></code> is produced with the following syntax:</p>
@@ -270,7 +270,7 @@
 <span class="co">#&gt; iterations per chain: 12000 </span>
 <span class="co">#&gt; burn-in per chain: 2000 </span>
 <span class="co">#&gt; thinning: 5 </span>
-<span class="co">#&gt; time: 1.8 min</span></code></pre></div>
+<span class="co">#&gt; time: 1.6 min</span></code></pre></div>
 <p>The output for the survival submodel contains now the estimated coefficients for <code><a href="../reference/jm.html">value(prothrombin)</a></code> and <code><a href="../reference/jm.html">value(ascites)</a></code>, and parameter estimates for all three longitudinal submodels.</p>
 </div>
 <div id="functional-forms" class="section level2">
