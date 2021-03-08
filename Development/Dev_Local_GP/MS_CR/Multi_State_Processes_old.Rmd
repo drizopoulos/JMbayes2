@@ -1,0 +1,499 @@
+---
+title: "Joint Models with Multi-state processes"
+author: "Grigorios Papageorgiou"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Joint Models with Multi-state processes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("JMbayes2")
+```
+
+# Multi-state Processes
+## Introduction
+It is very often the case that a subject may transition between multiple states and we are interested to assess the association of longitudinal marker(s) with each of these transitions. In this vignette we will illustrate how to do so using **JMbayes2**. 
+
+We will consider a simple case with one longitudinal outcome and a three-state (illness-death) model, but this application can be extended for the cases of multiple longitudinal markers and more than three states. 
+
+## Data
+First we will simulate data from a joint model with a single linear mixed effects model and a multi-state process with three possible states. The multi-state process can be visualized as:
+
+```{r ms_figure, echo = FALSE, warning = FALSE, message = FALSE}
+library("ggplot2")
+
+d <- data.frame("xmin" = c(0, 45, 22.5), "xmax" = c(15, 60, 37.5), 
+                "ymin" = c(50, 50, 0), "ymax" = c(60, 60, 15))
+
+dline <- data.frame("x1" = c(15), "y1" = c(55), "xend" = c(45), "yend" = c(55))
+
+dcurve <- data.frame("x1" = c(7.5, 52.5), "y1" = c(50, 50), 
+                     "xend" = c(22.4, 37.4), "yend" = c(7.5, 7.5), 
+                     "curvature" = c(1, -1))
+
+ggplot() + geom_rect(data = d, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax), 
+                     fill = "#ffffff", color = 'black', 
+                     size = 1) + 
+  geom_text(aes(x = 7.5, y = 55, label = "Healthy"), size = 6.5) +
+  geom_text(aes(x = 52.5, y = 55, label = "Illness"), size = 6.5) +
+  geom_text(aes(x = 30, y = 7, label = "Death"), size = 6.5) +
+  geom_text(aes(x = 30, y = 52.5, label = 'h[1][2](t)'), size = 4, parse = TRUE) +
+  geom_text(aes(x = 12.5, y = 30, label = "h[1][3](t)"), size = 4, parse = TRUE) +
+  geom_text(aes(x = 47.5, y = 30, label = "h[2][3](t)"), size = 4, parse = TRUE) +
+  geom_segment(data = dline, aes(x = x1, y = y1, xend = xend, yend = yend), size = 1, 
+               arrow = arrow(length = unit(0.02, "npc"))) + 
+  geom_curve(data = dcurve[1, ], aes(x = x1, y = y1, xend = xend, yend = yend), 
+             size = 1, curvature = 0.3, 
+             arrow = arrow(length = unit(0.02, "npc"))) +
+  geom_curve(data = dcurve[2, ], aes(x = x1, y = y1, xend = xend, yend = yend), 
+             size = 1, curvature = -0.3, 
+             arrow = arrow(length = unit(0.02, "npc"))) +
+  ylim(0, 60) + xlim(0, 60) + 
+  theme_void()
+```
+
+where all subjects start from state "Healthy" and then can transition to either state "Illness" and then state "Death" or directly to state "Death". In this case, states "Healthy" and "Illness" are *transient* states as the subject, when occupying these states, can still transition to other states whereas "Death" is an absorbing state as when a subject reaches this state then no further transitions can occur. This means that three transitions are possible: $1 \rightarrow 2$, $1 \rightarrow 3$ and $2 \rightarrow 3$ with transition intensities $h_{12}\left(t\right)$, $h_{13}\left(t\right)$ and $h_{23}\left(t\right)$ respectively. 
+
+For our example the default functional form is assumed, i.e., that the linear predictor $\eta(t)$ of the mixed model is associated with the each transition intensity at time $t$. The following piece of code simulates the data:
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+# function ms_setup needs to be sourced to be used in the simulation
+ms_setup <- function (data, timevars, statusvars, transitionmat, id, covs = NULL) {
+    # setup times matrix with NAs
+    # First row is NA as this is starting state 
+    timesmat <- matrix(NA, nrow(data), length(timevars))
+    timecols_data <- which(colnames(data) %in% timevars[!is.na(timevars)])
+    timesmat[, -which(is.na(timevars))] <- as.matrix(data[, timecols_data]) 
+    # setup status matrix with NAs
+    # First row is NA as this is starting state 
+    statusmat <- matrix(NA, nrow(data), length(statusvars))
+    statuscols_data <- which(colnames(data) %in% statusvars[!is.na(statusvars)])
+    statusmat[, -which(is.na(statusvars))] <- as.matrix(data[, statuscols_data]) 
+    # ensure convert to matrices
+    timesmat <- as.matrix(timesmat)
+    statusmat <- as.matrix(statusmat)
+    # check dimesnions are the same
+    if (any(dim(timesmat) != dim(statusmat))) 
+        stop("Dimensions of \"time\" and \"status\" data should be equal")
+    # components
+    # number of unique subjects
+    n_subj <- nrow(timesmat)
+    # number of states
+    n_states <- dim(transitionmat)[1]
+    # set start state to 1 and start time to 0 for all subjects
+    # ATTENTION: this needs to be adjusted to more flexible to allow subjects starting at different states
+    # this could be achieved by a requesting a separate argument (vector with starting state)
+    starting_state <- rep(1, n_subj)
+    starting_time <- rep(0, n_subj)
+    idnam <- id
+    id <- data[[id]]
+    order_id <- order(id)
+    out <- ms_prepdat(timesmat = timesmat, statusmat = statusmat, id = id, 
+                   starting_time = starting_time, starting_state = starting_state, 
+                   transitionmat = transitionmat, 
+                   original_states = (1:nrow(transitionmat)), longmat = NULL)
+    out <- as.data.frame(out)
+    names(out) <- c(idnam, "from_state", "to_state", "transition", 
+                    "Tstart", "Tstop", "status")
+    out$time <- out$Tstop - out$Tstart
+    out <- out[, c(1:6, 8, 7)]
+    ord <- order(out[, 1], out[, 5], out[, 2], out[, 3])
+    out <- out[ord, ]
+    row.names(out) <- 1:nrow(out)
+    # Covariates
+    if (!is.null(covs)) {
+        n_covs <- length(covs)
+        cov_cols <- match(covs, names(data))
+        cov_names <- covs
+        covs <- data[, cov_cols]
+        if (!is.factor(out[, 1])) 
+            out[, 1] <- factor(out[, 1])
+        n_per_subject <- tapply(out[, 1], out[, 1], length)
+        if (n_covs > 1) 
+            covs <- covs[order_id, , drop = FALSE]
+        if (n_covs == 1) {
+            longcovs <- rep(covs, n_per_subject)
+            longcovs <- longcovs[ord]
+            longcovs <- as.data.frame(longcovs)
+            names(longcovs) <- cov_names
+        } else {
+            longcovs <- lapply(1:n_covs, function(i) rep(covs[, i], n_per_subject))
+            longcovs <- as.data.frame(longcovs)
+            names(longcovs) <- cov_names
+        }
+        out <- cbind(out, longcovs)
+    }
+    # add attributes maybe
+    # add specific class maybe
+    # need to add functionality for covariates (e.g. like keep in mstate)
+    return(out)
+} 
+
+# used internally by ms_setup and needs also to be sourced
+ms_prepdat <- function (timesmat, statusmat, id, starting_time, starting_state, transitionmat, 
+                        original_states, longmat) {
+    if (is.null(nrow(timesmat))) 
+        return(longmat)
+    if (nrow(timesmat) == 0) 
+        return(longmat)
+    from_states <- apply(!is.na(transitionmat), 2, sum)
+    to_states <- apply(!is.na(transitionmat), 1, sum)
+    absorbing_states <- which(to_states == 0)
+    starts <- which(from_states == 0)
+    new_states <- starting_state
+    new_times <- starting_time
+    rmv <- NULL
+    for (i in 1:starts) {
+        subjects <- which(starting_state == starts)
+        n_start <- length(subjects)
+        to_states_2 <- which(!is.na(transitionmat[starts, ]))
+        trans_states <- transitionmat[starts, to_states_2]
+        n_trans_states <- length(to_states_2)
+        if (all(n_start > 0, n_trans_states > 0)) {
+            Tstart <- starting_time[subjects]
+            Tstop <- timesmat[subjects, to_states_2, drop = FALSE]
+            Tstop[Tstop <= Tstart] <- Inf
+            state_status <- statusmat[subjects, to_states_2, drop = FALSE]
+            mintime <- apply(Tstop, 1, min)
+            hlp <- Tstop * 1 / state_status
+            hlp[Tstop == 0 & state_status == 0] <- Inf
+            next_time <- apply(hlp, 1, min)
+            censored <- which(is.infinite(apply(hlp, 1, min)))
+            wh <- which(mintime < next_time)
+            whminc <- setdiff(wh, censored)
+            if (length(whminc) > 0) {
+                whsubjs <- id[subjects[whminc]]
+                whsubjs <- paste(whsubjs, collapse = " ")
+                warning("Subjects ", whsubjs, " Have smaller transition time with status = 0, larger transition time with status = 1, 
+                from starting state ", original_states[starts])
+            }
+            next_time[censored] <- mintime[censored]
+            if (ncol(hlp) > 1) {
+                hlpsrt <- t(apply(hlp, 1, sort))
+                warn1 <- which(hlpsrt[, 1] - hlpsrt[, 2] == 0)
+                if (length(warn1) > 0) {
+                    isw <- id[subjects[warn1]]
+                    isw <- paste(isw, collapse = " ")
+                    hsw <- hlpsrt[warn1, 1]
+                    hsw <- paste(hsw, collapse = " ")
+                    warning("simultaneous transitions possible for subjects ", isw, " at times ", hsw, 
+                            " -> Smallest receiving state will be used")
+                }
+            }
+            if (length(censored) > 0) {
+                next_state <- apply(hlp[-censored, , drop = FALSE], 
+                                    1, which.min)
+                absorbed <- (1:n_start)[-censored][which(to_states_2[next_state] %in% absorbing_states)]
+            } else {
+                next_state <- apply(hlp, 1, which.min)
+                absorbed <- (1:n_start)[which(to_states_2[next_state] %in% absorbing_states)]
+            }
+            states_matrix <- matrix(0, n_start, n_trans_states)
+            if (length(censored) > 0) {
+                states_matrix_min <- states_matrix[-censored, , drop = FALSE]
+            } else {
+                states_matrix_min <- states_matrix
+            }
+            if (nrow(states_matrix_min) > 0) 
+                states_matrix_min <- t(sapply(1:nrow(states_matrix_min), function(i) {
+                    x <- states_matrix_min[i, ]
+                    x[next_state[i]] <- 1
+                    return(x)
+                }))
+            if (length(censored) > 0) {
+                states_matrix[-censored, ] <- states_matrix_min
+            } else {
+                states_matrix <- states_matrix_min
+            }
+            mm <- matrix(c(rep(id[subjects], rep(n_trans_states, n_start)), 
+                           rep(original_states[starts], n_trans_states * n_start), 
+                           rep(original_states[to_states_2], n_start), 
+                           rep(trans_states, n_start), rep(Tstart, rep(n_trans_states, n_start)), 
+                           rep(next_time, rep(n_trans_states, n_start)), as.vector(t(states_matrix))), 
+                         n_trans_states * n_start, 7)
+            longmat <- rbind(longmat, mm)
+            rmv <- c(rmv, subjects[c(censored, absorbed)])
+            if (length(censored) > 0) {
+                new_states[subjects[-censored]] <- to_states_2[next_state]
+            } else {
+                new_states[subjects] <- to_states_2[next_state]
+            }
+            if (length(censored) > 0)  {
+                new_times[subjects[-censored]] <- next_time[-censored]
+            } else {
+                new_times[subjects] <- next_time
+            }
+        }
+    }
+    if (length(rmv) > 0) {
+        timesmat <- timesmat[-rmv, ]
+        statusmat <- statusmat[-rmv, ]
+        new_times <- new_times[-rmv]
+        new_states <- new_states[-rmv]
+        id <- id[-rmv]
+    }
+    n_states <- nrow(transitionmat)
+    idx <- rep(1, n_states)
+    idx[starts] <- 0
+    idx <- cumsum(idx)
+    new_states <- idx[new_states]
+    Recall(timesmat = timesmat[, -starts], statusmat = statusmat[, -starts], 
+           id = id, starting_time = new_times, starting_state = new_states, 
+           transitionmat = transitionmat[-starts, -starts], original_states = original_states[-starts], 
+           longmat = longmat)
+}
+```
+
+```{r "simulate_Multi_State"}
+set.seed(1234)
+# number of subjects
+N <- 500
+# number of measurements per subject  
+n <- 20
+# vector of ids
+id <- rep(1:N, each = n)
+# minimum and maximum follow-up times  
+min.t <- 0.01
+max.t <- 16
+# sample time-points
+time <- replicate(N, c(0, sort(runif(n - 1, min = min.t, max = max.t))), simplify = FALSE)
+time <- do.call(c, time)
+# sample continuous covariate  values
+Xcov.s <- rnorm(N, mean = 4.763, sd = 2.8) # wide version
+Xcov <- rep(Xcov.s, each = n) # long
+# initiate data frame to store results
+DF <- data.frame("id" = id, "time" = time, "X" = Xcov)
+# design matrices for fixed and random effects  
+X <- model.matrix(~ 1 + time + X, data = DF)
+Z <- model.matrix(~ 1 + time, data = DF)
+D11 <- 1.0 # variance of random intercepts
+D22 <- 0.5 # variance of random slopes
+# we simulate random effects
+b <- cbind(rnorm(N, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
+# fixed effects coefficients  
+true.betas <- c(-0.482, 0.243, 1.52)
+# linear predictor  
+eta.y <- as.vector(X %*% true.betas + rowSums(Z * b[id, ]))
+# residual standard error  
+sigma.e <- 1.242
+# sample longitudinal outcome values  
+y <- rnorm(N*n, eta.y, sigma.e)
+# values for the association parameter per transition  
+alpha <- c("alpha.01" = 0.8, "alpha.02" = 0.55, "alpha.12" = 1.25)
+# shape of Weibull for each transition  
+phi <- c("phi.01" = 12.325, "phi.02" = 8.216, "phi.12" = 3.243)
+# regression coefficients for transition intensities  
+gammas <- c("(Intercept)1" = -22.25, "X" = 1.2,  
+            "(Intercept)2" = -18.25, "X" = 1.2,
+            "(Intercept)3" = -19.25, "X" = 1.2)
+# design matrix transition intensities
+W <- cbind("(Intercept)1"= rep(1, N), Xcov[seq(1, by = n, N*n)], 
+           "(Intercept)2"= rep(1, N), Xcov[seq(1, by = n, N*n)],
+           "(Intercept)3"= rep(1, N), Xcov[seq(1, by = n, N*n)])
+
+## linear predictor for transition: 0 -> 1
+eta.t1 <- as.vector(W[, c(1, 2), drop = FALSE] %*% gammas[1:2])
+## linear predictor for transition: 0 -> 2
+eta.t2 <- as.vector(W[, c(3, 4), drop = FALSE] %*% gammas[3:4])
+## linear predictor for transition: 1 -> 2
+eta.t3 <- as.vector(W[, c(5, 6), drop = FALSE] %*% gammas[5:6])
+# we simulate event times using inverse transform sampling
+invS01 <- function(t, u, i) {
+  h <- function(s) {
+    XX <- cbind(1, s, Xcov[i])
+    ZZ <- cbind(1, s)
+    f1 <- as.vector(XX %*% true.betas + rowSums(ZZ * b[rep(i, nrow(ZZ)), ]))
+    exp(log(phi["phi.01"]) + (phi["phi.01"] - 1)*log(s) + eta.t1[i] + f1*alpha["alpha.01"])
+  }
+  integrate(h, lower = 0, upper = t, subdivisions = 10000L)$value + log(u)
+}
+
+invS02 <- function(t, u, i) {
+  h <- function(s) {
+    XX <- cbind(1, s, Xcov[i])
+    ZZ <- cbind(1, s)
+    f1 <- as.vector(XX %*% true.betas + rowSums(ZZ * b[rep(i, nrow(ZZ)), ]))
+    exp(log(phi["phi.02"]) + (phi["phi.02"] - 1)*log(s) + eta.t2[i] + f1*alpha["alpha.02"])
+  }
+  integrate(h, lower = 0, upper = t, subdivisions = 10000)$value + log(u)
+}
+
+invS12 <- function (t, u, i) {
+  h <- function (s) {
+    XX <- cbind(1, s, Xcov[i])
+    ZZ <- cbind(1, s)
+    f1 <- as.vector(XX %*% true.betas + rowSums(ZZ * b[rep(i, nrow(ZZ)), ]))
+    exp(log(phi["phi.12"]) + (phi["phi.12"] - 1) * log(s) + 
+          eta.t3[i] + f1 * alpha["alpha.12"])
+  }
+  integrate(h, lower = 0, upper = t, subdivisions = 10000)$value + log(u)
+}
+
+# Probability for each transition
+u01 <- runif(N, 0, 1)
+u02 <- runif(N, 0, 1)
+u12 <- runif(N, 0, 1)
+# initiate vectors to save true event times
+trueT01 <- numeric(N)
+trueT02 <- numeric(N)
+trueT12 <- numeric(N)
+
+# sample censoring times
+mean.Cens <- 9
+C <- runif(N, 0, 2 * mean.Cens)
+
+# simulate time-to-event data
+for (i in 1:N) {
+  Root01 <- NULL
+  Root02 <- NULL
+  Root12 <- NULL
+  
+  Up <- 50
+  tries <- 5
+  # Transition 0->1
+  Root01 <- try(uniroot(invS01, interval = c(1e-05, Up), u = u01[i], i = i)$root, TRUE)
+  while(inherits(Root01, "try-error") && tries > 0) {
+    tries <- tries - 1
+    Up <- Up + 200
+    Root01 <- try(uniroot(invS01, interval = c(1e-05, Up), u = u01[i], i = i)$root, TRUE)
+  }
+  trueT01[i] <- if (!inherits(Root01, "try-error")) Root01 else 500
+  
+  # Transition 0->2
+  Root02 <- try(uniroot(invS02, interval = c(1e-05, Up), u = u02[i], i = i)$root, TRUE)
+  while(inherits(Root02, "try-error") && tries > 0) {
+    tries <- tries - 1
+    Up <- Up + 200
+    Root02 <- try(uniroot(invS02, interval = c(1e-05, Up), u = u02[i], i = i)$root, TRUE)
+  }
+  trueT02[i] <- if (!inherits(Root02, "try-error")) Root02 else 500
+  
+  # Transition 1->2
+  if(as.numeric(trueT01[i]) < as.numeric(trueT02[i]) && as.numeric(trueT01[i]) < C[i]) {
+    Root12 <- try(uniroot(invS12, interval = c(as.numeric(trueT01[i]), Up), u = u12[i], i = i)$root, TRUE)
+    while(inherits(Root12, "try-error") && tries > 0) {
+      tries <- tries - 1
+      Up <- Up + 200
+      Root12 <- try(uniroot(invS12, interval = c(as.numeric(trueT01[i]), Up), u = u12[i], i = i)$root, TRUE)
+    }
+  } else {Root12 <- 500}
+  trueT12[i] <- if (!inherits(Root12, "try-error")) Root12 else 500
+}
+
+# arrange data in appropriate format
+matsurv <- NULL
+datasurv <- NULL
+for(k in 1:N){
+    if (C[k] < min(trueT01[k], trueT02[k])) { # if 0 -> C
+      aux1 <- c(k, Xcov.s[k], C[k], 0, C[k], 0)
+      matsurv <- rbind(matsurv, aux1) 
+    } else {
+      if (trueT02[k] < trueT01[k]) { # if 0 -> 2
+        aux1 <- c(k, Xcov.s[k], trueT02[k], 0, trueT02[k], 1)
+        matsurv <- rbind(matsurv, aux1)
+      } else {
+        if (C[k] < trueT12[k]) { # if 0 -> 1 -> C
+          aux1 <- c(k, Xcov.s[k], trueT01[k], 1, C[k], 0)
+          matsurv <- rbind(matsurv, aux1)
+        } else { # if 0 -> 1 -> 2
+          aux1 <- c(k, Xcov.s[k], trueT01[k], 1, trueT12[k], 1)
+          matsurv <- rbind(matsurv, aux1)
+        }
+      }
+    }
+  }
+
+matlongit <- NULL
+aux2 <- NULL
+datalongit <- NULL
+  for(k in 1:N){
+    n_final <- NULL
+    n_final <- if (matsurv[k, 4] == 1){
+      sum(time[(n*(k-1)+1) : (k*n)] < trueT12[k])
+    } else if (matsurv[k, 6] == 1){
+      sum(time[(n*(k-1)+1) : (k*n)] < trueT02[k])
+    } else{
+      sum(time[(n*(k-1)+1) : (k*n)] < C[k])          
+    }
+    aux2 <- matrix(nrow = n_final, ncol = 4,
+                   c(rep(k, n_final),
+                     y[(n*(k-1)+1) : (n*(k-1) + n_final)],
+                     time[(n*(k-1)+1) : (n*(k-1) + n_final)], 
+                     Xcov[(n*(k-1)+1) : (n*(k-1) + n_final)]))
+    matlongit <- rbind(matlongit, aux2)
+}
+  
+  
+datasurv <- data.frame(matsurv, row.names = NULL)
+names(datasurv) <- c("id", "X", "t_illness", "illness", "t_death", "death")
+row.names(datasurv) <- as.integer(1:nrow(datasurv))
+
+datalongit <- data.frame(matlongit, row.names = NULL)
+names(datalongit) <- c("id", "Y", "times", "X")
+row.names(datalongit) <- as.integer(1:nrow(datalongit))
+
+tmat <- matrix(NA, 3, 3)
+tmat[1, 2:3] <- 1:2
+tmat[2, 3] <- 3
+dimnames(tmat) <- list(from = c("healthy", "illness", "death"), 
+                       to = c("healthy", "illness", "death"))
+  
+covs <- c("X")
+  
+data_mstate <- JMbayes2:::ms_setup(data = datasurv, 
+                        timevars = c(NA, 't_illness', 't_death'), 
+                        statusvars = c(NA, 'illness', 'death'), 
+                        transitionmat = tmat, 
+                        id = 'id', 
+                        covs = covs)
+
+data_mstate$transition <- factor(data_mstate$transition)
+  
+out <- list("datasets" = list("long_data" = datalongit, 
+                              "data_mstate" = data_mstate))
+```
+
+The data for the muti state process need to be in the appropriate long format:
+
+```{r}
+head(out$datasets$data_mstate, n = 5L)
+```
+
+for example subject 1 experienced the following transition: $1 \rightarrow 2$ and therefore is represented in 3 rows, one for each transition, because all of these transitions were plausible. On the other hand subject 2 is only represented by two rows, only for transitions $1 \rightarrow 2$ and $1 \rightarrow 3$ since these are the only transitions that are possible from state 1. That is, since subject 2 never actually transitioned to state 2, transition $2 \rightarrow 3$ was never possible and therefore no row for this transition is in the dataset. It is also importnt to note that the time in the dataset follows the counting process formulation with intervals specified by `Tstart` and `Tstop` and that there is a variable (in this case `transition`) which indicates to which transition the row correspond to.
+
+## Fitting the model
+
+As soon data in the appropriate format are available, fitting the model is very straightforward. First we fit a linear mixed model using the `lme()` function from package **nlme**:
+
+```{r, "mixed_model_fit"}
+mixedmodel <- lme(Y ~ times + X, random = ~ times | id, data = out$datasets$long_data)
+```
+
+then we fit a multi-state model using function `coxph()` from package **survival** making sure we use the counting process specification and that we add `strata(transition)` to stratify by the transition indicator variable in the dataset:
+
+```{r, "multi_state_model_fit"}
+msmodel <- coxph(Surv(Tstart, Tstop, status) ~ X + strata(transition), data = out$datasets$data_mstate)
+```
+
+Finally, to fit the joint model we simply run:
+
+```{r, "jm_fit"}
+jm_ms_model <- jm(msmodel, mixedmodel, time_var = "times", 
+                  functional_forms = ~ value(Y):transition, 
+                  n_iter = 10000L, GK_k = 7L)
+
+summary(jm_ms_model)
+```
+
+which differs from a default call to `jm()` by the addition of the `functional_forms` argument by which we specify that we want an "interaction" between the value of the marker and each transition which translates into a separate association parameter for the longitudinal marker and each transition.
+
+
+
