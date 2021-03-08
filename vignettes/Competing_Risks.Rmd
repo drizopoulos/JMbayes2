@@ -1,12 +1,12 @@
 ---
-title: "Joint Models with Competing Risks"
+title: "Competing Risks"
 author: "Dimitris Rizopoulos"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Joint Models with Competing Risks}
+  %\VignetteIndexEntry{Competing Risks}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

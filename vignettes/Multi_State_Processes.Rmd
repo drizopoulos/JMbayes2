@@ -1,12 +1,12 @@
 ---
-title: "Joint Models with Multi-State Processes"
+title: "Multi-State Processes"
 author: "Grigorios Papageorgiou"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Joint Models with Multi-State Processes}
+  %\VignetteIndexEntry{Multi-State Processes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
