@@ -98,7 +98,7 @@ eta.y <- as.vector(X %*% true.betas + rowSums(Z * b[id, ]))
 # residual standard error  
 sigma.e <- 1.242
 # sample longitudinal outcome values  
-DF$y <- rnorm(N*n, eta.y, sigma.e)
+DF$y <- rnorm(N * n, eta.y, sigma.e)
 # values for the association parameter per transition  
 alpha <- c("alpha.01" = 0.8, "alpha.02" = 0.55, "alpha.12" = 1.25)
 # shape of Weibull for each transition  
@@ -224,19 +224,20 @@ ms_arrange <- function (x) {
 }
 data_mstate_split.by.id <- lapply(data_mstate_split.by.id, ms_arrange)
 data_mstate <- do.call(rbind, data_mstate_split.by.id)
+data_mstate$transition <- factor(data_mstate$transition)
 
 Tstop <- tapply(data_mstate$Tstop, data_mstate$id, max)
 Tstop <- Tstop[id]
 DF <- DF[DF$time <= Tstop, ]
 ```
 
-The data for the muti state process need to be in the appropriate long format:
+The data for the multi-state process need to be in the appropriate long format:
 
 ```{r}
 head(data_mstate, n = 5L)
 ```
 
-for example subject 1 experienced the following transition: $1 \rightarrow 2$ and therefore is represented in 3 rows, one for each transition, because all of these transitions were plausible. On the other hand subject 2 is only represented by two rows, only for transitions $1 \rightarrow 2$ and $1 \rightarrow 3$ since these are the only transitions that are possible from state 1. That is, since subject 2 never actually transitioned to state 2, transition $2 \rightarrow 3$ was never possible and therefore no row for this transition is in the dataset. It is also importnt to note that the time in the dataset follows the counting process formulation with intervals specified by `Tstart` and `Tstop` and that there is a variable (in this case `transition`) which indicates to which transition the row correspond to.
+for example subject 1 experienced the following transition: $1 \rightarrow 2$ and therefore is represented in 3 rows, one for each transition, because all of these transitions were plausible. On the other hand subject 2 is only represented by two rows, only for transitions $1 \rightarrow 2$ and $1 \rightarrow 3$ since these are the only transitions that are possible from state 1. That is, since subject 2 never actually transitioned to state 2, transition $2 \rightarrow 3$ was never possible and therefore no row for this transition is in the dataset. It is also important to note that the time in the dataset follows the counting process formulation with intervals specified by `Tstart` and `Tstop` and that there is a variable (in this case `transition`) which indicates to which transition the row correspond to.
 
 ## Fitting the model
 
@@ -257,8 +258,7 @@ Finally, to fit the joint model we simply run:
 
 ```{r, "jm_fit"}
 jm_ms_model <- jm(msmodel, mixedmodel, time_var = "time", 
-                  functional_forms = ~ value(y):transition, 
-                  n_iter = 10000L)
+                  functional_forms = ~ value(y):transition, n_iter = 10000L)
 
 summary(jm_ms_model)
 ```

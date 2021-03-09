@@ -123,7 +123,7 @@
       <h1 data-toc-skip>Multi-State Processes</h1>
                         <h4 class="author">Grigorios Papageorgiou</h4>
             
-            <h4 class="date">2021-03-08</h4>
+            <h4 class="date">2021-03-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/master/vignettes/Multi_State_Processes.Rmd"><code>vignettes/Multi_State_Processes.Rmd</code></a></small>
       <div class="hidden name"><code>Multi_State_Processes.Rmd</code></div>
@@ -181,7 +181,7 @@
 <span class="co"># residual standard error  </span>
 <span class="va">sigma.e</span> <span class="op">&lt;-</span> <span class="fl">1.242</span>
 <span class="co"># sample longitudinal outcome values  </span>
-<span class="va">DF</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">N</span><span class="op">*</span><span class="va">n</span>, <span class="va">eta.y</span>, <span class="va">sigma.e</span><span class="op">)</span>
+<span class="va">DF</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">N</span> <span class="op">*</span> <span class="va">n</span>, <span class="va">eta.y</span>, <span class="va">sigma.e</span><span class="op">)</span>
 <span class="co"># values for the association parameter per transition  </span>
 <span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"alpha.01"</span> <span class="op">=</span> <span class="fl">0.8</span>, <span class="st">"alpha.02"</span> <span class="op">=</span> <span class="fl">0.55</span>, <span class="st">"alpha.12"</span> <span class="op">=</span> <span class="fl">1.25</span><span class="op">)</span>
 <span class="co"># shape of Weibull for each transition  </span>
@@ -307,11 +307,12 @@
 <span class="op">}</span>
 <span class="va">data_mstate_split.by.id</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">data_mstate_split.by.id</span>, <span class="va">ms_arrange</span><span class="op">)</span>
 <span class="va">data_mstate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">data_mstate_split.by.id</span><span class="op">)</span>
+<span class="va">data_mstate</span><span class="op">$</span><span class="va">transition</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">data_mstate</span><span class="op">$</span><span class="va">transition</span><span class="op">)</span>
 
 <span class="va">Tstop</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tapply.html">tapply</a></span><span class="op">(</span><span class="va">data_mstate</span><span class="op">$</span><span class="va">Tstop</span>, <span class="va">data_mstate</span><span class="op">$</span><span class="va">id</span>, <span class="va">max</span><span class="op">)</span>
 <span class="va">Tstop</span> <span class="op">&lt;-</span> <span class="va">Tstop</span><span class="op">[</span><span class="va">id</span><span class="op">]</span>
 <span class="va">DF</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="va">Tstop</span>, <span class="op">]</span></code></pre></div>
-<p>The data for the muti state process need to be in the appropriate long format:</p>
+<p>The data for the multi-state process need to be in the appropriate long format:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">data_mstate</span>, n <span class="op">=</span> <span class="fl">5L</span><span class="op">)</span>
 <span class="co">#&gt;     id from_state to_state transition   Tstart    Tstop status        X</span>
@@ -320,7 +321,7 @@
 <span class="co">#&gt; 1.3  1          2        3          3 4.392984 9.094447      0 1.984455</span>
 <span class="co">#&gt; 2.1  2          1        2          1 0.000000 1.552122      0 7.673231</span>
 <span class="co">#&gt; 2.2  2          1        3          2 0.000000 1.552122      0 7.673231</span></code></pre></div>
-<p>for example subject 1 experienced the following transition: <span class="math inline">\(1 \rightarrow 2\)</span> and therefore is represented in 3 rows, one for each transition, because all of these transitions were plausible. On the other hand subject 2 is only represented by two rows, only for transitions <span class="math inline">\(1 \rightarrow 2\)</span> and <span class="math inline">\(1 \rightarrow 3\)</span> since these are the only transitions that are possible from state 1. That is, since subject 2 never actually transitioned to state 2, transition <span class="math inline">\(2 \rightarrow 3\)</span> was never possible and therefore no row for this transition is in the dataset. It is also importnt to note that the time in the dataset follows the counting process formulation with intervals specified by <code>Tstart</code> and <code>Tstop</code> and that there is a variable (in this case <code>transition</code>) which indicates to which transition the row correspond to.</p>
+<p>for example subject 1 experienced the following transition: <span class="math inline">\(1 \rightarrow 2\)</span> and therefore is represented in 3 rows, one for each transition, because all of these transitions were plausible. On the other hand subject 2 is only represented by two rows, only for transitions <span class="math inline">\(1 \rightarrow 2\)</span> and <span class="math inline">\(1 \rightarrow 3\)</span> since these are the only transitions that are possible from state 1. That is, since subject 2 never actually transitioned to state 2, transition <span class="math inline">\(2 \rightarrow 3\)</span> was never possible and therefore no row for this transition is in the dataset. It is also important to note that the time in the dataset follows the counting process formulation with intervals specified by <code>Tstart</code> and <code>Tstop</code> and that there is a variable (in this case <code>transition</code>) which indicates to which transition the row correspond to.</p>
 </div>
 <div id="fitting-the-model" class="section level2">
 <h2 class="hasAnchor">
@@ -335,8 +336,7 @@
 <p>Finally, to fit the joint model we simply run:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">jm_ms_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">msmodel</span>, <span class="va">mixedmodel</span>, time_var <span class="op">=</span> <span class="st">"time"</span>, 
-                  functional_forms <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">:</span><span class="va">transition</span>, 
-                  n_iter <span class="op">=</span> <span class="fl">10000L</span><span class="op">)</span>
+                  functional_forms <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">:</span><span class="va">transition</span>, n_iter <span class="op">=</span> <span class="fl">10000L</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">jm_ms_model</span><span class="op">)</span>
 <span class="co">#&gt; </span>
@@ -350,35 +350,37 @@
 <span class="co">#&gt;   y: 4033</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    18362.45 19966.25 -12389.33</span>
-<span class="co">#&gt; conditional 19335.32 21014.24 -13706.67</span>
+<span class="co">#&gt; marginal    18632.49 20505.82 -11357.24</span>
+<span class="co">#&gt; conditional 18924.89 20815.28 -13136.10</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                     </span>
 <span class="co">#&gt;        StdDev   Corr</span>
-<span class="co">#&gt; (Intr) 1.0142 (Intr)</span>
-<span class="co">#&gt; time   0.7089 0.0323</span>
+<span class="co">#&gt; (Intr) 1.0147 (Intr)</span>
+<span class="co">#&gt; time   0.7042 0.0326</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
-<span class="co">#&gt;                                     Mean  StDev    2.5%   97.5%      P   Rhat</span>
-<span class="co">#&gt; X                                 0.1856 0.0453  0.0945  0.2714 0.0000 1.0117</span>
-<span class="co">#&gt; X:strata(transition)transition=2  0.3290 0.0547  0.2214  0.4393 0.0000 1.0195</span>
-<span class="co">#&gt; X:strata(transition)transition=3 -0.4017 0.0563 -0.5155 -0.2935 0.0000 1.0114</span>
-<span class="co">#&gt; value(y):transition               0.0205 0.0076  0.0058  0.0354 0.0052 1.0281</span>
+<span class="co">#&gt;                          Mean  StDev    2.5%  97.5%      P   Rhat</span>
+<span class="co">#&gt; X                     -0.0960 0.0708 -0.2360 0.0413 0.1829 1.1366</span>
+<span class="co">#&gt; X:strata(transition)2  0.3537 0.1164  0.1498 0.5852 0.0000 1.2268</span>
+<span class="co">#&gt; X:strata(transition)3 -0.0285 0.0913 -0.2023 0.1619 0.7282 1.2795</span>
+<span class="co">#&gt; value(y):transition1   0.2414 0.0392  0.1671 0.3178 0.0000 1.0972</span>
+<span class="co">#&gt; value(y):transition2   0.2330 0.0796  0.0628 0.3838 0.0037 1.2121</span>
+<span class="co">#&gt; value(y):transition3   0.0083 0.0238 -0.0387 0.0557 0.7102 1.0633</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: y (family = gaussian, link = identity)</span>
 <span class="co">#&gt;                Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept) -0.4267 0.3979 -1.2134 0.3528 0.2735 1.0009</span>
-<span class="co">#&gt; time         0.3213 0.1043  0.1184 0.5269 0.0030 1.0009</span>
-<span class="co">#&gt; X            1.5312 0.0358  1.4612 1.6020 0.0000 1.0017</span>
-<span class="co">#&gt; sigma        1.2844 0.0413  1.2262 1.3864 0.0000 1.0089</span>
+<span class="co">#&gt; (Intercept) -0.4247 0.3864 -1.1770 0.3425 0.2690 1.0009</span>
+<span class="co">#&gt; time         0.3313 0.1020  0.1292 0.5314 0.0011 1.0017</span>
+<span class="co">#&gt; X            1.5314 0.0350  1.4628 1.5988 0.0000 1.0007</span>
+<span class="co">#&gt; sigma        1.2843 0.0425  1.2249 1.3931 0.0000 1.0102</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 10000 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 2.8 min</span></code></pre></div>
+<span class="co">#&gt; time: 3.3 min</span></code></pre></div>
 <p>which differs from a default call to <code><a href="../reference/jm.html">jm()</a></code> by the addition of the <code>functional_forms</code> argument by which we specify that we want an “interaction” between the value of the marker and each transition which translates into a separate association parameter for the longitudinal marker and each transition.</p>
 </div>
 </div>
