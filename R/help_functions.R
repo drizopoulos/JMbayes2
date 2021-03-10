@@ -327,9 +327,11 @@ design_matrices_functional_forms <-
                 if (direction_i == "both") {
                     t1 <- time + eps_i
                     t2 <- pmax(time - eps_i, 0)
+                    e <- 2 * eps_i
                 } else {
                     t1 <- time
                     t2 <- pmax(time - eps_i, 0)
+                    e <- eps_i
                 }
                 terms_i <- terms[[i]]
                 D1 <- LongData_HazardModel(t1, data, data[[timeVar]],
@@ -344,7 +346,7 @@ design_matrices_functional_forms <-
                     X1 <- X1 - rep(Xbar[[i]], each = nrow(X1))
                     X2 <- X2 - rep(Xbar[[i]], each = nrow(X2))
                 }
-                out[[i]] <- (X1 - X2) / c(t1 - t2)
+                out[[i]] <- (X1 - X2) / e
             }
             out
         }
