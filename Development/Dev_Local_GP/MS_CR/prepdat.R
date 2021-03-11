@@ -33,7 +33,7 @@ ms_prepdat <- function (timesmat, statusmat, id, starting_time, starting_state, 
         whsubjs <- id[subjects[whminc]]
         whsubjs <- paste(whsubjs, collapse = " ")
         warning("Subjects ", whsubjs, " Have smaller transition time with status = 0, larger transition time with status = 1, 
-                from starting state ", original_states[starting])
+                from starting state ", original_states[starts])
       }
       next_time[censored] <- mintime[censored]
       if (ncol(hlp) > 1) {
