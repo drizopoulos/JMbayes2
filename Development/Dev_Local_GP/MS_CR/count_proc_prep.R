@@ -28,7 +28,7 @@ ms_setup <- function (data, timevars, statusvars, transitionmat, id, covs = NULL
   idnam <- id
   id <- data[[id]]
   order_id <- order(id)
-  out <- prepdat(timesmat = timesmat, statusmat = statusmat, id = id, 
+  out <- ms_prepdat(timesmat = timesmat, statusmat = statusmat, id = id, 
                  starting_time = starting_time, starting_state = starting_state, 
                  transitionmat = transitionmat, 
                  original_states = (1:nrow(transitionmat)), longmat = NULL)

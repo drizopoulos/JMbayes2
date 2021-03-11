@@ -94,8 +94,8 @@ ms_prepdat <- function (timesmat, statusmat, id, starting_time, starting_state, 
     }
   }
     if (length(rmv) > 0) {
-      timesmat <- timesmat[-rmv, ]
-      statusmat <- statusmat[-rmv, ]
+      timesmat <- timesmat[-rmv, , drop = FALSE]
+      statusmat <- statusmat[-rmv, , drop = FALSE]
       new_times <- new_times[-rmv]
       new_states <- new_states[-rmv]
       id <- id[-rmv]
