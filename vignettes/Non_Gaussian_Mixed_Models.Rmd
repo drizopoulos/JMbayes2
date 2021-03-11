@@ -1,12 +1,12 @@
 ---
-title: "Joint Models with Non-Gaussian Mixed Models"
+title: "Non-Gaussian Mixed Models"
 author: "Dimitris Rizopoulos"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Joint Models with Non-Gaussian Mixed Models}
+  %\VignetteIndexEntry{Non-Gaussian Mixed Models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

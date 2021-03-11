@@ -322,9 +322,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
 
     # knots for the log baseline hazard function
     if (is.null(con$knots)) {
-        qs <- quantile(Time_right, probs = c(0.0, 1.0))
-        con$knots <- knots(qs[1L], qs[2L], con$base_hazard_segments,
-                           con$Bsplines_degree)
+        qs <- lapply(split(Time_right, strata), range)
+        con$knots <- lapply(qs, function (x)
+            knots(x[1L], x[2L], con$base_hazard_segments,
+                  con$Bsplines_degree))
     }
 
     # Extract functional forms per longitudinal outcome

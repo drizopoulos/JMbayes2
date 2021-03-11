@@ -99,7 +99,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-51</span>
       </span>
     </div>
 
@@ -107,7 +107,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -125,16 +125,16 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/Competing_Risks.html">Joint Models with Competing Risks</a>
+      <a href="../articles/Competing_Risks.html">Competing Risks</a>
     </li>
     <li>
-      <a href="../articles/Non_Gaussian_Mixed_Models.html">Joint Models with Non-Gaussian Mixed Models</a>
+      <a href="../articles/Multi_State_Processes.html">Multi-State Processes</a>
+    </li>
+    <li>
+      <a href="../articles/Non_Gaussian_Mixed_Models.html">Non-Gaussian Mixed Models</a>
     </li>
     <li>
       <a href="../articles/Transformation_Functions.html">Transformation Functions for Functional Forms</a>
-    </li>
-    <li>
-      <a href="../articles/Multi_State_Processes.html">Joint Models with Multi-state processes</a>
     </li>
   </ul>
 </li>
@@ -145,7 +145,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/drizopoulos/JMbayes2/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -200,9 +200,33 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="coda_methods.html">traceplot()</a></code> <code><a href="coda_methods.html">ggtraceplot()</a></code> <code><a href="coda_methods.html">gelman_diag()</a></code> <code><a href="coda_methods.html">densplot()</a></code> <code><a href="coda_methods.html">ggdensityplot()</a></code> <code><a href="coda_methods.html">cumuplot()</a></code> </p>
+        </td>
+        <td><p>Various Methods for Functions from the <em>coda</em> Package</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="crLong.html">crLong()</a></code> </p>
         </td>
         <td><p>Transform Competing Risks Data in Long Format</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="jm.html">jm()</a></code> <code><a href="jm.html">value()</a></code> <code><a href="jm.html">slope()</a></code> <code><a href="jm.html">area()</a></code> <code><a href="jm.html">vexpit()</a></code> <code><a href="jm.html">Dexpit()</a></code> <code><a href="jm.html">vexp()</a></code> <code><a href="jm.html">Dexp()</a></code> <code><a href="jm.html">vlog()</a></code> <code><a href="jm.html">vlog2()</a></code> <code><a href="jm.html">vlog10()</a></code> <code><a href="jm.html">vsqrt()</a></code> <code><a href="jm.html">tv()</a></code> </p>
+        </td>
+        <td><p>Joint Models for Longitudinal and Time-to-Event Data</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="JMbayes2.html">JMbayes2</a></code> </p>
+        </td>
+        <td><p>Extended Joint Models for Longitudinal and Time-to-Event Data</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="methods.html">coef()</a></code> <code><a href="methods.html">fixef()</a></code> <code><a href="methods.html">ranef()</a></code> <code><a href="methods.html">terms()</a></code> <code><a href="methods.html">model.frame()</a></code> <code><a href="methods.html">model.matrix()</a></code> <code><a href="methods.html">family()</a></code> <code><a href="methods.html">compare_jm()</a></code> </p>
+        </td>
+        <td><p>Various Methods for Standard Generics</p></td>
       </tr><tr>
         
         <td>
@@ -215,30 +239,6 @@
           <p><code><a href="prothro.html">prothro</a></code> </p>
         </td>
         <td><p>Prednisone versus Placebo in Liver Cirrhosis Patients</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="coda_methods.html">traceplot()</a></code> <code><a href="coda_methods.html">ggtraceplot()</a></code> <code><a href="coda_methods.html">gelman_diag()</a></code> <code><a href="coda_methods.html">densplot()</a></code> <code><a href="coda_methods.html">ggdensityplot()</a></code> <code><a href="coda_methods.html">cumuplot()</a></code> </p>
-        </td>
-        <td><p>Various Methods for Functions from the <em>coda</em> Package</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="methods.html">coef()</a></code> <code><a href="methods.html">fixef()</a></code> <code><a href="methods.html">ranef()</a></code> <code><a href="methods.html">terms()</a></code> <code><a href="methods.html">model.frame()</a></code> <code><a href="methods.html">model.matrix()</a></code> <code><a href="methods.html">family()</a></code> <code><a href="methods.html">compare_jm()</a></code> </p>
-        </td>
-        <td><p>Various Methods for Standard Generics</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="JMbayes2.html">JMbayes2</a></code> </p>
-        </td>
-        <td><p>Extended Joint Models for Longitudinal and Time-to-Event Data</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="jm.html">jm()</a></code> <code><a href="jm.html">value()</a></code> <code><a href="jm.html">slope()</a></code> <code><a href="jm.html">area()</a></code> <code><a href="jm.html">vexpit()</a></code> <code><a href="jm.html">Dexpit()</a></code> <code><a href="jm.html">vexp()</a></code> <code><a href="jm.html">Dexp()</a></code> <code><a href="jm.html">vlog()</a></code> <code><a href="jm.html">vlog2()</a></code> <code><a href="jm.html">vlog10()</a></code> <code><a href="jm.html">vsqrt()</a></code> <code><a href="jm.html">tv()</a></code> </p>
-        </td>
-        <td><p>Joint Models for Longitudinal and Time-to-Event Data</p></td>
       </tr>
     </tbody>
     </table>
