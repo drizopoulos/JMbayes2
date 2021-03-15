@@ -50,14 +50,14 @@ ms_setup <- function (data, timevars, statusvars, transitionmat, id, covs = NULL
       out[, 1] <- factor(out[, 1])
     n_per_subject <- tapply(out[, 1], out[, 1], length)
     if (n_covs > 1) 
-      covs <- covs[ord1, , drop = FALSE]
+      covs <- covs[order_id, , drop = FALSE]
     if (n_covs == 1) {
       longcovs <- rep(covs, n_per_subject)
       longcovs <- longcovs[ord]
       longcovs <- as.data.frame(longcovs)
       names(longcovs) <- cov_names
     } else {
-      longcovs <- lapply(1:nkeep, function(i) rep(covs[, i], n_per_subject))
+      longcovs <- lapply(1:n_covs, function(i) rep(covs[, i], n_per_subject))
       longcovs <- as.data.frame(longcovs)
       names(longcovs) <- cov_names
     }
