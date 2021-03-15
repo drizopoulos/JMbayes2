@@ -472,13 +472,13 @@ compare_jm <- function (..., type = c("marginal", "conditional"),
     if (length(models) == 1L) {
         stop("compare_jm() is supposed to compare two or more joint models.")
     }
-    respVars <- lapply(models, function (m) m$model_info$var_names$respVars)
-    check_names <- sapply(respVars[-1],
-                          function (nams, nams_1) all(nams %in% nams_1),
-                          nams_1 = respVars[[1]])
-    if (!all(check_names)) {
-        stop("it seems that some joint have different longitudinal outcomes.")
-    }
+    #respVars <- lapply(models, function (m) m$model_info$var_names$respVars)
+    #check_names <- sapply(respVars[-1],
+    #                      function (nams, nams_1) all(nams %in% nams_1),
+    #                      nams_1 = respVars[[1]])
+    #if (!all(check_names)) {
+    #    stop("it seems that some joint have different longitudinal outcomes.")
+    #}
     type <- match.arg(type)
     order <- match.arg(order)
     extract_criteria <- function (m, type) {

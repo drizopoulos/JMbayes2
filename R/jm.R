@@ -67,7 +67,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
 
     # extract terms from mixed models
     terms_FE <- lapply(Mixed_objects, extract_terms, which = "fixed", data = dataL)
-    respVars <- sapply(terms_FE, function (tt) all.vars(tt)[1L])
+    respVars <- lapply(terms_FE, function (tt) all.vars(attr(tt, "variables")[[2L]]))
     respVars_form <- sapply(terms_FE, function (tt) as.character(attr(tt, "variables"))[2L])
     terms_FE_noResp <- lapply(terms_FE, delete.response)
     terms_RE <- lapply(Mixed_objects, extract_terms, which = "random", data = dataL)
@@ -180,7 +180,11 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # them. This is needed for the calculation of the matrix of interaction terms
     # between the longitudinal outcomes and other variables.
     for (i in seq_along(respVars)) {
-        if (is.null(dataS[[respVars[i]]])) dataS[[respVars[i]]] <- rnorm(nrow(dataS))
+        nl <- length(respVars[[i]])
+        for (j in seq_len(nl)) {
+            if (is.null(dataS[[respVars[[i]][j]]]))
+                dataS[[respVars[[i]][j]]] <- rnorm(nrow(dataS), 20)
+        }
     }
     # if the time_var is not in dataS set it to a random number
     if (is.null(dataS[[time_var]])) dataS[[time_var]] <- rnorm(nrow(dataS))
