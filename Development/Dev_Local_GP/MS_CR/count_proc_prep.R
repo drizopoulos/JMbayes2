@@ -63,6 +63,7 @@ ms_setup <- function (data, timevars, statusvars, transitionmat, id, covs = NULL
     }
     out <- cbind(out, longcovs)
   }
+  out <- out[-which(is.infinite(out$time)), ]
   # add attributes maybe
   # add specific class maybe
   # need to add functionality for covariates (e.g. like keep in mstate)
