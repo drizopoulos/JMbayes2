@@ -294,5 +294,9 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     mcmc_out$logLik <- mcmc_out$mlogLik <- NULL
     c(mcmc_out, list(statistics = statistics,
                      fit_stats = list(conditional = conditional_fit_stats,
-                                      marginal = marginal_fit_stats)))
+                                      marginal = marginal_fit_stats)),
+      list(Wlong_bar = model_data$Wlong_bar,
+           Wlong_sds = model_data$Wlong_sds, Wlong_std = model_data$Wlong_std,
+           W_bar = model_data$W_bar, W_sds = model_data$W_sds,
+           W_std = model_data$W_std))
 }

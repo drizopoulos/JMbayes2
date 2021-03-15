@@ -716,6 +716,10 @@ docall_cbind <- function (l) {
     if (is.list(l)) do.call("cbind", l) else l
 }
 
+docall_rbind <- function (l) {
+    if (is.list(l)) do.call("rbind", l) else l
+}
+
 printCall <- function (call) {
     d <- deparse(call)
     if (length(d) <= 3) {

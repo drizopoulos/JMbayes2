@@ -53,9 +53,12 @@ if (is.null(dataL[[time_var]])) {
 dataL <- dataL[order(idL, dataL[[time_var]]), ]
 
 # extract terms
+respVars <- object$model_info$var_names$respVars
 terms_FE <- object$model_info$terms$terms_FE
+terms_FE_noResp <- object$model_info$terms$terms_FE_noResp
 terms_RE <- object$model_info$terms$terms_RE
 terms_Surv <- object$model_info$terms$terms_Surv_noResp
+Xbar <- object$model_data$Xbar
 # create model frames
 mf_FE_dataL <- lapply(terms_FE, model.frame.default, data = dataL)
 mf_RE_dataL <- lapply(terms_RE, model.frame.default, data = dataL)
@@ -184,10 +187,8 @@ if (length(which_interval)) {
 knots <- control$knots
 
 # indices
-idT <- model_data$idT
 ni_event <- tapply(idT, idT, length)
-model_data$ni_event <- cbind(c(0, head(cumsum(ni_event), -1)),
-                             cumsum(ni_event))
+ni_event <- cbind(c(0, head(cumsum(ni_event), -1)), cumsum(ni_event))
 id_H <- rep(paste0(idT, "_", unlist(tapply(idT, idT, seq_along))),
             each = control$GK_k)
 id_H <- match(id_H, unique(id_H))
@@ -196,13 +197,15 @@ id_H_ <- rep(idT, each = control$GK_k)
 id_H_ <- match(id_H_, unique(id_H_))
 id_h <- unclass(idT)
 
-
 # Functional forms
+functional_forms <- object$model_info$functional_forms
 FunForms_per_outcome <- object$model_info$FunForms_per_outcome
 collapsed_functional_forms <- object$model_info$collapsed_functional_forms
 FunForms_cpp <- object$model_info$FunForms_cpp
 FunForms_ind <- object$model_info$FunForms_ind
 Funs_FunForms <- object$model_info$Funs_FunForms
+eps <- object$model_info$eps
+direction <- object$model_info$direction
 
 # Design matrices
 strata_H <- rep(strata, each = control$GK_k)
@@ -228,7 +231,7 @@ Z_H <- design_matrices_functional_forms(st, terms_RE,
                                         eps, direction)
 U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
 if (length(which_event)) {
-    W0_h <- create_W0(Time_right, con$knots, con$Bsplines_degree + 1,
+    W0_h <- create_W0(Time_right, knots, control$Bsplines_degree + 1,
                       strata)
     dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start,
                                     paste0(idT, "_", strata), time_var)
@@ -251,7 +254,7 @@ if (length(which_event)) {
     X_h <- Z_h <- U_h <- rep(list(matrix(0.0)), length(respVars))
 }
 if (length(which_interval)) {
-    W0_H2 <- create_W0(c(t(st2)), con$knots, con$Bsplines_degree + 1,
+    W0_H2 <- create_W0(c(t(st2)), knots, control$Bsplines_degree + 1,
                        strata_H)
     dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start,
                                      paste0(idT, "_", strata), time_var)
@@ -273,12 +276,58 @@ if (length(which_interval)) {
     W0_H2 <- W_H2 <- matrix(0.0)
     X_H2 <- Z_H2 <- U_H2 <- rep(list(matrix(0.0)), length(respVars))
 }
+X_H[] <- lapply(X_H, docall_cbind)
+X_h[] <- lapply(X_h, docall_cbind)
+X_H2[] <- lapply(X_H2, docall_cbind)
+Z_H[] <- lapply(Z_H, docall_cbind)
+Z_h[] <- lapply(Z_h, docall_cbind)
+Z_H2[] <- lapply(Z_H2, docall_cbind)
 
 
 # MCMC sample
+b <- lapply(sapply(Z, ncol), function (nc) matrix(0.0, nY, nc))
+M <- sum(sapply(object$mcmc$bs_gammas, nrow))
+get_param <- function (nam) {
+    tht <- object$mcmc[[nam]]
+    if (!is.null(tht)) docall_rbind(tht) else matrix(0.0, M, 1)
+}
+ind_betas <- grep("^betas", names(object$mcmc))
+mcmc <- list(
+    b = b, bs_gammas = get_param("bs_gammas"), gammas = get_param("gammas"),
+    alphas = get_param("alphas"),
+    betas = lapply(object$mcmc[ind_betas], docall_rbind)
+)
+has_sigmas <- object$model_data$has_sigmas
+mcmc$sigmas <- matrix(0.0, M, length(has_sigmas))
+mcmc$sigmas[, has_sigmas > 0] <- get_param("sigmas")
+D <- get_param("D")
+mcmc$D <- array(0.0, c(dim(lowertri2mat(D[1L, ])), M))
+for (i in seq_len(M)) {
+    mcmc$D[, , i] <- lowertri2mat(D[i, ])
+}
 
 # Priors
 priors <- object$priors
+
+
+Data <- list(
+    ind_RE = object$model_data$ind_RE,
+    X_H = X_H, X_h = X_h, X_H2 = X_H2,
+    Z_H = Z_H, Z_h = Z_h, Z_H2 = Z_H2,
+    U_H = U_H, U_h = U_h, U_H2 = U_H2,
+    Wlong_bar = object$Wlong_bar, Wlong_sds = object$Wlong_sds,
+    idT = match(idT, unique(idT)), log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2,
+    id_H = id_H, id_H_ = id_H_, id_h = id_h,
+    which_event = which_event, which_right = which_right,
+    which_left = which_left, which_interval = which_interval,
+    ni_event = ni_event, FunForms_cpp = FunForms_cpp,
+    FunForms_ind = FunForms_ind, Funs_FunForms = Funs_FunForms,
+    X = X, Z = Z, y = y, family_names = family_names,
+    links = links, extra_parms = object$model_data$extra_parms,
+    unq_idL = unq_idL, idL_lp = idL_lp, idL = idL
+)
+
+control <- list(GK_k = object$control$GK_k)
 
 
 
