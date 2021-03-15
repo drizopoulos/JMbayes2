@@ -2,12 +2,12 @@ ms_setup <- function (data, timevars, statusvars, transitionmat, id, covs = NULL
   # setup times matrix with NAs
   # First row is NA as this is starting state 
   timesmat <- matrix(NA, nrow(data), length(timevars))
-  timecols_data <- which(colnames(data) %in% timevars[!is.na(timevars)])
+  timecols_data <- match(timevars[!is.na(timevars)], names(data))
   timesmat[, -which(is.na(timevars))] <- as.matrix(data[, timecols_data]) 
   # setup status matrix with NAs
   # First row is NA as this is starting state 
   statusmat <- matrix(NA, nrow(data), length(statusvars))
-  statuscols_data <- which(colnames(data) %in% statusvars[!is.na(statusvars)])
+  statuscols_data <- match(statusvars[!is.na(statusvars)], names(data))
   statusmat[, -which(is.na(statusvars))] <- as.matrix(data[, statuscols_data]) 
   # ensure convert to matrices
   timesmat <- as.matrix(timesmat)
@@ -50,14 +50,14 @@ ms_setup <- function (data, timevars, statusvars, transitionmat, id, covs = NULL
       out[, 1] <- factor(out[, 1])
     n_per_subject <- tapply(out[, 1], out[, 1], length)
     if (n_covs > 1) 
-      covs <- covs[ord1, , drop = FALSE]
+      covs <- covs[order_id, , drop = FALSE]
     if (n_covs == 1) {
       longcovs <- rep(covs, n_per_subject)
       longcovs <- longcovs[ord]
       longcovs <- as.data.frame(longcovs)
       names(longcovs) <- cov_names
     } else {
-      longcovs <- lapply(1:nkeep, function(i) rep(covs[, i], n_per_subject))
+      longcovs <- lapply(1:n_covs, function(i) rep(covs[, i], n_per_subject))
       longcovs <- as.data.frame(longcovs)
       names(longcovs) <- cov_names
     }

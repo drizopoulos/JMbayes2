@@ -12,10 +12,10 @@ ms_prepdat <- function (timesmat, statusmat, id, starting_time, starting_state, 
   new_times <- starting_time
   rmv <- NULL
   for (i in 1:starts) {
-    subjects <- which(starting_state == starts)
+    subjects <- which(starting_state == i)
     n_start <- length(subjects)
-    to_states_2 <- which(!is.na(transitionmat[starts, ]))
-    trans_states <- transitionmat[starts, to_states_2]
+    to_states_2 <- which(!is.na(transitionmat[i, ]))
+    trans_states <- transitionmat[i, to_states_2]
     n_trans_states <- length(to_states_2)
     if (all(n_start > 0, n_trans_states > 0)) {
       Tstart <- starting_time[subjects]
@@ -33,7 +33,7 @@ ms_prepdat <- function (timesmat, statusmat, id, starting_time, starting_state, 
         whsubjs <- id[subjects[whminc]]
         whsubjs <- paste(whsubjs, collapse = " ")
         warning("Subjects ", whsubjs, " Have smaller transition time with status = 0, larger transition time with status = 1, 
-                from starting state ", original_states[starts])
+                from starting state ", original_states[i])
       }
       next_time[censored] <- mintime[censored]
       if (ncol(hlp) > 1) {
@@ -74,7 +74,7 @@ ms_prepdat <- function (timesmat, statusmat, id, starting_time, starting_state, 
         states_matrix <- states_matrix_min
       }
       mm <- matrix(c(rep(id[subjects], rep(n_trans_states, n_start)), 
-                     rep(original_states[starts], n_trans_states * n_start), 
+                     rep(original_states[i], n_trans_states * n_start), 
                      rep(original_states[to_states_2], n_start), 
                      rep(trans_states, n_start), rep(Tstart, rep(n_trans_states, n_start)), 
                      rep(next_time, rep(n_trans_states, n_start)), as.vector(t(states_matrix))), 
