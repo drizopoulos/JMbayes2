@@ -8,7 +8,7 @@ using namespace Rcpp;
 using namespace arma;
 
 // [[Rcpp::export]]
-mat simulate_REs (List Data, List MCMC, List control) {
+cube simulate_REs (List Data, List MCMC, List control) {
     //////////////////////////////
     // Event Process Components //
     //////////////////////////////
@@ -101,10 +101,9 @@ mat simulate_REs (List Data, List MCMC, List control) {
     uword n_b = b_mat.n_rows;
     uword nRE = b_mat.n_cols;
     mat scale_b = mat(n_b,  b_mat.n_cols, fill::ones) * 0.1;
-    mat acceptance_b(n_b, b_mat.n_cols, fill::zeros);
     //
     field<vec> betas_it(betas.n_elem);
-    mat out(n_b, n_samples, fill::zeros);
+    cube out(n_b, nRE, n_samples, fill::zeros);
     for (uword it = 0; it < n_samples; ++it) {
         vec bs_gammas_it = bs_gammas.col(it);
         vec gammas_it = gammas.col(it);
@@ -163,8 +162,8 @@ mat simulate_REs (List Data, List MCMC, List control) {
                      which_event, which_right_event, which_left,
                      any_interval, which_interval);
         ///
-        field<vec> eta_it = linpred_mixed(X, betas_it, Z, b, idL);
-        vec logLik_long = log_long(y, eta_it, sigmas_it, extra_parms, families,
+        field<vec> eta = linpred_mixed(X, betas_it, Z, b, idL);
+        vec logLik_long = log_long(y, eta, sigmas_it, extra_parms, families,
                                    links, ids, unq_idL, n_b);
         ///
         vec logLik_re = log_re(b_mat, L_it, sds_it);
@@ -175,12 +174,13 @@ mat simulate_REs (List Data, List MCMC, List control) {
             for (uword j = 0; j < nRE; ++j) {
                 mat proposed_b_mat = propose_rnorm_mat(b_mat, scale_b, j);
                 field<mat> proposed_b = mat2field(proposed_b_mat, ind_RE);
-
+                //
                 field<vec> eta_proposed =
                     linpred_mixed(X, betas_it, Z, proposed_b, idL);
                 vec logLik_long_proposed =
                     log_long(y, eta_proposed, sigmas_it, extra_parms,
                              families, links, ids, unq_idL, n_b);
+                //
                 mat Wlong_H_proposed =
                     calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds,
                                     betas_it, proposed_b, id_H_, FunForms,
@@ -204,14 +204,59 @@ mat simulate_REs (List Data, List MCMC, List control) {
                                         proposed_b, id_H_, FunForms, FunForms_ind, Funs_FunForms);
                     WlongH2_alphas_proposed = Wlong_H2_proposed * alphas_it;
                 }
-
-
-
-
-
-
+                //
+                vec logLik_surv_proposed =
+                    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                             WH_gammas, Wh_gammas, WH2_gammas,
+                             WlongH_alphas_proposed, Wlongh_alphas_proposed,
+                             WlongH2_alphas_proposed,
+                             log_Pwk, log_Pwk2, indFast_H, indFast_h,
+                             which_event, which_right_event, which_left,
+                             any_interval, which_interval);
+                //
+                vec logLik_re_proposed = log_re(proposed_b_mat, L_it, sds_it);
+                //
+                vec numerator_b =
+                    logLik_long_proposed + logLik_surv_proposed + logLik_re_proposed;
+                vec log_ratio = numerator_b - denominator_b;
+                for (uword k = 0; k < n_b; ++k) {
+                    double acc_k(0.0);
+                    if (std::isfinite(log_ratio.at(k)) &&
+                        exp(log_ratio.at(k)) > R::runif(0.0, 1.0)) {
+                        acc_k = 1.0;
+                        b_mat.row(k) = proposed_b_mat.row(k);
+                        denominator_b.at(k) = numerator_b.at(k);
+                        logLik_long.at(k) = logLik_long_proposed.at(k);
+                        logLik_surv.at(k) = logLik_surv_proposed.at(k);
+                        logLik_re.at(k) = logLik_re_proposed.at(k);
+                        uword first_H = GK_k * ni_event.at(k, 0);
+                        uword last_H = GK_k * ni_event.at(k, 1) - 1;
+                        Wlong_H.rows(first_H, last_H) = Wlong_H_proposed.rows(first_H, last_H);
+                        WlongH_alphas.rows(first_H, last_H) =
+                            WlongH_alphas_proposed.rows(first_H, last_H);
+                        if (any_event) {
+                            uword fitst_h = ni_event.at(k, 0);
+                            uword last_h = ni_event.at(k, 1) - 1;
+                            Wlong_h.rows(fitst_h, last_h) = Wlong_h_proposed.rows(fitst_h, last_h);
+                            Wlongh_alphas.rows(fitst_h, last_h) =
+                                Wlongh_alphas_proposed.rows(fitst_h, last_h);
+                        }
+                        if (any_interval) {
+                            Wlong_H2.rows(first_H, last_H) = Wlong_H2_proposed.rows(first_H, last_H);
+                            WlongH2_alphas.rows(first_H, last_H) =
+                                WlongH2_alphas_proposed.rows(first_H, last_H);
+                        }
+                    }
+                    if (i > 19) {
+                        scale_b.at(k, j) =
+                            robbins_monro(scale_b.at(k, j), acc_k, i);
+                    }
+                }
             }
+            b = mat2field(b_mat, ind_RE);
+            eta = linpred_mixed(X, betas_it, Z, b, idL);
         }
+        out.slice(it) = b_mat;
     }
     return(out);
 }
