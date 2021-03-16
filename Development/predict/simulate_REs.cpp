@@ -99,11 +99,12 @@ mat simulate_REs (List Data, List MCMC, List control) {
     uword n_samples = as<uword>(control["n_samples"]);
     uword n_iter = as<uword>(control["n_iter"]);
     uword n_b = b_mat.n_rows;
+    uword nRE = b_mat.n_cols;
     mat scale_b = mat(n_b,  b_mat.n_cols, fill::ones) * 0.1;
     mat acceptance_b(n_b, b_mat.n_cols, fill::zeros);
     //
     field<vec> betas_it(betas.n_elem);
-    mat out(n_b, n_samples);
+    mat out(n_b, n_samples, fill::zeros);
     for (uword it = 0; it < n_samples; ++it) {
         vec bs_gammas_it = bs_gammas.col(it);
         vec gammas_it = gammas.col(it);
@@ -170,10 +171,47 @@ mat simulate_REs (List Data, List MCMC, List control) {
         // calculate the denominator
         vec denominator_b =
             logLik_long + logLik_surv + logLik_re;
-        for (uword j = 0; j < n_iter; ++j) {
+        for (uword i = 0; i < n_iter; ++i) {
+            for (uword j = 0; j < nRE; ++j) {
+                mat proposed_b_mat = propose_rnorm_mat(b_mat, scale_b, j);
+                field<mat> proposed_b = mat2field(proposed_b_mat, ind_RE);
 
+                field<vec> eta_proposed =
+                    linpred_mixed(X, betas_it, Z, proposed_b, idL);
+                vec logLik_long_proposed =
+                    log_long(y, eta_proposed, sigmas_it, extra_parms,
+                             families, links, ids, unq_idL, n_b);
+                mat Wlong_H_proposed =
+                    calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds,
+                                    betas_it, proposed_b, id_H_, FunForms,
+                                    FunForms_ind, Funs_FunForms);
+                vec WlongH_alphas_proposed = Wlong_H_proposed * alphas_it;
+
+                mat Wlong_h_proposed(Wlong_h.n_rows, Wlong_h.n_cols);
+                vec Wlongh_alphas_proposed(Wlongh_alphas.n_rows);
+                if (any_event) {
+                    Wlong_h_proposed =
+                        calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds,
+                                        betas_it, proposed_b, id_h, FunForms,
+                                        FunForms_ind, Funs_FunForms);
+                    Wlongh_alphas_proposed = Wlong_h_proposed * alphas_it;
+                }
+                mat Wlong_H2_proposed(Wlong_H2.n_rows, Wlong_H2.n_cols);
+                vec WlongH2_alphas_proposed(WlongH2_alphas.n_rows);
+                if (any_interval) {
+                    Wlong_H2_proposed =
+                        calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas_it,
+                                        proposed_b, id_H_, FunForms, FunForms_ind, Funs_FunForms);
+                    WlongH2_alphas_proposed = Wlong_H2_proposed * alphas_it;
+                }
+
+
+
+
+
+
+            }
         }
     }
-
     return(out);
 }
