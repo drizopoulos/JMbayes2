@@ -240,7 +240,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     Wh_gammas = W_h * gammas;
   }
   if (any_gammas && any_interval) {
-    WH2_gammas = WH2_gammas * gammas;
+    WH2_gammas = W_H2 * gammas;
   }
   vec WlongH_alphas = Wlong_H * alphas;
   vec Wlongh_alphas(W0_h.n_rows);

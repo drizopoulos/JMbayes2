@@ -312,12 +312,14 @@ priors <- object$priors
 
 Data <- list(
     ind_RE = object$model_data$ind_RE,
+    W0_H = W0_H, W0_h = W0_h, W0_H2 = W0_H2,
+    W_H = W_H, W_h = W_h, W_H2 = W_H2,
     X_H = X_H, X_h = X_h, X_H2 = X_H2,
     Z_H = Z_H, Z_h = Z_h, Z_H2 = Z_H2,
     U_H = U_H, U_h = U_h, U_H2 = U_H2,
     Wlong_bar = object$Wlong_bar, Wlong_sds = object$Wlong_sds,
     idT = match(idT, unique(idT)), log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2,
-    id_H = id_H, id_H_ = id_H_, id_h = id_h,
+    id_H = id_H, id_H_ = id_H_, id_h = id_h, any_gammas = any_gammas,
     which_event = which_event, which_right = which_right,
     which_left = which_left, which_interval = which_interval,
     ni_event = ni_event, FunForms_cpp = FunForms_cpp,
@@ -327,10 +329,18 @@ Data <- list(
     unq_idL = unq_idL, idL_lp = idL_lp, idL = idL
 )
 
-control <- list(GK_k = object$control$GK_k)
+control <- list(GK_k = object$control$GK_k, n_samples = 200L, n_iter = 200L)
+control$id_samples <- sample(seq_len(M), control$n_samples)
 
-
-
+# keep only the samples from the MCMC used in the sampling
+# of the random effects
+mcmc$bs_gammas <- mcmc$bs_gammas[control$id_samples, , drop = FALSE]
+mcmc$gammas <- mcmc$gammas[control$id_samples, , drop = FALSE]
+mcmc$alphas <- mcmc$alphas[control$id_samples, , drop = FALSE]
+mcmc$betas[] <- lapply(mcmc$betas, function (m, ind) m[ind, , drop = FALSE],
+                       "ind" = control$id_samples)
+mcmc$sigmas <- mcmc$sigmas[control$id_samples, , drop = FALSE]
+mcmc$D <- mcmc$D[, , control$id_samples, drop = FALSE]
 
 
 
