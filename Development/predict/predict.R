@@ -14,7 +14,7 @@ if (FALSE) {
 
 
 object <- jointFit1
-newdata <- pbc2[pbc2$id %in% c(2, 3, 10), ]
+newdata <- pbc2#pbc2[pbc2$id %in% c(2, 3, 10), ]
 ind <- tapply(row.names(newdata), factor(newdata$id), tail, 1)
 newdata2 <- newdata[ind[!is.na(ind)], ]; rm(ind)
 newdata2 <- newdata2[rep(1:nrow(newdata2), each = 3), ]
@@ -26,7 +26,9 @@ level <- 1L
 CI_level <- 0.95
 pred_type <- "response"
 n_samples <- 200L
-n_mcmc <- 50L
+n_mcmc <- 25L
+cores <- 3L
+seed <- 1L
 
 #############################################################
 #############################################################
@@ -329,22 +331,68 @@ get_REs_newdata <- function (object, newdata) {
     )
 
     control <- list(GK_k = object$control$GK_k, n_samples = n_samples, n_iter = n_mcmc)
-    control$id_samples <- sample(seq_len(M), control$n_samples)
+    id_samples <- split(sample(seq_len(M), control$n_samples),
+          rep(seq_len(cores), each = ceiling(control$n_samples / cores),
+              length.out = control$n_samples))
 
-    # keep only the samples from the MCMC used in the sampling
-    # of the random effects
-    mcmc$bs_gammas <- mcmc$bs_gammas[control$id_samples, , drop = FALSE]
-    mcmc$gammas <- mcmc$gammas[control$id_samples, , drop = FALSE]
-    mcmc$alphas <- mcmc$alphas[control$id_samples, , drop = FALSE]
-    mcmc$betas[] <- lapply(mcmc$betas, function (m, ind) m[ind, , drop = FALSE],
-                           "ind" = control$id_samples)
-    mcmc$sigmas <- mcmc$sigmas[control$id_samples, , drop = FALSE]
-    mcmc$D <- mcmc$D[, , control$id_samples, drop = FALSE]
-
-    # update random effects
-    mcmc[["b"]] <- simulate_REs(Data, mcmc, control)
-    list(mcmc = mcmc, X = X, Z = Z, y = y)
+    sample_parallel <- function (id_samples, Data, mcmc, control) {
+        # keep only the samples from the MCMC used in the sampling
+        # of the random effects
+        mcmc$bs_gammas <- mcmc$bs_gammas[id_samples, , drop = FALSE]
+        mcmc$gammas <- mcmc$gammas[id_samples, , drop = FALSE]
+        mcmc$alphas <- mcmc$alphas[id_samples, , drop = FALSE]
+        mcmc$betas[] <- lapply(mcmc$betas, function (m, ind) m[ind, , drop = FALSE],
+                               "ind" = id_samples)
+        mcmc$sigmas <- mcmc$sigmas[id_samples, , drop = FALSE]
+        mcmc$D <- mcmc$D[, , id_samples, drop = FALSE]
+        # update control n_samples
+        control$n_samples <- length(id_samples)
+        # update random effects
+        mcmc[["b"]] <- simulate_REs(Data, mcmc, control)
+        mcmc
+    }
+    if (cores > 1L) {
+        #cl <- parallel::makeCluster(cores)
+        #parallel::clusterSetRNGStream(cl = cl, iseed = seed)
+        #out <- parallel::parLapply(cl, id_samples, sample_parallel,
+        #                           Data = Data, mcmc = mcmc, control = control)
+        #parallel::stopCluster(cl)
+        out <- lapply(id_samples, sample_parallel, Data = Data, mcmc = mcmc,
+                      control = control)
+    } else {
+        out <- list(sample_parallel(id_samples[[1L]], Data = Data, mcmc = mcmc,
+                                    control = control))
+    }
+    combine <- function (x) {
+        n <- length(x)
+        res <- x[[1L]]
+        if (n > 1L) {
+            for (i in 2:n) {
+                res$bs_gammas <- rbind(res$bs_gammas, x[[i]][["bs_gammas"]])
+                res$gammas <- rbind(res$gammas, x[[i]][["gammas"]])
+                res$alphas <- rbind(res$alphas, x[[i]][["alphas"]])
+                res$sigmas <- rbind(res$sigmas, x[[i]][["sigmas"]])
+                d1 <- dim(res$D)[3L]
+                d2 <- dim(x[[i]][["D"]])[3L]
+                a <- array(0.0, dim = c(dim(res$D)[1:2], d1 + d2))
+                a[, , seq(1, d1)] <- res$D
+                a[, , seq(d1 + 1, d1 + d2)] <- x[[i]][["D"]]
+                res$D <- a
+                d1 <- dim(res$b)[3L]
+                d2 <- dim(x[[i]][["b"]])[3L]
+                a <- array(0.0, dim = c(dim(res$b)[1:2], d1 + d2))
+                a[, , seq(1, d1)] <- res$b
+                a[, , seq(d1 + 1, d1 + d2)] <- x[[i]][["b"]]
+                res$b <- a
+                for (j in seq_along(res$betas)) {
+                    res$betas[[j]] <- rbind(res$betas[[j]], x[[i]][["betas"]][[j]])
+                }
+            }
+        }
+        res
+    }
+    list(mcmc = combine(out), X = X, Z = Z, y = y)
 }
 
-REs_newdata <- get_REs_newdata(object, newdata)
+system.time(REs_newdata <- get_REs_newdata(object, newdata))
 

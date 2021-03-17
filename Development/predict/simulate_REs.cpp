@@ -247,10 +247,7 @@ cube simulate_REs (List Data, List MCMC, List control) {
                                 WlongH2_alphas_proposed.rows(first_H, last_H);
                         }
                     }
-                    if (i > 19) {
-                        scale_b.at(k, j) =
-                            robbins_monro(scale_b.at(k, j), acc_k, i);
-                    }
+                    if (i > 9) scale_b.at(k, j) = robbins_monro(scale_b.at(k, j), acc_k, i);
                 }
             }
             b = mat2field(b_mat, ind_RE);
