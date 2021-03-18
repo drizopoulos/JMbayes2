@@ -14,14 +14,13 @@ if (FALSE) {
 
 
 object <- jointFit1
-newdata <- pbc2#pbc2[pbc2$id %in% c(2, 3, 10), ]
+newdata <- pbc2[pbc2$id %in% c(2, 3, 10), ]
 ind <- tapply(row.names(newdata), factor(newdata$id), tail, 1)
 newdata2 <- newdata[ind[!is.na(ind)], ]; rm(ind)
 newdata2 <- newdata2[rep(1:nrow(newdata2), each = 3), ]
 rownames(newdata2) <- seq(1:nrow(newdata2))
 newdata2$year <- with(newdata2, ave(year, id, FUN = function (x) x + seq_along(x)))
 process <- c("Event")
-type <- "fixed"
 level <- 1L
 CI_level <- 0.95
 pred_type <- "response"
@@ -33,7 +32,7 @@ seed <- 1L
 #############################################################
 #############################################################
 
-get_REs_newdata <- function (object, newdata) {
+get_components_newdata <- function (object, newdata) {
     # control
     control <- object$control
 
@@ -391,8 +390,37 @@ get_REs_newdata <- function (object, newdata) {
         }
         res
     }
-    list(mcmc = combine(out), X = X, Z = Z, y = y)
+    list(mcmc = combine(out), X = X, Z = Z, y = y, id = idL,
+         ind_RE = object$model_data$ind_RE, links = links,
+         respVars = lapply(respVars, "[", 1L))
 }
 
-system.time(REs_newdata <- get_REs_newdata(object, newdata))
+components_newdata <- get_components_newdata(object, newdata)
+
+predict_Long <- function (components_newdata, newdata2, level, pred_type,
+                          CI_level) {
+    betas <- components_newdata$mcmc[["betas"]]
+    b_mat <- components_newdata$mcmc[["b"]]
+    ind_RE <- components_newdata$ind_RE
+    links <- components_newdata$links
+    K <- length(ind_RE)
+    M <- dim(b)[3L]
+    out <- lapply(components_newdata$X, function (x) matrix(0.0, nrow(x), M))
+    names(out) <- components_newdata$respVars
+    for (i in seq_len(M)) {
+        eta_i <-
+            linpred_long(components_newdata$X, lapply(betas, i_row, i),
+                         components_newdata$Z, splt_REs(b_mat[, , i], ind_RE),
+                         components_newdata$id, level = level)
+        for (j in seq_len(K)) {
+            out[[j]][, i] <- mu_fun(eta_i[[j]], links[j])
+        }
+    }
+    list(preds = lapply(out, rowMeans, na.rm = TRUE),
+         low = lapply(out, rowQuantile, probs = (1 - CI_level) / 2),
+         upp = lapply(out, rowQuantile, probs = (1 + CI_level) / 2))
+}
+
+
+
 
