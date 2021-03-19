@@ -81,10 +81,8 @@ get_components_newdata <- function (object, newdata) {
     # for some outcomes)
     NAs_FE_dataL <- lapply(mf_FE_dataL, attr, "na.action")
     NAs_RE_dataL <- lapply(mf_RE_dataL, attr, "na.action")
-    mf_FE_dataL <- mapply(fix_NAs_fixed, mf_FE_dataL, NAs_FE_dataL, NAs_RE_dataL,
-                          SIMPLIFY = FALSE)
-    mf_RE_dataL <- mapply(fix_NAs_random, mf_RE_dataL, NAs_RE_dataL, NAs_FE_dataL,
-                          SIMPLIFY = FALSE)
+    mf_FE_dataL <- mapply2(fix_NAs_fixed, mf_FE_dataL, NAs_FE_dataL, NAs_RE_dataL)
+    mf_RE_dataL <- mapply2(fix_NAs_random, mf_RE_dataL, NAs_RE_dataL, NAs_FE_dataL)
 
     # create response vectors
     y <- lapply(mf_FE_dataL, model.response)
@@ -104,13 +102,13 @@ get_components_newdata <- function (object, newdata) {
     }
     y[binomial_data] <- lapply(y[binomial_data], trials_fun)
     unq_id <- unique(idL)
-    idL <- mapply(exclude_NAs, NAs_FE_dataL, NAs_RE_dataL,
-                  MoreArgs = list(id = idL), SIMPLIFY = FALSE)
+    idL <- mapply2(exclude_NAs, NAs_FE_dataL, NAs_RE_dataL,
+                  MoreArgs = list(id = idL))
     idL <- lapply(idL, match, table = unq_id)
     idL_lp <- lapply(idL, function (x) match(x, unique(x)))
     unq_idL <- lapply(idL, unique)
-    X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL, SIMPLIFY = FALSE)
-    Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL, SIMPLIFY = FALSE)
+    X <- mapply2(model.matrix.default, terms_FE, mf_FE_dataL)
+    Z <- mapply2(model.matrix.default, terms_RE, mf_RE_dataL)
 
     ################################
 
@@ -401,6 +399,7 @@ get_components_newdata <- function (object, newdata) {
     }
     list(mcmc = combine(out), X = X, Z = Z, y = y, id = idL,
          ind_RE = object$model_data$ind_RE, links = links,
-         respVars = lapply(respVars, "[", 1L), NAs = NAs_FE_dataL)
+         respVars = lapply(respVars, "[", 1L),
+         NAs = mapply2(c, NAs_FE_dataL, NAs_RE_dataL))
 }
 

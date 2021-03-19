@@ -81,10 +81,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # for some outcomes)
     NAs_FE_dataL <- lapply(mf_FE_dataL, attr, "na.action")
     NAs_RE_dataL <- lapply(mf_RE_dataL, attr, "na.action")
-    mf_FE_dataL <- mapply(fix_NAs_fixed, mf_FE_dataL, NAs_FE_dataL, NAs_RE_dataL,
-                          SIMPLIFY = FALSE)
-    mf_RE_dataL <- mapply(fix_NAs_random, mf_RE_dataL, NAs_RE_dataL, NAs_FE_dataL,
-                          SIMPLIFY = FALSE)
+    mf_FE_dataL <- mapply2(fix_NAs_fixed, mf_FE_dataL, NAs_FE_dataL, NAs_RE_dataL)
+    mf_RE_dataL <- mapply2(fix_NAs_random, mf_RE_dataL, NAs_RE_dataL, NAs_FE_dataL)
 
     # create response vectors
     y <- lapply(mf_FE_dataL, model.response)
@@ -109,8 +107,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # This needs to be taken into account when using idL for indexing. Namely, a new id variable
     # will need to be created in jm_fit()
     unq_id <- unique(idL)
-    idL <- mapply(exclude_NAs, NAs_FE_dataL, NAs_RE_dataL,
-                  MoreArgs = list(id = idL), SIMPLIFY = FALSE)
+    idL <- mapply2(exclude_NAs, NAs_FE_dataL, NAs_RE_dataL,
+                   MoreArgs = list(id = idL))
     idL <- lapply(idL, match, table = unq_id)
     # the index variable idL_lp is to be used to subset the random effects of each outcome
     # such that to calculate the Zb part of the model as rowSums(Z * b[idL_lp, ]). This
@@ -123,9 +121,9 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     unq_idL <- lapply(idL, unique)
 
     # create design matrices for mixed models
-    X <- mapply(model.matrix.default, terms_FE, mf_FE_dataL, SIMPLIFY = FALSE)
+    X <- mapply2(model.matrix.default, terms_FE, mf_FE_dataL)
     Xbar <- lapply(X, colMeans)
-    Z <- mapply(model.matrix.default, terms_RE, mf_RE_dataL, SIMPLIFY = FALSE)
+    Z <- mapply2(model.matrix.default, terms_RE, mf_RE_dataL)
     if (length(Z) == 1 && ncol(Z[[1]]) == 1) {
         stop("jm() does not currently work when you have a single ",
              "longitudinal outcome and only random intercepts.")
