@@ -17,6 +17,8 @@
 \alias{get_links}
 \alias{get_links.jm}
 \alias{compare_jm}
+\alias{predict}
+\alias{predict.jm}
 
 \title{
 Various Methods for Standard Generics
@@ -60,6 +62,16 @@ family(object, \dots)
 
 compare_jm(\dots, type = c("marginal", "conditional"),
   order = c("WAIC", "DIC", "LPML", "none"))
+
+predict(object, \dots)
+
+\method{predict}{jm}(object, newdata = NULL, newdata2 = NULL,
+  process = c("longitudinal", "event"),
+  type_pred = c("response", "link"),
+  type = c("subject_specific", "mean_subject"),
+  level = 0.95, return_newdata = FALSE,
+  n_samples = 200L, n_mcmc = 25L, cores = NULL, seed = 123L,
+  \dots)
 }
 
 \arguments{
@@ -70,7 +82,7 @@ than the total number of submodels, extracts from all of them.}
 \item{process}{which submodel(s) to extract the terms: \cr
 \itemize{
     \item if \code{"longitudinal"}, the linear mixed model(s), or
-    \item if \code{"survival"}, the survival model.
+    \item if \code{"event"}, the survival model.
 }
 }
 \item{type}{in \code{terms()} and \code{model.frame()}, which effects to select in the longitudinal process: \cr
@@ -83,7 +95,16 @@ in \code{compare_jm()}, which log-likelihood function use to calculate the crite
     \item if \code{"marginal"}, the marginal log-likelihood, or
     \item if \code{"conditional"}, the conditional log-likelihood.
 }
+in \code{predict()} what type of predictions to calculate.
 }
+\item{newdata, newdata2}{data frames}
+\item{type_pred}{type of prediction}
+\item{level}{level of credible interval.}
+\item{return_newdata}{should \code{predict()} return the predictions as extra columns in \code{newdata} and \code{newdata2}.}
+\item{n_samples}{number of samples.}
+\item{n_mcmc}{number of samples.}
+\item{cores}{number of cores for parallel computing.}
+\item{seed}{the seed.}
 \item{\dots}{further arguments; currently, none is used. \cr in \code{compare_jm()}, a series of \code{jm} objects.}
 \item{order}{which criteria use to sort the models in the output.}
 }

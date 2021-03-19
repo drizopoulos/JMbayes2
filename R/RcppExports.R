@@ -13,3 +13,7 @@ mlogLik_jm <- function(res_thetas, mean_b_mat, post_vars, model_data, model_info
     .Call(`_JMbayes2_mlogLik_jm`, res_thetas, mean_b_mat, post_vars, model_data, model_info, control)
 }
 
+simulate_REs <- function(Data, MCMC, control) {
+    .Call(`_JMbayes2_simulate_REs`, Data, MCMC, control)
+}
+

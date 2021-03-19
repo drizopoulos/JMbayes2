@@ -126,6 +126,11 @@ predict_Long <- function (components_newdata, newdata2, level, pred_type,
             res2 <- cbind(newdata2, as.data.frame(do.call("cbind", l)))
         }
     }
+    if (is.null(newdata2)) {
+        res1
+    } else {
+        list(newdata = res1, newdata2 = res2)
+    }
 }
 
 

@@ -51,3 +51,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// simulate_REs
+arma::cube simulate_REs(List Data, List MCMC, List control);
+RcppExport SEXP _JMbayes2_simulate_REs(SEXP DataSEXP, SEXP MCMCSEXP, SEXP controlSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type Data(DataSEXP);
+    Rcpp::traits::input_parameter< List >::type MCMC(MCMCSEXP);
+    Rcpp::traits::input_parameter< List >::type control(controlSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_REs(Data, MCMC, control));
+    return rcpp_result_gen;
+END_RCPP
+}
