@@ -118,6 +118,8 @@ get_components_newdata <- function (object, newdata) {
     type_censoring <- object$model_info$type_censoring
     dataS <- newdata
     idT <- dataS[[idVar]]
+    dataS <- dataS[tapply(row.names(dataS), factor(idT, unique(idT)), tail, 1L), ]
+    idT <- dataS[[idVar]]
     mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
     if (!is.null(NAs_surv <- attr(mf_surv_dataS, "na.action"))) {
         idT <- idT[-NAs_surv]
