@@ -281,6 +281,12 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     }
     n_strata <- length(unique(strata))
 
+    # check if we have competing risks or multi-state processes. In this case,
+    # we will have multiple strata per subject. NOTE: this will also be the
+    # case for recurrent events. We will need to change the definition of
+    # CR_MS to account for this
+    CR_MS <- any(tapply(strata, idT, function (x) length(unique(x))) > 1)
+
     # 'Time_integration' is the upper limit of the integral in likelihood
     # of the survival model. For subjects with event (delta = 1), for subjects with
     # right censoring and for subjects with interval censoring we need to integrate
@@ -491,7 +497,7 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         var_names = list(respVars = respVars, respVars_form = respVars_form,
                          idVar = idVar, time_var = time_var),
         families = families,
-        type_censoring = type_censoring,
+        type_censoring = type_censoring, CR_MS = CR_MS,
         functional_forms = functional_forms,
         FunForms_per_outcome = FunForms_per_outcome,
         collapsed_functional_forms = collapsed_functional_forms,
@@ -570,8 +576,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     if (is.null(priors) || !is.list(priors)) {
         priors <- prs
     } else {
-        ind <- names(prs) %in% names(priors)
-        prs[ind] <- priors
+        ind <- intersect(names(priors), names(prs))
+        prs[ind] <- priors[ind]
         priors <- prs
     }
     if (!priors$penalty_gammas %in% c("none", "ridge", "horseshoe")) {

@@ -297,6 +297,11 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
     Z_h[] <- lapply(Z_h, docall_cbind)
     Z_H2[] <- lapply(Z_H2, docall_cbind)
 
+    W_bar <- object$W_bar
+    W_sds <- object$W_sds
+    W_H <- center_fun(W_H, W_bar, W_sds)
+    W_h <- center_fun(W_h, W_bar, W_sds)
+    W_H2 <- center_fun(W_H2, W_bar, W_sds)
 
     # MCMC sample
     b <- lapply(sapply(Z, ncol), function (nc) matrix(0.0, nY, nc))
