@@ -7,6 +7,74 @@
 using namespace Rcpp;
 using namespace arma;
 
+
+// [[Rcpp::export]]
+vec cif (List Data, List MCMC, List control) {
+    ////////////////////////////
+    // MCMC Sample Parameters //
+    ///////////////////////////
+    cube b = as<cube>(MCMC["b"]);
+    mat bs_gammas = trans(as<mat>(MCMC["bs_gammas"]));
+    mat gammas = trans(as<mat>(MCMC["gammas"]));
+    mat alphas = trans(as<mat>(MCMC["alphas"]));
+    field<mat> betas = List2Field_mat(as<List>(MCMC["betas"]));
+    for (uword j = 0; j < betas.n_elem; ++j) betas.at(j) = trans(betas.at(j));
+
+    ////////////////////
+    // index vectors //
+    ///////////////////
+    vec log_Pwk = as<vec>(Data["log_Pwk"]);
+    uvec id_H = as<uvec>(Data["id_H"]) - 1;
+    uvec id_h = as<uvec>(Data["id_h"]) - 1;
+    uvec indFast_H = create_fast_ind(id_H + 1);
+    uvec id_H_ = as<uvec>(Data["id_H_"]) - 1;
+    uvec indFast_h = create_fast_ind(id_h + 1);
+
+    //////////////////////
+    // Design matrices //
+    /////////////////////
+    mat W0_H = as<mat>(Data["W0_H"]);
+    mat W_H = as<mat>(Data["W_H"]);
+    field<mat> X_H = List2Field_mat(as<List>(Data["X_H"]));
+    field<mat> Z_H = List2Field_mat(as<List>(Data["Z_H"]));
+    field<mat> U_H = List2Field_mat(as<List>(Data["U_H"]));
+    mat Wlong_bar = docall_cbindL(as<List>(Data["Wlong_bar"]));
+    mat Wlong_sds = docall_cbindL(as<List>(Data["Wlong_sds"]));
+
+    bool any_gammas = as<bool>(Data["any_gammas"]);
+    field<uvec> FunForms = List2Field_uvec(as<List>(Data["FunForms_cpp"]), true);
+    field<uvec> FunForms_ind = List2Field_uvec(as<List>(Data["FunForms_ind"]), true);
+    List Funs_FunForms = as<List>(Data["Funs_FunForms"]);
+
+    ///////////////////////
+    // Calculation CIFs //
+    //////////////////////
+    uword n_samples = as<uword>(control["n_samples"]);
+    field<vec> betas_it(betas.n_elem);
+    mat out(1, n_samples, fill::zeros);
+    for (uword it = 0; it < n_samples; ++it) {
+        vec bs_gammas_it = bs_gammas.col(it);
+        vec gammas_it = gammas.col(it);
+        vec alphas_it = alphas.col(it);
+        for (uword i = 0; i < betas.n_elem; ++i) betas_it.at(i) = betas.at(i).col(it);
+        ///////////////////////
+        vec W0H_bs_gammas = W0_H * bs_gammas_it;
+        vec WH_gammas(W0_H.n_rows);
+        if (any_gammas) {
+            WH_gammas = W_H * gammas_it;
+        }
+        mat Wlong_H =
+            calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas_it, b,
+                            id_H_, FunForms, FunForms_ind, Funs_FunForms);
+        vec WlongH_alphas = Wlong_H * alphas_it;
+        ///////////////////////
+        vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
+        vec H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
+        out.col(it) = group_sum(H, indFast_h);
+    }
+    return out;
+}
+
 // [[Rcpp::export]]
 cube simulate_REs (List Data, List MCMC, List control) {
     //////////////////////////////

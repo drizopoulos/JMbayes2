@@ -44,16 +44,29 @@ components_newdata <- get_components_newdata(object, newdata, n_samples,
 
 
 object$model_info$CR_MS
+control <- object$control
+terms_FE <- object$model_info$terms$terms_FE
+terms_FE_noResp <- object$model_info$terms$terms_FE_noResp
+terms_RE <- object$model_info$terms$terms_RE
 idVar <- object$model_info$var_names$idVar
 time_var <- object$model_info$var_names$time_var
 terms_Surv <- object$model_info$terms$terms_Surv
+terms_Surv_noResp <- object$model_info$terms$terms_Surv_noResp
 type_censoring <- object$model_info$type_censoring
+dataL <- newdata
+Xbar <- object$model_data$Xbar
 data_pred <- newdata
 idT <- data_pred[[idVar]]
 data_pred <- data_pred[tapply(row.names(data_pred),
                               factor(idT, unique(idT)), tail, 1L), ]
 mf_data_pred <- model.frame.default(terms_Surv, data = data_pred)
 Surv_Response <- model.response(mf_data_pred)
+ind_strata <- attr(terms_Surv, "specials")$strata
+strata <- if (is.null(ind_strata)) {
+    rep(1, nrow(mf_data_pred))
+} else {
+    unclass(mf_data_pred[[ind_strata]])
+}
 # The definition of last_times needs to be checked for counting and interval
 last_times <- switch(type_censoring, "right" = unname(Surv_Response[, "time"]),
                      "counting" = unname(Surv_Response[, "stop"]),
@@ -63,7 +76,11 @@ times <- lapply(lapply(last_times, seq, to = t_max, length.out = 11L), tail, -1)
 n_times <- sapply(times, length)
 data_pred <- data_pred[rep(seq_along(times), n_times), ]
 data_pred[[time_var]] <- unlist(times, use.names = FALSE)
+idT <- data_pred[[idVar]]
+idT <- factor(idT, levels = unique(idT))
+strata <- rep(strata, n_times)
 upp_limit <- data_pred[[time_var]]
+Time_start <- last_times[unclass(idT)]
 g <- function (t0, t) c(t0, head(t, -1))
 low_limit <- unlist(mapply2(g, last_times, times), use.names = FALSE)
 GK <- gaussKronrod(k = 7L)
@@ -72,6 +89,21 @@ P <- c(upp_limit - low_limit) / 2
 st <- outer(P, sk) + (c(upp_limit + low_limit) / 2)
 log_Pwk <- unname(rep(log(P), each = length(sk)) +
                       rep_len(log(GK$wk), length.out = length(st)))
+
+# knots
+knots <- control$knots
+
+# indices
+ni_event <- tapply(idT, idT, length)
+ni_event <- cbind(c(0, head(cumsum(ni_event), -1)), cumsum(ni_event))
+id_H <- rep(paste0(idT, "_", unlist(tapply(idT, idT, seq_along))),
+            each = 7L)
+id_H <- match(id_H, unique(id_H))
+# id_H_ repeats each unique idT the number of quadrature points
+id_H_ <- rep(idT, each = 7L)
+id_H_ <- match(id_H_, unique(id_H_))
+id_h <- unclass(idT)
+
 
 # Functional forms
 functional_forms <- object$model_info$functional_forms
@@ -84,9 +116,9 @@ eps <- object$model_info$eps
 direction <- object$model_info$direction
 
 
-strata_H <- rep(strata, each = control$GK_k)
+strata_H <- rep(strata, each = 7L)
 W0_H <- create_W0(c(t(st)), knots, control$Bsplines_degree + 1, strata_H)
-dataS_H <- SurvData_HazardModel(st, dataS, Time_start,
+dataS_H <- SurvData_HazardModel(st, data_pred, Time_start,
                                 paste0(idT, "_", strata), time_var)
 mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
 W_H <- construct_Wmat(terms_Surv_noResp, mf)
@@ -107,11 +139,15 @@ Z_H <- design_matrices_functional_forms(st, terms_RE,
                                         eps, direction)
 U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
 
+betas <- components_newdata$mcmc$betas
+b <- components_newdata$mcmc$b
+bs_gammas <- components_newdata$mcmc$bs_gammas
+gammas <- components_newdata$mcmc$gammas
+alphas <- components_newdata$mcmc$alphas
+eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
 
-
-
-
-
+W0H_bs_gammas <- W0_H %*% bs_gammas[1, ]
+W_H_gammas <- W_H * gammas[1, ]
 
 
 
