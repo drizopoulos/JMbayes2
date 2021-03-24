@@ -9,7 +9,7 @@ using namespace arma;
 
 
 // [[Rcpp::export]]
-vec cif (List Data, List MCMC, List control) {
+mat cif (const List &Data, const List &MCMC) {
     ////////////////////////////
     // MCMC Sample Parameters //
     ///////////////////////////
@@ -19,6 +19,9 @@ vec cif (List Data, List MCMC, List control) {
     mat alphas = trans(as<mat>(MCMC["alphas"]));
     field<mat> betas = List2Field_mat(as<List>(MCMC["betas"]));
     for (uword j = 0; j < betas.n_elem; ++j) betas.at(j) = trans(betas.at(j));
+    vec W_std_gammas = as<vec>(MCMC["W_std_gammas"]);
+    vec Wlong_std_alphas = as<vec>(MCMC["Wlong_std_alphas"]);
+    uword n_samples = bs_gammas.n_cols;
 
     ////////////////////
     // index vectors //
@@ -29,6 +32,7 @@ vec cif (List Data, List MCMC, List control) {
     uvec indFast_H = create_fast_ind(id_H + 1);
     uvec id_H_ = as<uvec>(Data["id_H_"]) - 1;
     uvec indFast_h = create_fast_ind(id_h + 1);
+    field<uvec> ind_RE = List2Field_uvec(as<List>(Data["ind_RE"]), true);
 
     //////////////////////
     // Design matrices //
@@ -49,28 +53,30 @@ vec cif (List Data, List MCMC, List control) {
     ///////////////////////
     // Calculation CIFs //
     //////////////////////
-    uword n_samples = as<uword>(control["n_samples"]);
     field<vec> betas_it(betas.n_elem);
-    mat out(1, n_samples, fill::zeros);
+    uvec H_unq = unique(id_H);
+    mat out(H_unq.n_rows, n_samples, fill::zeros);
     for (uword it = 0; it < n_samples; ++it) {
+        field<mat> b_it = mat2field(b.slice(it), ind_RE);
         vec bs_gammas_it = bs_gammas.col(it);
         vec gammas_it = gammas.col(it);
         vec alphas_it = alphas.col(it);
         for (uword i = 0; i < betas.n_elem; ++i) betas_it.at(i) = betas.at(i).col(it);
         ///////////////////////
-        vec W0H_bs_gammas = W0_H * bs_gammas_it;
+        vec W0H_bs_gammas = (W0_H * bs_gammas_it) - Wlong_std_alphas.at(it) -
+            W_std_gammas.at(it);
         vec WH_gammas(W0_H.n_rows);
         if (any_gammas) {
             WH_gammas = W_H * gammas_it;
         }
         mat Wlong_H =
-            calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas_it, b,
+            calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas_it, b_it,
                             id_H_, FunForms, FunForms_ind, Funs_FunForms);
         vec WlongH_alphas = Wlong_H * alphas_it;
         ///////////////////////
         vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
         vec H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
-        out.col(it) = group_sum(H, indFast_h);
+        out.col(it) = 1.0 - exp(- H);
     }
     return out;
 }

@@ -23,7 +23,8 @@ importFrom("ggplot2", "ggplot", "geom_density", "aes", "ggtitle", "theme_bw",
            "theme", "element_text", "scale_color_manual", "scale_fill_manual",
            "guide_legend", "geom_line", "guides")
 importFrom("gridExtra", "marrangeGrob")
-importFrom("matrixStats", "rowQuantiles", "colVars", "colLogSumExps")
+importFrom("matrixStats", "rowQuantiles", "colVars", "colLogSumExps",
+           "colCumsums")
 
 
 useDynLib(JMbayes2, .registration = TRUE)

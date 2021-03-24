@@ -82,7 +82,7 @@ strata <- rep(strata, n_times)
 upp_limit <- data_pred[[time_var]]
 Time_start <- last_times[unclass(idT)]
 g <- function (t0, t) c(t0, head(t, -1))
-low_limit <- unlist(mapply2(g, last_times, times), use.names = FALSE)
+low_limit <- 0#unlist(mapply2(g, last_times, times), use.names = FALSE)
 GK <- gaussKronrod(k = 7L)
 sk <- GK$sk
 P <- c(upp_limit - low_limit) / 2
@@ -139,20 +139,26 @@ Z_H <- design_matrices_functional_forms(st, terms_RE,
                                         eps, direction)
 U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
 
-betas <- components_newdata$mcmc$betas
-b <- components_newdata$mcmc$b
-bs_gammas <- components_newdata$mcmc$bs_gammas
-gammas <- components_newdata$mcmc$gammas
-alphas <- components_newdata$mcmc$alphas
-eta_H <- linpred_surv(X_H, betas, Z_H, b, id_H)
+X_H[] <- lapply(X_H, docall_cbind)
+Z_H[] <- lapply(Z_H, docall_cbind)
 
-W0H_bs_gammas <- W0_H %*% bs_gammas[1, ]
-W_H_gammas <- W_H * gammas[1, ]
+Data <- list(
+    log_Pwk = log_Pwk, id_H = id_H, id_h = id_h, id_H_ = id_H_,
+    ind_RE = object$model_data$ind_RE,
+    W0_H = W0_H, W_H = W_H, U_H = U_H, X_H = X_H, Z_H = Z_H,
+    Wlong_bar = object$Wlong_bar, Wlong_sds = object$Wlong_sds,
+    any_gammas = any_gammas,
+    FunForms_cpp = FunForms_cpp, FunForms_ind = FunForms_ind,
+    Funs_FunForms = Funs_FunForms
+)
 
+CIF <- cif(Data, components_newdata$mcmc)
+index <- rep(seq_along(times), n_times)
+for (i in seq_along(times)) {
+    CIF[index == i, ] <- matrixStats::colCumsums(CIF[index == i, ])
+}
 
-
-
-
-
-
+list(pred = rowMeans(CIF),
+     low = rowQuantile(CIF, probs = (1 - level) / 2),
+     upp = rowQuantile(CIF, probs = (1 + level) / 2))
 

@@ -10,14 +10,10 @@ splt_REs <- function (b_mat, ind_RE) {
 linpred_long <- function (X, betas, Z, b, id, type) {
     out <- vector("list", length(X))
     for (i in seq_along(X)) {
-        X_i <- X[[i]]
-        Z_i <- Z[[i]]
-        betas_i <- betas[[i]]
-        b_i <- b[[i]]
-        id_i <- id[[i]]
-        out[[i]] <- c(X_i %*% betas_i)
+        out[[i]] <- c(X[[i]] %*% betas[[i]])
         if (type == "subject_specific") {
-            out[[i]] <- out[[i]] + as.vector(rowSums(Z_i * b_i[id_i, ]))
+            out[[i]] <- out[[i]] +
+                as.vector(rowSums(Z[[i]] * b[[i]][id[[i]], ]))
         }
     }
     out
@@ -27,10 +23,6 @@ mu_fun <- function (eta, link) {
     switch (link, "identity" = eta, "inverse" = 1 / eta, "logit" = plogis(eta),
             "probit" = pnorm(eta), "cloglog" = - exp(- exp(eta)) + 1.0,
             "log" = exp(eta))
-}
-
-rowQuantile <- function (m, probs, na.rm = TRUE) {
-    apply(m, 1L, quantile, probs = probs, na.rm = na.rm)
 }
 
 fix_NAs_preds <- function (preds, NAs, n) {
@@ -314,6 +306,8 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
     mcmc <- list(
         b = b, bs_gammas = get_param("bs_gammas"), gammas = get_param("gammas"),
         alphas = get_param("alphas"),
+        Wlong_std_alphas = get_param("Wlong_std_alphas"),
+        W_std_gammas = get_param("W_std_gammas"),
         betas = lapply(object$mcmc[ind_betas], docall_rbind)
     )
     has_sigmas <- object$model_data$has_sigmas
@@ -363,6 +357,8 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
         control$n_samples <- length(id_samples)
         # update random effects
         mcmc[["b"]] <- simulate_REs(Data, mcmc, control)
+        mcmc$Wlong_std_alphas <- mcmc$Wlong_std_alphas[id_samples, , drop = FALSE]
+        mcmc$W_std_gammas <- mcmc$W_std_gammas[id_samples, , drop = FALSE]
         mcmc
     }
     if (cores > 1L) {
@@ -386,6 +382,10 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
                 res$gammas <- rbind(res$gammas, x[[i]][["gammas"]])
                 res$alphas <- rbind(res$alphas, x[[i]][["alphas"]])
                 res$sigmas <- rbind(res$sigmas, x[[i]][["sigmas"]])
+                res$Wlong_std_alphas <-
+                    rbind(res$Wlong_std_alphas, x[[i]][["Wlong_std_alphas"]])
+                res$W_std_gammas <-
+                    rbind(res$W_std_gammas, x[[i]][["W_std_gammas"]])
                 d1 <- dim(res$D)[3L]
                 d2 <- dim(x[[i]][["D"]])[3L]
                 a <- array(0.0, dim = c(dim(res$D)[1:2], d1 + d2))
@@ -434,8 +434,8 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, type,
         }
     }
     res1 <- list(preds = lapply(out, rowMeans, na.rm = TRUE),
-                 low = lapply(out, rowQuantile, probs = (1 - level) / 2),
-                 upp = lapply(out, rowQuantile, probs = (1 + level) / 2))
+                 low = lapply(out, rowQuantiles, probs = (1 - level) / 2),
+                 upp = lapply(out, rowQuantiles, probs = (1 + level) / 2))
     if (return_newdata) {
         n <- nrow(newdata)
         preds <- mapply2(fix_NAs_preds, res1$preds, components_newdata$NAs,
@@ -483,8 +483,8 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, type,
             }
         }
         res2 <- list(preds = lapply(out, rowMeans, na.rm = TRUE),
-                     low = lapply(out, rowQuantile, probs = (1 - level) / 2),
-                     upp = lapply(out, rowQuantile, probs = (1 + level) / 2))
+                     low = lapply(out, rowQuantiles, probs = (1 - level) / 2),
+                     upp = lapply(out, rowQuantiles, probs = (1 + level) / 2))
         if (return_newdata) {
             n <- nrow(newdata2)
             preds <- mapply2(fix_NAs_preds, res2$preds, NAs,
