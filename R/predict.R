@@ -17,6 +17,7 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
         predict_Long(object, components_newdata, newdata, newdata2, type,
                      type_pred, level, return_newdata)
     } else {
-        NA
+        predict_Event(object, components_newdata, newdata, level,
+                      return_newdata)
     }
 }

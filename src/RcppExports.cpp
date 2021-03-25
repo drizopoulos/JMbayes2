@@ -52,15 +52,27 @@ BEGIN_RCPP
 END_RCPP
 }
 // simulate_REs
-arma::cube simulate_REs(List Data, List MCMC, List control);
+arma::cube simulate_REs(const List& Data, const List& MCMC, const List& control);
 RcppExport SEXP _JMbayes2_simulate_REs(SEXP DataSEXP, SEXP MCMCSEXP, SEXP controlSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type Data(DataSEXP);
-    Rcpp::traits::input_parameter< List >::type MCMC(MCMCSEXP);
-    Rcpp::traits::input_parameter< List >::type control(controlSEXP);
+    Rcpp::traits::input_parameter< const List& >::type Data(DataSEXP);
+    Rcpp::traits::input_parameter< const List& >::type MCMC(MCMCSEXP);
+    Rcpp::traits::input_parameter< const List& >::type control(controlSEXP);
     rcpp_result_gen = Rcpp::wrap(simulate_REs(Data, MCMC, control));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cum_haz
+arma::mat cum_haz(const List& Data, const List& MCMC);
+RcppExport SEXP _JMbayes2_cum_haz(SEXP DataSEXP, SEXP MCMCSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const List& >::type Data(DataSEXP);
+    Rcpp::traits::input_parameter< const List& >::type MCMC(MCMCSEXP);
+    rcpp_result_gen = Rcpp::wrap(cum_haz(Data, MCMC));
     return rcpp_result_gen;
 END_RCPP
 }
