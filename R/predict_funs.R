@@ -337,7 +337,11 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
         links = links, extra_parms = object$model_data$extra_parms,
         unq_idL = unq_idL, idL_lp = idL_lp, idL = idL
     )
-
+    if (!exists(".Random.seed", envir = .GlobalEnv))
+        runif(1)
+    RNGstate <- get(".Random.seed", envir = .GlobalEnv)
+    on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
+    set.seed(seed)
     control <- list(GK_k = object$control$GK_k, n_samples = n_samples, n_iter = n_mcmc)
     id_samples <- split(sample(seq_len(M), control$n_samples),
                         rep(seq_len(cores), each = ceiling(control$n_samples / cores),

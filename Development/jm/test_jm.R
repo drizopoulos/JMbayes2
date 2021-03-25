@@ -105,7 +105,7 @@ control = NULL
 
 
 fm <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
-CoxFit <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
+CoxFit <- coxph(Surv(years, status2) ~ 1, data = pbc2.id)
 ff <- list("log(serBilir)" = ~ area(log(serBilir)))
 test <- jm(CoxFit, fm, time_var = "year")
 summary(test)
