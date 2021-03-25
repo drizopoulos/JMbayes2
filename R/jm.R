@@ -278,10 +278,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         rep(1, nrow(mf_surv_dataS))
     } else {
         strt <- mf_surv_dataS[[ind_strata]]
-        if (!is.factor(str)) {
-            warning("the strata variable is turned into a factor internally. ",
-                    "But it would be best that this is done in the original database.")
-            strt <- factor(strt)
+        if (!is.factor(strt)) {
+            stop("the strata variable in the Cox model is not a factor. ",
+                 "Please set it as a factor in the database,\n\tand ",
+                 "refit the stratified Cox model.")
         }
         unclass(strt)
     }
