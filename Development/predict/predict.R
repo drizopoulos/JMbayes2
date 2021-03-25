@@ -30,7 +30,7 @@ process = "event"
 type_pred = "response"
 type = "subject_specific"
 level = 0.95; return_newdata = FALSE
-n_samples = 200L; n_mcmc = 25L; cores = NULL; seed = 123L
+n_samples = 500L; n_mcmc = 25L; cores = NULL; seed = 123L
 
 #############################################################
 #############################################################
@@ -72,7 +72,7 @@ last_times <- switch(type_censoring, "right" = unname(Surv_Response[, "time"]),
                      "counting" = unname(Surv_Response[, "stop"]),
                      "interval" = unname(Surv_Response[, "time1"]))
 t_max <- quantile(object$model_data$Time_right, probs = 0.9)
-times <- lapply(lapply(last_times, seq, to = t_max, length.out = 11L), tail, -1)
+times <- lapply(lapply(last_times, seq, to = t_max, length.out = 21L), tail, -1)
 n_times <- sapply(times, length)
 data_pred <- data_pred[rep(seq_along(times), n_times), ]
 data_pred[[time_var]] <- unlist(times, use.names = FALSE)
@@ -82,7 +82,7 @@ strata <- rep(strata, n_times)
 upp_limit <- data_pred[[time_var]]
 Time_start <- last_times[unclass(idT)]
 g <- function (t0, t) c(t0, head(t, -1))
-low_limit <- 0#unlist(mapply2(g, last_times, times), use.names = FALSE)
+low_limit <- unlist(mapply2(g, last_times, times), use.names = FALSE)
 GK <- gaussKronrod(k = 7L)
 sk <- GK$sk
 P <- c(upp_limit - low_limit) / 2
@@ -152,13 +152,18 @@ Data <- list(
     Funs_FunForms = Funs_FunForms
 )
 
-CIF <- cif(Data, components_newdata$mcmc)
+H <- cum_haz(Data, components_newdata$mcmc)
 index <- rep(seq_along(times), n_times)
 for (i in seq_along(times)) {
-    CIF[index == i, ] <- matrixStats::colCumsums(CIF[index == i, ])
+    H[index == i, ] <- colCumsums(H[index == i, ])
 }
+CIF <- 1.0 - exp(- H)
+res <- list(pred = rowMeans(CIF),
+     low = rowQuantiles(CIF, probs = (1 - level) / 2),
+     upp = rowQuantiles(CIF, probs = (1 + level) / 2))
 
-list(pred = rowMeans(CIF),
-     low = rowQuantile(CIF, probs = (1 - level) / 2),
-     upp = rowQuantile(CIF, probs = (1 + level) / 2))
+
+matplot(times[[1]], cbind(res$low, res$pred, res$upp)[index == 1, ],
+        type = "l", lty = c(2, 1, 2), col = c(1, 2, 1), lwd = 2)
+
 

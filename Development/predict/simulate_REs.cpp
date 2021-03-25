@@ -9,7 +9,7 @@ using namespace arma;
 
 
 // [[Rcpp::export]]
-mat cif (const List &Data, const List &MCMC) {
+mat cum_haz (const List &Data, const List &MCMC) {
     ////////////////////////////
     // MCMC Sample Parameters //
     ///////////////////////////
@@ -75,8 +75,7 @@ mat cif (const List &Data, const List &MCMC) {
         vec WlongH_alphas = Wlong_H * alphas_it;
         ///////////////////////
         vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
-        vec H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
-        out.col(it) = 1.0 - exp(- H);
+        out.col(it) = group_sum(exp(log_Pwk + lambda_H), indFast_H);
     }
     return out;
 }
