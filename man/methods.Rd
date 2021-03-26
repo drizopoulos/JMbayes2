@@ -70,7 +70,7 @@ predict(object, \dots)
   type_pred = c("response", "link"),
   type = c("subject_specific", "mean_subject"),
   level = 0.95, return_newdata = FALSE,
-  n_samples = 200L, n_mcmc = 25L, cores = NULL, seed = 123L,
+  n_samples = 200L, n_mcmc = 55L, cores = NULL, seed = 123L,
   \dots)
 }
 
