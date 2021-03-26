@@ -7,7 +7,7 @@ if (FALSE) {
     fm3 <- mixed_model(ascites ~ year + sex, data = pbc2,
                        random = ~ year | id, family = binomial())
 
-    jointFit1 <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year")
+    jointFit1 <- jm(CoxFit, list(fm1), time_var = "year")
 
     source("./R/help_functions.R")
     source("./R/predict_funs.R")
@@ -25,11 +25,12 @@ ND$years <- with(ND, ave(year, id, FUN = function (x) max(x, na.rm = T)))
 ND$prothrombin[c(3, 5, 8)] <- NA
 newdata = ND
 newdata2 = ND2
+times = NULL
 process = "event"
 type_pred = "response"
 type = "subject_specific"
 level = 0.95; return_newdata = FALSE
-n_samples = 500L; n_mcmc = 25L; cores = NULL; seed = 123L
+n_samples = 500L; n_mcmc = 55L; cores = NULL; seed = 123L
 
 #############################################################
 #############################################################
@@ -73,7 +74,15 @@ predict_Event <- function (object, components_newdata, newdata, level) {
                          "counting" = unname(Surv_Response[, "stop"]),
                          "interval" = unname(Surv_Response[, "time1"]))
     t_max <- quantile(object$model_data$Time_right, probs = 0.9)
-    times <- lapply(lapply(last_times, seq, to = t_max, length.out = 21L), tail, -1)
+    # times <- seq(0.5, 20, len = 50)
+    if (is.null(times) || !is.numeric(times)) {
+        times <- lapply(last_times, seq, to = t_max, length.out = 21L)
+    } else {
+        t_max <- max(object$model_data$Time_right)
+        f <- function (lt, tt, tm) c(lt, sort(tt[tt > lt & tt <= tm]))
+        times <- lapply(last_times, f, tt = times, tm = t_max)
+    }
+
     n_times <- sapply(times, length)
     data_pred <- data_pred[rep(seq_along(times), n_times), ]
     data_pred[[time_var]] <- unlist(times, use.names = FALSE)

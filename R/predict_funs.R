@@ -169,7 +169,10 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
     if (length(which_interval)) {
         Time_integration2[which_interval] <- Time_right[which_interval]
     }
-
+    last_times <- switch(type_censoring,
+                         "right" = unname(Surv_Response[, "time"]),
+                         "counting" = unname(Surv_Response[, "stop"]),
+                         "interval" = unname(Surv_Response[, "time1"]))
     # create Gauss Kronrod points and weights
     GK <- gaussKronrod(control$GK_k)
     sk <- GK$sk
@@ -412,11 +415,12 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
     list(mcmc = combine(out), X = X, Z = Z, y = y, id = idL,
          ind_RE = object$model_data$ind_RE, links = links,
          respVars = lapply(respVars, "[", 1L),
-         NAs = mapply2(c, NAs_FE_dataL, NAs_RE_dataL))
+         NAs = mapply2(c, NAs_FE_dataL, NAs_RE_dataL),
+         last_times = last_times)
 }
 
-predict_Long <- function (object, components_newdata, newdata, newdata2, type,
-                          type_pred, level, return_newdata) {
+predict_Long <- function (object, components_newdata, newdata, newdata2, times,
+                          type, type_pred, level, return_newdata) {
     # Predictions for newdata
     betas <- components_newdata$mcmc[["betas"]]
     b_mat <- components_newdata$mcmc[["b"]]
@@ -458,6 +462,21 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, type,
     ############################################################################
     ############################################################################
     # Predictions for newdata2
+    if (is.null(newdata2) && !is.null(times) && is.numeric(times)) {
+        last_times <- components_newdata$last_times
+        t_max <- max(object$model_data$Time_right)
+        f <- function (lt, tt, tm) c(lt, sort(tt[tt > lt & tt <= tm]))
+        times <- lapply(last_times, f, tt = times, tm = t_max)
+        n_times <- sapply(times, length)
+        newdata2 <- newdata
+        idVar <- object$model_info$var_names$idVar
+        time_var <- object$model_info$var_names$time_var
+        idT <- newdata2[[idVar]]
+        newdata2 <- newdata2[tapply(row.names(newdata2),
+                                    factor(idT, unique(idT)), tail, 1L), ]
+        newdata2 <- newdata2[rep(seq_along(times), n_times), ]
+        newdata2[[time_var]] <- unlist(times, use.names = FALSE)
+    }
     if (!is.null(newdata2)) {
         terms_FE_noResp <- object$model_info$terms$terms_FE_noResp
         terms_RE <- object$model_info$terms$terms_RE
@@ -512,8 +531,8 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, type,
     }
 }
 
-predict_Event <- function (object, components_newdata, newdata, level,
-                           return_newdata) {
+predict_Event <- function (object, components_newdata, newdata, times,
+                           level, return_newdata) {
     control <- object$control
     terms_FE <- object$model_info$terms$terms_FE
     terms_FE_noResp <- object$model_info$terms$terms_FE_noResp
@@ -542,7 +561,13 @@ predict_Event <- function (object, components_newdata, newdata, level,
                          "counting" = unname(Surv_Response[, "stop"]),
                          "interval" = unname(Surv_Response[, "time1"]))
     t_max <- quantile(object$model_data$Time_right, probs = 0.9)
-    times <- lapply(last_times, seq, to = t_max, length.out = 21L)
+    if (is.null(times) || !is.numeric(times)) {
+        times <- lapply(last_times, seq, to = t_max, length.out = 21L)
+    } else {
+        t_max <- max(object$model_data$Time_right)
+        f <- function (lt, tt, tm) c(lt, sort(tt[tt > lt & tt <= tm]))
+        times <- lapply(last_times, f, tt = times, tm = t_max)
+    }
     n_times <- sapply(times, length)
     data_pred <- data_pred[rep(seq_along(times), n_times), ]
     data_pred[[time_var]] <- unlist(times, use.names = FALSE)

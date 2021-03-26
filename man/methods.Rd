@@ -65,7 +65,7 @@ compare_jm(\dots, type = c("marginal", "conditional"),
 
 predict(object, \dots)
 
-\method{predict}{jm}(object, newdata = NULL, newdata2 = NULL,
+\method{predict}{jm}(object, newdata = NULL, newdata2 = NULL, times = NULL,
   process = c("longitudinal", "event"),
   type_pred = c("response", "link"),
   type = c("subject_specific", "mean_subject"),
@@ -98,6 +98,7 @@ in \code{compare_jm()}, which log-likelihood function use to calculate the crite
 in \code{predict()} what type of predictions to calculate.
 }
 \item{newdata, newdata2}{data frames}
+\item{times}{numeric vector of times to predict.}
 \item{type_pred}{type of prediction}
 \item{level}{level of credible interval.}
 \item{return_newdata}{should \code{predict()} return the predictions as extra columns in \code{newdata} and \code{newdata2}.}
