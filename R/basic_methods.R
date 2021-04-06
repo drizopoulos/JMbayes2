@@ -536,6 +536,16 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL, times = NULL,
     process <- match.arg(process)
     type_pred <- match.arg(type_pred)
     type <- match.arg(type)
+    id_var <- object$model_info$var_names$idVar
+    time_var <- object$model_info$var_names$time_var
+    Time_var <- object$model_info$var_names$Time_var
+    event_var <- object$model_info$var_names$event_var
+    if (is.null(newdata[[Time_var]]) || is.null(newdata[[event_var]])) {
+        newdata[[event_var]] <- 0
+        last_time <- function (x) max(x, na.rm = TRUE)
+        newdata[[Time_var]] <- ave(newdata[[time_var]], newdata[[id_var]],
+                                   FUN = last_time)
+    }
     if (is.null(cores)) {
         n <- length(unique(newdata[[object$model_info$var_names$idVar]]))
         cores <- if (n > 20) 4L else 1L

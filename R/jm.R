@@ -190,7 +190,10 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     terms_Surv <- Surv_object$terms
     terms_Surv_noResp <- delete.response(terms_Surv)
     mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
-
+    # var names
+    av <- all.vars(terms_Surv)
+    Time_var <- head(av, -1L)
+    event_var <- tail(av, 1L)
     # survival times
     Surv_Response <- model.response(mf_surv_dataS)
     type_censoring <- attr(Surv_Response, "type")
@@ -501,7 +504,8 @@ jm <- function (Surv_object, Mixed_objects, time_var,
         frames = list(mf_FE = mf_FE_dataL, mf_RE = mf_RE_dataL,
                       mf_Surv = mf_surv_dataS),
         var_names = list(respVars = respVars, respVars_form = respVars_form,
-                         idVar = idVar, time_var = time_var),
+                         idVar = idVar, time_var = time_var,
+                         Time_var = Time_var, event_var = event_var),
         families = families,
         type_censoring = type_censoring, CR_MS = CR_MS,
         functional_forms = functional_forms,
