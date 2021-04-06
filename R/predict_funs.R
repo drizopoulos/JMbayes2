@@ -465,6 +465,12 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
     if (is.null(newdata2) && !is.null(times) && is.numeric(times)) {
         last_times <- components_newdata$last_times
         t_max <- max(object$model_data$Time_right)
+        test <- sapply(last_times, function (lt, tt) all(tt <= lt), tt = times)
+        if (any(test)) {
+            stop("according to the definition of argument 'times', for some ",
+                 "subjects the last available time is\n\t larger than the ",
+                 "maximum time to predict; redefine 'times' accordingly.")
+        }
         f <- function (lt, tt, tm) c(lt, sort(tt[tt > lt & tt <= tm]))
         times <- lapply(last_times, f, tt = times, tm = t_max)
         n_times <- sapply(times, length)
@@ -565,6 +571,12 @@ predict_Event <- function (object, components_newdata, newdata, times,
         times <- lapply(last_times, seq, to = t_max, length.out = 21L)
     } else {
         t_max <- max(object$model_data$Time_right)
+        test <- sapply(last_times, function (lt, tt) all(tt <= lt), tt = times)
+        if (any(test)) {
+            stop("according to the definition of argument 'times', for some ",
+                 "subjects the last available time is\n\t larger than the ",
+                 "maximum time to predict; redefine 'times' accordingly.")
+        }
         f <- function (lt, tt, tm) c(lt, sort(tt[tt > lt & tt <= tm]))
         times <- lapply(last_times, f, tt = times, tm = t_max)
     }
@@ -665,4 +677,3 @@ predict_Event <- function (object, components_newdata, newdata, times,
     }
     res
 }
-

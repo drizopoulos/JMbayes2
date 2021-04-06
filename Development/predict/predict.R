@@ -174,9 +174,9 @@ predict_Event <- function (object, components_newdata, newdata, level) {
 }
 
 
-tt <- predict_Event(jointFit1, components_newdata, ND, level = 0.9)
+tt <- res#predict_Event(jointFit1, components_newdata, ND, level = 0.9)
 
-matplot(times[[1]], cbind(res$low, res$pred, res$upp)[index == 1, ],
-        type = "l", lty = c(2, 1, 2), col = c(1, 2, 1), lwd = 2)
+matplot(times[[1]], cbind(res$low, res$pred, res$upp)[index == 2, ],
+        type = "l", lty = c(2, 1, 2), col = c(1, 2, 1), lwd = 2, ylim = c(0, 1))
 
 
