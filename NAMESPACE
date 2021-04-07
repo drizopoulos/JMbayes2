@@ -10,7 +10,7 @@ importFrom("stats", "coef", "terms", "model.frame", "model.frame.default",
            "ar", "var", "vcov", "optim", "delete.response", "model.response",
            "rnorm", "quantile", "runif", "rlnorm", "cov2cor", "as.formula",
            "gaussian", ".getXlevels", "makepredictcall", "plogis",
-           "reformulate", "predict", "pnorm")
+           "reformulate", "predict", "pnorm", "ave")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
            "clusterSetRNGStream")
 importFrom("nlme", "fixef", "ranef", "pdMatrix")

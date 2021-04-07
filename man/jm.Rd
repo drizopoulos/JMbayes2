@@ -24,8 +24,9 @@ Fits multivariate joint models for longitudinal and time-to-event data.
 }
 
 \usage{
-jm(Surv_object, Mixed_objects, time_var, functional_forms = NULL,
-  data_Surv = NULL, id_var = NULL, priors = NULL, control = NULL, \dots)
+jm(Surv_object, Mixed_objects, time_var, recurrent = FALSE,
+  functional_forms = NULL, data_Surv = NULL, id_var = NULL, priors = NULL,
+  control = NULL, \dots)
 
 value(x)
 slope(x, eps = 0.001, direction = "both")
@@ -58,6 +59,7 @@ tv(x, knots = NULL, ord = 2L)
     \item of class 'MixMod' fitted by function \code{mixed_model()} from package \bold{GLMMadaptive}.
     }}
 \item{time_var}{a \code{character} string indicating the time variable in the mixed-effects model(s).}
+\item{recurrent}{logical; if TRUE a recurrent and terminal event model is fitted - not working yet.}
 \item{functional_forms}{a \code{list} of formulas. Each formula corresponds to one longitudinal outcome and specifies the association structure between that outcome and the survival submodel as well as any interaction terms between the components of the longitudinal outcome and the survival submodel. See \bold{Examples}.}
 \item{data_Surv}{the \code{data.frame} used to fit the Cox/AFT survival submodel.}
 \item{id_var}{a \code{character} string indicating the id variable in the survival submodel.}

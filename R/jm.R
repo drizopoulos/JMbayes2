@@ -1,4 +1,4 @@
-jm <- function (Surv_object, Mixed_objects, time_var,
+jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 functional_forms = NULL, data_Surv = NULL, id_var = NULL,
                 priors = NULL, control = NULL, ...) {
     call <- match.call()
@@ -397,7 +397,12 @@ jm <- function (Surv_object, Mixed_objects, time_var,
     # 'Time_right', we put "_H" to denote calculation at the 'Time_integration', and
     # "_H2" to denote calculation at the 'Time_integration2'.
     strata_H <- rep(strata, each = con$GK_k)
-    W0_H <- create_W0(c(t(st)), con$knots, con$Bsplines_degree + 1, strata_H)
+    W0_H <- if (recurrent) {
+        create_W0(c(t(st - trunc_Time)), con$knots, con$Bsplines_degree + 1,
+                  strata_H)
+    } else {
+        create_W0(c(t(st)), con$knots, con$Bsplines_degree + 1, strata_H)
+    }
     dataS_H <- SurvData_HazardModel(st, dataS, Time_start,
                                     paste0(idT, "_", strata), time_var)
     mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
@@ -419,8 +424,12 @@ jm <- function (Surv_object, Mixed_objects, time_var,
                                             eps, direction)
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
     if (length(which_event)) {
-        W0_h <- create_W0(Time_right, con$knots, con$Bsplines_degree + 1,
-                          strata)
+        W0_h <- if (recurrent) {
+            create_W0(Time_right - trunc_Time, con$knots,
+                      con$Bsplines_degree + 1, strata)
+        } else {
+            create_W0(Time_right, con$knots, con$Bsplines_degree + 1, strata)
+        }
         dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start,
                                         paste0(idT, "_", strata), time_var)
         mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
