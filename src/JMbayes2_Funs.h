@@ -281,6 +281,16 @@ mat propose_rnorm_mat (const mat &thetas, const mat &scale, const uword &i) {
   return proposed_thetas;
 }
 
+mat propose_rnorm_mat2 (const mat &thetas, const mat &scale, const uword &i) {
+  mat proposed_thetas = thetas;
+  vec out(thetas.n_rows);
+  for (uword i = 0; i < thetas.n_rows; i++) {
+    out.at(i) = R::rnorm(0.0, 1.0);
+  }
+  proposed_thetas.col(i) = scale.col(i) % out + thetas.col(i);
+  return proposed_thetas;
+}
+
 // returns a mat transposed version: same dimensions as b_mat
 mat propose_mvnorm_mat (const int &n, const cube &S, const vec &scale) {
   uword ncol_per_slice = S.n_cols;

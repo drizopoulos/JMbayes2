@@ -35,9 +35,13 @@ fix_NAs_preds <- function (preds, NAs, n) {
 
 get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
                                     cores, seed) {
+    if (!exists(".Random.seed", envir = .GlobalEnv)) {
+        runif(1L)
+    }
+    RNGstate <- get(".Random.seed", envir = .GlobalEnv)
+    on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
     # control
     control <- object$control
-
     # check for tibbles
     if (inherits(newdata, "tbl_df") || inherits(newdata, "tbl")) {
         newdata <- as.data.frame(newdata)
@@ -340,15 +344,16 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
         links = links, extra_parms = object$model_data$extra_parms,
         unq_idL = unq_idL, idL_lp = idL_lp, idL = idL
     )
-    if (!exists(".Random.seed", envir = .GlobalEnv))
-        runif(1)
-    RNGstate <- get(".Random.seed", envir = .GlobalEnv)
-    on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
-    set.seed(seed)
+    if (n_samples > M) {
+        warning("the number of samples cannot be greater than the number of ",
+                "MCMC iterations in the fitted model.")
+        n_samples <- M
+    }
     control <- list(GK_k = object$control$GK_k, n_samples = n_samples, n_iter = n_mcmc)
-    id_samples <- split(sample(seq_len(M), control$n_samples),
-                        rep(seq_len(cores), each = ceiling(control$n_samples / cores),
-                            length.out = control$n_samples))
+    id_samples <-
+        split(seq_len(control$n_samples),
+              rep(seq_len(cores), each = ceiling(control$n_samples / cores),
+                  length.out = control$n_samples))
 
     sample_parallel <- function (id_samples, Data, mcmc, control) {
         # keep only the samples from the MCMC used in the sampling
@@ -377,6 +382,7 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
         #out <- lapply(id_samples, sample_parallel, Data = Data, mcmc = mcmc,
         #              control = control)
     } else {
+        set.seed(seed)
         out <- list(sample_parallel(id_samples[[1L]], Data = Data, mcmc = mcmc,
                                     control = control))
     }
@@ -657,13 +663,12 @@ predict_Event <- function (object, components_newdata, newdata, times,
         FunForms_cpp = FunForms_cpp, FunForms_ind = FunForms_ind,
         Funs_FunForms = Funs_FunForms
     )
-
     H <- cum_haz(Data, components_newdata$mcmc)
     index <- rep(seq_along(times), n_times)
     for (i in seq_along(times)) {
         H[index == i, ] <- colCumsums(H[index == i, ])
     }
-    CIF <- 1.0 - exp(- H)
+    CIF <- 1.0 - pmax(exp(- H), .Machine$double.eps)
     res <- list(pred = rowMeans(CIF),
                 low = rowQuantiles(CIF, probs = (1 - level) / 2),
                 upp = rowQuantiles(CIF, probs = (1 + level) / 2),

@@ -662,8 +662,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
 }
 
 // [[Rcpp::export]]
-arma::cube simulate_REs (const List &Data, const List &MCMC,
-                         const List &control) {
+arma::cube simulate_REs (List Data, List MCMC, List control) {
   //////////////////////////////
   // Event Process Components //
   //////////////////////////////
@@ -769,16 +768,16 @@ arma::cube simulate_REs (const List &Data, const List &MCMC,
     vec sds_it = sds.col(it);
     ///////////////////////
     vec W0H_bs_gammas = W0_H * bs_gammas_it;
-    vec W0h_bs_gammas(W0_h.n_rows);
-    vec W0H2_bs_gammas(W0_H2.n_rows);
+    vec W0h_bs_gammas(W0_h.n_rows, fill::zeros);
+    vec W0H2_bs_gammas(W0_H2.n_rows, fill::zeros);
     if (any_event) {
       W0h_bs_gammas = W0_h * bs_gammas_it;
     }
     if (any_interval) {
       W0H2_bs_gammas = W0_H2 * bs_gammas_it;
     }
-    vec WH_gammas(W0_H.n_rows);
-    vec Wh_gammas(W0_h.n_rows);
+    vec WH_gammas(W0_H.n_rows, fill::zeros);
+    vec Wh_gammas(W0_h.n_rows, fill::zeros);
     vec WH2_gammas(W0_H2.n_rows);
     if (any_gammas) {
       WH_gammas = W_H * gammas_it;
@@ -793,16 +792,16 @@ arma::cube simulate_REs (const List &Data, const List &MCMC,
       calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas_it, b,
                       id_H_, FunForms, FunForms_ind, Funs_FunForms);
     vec WlongH_alphas = Wlong_H * alphas_it;
-    mat Wlong_h(W0_h.n_rows, Wlong_H.n_cols);
-    vec Wlongh_alphas(W0_h.n_rows);
+    mat Wlong_h(W0_h.n_rows, Wlong_H.n_cols, fill::zeros);
+    vec Wlongh_alphas(W0_h.n_rows, fill::zeros);
     if (any_event) {
       Wlong_h =
         calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas_it, b,
                         id_h, FunForms, FunForms_ind, Funs_FunForms);
       Wlongh_alphas = Wlong_h * alphas_it;
     }
-    mat Wlong_H2(W0_H2.n_rows, Wlong_H.n_cols);
-    vec WlongH2_alphas(W0_H2.n_rows);
+    mat Wlong_H2(W0_H2.n_rows, Wlong_H.n_cols, fill::zeros);
+    vec WlongH2_alphas(W0_H2.n_rows, fill::zeros);
     if (any_interval) {
       Wlong_H2 =
         calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas_it,
@@ -827,7 +826,9 @@ arma::cube simulate_REs (const List &Data, const List &MCMC,
       logLik_long + logLik_surv + logLik_re;
     for (uword i = 0; i < n_iter; ++i) {
       for (uword j = 0; j < nRE; ++j) {
-        mat proposed_b_mat = propose_rnorm_mat(b_mat, scale_b, j);
+        //mat proposed_b_mat = propose_rnorm_mat(b_mat, scale_b, j);
+        mat proposed_b_mat = b_mat;
+        proposed_b_mat.col(j) = scale_b.col(j) % randn(b_mat.n_rows, 1) + b_mat.col(j);
         field<mat> proposed_b = mat2field(proposed_b_mat, ind_RE);
         //
         field<vec> eta_proposed =
@@ -856,7 +857,8 @@ arma::cube simulate_REs (const List &Data, const List &MCMC,
         if (any_interval) {
           Wlong_H2_proposed =
             calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas_it,
-                            proposed_b, id_H_, FunForms, FunForms_ind, Funs_FunForms);
+                            proposed_b, id_H_, FunForms, FunForms_ind,
+                            Funs_FunForms);
           WlongH2_alphas_proposed = Wlong_H2_proposed * alphas_it;
         }
         //
@@ -970,7 +972,7 @@ arma::mat cum_haz (const List &Data, const List &MCMC) {
     ///////////////////////
     vec W0H_bs_gammas = (W0_H * bs_gammas_it) - Wlong_std_alphas.at(it) -
       W_std_gammas.at(it);
-    vec WH_gammas(W0_H.n_rows);
+    vec WH_gammas(W0_H.n_rows, fill::zeros);
     if (any_gammas) {
       WH_gammas = W_H * gammas_it;
     }

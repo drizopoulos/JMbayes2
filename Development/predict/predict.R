@@ -42,6 +42,7 @@ if (is.null(cores)) {
 components_newdata <- get_components_newdata(object, newdata, n_samples,
                                              n_mcmc, cores, seed)
 
+components_newdata$mcmc$b[, , 21]
 
 object$model_info$CR_MS
 

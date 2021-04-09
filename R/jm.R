@@ -191,7 +191,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     terms_Surv_noResp <- delete.response(terms_Surv)
     mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
     # var names
-    av <- all.vars(terms_Surv)
+    av <- all.vars(attr(terms_Surv, "variables")[[2L]])
     Time_var <- head(av, -1L)
     event_var <- tail(av, 1L)
     # survival times

@@ -379,7 +379,8 @@ ggtraceplot.jm <- function(object,
         gplots <- list(NULL)
         for (i in seq_len(n_parms)) {
             gplots[[i]] <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
-                geom_line(aes(x = iteration, y = value, color = chain), size = size, alpha = alpha) +
+                geom_line(aes(x = iteration, y = value, color = chain),
+                          size = size, alpha = alpha) +
                 ggtitle(paste('Traceplot of ', unique(ggdata$parm)[i])) +
                 theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
                 scale_color_manual(values = ggcolthemes[[coltheme]]) +
@@ -389,7 +390,8 @@ ggtraceplot.jm <- function(object,
     } else {
         for (i in seq_len(n_parms)) {
             g <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
-                geom_line(aes(x = iteration, y = value, color = chain), size = size, alpha = alpha) +
+                geom_line(aes(x = iteration, y = value, color = chain),
+                          size = size, alpha = alpha) +
                 ggtitle(paste('Traceplot of ', unique(ggdata$parm)[i])) +
                 theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
                 scale_color_manual(values = ggcolthemes[[coltheme]]) +
@@ -420,7 +422,8 @@ ggdensityplot.jm <- function(object,
         gplots <- list(NULL)
         for (i in seq_len(n_parms)) {
             gplots[[i]] <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
-                geom_density(aes(x = value, color = chain, fill = chain), size = size, alpha = alpha) +
+                geom_density(aes(x = value, color = chain, fill = chain),
+                             size = size, alpha = alpha) +
                 ggtitle(paste('Density plot of ', unique(ggdata$parm)[i])) +
                 theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
                 scale_color_manual(values = ggcolthemes[[coltheme]]) +
@@ -431,7 +434,8 @@ ggdensityplot.jm <- function(object,
     } else {
         for (i in seq_len(n_parms)) {
             g <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
-                geom_density(aes(x = value, color = chain, fill = chain), size = size, alpha = alpha) +
+                geom_density(aes(x = value, color = chain, fill = chain),
+                             size = size, alpha = alpha) +
                 ggtitle(paste('Density plot of ', unique(ggdata$parm)[i])) +
                 theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
                 scale_color_manual(values = ggcolthemes[[coltheme]]) +
@@ -552,6 +556,9 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL, times = NULL,
     }
     components_newdata <- get_components_newdata(object, newdata, n_samples,
                                                  n_mcmc, cores, seed)
+
+    assign("xx1", components_newdata, envir = .GlobalEnv)
+
     if (process == "longitudinal") {
         predict_Long(object, components_newdata, newdata, newdata2, times, type,
                      type_pred, level, return_newdata)
