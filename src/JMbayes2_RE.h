@@ -37,8 +37,10 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const uvec &which_interval, const bool &any_event,
                const bool &any_interval, const umat &ni_event,
                const mat &L, const vec &sds,
-               const uword &it, mat &acceptance_b, cube &res_b, const bool &save_random_effects,
-               const uword &n_burnin, const uword &GK_k, mat &cumsum_b, cube &outprod_b) {
+               const uword &it, mat &acceptance_b, cube &res_b, cube &res_b_last, 
+               const bool &save_random_effects,
+               const uword &n_burnin, const uword &n_iter, 
+               const uword &GK_k, mat &cumsum_b, cube &outprod_b) {
   uword n = b_mat.n_rows;
   uword nRE = b_mat.n_cols;
   // calculate denominator_b
@@ -137,6 +139,9 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
         outprod_b.slice(j) += b_mat.row(j).t() * b_mat.row(j);
       }
     }
+  }
+  if (it == n_iter - 1) {
+    res_b_last.slice(0) = b_mat;
   }
   b = mat2field(b_mat, ind_RE);
   eta = linpred_mixed(X, betas, Z, b, idL);

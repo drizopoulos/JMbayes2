@@ -199,6 +199,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat res_L(n_iter, n_L, fill::zeros);
   mat acceptance_L(n_iter, n_L, fill::zeros);
   cube res_b(n_b, b_mat.n_cols, 1, fill::zeros);
+  cube res_b_last(n_b, b_mat.n_cols, 1, fill::zeros);
   if (save_random_effects) {
     res_b.set_size(n_b, b_mat.n_cols, n_iter);
   }
@@ -385,8 +386,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2,
              id_H_fast, id_h_fast, which_event, which_right_event, which_left,
              which_interval, any_event, any_interval, ni_event,
-             L, sds, it, acceptance_b, res_b, save_random_effects,
-             n_burnin, GK_k, cumsum_b, outprod_b);
+             L, sds, it, acceptance_b, res_b, res_b_last, save_random_effects,
+             n_burnin, n_iter, GK_k, cumsum_b, outprod_b);
 
     ////////////////////////////////////////////////////////////////////
 
@@ -458,6 +459,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("sds") = res_sds.rows(n_burnin, n_iter - 1),
       Named("L") = res_L.rows(n_burnin, n_iter - 1),
       Named("b") = res_b,
+      Named("b_last") = res_b_last,
       Named("cumsum_b") = cumsum_b,
       Named("outprod_b") = outprod_b,
       Named("sigmas") = res_sigmas.rows(n_burnin, n_iter - 1),
