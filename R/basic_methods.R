@@ -556,9 +556,6 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL, times = NULL,
     }
     components_newdata <- get_components_newdata(object, newdata, n_samples,
                                                  n_mcmc, cores, seed)
-
-    assign("xx1", components_newdata, envir = .GlobalEnv)
-
     if (process == "longitudinal") {
         predict_Long(object, components_newdata, newdata, newdata2, times, type,
                      type_pred, level, return_newdata)
