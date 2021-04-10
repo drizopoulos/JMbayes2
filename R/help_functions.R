@@ -741,6 +741,7 @@ mapply2 <- function (FUN, ..., MoreArgs = NULL, USE.NAMES = TRUE) {
 
 # help function to extract mcmc lists
 ggextractmcmc <- function(mcmc_list) {
+    mcmc_list <- mcmc_list[!names(mcmc_list) %in% 'b']
     fun1 <- function(x) do.call(rbind, x)
     tmp <- lapply(mcmc_list, fun1)
     tmp2 <- lapply(mcmc_list, FUN = function(x) ncol(fun1(x)))
@@ -762,7 +763,7 @@ ggprepare <- function(object,
     n_parms <- ncol(widedat)
     parms <- colnames(widedat)
     parms <- make.unique(parms)
-    parm_fam <- names(object$mcmc)
+    parm_fam <- names(object$mcmc[!names(object$mcmc) %in% 'b'])
     reps <- n_parms_each_fam * (n_iter * n_chains)
     parm_fam <- rep(parm_fam, times = reps)
     parm_fam <- gsub('[[:digit:]]+', '', parm_fam)
