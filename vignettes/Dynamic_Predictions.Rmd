@@ -1,0 +1,97 @@
+---
+title: "Dynamic Predictions"
+author: "Dimitris Rizopoulos"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Dynamic Predictions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("JMbayes2")
+```
+
+# Dynamic Predictions
+## PBC Dataset
+```{r}
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
+CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
+fm1 <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
+fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
+fm3 <- mixed_model(ascites ~ year * sex, data = pbc2,
+                   random = ~ year | id, family = binomial())
+
+jointFit1 <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year")
+```
+
+```{r}
+t0 <- 3
+ND <- pbc2[pbc2$id %in% c(2, 25), ]
+#ND$id <- factor(ND$id)
+ND <- ND[ND$year < t0, ]
+ND$status2 <- 0
+ND$years <- t0
+```
+
+```{r}
+predLong1 <- predict(jointFit1, newdata = ND, return_newdata = TRUE)
+```
+
+```{r}
+library("lattice")
+xyplot(pred_serBilir + low_serBilir + upp_serBilir ~ year | id, 
+       data = predLong1, 
+       type = "l", lwd = 2, col = c(2, 1, 1), lty = c(1, 2, 2),
+       abline = list(v = t0, lty = 3),
+       layout = c(3, 1), xlab = "Follow-up Time (years)", 
+       ylab = "Log Serum Bilirubin")
+
+xyplot(pred_ascites + low_ascites + upp_ascites ~ year | id, 
+       data = predLong1, 
+       type = "l", lwd = 2, col = c(2, 1, 1), lty = c(1, 2, 2),
+       abline = list(v = t0, lty = 3),
+       layout = c(3, 1), xlab = "Follow-up Time (years)", 
+       ylab = "Probability of Ascites")
+```
+
+```{r}
+predLong2 <- predict(jointFit1, newdata = ND,
+                     times = seq(t0, 10, length.out = 51),
+                     return_newdata = TRUE)
+plot_data <- rbind(predLong2[[1]], predLong2[[2]])
+
+xyplot(pred_serBilir + low_serBilir + upp_serBilir ~ year | id, 
+       data = plot_data, 
+       type = "l", lwd = 2, col = c(2, 1, 1), lty = c(1, 2, 2),
+       abline = list(v = t0, lty = 3),
+       layout = c(3, 1), xlab = "Follow-up Time (years)", 
+       ylab = "Log Serum Bilirubin")
+
+xyplot(pred_prothrombin + low_prothrombin + upp_prothrombin ~ year | id, 
+       data = plot_data, 
+       type = "l", lwd = 2, col = c(2, 1, 1), lty = c(1, 2, 2),
+       abline = list(v = t0, lty = 3),
+       layout = c(3, 1), xlab = "Follow-up Time (years)", 
+       ylab = "Prothrombin Time (sec)")
+
+```
+
+```{r}
+predSurv <- predict(jointFit1, newdata = ND, process = "event",
+                    times = seq(t0, 10, length.out = 51),
+                    return_newdata = TRUE)
+
+xyplot(pred_CIF + low_CIF + upp_CIF ~ year | id, data = predSurv,
+       type = "l", lwd = 2, col = c(2, 1, 1), lty = c(1, 2, 2),
+       abline = list(v = t0, lty = 3), grid = TRUE,
+       layout = c(3, 1), xlab = "Follow-up Time (years)", 
+       ylab = "Cumulative Incidence")
+```
