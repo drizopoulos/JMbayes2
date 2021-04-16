@@ -547,8 +547,8 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL, times = NULL,
     if (is.null(newdata[[Time_var]]) || is.null(newdata[[event_var]])) {
         newdata[[event_var]] <- 0
         last_time <- function (x) max(x, na.rm = TRUE)
-        newdata[[Time_var]] <- ave(newdata[[time_var]], newdata[[id_var]],
-                                   FUN = last_time)
+        f <- factor(newdata[[id_var]], unique(newdata[[id_var]]))
+        newdata[[Time_var]] <- ave(newdata[[time_var]], f, FUN = last_time)
     }
     if (is.null(cores)) {
         n <- length(unique(newdata[[object$model_info$var_names$idVar]]))
