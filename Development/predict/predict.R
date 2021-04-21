@@ -1,3 +1,89 @@
+pred_Long <- predLong1
+subject <- 1
+outcomes <- 1
+CI <- TRUE
+lwd <- 2
+col_line_L <- "red"
+col_fill_CI <- "lightgrey"
+
+####
+
+id_var <- "id"
+time_var <- "year"
+
+####
+
+test1 <- is.data.frame(pred_Long)
+test2 <- is.list(pred_Long) && length(pred_Long) == 2L && is.data.frame(pred_Long[[1]])
+if (!test1 && !test2) {
+    stop("'pred_Long' must be the output of ",
+         "predict.jm(..., return_newdata = TRUE)")
+}
+if (test2) {
+    pred_Long <- rbind(pred_Long[[1L]], pred_Long[[2L]])
+}
+unq_id <- unique(pred_Long[[id_var]])
+if (length(subject) > 1L) {
+    stop("'subject' must be of length 1.")
+}
+if (!subject %in% unq_id && subject > length(unq_id)) {
+    stop("not valid input for 'subject'.")
+}
+subj <- if (subject %in% unq_id) subject else unq_id[subject]
+pred_Long <- pred_Long[pred_Long[[id_var]] == subj, ]
+pos_outcomes <- grep("pred_", names(pred_Long), fixed = TRUE)
+n_outcomes <- length(pos_outcomes)
+if (any(outcomes > n_outcomes)) {
+    stop("not valid entries in 'outcome'.")
+}
+
+outcome <- outcomes[1L]
+plot_long_i <- function (outcome) {
+    ind <- pos_outcomes[outcome]
+    preds <- pred_Long[[ind]]
+    low <- pred_Long[[ind + 1]]
+    upp <- pred_Long[[ind + 2]]
+    times <- pred_Long[[time_var]]
+    ry <- if (CI) range(preds, low, upp) else range(preds)
+    rx <- range(times)
+    plot(rx, ry, type = "n")
+    if (CI) {
+        polygon(c(times, rev(times)), c(low, rev(upp)), border = NA,
+                col = col_fill_CI)
+    }
+    lines(pred_Long[[time_var]], pred_Long[[ind]], lwd = lwd, col = col_line_L)
+}
+
+plot_long_i(3)
+
+layout(matrix(1:3, by = T))
+#layout.show(4)
+plot_long_i(1)
+plot_long_i(2)
+plot_long_i(3)
+
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################################################
+################################################################################
+################################################################################
+
 if (FALSE) {
     library("JMbayes2")
     pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
