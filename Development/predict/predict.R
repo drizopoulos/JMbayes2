@@ -1,15 +1,26 @@
-pred_Long <- predLong1
+pred_Long <- predLong2
+pred_Event <- predSurv
 subject <- 1
 outcomes <- 1
 CI <- TRUE
-lwd <- 2
-col_line_L <- "red"
-col_fill_CI <- "lightgrey"
+xlab <- "time"
+ylab_long <- NULL
+lwd_long <- 2
+lwd_event <- 2
+col_line_long <- "blue"
+col_line_event <- "red"
+fill_CI_long <- "#0000FF80"
+fill_CI_event <- "#FF000080"
+cex_xlab <- 1
+cex_ylab_long <- 1
 
 ####
 
 id_var <- "id"
 time_var <- "year"
+resp_vars <- jointFit$model_info$var_names$respVars_form
+ranges <- lapply(jointFit$model_data$y, range, na.rm = TRUE)
+last_times <- rep(3, 2)
 
 ####
 
@@ -31,14 +42,23 @@ if (!subject %in% unq_id && subject > length(unq_id)) {
 }
 subj <- if (subject %in% unq_id) subject else unq_id[subject]
 pred_Long <- pred_Long[pred_Long[[id_var]] == subj, ]
+subj_ind <- match(subj, unq_id)
+pred_Long <- pred_Long[pred_Long[[time_var]] <= last_times[subj_ind], ]
+pred_Event <- pred_Event[pred_Event[[id_var]] == subj, ]
 pos_outcomes <- grep("pred_", names(pred_Long), fixed = TRUE)
 n_outcomes <- length(pos_outcomes)
 if (any(outcomes > n_outcomes)) {
     stop("not valid entries in 'outcome'.")
 }
+if (is.null(ylab_long)) {
+    ylab_long <- resp_vars
+}
 
-outcome <- outcomes[1L]
-plot_long_i <- function (outcome) {
+xlim <- NULL
+xlim <- if (!is.null(pred_Long)) range(xlim, pred_Long[[time_var]])
+xlim <- if (!is.null(pred_Event)) range(xlim, pred_Event[[time_var]])
+
+plot_long_i <- function (outcome, add_xlab = FALSE, box = TRUE) {
     ind <- pos_outcomes[outcome]
     preds <- pred_Long[[ind]]
     low <- pred_Long[[ind + 1]]
@@ -46,25 +66,114 @@ plot_long_i <- function (outcome) {
     times <- pred_Long[[time_var]]
     ry <- if (CI) range(preds, low, upp) else range(preds)
     rx <- range(times)
-    plot(rx, ry, type = "n")
+    plot(rx, ry, type = "n", xaxt = "n", bty = if (box) "o" else "n",
+         xlab = if (add_xlab) xlab  else "", xlim = xlim,
+         ylim = ranges[[outcome]], ylab = ylab_long[outcome],
+         cex.lab = cex_ylab_long)
     if (CI) {
         polygon(c(times, rev(times)), c(low, rev(upp)), border = NA,
-                col = col_fill_CI)
+                col = fill_CI_long)
     }
-    lines(pred_Long[[time_var]], pred_Long[[ind]], lwd = lwd, col = col_line_L)
+    lines(pred_Long[[time_var]], pred_Long[[ind]],
+          lwd = lwd_long, col = col_line_long)
+    if (!is.null(pred_Event)) abline(v = last_times[subj_ind] + 0.01, lty = 3)
+}
+plot_event <- function (box = FALSE) {
+  ind <- grep("pred_", names(pred_Event), fixed = TRUE)
+  preds <- pred_Event[[ind]]
+  low <- pred_Event[[ind + 1]]
+  upp <- pred_Event[[ind + 2]]
+  times <- pred_Event[[time_var]]
+  rx <- range(times)
+  plot(rx, c(0, 1), type = "n", xlab = "", ylab = "", xlim = xlim, axes = FALSE)
+  if (box) box()
+  axis(4)
+  if (CI) {
+    polygon(c(times, rev(times)), c(low, rev(upp)), border = NA,
+            col = fill_CI_event)
+  }
+  lines(pred_Event[[time_var]], pred_Event[[ind]],
+        lwd = lwd_long, col = col_line_event)
 }
 
-plot_long_i(3)
 
-layout(matrix(1:3, by = T))
-#layout.show(4)
+# n_outcomes == 1
+op <- par(mar = c(4,4,4,4), mgp = c(2, 0.4, 0), tcl = -0.3)
+plot_long_i(1, TRUE)
+axis(1)
+par(new = TRUE)
+plot_event()
+mtext("CIF", 4, 2)
+par(op)
+
+
+# n_outcomes == 2
+op <- par(mfrow = c(2, 1), oma = c(4,4,4,4), mar = c(0, 0, 0, 0),
+          mgp = c(2, 0.4, 0), tcl = -0.3)
+plot_long_i(1, box = FALSE)
+axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0)
+plot_long_i(2, box = FALSE)
+axis(1)
+mtext(xlab, side = 1, line = 1.5, outer = TRUE, cex = cex_xlab)
+par(op)
+op <- par(new = TRUE, oma = c(4,4,4,4), mar = c(0, 0, 0, 0),
+          mgp = c(2, 0.4, 0), tcl = -0.3, cex = 0.9)
+plot_event(box = TRUE)
+mtext("CIF", 4, 2)
+par(op)
+
+
+# n_outcomes == 3
+op <- par(mfrow = c(3, 1), oma = c(4,4,4,4), mar = c(0, 0, 0, 0),
+          mgp = c(2, 0.4, 0), tcl = -0.3)
+plot_long_i(1, box = FALSE)
+axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0)
+plot_long_i(2, box = FALSE)
+axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0)
+plot_long_i(3, box = FALSE)
+axis(1)
+mtext(xlab, side = 1, line = 1.5, outer = TRUE, cex = cex_xlab)
+par(op)
+op <- par(new = TRUE, oma = c(2.6,2.6,2.6,2.6), mar = c(0, 0, 0, 0),
+          mgp = c(2, 0.4, 0), tcl = -0.3, cex = 0.66)
+plot_event(box = TRUE)
+mtext("CIF", 4, 1.5)
+par(op)
+
+
+
+
+
+op <- par(mfrow = c(n_outcomes, 1), oma = c(3, 3, 2, 3),
+          mar = c(0, 0, 0, 0), mgp = c(1.9, 0.4, 0), tcl = -0.25)
 plot_long_i(1)
 plot_long_i(2)
 plot_long_i(3)
+axis(1)
+mtext(xlab, side = 1, line = 1.5, outer = TRUE, cex = cex_xlab)
+par(op)
 
-#
+op <- par(new = TRUE, oma = c(3, 3, 2, 3),
+          #cex =  switch(n_outcomes, "1" = 1, "2" = 0.83, "3" = 0.66),
+          mar = c(0, 0, 0, 0), mgp = c(1.9, 0.4, 0), tcl = -0.25)
 
-
+plot_event <- function () {
+  ind <- grep("pred_", names(pred_Event), fixed = TRUE)
+  preds <- pred_Event[[ind]]
+  low <- pred_Event[[ind + 1]]
+  upp <- pred_Event[[ind + 2]]
+  times <- pred_Event[[time_var]]
+  rx <- range(times)
+  plot(rx, c(0, 1), type = "n", xlab = "", ylab = "", xlim = xlim, axes = FALSE)
+  axis(4)
+  if (CI) {
+    polygon(c(times, rev(times)), c(low, rev(upp)), border = NA,
+            col = fill_CI_event)
+  }
+  lines(pred_Event[[time_var]], pred_Event[[ind]],
+        lwd = lwd_long, col = col_line_event)
+}
+par(op)
 
 
 
