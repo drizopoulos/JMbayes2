@@ -122,59 +122,28 @@ plot_event(box = TRUE)
 mtext("CIF", 4, 2)
 par(op)
 
-
 # n_outcomes == 3
 op <- par(mfrow = c(3, 1), oma = c(4,4,4,4), mar = c(0, 0, 0, 0),
           mgp = c(2, 0.4, 0), tcl = -0.3)
+pos <- par("usr")[1] + c(0.25, 0.5, 0.75) * diff(par("usr")[1:2])
 plot_long_i(1, box = FALSE)
 axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0)
+mtext("serBilir", 2, 1.7, at = pos[1])
 plot_long_i(2, box = FALSE)
 axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0)
+mtext("Prothro", 2, 1.7, at = pos[2])
 plot_long_i(3, box = FALSE)
+mtext("Ascites", 2, 1.7, at = pos[3])
 axis(1)
 mtext(xlab, side = 1, line = 1.5, outer = TRUE, cex = cex_xlab)
+box("inner")
 par(op)
-op <- par(new = TRUE, oma = c(2.6,2.6,2.6,2.6), mar = c(0, 0, 0, 0),
+
+op <- par(new = TRUE, oma = c(1.9, 2.61, 2, 2.61), mar = c(0, 0, 0, 0),
           mgp = c(2, 0.4, 0), tcl = -0.3, cex = 0.66)
-plot_event(box = TRUE)
+plot_event()
 mtext("CIF", 4, 1.5)
 par(op)
-
-
-
-
-
-op <- par(mfrow = c(n_outcomes, 1), oma = c(3, 3, 2, 3),
-          mar = c(0, 0, 0, 0), mgp = c(1.9, 0.4, 0), tcl = -0.25)
-plot_long_i(1)
-plot_long_i(2)
-plot_long_i(3)
-axis(1)
-mtext(xlab, side = 1, line = 1.5, outer = TRUE, cex = cex_xlab)
-par(op)
-
-op <- par(new = TRUE, oma = c(3, 3, 2, 3),
-          #cex =  switch(n_outcomes, "1" = 1, "2" = 0.83, "3" = 0.66),
-          mar = c(0, 0, 0, 0), mgp = c(1.9, 0.4, 0), tcl = -0.25)
-
-plot_event <- function () {
-  ind <- grep("pred_", names(pred_Event), fixed = TRUE)
-  preds <- pred_Event[[ind]]
-  low <- pred_Event[[ind + 1]]
-  upp <- pred_Event[[ind + 2]]
-  times <- pred_Event[[time_var]]
-  rx <- range(times)
-  plot(rx, c(0, 1), type = "n", xlab = "", ylab = "", xlim = xlim, axes = FALSE)
-  axis(4)
-  if (CI) {
-    polygon(c(times, rev(times)), c(low, rev(upp)), border = NA,
-            col = fill_CI_event)
-  }
-  lines(pred_Event[[time_var]], pred_Event[[ind]],
-        lwd = lwd_long, col = col_line_event)
-}
-par(op)
-
 
 
 
