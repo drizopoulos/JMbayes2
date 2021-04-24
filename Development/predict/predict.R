@@ -1,7 +1,7 @@
 pred_Long <- predLong2
 pred_Event <- predSurv
 subject <- 1
-outcomes <- 1
+outcomes <- 1:3
 CI <- TRUE
 xlab <- "time"
 ylab_long <- NULL
@@ -50,6 +50,11 @@ n_outcomes <- length(pos_outcomes)
 if (any(outcomes > n_outcomes)) {
     stop("not valid entries in 'outcome'.")
 }
+if (!is.null(pred_Event) && n_outcomes > 3) {
+  warning("when 'pred_Event' is not null max three outcomes are allowed in the plot.")
+  n_outcomes <- 3
+  outcomes <- rep_len(outcomes, length.out = 3L)
+}
 if (is.null(ylab_long)) {
     ylab_long <- resp_vars
 }
@@ -97,6 +102,13 @@ plot_event <- function (box = FALSE) {
 }
 
 
+
+if (is.null(pred_Event)) {
+  for (i in seq_along(outcomes)) {
+    plot_long_i(outcomes[i], TRUE)
+  }
+}
+
 # n_outcomes == 1
 op <- par(mar = c(4,4,4,4), mgp = c(2, 0.4, 0), tcl = -0.3)
 plot_long_i(1, TRUE)
@@ -125,24 +137,24 @@ par(op)
 # n_outcomes == 3
 op <- par(mfrow = c(3, 1), oma = c(4,4,4,4), mar = c(0, 0, 0, 0),
           mgp = c(2, 0.4, 0), tcl = -0.3)
-pos <- par("usr")[1] + c(0.25, 0.5, 0.75) * diff(par("usr")[1:2])
+pp <- par("usr")[1] + c(0.1, 2, 0.08) * diff(par("usr")[1:2])
 plot_long_i(1, box = FALSE)
 axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0)
-mtext("serBilir", 2, 1.7, at = pos[1])
+mtext("serBilir", 2, 1.7, at = pp[1], cex = cex_ylab_long * 0.66)
 plot_long_i(2, box = FALSE)
 axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0)
-mtext("Prothro", 2, 1.7, at = pos[2])
+mtext("Prothro", 2, 1.7, at = pp[2], cex = cex_ylab_long * 0.66)
 plot_long_i(3, box = FALSE)
-mtext("Ascites", 2, 1.7, at = pos[3])
+mtext("Ascites", 2, 1.7, at = pp[3], cex = cex_ylab_long * 0.66)
 axis(1)
 mtext(xlab, side = 1, line = 1.5, outer = TRUE, cex = cex_xlab)
 box("inner")
 par(op)
 
-op <- par(new = TRUE, oma = c(1.9, 2.61, 2, 2.61), mar = c(0, 0, 0, 0),
+op <- par(new = TRUE, oma = 0.6525 * c(4,4,4,4), mar = c(0, 0, 0, 0),
           mgp = c(2, 0.4, 0), tcl = -0.3, cex = 0.66)
 plot_event()
-mtext("CIF", 4, 1.5)
+mtext("CIF", 4, 1.5, cex = cex_ylab_long)
 par(op)
 
 
