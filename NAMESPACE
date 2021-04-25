@@ -25,7 +25,8 @@ importFrom("ggplot2", "ggplot", "geom_density", "aes", "ggtitle", "theme_bw",
 importFrom("gridExtra", "marrangeGrob")
 importFrom("matrixStats", "rowQuantiles", "colVars", "colLogSumExps",
            "colCumsums")
-
+importFrom("graphics", "abline", "axis", "box", "lines", "mtext", "par",
+           "polygon")
 
 useDynLib(JMbayes2, .registration = TRUE)
 
@@ -49,5 +50,7 @@ S3method(family, jm)
 S3method(effectPlotData, jm)
 S3method(print, compare_jm)
 S3method(predict, jm)
+S3method(plot, predict_jm)
+
 
 

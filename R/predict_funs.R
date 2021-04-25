@@ -13,7 +13,7 @@ linpred_long <- function (X, betas, Z, b, id, type) {
         out[[i]] <- c(X[[i]] %*% betas[[i]])
         if (type == "subject_specific") {
             out[[i]] <- out[[i]] +
-                as.vector(rowSums(Z[[i]] * b[[i]][id[[i]], ]))
+                as.vector(rowSums(Z[[i]] * b[[i]][id[[i]], , drop = FALSE]))
         }
     }
     out
@@ -439,7 +439,8 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
     for (i in seq_len(M)) {
         eta_i <-
             linpred_long(components_newdata$X, lapply(betas, i_row, i),
-                         components_newdata$Z, splt_REs(b_mat[, , i], ind_RE),
+                         components_newdata$Z,
+                         splt_REs(rbind(b_mat[, , i]), ind_RE),
                          components_newdata$id, type = type)
         for (j in seq_len(K)) {
             out[[j]][, i] <- if (type_pred == "response") {
@@ -510,7 +511,8 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
         for (i in seq_len(M)) {
             eta_i <-
                 linpred_long(X, lapply(betas, i_row, i), Z,
-                             splt_REs(b_mat[, , i], ind_RE), idL, type = type)
+                             splt_REs(rbind(b_mat[, , i]), ind_RE),
+                             idL, type = type)
             for (j in seq_len(K)) {
                 out[[j]][, i] <- if (type_pred == "response") {
                     mu_fun(eta_i[[j]], links[j])
@@ -536,11 +538,20 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
             res2 <- cbind(newdata2, as.data.frame(do.call("cbind", l)))
         }
     }
-    if (is.null(newdata2)) {
+    out <- if (is.null(newdata2)) {
         res1
     } else {
         list(newdata = res1, newdata2 = res2)
     }
+    class(out) <- "predict_jm"
+    attr(out, "id_var") <- object$model_info$var_names$idVar
+    attr(out, "time_var") <- object$model_info$var_names$time_var
+    attr(out, "resp_vars") <- object$model_info$var_names$respVars
+    attr(out, "ranges") <- ranges <- lapply(object$model_data$y, range,
+                                            na.rm = TRUE)
+    attr(out, "last_times") <- components_newdata$last_times
+    attr(out, "process") <- "longitudinal"
+    out
 }
 
 predict_Event <- function (object, components_newdata, newdata, times,
@@ -680,5 +691,13 @@ predict_Event <- function (object, components_newdata, newdata, times,
         data_pred[["upp_CIF"]] <- res$upp
         res <- data_pred
     }
+    class(res) <- "predict_jm"
+    attr(res, "id_var") <- object$model_info$var_names$idVar
+    attr(res, "time_var") <- object$model_info$var_names$time_var
+    attr(res, "resp_vars") <- object$model_info$var_names$respVars
+    attr(res, "ranges") <- ranges <- lapply(object$model_data$y, range,
+                                            na.rm = TRUE)
+    attr(res, "last_times") <- components_newdata$last_times
+    attr(out, "process") <- "event"
     res
 }

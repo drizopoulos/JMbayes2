@@ -5,6 +5,7 @@ outcomes <- 1:3
 CI <- TRUE
 xlab <- "time"
 ylab_long <- NULL
+ylab_event <- "CIF"
 lwd_long <- 2
 lwd_event <- 2
 col_line_long <- "blue"
@@ -13,6 +14,7 @@ fill_CI_long <- "#0000FF80"
 fill_CI_event <- "#FF000080"
 cex_xlab <- 1
 cex_ylab_long <- 1
+cex_ylab_event <- 1
 
 ####
 
@@ -75,6 +77,9 @@ plot_long_i <- function (outcome, add_xlab = FALSE, box = TRUE) {
          xlab = if (add_xlab) xlab  else "", xlim = xlim,
          ylim = ranges[[outcome]], ylab = ylab_long[outcome],
          cex.lab = cex_ylab_long)
+    if (!add_xlab) {
+      axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0)
+    }
     if (CI) {
         polygon(c(times, rev(times)), c(low, rev(upp)), border = NA,
                 col = fill_CI_long)
@@ -110,51 +115,50 @@ if (is.null(pred_Event)) {
 }
 
 # n_outcomes == 1
-op <- par(mar = c(4,4,4,4), mgp = c(2, 0.4, 0), tcl = -0.3)
+op <- par(mar = c(4,4,3,4), mgp = c(2, 0.4, 0), tcl = -0.3)
 plot_long_i(1, TRUE)
 axis(1)
 par(new = TRUE)
 plot_event()
-mtext("CIF", 4, 2)
+mtext(ylab_event, 4, 1.5, cex = cex_ylab_event)
 par(op)
 
 
 # n_outcomes == 2
-op <- par(mfrow = c(2, 1), oma = c(4,4,4,4), mar = c(0, 0, 0, 0),
+op <- par(mfrow = c(2, 1), oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
           mgp = c(2, 0.4, 0), tcl = -0.3)
-plot_long_i(1, box = FALSE)
-axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0)
-plot_long_i(2, box = FALSE)
+pp <- par("usr")[1] + c(0.1, 2) * diff(par("usr")[1:2])
+plot_long_i(outcomes[1L], box = FALSE)
+mtext(ylab_long[outcomes[1L]], 2, 1.5, at = pp[1], cex = cex_ylab_long * 0.66)
+plot_long_i(outcomes[2L], box = FALSE)
+mtext(ylab_long[outcomes[2L]], 2, 1.5, at = pp[2], cex = cex_ylab_long * 0.66)
 axis(1)
 mtext(xlab, side = 1, line = 1.5, outer = TRUE, cex = cex_xlab)
 par(op)
-op <- par(new = TRUE, oma = c(4,4,4,4), mar = c(0, 0, 0, 0),
+op <- par(new = TRUE, oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
           mgp = c(2, 0.4, 0), tcl = -0.3, cex = 0.9)
 plot_event(box = TRUE)
-mtext("CIF", 4, 2)
+mtext(ylab_event, 4, 1.5, cex = cex_ylab_event)
 par(op)
 
 # n_outcomes == 3
-op <- par(mfrow = c(3, 1), oma = c(4,4,4,4), mar = c(0, 0, 0, 0),
+op <- par(mfrow = c(3, 1), oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
           mgp = c(2, 0.4, 0), tcl = -0.3)
 pp <- par("usr")[1] + c(0.1, 2, 0.08) * diff(par("usr")[1:2])
-plot_long_i(1, box = FALSE)
-axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0)
-mtext("serBilir", 2, 1.7, at = pp[1], cex = cex_ylab_long * 0.66)
-plot_long_i(2, box = FALSE)
-axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0)
-mtext("Prothro", 2, 1.7, at = pp[2], cex = cex_ylab_long * 0.66)
-plot_long_i(3, box = FALSE)
-mtext("Ascites", 2, 1.7, at = pp[3], cex = cex_ylab_long * 0.66)
+plot_long_i(outcomes[1L], box = FALSE)
+mtext(ylab_long[outcomes[1L]], 2, 1.5, at = pp[1], cex = cex_ylab_long * 0.66)
+plot_long_i(outcomes[2L], box = FALSE)
+mtext(ylab_long[outcomes[2L]], 2, 1.5, at = pp[2], cex = cex_ylab_long * 0.66)
+plot_long_i(outcomes[3L], box = FALSE)
+mtext(ylab_long[outcomes[3L]], 2, 1.5, at = pp[3], cex = cex_ylab_long * 0.66)
 axis(1)
 mtext(xlab, side = 1, line = 1.5, outer = TRUE, cex = cex_xlab)
 box("inner")
 par(op)
-
-op <- par(new = TRUE, oma = 0.6525 * c(4,4,4,4), mar = c(0, 0, 0, 0),
+op <- par(new = TRUE, oma = 0.6525 * c(4,4,3,4), mar = c(0, 0, 0, 0),
           mgp = c(2, 0.4, 0), tcl = -0.3, cex = 0.66)
 plot_event()
-mtext("CIF", 4, 1.5, cex = cex_ylab_long)
+mtext(ylab_event, 4, 1.5, cex = cex_ylab_event)
 par(op)
 
 
@@ -192,13 +196,13 @@ if (FALSE) {
 
 
 object <- jointFit1
-ND <- pbc2[pbc2$id %in% c(2, 3, 15), ]
+ND <- pbc2[pbc2$id %in% c(2), ]
 ND$id <- factor(ND$id)
 ND2 <- ND[ND$year > 1, ]
 ND <- ND[ND$year < 1, ]
 ND$status2 <- 0
 ND$years <- with(ND, ave(year, id, FUN = function (x) max(x, na.rm = T)))
-ND$prothrombin[c(3, 5, 8)] <- NA
+#ND$prothrombin[c(3, 5, 8)] <- NA
 newdata = ND
 newdata2 = ND2
 times = NULL

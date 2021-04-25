@@ -530,7 +530,8 @@ crLong <- function (data, statusVar, censLevel, nameStrata = "strata",
     dataOut
 }
 
-predict.jm <- function (object, newdata = NULL, newdata2 = NULL, times = NULL,
+predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
+                        times = NULL,
                         process = c("longitudinal", "event"),
                         type_pred = c("response", "link"),
                         type = c("subject_specific", "mean_subject"),
@@ -564,4 +565,165 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL, times = NULL,
                       return_newdata)
     }
 }
+
+plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
+                             CI = TRUE, xlab = "time", ylab_long = NULL,
+                             ylab_event = "CIF", lwd_long = 2, lwd_event = 2,
+                             col_line_long = "blue", col_line_event = "red",
+                             fill_CI_long = "#0000FF80",
+                             fill_CI_event = "#FF000080", cex_xlab = 1,
+                             cex_ylab_long = 1, cex_ylab_event = 1, ...) {
+    process_x <- attr(x, "process")
+    pred_Long <- if (process_x == "longitudinal") x
+    pred_Event <- if (process_x == "event") x
+    if (!is.null(x2)) {
+        process_x2 <- attr(x, "process")
+        pred_Long <- if (process_x2 == "longitudinal") x2
+        pred_Event <- if (process_x2 == "event") x2
+    }
+    id_var <- attr(x, "id_var")
+    time_var <- attr(x, "time_var")
+    resp_vars <- attr(x, "resp_vars")
+    ranges <- attr(x, "ranges")
+    last_times <- attr(x, "last_times")
+    test1 <- is.data.frame(pred_Long)
+    test2 <- is.list(pred_Long) && length(pred_Long) == 2L && is.data.frame(pred_Long[[1]])
+    if (!test1 && !test2) {
+        stop("'pred_Long' must be the output of ",
+             "predict.jm(..., return_newdata = TRUE)")
+    }
+    if (test2) {
+        pred_Long <- rbind(pred_Long[[1L]], pred_Long[[2L]])
+    }
+    unq_id <- unique(pred_Long[[id_var]])
+    if (length(subject) > 1L) {
+        stop("'subject' must be of length 1.")
+    }
+    if (!subject %in% unq_id && subject > length(unq_id)) {
+        stop("not valid input for 'subject'.")
+    }
+    subj <- if (subject %in% unq_id) subject else unq_id[subject]
+    pred_Long <- pred_Long[pred_Long[[id_var]] == subj, ]
+    subj_ind <- match(subj, unq_id)
+    pred_Long <- pred_Long[pred_Long[[time_var]] <= last_times[subj_ind], ]
+    pred_Event <- pred_Event[pred_Event[[id_var]] == subj, ]
+    pos_outcomes <- grep("pred_", names(pred_Long), fixed = TRUE)
+    n_outcomes <- length(pos_outcomes)
+    if (any(outcomes > n_outcomes)) {
+        stop("not valid entries in 'outcome'.")
+    }
+    if (!is.null(pred_Event) && n_outcomes > 3) {
+        warning("when 'pred_Event' is not null max three outcomes are allowed in the plot.")
+        n_outcomes <- 3
+        outcomes <- rep_len(outcomes, length.out = 3L)
+    }
+    if (is.null(ylab_long)) {
+        ylab_long <- resp_vars
+    }
+    xlim <- NULL
+    xlim <- if (!is.null(pred_Long)) range(xlim, pred_Long[[time_var]])
+    xlim <- if (!is.null(pred_Event)) range(xlim, pred_Event[[time_var]])
+    plot_long_i <- function (outcome, add_xlab = FALSE, box = TRUE) {
+        ind <- pos_outcomes[outcome]
+        preds <- pred_Long[[ind]]
+        low <- pred_Long[[ind + 1]]
+        upp <- pred_Long[[ind + 2]]
+        times <- pred_Long[[time_var]]
+        ry <- if (CI) range(preds, low, upp) else range(preds)
+        rx <- range(times)
+        plot(rx, ry, type = "n", xaxt = "n", bty = if (box) "o" else "n",
+             xlab = if (add_xlab) xlab  else "", xlim = xlim,
+             ylim = ranges[[outcome]], ylab = ylab_long[outcome],
+             cex.lab = cex_ylab_long)
+        if (!add_xlab) {
+            axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0)
+        }
+        if (CI) {
+            polygon(c(times, rev(times)), c(low, rev(upp)), border = NA,
+                    col = fill_CI_long)
+        }
+        lines(pred_Long[[time_var]], pred_Long[[ind]],
+              lwd = lwd_long, col = col_line_long)
+        if (!is.null(pred_Event)) abline(v = last_times[subj_ind] + 0.01, lty = 3)
+    }
+    plot_event <- function (box = FALSE) {
+        ind <- grep("pred_", names(pred_Event), fixed = TRUE)
+        preds <- pred_Event[[ind]]
+        low <- pred_Event[[ind + 1]]
+        upp <- pred_Event[[ind + 2]]
+        times <- pred_Event[[time_var]]
+        rx <- range(times)
+        plot(rx, c(0, 1), type = "n", xlab = "", ylab = "", xlim = xlim, axes = FALSE)
+        if (box) box()
+        axis(4)
+        if (CI) {
+            polygon(c(times, rev(times)), c(low, rev(upp)), border = NA,
+                    col = fill_CI_event)
+        }
+        lines(pred_Event[[time_var]], pred_Event[[ind]],
+              lwd = lwd_long, col = col_line_event)
+    }
+    if (is.null(pred_Event)) {
+        for (i in seq_along(outcomes)) {
+            plot_long_i(outcomes[i], TRUE)
+        }
+    }
+    if (is.null(pred_Long)) {
+        plot_event(box = TRUE)
+    }
+    if (!is.null(pred_Long) && !is.null(pred_Event)) {
+        if (n_outcomes == 1) {
+            # n_outcomes == 1
+            op <- par(mar = c(4,4,3,4), mgp = c(2, 0.4, 0), tcl = -0.3)
+            plot_long_i(1, TRUE)
+            axis(1)
+            par(new = TRUE)
+            plot_event()
+            mtext(ylab_event, 4, 1.5, cex = cex_ylab_event)
+            par(op)
+        } else if (n_outcomes == 2) {
+            # n_outcomes == 2
+            op <- par(mfrow = c(2, 1), oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
+                      mgp = c(2, 0.4, 0), tcl = -0.3)
+            pp <- par("usr")[1] + c(0.1, 2) * diff(par("usr")[1:2])
+            plot_long_i(outcomes[1L], box = FALSE)
+            mtext(ylab_long[outcomes[1L]], 2, 1.5, at = pp[1], cex = cex_ylab_long * 0.66)
+            plot_long_i(outcomes[2L], box = FALSE)
+            mtext(ylab_long[outcomes[2L]], 2, 1.5, at = pp[2], cex = cex_ylab_long * 0.66)
+            axis(1)
+            mtext(xlab, side = 1, line = 1.5, outer = TRUE, cex = cex_xlab)
+            par(op)
+            op <- par(new = TRUE, oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
+                      mgp = c(2, 0.4, 0), tcl = -0.3, cex = 0.9)
+            plot_event(box = TRUE)
+            mtext(ylab_event, 4, 1.5, cex = cex_ylab_event)
+            par(op)
+
+        } else {
+            # n_outcomes == 3
+            op <- par(mfrow = c(3, 1), oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
+                      mgp = c(2, 0.4, 0), tcl = -0.3)
+            pp <- par("usr")[1] + c(0.1, 2, 0.08) * diff(par("usr")[1:2])
+            plot_long_i(outcomes[1L], box = FALSE)
+            mtext(ylab_long[outcomes[1L]], 2, 1.5, at = pp[1], cex = cex_ylab_long * 0.66)
+            plot_long_i(outcomes[2L], box = FALSE)
+            mtext(ylab_long[outcomes[2L]], 2, 1.5, at = pp[2], cex = cex_ylab_long * 0.66)
+            plot_long_i(outcomes[3L], box = FALSE)
+            mtext(ylab_long[outcomes[3L]], 2, 1.5, at = pp[3], cex = cex_ylab_long * 0.66)
+            axis(1)
+            mtext(xlab, side = 1, line = 1.5, outer = TRUE, cex = cex_xlab)
+            box("inner")
+            par(op)
+            op <- par(new = TRUE, oma = 0.6525 * c(4,4,3,4), mar = c(0, 0, 0, 0),
+                      mgp = c(2, 0.4, 0), tcl = -0.3, cex = 0.66)
+            plot_event()
+            mtext(ylab_event, 4, 1.5, cex = cex_ylab_event)
+            par(op)
+        }
+    }
+    invisible()
+}
+
+
+
 

@@ -683,7 +683,8 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
   uvec id_H_ = as<uvec>(Data["id_H_"]) - 1;
   uvec id_h = as<uvec>(Data["id_h"]) - 1;
   uvec indFast_H = create_fast_ind(id_H + 1);
-  uvec indFast_h = create_fast_ind(id_h + 1);
+  uvec indFast_h;
+  if (id_h.n_rows> 1) indFast_h = create_fast_ind(id_h + 1); else indFast_h = id_h;
   uword GK_k = as<uword>(control["GK_k"]);
   bool any_gammas = as<bool>(Data["any_gammas"]);
   field<uvec> FunForms = List2Field_uvec(as<List>(Data["FunForms_cpp"]), true);
@@ -708,7 +709,6 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
   field<mat> U_H2 = List2Field_mat(as<List>(Data["U_H2"]));
   mat Wlong_bar = docall_cbindL(as<List>(Data["Wlong_bar"]));
   mat Wlong_sds = docall_cbindL(as<List>(Data["Wlong_sds"]));
-
   /////////////////////////////////////
   // Longitudinal Process Components //
   /////////////////////////////////////
