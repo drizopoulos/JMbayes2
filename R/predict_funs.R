@@ -543,10 +543,10 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
     } else {
         list(newdata = res1, newdata2 = res2)
     }
-    class(out) <- "predict_jm"
+    class(out) <- c("predict_jm", class(out))
     attr(out, "id_var") <- object$model_info$var_names$idVar
     attr(out, "time_var") <- object$model_info$var_names$time_var
-    attr(out, "resp_vars") <- object$model_info$var_names$respVars
+    attr(out, "resp_vars") <- object$model_info$var_names$respVars_form
     attr(out, "ranges") <- ranges <- lapply(object$model_data$y, range,
                                             na.rm = TRUE)
     attr(out, "last_times") <- components_newdata$last_times
@@ -691,13 +691,13 @@ predict_Event <- function (object, components_newdata, newdata, times,
         data_pred[["upp_CIF"]] <- res$upp
         res <- data_pred
     }
-    class(res) <- "predict_jm"
+    class(res) <- c("predict_jm", class(res))
     attr(res, "id_var") <- object$model_info$var_names$idVar
     attr(res, "time_var") <- object$model_info$var_names$time_var
-    attr(res, "resp_vars") <- object$model_info$var_names$respVars
+    attr(res, "resp_vars") <- object$model_info$var_names$respVars_form
     attr(res, "ranges") <- ranges <- lapply(object$model_data$y, range,
                                             na.rm = TRUE)
     attr(res, "last_times") <- components_newdata$last_times
-    attr(out, "process") <- "event"
+    attr(res, "process") <- "event"
     res
 }

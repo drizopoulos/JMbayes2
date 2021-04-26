@@ -1,7 +1,7 @@
-pred_Long <- predLong2
-pred_Event <- predSurv
-subject <- 1
-outcomes <- 1:3
+x <- predLong1
+x2 <- predSurv
+subject <- 2
+outcomes <- 3:1
 CI <- TRUE
 xlab <- "time"
 ylab_long <- NULL

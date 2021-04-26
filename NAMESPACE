@@ -49,8 +49,9 @@ S3method(model.matrix, jm)
 S3method(family, jm)
 S3method(effectPlotData, jm)
 S3method(print, compare_jm)
-S3method(predict, jm)
 S3method(plot, predict_jm)
+S3method(predict, jm)
+
 
 
 
