@@ -621,6 +621,10 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         }
         pos_outcomes <- grep("pred_", names(pred_Long), fixed = TRUE)
         n_outcomes <- length(outcomes)
+        if (n_outcomes > length(pos_outcomes)) {
+            stop("the length of 'outcomes' is greater than the number of ",
+                 "outcomes in the dataset.")
+        }
         if (any(outcomes > length(pos_outcomes))) {
             stop("not valid entries in 'outcome'.")
         }
@@ -697,23 +701,25 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
     if (is.null(pred_Event)) {
         for (i in seq_along(outcomes)) {
             plot_long_i(outcomes[i], TRUE, cex_axis = cex_axis)
+            axis(1, cex.axis = cex_axis)
         }
     }
     if (is.null(pred_Long)) {
         plot_event(box = TRUE, 2, cex_axis = cex_axis)
-        axis(1, cex.axis = cex_axis)
         title(xlab = xlab, cex = cex_xlab)
         title(ylab = ylab_event, cex = cex_ylab_event)
         abline(v = last_times[subj_ind] + 0.01, lty = 3)
+        axis(1, cex.axis = cex_axis)
     }
     if (!is.null(pred_Long) && !is.null(pred_Event)) {
         if (n_outcomes == 1) {
             # n_outcomes == 1
             op <- par(mar = c(4,4,3,4), mgp = c(2, 0.4, 0), tcl = -0.3)
-            plot_long_i(outcomes[1L], TRUE)
+            plot_long_i(outcomes[1L], cex_axis = cex_axis)
             axis(1, cex.axis = cex_axis)
+            title(xlab = xlab, cex = cex_xlab)
             par(new = TRUE)
-            plot_event()
+            plot_event(cex_axis = cex_axis)
             mtext(ylab_event, 4, 1.5, cex = cex_ylab_event)
             par(op)
         } else if (n_outcomes == 2) {
