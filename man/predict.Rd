@@ -25,7 +25,7 @@ Predict method for object of class \code{"jm"}.
   fun_long = NULL, fun_event = NULL, CI = TRUE, xlab = "Follow-up Time",
   ylab_long = NULL, ylab_event = "Cumulative Risk", lwd_long = 2,
   lwd_event = 2, col_line_long = "blue", col_line_event = "red",
-  fill_CI_long = "#0000FF80", fill_CI_event = "#FF000080",
+  fill_CI_long = "#0000FF44", fill_CI_event = "#FF000044",
   cex_xlab = 1, cex_ylab_long = 1, cex_ylab_event = 1, cex_axis = 1,
   pos_ylab_long = c(0.1, 2, 0.08), \dots)
 }
@@ -106,7 +106,7 @@ fm2 <- lme(prothrombin ~ ns(year, 2) * sex, data = pbc2,
 fm3 <- mixed_model(ascites ~ year * sex, data = pbc2,
                    random = ~ year | id, family = binomial())
 
-jointFit <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year", n_chains = 2L)
+jointFit <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year", n_chains = 1L)
 
 # we select the subject for whom we want to calculate predictions
 # we use measurements up to follow-up year 3; we also set that the patients

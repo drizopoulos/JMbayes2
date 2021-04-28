@@ -571,8 +571,8 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
                              CI = TRUE, xlab = "Follow-up Time", ylab_long = NULL,
                              ylab_event = "Cumulative Risk", lwd_long = 2, lwd_event = 2,
                              col_line_long = "blue", col_line_event = "red",
-                             fill_CI_long = "#0000FF80",
-                             fill_CI_event = "#FF000080", cex_xlab = 1,
+                             fill_CI_long = "#0000FF44",
+                             fill_CI_event = "#FF000044", cex_xlab = 1,
                              cex_ylab_long = 1, cex_ylab_event = 1, cex_axis = 1,
                              pos_ylab_long = c(0.1, 2, 0.08), ...) {
     process_x <- attr(x, "process")
