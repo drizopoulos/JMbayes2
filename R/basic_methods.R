@@ -574,7 +574,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
                              fill_CI_long = "#0000FF80",
                              fill_CI_event = "#FF000080", cex_xlab = 1,
                              cex_ylab_long = 1, cex_ylab_event = 1, cex_axis = 1,
-                             ...) {
+                             pos_ylab_long = c(0.1, 2, 0.08), ...) {
     process_x <- attr(x, "process")
     pred_Long <- if (process_x == "longitudinal") x
     pred_Event <- if (process_x == "event") x
@@ -663,11 +663,11 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         low <- f(pred_Long[[ind + 1]])
         upp <- f(pred_Long[[ind + 2]])
         times <- pred_Long[[time_var]]
-        ry <- if (CI) range(preds, low, upp) else range(preds)
+        ry <- range(preds, low, upp)
         rx <- range(times)
         plot(rx, ry, type = "n", xaxt = "n", bty = if (box) "o" else "n",
              xlab = if (add_xlab) xlab  else "", xlim = xlim,
-             ylim = ranges[[outcome]], ylab = ylab_long[outcome],
+             ylim = f(ranges[[outcome]]), ylab = ylab_long[outcome],
              cex.lab = cex_ylab_long, cex.axis = cex_axis)
         if (!add_xlab) {
             axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0,
@@ -677,8 +677,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
             polygon(c(times, rev(times)), c(low, rev(upp)), border = NA,
                     col = fill_CI_long)
         }
-        lines(pred_Long[[time_var]], pred_Long[[ind]],
-              lwd = lwd_long, col = col_line_long)
+        lines(times, preds, lwd = lwd_long, col = col_line_long)
         abline(v = last_times[subj_ind] + 0.01, lty = 3)
     }
     plot_event <- function (box = FALSE, axis_side = 4, cex_axis = cex_axis) {
@@ -687,8 +686,9 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         low <- fun_event(pred_Event[[ind + 1]])
         upp <- fun_event(pred_Event[[ind + 2]])
         times <- pred_Event[[time_var]]
+        ry <- range(preds, low, upp)
         rx <- range(times)
-        plot(rx, c(0, 1), type = "n", xlab = "", ylab = "", xlim = xlim,
+        plot(rx, ry, type = "n", xlab = "", ylab = "", xlim = xlim,
              axes = FALSE)
         if (box) box()
         axis(axis_side, cex.axis = cex_axis)
@@ -726,7 +726,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
             # n_outcomes == 2
             op <- par(mfrow = c(2, 1), oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
                       mgp = c(2, 0.4, 0), tcl = -0.3)
-            pp <- par("usr")[1] + c(0.1, 2) * diff(par("usr")[1:2])
+            pp <- par("usr")[1] + pos_ylab_long * diff(par("usr")[1:2])
             plot_long_i(outcomes[1L], box = FALSE, cex_axis = cex_axis)
             mtext(ylab_long[outcomes[1L]], 2, 1.5, at = pp[1], cex = cex_ylab_long * 0.66)
             plot_long_i(outcomes[2L], box = FALSE, cex_axis = cex_axis)
@@ -743,7 +743,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
             # n_outcomes == 3
             op <- par(mfrow = c(3, 1), oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
                       mgp = c(2, 0.4, 0), tcl = -0.3)
-            pp <- par("usr")[1] + c(0.1, 2, 0.08) * diff(par("usr")[1:2])
+            pp <- par("usr")[1] + pos_ylab_long * diff(par("usr")[1:2])
             plot_long_i(outcomes[1L], box = FALSE, cex_axis = cex_axis)
             mtext(ylab_long[outcomes[1L]], 2, 1.5, at = pp[1], cex = cex_ylab_long * 0.66)
             plot_long_i(outcomes[2L], box = FALSE, cex_axis = cex_axis)
