@@ -129,6 +129,9 @@
       <a href="../articles/Competing_Risks.html">Competing Risks</a>
     </li>
     <li>
+      <a href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a>
+    </li>
+    <li>
       <a href="../articles/Multi_State_Processes.html">Multi-State Processes</a>
     </li>
     <li>
@@ -178,8 +181,9 @@
     <p>Fits multivariate joint models for longitudinal and time-to-event data.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>jm</span><span class='op'>(</span><span class='va'>Surv_object</span>, <span class='va'>Mixed_objects</span>, <span class='va'>time_var</span>, functional_forms <span class='op'>=</span> <span class='cn'>NULL</span>,
-  data_Surv <span class='op'>=</span> <span class='cn'>NULL</span>, id_var <span class='op'>=</span> <span class='cn'>NULL</span>, priors <span class='op'>=</span> <span class='cn'>NULL</span>, control <span class='op'>=</span> <span class='cn'>NULL</span>, <span class='va'>...</span><span class='op'>)</span>
+    <pre class="usage"><span class='fu'>jm</span><span class='op'>(</span><span class='va'>Surv_object</span>, <span class='va'>Mixed_objects</span>, <span class='va'>time_var</span>, recurrent <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  functional_forms <span class='op'>=</span> <span class='cn'>NULL</span>, data_Surv <span class='op'>=</span> <span class='cn'>NULL</span>, id_var <span class='op'>=</span> <span class='cn'>NULL</span>, priors <span class='op'>=</span> <span class='cn'>NULL</span>,
+  control <span class='op'>=</span> <span class='cn'>NULL</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='fu'>value</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
 <span class='fu'>slope</span><span class='op'>(</span><span class='va'>x</span>, eps <span class='op'>=</span> <span class='fl'>0.001</span>, direction <span class='op'>=</span> <span class='st'>"both"</span><span class='op'>)</span>
@@ -219,6 +223,10 @@
     <tr>
       <th>time_var</th>
       <td><p>a <code>character</code> string indicating the time variable in the mixed-effects model(s).</p></td>
+    </tr>
+    <tr>
+      <th>recurrent</th>
+      <td><p>logical; if TRUE a recurrent and terminal event model is fitted - not working yet.</p></td>
     </tr>
     <tr>
       <th>functional_forms</th>
@@ -400,7 +408,7 @@ and <code>"backward"</code>.</p></td>
 #&gt;   log(serBilir): 1945
 #&gt; 
 #&gt;                  DIC      WAIC      LPML
-#&gt; marginal    11679.47 106629.15 -40561.02
+#&gt; marginal    11693.99 106643.66 -40568.28
 #&gt; conditional 10628.49  35400.49 -30794.04
 #&gt; 
 #&gt; Random-effects covariance matrix:
@@ -431,7 +439,7 @@ and <code>"backward"</code>.</p></td>
 #&gt; iterations per chain: 11000 
 #&gt; burn-in per chain: 1000 
 #&gt; thinning: 1 
-#&gt; time: 32 sec</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_1</span><span class='op'>)</span>
+#&gt; time: 33 sec</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_1</span><span class='op'>)</span>
 </div><div class='img'><img src='jm-1.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-2.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-3.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-4.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-5.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-6.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-7.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-8.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-9.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-10.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-11.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-12.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-13.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-14.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-15.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-16.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-17.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-18.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-19.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-20.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-21.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-22.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-23.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-24.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-25.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-26.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-27.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>################################################################################</span>
 
@@ -522,7 +530,7 @@ and <code>"backward"</code>.</p></td>
 #&gt; iterations per chain: 11000 
 #&gt; burn-in per chain: 1000 
 #&gt; thinning: 1 
-#&gt; time: 1.1 min</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_2</span><span class='op'>)</span>
+#&gt; time: 1.2 min</div><div class='input'><span class='fu'><a href='jm coda Methods.html'>traceplot</a></span><span class='op'>(</span><span class='va'>joint_model_fit_2</span><span class='op'>)</span>
 </div><div class='img'><img src='jm-28.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-29.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-30.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-31.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-32.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-33.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-34.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-35.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-36.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-37.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-38.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-39.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-40.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-41.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-42.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-43.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-44.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-45.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-46.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-47.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-48.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-49.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-50.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-51.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-52.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-53.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-54.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-55.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-56.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-57.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-58.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-59.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-60.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-61.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-62.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-63.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-64.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-65.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-66.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-67.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-68.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-69.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-70.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-71.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-72.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-73.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-74.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-75.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-76.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-77.png' alt='' width='700' height='433' /></div><div class='img'><img src='jm-78.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>################################################################################</span>
 
@@ -583,9 +591,9 @@ and <code>"backward"</code>.</p></td>
 #&gt;   hepatomegaly: 1884
 #&gt;   ascites: 1885
 #&gt; 
-#&gt;                   DIC         WAIC          LPML
-#&gt; marginal    153930.64 1.538499e+12 -58118907.599
-#&gt; conditional  10665.91 1.205385e+04     -7589.622
+#&gt;                  DIC         WAIC          LPML
+#&gt; marginal    155333.7 1.561463e+12 -58697964.613
+#&gt; conditional  10666.7 1.205385e+04     -7589.622
 #&gt; 
 #&gt; Random-effects covariance matrix:
 #&gt;                                                    

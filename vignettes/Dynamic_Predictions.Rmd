@@ -20,74 +20,124 @@ library("JMbayes2")
 ```
 
 # Dynamic Predictions
-## PBC Dataset
+## Theory
+Based on the general framework of joint models presented earlier, we are interested in deriving cumulative risk probabilities for a new subject $j$ that has survived up to time point $t$ and has provided longitudinal measurements $\mathcal Y_{kj}(t) = \{ y_{kj}(t_{jl}); 0 \leq t_{jl} \leq t, l = 1, \ldots, n_j \}$. The probabilities of 
+interest are 
+$$\begin{array}{l}
+\pi_j(u \mid t) = \mbox{Pr}\{T_j^* \leq u \mid T_j^* > t, \mathcal Y_j(t), \mathcal D_n\}\\\\
+= \displaystyle 1 - \int\int \frac{S\{u \mid \mathcal H_j(u, b_j), 
+\theta\}}{S\{t \mid \mathcal H_j(t, b_j), \theta\}} \; p\{b_j \mid T_j^* > t, \mathcal Y_j(t), 
+\theta\} \; p(\theta \mid \mathcal D_n) \; db_j d\theta,
+\end{array}$$
+where $S(\cdot)$ denotes the survival functional conditional on the random effects, and 
+$\mathcal Y_j(t) = \{\mathcal Y_{1j}(t), \ldots, \mathcal Y_{Kj}(t)\}$. Combining the 
+three terms in the integrand we can device a Monte Carlo scheme to obtain estimates of 
+these probabilities, namely,
+
+1. Sample a value $\tilde \theta$ from the posterior of the parameters 
+$[\theta \mid \mathcal D_n]$.
+
+2. Sample a value $\tilde b_j$ from the posterior of the random effects 
+$[b_j \mid T_j^* > t, \mathcal Y_j(t), \theta]$.
+
+3. Compute the ratio of survival probabilities $S\{u \mid \mathcal H_j(u, \tilde b_j), 
+\tilde \theta\} \Big / S\{t \mid \mathcal H_j(t, \tilde b_j), 
+\tilde \theta\}$.
+
+Replicating these steps $L$ times, we can estimate the conditional cumulative risk probabilities
+by 
+$$1 - \frac{1}{L} \sum_{l=1}^L \frac{S \bigl \{u \mid \mathcal H_j(u, \tilde b_j^{(l)}), 
+\tilde \theta^{(l)} \bigr \}}{S \bigl \{t \mid \mathcal H_j(t, \tilde b_j^{(l)}), 
+\tilde \theta^{(l)} \bigr \}},$$
+and their standard error by calculating the standard deviation across the Monte Carlo 
+samples.
+
+## Examples
+We will illustrate the calculation of dynamic predictions using package **JMbayes2** from a
+trivariate joint model fitted to the PBC dataset for the longitudinal outcomes `serBilir` (continuous),
+`prothrombin` time (continuous) and `ascites` (dichotomous). We start by fitting the univariate mixed models. For the two continuous outcomes, we allow for nonlinear subject-specific time effects using natural cubic splines. For `ascites`, we postulate linear subject-specific profiles for the log odds. The code is:
 ```{r}
-pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
-CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
-fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2, 
+fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
            random = ~ ns(year, 3) | id, control = lmeControl(opt = 'optim'))
-fm2 <- lme(prothrombin ~ ns(year, 2) * sex, data = pbc2, 
+
+fm2 <- lme(prothrombin ~ ns(year, 2) * sex, data = pbc2,
            random = ~ ns(year, 2) | id, control = lmeControl(opt = 'optim'))
+
 fm3 <- mixed_model(ascites ~ year * sex, data = pbc2,
                    random = ~ year | id, family = binomial())
-
-jointFit <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year", 
-               n_iter = 13000L, n_burnin = 3000L)
 ```
 
+Following, we fit the Cox model for the time to either transplantation or death. The first line defines the composite event indicator, and the second one fits the Cox model in which we have also included the baseline covariates `drug` and `age`. The code is:
 ```{r}
-t0 <- 3
-ND <- pbc2[pbc2$id %in% c(2, 25), ]
+pbc2.id$event <- as.numeric(pbc2.id$status != "alive")
+CoxFit <- coxph(Surv(years, event) ~ drug + age, data = pbc2.id, model = TRUE)
+```
+
+The joint model is fitted with the following call to `jm()`:
+```{r}
+jointFit <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year")
+```
+
+We want to calculate predictions for the longitudinal and survival outcomes for Patients 25 and 93. As a first step, we extract the data of these patients and store them in the data.frame `ND` with the code:
+```{r}
+t0 <- 7
+ND <- pbc2[pbc2$id %in% c(25, 93), ]
 ND <- ND[ND$year < t0, ]
 ND$status2 <- 0
 ND$years <- t0
 ```
 
+We will only the longitudinal measurements up to follow-up year seven (line three), and further specify that the patients were event-free at this time point (lines four and five).
+
+We start with predictions for the longitudinal outcomes. These are produced by the `predict()` method for class `jm` objects, and follow the same lines as the procedure described above for cumulative risk probabilities. The only difference is in Step 3, where instead of calculating the cumulative risk we calculate the predicted values for the longitudinal outcomes. There are two options controlled by the `type_pred` argument, namely predictions at the scale of the response/outcome (default) or at the linear predictor level. The `type` argument controls if the predictions will be for the mean subject (i.e., including only the fixed effects) or subject-specific including both the fixed and random effects. In the `newdata` argument we provide the available measurements of the two patients. This will be used to sample their random effects at Step 2 presented above. This is done with a Metropolis-Hastings algorithm that runs for `n_mcmc` iterations; all iterations but the last one are discarded as burn-in. Finally, argument `n_samples` corresponds to the value of $L$ defined above and specifies how many iterations from the MCMC sample of the parameters will be used: 
 ```{r}
 predLong1 <- predict(jointFit, newdata = ND, return_newdata = TRUE)
 ```
 
-```{r}
-library("lattice")
-xyplot(pred_serBilir + low_serBilir + upp_serBilir ~ year | id, data = predLong1, 
-       type = "l", lwd = 2, col = c(2, 1, 1), lty = c(1, 2, 2),
-       abline = list(v = t0, lty = 3), 
-       xlab = "Follow-up Time (years)", 
-       ylab = "Log(serum Bilirubin (mg/dL))")
-
-xyplot(pred_ascites + low_ascites + upp_ascites ~ year | id,  data = predLong1, 
-       type = "l", lwd = 2, col = c(2, 1, 1), lty = c(1, 2, 2),
-       abline = list(v = t0, lty = 3),
-       xlab = "Follow-up Time (years)", 
-       ylab = "Probability of Ascites")
+Argument `return_newdata` specifies that the predictions are returned as extra columns of the `newdata` data.frame. By default the 95\% credible intervals are also included. Using the `plot()` method for objects returned by `predict.jm(..., return_newdata = TRUE)`, we can display the predictions. With the following code we do that for the first longitudinal outcome:
+```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+plot(predLong1)
 ```
 
+When we want to calculate predictions for other, future time points, we can accordingly specify the `times` argument. In the following example, we calculate also predictions from time `t0 = 7` to time 12:
 ```{r}
 predLong2 <- predict(jointFit, newdata = ND,
-                     times = seq(t0, 10, length.out = 51),
+                     times = seq(t0, 12, length.out = 51),
                      return_newdata = TRUE)
-plot_data <- rbind(predLong2[[1]], predLong2[[2]])
-
-xyplot(pred_serBilir + low_serBilir + upp_serBilir ~ year | id, 
-       data = plot_data, type = "l", lwd = 2, col = c(2, 1, 1), lty = c(1, 2, 2),
-       abline = list(v = t0, lty = 3), xlab = "Follow-up Time (years)", 
-       ylab = "Log(serum Bilirubin (mg/dL))")
-
-xyplot(pred_prothrombin + low_prothrombin + upp_prothrombin ~ year | id, 
-       data = plot_data, type = "l", lwd = 2, col = c(2, 1, 1), lty = c(1, 2, 2),
-       abline = list(v = t0, lty = 3), xlab = "Follow-up Time (years)", 
-       ylab = "Prothrombin Time (sec)")
-
 ```
 
+We show these predictions for the second outcome and the second patient (i.e., Patient 93). This is achieved by suitably specifying the `outcomes` and `subject` argument of the `plot()` method:
+```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+plot(predLong2, outcomes = 2, subject = 93)
+```
+
+We continue with predictions for the event outcome. To let `predict()` know that we want the cumulative risk probabilities, we specify `process = "event"`. For these predictions it is required to specify the `times` argument:
 ```{r}
 predSurv <- predict(jointFit, newdata = ND, process = "event",
-                    times = seq(t0, 10, length.out = 51),
+                    times = seq(t0, 12, length.out = 51),
                     return_newdata = TRUE)
+```
 
-xyplot(pred_CIF + low_CIF + upp_CIF ~ year | id, data = predSurv,
-       type = "l", lwd = 2, col = c(2, 1, 1), lty = c(1, 2, 2),
-       abline = list(v = t0, lty = 3), grid = TRUE,
-       xlab = "Follow-up Time (years)", 
-       ylab = "Cumulative Incidence")
+The predictions are included again as extra columns in the corresponding data.frame. To depict the predictions of both the longitudinal and survival outcomes combined, we provide both objects to the `plot()` method:
+```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+plot(predLong2, predSurv)
+```
+
+Again by default, the plot is for the predictions of the first subject (i.e., Patient 25) and for the first longitudinal outcome. However, the `plot()` method has a series of arguments that allow users to customize the plot. We illustrate some of these capabilities with the following figure. First, we specify that we want to depict all three outcomes using `outcomes = 1:3` (note: a max of three outcomes can be simultaneously displayed). Next, we specify via the `subject` argument that we want to show the predictions of Patient 93. Note, that for serum bilirubin we used the log transformation in the specification of the linear mixed model. Hence, we receive predictions on the transformed scale. To show predictions on the original scale, we use the `fun_long` argument. Because we have three outcomes, this needs to be a list of three functions. The first one, corresponding to serum bilirubin is the `exp()` and for the other two the `identity()` because we do not wish to transform the predictions. Analogously, we also have the `fun_event` argument to transform the predictions for the event outcome, and in the example below we set that we want to obtain survival probabilities. Finally, the `pos_ylab_long` specifies the relative positive of the y-axis labels for the three longitudinal outcomes.
+```{r, eval = FALSE}
+plot(predLong2, predSurv, outcomes = 1:3, subject = 93,
+     fun_long = list(exp, identity, identity),
+     fun_event = function (x) 1 - x,
+     ylab_event = "Survival Probabilities",
+     ylab_long = c("Serum Bilirubin", "Prothrombin", "Ascites"),
+     pos_ylab_long = c(1.9, 1.9, 0.08))
+```
+
+```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5, echo = FALSE}
+plot(predLong2, predSurv, outcomes = 1:3, subject = 93,
+     fun_long = list(exp, identity, identity),
+     fun_event = function (x) 1 - x,
+     ylab_event = "Survival Probabilities",
+     ylab_long = c("Serum Bilirubin", "Prothrombin", "Ascites"),
+     pos_ylab_long = c(19, 22, 0.5))
 ```

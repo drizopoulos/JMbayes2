@@ -602,7 +602,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         stop("you must use predict.jm(..., return_newdata = TRUE)")
     }
     unq_id <- if (!is.null(pred_Long)) unique(pred_Long[[id_var]])
-    if (!is.null(pred_Event)) unq_id <- unique(pred_Event[[id_var]], unq_id)
+    if (!is.null(pred_Event)) unq_id <- unique(c(pred_Event[[id_var]], unq_id))
     if (length(subject) > 1L) {
         stop("'subject' must be of length 1.")
     }
@@ -653,8 +653,8 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         ylab_long <- resp_vars
     }
     xlim <- NULL
-    xlim <- if (!is.null(pred_Long)) range(xlim, pred_Long[[time_var]])
-    xlim <- if (!is.null(pred_Event)) range(xlim, pred_Event[[time_var]])
+    if (!is.null(pred_Long)) xlim <- range(xlim, pred_Long[[time_var]])
+    if (!is.null(pred_Event)) xlim <- range(xlim, pred_Event[[time_var]])
     plot_long_i <- function (outcome, add_xlab = FALSE, box = TRUE,
                              cex_axis = cex_axis) {
         ind <- pos_outcomes[outcome]
@@ -667,7 +667,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         rx <- range(times)
         plot(rx, ry, type = "n", xaxt = "n", bty = if (box) "o" else "n",
              xlab = if (add_xlab) xlab  else "", xlim = xlim,
-             ylim = f(ranges[[outcome]]), ylab = ylab_long[outcome],
+             ylim = range(f(ranges[[outcome]]), ry), ylab = ylab_long[outcome],
              cex.lab = cex_ylab_long, cex.axis = cex_axis)
         if (!add_xlab) {
             axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0,
