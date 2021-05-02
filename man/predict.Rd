@@ -33,7 +33,7 @@ Predict method for object of class \code{"jm"}.
 \arguments{
 \item{object}{an object inheriting from class \code{"jm"}.}
 
-\item{newdata, newdata2}{data frames}
+\item{newdata, newdata2}{data.frames.}
 
 \item{times}{a numeric vector of future times to calculate predictions.}
 
@@ -77,7 +77,7 @@ Predict method for object of class \code{"jm"}.
 }
 
 \details{
-xxx
+A detailed description of the methodology behind these predictions is given here: \url{https://drizopoulos.github.io/JMbayes2/articles/Dynamic_Predictions.html}.
 }
 
 \value{

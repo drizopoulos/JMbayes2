@@ -87,7 +87,7 @@ ND$status2 <- 0
 ND$years <- t0
 ```
 
-We will only the longitudinal measurements up to follow-up year seven (line three), and further specify that the patients were event-free at this time point (lines four and five).
+We will only use the first seven years of follow-up year (line three), and further specify that the patients were event-free up to this time point (lines four and five).
 
 We start with predictions for the longitudinal outcomes. These are produced by the `predict()` method for class `jm` objects, and follow the same lines as the procedure described above for cumulative risk probabilities. The only difference is in Step 3, where instead of calculating the cumulative risk we calculate the predicted values for the longitudinal outcomes. There are two options controlled by the `type_pred` argument, namely predictions at the scale of the response/outcome (default) or at the linear predictor level. The `type` argument controls if the predictions will be for the mean subject (i.e., including only the fixed effects) or subject-specific including both the fixed and random effects. In the `newdata` argument we provide the available measurements of the two patients. This will be used to sample their random effects at Step 2 presented above. This is done with a Metropolis-Hastings algorithm that runs for `n_mcmc` iterations; all iterations but the last one are discarded as burn-in. Finally, argument `n_samples` corresponds to the value of $L$ defined above and specifies how many iterations from the MCMC sample of the parameters will be used: 
 ```{r}
@@ -106,12 +106,12 @@ predLong2 <- predict(jointFit, newdata = ND,
                      return_newdata = TRUE)
 ```
 
-We show these predictions for the second outcome and the second patient (i.e., Patient 93). This is achieved by suitably specifying the `outcomes` and `subject` argument of the `plot()` method:
+We show these predictions for the second outcome and the second patient (i.e., Patient 93). This is achieved by suitably specifying the `outcomes` and `subject` arguments of the `plot()` method:
 ```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
 plot(predLong2, outcomes = 2, subject = 93)
 ```
 
-We continue with predictions for the event outcome. To let `predict()` know that we want the cumulative risk probabilities, we specify `process = "event"`. For these predictions it is required to specify the `times` argument:
+We continue with the predictions for the event outcome. To let `predict()` know that we want the cumulative risk probabilities, we specify `process = "event"`:
 ```{r}
 predSurv <- predict(jointFit, newdata = ND, process = "event",
                     times = seq(t0, 12, length.out = 51),
@@ -123,7 +123,7 @@ The predictions are included again as extra columns in the corresponding data.fr
 plot(predLong2, predSurv)
 ```
 
-Again by default, the plot is for the predictions of the first subject (i.e., Patient 25) and for the first longitudinal outcome. However, the `plot()` method has a series of arguments that allow users to customize the plot. We illustrate some of these capabilities with the following figure. First, we specify that we want to depict all three outcomes using `outcomes = 1:3` (note: a max of three outcomes can be simultaneously displayed). Next, we specify via the `subject` argument that we want to show the predictions of Patient 93. Note, that for serum bilirubin we used the log transformation in the specification of the linear mixed model. Hence, we receive predictions on the transformed scale. To show predictions on the original scale, we use the `fun_long` argument. Because we have three outcomes, this needs to be a list of three functions. The first one, corresponding to serum bilirubin is the `exp()` and for the other two the `identity()` because we do not wish to transform the predictions. Analogously, we also have the `fun_event` argument to transform the predictions for the event outcome, and in the example below we set that we want to obtain survival probabilities. Finally, the `pos_ylab_long` specifies the relative positive of the y-axis labels for the three longitudinal outcomes.
+Again by default, the plot is for the predictions of the first subject (i.e., Patient 25) and for the first longitudinal outcome (i.e., `log(serBilir)`). However, the `plot()` method has a series of arguments that allow users to customize the plot. We illustrate some of these capabilities with the following figure. First, we specify that we want to depict all three outcomes using `outcomes = 1:3` (note: a max of three outcomes can be simultaneously displayed). Next, we specify via the `subject` argument that we want to show the predictions of Patient 93. Note, that for serum bilirubin we used the log transformation in the specification of the linear mixed model. Hence, we receive predictions on the transformed scale. To show predictions on the original scale, we use the `fun_long` argument. Because we have three outcomes, this needs to be a list of three functions. The first one, corresponding to serum bilirubin is the `exp()` and for the other two the `identity()` because we do not wish to transform the predictions. Analogously, we also have the `fun_event` argument to transform the predictions for the event outcome, and in the example below we set that we want to obtain survival probabilities. Finally, the `pos_ylab_long` specifies the relative positive of the y-axis labels for the three longitudinal outcomes.
 ```{r, eval = FALSE}
 plot(predLong2, predSurv, outcomes = 1:3, subject = 93,
      fun_long = list(exp, identity, identity),

@@ -1,6 +1,6 @@
 export(area, cumuplot, coef, compare_jm, crLong, densplot, family, fixef, gelman_diag,
        ggdensityplot, ggtraceplot, jm, model.frame, model.matrix, ranef, slope,
-       terms, traceplot, tv, value, vexpit, Dexpit, vexp, Dexp, vlog, vlog2,
+       terms, traceplot, tv, tvROC, value, vexpit, Dexpit, vexp, Dexp, vlog, vlog2,
        vlog10, vsqrt)
 
 import(Rcpp)
@@ -10,7 +10,7 @@ importFrom("stats", "coef", "terms", "model.frame", "model.frame.default",
            "ar", "var", "vcov", "optim", "delete.response", "model.response",
            "rnorm", "quantile", "runif", "rlnorm", "cov2cor", "as.formula",
            "gaussian", ".getXlevels", "makepredictcall", "plogis",
-           "reformulate", "predict", "pnorm", "ave")
+           "reformulate", "predict", "pnorm", "ave", "median")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
            "clusterSetRNGStream")
 importFrom("nlme", "fixef", "ranef", "pdMatrix")
@@ -50,6 +50,9 @@ S3method(family, jm)
 S3method(effectPlotData, jm)
 S3method(print, compare_jm)
 S3method(plot, predict_jm)
+S3method(tvROC, jm)
+S3method(print, tvROC)
+S3method(plot, tvROC)
 S3method(predict, jm)
 
 

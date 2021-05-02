@@ -1,3 +1,11 @@
+# JMbayes2 0.1.6
+
+## Major
+* Added a `predict()` method for `jm` objects and a corresponding `plot()` for objects of class `predict_jm` for calculating and displaying predictions from joint models. Currently, only standard survival models are covered. Future versions will include predictions from competing risks and multi-state models.
+
+* Added a vignette (available on the [website of the package](https://drizopoulos.github.io/JMbayes2/)) to explain how (dynamic) predictions are calculated in the package. 
+
+
 # JMbayes2 0.1.5
 
 ## Major
