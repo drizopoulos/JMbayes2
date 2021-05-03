@@ -145,7 +145,147 @@ tvAUC <- function (object, newdata, Tstart, ...) {
 }
 
 tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
-    NA
+    if (!inherits(object, "jm"))
+        stop("Use only with 'jm' objects.\n")
+    if (!is.data.frame(newdata) || nrow(newdata) == 0)
+        stop("'newdata' must be a data.frame with more than one rows.\n")
+    if (is.null(Thoriz) && is.null(Dt))
+        stop("either 'Thoriz' or 'Dt' must be non null.\n")
+    if (!is.null(Thoriz) && Thoriz <= Tstart)
+        stop("'Thoriz' must be larger than 'Tstart'.")
+    if (is.null(Thoriz))
+        Thoriz <- Tstart + Dt
+    type_censoring <- object$model_info$type_censoring
+    if (type_censoring != "right")
+        stop("'tvROC()' currently only works for right censored data.")
+    Tstart <- Tstart + 1e-06
+    Thoriz <- Thoriz + 1e-06
+    id_var <- object$model_info$var_names$idVar
+    time_var <- object$model_info$var_names$time_var
+    Time_var <- object$model_info$var_names$Time_var
+    event_var <- object$model_info$var_names$event_var
+    if (is.null(newdata[[id_var]]))
+        stop("cannot find the '", id_var, "' variable in newdata.", sep = "")
+    if (is.null(newdata[[time_var]]))
+        stop("cannot find the '", time_var, "' variable in newdata.", sep = "")
+    if (is.null(newdata[[Time_var]]))
+        stop("cannot find the '", Time_var, "' variable in newdata.", sep = "")
+    if (is.null(newdata[[event_var]]))
+        stop("cannot find the '", event_var, "' variable in newdata.", sep = "")
+    newdata <- newdata[order(newdata[[Time_var]]), ]
+    newdata <- newdata[newdata[[Time_var]] > Tstart, ]
+    newdata <- newdata[newdata[[time_var]] <= Tstart, ]
+    newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
+    test1 <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
+    if (!any(test1))
+        stop("it seems that there are no events in the interval [Tstart, Thoriz).")
+    test2 <- newdata[[Time_var]] > Thoriz & newdata[[event_var]] == 1
+    if (!any(test2))
+        stop("it seems that there are no events after Thoriz.")
+    newdata2 <- newdata
+    newdata2[[Time_var]] <- Tstart
+    newdata2[[event_var]] <- 0
+    preds <- predict(object, newdata = newdata2, process = "event",
+                     times = Thoriz)
+    si_u_t <- 1 - preds$pred
+    names(si_u_t) <- preds$id
+    si_u_t <- si_u_t[preds$times > Tstart]
+
+    id <- newdata[[id_var]]
+    Time <- newdata[[Time_var]]
+    event <- newdata[[event_var]]
+    f <- factor(id, levels = unique(id))
+    Time <- tapply(Time, f, tail, 1L)
+    event <- tapply(event, f, tail, 1L)
+    names(Time) <- names(event) <- as.character(unique(id))
+    if (any(dupl <- duplicated(Time))) {
+        Time[dupl] <- Time[dupl] + runif(length(Time[dupl]), 1e-07, 1e-06)
+    }
+    if (!all(names(si_u_t) == names(Time)))
+        stop("mismatch between 'Time' variable names and survival probabilities names.")
+
+    auc <- if (length(Time) > 1L) {
+        pairs <- combn(as.character(unique(id)), 2)
+        Ti <- Time[pairs[1, ]]
+        Tj <- Time[pairs[2, ]]
+        di <- event[pairs[1, ]]
+        dj <- event[pairs[2, ]]
+        si_u_t_i <- si_u_t[pairs[1, ]]
+        si_u_t_j <- si_u_t[pairs[2, ]]
+        ind1 <- (Ti <= Thoriz & di == 1) & Tj > Thoriz
+        ind2 <- (Ti <= Thoriz & di == 0) & Tj > Thoriz
+        ind3 <- (Ti <= Thoriz & di == 1) & (Tj <= Thoriz & dj == 0)
+        ind4 <- (Ti <= Thoriz & di == 0) & (Tj <= Thoriz & dj == 0)
+        names(ind1) <- names(ind2) <- names(ind3) <- names(ind4) <-
+            paste(names(Ti), names(Tj), sep = "_")
+        ind <- ind1 | ind2 | ind3 | ind4
+        if (any(ind2)) {
+            nams <- strsplit(names(ind2[ind2]), "_")
+            nams_i <- sapply(nams, "[", 1)
+            unq_nams_i <- unique(nams_i)
+            preds2 <- predict(object, newdata = newdata[id %in% unq_nams_i, ],
+                              process = "event", times = Thoriz)
+            pi_u_t <- preds2$pred
+            f <- factor(preds2$id, levels = unique(preds2$id))
+            names(pi_u_t) <- f
+            pi_u_t <- tapply(pi_u_t, f, tail, 1)
+            ind[ind2] <- ind[ind2] * pi_u_t[nams_i]
+        }
+        if (any(ind3)) {
+            nams <- strsplit(names(ind3[ind3]), "_")
+            nams_j <- sapply(nams, "[", 2)
+            unq_nams_j <- unique(nams_j)
+            preds3 <- predict(object, newdata = newdata[id %in% unq_nams_j, ],
+                              process = "event", times = Thoriz)
+            qi_u_t <- preds3$pred
+            f <- factor(preds3$id, levels = unique(preds3$id))
+            names(qi_u_t) <- f
+            qi_u_t <- 1 - tapply(qi_u_t, f, tail, 1)
+            ind[ind3] <- ind[ind3] * qi_u_t[nams_j]
+        }
+        if (any(ind4)) {
+            nams <- strsplit(names(ind4[ind4]), "_")
+            nams_i <- sapply(nams, "[", 1)
+            nams_j <- sapply(nams, "[", 2)
+            unq_nams_i <- unique(nams_i)
+            unq_nams_j <- unique(nams_j)
+            preds4_i <- predict(object, newdata = newdata[id %in% unq_nams_i, ],
+                                process = "event", times = Thoriz)
+            pi_u_t <- preds4_i$pred
+            f <- factor(preds4_i$id, levels = unique(preds4_i$id))
+            names(pi_u_t) <- f
+            pi_u_t <- tapply(pi_u_t, f, tail, 1)
+
+            preds4_j <- predict(object, newdata = newdata[id %in% unq_nams_j, ],
+                                process = "event", times = Thoriz)
+            qi_u_t <- preds4_j$pred
+            f <- factor(preds4_j$id, levels = unique(preds4_j$id))
+            names(qi_u_t) <- f
+            qi_u_t <- 1 - tapply(qi_u_t, f, tail, 1)
+            ind[ind4] <- ind[ind4] * pi_u_t[nams_i] * qi_u_t[nams_j]
+        }
+        sum((si_u_t_i < si_u_t_j) * c(ind), na.rm = TRUE) / sum(ind, na.rm = TRUE)
+    } else {
+        NA
+    }
+    out <- list(auc = auc, Tstart = Tstart, Thoriz = Thoriz, nr = length(unique(id)),
+                classObject = class(object), nameObject = deparse(substitute(object)))
+    class(out) <- "tvAUC"
+    out
 }
 
+print.tvAUC <- function (x, digits = 4, ...) {
+    if (!inherits(x, "tvAUC"))
+        stop("Use only with 'tvAUC' objects.\n")
+    if (x$class == "jm")
+        cat("\n\tTime-dependent AUC for the Joint Model",  x$nameObject)
+    else
+        cat("\n\tTime-dependent AUC for the Cox Model",  x$nameObject)
+    cat("\n\nEstimated AUC:", round(x$auc, digits))
+    cat("\nAt time:", round(x$Thoriz, digits))
+    cat("\nUsing information up to time: ", round(x$Tstart, digits),
+        " (", x$nr, " subjects still at risk)", sep = "")
+    cat("\n\n")
+    invisible(x)
+}
 
