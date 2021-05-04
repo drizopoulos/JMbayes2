@@ -44,7 +44,7 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     newdata2[[event_var]] <- 0
     preds <- predict(object, newdata = newdata2, process = "event",
                      times = Thoriz, ...)
-    pi_u_t <- 1 - preds$pred
+    pi_u_t <- 1 - preds$pred # survival probabilities
     names(pi_u_t) <- preds$id
     pi_u_t <- pi_u_t[preds$times > Tstart]
 
@@ -64,7 +64,7 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
         nams <- names(ind2[ind2])
         preds2 <- predict(object, newdata = newdata[id %in% nams, ],
                           process = "event", times = Thoriz, ...)
-        pi_u_t2 <- preds2$pred
+        pi_u_t2 <- preds2$pred # cumulative risks
         f <- factor(preds2$id, levels = unique(preds2$id))
         names(pi_u_t2) <- f
         pi_u_t2 <- tapply(pi_u_t2, f, tail, 1)
@@ -186,7 +186,7 @@ tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     newdata2[[Time_var]] <- Tstart
     newdata2[[event_var]] <- 0
     preds <- predict(object, newdata = newdata2, process = "event",
-                     times = Thoriz)
+                     times = Thoriz, ...)
     si_u_t <- 1 - preds$pred
     names(si_u_t) <- preds$id
     si_u_t <- si_u_t[preds$times > Tstart]
@@ -224,7 +224,7 @@ tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
             nams_i <- sapply(nams, "[", 1)
             unq_nams_i <- unique(nams_i)
             preds2 <- predict(object, newdata = newdata[id %in% unq_nams_i, ],
-                              process = "event", times = Thoriz)
+                              process = "event", times = Thoriz, ...)
             pi_u_t <- preds2$pred
             f <- factor(preds2$id, levels = unique(preds2$id))
             names(pi_u_t) <- f
@@ -250,14 +250,14 @@ tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
             unq_nams_i <- unique(nams_i)
             unq_nams_j <- unique(nams_j)
             preds4_i <- predict(object, newdata = newdata[id %in% unq_nams_i, ],
-                                process = "event", times = Thoriz)
+                                process = "event", times = Thoriz, ...)
             pi_u_t <- preds4_i$pred
             f <- factor(preds4_i$id, levels = unique(preds4_i$id))
             names(pi_u_t) <- f
             pi_u_t <- tapply(pi_u_t, f, tail, 1)
 
             preds4_j <- predict(object, newdata = newdata[id %in% unq_nams_j, ],
-                                process = "event", times = Thoriz)
+                                process = "event", times = Thoriz, ...)
             qi_u_t <- preds4_j$pred
             f <- factor(preds4_j$id, levels = unique(preds4_j$id))
             names(qi_u_t) <- f
