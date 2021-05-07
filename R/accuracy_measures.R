@@ -32,6 +32,9 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
         stop("cannot find the '", event_var, "' variable in newdata.", sep = "")
     newdata <- newdata[newdata[[Time_var]] > Tstart, ]
     newdata <- newdata[newdata[[time_var]] <= Tstart, ]
+    if (!nrow(newdata))
+        stop("there are no data on subjects who had an observed event time after Tstart",
+             "and longitudinal measurements before Tstart.")
     newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
     test1 <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
     if (!any(test1))
@@ -44,9 +47,9 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     newdata2[[event_var]] <- 0
     preds <- predict(object, newdata = newdata2, process = "event",
                      times = Thoriz, ...)
-    pi_u_t <- 1 - preds$pred # survival probabilities
-    names(pi_u_t) <- preds$id
-    pi_u_t <- pi_u_t[preds$times > Tstart]
+    qi_u_t <- 1 - preds$pred
+    names(qi_u_t) <- preds$id
+    qi_u_t <- qi_u_t[preds$times > Tstart]
 
     id <- newdata[[id_var]]
     Time <- newdata[[Time_var]]
@@ -64,16 +67,16 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
         nams <- names(ind2[ind2])
         preds2 <- predict(object, newdata = newdata[id %in% nams, ],
                           process = "event", times = Thoriz, ...)
-        pi_u_t2 <- preds2$pred # cumulative risks
+        pi_u_t <- preds2$pred
         f <- factor(preds2$id, levels = unique(preds2$id))
-        names(pi_u_t2) <- f
-        pi_u_t2 <- tapply(pi_u_t2, f, tail, 1)
+        names(pi_u_t) <- f
+        pi_u_t <- tapply(pi_u_t, f, tail, 1)
         nams2 <- names(ind2[ind2])
-        ind[ind2] <- ind[ind2] * pi_u_t2[nams2]
+        ind[ind2] <- ind[ind2] * pi_u_t[nams2]
     }
     # calculate sensitivity and specificity
     thrs <- seq(0, 1, length = 101)
-    Check <- outer(pi_u_t, thrs, "<")
+    Check <- outer(qi_u_t, thrs, "<")
     nTP <- colSums(Check * c(ind))
     nFN <- sum(ind) - nTP
     TP <- nTP / sum(ind)
@@ -270,6 +273,28 @@ tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     }
     out <- list(auc = auc, Tstart = Tstart, Thoriz = Thoriz, nr = length(unique(id)),
                 classObject = class(object), nameObject = deparse(substitute(object)))
+    class(out) <- "tvAUC"
+    out
+}
+
+tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
+    roc <- tvROC(object, newdata, Tstart, Thoriz, Dt, ...)
+    TP <- roc$TP
+    FP <- roc$FP
+    auc <- sum(0.5 * diff(FP) * (TP[-1L] + TP[-length(TP)]), na.rm = TRUE)
+    out <- list(auc = auc, Tstart = Tstart, Thoriz = roc$Thoriz, nr = roc$nr,
+                classObject = class(object), nameObject = deparse(substitute(object)))
+    class(out) <- "tvAUC"
+    out
+}
+
+tvAUC.tvROC <- function (object, ...) {
+    TP <- object$TP
+    FP <- object$FP
+    auc <- sum(0.5 * diff(FP) * (TP[-1L] + TP[-length(TP)]), na.rm = TRUE)
+    out <- list(auc = auc, Tstart = object$Tstart, Thoriz = object$Thoriz,
+                nr = object$nr, classObject = object$classObject,
+                nameObject = object$nameObject)
     class(out) <- "tvAUC"
     out
 }

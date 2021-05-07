@@ -141,3 +141,22 @@ plot(predLong2, predSurv, outcomes = 1:3, subject = 93,
      ylab_long = c("Serum Bilirubin", "Prothrombin", "Ascites"),
      pos_ylab_long = c(19, 22, 0.5))
 ```
+
+We evaluate the accuracy of the predictions using ROC methodology. We calculate the components of the ROC curve using information up to year seven, and we are interested in events occurring within a two-year window. The calculations are performed with the following call to `tvROC()`:
+```{r}
+pbc2$event <- as.numeric(pbc2$status != "alive")
+roc <- tvROC(jointFit, newdata = pbc2, Tstart = t0, Dt = 2)
+roc
+```
+
+In the first line we define the event indicator as we did in the `pbc2.id` data.frame. To depict the ROC curve we use the corresponding `plot()` method:
+```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5, echo = FALSE}
+plot(roc)
+```
+
+The area under the ROC curve is calculated with the `tvAUC()` function:
+```{r}
+tvAUC(roc)
+```
+
+This function either accepts an object of class `tvROC` or of class `jm`. In the latter case, the user must also provide the `newdata`, `Tstart` and `Dt` or `Thoriz` arguments.
