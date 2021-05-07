@@ -100,7 +100,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-51</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-52</span>
       </span>
     </div>
 
@@ -345,12 +345,12 @@ than the total number of submodels, extracts from all of them.</p></td>
 <span class='co'># ranef(): random effects from all linear mixed submodels</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='fu'>ranef</span><span class='op'>(</span><span class='va'>fit_jm</span><span class='op'>)</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;             [,1]         [,2]        [,3]        [,4]
-#&gt; [1,]  1.98894051  0.057689470  0.87712149  0.05968410
-#&gt; [2,] -0.38535970  0.007831437 -0.02758683  0.08862963
-#&gt; [3,] -0.08870566  0.148719462  0.60677674  0.23036850
-#&gt; [4,]  0.16007723  0.116833906  1.03897526  0.53567200
-#&gt; [5,]  0.35445453  0.166468168 -0.05570527  0.42235232
-#&gt; [6,] -0.70239676 -0.087049104 -0.01774674 -0.01519069</div><div class='input'>
+#&gt; [1,]  1.98894051  0.057679953  0.88289818  0.05968410
+#&gt; [2,] -0.38535970  0.006516203 -0.02204205  0.08862963
+#&gt; [3,] -0.08870566  0.148442384  0.61368419  0.23036850
+#&gt; [4,]  0.16007723  0.116406855  1.04434947  0.53567200
+#&gt; [5,]  0.35445453  0.166156110 -0.05199462  0.42235232
+#&gt; [6,] -0.70239676 -0.087634407 -0.01122069 -0.01519069</div><div class='input'>
 <span class='co'># terms(): random effects terms for the first linear mixed submodel</span>
 <span class='fu'>terms</span><span class='op'>(</span><span class='va'>fit_jm</span>, process <span class='op'>=</span> <span class='st'>"longitudinal"</span>, type <span class='op'>=</span> <span class='st'>"random"</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>
 </div><div class='output co'>#&gt; ~year
@@ -368,7 +368,7 @@ than the total number of submodels, extracts from all of them.</p></td>
 #&gt; attr(,"response")
 #&gt; [1] 0
 #&gt; attr(,".Environment")
-#&gt; &lt;environment: 0x0000000046440108&gt;
+#&gt; &lt;environment: 0x000000004053b590&gt;
 #&gt; attr(,"predvars")
 #&gt; list(year)
 #&gt; attr(,"dataClasses")
@@ -417,9 +417,9 @@ than the total number of submodels, extracts from all of them.</p></td>
 
 <span class='fu'>compare_jm</span><span class='op'>(</span><span class='va'>fit_jm</span>, <span class='va'>fit_jm2</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; 
-#&gt;               DIC      WAIC       LPML
-#&gt;  fit_jm2 10607.02   10641.4   -5340.57
-#&gt;   fit_jm 15088.35 1016225.1 -153484.30
+#&gt;                DIC     WAIC      LPML
+#&gt;   fit_jm 15092.462 996777.6 -151941.8
+#&gt;  fit_jm2  7741.163       NA       Inf
 #&gt; 
 #&gt; The criteria are calculated based on the marginal log-likelihood.</div><div class='input'><span class='co'># }</span>
 </div></pre>

@@ -51,7 +51,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-51</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-52</span>
       </span>
     </div>
 
@@ -126,7 +126,7 @@
       <h1 data-toc-skip>Dynamic Predictions</h1>
                         <h4 class="author">Dimitris Rizopoulos</h4>
             
-            <h4 class="date">2021-04-29</h4>
+            <h4 class="date">2021-05-07</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/master/vignettes/Dynamic_Predictions.Rmd"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="hidden name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -183,7 +183,7 @@
 <span class="va">ND</span> <span class="op">&lt;-</span> <span class="va">ND</span><span class="op">[</span><span class="va">ND</span><span class="op">$</span><span class="va">year</span> <span class="op">&lt;</span> <span class="va">t0</span>, <span class="op">]</span>
 <span class="va">ND</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fl">0</span>
 <span class="va">ND</span><span class="op">$</span><span class="va">years</span> <span class="op">&lt;-</span> <span class="va">t0</span></code></pre></div>
-<p>We will only the longitudinal measurements up to follow-up year seven (line three), and further specify that the patients were event-free at this time point (lines four and five).</p>
+<p>We will only use the first seven years of follow-up year (line three), and further specify that the patients were event-free up to this time point (lines four and five).</p>
 <p>We start with predictions for the longitudinal outcomes. These are produced by the <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> method for class <code>jm</code> objects, and follow the same lines as the procedure described above for cumulative risk probabilities. The only difference is in Step 3, where instead of calculating the cumulative risk we calculate the predicted values for the longitudinal outcomes. There are two options controlled by the <code>type_pred</code> argument, namely predictions at the scale of the response/outcome (default) or at the linear predictor level. The <code>type</code> argument controls if the predictions will be for the mean subject (i.e., including only the fixed effects) or subject-specific including both the fixed and random effects. In the <code>newdata</code> argument we provide the available measurements of the two patients. This will be used to sample their random effects at Step 2 presented above. This is done with a Metropolis-Hastings algorithm that runs for <code>n_mcmc</code> iterations; all iterations but the last one are discarded as burn-in. Finally, argument <code>n_samples</code> corresponds to the value of <span class="math inline">\(L\)</span> defined above and specifies how many iterations from the MCMC sample of the parameters will be used:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">predLong1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
@@ -196,11 +196,11 @@
 <code class="sourceCode R"><span class="va">predLong2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>,
                      times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="va">t0</span>, <span class="fl">12</span>, length.out <span class="op">=</span> <span class="fl">51</span><span class="op">)</span>,
                      return_newdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p>We show these predictions for the second outcome and the second patient (i.e., Patient 93). This is achieved by suitably specifying the <code>outcomes</code> and <code>subject</code> argument of the <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method:</p>
+<p>We show these predictions for the second outcome and the second patient (i.e., Patient 93). This is achieved by suitably specifying the <code>outcomes</code> and <code>subject</code> arguments of the <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, outcomes <span class="op">=</span> <span class="fl">2</span>, subject <span class="op">=</span> <span class="fl">93</span><span class="op">)</span></code></pre></div>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-8-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>We continue with predictions for the event outcome. To let <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> know that we want the cumulative risk probabilities, we specify <code>process = "event"</code>. For these predictions it is required to specify the <code>times</code> argument:</p>
+<p>We continue with the predictions for the event outcome. To let <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> know that we want the cumulative risk probabilities, we specify <code>process = "event"</code>:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">predSurv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>, process <span class="op">=</span> <span class="st">"event"</span>,
                     times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="va">t0</span>, <span class="fl">12</span>, length.out <span class="op">=</span> <span class="fl">51</span><span class="op">)</span>,
@@ -209,7 +209,7 @@
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, <span class="va">predSurv</span><span class="op">)</span></code></pre></div>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-10-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>Again by default, the plot is for the predictions of the first subject (i.e., Patient 25) and for the first longitudinal outcome. However, the <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method has a series of arguments that allow users to customize the plot. We illustrate some of these capabilities with the following figure. First, we specify that we want to depict all three outcomes using <code>outcomes = 1:3</code> (note: a max of three outcomes can be simultaneously displayed). Next, we specify via the <code>subject</code> argument that we want to show the predictions of Patient 93. Note, that for serum bilirubin we used the log transformation in the specification of the linear mixed model. Hence, we receive predictions on the transformed scale. To show predictions on the original scale, we use the <code>fun_long</code> argument. Because we have three outcomes, this needs to be a list of three functions. The first one, corresponding to serum bilirubin is the <code><a href="https://rdrr.io/r/base/Log.html">exp()</a></code> and for the other two the <code><a href="https://rdrr.io/r/base/identity.html">identity()</a></code> because we do not wish to transform the predictions. Analogously, we also have the <code>fun_event</code> argument to transform the predictions for the event outcome, and in the example below we set that we want to obtain survival probabilities. Finally, the <code>pos_ylab_long</code> specifies the relative positive of the y-axis labels for the three longitudinal outcomes.</p>
+<p>Again by default, the plot is for the predictions of the first subject (i.e., Patient 25) and for the first longitudinal outcome (i.e., <code><a href="https://rdrr.io/r/base/Log.html">log(serBilir)</a></code>). However, the <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method has a series of arguments that allow users to customize the plot. We illustrate some of these capabilities with the following figure. First, we specify that we want to depict all three outcomes using <code>outcomes = 1:3</code> (note: a max of three outcomes can be simultaneously displayed). Next, we specify via the <code>subject</code> argument that we want to show the predictions of Patient 93. Note, that for serum bilirubin we used the log transformation in the specification of the linear mixed model. Hence, we receive predictions on the transformed scale. To show predictions on the original scale, we use the <code>fun_long</code> argument. Because we have three outcomes, this needs to be a list of three functions. The first one, corresponding to serum bilirubin is the <code><a href="https://rdrr.io/r/base/Log.html">exp()</a></code> and for the other two the <code><a href="https://rdrr.io/r/base/identity.html">identity()</a></code> because we do not wish to transform the predictions. Analogously, we also have the <code>fun_event</code> argument to transform the predictions for the event outcome, and in the example below we set that we want to obtain survival probabilities. Finally, the <code>pos_ylab_long</code> specifies the relative positive of the y-axis labels for the three longitudinal outcomes.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, <span class="va">predSurv</span>, outcomes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, subject <span class="op">=</span> <span class="fl">93</span>,
      fun_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">exp</span>, <span class="va">identity</span>, <span class="va">identity</span><span class="op">)</span>,
@@ -218,6 +218,39 @@
      ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Serum Bilirubin"</span>, <span class="st">"Prothrombin"</span>, <span class="st">"Ascites"</span><span class="op">)</span>,
      pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1.9</span>, <span class="fl">1.9</span>, <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-12-1.png" width="816" style="display: block; margin: auto;"></p>
+<p>We evaluate the accuracy of the predictions using ROC methodology. We calculate the components of the ROC curve using information up to year seven, and we are interested in events occurring within a two-year window. The calculations are performed with the following call to <code><a href="../reference/Accuracy%20Measures.html">tvROC()</a></code>:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">pbc2</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">pbc2</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span>
+<span class="va">roc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Accuracy%20Measures.html">tvROC</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
+<span class="va">roc</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;  Time-dependent Sensitivity and Specificity for the Joint Model jointFit</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; At time: 9</span>
+<span class="co">#&gt; Using information up to time: 7 (129 subjects still at risk)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;    cut-off         SN        SP         qSN         qSP    qOverall  </span>
+<span class="co">#&gt; 1     0.55 0.00000000 0.9909546 -0.00781250 -0.16685494 -0.01492613  </span>
+<span class="co">#&gt; 2     0.60 0.00000000 0.9819092 -0.01574803 -0.16685494 -0.02877978  </span>
+<span class="co">#&gt; 3     0.65 0.00000000 0.9819092 -0.01574803 -0.16685494 -0.02877978  </span>
+<span class="co">#&gt; 4     0.70 0.05421108 0.9728638  0.02394584  0.12485879  0.04018488  </span>
+<span class="co">#&gt; 5     0.75 0.05421108 0.9638185  0.01607443  0.06651605  0.02589179  </span>
+<span class="co">#&gt; 6     0.80 0.27249604 0.9550134  0.21136125  0.41967336  0.28113414  </span>
+<span class="co">#&gt; 7     0.82 0.38490705 0.9375882  0.31002617  0.42492006  0.35849246 *</span>
+<span class="co">#&gt; 8     0.85 0.39503426 0.9121418  0.30320910  0.33331158  0.31754853  </span>
+<span class="co">#&gt; 9     0.90 0.47221914 0.7531582  0.26791687  0.11548341  0.16139766  </span>
+<span class="co">#&gt; 10    0.95 0.82524168 0.5407001  0.64216153  0.10227747  0.17645141</span></code></pre></div>
+<p>In the first line we define the event indicator as we did in the <code>pbc2.id</code> data.frame. To depict the ROC curve we use the corresponding <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method: <img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-14-1.png" width="816" style="display: block; margin: auto;"></p>
+<p>The area under the ROC curve is calculated with the <code><a href="../reference/Accuracy%20Measures.html">tvAUC()</a></code> function:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/Accuracy%20Measures.html">tvAUC</a></span><span class="op">(</span><span class="va">roc</span><span class="op">)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;  Time-dependent AUC for the Joint Model jointFit</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Estimated AUC: 0.7377</span>
+<span class="co">#&gt; At time: 9</span>
+<span class="co">#&gt; Using information up to time: 7 (129 subjects still at risk)</span></code></pre></div>
+<p>This function either accepts an object of class <code>tvROC</code> or of class <code>jm</code>. In the latter case, the user must also provide the <code>newdata</code>, <code>Tstart</code> and <code>Dt</code> or <code>Thoriz</code> arguments.</p>
 </div>
 </div>
   </div>
