@@ -47,7 +47,7 @@ vignettes/*.pdf
 # Local development folders (temporary)
 Dev_Local/
 Development/Dev_Local_GP/update/*.RData
-Development/Dev_Local_GP/update_new/*.RData
-Development/Dev_Local_GP/update_wrkng/*.RData
+Development/Dev_Local_GP/update/update_new/*.RData
+Development/Dev_Local_GP/update/update_wrkng/*.RData
 
 Design
