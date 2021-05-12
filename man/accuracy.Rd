@@ -82,7 +82,7 @@ Applications in R}. Boca Raton: Chapman and Hall/CRC.
 Rizopoulos, D. (2011). Dynamic predictions and prospective accuracy in joint models for
 longitudinal and time-to-event data. \emph{Biometrics} \bold{67}, 819--829.
 
-Rizopoulos, D., Molenberghs, G. and Lesaffre, E.M.E.H. (2017). Dynamic predictions with time‐dependent covariates in survival analysis using joint modeling and landmarking. \emph{Biometrical Journal} \bold{59}, 1261--1276.
+Rizopoulos, D., Molenberghs, G. and Lesaffre, E.M.E.H. (2017). Dynamic predictions with time-dependent covariates in survival analysis using joint modeling and landmarking. \emph{Biometrical Journal} \bold{59}, 1261--1276.
 }
 
 \author{Dimitris Rizopoulos \email{d.rizopoulos@erasmusmc.nl}}
