@@ -3,6 +3,8 @@
 ## Major
 * Added a `predict()` method for `jm` objects and a corresponding `plot()` for objects of class `predict_jm` for calculating and displaying predictions from joint models. Currently, only standard survival models are covered. Future versions will include predictions from competing risks and multi-state models.
 
+* Added the functions `tvROC()` and `tvAUC()` for calculating time-varying Receiver Operating Characteristic (ROC) curves and the areas under the ROC curves for fitted joint models. Currently, only right-censored data are supported.
+
 * Added a vignette (available on the [website of the package](https://drizopoulos.github.io/JMbayes2/)) to explain how (dynamic) predictions are calculated in the package. 
 
 
