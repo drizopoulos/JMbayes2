@@ -110,15 +110,13 @@ print.tvROC <- function (x, digits = 4, ...) {
     cat("\n\nAt time:", round(x$Thoriz, digits))
     cat("\nUsing information up to time: ", round(x$Tstart, digits),
         " (", x$nr, " subjects still at risk)\n\n", sep = "")
-    d <- data.frame("cut-off" = x$thrs, "SN" = x$TP, "SP" = 1 - x$FP, "qSN" = x$qSN,
-                    "qSP" = x$qSP, "qOverall" = x$qOverall, check.names = FALSE,
+    d <- data.frame("cut-off" = x$thrs, "SN" = x$TP, "SP" = 1 - x$FP,
+                    "qSN" = x$qSN, "qSP" = x$qSP, check.names = FALSE,
                     check.rows = FALSE)
     xx <- rep("", nrow(d))
-    xx[ind <- which.max(d$qOverall)] <- "*"
+    xx[x$thr == x$Youden] <- "*"
     d[[" "]] <- xx
-    nms <- c(as.character(seq(6, 96, 5)), row.names(d)[ind])
-    d <- d[row.names(d) %in% nms, ]
-    d <- d[!is.na(d$qOverall), ]
+    d <- d[!is.na(d$qSN) & !is.na(d$qSP), ]
     row.names(d) <- 1:nrow(d)
     print(d)
     cat("\n")
@@ -126,17 +124,17 @@ print.tvROC <- function (x, digits = 4, ...) {
 }
 
 plot.tvROC <- function (x, legend = FALSE,
-                        optimal.cutoff = c("", "qOverall", "Youden"), ...) {
+                        optimal_cutoff = c("", "F1score", "Youden"), ...) {
     plot(x$FP, x$TP, type = "l", xlab = "1 - Specificity", ylab = "Sensitivity")
     abline(a = 0, b = 1, lty = 3)
-    optimal.cutoff <- match.arg(optimal.cutoff)
-    if (optimal.cutoff == "qOverall")
-        abline(v = x$thrs[which.max(x$qOverall)], lty = 3, lwd = 2, col = 2)
-    if (optimal.cutoff == "Youden")
+    optimal_cutoff <- match.arg(optimal_cutoff)
+    if (optimal_cutoff == "F1score")
+        abline(v = x$thrs[which.max(x$F1score)], lty = 3, lwd = 2, col = 2)
+    if (optimal_cutoff == "Youden")
         abline(v = x$thrs[which.max(x$TP - x$FP)], lty = 3, lwd = 2, col = 2)
     if (legend) {
         legend("bottomright", c(paste("At time:", round(x$Thoriz, 1), "\n"),
-                                paste("\nUsing information up to time:",
+                                paste("Using information up to time:",
                                       round(x$Tstart, 1))),
                bty = "n")
     }

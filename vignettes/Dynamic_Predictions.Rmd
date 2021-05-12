@@ -70,7 +70,7 @@ fm3 <- mixed_model(ascites ~ year * sex, data = pbc2,
 Following, we fit the Cox model for the time to either transplantation or death. The first line defines the composite event indicator, and the second one fits the Cox model in which we have also included the baseline covariates `drug` and `age`. The code is:
 ```{r}
 pbc2.id$event <- as.numeric(pbc2.id$status != "alive")
-CoxFit <- coxph(Surv(years, event) ~ drug + age, data = pbc2.id, model = TRUE)
+CoxFit <- coxph(Surv(years, event) ~ drug + age, data = pbc2.id)
 ```
 
 The joint model is fitted with the following call to `jm()`:

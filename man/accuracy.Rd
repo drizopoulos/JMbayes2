@@ -3,6 +3,7 @@
 \alias{tvAUC}
 \alias{tvROC}
 \alias{tvAUC.jm}
+\alias{tvAUC.tvROC}
 \alias{tvROC.jm}
 
 
@@ -13,19 +14,21 @@
 }
 
 \usage{
+tvROC(object, newdata, Tstart, \dots)
+
+\method{tvROC}{jm}(object, newdata, Tstart, Thoriz = NULL,
+    Dt = NULL, \dots)
+
 tvAUC(object, newdata, Tstart, \dots)
 
 \method{tvAUC}{jm}(object, newdata, Tstart, Thoriz = NULL,
     Dt = NULL, \dots)
 
-tvROC(object, newdata, Tstart, \dots)
-
-\method{tvROC}{jm}(object, newdata, Tstart, Thoriz = NULL,
-    Dt = NULL, \dots)
+\method{tvAUC}{tvROC}(object, \dots)
 }
 
 \arguments{
-\item{object}{an object inheriting from class \code{jm}.}
+\item{object}{an object inheriting from class \code{jm}, except for \code{tvAUC.tvROC()} where this is an object of class \code{tvROC}.}
 
 \item{newdata}{a data.frame that contains the longitudinal and covariate information for the subjects for which prediction of survival probabilities is required. The names of the variables in this data.frame must be the same as in the data.frames that were used to fit the linear mixed effects and the event process model that were supplied as the two first argument of \code{\link{jm}}.}
 
@@ -103,7 +106,8 @@ jointFit <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year", n_chains = 1L)
 
 roc <- tvROC(jointFit, newdata = pbc2, Tstart = 4, Dt = 3, cores = 1L)
 roc
-plot(roc)
+tvAUC(roc)
+plot(roc, legend = TRUE, optimal_cutoff = "Youden")
 }
 }
 

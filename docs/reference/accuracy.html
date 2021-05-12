@@ -100,7 +100,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-52</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-6</span>
       </span>
     </div>
 
@@ -181,24 +181,27 @@
     <p>Using the available longitudinal information up to a starting time point, this function computes an estimate of the ROC and the AUC at a horizon time point based on joint models.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>tvAUC</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>newdata</span>, <span class='va'>Tstart</span>, <span class='va'>...</span><span class='op'>)</span>
+    <pre class="usage"><span class='fu'>tvROC</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>newdata</span>, <span class='va'>Tstart</span>, <span class='va'>...</span><span class='op'>)</span>
+
+<span class='co'># S3 method for jm</span>
+<span class='fu'>tvROC</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>newdata</span>, <span class='va'>Tstart</span>, Thoriz <span class='op'>=</span> <span class='cn'>NULL</span>,
+    Dt <span class='op'>=</span> <span class='cn'>NULL</span>, <span class='va'>...</span><span class='op'>)</span>
+
+<span class='fu'>tvAUC</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>newdata</span>, <span class='va'>Tstart</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for jm</span>
 <span class='fu'>tvAUC</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>newdata</span>, <span class='va'>Tstart</span>, Thoriz <span class='op'>=</span> <span class='cn'>NULL</span>,
     Dt <span class='op'>=</span> <span class='cn'>NULL</span>, <span class='va'>...</span><span class='op'>)</span>
 
-<span class='fu'>tvROC</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>newdata</span>, <span class='va'>Tstart</span>, <span class='va'>...</span><span class='op'>)</span>
-
-<span class='co'># S3 method for jm</span>
-<span class='fu'>tvROC</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>newdata</span>, <span class='va'>Tstart</span>, Thoriz <span class='op'>=</span> <span class='cn'>NULL</span>,
-    Dt <span class='op'>=</span> <span class='cn'>NULL</span>, <span class='va'>...</span><span class='op'>)</span></pre>
+<span class='co'># S3 method for tvROC</span>
+<span class='fu'>tvAUC</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>an object inheriting from class <code>jm</code>.</p></td>
+      <td><p>an object inheriting from class <code>jm</code>, except for <code>tvAUC.tvROC()</code> where this is an object of class <code>tvROC</code>.</p></td>
     </tr>
     <tr>
       <th>newdata</th>
@@ -288,19 +291,68 @@ longitudinal and time-to-event data. <em>Biometrics</em> <b>67</b>, 819--829.</p
 #&gt; At time: 7
 #&gt; Using information up to time: 4 (225 subjects still at risk)
 #&gt; 
-#&gt;    cut-off         SN        SP           qSN          qSP     qOverall  
-#&gt; 1     0.50 0.00875726 0.9910846 -0.0001328099 -0.002981134 -0.000254291  
-#&gt; 2     0.55 0.01008439 0.9860126 -0.0032928437 -0.049054543 -0.006171423  
-#&gt; 3     0.60 0.06312739 0.9860126  0.0418348279  0.370567274  0.075182052  
-#&gt; 4     0.65 0.11617038 0.9753342  0.0793441461  0.383356236  0.131476326  
-#&gt; 5     0.70 0.26882776 0.9313180  0.1855754714  0.328110785  0.237068105  
-#&gt; 6     0.75 0.37491374 0.9259788  0.2860689954  0.405186890  0.335364686  
-#&gt; 7     0.80 0.43243505 0.9108628  0.3348848200  0.392246566  0.361303124  
-#&gt; 8     0.85 0.54378927 0.8798883  0.4360032207  0.371508735  0.401180450  
-#&gt; 9     0.87 0.62744870 0.8540168  0.5182526318  0.355956549  0.422039536 *
-#&gt; 10    0.90 0.71337469 0.7912273  0.5943981493  0.288275037  0.388252756  
-#&gt; 11    0.95 0.82971287 0.5743850  0.6639069812  0.137266799  0.227497176  
-#&gt; </div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>roc</span><span class='op'>)</span>
+#&gt;    cut-off          SN         SP           qSN          qSP  
+#&gt; 1     0.47 0.004636462 0.99559421  0.0001928752  0.008697629  
+#&gt; 2     0.48 0.008757260 0.99108461 -0.0001328099 -0.002981134  
+#&gt; 3     0.49 0.008757260 0.99108461 -0.0001328099 -0.002981134  
+#&gt; 4     0.50 0.008757260 0.99108461 -0.0001328099 -0.002981134  
+#&gt; 5     0.51 0.008757260 0.99108461 -0.0001328099 -0.002981134  
+#&gt; 6     0.52 0.008757260 0.99108461 -0.0001328099 -0.002981134  
+#&gt; 7     0.53 0.010084394 0.98601261 -0.0032928437 -0.049054543  
+#&gt; 8     0.54 0.010084394 0.98601261 -0.0032928437 -0.049054543  
+#&gt; 9     0.55 0.010084394 0.98601261 -0.0032928437 -0.049054543  
+#&gt; 10    0.56 0.010084394 0.98601261 -0.0032928437 -0.049054543  
+#&gt; 11    0.57 0.036605891 0.98601261  0.0191688933  0.213209092  
+#&gt; 12    0.58 0.036605891 0.98601261  0.0191688933  0.213209092  
+#&gt; 13    0.59 0.036605891 0.98601261  0.0191688933  0.213209092  
+#&gt; 14    0.60 0.063127387 0.98601261  0.0418348279  0.370567274  
+#&gt; 15    0.61 0.063127387 0.98601261  0.0418348279  0.370567274  
+#&gt; 16    0.62 0.063127387 0.98601261  0.0418348279  0.370567274  
+#&gt; 17    0.63 0.116170380 0.98067343  0.0835867998  0.456440156  
+#&gt; 18    0.64 0.116170380 0.97533425  0.0793441461  0.383356236  
+#&gt; 19    0.65 0.116170380 0.97533425  0.0793441461  0.383356236  
+#&gt; 20    0.66 0.148891628 0.97124317  0.1051430667  0.411792211  
+#&gt; 21    0.67 0.162526088 0.96330964  0.1111715558  0.364974558  
+#&gt; 22    0.68 0.194827716 0.95913409  0.1373154099  0.387011360  
+#&gt; 23    0.69 0.253401253 0.94422994  0.1805623511  0.372586801  
+#&gt; 24    0.70 0.268827757 0.93131799  0.1855754714  0.328110785  
+#&gt; 25    0.71 0.268827757 0.93131799  0.1855754714  0.328110785  
+#&gt; 26    0.72 0.295349253 0.93131799  0.2112118505  0.356106169  
+#&gt; 27    0.73 0.295349253 0.92597881  0.2072679097  0.333809317  
+#&gt; 28    0.74 0.321870750 0.92597881  0.2332709481  0.359432036  
+#&gt; 29    0.75 0.374913743 0.92597881  0.2860689954  0.405186890  
+#&gt; 30    0.76 0.374913743 0.92597881  0.2860689954  0.405186890  
+#&gt; 31    0.77 0.401435239 0.92597881  0.3128720858  0.425697687  
+#&gt; 32    0.78 0.427956736 0.92063963  0.3365477605  0.423997349  
+#&gt; 33    0.79 0.432435046 0.91620201  0.3383310126  0.410795369  
+#&gt; 34    0.80 0.432435046 0.91086283  0.3348848200  0.392246566  
+#&gt; 35    0.81 0.435107118 0.90606158  0.3345502694  0.378348689  
+#&gt; 36    0.82 0.461628614 0.90606158  0.3624549377  0.396110155  
+#&gt; 37    0.83 0.488150111 0.90072240  0.3874136962  0.396284873  
+#&gt; 38    0.84 0.490746279 0.89056669  0.3839672727  0.368653996  
+#&gt; 39    0.85 0.543789272 0.87988834  0.4360032207  0.371508735  
+#&gt; 40    0.86 0.546691396 0.86445504  0.4301986822  0.337008360  
+#&gt; 41    0.87 0.627448702 0.85401682  0.5182526318  0.355956549  
+#&gt; 42    0.88 0.656667553 0.83320312  0.5429005889  0.329833976  
+#&gt; 43    0.89 0.684690024 0.80680940  0.5647561683  0.298905081  
+#&gt; 44    0.90 0.713374692 0.79122734  0.5943981493  0.288275037  
+#&gt; 45    0.91 0.739896189 0.77520981  0.6224299513  0.277460101  
+#&gt; 46    0.92 0.766417685 0.75385310  0.6496265278  0.261559288 *
+#&gt; 47    0.93 0.770693506 0.70132210  0.6314717066  0.209382030  
+#&gt; 48    0.94 0.799391238 0.65904678  0.6554429665  0.183888576  
+#&gt; 49    0.95 0.829712870 0.57438495  0.6639069812  0.137266799  
+#&gt; 50    0.96 0.862244685 0.47948971  0.6737374119  0.099116810  
+#&gt; 51    0.97 0.891422269 0.36790168  0.6653426107  0.064328142  
+#&gt; 52    0.98 0.972206609 0.22932862  0.8578747040  0.041983086  
+#&gt; 53    0.99 1.000000000 0.01067836  1.0000000000  0.001805517  
+#&gt; </div><div class='input'><span class='fu'>tvAUC</span><span class='op'>(</span><span class='va'>roc</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; 
+#&gt; 	Time-dependent AUC for the Joint Model jointFit
+#&gt; 
+#&gt; Estimated AUC: 0.7938
+#&gt; At time: 7
+#&gt; Using information up to time: 4 (225 subjects still at risk)
+#&gt; </div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>roc</span>, legend <span class='op'>=</span> <span class='cn'>TRUE</span>, optimal_cutoff <span class='op'>=</span> <span class='st'>"Youden"</span><span class='op'>)</span>
 </div><div class='img'><img src='accuracy-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># }</span>
 </div></pre>
   </div>
