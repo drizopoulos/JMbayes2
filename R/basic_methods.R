@@ -568,13 +568,16 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
 
 plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
                              fun_long = NULL, fun_event = NULL,
-                             CI = TRUE, xlab = "Follow-up Time", ylab_long = NULL,
+                             CI_long = TRUE, CI_event = TRUE,
+                             xlab = "Follow-up Time", ylab_long = NULL,
                              ylab_event = "Cumulative Risk", lwd_long = 2, lwd_event = 2,
                              col_line_long = "blue", col_line_event = "red",
+                             pch_points = 16, col_points = "blue", cex_points = 1,
                              fill_CI_long = "#0000FF44",
                              fill_CI_event = "#FF000044", cex_xlab = 1,
                              cex_ylab_long = 1, cex_ylab_event = 1, cex_axis = 1,
-                             pos_ylab_long = c(0.1, 2, 0.08), ...) {
+                             col_axis = "black", pos_ylab_long = c(0.1, 2, 0.08),
+                             bg = "white", ...) {
     process_x <- attr(x, "process")
     pred_Long <- if (process_x == "longitudinal") x
     pred_Event <- if (process_x == "event") x
@@ -588,6 +591,9 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
     resp_vars <- attr(x, "resp_vars")
     ranges <- attr(x, "ranges")
     last_times <- attr(x, "last_times")
+    y <- attr(x, "y")
+    times_y <- attr(x, "times_y")
+    id <- attr(x, "id")
     if (!is.null(pred_Long)) {
         test1 <- is.data.frame(pred_Long)
         test2 <- is.list(pred_Long) && length(pred_Long) == 2L && is.data.frame(pred_Long[[1]])
@@ -655,6 +661,11 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
     xlim <- NULL
     if (!is.null(pred_Long)) xlim <- range(xlim, pred_Long[[time_var]])
     if (!is.null(pred_Event)) xlim <- range(xlim, pred_Event[[time_var]])
+    col_line_long <- rep(col_line_long, length.out = n_outcomes)
+    pch_points <- rep(pch_points, length.out = n_outcomes)
+    col_points <- rep(col_points, length.out = n_outcomes)
+    cex_points <- rep(cex_points, length.out = n_outcomes)
+    fill_CI_long <- rep(fill_CI_long, length.out = n_outcomes)
     plot_long_i <- function (outcome, add_xlab = FALSE, box = TRUE,
                              cex_axis = cex_axis) {
         ind <- pos_outcomes[outcome]
@@ -666,19 +677,27 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         ry <- range(preds, low, upp)
         rx <- range(times)
         plot(rx, ry, type = "n", xaxt = "n", bty = if (box) "o" else "n",
-             xlab = if (add_xlab) xlab  else "", xlim = xlim,
+             xlab = if (add_xlab) xlab  else "", xlim = xlim, col.axis = col_axis,
              ylim = range(f(ranges[[outcome]]), ry), ylab = ylab_long[outcome],
-             cex.lab = cex_ylab_long, cex.axis = cex_axis)
+             cex.lab = cex_ylab_long, cex.axis = cex_axis, col.lab = col_axis,
+             col.axis = col_axis)
         if (!add_xlab) {
             axis(1, c(-5, last_times[subj_ind]), labels = c("", ""), tcl = 0,
-                 cex.axis = cex_axis)
+                 cex.axis = cex_axis, col = col_axis, col.axis = col_axis,
+                 col.ticks = col_axis)
         }
-        if (CI) {
+        if (CI_long) {
             polygon(c(times, rev(times)), c(low, rev(upp)), border = NA,
-                    col = fill_CI_long)
+                    col = fill_CI_long[outcome])
         }
-        lines(times, preds, lwd = lwd_long, col = col_line_long)
-        abline(v = last_times[subj_ind] + 0.01, lty = 3)
+        y_i <- f(c(y[[outcome]]))
+        times_y_i <- times_y[[outcome]]
+        id_i <- id[[outcome]]
+        points(times_y_i[id_i == subj_ind], y_i[id_i == subj_ind],
+               pch = pch_points[outcome], cex = cex_points[outcome],
+               col = col_points[outcome])
+        lines(times, preds, lwd = lwd_long, col = col_line_long[outcome])
+        abline(v = last_times[subj_ind] + 0.01, lty = 3, col = col_axis)
     }
     plot_event <- function (box = FALSE, axis_side = 4, cex_axis = cex_axis) {
         ind <- grep("pred_", names(pred_Event), fixed = TRUE)
@@ -689,10 +708,11 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         ry <- range(preds, low, upp)
         rx <- range(times)
         plot(rx, ry, type = "n", xlab = "", ylab = "", xlim = xlim,
-             axes = FALSE)
-        if (box) box()
-        axis(axis_side, cex.axis = cex_axis)
-        if (CI) {
+             axes = FALSE, col.axis = col_axis, col.lab = col_axis)
+        if (box) box(col = col_axis)
+        axis(axis_side, cex.axis = cex_axis, col = col_axis,
+             col.ticks = col_axis, col.axis = col_axis)
+        if (CI_event) {
             polygon(c(times, rev(times)), c(low, rev(upp)), border = NA,
                     col = fill_CI_event)
         }
@@ -701,7 +721,8 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
     if (is.null(pred_Event)) {
         for (i in seq_along(outcomes)) {
             plot_long_i(outcomes[i], TRUE, cex_axis = cex_axis)
-            axis(1, cex.axis = cex_axis)
+            axis(1, cex.axis = cex_axis, col = col_axis,
+                 col.ticks = col_axis, col.axis = col_axis)
         }
     }
     if (is.null(pred_Long)) {
@@ -709,55 +730,66 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         title(xlab = xlab, cex = cex_xlab)
         title(ylab = ylab_event, cex = cex_ylab_event)
         abline(v = last_times[subj_ind] + 0.01, lty = 3)
-        axis(1, cex.axis = cex_axis)
+        axis(1, cex.axis = cex_axis, col = col_axis, col.ticks = col_axis,
+             col.axis = col_axis)
     }
     if (!is.null(pred_Long) && !is.null(pred_Event)) {
         if (n_outcomes == 1) {
             # n_outcomes == 1
-            op <- par(mar = c(4,4,3,4), mgp = c(2, 0.4, 0), tcl = -0.3)
+            op <- par(mar = c(4,4,3,4), mgp = c(2, 0.4, 0), tcl = -0.3, bg = bg)
             plot_long_i(outcomes[1L], cex_axis = cex_axis)
-            axis(1, cex.axis = cex_axis)
-            title(xlab = xlab, cex = cex_xlab)
+            axis(1, cex.axis = cex_axis, col.ticks = col_axis, col = col_axis,
+                 col.axis = col_axis)
+            title(xlab = xlab, cex = cex_xlab, col = col_axis)
             par(new = TRUE)
             plot_event(cex_axis = cex_axis)
-            mtext(ylab_event, 4, 1.5, cex = cex_ylab_event)
+            mtext(ylab_event, 4, 1.5, cex = cex_ylab_event, col = col_axis)
             par(op)
         } else if (n_outcomes == 2) {
             # n_outcomes == 2
             op <- par(mfrow = c(2, 1), oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
-                      mgp = c(2, 0.4, 0), tcl = -0.3)
+                      mgp = c(2, 0.4, 0), tcl = -0.3, bg = bg)
             pp <- par("usr")[1] + pos_ylab_long * diff(par("usr")[1:2])
             plot_long_i(outcomes[1L], box = FALSE, cex_axis = cex_axis)
-            mtext(ylab_long[outcomes[1L]], 2, 1.5, at = pp[1], cex = cex_ylab_long * 0.66)
+            mtext(ylab_long[outcomes[1L]], 2, 1.5, at = pp[1],
+                  cex = cex_ylab_long * 0.66, col = col_axis)
             plot_long_i(outcomes[2L], box = FALSE, cex_axis = cex_axis)
-            mtext(ylab_long[outcomes[2L]], 2, 1.5, at = pp[2], cex = cex_ylab_long * 0.66)
-            axis(1, cex.axis = cex_axis)
-            mtext(xlab, side = 1, line = 1.5, outer = TRUE, cex = cex_xlab)
+            mtext(ylab_long[outcomes[2L]], 2, 1.5, at = pp[2],
+                  cex = cex_ylab_long * 0.66, col = col_axis)
+            axis(1, cex.axis = cex_axis, col.ticks = col_axis, col = col_axis,
+                 col.axis = col_axis)
+            mtext(xlab, side = 1, line = 1.5, outer = TRUE,
+                  cex = cex_xlab, col = col_axis)
             par(op)
             op <- par(new = TRUE, oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
                       mgp = c(2, 0.4, 0), tcl = -0.3, cex = 0.9)
             plot_event(box = TRUE, cex_axis = 0.66 * cex_axis)
-            mtext(ylab_event, 4, 1.5, cex = cex_ylab_event)
+            mtext(ylab_event, 4, 1.5, cex = cex_ylab_event, col = col_axis)
             par(op)
         } else {
             # n_outcomes == 3
             op <- par(mfrow = c(3, 1), oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
-                      mgp = c(2, 0.4, 0), tcl = -0.3)
+                      mgp = c(2, 0.4, 0), tcl = -0.3, bg = bg)
             pp <- par("usr")[1] + pos_ylab_long * diff(par("usr")[1:2])
             plot_long_i(outcomes[1L], box = FALSE, cex_axis = cex_axis)
-            mtext(ylab_long[outcomes[1L]], 2, 1.5, at = pp[1], cex = cex_ylab_long * 0.66)
+            mtext(ylab_long[outcomes[1L]], 2, 1.5, at = pp[1],
+                  cex = cex_ylab_long * 0.66, col = col_axis)
             plot_long_i(outcomes[2L], box = FALSE, cex_axis = cex_axis)
-            mtext(ylab_long[outcomes[2L]], 2, 1.5, at = pp[2], cex = cex_ylab_long * 0.66)
+            mtext(ylab_long[outcomes[2L]], 2, 1.5, at = pp[2],
+                  cex = cex_ylab_long * 0.66, col = col_axis)
             plot_long_i(outcomes[3L], box = FALSE, cex_axis = cex_axis)
-            mtext(ylab_long[outcomes[3L]], 2, 1.5, at = pp[3], cex = cex_ylab_long * 0.66)
-            axis(1, cex.axis = cex_axis)
-            mtext(xlab, side = 1, line = 1.5, outer = TRUE, cex = cex_xlab)
-            box("inner")
+            mtext(ylab_long[outcomes[3L]], 2, 1.5, at = pp[3],
+                  cex = cex_ylab_long * 0.66, col = col_axis)
+            axis(1, cex.axis = cex_axis, col = col_axis, col.ticks = col_axis,
+                 col.axis = col_axis)
+            mtext(xlab, side = 1, line = 1.5, outer = TRUE, cex = cex_xlab,
+                  col = col_axis)
+            box("inner", col = col_axis)
             par(op)
             op <- par(new = TRUE, oma = 0.6525 * c(4,4,3,4), mar = c(0, 0, 0, 0),
                       mgp = c(2, 0.4, 0), tcl = -0.3, cex = 0.66)
             plot_event(cex_axis = cex_axis)
-            mtext(ylab_event, 4, 1.5, cex = cex_ylab_event)
+            mtext(ylab_event, 4, 1.5, cex = cex_ylab_event, col = col_axis)
             par(op)
         }
     }

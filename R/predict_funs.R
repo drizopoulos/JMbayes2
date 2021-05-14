@@ -87,6 +87,9 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
         if (is.factor(yy)) as.numeric(yy != levels(yy)[1L]) else yy
     })
     y[] <- lapply(y, as.matrix)
+    NAs <- mapply2(c, NAs_FE_dataL, NAs_RE_dataL)
+    times_y <- lapply(NAs, function (ind) if (!is.null(ind))
+        dataL[[time_var]][-ind] else dataL[[time_var]])
     families <- object$model_info$families
     family_names <- sapply(families, "[[", "family")
     links <- sapply(families, "[[", "link")
@@ -418,7 +421,7 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
         }
         res
     }
-    list(mcmc = combine(out), X = X, Z = Z, y = y, id = idL,
+    list(mcmc = combine(out), X = X, Z = Z, y = y, times_y = times_y, id = idL,
          ind_RE = object$model_data$ind_RE, links = links,
          respVars = lapply(respVars, "[", 1L),
          NAs = mapply2(c, NAs_FE_dataL, NAs_RE_dataL),
@@ -550,6 +553,9 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
     attr(out, "ranges") <- ranges <- lapply(object$model_data$y, range,
                                             na.rm = TRUE)
     attr(out, "last_times") <- components_newdata$last_times
+    attr(out, "y") <- components_newdata$y
+    attr(out, "times_y") <- components_newdata$times_y
+    attr(out, "id") <- components_newdata$id
     attr(out, "process") <- "longitudinal"
     out
 }
@@ -698,6 +704,9 @@ predict_Event <- function (object, components_newdata, newdata, times,
     attr(res, "ranges") <- ranges <- lapply(object$model_data$y, range,
                                             na.rm = TRUE)
     attr(res, "last_times") <- components_newdata$last_times
+    attr(res, "y") <- components_newdata$y
+    attr(res, "times_y") <- components_newdata$times_y
+    attr(res, "id") <- components_newdata$id
     attr(res, "process") <- "event"
     res
 }
