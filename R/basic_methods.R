@@ -648,6 +648,11 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
                 stop("'fun_long' needs to be a function or a list of functions.")
             }
         }
+        col_line_long <- rep(col_line_long, length.out = n_outcomes)
+        pch_points <- rep(pch_points, length.out = n_outcomes)
+        col_points <- rep(col_points, length.out = n_outcomes)
+        cex_points <- rep(cex_points, length.out = n_outcomes)
+        fill_CI_long <- rep(fill_CI_long, length.out = n_outcomes)
     }
     if (!is.null(pred_Event)) {
         pred_Event <- pred_Event[pred_Event[[id_var]] == subj, ]
@@ -661,11 +666,6 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
     xlim <- NULL
     if (!is.null(pred_Long)) xlim <- range(xlim, pred_Long[[time_var]])
     if (!is.null(pred_Event)) xlim <- range(xlim, pred_Event[[time_var]])
-    col_line_long <- rep(col_line_long, length.out = n_outcomes)
-    pch_points <- rep(pch_points, length.out = n_outcomes)
-    col_points <- rep(col_points, length.out = n_outcomes)
-    cex_points <- rep(cex_points, length.out = n_outcomes)
-    fill_CI_long <- rep(fill_CI_long, length.out = n_outcomes)
     plot_long_i <- function (outcome, add_xlab = FALSE, box = TRUE,
                              cex_axis = cex_axis) {
         ind <- pos_outcomes[outcome]
