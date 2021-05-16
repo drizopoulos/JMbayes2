@@ -117,6 +117,7 @@ print.tvROC <- function (x, digits = 4, ...) {
     xx[x$thr == x$Youden] <- "*"
     d[[" "]] <- xx
     d <- d[!is.na(d$qSN) & !is.na(d$qSP), ]
+    d <- d[!duplicated(d[c("SN", "SP")]), ]
     row.names(d) <- 1:nrow(d)
     print(d)
     cat("\n")
