@@ -123,33 +123,43 @@ The predictions are included again as extra columns in the corresponding data.fr
 plot(predLong2, predSurv)
 ```
 
-Again by default, the plot is for the predictions of the first subject (i.e., Patient 25) and for the first longitudinal outcome (i.e., `log(serBilir)`). However, the `plot()` method has a series of arguments that allow users to customize the plot. We illustrate some of these capabilities with the following figure. First, we specify that we want to depict all three outcomes using `outcomes = 1:3` (note: a max of three outcomes can be simultaneously displayed). Next, we specify via the `subject` argument that we want to show the predictions of Patient 93. Note, that for serum bilirubin we used the log transformation in the specification of the linear mixed model. Hence, we receive predictions on the transformed scale. To show predictions on the original scale, we use the `fun_long` argument. Because we have three outcomes, this needs to be a list of three functions. The first one, corresponding to serum bilirubin is the `exp()` and for the other two the `identity()` because we do not wish to transform the predictions. Analogously, we also have the `fun_event` argument to transform the predictions for the event outcome, and in the example below we set that we want to obtain survival probabilities. Finally, the `pos_ylab_long` specifies the relative positive of the y-axis labels for the three longitudinal outcomes.
+Again by default, the plot is for the predictions of the first subject (i.e., Patient 25) and for the first longitudinal outcome (i.e., `log(serBilir)`). However, the `plot()` method has a series of arguments that allow users to customize the plot. We illustrate some of these capabilities with the following figure. First, we specify that we want to depict all three outcomes using `outcomes = 1:3` (note: a max of three outcomes can be simultaneously displayed). Next, we specify via the `subject` argument that we want to show the predictions of Patient 93. Note, that for serum bilirubin we used the log transformation in the specification of the linear mixed model. Hence, we receive predictions on the transformed scale. To show predictions on the original scale, we use the `fun_long` argument. Because we have three outcomes, this needs to be a list of three functions. The first one, corresponding to serum bilirubin is the `exp()` and for the other two the `identity()` because we do not wish to transform the predictions. Analogously, we also have the `fun_event` argument to transform the predictions for the event outcome, and in the example below we set that we want to obtain survival probabilities. Using the arguments `bg`, `col_points`, `col_line_long`, `col_line_event`, `fill_CI_long`, and `fill_CI_event` we have changed the appereance of the plot to a dark theme. Finally, the `pos_ylab_long` specifies the relative positive of the y-axis labels for the three longitudinal outcomes.
 ```{r, eval = FALSE}
+cols <- c('#F25C78', '#D973B5', '#F28322')
 plot(predLong2, predSurv, outcomes = 1:3, subject = 93,
      fun_long = list(exp, identity, identity),
      fun_event = function (x) 1 - x,
      ylab_event = "Survival Probabilities",
      ylab_long = c("Serum Bilirubin", "Prothrombin", "Ascites"),
+     bg = '#132743', col_points = cols, col_line_long = cols,
+     col_line_event = '#F7F7FF', col_axis = "white", 
+     fill_CI_long = c("#F25C7880", "#D973B580", "#F2832280"),
+     fill_CI_event = "#F7F7FF80",
      pos_ylab_long = c(1.9, 1.9, 0.08))
 ```
 
 ```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5, echo = FALSE}
+cols <- c('#F25C78', '#D973B5', '#F28322')
 plot(predLong2, predSurv, outcomes = 1:3, subject = 93,
      fun_long = list(exp, identity, identity),
      fun_event = function (x) 1 - x,
      ylab_event = "Survival Probabilities",
      ylab_long = c("Serum Bilirubin", "Prothrombin", "Ascites"),
+     bg = '#132743', col_points = cols, col_line_long = cols,
+     col_line_event = '#F7F7FF', col_axis = "white", 
+     fill_CI_long = c("#F25C7880", "#D973B580", "#F2832280"),
+     fill_CI_event = "#F7F7FF80",
      pos_ylab_long = c(19, 22, 0.5))
 ```
 
-We evaluate the accuracy of the predictions using ROC methodology. We calculate the components of the ROC curve using information up to year seven, and we are interested in events occurring within a two-year window. The calculations are performed with the following call to `tvROC()`:
+We evaluate the accuracy of the predictions using ROC methodology. We calculate the components of the ROC curve using information up to year seven, and we are interested in events occurring within a two-year window. That is discriminating between patients who will get the event in the interval `(t0, t0 + Dt]`, (i.e., in our case $T_j \in (7, 9]$) from patients who will survive at least 9 years (i.e., $T_j > 9$). The calculations are performed with the following call to `tvROC()`:
 ```{r}
 pbc2$event <- as.numeric(pbc2$status != "alive")
 roc <- tvROC(jointFit, newdata = pbc2, Tstart = t0, Dt = 2)
 roc
 ```
 
-In the first line we define the event indicator as we did in the `pbc2.id` data.frame. To depict the ROC curve we use the corresponding `plot()` method:
+In the first line we define the event indicator as we did in the `pbc2.id` data.frame. The cut-point with the asterisk on the right maximizes the [Youden's index](https://en.wikipedia.org/wiki/Youden%27s_J_statistic). To depict the ROC curve, we use the corresponding `plot()` method:
 ```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5, echo = FALSE}
 plot(roc)
 ```
