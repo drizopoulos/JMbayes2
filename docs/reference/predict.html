@@ -100,7 +100,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-62</span>
       </span>
     </div>
 
@@ -192,12 +192,13 @@
 
 <span class='co'># S3 method for predict_jm</span>
 <span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>x</span>, x2 <span class='op'>=</span> <span class='cn'>NULL</span>, subject <span class='op'>=</span> <span class='fl'>1</span>, outcomes <span class='op'>=</span> <span class='fl'>1</span>,
-  fun_long <span class='op'>=</span> <span class='cn'>NULL</span>, fun_event <span class='op'>=</span> <span class='cn'>NULL</span>, CI <span class='op'>=</span> <span class='cn'>TRUE</span>, xlab <span class='op'>=</span> <span class='st'>"Follow-up Time"</span>,
-  ylab_long <span class='op'>=</span> <span class='cn'>NULL</span>, ylab_event <span class='op'>=</span> <span class='st'>"Cumulative Risk"</span>, lwd_long <span class='op'>=</span> <span class='fl'>2</span>,
-  lwd_event <span class='op'>=</span> <span class='fl'>2</span>, col_line_long <span class='op'>=</span> <span class='st'>"blue"</span>, col_line_event <span class='op'>=</span> <span class='st'>"red"</span>,
-  fill_CI_long <span class='op'>=</span> <span class='st'>"#0000FF44"</span>, fill_CI_event <span class='op'>=</span> <span class='st'>"#FF000044"</span>,
-  cex_xlab <span class='op'>=</span> <span class='fl'>1</span>, cex_ylab_long <span class='op'>=</span> <span class='fl'>1</span>, cex_ylab_event <span class='op'>=</span> <span class='fl'>1</span>, cex_axis <span class='op'>=</span> <span class='fl'>1</span>,
-  pos_ylab_long <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.1</span>, <span class='fl'>2</span>, <span class='fl'>0.08</span><span class='op'>)</span>, <span class='va'>...</span><span class='op'>)</span></pre>
+  fun_long <span class='op'>=</span> <span class='cn'>NULL</span>, fun_event <span class='op'>=</span> <span class='cn'>NULL</span>, CI_long <span class='op'>=</span> <span class='cn'>TRUE</span>, CI_event <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  xlab <span class='op'>=</span> <span class='st'>"Follow-up Time"</span>, ylab_long <span class='op'>=</span> <span class='cn'>NULL</span>, ylab_event <span class='op'>=</span> <span class='st'>"Cumulative Risk"</span>,
+  lwd_long <span class='op'>=</span> <span class='fl'>2</span>, lwd_event <span class='op'>=</span> <span class='fl'>2</span>, col_line_long <span class='op'>=</span> <span class='st'>"blue"</span>, col_line_event <span class='op'>=</span> <span class='st'>"red"</span>,
+  pch_points <span class='op'>=</span> <span class='fl'>16</span>, col_points <span class='op'>=</span> <span class='st'>"blue"</span>, cex_points <span class='op'>=</span> <span class='fl'>1</span>,
+  fill_CI_long <span class='op'>=</span> <span class='st'>"#0000FF44"</span>, fill_CI_event <span class='op'>=</span> <span class='st'>"#FF000044"</span>, cex_xlab <span class='op'>=</span> <span class='fl'>1</span>,
+  cex_ylab_long <span class='op'>=</span> <span class='fl'>1</span>, cex_ylab_event <span class='op'>=</span> <span class='fl'>1</span>, cex_axis <span class='op'>=</span> <span class='fl'>1</span>, col_axis <span class='op'>=</span> <span class='st'>"black"</span>,
+  pos_ylab_long <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.1</span>, <span class='fl'>2</span>, <span class='fl'>0.08</span><span class='op'>)</span>, bg <span class='op'>=</span> <span class='st'>"white"</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -267,7 +268,7 @@
       <td><p>function to apply to the predictions for the longitudinal and event outcomes, respectively. When multiple longitudinal outcomes are plotted, <code>fun_long</code> can be a list of functions; see examples below.</p></td>
     </tr>
     <tr>
-      <th>CI</th>
+      <th>CI_long, CI_event</th>
       <td><p>logical; should credible interval areas be plotted.</p></td>
     </tr>
     <tr>
@@ -277,8 +278,8 @@
     <tr>
       <th>lwd_long, lwd_event, col_line_long, col_line_event,
   fill_CI_long, fill_CI_event, cex_xlab, cex_ylab_long, cex_ylab_event,
-  cex_axis</th>
-      <td><p>graphical parameters.</p></td>
+  cex_axis, pch_points, col_points, cex_points, col_axis, bg</th>
+      <td><p>graphical parameters; see <code>par</code>.</p></td>
     </tr>
     <tr>
       <th>pos_ylab_long</th>

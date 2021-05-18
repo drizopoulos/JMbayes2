@@ -99,7 +99,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-62</span>
       </span>
     </div>
 
@@ -184,6 +184,7 @@
 <a href="#major" class="anchor"></a>Major</h2>
 <ul>
 <li><p>Added a <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> method for <code>jm</code> objects and a corresponding <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> for objects of class <code>predict_jm</code> for calculating and displaying predictions from joint models. Currently, only standard survival models are covered. Future versions will include predictions from competing risks and multi-state models.</p></li>
+<li><p>Added the functions <code><a href="../reference/Accuracy%20Measures.html">tvROC()</a></code> and <code><a href="../reference/Accuracy%20Measures.html">tvAUC()</a></code> for calculating time-varying Receiver Operating Characteristic (ROC) curves and the areas under the ROC curves for fitted joint models. Currently, only right-censored data are supported.</p></li>
 <li><p>Added a vignette (available on the <a href="https://drizopoulos.github.io/JMbayes2/">website of the package</a>) to explain how (dynamic) predictions are calculated in the package.</p></li>
 </ul>
 </div>

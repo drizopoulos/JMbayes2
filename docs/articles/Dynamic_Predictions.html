@@ -51,7 +51,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-62</span>
       </span>
     </div>
 
@@ -126,7 +126,7 @@
       <h1 data-toc-skip>Dynamic Predictions</h1>
                         <h4 class="author">Dimitris Rizopoulos</h4>
             
-            <h4 class="date">2021-05-12</h4>
+            <h4 class="date">2021-05-18</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/master/vignettes/Dynamic_Predictions.Rmd"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="hidden name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -209,16 +209,21 @@
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, <span class="va">predSurv</span><span class="op">)</span></code></pre></div>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-10-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>Again by default, the plot is for the predictions of the first subject (i.e., Patient 25) and for the first longitudinal outcome (i.e., <code><a href="https://rdrr.io/r/base/Log.html">log(serBilir)</a></code>). However, the <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method has a series of arguments that allow users to customize the plot. We illustrate some of these capabilities with the following figure. First, we specify that we want to depict all three outcomes using <code>outcomes = 1:3</code> (note: a max of three outcomes can be simultaneously displayed). Next, we specify via the <code>subject</code> argument that we want to show the predictions of Patient 93. Note, that for serum bilirubin we used the log transformation in the specification of the linear mixed model. Hence, we receive predictions on the transformed scale. To show predictions on the original scale, we use the <code>fun_long</code> argument. Because we have three outcomes, this needs to be a list of three functions. The first one, corresponding to serum bilirubin is the <code><a href="https://rdrr.io/r/base/Log.html">exp()</a></code> and for the other two the <code><a href="https://rdrr.io/r/base/identity.html">identity()</a></code> because we do not wish to transform the predictions. Analogously, we also have the <code>fun_event</code> argument to transform the predictions for the event outcome, and in the example below we set that we want to obtain survival probabilities. Finally, the <code>pos_ylab_long</code> specifies the relative positive of the y-axis labels for the three longitudinal outcomes.</p>
+<p>Again by default, the plot is for the predictions of the first subject (i.e., Patient 25) and for the first longitudinal outcome (i.e., <code><a href="https://rdrr.io/r/base/Log.html">log(serBilir)</a></code>). However, the <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method has a series of arguments that allow users to customize the plot. We illustrate some of these capabilities with the following figure. First, we specify that we want to depict all three outcomes using <code>outcomes = 1:3</code> (note: a max of three outcomes can be simultaneously displayed). Next, we specify via the <code>subject</code> argument that we want to show the predictions of Patient 93. Note, that for serum bilirubin we used the log transformation in the specification of the linear mixed model. Hence, we receive predictions on the transformed scale. To show predictions on the original scale, we use the <code>fun_long</code> argument. Because we have three outcomes, this needs to be a list of three functions. The first one, corresponding to serum bilirubin is the <code><a href="https://rdrr.io/r/base/Log.html">exp()</a></code> and for the other two the <code><a href="https://rdrr.io/r/base/identity.html">identity()</a></code> because we do not wish to transform the predictions. Analogously, we also have the <code>fun_event</code> argument to transform the predictions for the event outcome, and in the example below we set that we want to obtain survival probabilities. Using the arguments <code>bg</code>, <code>col_points</code>, <code>col_line_long</code>, <code>col_line_event</code>, <code>fill_CI_long</code>, and <code>fill_CI_event</code> we have changed the appereance of the plot to a dark theme. Finally, the <code>pos_ylab_long</code> specifies the relative positive of the y-axis labels for the three longitudinal outcomes.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, <span class="va">predSurv</span>, outcomes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, subject <span class="op">=</span> <span class="fl">93</span>,
+<code class="sourceCode R"><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'#F25C78'</span>, <span class="st">'#D973B5'</span>, <span class="st">'#F28322'</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, <span class="va">predSurv</span>, outcomes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, subject <span class="op">=</span> <span class="fl">93</span>,
      fun_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">exp</span>, <span class="va">identity</span>, <span class="va">identity</span><span class="op">)</span>,
      fun_event <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">x</span>,
      ylab_event <span class="op">=</span> <span class="st">"Survival Probabilities"</span>,
      ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Serum Bilirubin"</span>, <span class="st">"Prothrombin"</span>, <span class="st">"Ascites"</span><span class="op">)</span>,
+     bg <span class="op">=</span> <span class="st">'#132743'</span>, col_points <span class="op">=</span> <span class="va">cols</span>, col_line_long <span class="op">=</span> <span class="va">cols</span>,
+     col_line_event <span class="op">=</span> <span class="st">'#F7F7FF'</span>, col_axis <span class="op">=</span> <span class="st">"white"</span>, 
+     fill_CI_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"#F25C7880"</span>, <span class="st">"#D973B580"</span>, <span class="st">"#F2832280"</span><span class="op">)</span>,
+     fill_CI_event <span class="op">=</span> <span class="st">"#F7F7FF80"</span>,
      pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1.9</span>, <span class="fl">1.9</span>, <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-12-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>We evaluate the accuracy of the predictions using ROC methodology. We calculate the components of the ROC curve using information up to year seven, and we are interested in events occurring within a two-year window. The calculations are performed with the following call to <code><a href="../reference/Accuracy%20Measures.html">tvROC()</a></code>:</p>
+<p>We evaluate the accuracy of the predictions using ROC methodology. We calculate the components of the ROC curve using information up to year seven, and we are interested in events occurring within a two-year window. That is discriminating between patients who will get the event in the interval <code>(t0, t0 + Dt]</code>, (i.e., in our case <span class="math inline">\(T_j \in (7, 9]\)</span>) from patients who will survive at least 9 years (i.e., <span class="math inline">\(T_j &gt; 9\)</span>). The calculations are performed with the following call to <code><a href="../reference/Accuracy%20Measures.html">tvROC()</a></code>:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pbc2</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">pbc2</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span>
 <span class="va">roc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Accuracy%20Measures.html">tvROC</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
@@ -231,51 +236,31 @@
 <span class="co">#&gt; </span>
 <span class="co">#&gt;    cut-off         SN        SP         qSN         qSP  </span>
 <span class="co">#&gt; 1     0.54 0.00000000 0.9909546 -0.00781250 -0.16685494  </span>
-<span class="co">#&gt; 2     0.55 0.00000000 0.9909546 -0.00781250 -0.16685494  </span>
-<span class="co">#&gt; 3     0.56 0.00000000 0.9909546 -0.00781250 -0.16685494  </span>
-<span class="co">#&gt; 4     0.57 0.00000000 0.9909546 -0.00781250 -0.16685494  </span>
-<span class="co">#&gt; 5     0.58 0.00000000 0.9909546 -0.00781250 -0.16685494  </span>
-<span class="co">#&gt; 6     0.59 0.00000000 0.9909546 -0.00781250 -0.16685494  </span>
-<span class="co">#&gt; 7     0.60 0.00000000 0.9819092 -0.01574803 -0.16685494  </span>
-<span class="co">#&gt; 8     0.61 0.00000000 0.9819092 -0.01574803 -0.16685494  </span>
-<span class="co">#&gt; 9     0.62 0.00000000 0.9819092 -0.01574803 -0.16685494  </span>
-<span class="co">#&gt; 10    0.63 0.00000000 0.9819092 -0.01574803 -0.16685494  </span>
-<span class="co">#&gt; 11    0.64 0.00000000 0.9819092 -0.01574803 -0.16685494  </span>
-<span class="co">#&gt; 12    0.65 0.00000000 0.9819092 -0.01574803 -0.16685494  </span>
-<span class="co">#&gt; 13    0.66 0.00000000 0.9728638 -0.02380952 -0.16685494  </span>
-<span class="co">#&gt; 14    0.67 0.00000000 0.9728638 -0.02380952 -0.16685494  </span>
-<span class="co">#&gt; 15    0.68 0.00000000 0.9728638 -0.02380952 -0.16685494  </span>
-<span class="co">#&gt; 16    0.69 0.00000000 0.9728638 -0.02380952 -0.16685494  </span>
-<span class="co">#&gt; 17    0.70 0.05421108 0.9728638  0.02394584  0.12485879  </span>
-<span class="co">#&gt; 18    0.71 0.05421108 0.9728638  0.02394584  0.12485879  </span>
-<span class="co">#&gt; 19    0.72 0.05421108 0.9728638  0.02394584  0.12485879  </span>
-<span class="co">#&gt; 20    0.73 0.05421108 0.9638185  0.01607443  0.06651605  </span>
-<span class="co">#&gt; 21    0.74 0.05421108 0.9638185  0.01607443  0.06651605  </span>
-<span class="co">#&gt; 22    0.75 0.05421108 0.9638185  0.01607443  0.06651605  </span>
-<span class="co">#&gt; 23    0.76 0.05421108 0.9638185  0.01607443  0.06651605  </span>
-<span class="co">#&gt; 24    0.77 0.10986279 0.9550134  0.05878934  0.17096195  </span>
-<span class="co">#&gt; 25    0.78 0.21828495 0.9550134  0.15965633  0.35519263  </span>
-<span class="co">#&gt; 26    0.79 0.21828495 0.9550134  0.15965633  0.35519263  </span>
-<span class="co">#&gt; 27    0.80 0.27249604 0.9550134  0.21136125  0.41967336  </span>
-<span class="co">#&gt; 28    0.81 0.32670712 0.9459681  0.25765144  0.41915656  </span>
-<span class="co">#&gt; 29    0.82 0.38490705 0.9375882  0.31002617  0.42492006  </span>
-<span class="co">#&gt; 30    0.83 0.38490705 0.9375882  0.31002617  0.42492006  </span>
-<span class="co">#&gt; 31    0.84 0.38490705 0.9285428  0.30397377  0.38546839  </span>
-<span class="co">#&gt; 32    0.85 0.39503426 0.9121418  0.30320910  0.33331158  </span>
-<span class="co">#&gt; 33    0.86 0.45845242 0.8774965  0.34710618  0.28168422  </span>
-<span class="co">#&gt; 34    0.87 0.46042220 0.8597344  0.33709013  0.24607255  </span>
-<span class="co">#&gt; 35    0.88 0.46104564 0.8327023  0.31838125  0.20068872  </span>
-<span class="co">#&gt; 36    0.89 0.46761845 0.7976174  0.29921205  0.15782745  </span>
-<span class="co">#&gt; 37    0.90 0.47221914 0.7531582  0.26791687  0.11548341  </span>
-<span class="co">#&gt; 38    0.91 0.52643022 0.7350674  0.32121665  0.12368443  </span>
-<span class="co">#&gt; 39    0.92 0.58757226 0.7090877  0.38135839  0.12726306  </span>
-<span class="co">#&gt; 40    0.93 0.59589620 0.6652496  0.35642728  0.10035841  </span>
-<span class="co">#&gt; 41    0.94 0.76516552 0.6392207  0.59608470  0.13813844 *</span>
-<span class="co">#&gt; 42    0.95 0.82524168 0.5407001  0.64216153  0.10227747  </span>
-<span class="co">#&gt; 43    0.96 0.88524597 0.4512129  0.71532173  0.08060335  </span>
-<span class="co">#&gt; 44    0.97 0.94224242 0.3159968  0.79303534  0.05122137  </span>
-<span class="co">#&gt; 45    0.98 0.94433810 0.1625749  0.62208499  0.01792874</span></code></pre></div>
-<p>In the first line we define the event indicator as we did in the <code>pbc2.id</code> data.frame. To depict the ROC curve we use the corresponding <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method: <img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-14-1.png" width="816" style="display: block; margin: auto;"></p>
+<span class="co">#&gt; 2     0.60 0.00000000 0.9819092 -0.01574803 -0.16685494  </span>
+<span class="co">#&gt; 3     0.66 0.00000000 0.9728638 -0.02380952 -0.16685494  </span>
+<span class="co">#&gt; 4     0.70 0.05421108 0.9728638  0.02394584  0.12485879  </span>
+<span class="co">#&gt; 5     0.73 0.05421108 0.9638185  0.01607443  0.06651605  </span>
+<span class="co">#&gt; 6     0.77 0.10986279 0.9550134  0.05878934  0.17096195  </span>
+<span class="co">#&gt; 7     0.78 0.21828495 0.9550134  0.15965633  0.35519263  </span>
+<span class="co">#&gt; 8     0.80 0.27249604 0.9550134  0.21136125  0.41967336  </span>
+<span class="co">#&gt; 9     0.81 0.32670712 0.9459681  0.25765144  0.41915656  </span>
+<span class="co">#&gt; 10    0.82 0.38490705 0.9375882  0.31002617  0.42492006  </span>
+<span class="co">#&gt; 11    0.84 0.38490705 0.9285428  0.30397377  0.38546839  </span>
+<span class="co">#&gt; 12    0.85 0.39503426 0.9121418  0.30320910  0.33331158  </span>
+<span class="co">#&gt; 13    0.86 0.45845242 0.8774965  0.34710618  0.28168422  </span>
+<span class="co">#&gt; 14    0.87 0.46042220 0.8597344  0.33709013  0.24607255  </span>
+<span class="co">#&gt; 15    0.88 0.46104564 0.8327023  0.31838125  0.20068872  </span>
+<span class="co">#&gt; 16    0.89 0.46761845 0.7976174  0.29921205  0.15782745  </span>
+<span class="co">#&gt; 17    0.90 0.47221914 0.7531582  0.26791687  0.11548341  </span>
+<span class="co">#&gt; 18    0.91 0.52643022 0.7350674  0.32121665  0.12368443  </span>
+<span class="co">#&gt; 19    0.92 0.58757226 0.7090877  0.38135839  0.12726306  </span>
+<span class="co">#&gt; 20    0.93 0.59589620 0.6652496  0.35642728  0.10035841  </span>
+<span class="co">#&gt; 21    0.94 0.76516552 0.6392207  0.59608470  0.13813844 *</span>
+<span class="co">#&gt; 22    0.95 0.82524168 0.5407001  0.64216153  0.10227747  </span>
+<span class="co">#&gt; 23    0.96 0.88524597 0.4512129  0.71532173  0.08060335  </span>
+<span class="co">#&gt; 24    0.97 0.94224242 0.3159968  0.79303534  0.05122137  </span>
+<span class="co">#&gt; 25    0.98 0.94433810 0.1625749  0.62208499  0.01792874</span></code></pre></div>
+<p>In the first line we define the event indicator as we did in the <code>pbc2.id</code> data.frame. The cut-point with the asterisk on the right maximizes the <a href="https://en.wikipedia.org/wiki/Youden%27s_J_statistic">Youden’s index</a>. To depict the ROC curve, we use the corresponding <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method: <img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-14-1.png" width="816" style="display: block; margin: auto;"></p>
 <p>The area under the ROC curve is calculated with the <code><a href="../reference/Accuracy%20Measures.html">tvAUC()</a></code> function:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/Accuracy%20Measures.html">tvAUC</a></span><span class="op">(</span><span class="va">roc</span><span class="op">)</span>
