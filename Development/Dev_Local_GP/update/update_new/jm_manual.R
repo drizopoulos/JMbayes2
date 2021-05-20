@@ -1,18 +1,19 @@
-load(file = paste0(getwd(), '/Development/Dev_Local_GP/update/draft_env.RData'))
+load(file = paste0(getwd(), '/Development/Dev_Local_GP/update/update_new/mvfit.RData'))
 
 library(JMbayes2)
 
 Surv_object <- fCox1
-Mixed_objects <- fm1
+Mixed_objects <- Mixed
 time_var <- 'year'
 recurrent = FALSE
 functional_forms = NULL
 data_Surv = NULL
 id_var = NULL
 priors = NULL
-control = NULL 
-initial_values = NULL
-last_iterations = extract_last_iterations(joint_model_fit_1)
+control = list(n_burnin = 1)
+control = NULL
+last_iterations = NULL
+last_iterations = extract_last_iterations(joint_model_fit_2)
 
 jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 functional_forms = NULL, data_Surv = NULL, id_var = NULL,
@@ -124,7 +125,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
   # will need to be created in jm_fit()
   unq_id <- unique(idL)
   idL <- JMbayes2:::mapply2(JMbayes2:::exclude_NAs, NAs_FE_dataL, NAs_RE_dataL,
-                 MoreArgs = list(id = idL))
+                            MoreArgs = list(id = idL))
   idL <- lapply(idL, match, table = unq_id)
   # the index variable idL_lp is to be used to subset the random effects of each outcome
   # such that to calculate the Zb part of the model as rowSums(Z * b[idL_lp, ]). This
@@ -147,7 +148,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
   nres <- sapply(Z, ncol)
   ind_RE <- split(seq_len(sum(nres)), rep(seq_along(Z), nres))
   componentsHC <- JMbayes2:::mapply2(JMbayes2:::create_HC_X, x = X, z = Z, id = idL,
-                          terms = terms_FE, data = mf_FE_dataL)
+                                     terms = terms_FE, data = mf_FE_dataL)
   x_in_z <- lapply(componentsHC, "[[", "x_in_z")
   x_notin_z <- lapply(componentsHC, "[[", "x_notin_z")
   x_in_z_base <- lapply(componentsHC, "[[", "x_in_z_base")
@@ -358,7 +359,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     qs <- lapply(split(Time_right, strata), range)
     con$knots <- lapply(qs, function (x)
       JMbayes2:::knots(x[1L], x[2L], con$base_hazard_segments,
-            con$Bsplines_degree))
+                       con$Bsplines_degree))
   }
   
   # Extract functional forms per longitudinal outcome
@@ -415,12 +416,12 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
   strata_H <- rep(strata, each = con$GK_k)
   W0_H <- if (recurrent) {
     JMbayes2:::create_W0(c(t(st - trunc_Time)), con$knots, con$Bsplines_degree + 1,
-              strata_H)
+                         strata_H)
   } else {
     JMbayes2:::create_W0(c(t(st)), con$knots, con$Bsplines_degree + 1, strata_H)
   }
   dataS_H <- JMbayes2:::SurvData_HazardModel(st, dataS, Time_start,
-                                  paste0(idT, "_", strata), time_var)
+                                             paste0(idT, "_", strata), time_var)
   mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
   W_H <- JMbayes2:::construct_Wmat(terms_Surv_noResp, mf)
   any_gammas <- as.logical(ncol(W_H))
@@ -431,36 +432,36 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
   eps <- lapply(attr, "[[", 1L)
   direction <- lapply(attr, "[[", 2L)
   X_H <- JMbayes2:::design_matrices_functional_forms(st, terms_FE_noResp,
-                                          dataL, time_var, idVar, idT,
-                                          collapsed_functional_forms, Xbar,
-                                          eps, direction)
+                                                     dataL, time_var, idVar, idT,
+                                                     collapsed_functional_forms, Xbar,
+                                                     eps, direction)
   Z_H <- JMbayes2:::design_matrices_functional_forms(st, terms_RE,
-                                          dataL, time_var, idVar, idT,
-                                          collapsed_functional_forms, NULL,
-                                          eps, direction)
+                                                     dataL, time_var, idVar, idT,
+                                                     collapsed_functional_forms, NULL,
+                                                     eps, direction)
   U_H <- lapply(functional_forms, JMbayes2:::construct_Umat, dataS = dataS_H)
   if (length(which_event)) {
     W0_h <- if (recurrent) {
       JMbayes2:::create_W0(Time_right - trunc_Time, con$knots,
-                con$Bsplines_degree + 1, strata)
+                           con$Bsplines_degree + 1, strata)
     } else {
       JMbayes2:::create_W0(Time_right, con$knots, con$Bsplines_degree + 1, strata)
     }
     dataS_h <- JMbayes2:::SurvData_HazardModel(Time_right, dataS, Time_start,
-                                    paste0(idT, "_", strata), time_var)
+                                               paste0(idT, "_", strata), time_var)
     mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
     W_h <- JMbayes2:::construct_Wmat(terms_Surv_noResp, mf)
     if (!any_gammas) {
       W_h <- matrix(0.0, nrow = nrow(W_h), ncol = 1L)
     }
     X_h <- JMbayes2:::design_matrices_functional_forms(Time_right, terms_FE_noResp,
-                                            dataL, time_var, idVar, idT,
-                                            collapsed_functional_forms, Xbar,
-                                            eps, direction)
+                                                       dataL, time_var, idVar, idT,
+                                                       collapsed_functional_forms, Xbar,
+                                                       eps, direction)
     Z_h <- JMbayes2:::design_matrices_functional_forms(Time_right, terms_RE,
-                                            dataL, time_var, idVar, idT,
-                                            collapsed_functional_forms, NULL,
-                                            eps, direction)
+                                                       dataL, time_var, idVar, idT,
+                                                       collapsed_functional_forms, NULL,
+                                                       eps, direction)
     U_h <- lapply(functional_forms, JMbayes2:::construct_Umat, dataS = dataS_h)
   } else {
     W0_h <- W_h <- matrix(0.0)
@@ -468,22 +469,22 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
   }
   if (length(which_interval)) {
     W0_H2 <- JMbayes2:::create_W0(c(t(st2)), con$knots, con$Bsplines_degree + 1,
-                       strata_H)
+                                  strata_H)
     dataS_H2 <- JMbayes2:::SurvData_HazardModel(st2, dataS, Time_start,
-                                     paste0(idT, "_", strata), time_var)
+                                                paste0(idT, "_", strata), time_var)
     mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
     W_h <- JMbayes2:::construct_Wmat(terms_Surv_noResp, mf2)
     if (!any_gammas) {
       W_H2 <- matrix(0.0, nrow = nrow(W_H2), ncol = 1L)
     }
     X_H2 <- JMbayes2:::design_matrices_functional_forms(st, terms_FE_noResp,
-                                             dataL, time_var, idVar, idT,
-                                             collapsed_functional_forms, Xbar,
-                                             eps, direction)
+                                                        dataL, time_var, idVar, idT,
+                                                        collapsed_functional_forms, Xbar,
+                                                        eps, direction)
     Z_H2 <- JMbayes2:::design_matrices_functional_forms(st, terms_RE,
-                                             dataL, time_var, idVar, idT,
-                                             collapsed_functional_forms, NULL,
-                                             eps, direction)
+                                                        dataL, time_var, idVar, idT,
+                                                        collapsed_functional_forms, NULL,
+                                                        eps, direction)
     U_H <- lapply(functional_forms, JMbayes2:::construct_Umat, dataS = dataS_H2)
   } else {
     W0_H2 <- W_H2 <- matrix(0.0)
@@ -498,7 +499,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
   ind_RE_patt <- lapply(unq_out_in, find_patt, n = nres)
   ind_FE_patt <- lapply(unq_out_in, find_patt, n = nfes_HC)
   X_dot <- JMbayes2:::create_X_dot(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL,
-                        xbas_in_z)
+                                   xbas_in_z)
   ############################################################################
   ############################################################################
   Data <- list(n = nY, idL = idL, idL_lp = idL_lp, unq_idL = unq_idL,
@@ -572,7 +573,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
   Tau_bs_gammas <- rep(list(Tau_bs_gammas), n_strata)
   mean_betas <- lapply(betas, unname)
   mean_betas <- JMbayes2:::mapply2(function (b, m) {b[1] <- b[1] + m; b},
-                        mean_betas, JMbayes2:::mapply2("%*%", Xbar, betas))
+                                   mean_betas, JMbayes2:::mapply2("%*%", Xbar, betas))
   Tau_betas <- JMbayes2:::mapply2(JMbayes2:::weak_informative_Tau, Mixed_objects, Xbar)
   #mean_betas <- lapply(betas, "*", 0.0)
   #Tau_betas <- lapply(betas, function (b) 0.01 * diag(length(b)))

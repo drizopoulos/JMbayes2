@@ -1,4 +1,4 @@
-load(file = paste0(getwd(), '/Development/Dev_Local_GP/update/pass_to_jmfit.RData'))
+#load(file = paste0(getwd(), '/Development/Dev_Local_GP/update/pass_to_jmfit.RData'))
 
 model_data <- Data
 model_info <- model_info
@@ -37,10 +37,19 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
   id_H_ <- rep(idT, each = control$GK_k)
   id_H_ <- match(id_H_, unique(id_H_))
   id_h <- unclass(idT)
+  n_chains <- control$n_chains
+  if (!is.null(last_iterations)) {
+    model_data_Wlong <- vector('list', n_chains)
+    for (i in 1:n_chains) {
+      model_data_Wlong[[i]] <- JMbayes2:::create_Wlong_mats(model_data, model_info, 
+                                                            last_iterations[[i]], priors, 
+                                                            control)
+    }
+  }
   model_data <-
     c(model_data, JMbayes2:::create_Wlong_mats(model_data, model_info, 
-                                    initial_values, priors, 
-                                    control),
+                                               initial_values, priors, 
+                                               control),
       list(id_H = id_H, id_H_ = id_H_, id_h = id_h))
   # cbind the elements of X_H and Z_H, etc.
   model_data$X_H[] <- lapply(model_data$X_H, JMbayes2:::docall_cbind)
@@ -67,28 +76,25 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
   
   model_data$Wlong_bar <- lapply(model_data$Wlong_H, colMeans)
   model_data$Wlong_sds <- lapply(model_data$Wlong_H, colSds)
-  model_data$Wlong_H <- JMbayes2:::mapply2(JMbayes2:::center_fun, model_data$Wlong_H,
-                                           model_data$Wlong_bar, model_data$Wlong_sds)
-  model_data$Wlong_h <- JMbayes2:::mapply2(JMbayes2:::center_fun, model_data$Wlong_h,
-                                           model_data$Wlong_bar, model_data$Wlong_sds)
-  model_data$Wlong_H2 <- JMbayes2:::mapply2(JMbayes2:::center_fun, model_data$Wlong_H2,
-                                            model_data$Wlong_bar, model_data$Wlong_sds)
+  if (is.null(last_iterations)) {
+    model_data_Wlong <- list(NULL)
+      model_data_Wlong$Wlong_H <- JMbayes2:::mapply2(JMbayes2:::center_fun, model_data$Wlong_H,
+                                                               model_data$Wlong_bar, model_data$Wlong_sds)
+      model_data_Wlong$Wlong_h <- JMbayes2:::mapply2(JMbayes2:::center_fun, model_data$Wlong_h,
+                                                               model_data$Wlong_bar, model_data$Wlong_sds)
+      model_data_Wlong$Wlong_H2 <- JMbayes2:::mapply2(JMbayes2:::center_fun, model_data$Wlong_H2,
+                                                                model_data$Wlong_bar, model_data$Wlong_sds)
+  }
+  #model_data$Wlong_H <- JMbayes2:::mapply2(JMbayes2:::center_fun, model_data$Wlong_H,
+  #                                         model_data$Wlong_bar, model_data$Wlong_sds)
+  #model_data$Wlong_h <- JMbayes2:::mapply2(JMbayes2:::center_fun, model_data$Wlong_h,
+  #                                         model_data$Wlong_bar, model_data$Wlong_sds)
+  #model_data$Wlong_H2 <- JMbayes2:::mapply2(JMbayes2:::center_fun, model_data$Wlong_H2,
+  #                                          model_data$Wlong_bar, model_data$Wlong_sds)
   model_data$Wlong_std <- JMbayes2:::mapply2("/", model_data$Wlong_bar, model_data$Wlong_sds)
   model_data$Wlong_bar <- lapply(model_data$Wlong_bar, rbind)
   model_data$Wlong_sds <- lapply(model_data$Wlong_sds, rbind)
   model_data$Wlong_std <- lapply(model_data$Wlong_std, rbind)
-  model_data_Wlong <- list(NULL)
-  if (!is.null(last_iterations)) {
-    for (i in 1:control$n_chains) {
-      model_data_Wlong[[i]] <- JMbayes2:::create_Wlong_mats(model_data, model_info, 
-                                                 last_iterations[[i]], priors, 
-                                                 control)
-    }
-  } else {
-    model_data_Wlong <- list('Wlong_H' = model_data$Wlong_H, 
-                             'Wlong_h' = model_data$Wlong_h, 
-                             'Wlong_H2' = model_data$Wlong_H2)
-  }
   # unlist priors and initial values for alphas
   initial_values$alphas <- unlist(initial_values$alphas, use.names = FALSE)
   priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
@@ -98,7 +104,6 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     runif(1)
   RNGstate <- get(".Random.seed", envir = .GlobalEnv)
   on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
-  n_chains <- control$n_chains
   tik <- proc.time()
   if (n_chains > 1) {
     mcmc_parallel <- function (chain, model_data, model_data_Wlong, model_info, initial_values,
@@ -121,7 +126,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     cl <- parallel::makeCluster(cores)
     parallel::clusterSetRNGStream(cl = cl, iseed = control$seed)
     out <- parallel::parLapply(cl, chains, mcmc_parallel,
-                               model_data = model_data, model_data_Wlong = model_data_Wlong, 
+                               model_data = model_data, 
+                               model_data_Wlong = model_data_Wlong, 
                                model_info = model_info,
                                initial_values = initial_values,
                                priors = priors, control = control, 
@@ -269,7 +275,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     for (i in seq_len(control$n_chains)) {
       mcmc_out$mcmc[["b"]][[i]] <- array(0.0, dim = c(length(dnames_b[[1]]), nRE, length(keep_its)))
       for (j in jstart:jstop) {
-          mcmc_out$mcmc[["b"]][[i]][, , j - ((i - 1) * length(keep_its))] <- b[j, ]
+        mcmc_out$mcmc[["b"]][[i]][, , j - ((i - 1) * length(keep_its))] <- b[j, ]
       } 
       jstart <- jstart + length(keep_its)
       jstop <- jstop + length(keep_its)
@@ -303,11 +309,11 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
   # Fit statistics
   thetas <- statistics$Mean
   thetas[["betas"]] <- thetas[grep("^betas", names(thetas))]
-  thetas[["D"]] <- nearPD(lowertri2mat(thetas[["D"]]))
+  thetas[["D"]] <- JMbayes2:::nearPD(JMbayes2:::lowertri2mat(thetas[["D"]]))
   if (is.null(thetas[["gammas"]])) thetas[["gammas"]] <- 0.0
   if (is.null(thetas[["sigmas"]])) thetas[["sigmas"]] <- 0.0
-  clogLik_mean_parms <- logLik_jm(thetas, model_data, model_info, control)
-  conditional_fit_stats <- fit_stats(mcmc_out$logLik, clogLik_mean_parms)
+  clogLik_mean_parms <- JMbayes2:::logLik_jm(thetas, model_data, model_info, control)
+  conditional_fit_stats <- JMbayes2:::fit_stats(mcmc_out$logLik, clogLik_mean_parms)
   #
   res_thetas <- thetas
   res_thetas$bs_gammas <- do.call("rbind", mcmc_out$mcmc$bs_gammas)
@@ -319,7 +325,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
   D <- do.call("rbind", mcmc_out$mcmc$D)
   res_thetas$D <- array(0.0, c(dim(thetas$D), nrow(res_thetas$bs_gammas)))
   for (i in seq_len(nrow(res_thetas$bs_gammas))) {
-    res_thetas$D[, , i] <- lowertri2mat(D[i, ])
+    res_thetas$D[, , i] <- JMbayes2:::lowertri2mat(D[i, ])
   }
   res_thetas$sigmas <- if (!is.null(mcmc_out$mcmc$sigmas)) {
     do.call("rbind", mcmc_out$mcmc$sigmas)
@@ -327,7 +333,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
   res_thetas[["betas"]] <-
     lapply(mcmc_out$mcmc[grep("^betas", names(mcmc_out$mcmc))], function (m)
       do.call("rbind", m))
-  mcmc_out$mlogLik <- mlogLik_jm(res_thetas, statistics$Mean[["b"]],
+  mcmc_out$mlogLik <- JMbayes2:::mlogLik_jm(res_thetas, statistics$Mean[["b"]],
                                  statistics$post_vars, model_data, model_info, control)
   ind <- names(thetas) %in% c("sigmas", "bs_gammas", "gammas", "alphas",
                               "tau_bs_gammas")
@@ -335,9 +341,9 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
   thetas$betas <- lapply(thetas$betas, rbind)
   dim(thetas[["D"]]) <- c(dim(thetas[["D"]]), 1L)
   mlogLik_mean_parms <-
-    c(mlogLik_jm(thetas, statistics$Mean[["b"]], statistics$post_vars,
+    c(JMbayes2:::mlogLik_jm(thetas, statistics$Mean[["b"]], statistics$post_vars,
                  model_data, model_info, control))
-  marginal_fit_stats <- fit_stats(mcmc_out$mlogLik, mlogLik_mean_parms)
+  marginal_fit_stats <- JMbayes2:::fit_stats(mcmc_out$mlogLik, mlogLik_mean_parms)
   mcmc_out$logLik <- mcmc_out$mlogLik <- NULL
   c(mcmc_out, list(statistics = statistics,
                    fit_stats = list(conditional = conditional_fit_stats,

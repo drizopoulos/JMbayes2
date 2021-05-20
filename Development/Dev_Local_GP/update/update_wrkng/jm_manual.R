@@ -1,4 +1,4 @@
-load(file = paste0(getwd(), '/Development/Dev_Local_GP/update/draft_env.RData'))
+load(file = paste0(getwd(), '\\Development\\Dev_Local_GP\\update\\update_wrkng\\example_objects.RData'))
 
 library(JMbayes2)
 
@@ -10,9 +10,12 @@ functional_forms = NULL
 data_Surv = NULL
 id_var = NULL
 priors = NULL
-control = NULL 
+control = NULL
 initial_values = NULL
-last_iterations = extract_last_iterations(joint_model_fit_1)
+
+
+
+
 
 jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 functional_forms = NULL, data_Surv = NULL, id_var = NULL,
@@ -207,7 +210,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
   terms_Surv_noResp <- delete.response(terms_Surv)
   mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
   # var names
-  av <- all.vars(terms_Surv)
+  av <- all.vars(attr(terms_Surv, "variables")[[2L]])
   Time_var <- head(av, -1L)
   event_var <- tail(av, 1L)
   # survival times
@@ -467,24 +470,24 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     X_h <- Z_h <- U_h <- rep(list(matrix(0.0)), length(respVars))
   }
   if (length(which_interval)) {
-    W0_H2 <- JMbayes2:::create_W0(c(t(st2)), con$knots, con$Bsplines_degree + 1,
+    W0_H2 <- create_W0(c(t(st2)), con$knots, con$Bsplines_degree + 1,
                        strata_H)
-    dataS_H2 <- JMbayes2:::SurvData_HazardModel(st2, dataS, Time_start,
+    dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start,
                                      paste0(idT, "_", strata), time_var)
     mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
-    W_h <- JMbayes2:::construct_Wmat(terms_Surv_noResp, mf2)
+    W_h <- construct_Wmat(terms_Surv_noResp, mf2)
     if (!any_gammas) {
       W_H2 <- matrix(0.0, nrow = nrow(W_H2), ncol = 1L)
     }
-    X_H2 <- JMbayes2:::design_matrices_functional_forms(st, terms_FE_noResp,
+    X_H2 <- design_matrices_functional_forms(st, terms_FE_noResp,
                                              dataL, time_var, idVar, idT,
                                              collapsed_functional_forms, Xbar,
                                              eps, direction)
-    Z_H2 <- JMbayes2:::design_matrices_functional_forms(st, terms_RE,
+    Z_H2 <- design_matrices_functional_forms(st, terms_RE,
                                              dataL, time_var, idVar, idT,
                                              collapsed_functional_forms, NULL,
                                              eps, direction)
-    U_H <- lapply(functional_forms, JMbayes2:::construct_Umat, dataS = dataS_H2)
+    U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
   } else {
     W0_H2 <- W_H2 <- matrix(0.0)
     X_H2 <- Z_H2 <- U_H2 <- rep(list(matrix(0.0)), length(respVars))
@@ -555,9 +558,18 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     -coef(Surv_object) / Surv_object$scale
   if (is.null(gammas)) gammas <- 0.0
   alphas <- rep(0.0, sum(sapply(U_H, ncol)))
-  initial_values <- list(betas = betas, log_sigmas = log_sigmas, D = D,
-                         b = b, bs_gammas = bs_gammas, gammas = gammas,
-                         alphas = alphas, tau_bs_gammas = rep(20, n_strata))
+  #initial_values <- list(betas = betas, log_sigmas = log_sigmas, D = D,
+  #                       b = b, bs_gammas = bs_gammas, gammas = gammas,
+  #                       alphas = alphas, tau_bs_gammas = rep(20, n_strata))
+  if (is.null(initial_values)) {
+    initial_values <- lapply(seq_len(con$n_chains), 
+                             function(x, ...) list(betas = betas, log_sigmas = log_sigmas, D = D, 
+                                                   b = b, bs_gammas = bs_gammas, gammas = gammas, 
+                                                   alphas = alphas, tau_bs_gammas = rep(20, n_strata)), 
+                             betas = betas, log_sigmas = log_sigmas, 
+                             D = D, b = b, bs_gammas = bs_gammas, gammas = gammas, 
+                             alphas = alphas, n_strata = n_strata)
+  }
   ############################################################################
   ############################################################################
   # Limits
