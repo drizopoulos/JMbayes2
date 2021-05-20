@@ -206,3 +206,21 @@ model_data <- Data
 control <- con
 control$n_chains = 1
 
+
+fm <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
+CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
+jm1 <- jm(CoxFit, fm, time_var = "year", cores = 1L)
+jm2 <- jm(CoxFit, fm, time_var = "year", cores = 2L)
+jm3 <- jm(CoxFit, fm, time_var = "year", cores = 3L)
+
+summary(jm1)
+summary(jm2)
+summary(jm3)
+
+length(jm1$mcmc$bs_gammas)
+length(jm2$mcmc$bs_gammas)
+length(jm3$mcmc$bs_gammas)
+
+
+
+

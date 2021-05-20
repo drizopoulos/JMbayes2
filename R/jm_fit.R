@@ -79,17 +79,15 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
     n_chains <- control$n_chains
     tik <- proc.time()
-    if (n_chains > 1) {
-        mcmc_parallel <- function (chain, model_data, model_info, initial_values,
-                                   priors, control) {
-            not_D <- !names(initial_values) %in% c("D")
-            initial_values[not_D] <- lapply(initial_values[not_D], jitter2)
-            mcmc_cpp(model_data, model_info, initial_values, priors, control)
-        }
-        cores <- control$cores
-        chains <- split(seq_len(n_chains),
-                        rep(seq_len(cores), each = ceiling(n_chains / cores),
-                            length.out = n_chains))
+    cores <- control$cores
+    chains <- seq_len(n_chains)
+    mcmc_parallel <- function (chain, model_data, model_info, initial_values,
+                               priors, control) {
+      not_D <- !names(initial_values) %in% c("D")
+      initial_values[not_D] <- lapply(initial_values[not_D], jitter2)
+      mcmc_cpp(model_data, model_info, initial_values, priors, control)
+    }
+    if (cores > 1L) {
         cores <- min(cores, length(chains))
         cl <- parallel::makeCluster(cores)
         parallel::clusterSetRNGStream(cl = cl, iseed = control$seed)
@@ -98,13 +96,11 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
                                    initial_values = initial_values,
                                    priors = priors, control = control)
         parallel::stopCluster(cl)
-        #out <- lapply(chains, mcmc_parallel, model_data = model_data,
-        #              model_info = model_info, initial_values = initial_values,
-        #              priors = priors, control = control)
     } else {
         set.seed(control$seed)
-        out <- list(mcmc_cpp(model_data, model_info, initial_values, priors,
-                             control))
+        out <- lapply(chains, mcmc_parallel, model_data = model_data,
+                    model_info = model_info, initial_values = initial_values,
+                    priors = priors, control = control)
     }
     tok <- proc.time()
     # split betas per outcome
@@ -234,7 +230,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
           mcmc_out$mcmc[["b"]][[i]] <- array(0.0, dim = c(length(dnames_b[[1]]), nRE, length(keep_its)))
           for (j in jstart:jstop) {
             mcmc_out$mcmc[["b"]][[i]][, , j - ((i - 1) * length(keep_its))] <- b[j, ]
-          } 
+          }
           jstart <- jstart + length(keep_its)
           jstop <- jstop + length(keep_its)
         }
