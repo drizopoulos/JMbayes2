@@ -133,6 +133,7 @@ tv(x, knots = NULL, ord = 2L)
         \item{\code{n_chains}}{an integer specifying the number of chains for the MCMC. Defaults to 3.}
         \item{\code{n_burnin}}{an integer specifying the number of burn-in iterations. Defaults to 500.}
         \item{\code{n_iter}}{an integer specifying the number of total iterations per chain. Defaults to 3500.}
+        \item{\code{n_thin}}{an integer specifying the thinning of the chains. Defaults to 1.}
         \item{\code{seed}}{the seed used in the sampling procedures. Defaults to 123.}
         \item{\code{MALA}}{a \code{logical}; if TRUE, the MALA algorithm is used when updating the elements of the Cholesky factor of the D matrix. Defaults to \code{FALSE}.}
         \item{\code{save_random_effects}}{a \code{logical}; if TRUE, the full MCMC results of the random effects will be saved and returned with the \code{jm} object. Defaults to \code{FALSE}.}
