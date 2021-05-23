@@ -972,8 +972,7 @@ arma::mat cum_haz (const List &Data, const List &MCMC) {
     vec alphas_it = alphas.col(it);
     for (uword i = 0; i < betas.n_elem; ++i) betas_it.at(i) = betas.at(i).col(it);
     ///////////////////////
-    vec W0H_bs_gammas = (W0_H * bs_gammas_it) - Wlong_std_alphas.at(it) -
-      W_std_gammas.at(it);
+    vec W0H_bs_gammas = (W0_H * bs_gammas_it) - W_std_gammas.at(it); //-Wlong_std_alphas.at(it);
     vec WH_gammas(W0_H.n_rows, fill::zeros);
     if (any_gammas) {
       WH_gammas = W_H * gammas_it;

@@ -5,6 +5,7 @@
 \alias{tvAUC.jm}
 \alias{tvAUC.tvROC}
 \alias{tvROC.jm}
+\alias{calibration_plot}
 
 
 \title{Time-Dependent ROCs and AUCs for Joint Models}
@@ -25,6 +26,11 @@ tvAUC(object, newdata, Tstart, \dots)
     Dt = NULL, \dots)
 
 \method{tvAUC}{tvROC}(object, \dots)
+
+calibration_plot(object, newdata, Tstart, Thoriz = NULL,
+    Dt = NULL, add_density = TRUE, col = "red", lty = 1, lwd = 1,
+    col_dens = "grey", xlab = "Predicted Probabilities",
+    ylab = "Observed Probabilities", \dots)
 }
 
 \arguments{
@@ -38,7 +44,11 @@ tvAUC(object, newdata, Tstart, \dots)
 
 \item{Dt}{numeric scalar denoting the length of the time interval of prediction; either \code{Dt} or \code{Thoriz} must be specified.}
 
-\item{\dots}{additional arguments; currently none is used.}
+\item{add_density}{logical; should the kernal density estimation of the predicted probabilities be superimposed in the calibration plot.}
+
+\item{col, lwd, lty, col_dens, xlab, ylab}{graphical parameters.}
+
+\item{\dots}{additional arguments passed to \code{predict.jm()}.}
 }
 
 \value{
