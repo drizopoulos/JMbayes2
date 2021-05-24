@@ -669,7 +669,8 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
     plot_long_i <- function (outcome, add_xlab = FALSE, box = TRUE,
                              cex_axis = cex_axis) {
         ind <- pos_outcomes[outcome]
-        f <- fun_long[[match(outcome, outcomes)]]
+        outcome_i <- match(outcome, outcomes)
+        f <- fun_long[[outcome_i]]
         preds <- f(pred_Long[[ind]])
         low <- f(pred_Long[[ind + 1]])
         upp <- f(pred_Long[[ind + 2]])
@@ -688,14 +689,14 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         }
         if (CI_long) {
             polygon(c(times, rev(times)), c(low, rev(upp)), border = NA,
-                    col = fill_CI_long[outcome])
+                    col = fill_CI_long[outcome_i])
         }
         y_i <- f(c(y[[outcome]]))
         times_y_i <- times_y[[outcome]]
         id_i <- id[[outcome]]
         points(times_y_i[id_i == subj_ind], y_i[id_i == subj_ind],
-               pch = pch_points[outcome], cex = cex_points[outcome],
-               col = col_points[outcome])
+               pch = pch_points[outcome_i], cex = cex_points[outcome_i],
+               col = col_points[outcome_i])
         lines(times, preds, lwd = lwd_long, col = col_line_long[outcome])
         abline(v = last_times[subj_ind] + 0.01, lty = 3, col = col_axis)
     }

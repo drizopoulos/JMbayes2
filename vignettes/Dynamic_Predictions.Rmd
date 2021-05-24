@@ -80,14 +80,14 @@ jointFit <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year")
 
 We want to calculate predictions for the longitudinal and survival outcomes for Patients 25 and 93. As a first step, we extract the data of these patients and store them in the data.frame `ND` with the code:
 ```{r}
-t0 <- 7
+t0 <- 5
 ND <- pbc2[pbc2$id %in% c(25, 93), ]
 ND <- ND[ND$year < t0, ]
 ND$status2 <- 0
 ND$years <- t0
 ```
 
-We will only use the first seven years of follow-up year (line three), and further specify that the patients were event-free up to this time point (lines four and five).
+We will only use the first five years of follow-up year (line three), and further specify that the patients were event-free up to this time point (lines four and five).
 
 We start with predictions for the longitudinal outcomes. These are produced by the `predict()` method for class `jm` objects, and follow the same lines as the procedure described above for cumulative risk probabilities. The only difference is in Step 3, where instead of calculating the cumulative risk we calculate the predicted values for the longitudinal outcomes. There are two options controlled by the `type_pred` argument, namely predictions at the scale of the response/outcome (default) or at the linear predictor level. The `type` argument controls if the predictions will be for the mean subject (i.e., including only the fixed effects) or subject-specific including both the fixed and random effects. In the `newdata` argument we provide the available measurements of the two patients. This will be used to sample their random effects at Step 2 presented above. This is done with a Metropolis-Hastings algorithm that runs for `n_mcmc` iterations; all iterations but the last one are discarded as burn-in. Finally, argument `n_samples` corresponds to the value of $L$ defined above and specifies how many iterations from the MCMC sample of the parameters will be used: 
 ```{r}
@@ -152,10 +152,10 @@ plot(predLong2, predSurv, outcomes = 1:3, subject = 93,
      pos_ylab_long = c(19, 22, 0.5))
 ```
 
-We evaluate the accuracy of the predictions using ROC methodology. We calculate the components of the ROC curve using information up to year seven, and we are interested in events occurring within a two-year window. That is discriminating between patients who will get the event in the interval `(t0, t0 + Dt]`, (i.e., in our case $T_j \in (7, 9]$) from patients who will survive at least 9 years (i.e., $T_j > 9$). The calculations are performed with the following call to `tvROC()`:
+We evaluate the accuracy of the predictions using ROC methodology. We calculate the components of the ROC curve using information up to year five, and we are interested in events occurring within a three-year window. That is discriminating between patients who will get the event in the interval `(t0, t0 + Dt]`, (i.e., in our case $T_j \in (7, 9]$) from patients who will survive at least 9 years (i.e., $T_j > 9$). The calculations are performed with the following call to `tvROC()`:
 ```{r}
 pbc2$event <- as.numeric(pbc2$status != "alive")
-roc <- tvROC(jointFit, newdata = pbc2, Tstart = t0, Dt = 2)
+roc <- tvROC(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 roc
 ```
 
@@ -173,7 +173,7 @@ This function either accepts an object of class `tvROC` or of class `jm`. In the
 
 Finally, using the calibration plot, we assess if the predictions are well calibrated:
 ```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5, echo = FALSE}
-calibration_plot(jointFit, newdata = pbc2, Tstart = t0, Dt = 2)
+calibration_plot(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 ```
 
 

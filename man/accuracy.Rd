@@ -6,7 +6,7 @@
 \alias{tvAUC.tvROC}
 \alias{tvROC.jm}
 \alias{calibration_plot}
-
+\alias{calibration_metrics}
 
 \title{Time-Dependent ROCs and AUCs for Joint Models}
 
@@ -28,9 +28,13 @@ tvAUC(object, newdata, Tstart, \dots)
 \method{tvAUC}{tvROC}(object, \dots)
 
 calibration_plot(object, newdata, Tstart, Thoriz = NULL,
-    Dt = NULL, add_density = TRUE, col = "red", lty = 1, lwd = 1,
+    Dt = NULL, df_ns = 3, plot = TRUE, add_density = TRUE,
+    col = "red", lty = 1, lwd = 1,
     col_dens = "grey", xlab = "Predicted Probabilities",
     ylab = "Observed Probabilities", \dots)
+
+calibration_metrics(object, newdata, Tstart, Thoriz = NULL,
+    Dt = NULL, df_ns = 3, \dots)
 }
 
 \arguments{
@@ -43,6 +47,11 @@ calibration_plot(object, newdata, Tstart, Thoriz = NULL,
 \item{Thoriz}{numeric scalar denoting the time point for which a prediction of the survival status is of interest; \code{Thoriz} must be later than \code{Tstart} and either \code{Dt} or \code{Thoriz} must be specified. If \code{Thoriz} is \code{NULL} is set equal to \code{Tstart + Dt}.}
 
 \item{Dt}{numeric scalar denoting the length of the time interval of prediction; either \code{Dt} or \code{Thoriz} must be specified.}
+
+\item{df_ns}{the degrees of freedom for the natural cubic spline of the cloglog transformation of the
+predicted probabilities used in the Cox model that assess calibration.}
+
+\item{plot}{logical; should a plot be produced. If \code{FALSE}, a list is returned with the observed and predicted probabilities.}
 
 \item{add_density}{logical; should the kernal density estimation of the predicted probabilities be superimposed in the calibration plot.}
 

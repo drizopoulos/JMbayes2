@@ -114,7 +114,7 @@ print.tvROC <- function (x, digits = 4, ...) {
                     "qSN" = x$qSN, "qSP" = x$qSP, check.names = FALSE,
                     check.rows = FALSE)
     xx <- rep("", nrow(d))
-    xx[x$thr == x$Youden] <- "*"
+    xx[which.min(abs(x$thr - x$Youden))] <- "*"
     d[[" "]] <- xx
     d <- d[!is.na(d$qSN) & !is.na(d$qSP), ]
     d <- d[!duplicated(d[c("SN", "SP")]), ]
@@ -314,8 +314,8 @@ print.tvAUC <- function (x, digits = 4, ...) {
 }
 
 calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
-                              Dt = NULL, add_density = TRUE,
-                              col = "red", lty = 1, lwd = 1,
+                              Dt = NULL, df_ns = 3, plot = TRUE,
+                              add_density = TRUE, col = "red", lty = 1, lwd = 1,
                               col_dens = "grey",
                               xlab = "Predicted Probabilities",
                               ylab = "Observed Probabilities", ...) {
@@ -376,22 +376,40 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     names(Time) <- names(event) <- as.character(unique(id))
     cal_DF <- data.frame(Time = Time, event = event, preds = pi_u_t[names(Time)])
     cloglog <- function (x) log(-log(1 - x))
-    cal_Cox <- coxph(Surv(Time, event) ~ ns(cloglog(preds), 4), data = cal_DF)
-    qs <- quantile(pi_u_t, probs = c(0.05, 0.95))
+    Bounds <- quantile(cloglog(pi_u_t), probs = c(0.05, 0.95))
+    form <- paste0("ns(cloglog(preds), df = ", df_ns,
+                   ", B = c(", Bounds[1L], ", ", Bounds[2L], "))")
+    form <- paste("Surv(Time, event) ~", form)
+    cal_Cox <- coxph(as.formula(form), data = cal_DF)
+    qs <- quantile(pi_u_t, probs = c(0.01, 0.99))
     probs_grid <- data.frame(preds = seq(qs[1L], qs[2L], length.out = 100L))
     obs <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$surv)
-    plot(probs_grid$preds, obs, type = "l", col = col, lwd = lwd, lty = lty,
-         xlab = xlab, ylab = ylab, xlim = c(0, 1), ylim = c(0, 1))
-    abline(0, 1, lty = 2)
-    if (add_density) {
-        par(new = TRUE)
-        plot(density(pi_u_t), axes = FALSE, xlab = "", ylab = "", main = "",
-             col = col_dens)
-        axis(side = 4)
+    obs_pi_u_t <- 1 - c(summary(survfit(cal_Cox, newdata = cal_DF), times = Thoriz)$surv)
+    if (plot) {
+        plot(probs_grid$preds, obs, type = "l", col = col, lwd = lwd, lty = lty,
+             xlab = xlab, ylab = ylab, xlim = c(0, 1), ylim = c(0, 1))
+        abline(0, 1, lty = 2)
+        if (add_density) {
+            par(new = TRUE)
+            plot(density(pi_u_t), axes = FALSE, xlab = "", ylab = "", main = "",
+                 col = col_dens)
+            axis(side = 4)
+        }
+        invisible()
+    } else {
+        list("observed" = obs, "predicted" = probs_grid$preds,
+             "pi_u_t" = pi_u_t, "obs_pi_u_t" = obs_pi_u_t)
     }
-    invisible()
 }
 
-
-
+calibration_metrics <- function (object, newdata, Tstart, Thoriz = NULL,
+                                 Dt = NULL, df_ns = 3, ...) {
+    comps <- calibration_plot(object, newdata, Tstart, Dt = Dt, df_ns = df_ns,
+                              plot = FALSE)
+    diff <- abs(as.vector(comps$pi_u_t) - comps$obs_pi_u_t)
+    ICI <- mean(diff)
+    E50 <- median(diff)
+    E90 <- unname(quantile(diff, probs = 0.9))
+    c("ICI" = ICI, "E50" = E50, "E90" = E90)
+}
 

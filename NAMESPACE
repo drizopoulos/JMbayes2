@@ -1,7 +1,8 @@
-export(area, calibration_plot, cumuplot, coef, compare_jm, crLong, densplot, family, fixef, gelman_diag,
+export(area, calibration_metrics, calibration_plot, cumuplot, coef, compare_jm,
+       crLong, densplot, family, fixef, gelman_diag,
        ggdensityplot, ggtraceplot, jm, model.frame, model.matrix, ranef, slope,
-       terms, traceplot, tv, tvAUC, tvROC, value, vexpit, Dexpit, vexp, Dexp, vlog, vlog2,
-       vlog10, vsqrt)
+       terms, traceplot, tv, tvAUC, tvROC, value, vexpit, Dexpit, vexp, Dexp,
+       vlog, vlog2, vlog10, vsqrt)
 
 import(Rcpp)
 importFrom("utils", "glob2rx", "tail", "head", "combn")
