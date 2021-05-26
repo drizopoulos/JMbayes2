@@ -171,10 +171,6 @@ tvAUC(roc)
 
 This function either accepts an object of class `tvROC` or of class `jm`. In the latter case, the user must also provide the `newdata`, `Tstart` and `Dt` or `Thoriz` arguments.
 
-Finally, using the calibration plot, we assess if the predictions are well calibrated:
-```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5, echo = FALSE}
-calibration_plot(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
-```
 
 
 
