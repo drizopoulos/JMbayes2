@@ -51,7 +51,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-63</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-64</span>
       </span>
     </div>
 
@@ -313,7 +313,7 @@
 <span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></code></pre></div>
 <p>This function either accepts an object of class <code>tvROC</code> or of class <code>jm</code>. In the latter case, the user must also provide the <code>newdata</code>, <code>Tstart</code> and <code>Dt</code> or <code>Thoriz</code> arguments. Here we have used the same dataset as the one to fit the model, but, in principle, discrimination could be (better) assessed in another dataset.</p>
 <p>To assess the accuracy of the predictions we produce a calibration plot: <img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-16-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>The syntax of the <code><a href="../reference/Accuracy%20Measures.html">calibration_plot()</a></code> function is almost identical to that of <code><a href="../reference/Accuracy%20Measures.html">tvROC()</a></code>. The kernel density estimation is of the estimated probabilities <code>\pi_j(t + \Delta t | t) = \pi_j(8 | 5)</code> for all individuals at risk at year <code>t0</code> in the data frame provided in the <code>newdata</code> argument. Using the <code><a href="../reference/Accuracy%20Measures.html">calibration_metrics()</a></code> function we can also calculate metrics for the accuracy of predictions:</p>
+<p>The syntax of the <code><a href="../reference/Accuracy%20Measures.html">calibration_plot()</a></code> function is almost identical to that of <code><a href="../reference/Accuracy%20Measures.html">tvROC()</a></code>. The kernel density estimation is of the estimated probabilities <span class="math inline">\(\pi_j(t + \Delta t \mid t) = \pi_j(8 \mid 5)\)</span> for all individuals at risk at year <code>t0</code> in the data frame provided in the <code>newdata</code> argument. Using the <code><a href="../reference/Accuracy%20Measures.html">calibration_metrics()</a></code> function we can also calculate metrics for the accuracy of predictions:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/Accuracy%20Measures.html">calibration_metrics</a></span><span class="op">(</span><span class="va">jointFit</span>, <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
 <span class="co">#&gt;        ICI        E50        E90 </span>

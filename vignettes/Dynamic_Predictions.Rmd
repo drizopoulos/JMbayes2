@@ -176,7 +176,7 @@ To assess the accuracy of the predictions we produce a calibration plot:
 calibration_plot(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 ```
 
-The syntax of the `calibration_plot()` function is almost identical to that of `tvROC()`. The kernel density estimation is of the estimated probabilities `\pi_j(t + \Delta t | t) = \pi_j(8 | 5)` for all individuals at risk at year `t0` in the data frame provided in the `newdata` argument. Using the `calibration_metrics()` function we can also calculate metrics for the accuracy of predictions:
+The syntax of the `calibration_plot()` function is almost identical to that of `tvROC()`. The kernel density estimation is of the estimated probabilities $\pi_j(t + \Delta t \mid t) = \pi_j(8 \mid 5)$ for all individuals at risk at year `t0` in the data frame provided in the `newdata` argument. Using the `calibration_metrics()` function we can also calculate metrics for the accuracy of predictions:
 ```{r}
 calibration_metrics(jointFit, pbc2, Tstart = 5, Dt = 3)
 ```
