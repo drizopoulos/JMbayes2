@@ -126,7 +126,7 @@
       <h1 data-toc-skip>Dynamic Predictions</h1>
                         <h4 class="author">Dimitris Rizopoulos</h4>
             
-            <h4 class="date">2021-05-26</h4>
+            <h4 class="date">2021-05-27</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/master/vignettes/Dynamic_Predictions.Rmd"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="hidden name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -223,7 +223,7 @@
      fill_CI_event <span class="op">=</span> <span class="st">"#F7F7FF80"</span>,
      pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1.9</span>, <span class="fl">1.9</span>, <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-12-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>We evaluate the accuracy of the predictions using ROC methodology. We calculate the components of the ROC curve using information up to year five, and we are interested in events occurring within a three-year window. That is discriminating between patients who will get the event in the interval <code>(t0, t0 + Dt]</code>, (i.e., in our case <span class="math inline">\(T_j \in (7, 9]\)</span>) from patients who will survive at least 9 years (i.e., <span class="math inline">\(T_j &gt; 9\)</span>). The calculations are performed with the following call to <code><a href="../reference/Accuracy%20Measures.html">tvROC()</a></code>:</p>
+<p>We evaluate the discriminative capability of the model using ROC methodology. We calculate the components of the ROC curve using information up to year five, and we are interested in events occurring within a three-year window. That is discriminating between patients who will get the event in the interval <code>(t0, t0 + Dt]</code>, (i.e., in our case <span class="math inline">\(T_j \in (5, 8]\)</span>) from patients who will survive at least 9 years (i.e., <span class="math inline">\(T_j &gt; 8\)</span>). The calculations are performed with the following call to <code><a href="../reference/Accuracy%20Measures.html">tvROC()</a></code>:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pbc2</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">pbc2</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span>
 <span class="va">roc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Accuracy%20Measures.html">tvROC</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
@@ -234,68 +234,73 @@
 <span class="co">#&gt; At time: 8</span>
 <span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt;    cut-off         SN          SP        qSN         qSP  </span>
-<span class="co">#&gt; 1     0.05 0.01682112 0.998734088 0.01192969 0.744285697  </span>
-<span class="co">#&gt; 2     0.14 0.03772064 0.998734088 0.02809785 0.872142848  </span>
-<span class="co">#&gt; 3     0.15 0.03772064 0.992246984 0.02321392 0.477963593  </span>
-<span class="co">#&gt; 4     0.19 0.05169306 0.990096848 0.03253534 0.499890823  </span>
-<span class="co">#&gt; 5     0.22 0.06781941 0.988615283 0.04416001 0.540057445  </span>
-<span class="co">#&gt; 6     0.26 0.06781941 0.982128180 0.03928327 0.398315384  </span>
-<span class="co">#&gt; 7     0.27 0.08871893 0.982128180 0.05600627 0.484270329  </span>
-<span class="co">#&gt; 8     0.28 0.13051796 0.982128180 0.08997217 0.598876923  </span>
-<span class="co">#&gt; 9     0.30 0.14421911 0.979893844 0.09964719 0.593855642  </span>
-<span class="co">#&gt; 10    0.34 0.16511863 0.973406740 0.11238928 0.552346792  </span>
-<span class="co">#&gt; 11    0.35 0.18601814 0.973406740 0.13002997 0.586781654  </span>
-<span class="co">#&gt; 12    0.36 0.20691766 0.973406740 0.14785834 0.616297250  </span>
-<span class="co">#&gt; 13    0.37 0.26961621 0.973406740 0.20249986 0.684009500  </span>
-<span class="co">#&gt; 14    0.38 0.29051572 0.973406740 0.22110965 0.701564528  </span>
-<span class="co">#&gt; 15    0.41 0.31141524 0.973406740 0.23992283 0.717271658  </span>
-<span class="co">#&gt; 16    0.42 0.35321427 0.973406740 0.27817283 0.744198167  </span>
-<span class="co">#&gt; 17    0.46 0.37411379 0.973406740 0.29761658 0.755825523  </span>
-<span class="co">#&gt; 18    0.47 0.37411379 0.966919637 0.29369265 0.709468112  </span>
-<span class="co">#&gt; 19    0.48 0.37411379 0.960432533 0.28972463 0.666973819  </span>
-<span class="co">#&gt; 20    0.50 0.39602837 0.954260500 0.30680529 0.644639273  </span>
-<span class="co">#&gt; 21    0.52 0.40362436 0.950131153 0.31161211 0.626907146  </span>
-<span class="co">#&gt; 22    0.54 0.42452387 0.950131153 0.33191852 0.640231891  </span>
-<span class="co">#&gt; 23    0.57 0.44542339 0.950131153 0.35245968 0.652637688  </span>
-<span class="co">#&gt; 24    0.58 0.46632290 0.950131153 0.37323969 0.664216432  </span>
-<span class="co">#&gt; 25    0.59 0.48722242 0.950131153 0.39426274 0.675048160  </span>
-<span class="co">#&gt; 26    0.60 0.52902145 0.943644050 0.43370437 0.665179354  </span>
-<span class="co">#&gt; 27    0.61 0.52902145 0.937156946 0.43031337 0.637305803  </span>
-<span class="co">#&gt; 28    0.63 0.54992097 0.937156946 0.45231347 0.647380642  </span>
-<span class="co">#&gt; 29    0.64 0.59172000 0.937156946 0.49711854 0.665939556  </span>
-<span class="co">#&gt; 30    0.65 0.59172000 0.930669843 0.49403337 0.640905338  </span>
-<span class="co">#&gt; 31    0.66 0.59172000 0.917695635 0.48774808 0.594500448  </span>
-<span class="co">#&gt; 32    0.67 0.61261952 0.917695635 0.51093214 0.604155199 *</span>
-<span class="co">#&gt; 33    0.69 0.61723221 0.906153185 0.51063865 0.569157805  </span>
-<span class="co">#&gt; 34    0.70 0.62298582 0.901451972 0.51492443 0.557628850  </span>
-<span class="co">#&gt; 35    0.71 0.62298582 0.894964868 0.51181497 0.538758768  </span>
-<span class="co">#&gt; 36    0.72 0.62544205 0.882753064 0.50869672 0.506585812  </span>
-<span class="co">#&gt; 37    0.73 0.65179117 0.852009076 0.52474201 0.446404320  </span>
-<span class="co">#&gt; 38    0.74 0.65735114 0.827786446 0.51933979 0.400221762  </span>
-<span class="co">#&gt; 39    0.75 0.66547733 0.797873256 0.51385914 0.351911076  </span>
-<span class="co">#&gt; 40    0.76 0.68637684 0.784899049 0.53417737 0.341660726  </span>
-<span class="co">#&gt; 41    0.77 0.69607147 0.774934005 0.54183908 0.331421604  </span>
-<span class="co">#&gt; 42    0.78 0.69607147 0.761959798 0.53489725 0.313083989  </span>
-<span class="co">#&gt; 43    0.80 0.69607147 0.742498488 0.52408091 0.287461569  </span>
-<span class="co">#&gt; 44    0.81 0.69607147 0.729524281 0.51658612 0.271518729  </span>
-<span class="co">#&gt; 45    0.82 0.72133432 0.711417328 0.54235393 0.262105066  </span>
-<span class="co">#&gt; 46    0.83 0.76979863 0.700511986 0.60923800 0.271125557  </span>
-<span class="co">#&gt; 47    0.84 0.79579916 0.689121111 0.64440889 0.269796097  </span>
-<span class="co">#&gt; 48    0.85 0.80120502 0.671337750 0.64463198 0.254047478  </span>
-<span class="co">#&gt; 49    0.86 0.82324156 0.665203572 0.67833148 0.256825511  </span>
-<span class="co">#&gt; 50    0.87 0.82615119 0.627184086 0.66554800 0.223620467  </span>
-<span class="co">#&gt; 51    0.88 0.85333811 0.590213042 0.69769691 0.204067639  </span>
-<span class="co">#&gt; 52    0.89 0.85890290 0.553017705 0.69019985 0.179177968  </span>
-<span class="co">#&gt; 53    0.90 0.88315554 0.489187461 0.70861010 0.147238570  </span>
-<span class="co">#&gt; 54    0.91 0.90593400 0.431386745 0.73237561 0.123207041  </span>
-<span class="co">#&gt; 55    0.92 0.96976846 0.386329600 0.89988900 0.120840988  </span>
-<span class="co">#&gt; 56    0.93 0.96993254 0.295561082 0.87077392 0.081957023  </span>
-<span class="co">#&gt; 57    0.94 0.97357217 0.231819767 0.85571833 0.059561170  </span>
-<span class="co">#&gt; 58    0.95 0.97830276 0.135981566 0.80077991 0.030379313  </span>
-<span class="co">#&gt; 59    0.96 0.97830276 0.090571841 0.70781054 0.017623058  </span>
-<span class="co">#&gt; 60    0.97 0.97833506 0.058146348 0.56236819 0.009091470  </span>
-<span class="co">#&gt; 61    0.98 0.99971246 0.006397854 0.94191755 0.001454559</span></code></pre></div>
+<span class="co">#&gt;    cut-off         SN         SP        qSN         qSP  </span>
+<span class="co">#&gt; 1     0.01 0.01871279 0.99955491 0.01383076 0.910090856  </span>
+<span class="co">#&gt; 2     0.04 0.03878517 0.99298375 0.02429450 0.527572684  </span>
+<span class="co">#&gt; 3     0.08 0.05552622 0.98532201 0.03155480 0.407009282  </span>
+<span class="co">#&gt; 4     0.10 0.09404758 0.98479055 0.06152622 0.561098843  </span>
+<span class="co">#&gt; 5     0.13 0.11411997 0.98479055 0.07758883 0.615961487  </span>
+<span class="co">#&gt; 6     0.14 0.13419235 0.97821940 0.08909820 0.560031910  </span>
+<span class="co">#&gt; 7     0.17 0.15426474 0.97821940 0.10555747 0.600029009  </span>
+<span class="co">#&gt; 8     0.21 0.22951943 0.97657113 0.16771617 0.684491222  </span>
+<span class="co">#&gt; 9     0.22 0.26966419 0.97657113 0.20255225 0.721609902  </span>
+<span class="co">#&gt; 10    0.23 0.28973658 0.97657113 0.22025429 0.737076018  </span>
+<span class="co">#&gt; 11    0.24 0.32988134 0.97657113 0.25624193 0.763368416  </span>
+<span class="co">#&gt; 12    0.28 0.34995373 0.96999998 0.27050363 0.724545251  </span>
+<span class="co">#&gt; 13    0.29 0.34995373 0.96342883 0.26642823 0.678809684  </span>
+<span class="co">#&gt; 14    0.31 0.37002611 0.96342883 0.28508581 0.692192613  </span>
+<span class="co">#&gt; 15    0.34 0.37190803 0.95747376 0.28319448 0.656388005  </span>
+<span class="co">#&gt; 16    0.35 0.39198042 0.95747376 0.30215934 0.669603851  </span>
+<span class="co">#&gt; 17    0.41 0.40210099 0.95421581 0.30985371 0.657466427  </span>
+<span class="co">#&gt; 18    0.43 0.42217337 0.95421581 0.32918977 0.669699769  </span>
+<span class="co">#&gt; 19    0.44 0.46231814 0.95421581 0.36853642 0.691719784  </span>
+<span class="co">#&gt; 20    0.47 0.50246290 0.95421581 0.40880886 0.710987298  </span>
+<span class="co">#&gt; 21    0.48 0.50246290 0.94764466 0.40531069 0.679521840  </span>
+<span class="co">#&gt; 22    0.50 0.52253529 0.94764466 0.42590552 0.688947668  </span>
+<span class="co">#&gt; 23    0.51 0.52253529 0.94107350 0.42246783 0.659909941  </span>
+<span class="co">#&gt; 24    0.52 0.52253529 0.93450235 0.41898872 0.632485420  </span>
+<span class="co">#&gt; 25    0.53 0.56268006 0.93450235 0.46134982 0.651828293  </span>
+<span class="co">#&gt; 26    0.54 0.56268006 0.92136005 0.45469982 0.602868238  </span>
+<span class="co">#&gt; 27    0.56 0.58275244 0.92136005 0.47649685 0.612554378  </span>
+<span class="co">#&gt; 28    0.57 0.60282482 0.92136005 0.49856634 0.621779274  </span>
+<span class="co">#&gt; 29    0.58 0.60912180 0.91027920 0.50026965 0.588099975  </span>
+<span class="co">#&gt; 30    0.59 0.60912180 0.90370805 0.49708665 0.567756135  </span>
+<span class="co">#&gt; 31    0.60 0.61642048 0.89952629 0.50331370 0.558789342  </span>
+<span class="co">#&gt; 32    0.62 0.62040942 0.89426100 0.50530776 0.545547290  </span>
+<span class="co">#&gt; 33    0.63 0.62040942 0.88768985 0.50209547 0.527361455  </span>
+<span class="co">#&gt; 34    0.64 0.62340500 0.88209937 0.50279615 0.513960674  </span>
+<span class="co">#&gt; 35    0.66 0.64347739 0.88209937 0.52620021 0.523681460 *</span>
+<span class="co">#&gt; 36    0.67 0.64347739 0.86238591 0.51666062 0.475508578  </span>
+<span class="co">#&gt; 37    0.68 0.64782742 0.83752539 0.50938717 0.424212775  </span>
+<span class="co">#&gt; 38    0.69 0.67472779 0.82661838 0.53728883 0.416281878  </span>
+<span class="co">#&gt; 39    0.70 0.68498863 0.79055058 0.53211546 0.358957844  </span>
+<span class="co">#&gt; 40    0.71 0.68498863 0.78397943 0.52864965 0.348714103  </span>
+<span class="co">#&gt; 41    0.72 0.69022836 0.77255247 0.52951977 0.334139121  </span>
+<span class="co">#&gt; 42    0.74 0.69613778 0.76134475 0.53144909 0.321009004  </span>
+<span class="co">#&gt; 43    0.75 0.69613778 0.75477360 0.52784486 0.312003701  </span>
+<span class="co">#&gt; 44    0.76 0.69613778 0.74820244 0.52418474 0.303245119  </span>
+<span class="co">#&gt; 45    0.77 0.71621016 0.74163129 0.54861774 0.304126945  </span>
+<span class="co">#&gt; 46    0.78 0.73694512 0.73527705 0.57490332 0.305531999  </span>
+<span class="co">#&gt; 47    0.79 0.76898012 0.71947983 0.61433045 0.300431169  </span>
+<span class="co">#&gt; 48    0.80 0.79383393 0.70790283 0.64707164 0.297575848  </span>
+<span class="co">#&gt; 49    0.81 0.79669329 0.69569660 0.64596589 0.285240850  </span>
+<span class="co">#&gt; 50    0.82 0.80302519 0.67148488 0.64474186 0.262666072  </span>
+<span class="co">#&gt; 51    0.83 0.82474266 0.66545229 0.67816379 0.265449585  </span>
+<span class="co">#&gt; 52    0.84 0.82833602 0.66005750 0.68187042 0.261630274  </span>
+<span class="co">#&gt; 53    0.85 0.83116204 0.64784036 0.68125917 0.251197394  </span>
+<span class="co">#&gt; 54    0.86 0.85269143 0.61546158 0.70538285 0.230923161  </span>
+<span class="co">#&gt; 55    0.87 0.88164570 0.57237120 0.74292938 0.207513606  </span>
+<span class="co">#&gt; 56    0.88 0.88563022 0.53424871 0.73445177 0.181897734  </span>
+<span class="co">#&gt; 57    0.89 0.88786288 0.49555271 0.72034941 0.157864853  </span>
+<span class="co">#&gt; 58    0.90 0.88894604 0.45648039 0.70089466 0.135504241  </span>
+<span class="co">#&gt; 59    0.91 0.92909080 0.43676693 0.79537632 0.138082729  </span>
+<span class="co">#&gt; 60    0.92 0.93022702 0.39771198 0.77977904 0.118390006  </span>
+<span class="co">#&gt; 61    0.93 0.97245499 0.33268244 0.89299823 0.101345688  </span>
+<span class="co">#&gt; 62    0.94 0.97466059 0.26769297 0.87812948 0.075462374  </span>
+<span class="co">#&gt; 63    0.95 0.97857018 0.19011903 0.85570585 0.048860725  </span>
+<span class="co">#&gt; 64    0.96 0.97923420 0.13119605 0.80025282 0.030395587  </span>
+<span class="co">#&gt; 65    0.97 0.97926415 0.07206548 0.65094647 0.013459084  </span>
+<span class="co">#&gt; 66    0.98 0.99979154 0.03278752 0.99157804 0.008238977</span></code></pre></div>
 <p>In the first line we define the event indicator as we did in the <code>pbc2.id</code> data.frame. The cut-point with the asterisk on the right maximizes the <a href="https://en.wikipedia.org/wiki/Youden%27s_J_statistic">Youden’s index</a>. To depict the ROC curve, we use the corresponding <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method: <img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-14-1.png" width="816" style="display: block; margin: auto;"></p>
 <p>The area under the ROC curve is calculated with the <code><a href="../reference/Accuracy%20Measures.html">tvAUC()</a></code> function:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -303,10 +308,17 @@
 <span class="co">#&gt; </span>
 <span class="co">#&gt;  Time-dependent AUC for the Joint Model jointFit</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; Estimated AUC: 0.8236</span>
+<span class="co">#&gt; Estimated AUC: 0.8296</span>
 <span class="co">#&gt; At time: 8</span>
 <span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></code></pre></div>
-<p>This function either accepts an object of class <code>tvROC</code> or of class <code>jm</code>. In the latter case, the user must also provide the <code>newdata</code>, <code>Tstart</code> and <code>Dt</code> or <code>Thoriz</code> arguments.</p>
+<p>This function either accepts an object of class <code>tvROC</code> or of class <code>jm</code>. In the latter case, the user must also provide the <code>newdata</code>, <code>Tstart</code> and <code>Dt</code> or <code>Thoriz</code> arguments. Here we have used the same dataset as the one to fit the model, but, in principle, discrimination could be (better) assessed in another dataset.</p>
+<p>To assess the accuracy of the predictions we produce a calibration plot: <img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-16-1.png" width="816" style="display: block; margin: auto;"></p>
+<p>The syntax of the <code><a href="../reference/Accuracy%20Measures.html">calibration_plot()</a></code> function is almost identical to that of <code><a href="../reference/Accuracy%20Measures.html">tvROC()</a></code>. The kernel density estimation is of the estimated probabilities <code>\pi_j(t + \Delta t | t) = \pi_j(8 | 5)</code> for all individuals at risk at year <code>t0</code> in the data frame provided in the <code>newdata</code> argument. Using the <code><a href="../reference/Accuracy%20Measures.html">calibration_metrics()</a></code> function we can also calculate metrics for the accuracy of predictions:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/Accuracy%20Measures.html">calibration_metrics</a></span><span class="op">(</span><span class="va">jointFit</span>, <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
+<span class="co">#&gt;        ICI        E50        E90 </span>
+<span class="co">#&gt; 0.05203161 0.03034106 0.18190011</span></code></pre></div>
+<p>The ICI is the mean absolute difference between the observed and predicted probabilities, E50 is the median absolute difference, and E90 is the 90% percentile of the absolute differences.</p>
 </div>
 </div>
   </div>

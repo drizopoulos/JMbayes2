@@ -152,7 +152,7 @@ plot(predLong2, predSurv, outcomes = 1:3, subject = 93,
      pos_ylab_long = c(19, 22, 0.5))
 ```
 
-We evaluate the accuracy of the predictions using ROC methodology. We calculate the components of the ROC curve using information up to year five, and we are interested in events occurring within a three-year window. That is discriminating between patients who will get the event in the interval `(t0, t0 + Dt]`, (i.e., in our case $T_j \in (7, 9]$) from patients who will survive at least 9 years (i.e., $T_j > 9$). The calculations are performed with the following call to `tvROC()`:
+We evaluate the discriminative capability of the model using ROC methodology. We calculate the components of the ROC curve using information up to year five, and we are interested in events occurring within a three-year window. That is discriminating between patients who will get the event in the interval `(t0, t0 + Dt]`, (i.e., in our case $T_j \in (5, 8]$) from patients who will survive at least 9 years (i.e., $T_j > 8$). The calculations are performed with the following call to `tvROC()`:
 ```{r}
 pbc2$event <- as.numeric(pbc2$status != "alive")
 roc <- tvROC(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
@@ -169,8 +169,16 @@ The area under the ROC curve is calculated with the `tvAUC()` function:
 tvAUC(roc)
 ```
 
-This function either accepts an object of class `tvROC` or of class `jm`. In the latter case, the user must also provide the `newdata`, `Tstart` and `Dt` or `Thoriz` arguments.
+This function either accepts an object of class `tvROC` or of class `jm`. In the latter case, the user must also provide the `newdata`, `Tstart` and `Dt` or `Thoriz` arguments. Here we have used the same dataset as the one to fit the model, but, in principle, discrimination could be (better) assessed in another dataset.
 
+To assess the accuracy of the predictions we produce a calibration plot:
+```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5, echo = FALSE}
+calibration_plot(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
+```
 
+The syntax of the `calibration_plot()` function is almost identical to that of `tvROC()`. The kernel density estimation is of the estimated probabilities `\pi_j(t + \Delta t | t) = \pi_j(8 | 5)` for all individuals at risk at year `t0` in the data frame provided in the `newdata` argument. Using the `calibration_metrics()` function we can also calculate metrics for the accuracy of predictions:
+```{r}
+calibration_metrics(jointFit, pbc2, Tstart = 5, Dt = 3)
+```
 
-
+The ICI is the mean absolute difference between the observed and predicted probabilities, E50 is the median absolute difference, and E90 is the 90% percentile of the absolute differences.

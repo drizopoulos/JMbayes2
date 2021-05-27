@@ -953,6 +953,8 @@ arma::mat cum_haz (const List &Data, const List &MCMC) {
   field<mat> U_H = List2Field_mat(as<List>(Data["U_H"]));
   mat Wlong_bar = docall_cbindL(as<List>(Data["Wlong_bar"]));
   mat Wlong_sds = docall_cbindL(as<List>(Data["Wlong_sds"]));
+  Wlong_bar = Wlong_bar.zeros();
+  Wlong_sds = Wlong_sds.ones();
 
   bool any_gammas = as<bool>(Data["any_gammas"]);
   field<uvec> FunForms = List2Field_uvec(as<List>(Data["FunForms_cpp"]), true);
@@ -972,7 +974,7 @@ arma::mat cum_haz (const List &Data, const List &MCMC) {
     vec alphas_it = alphas.col(it);
     for (uword i = 0; i < betas.n_elem; ++i) betas_it.at(i) = betas.at(i).col(it);
     ///////////////////////
-    vec W0H_bs_gammas = (W0_H * bs_gammas_it) - W_std_gammas.at(it);// - Wlong_std_alphas.at(it);
+    vec W0H_bs_gammas = (W0_H * bs_gammas_it) - W_std_gammas.at(it) - Wlong_std_alphas.at(it);
     vec WH_gammas(W0_H.n_rows, fill::zeros);
     if (any_gammas) {
       WH_gammas = W_H * gammas_it;

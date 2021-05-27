@@ -378,7 +378,8 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     cloglog <- function (x) log(-log(1 - x))
     Bounds <- quantile(cloglog(pi_u_t), probs = c(0.05, 0.95))
     form <- paste0("ns(cloglog(preds), df = ", df_ns,
-                   ", B = c(", Bounds[1L], ", ", Bounds[2L], "))")
+                   ", B = c(", round(Bounds[1L], 2), ", ",
+                   round(Bounds[2L], 2), "))")
     form <- paste("Surv(Time, event) ~", form)
     cal_Cox <- coxph(as.formula(form), data = cal_DF)
     qs <- quantile(pi_u_t, probs = c(0.01, 0.99))
