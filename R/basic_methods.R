@@ -697,7 +697,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         points(times_y_i[id_i == subj_ind], y_i[id_i == subj_ind],
                pch = pch_points[outcome_i], cex = cex_points[outcome_i],
                col = col_points[outcome_i])
-        lines(times, preds, lwd = lwd_long, col = col_line_long[outcome])
+        lines(times, preds, lwd = lwd_long, col = col_line_long[outcome_i])
         abline(v = last_times[subj_ind] + 0.01, lty = 3, col = col_axis)
     }
     plot_event <- function (box = FALSE, axis_side = 4, cex_axis = cex_axis) {
