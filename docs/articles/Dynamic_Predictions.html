@@ -126,7 +126,7 @@
       <h1 data-toc-skip>Dynamic Predictions</h1>
                         <h4 class="author">Dimitris Rizopoulos</h4>
             
-            <h4 class="date">2021-05-27</h4>
+            <h4 class="date">2021-05-28</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/master/vignettes/Dynamic_Predictions.Rmd"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="hidden name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -319,6 +319,15 @@
 <span class="co">#&gt;        ICI        E50        E90 </span>
 <span class="co">#&gt; 0.05203161 0.03034106 0.18190011</span></code></pre></div>
 <p>The ICI is the mean absolute difference between the observed and predicted probabilities, E50 is the median absolute difference, and E90 is the 90% percentile of the absolute differences.</p>
+<p>Finally, we calculate the Brier score as an overall measure of predictive performance:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/Accuracy%20Measures.html">tvBrier</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Prediction Error for the Joint Model jointFit</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Estimated Brier score: 0.1306</span>
+<span class="co">#&gt; At time: 8</span>
+<span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></code></pre></div>
 </div>
 </div>
   </div>

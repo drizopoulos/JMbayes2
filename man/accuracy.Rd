@@ -7,6 +7,7 @@
 \alias{tvROC.jm}
 \alias{calibration_plot}
 \alias{calibration_metrics}
+\alias{tvBrier}
 
 \title{Time-Dependent ROCs and AUCs for Joint Models}
 
@@ -35,6 +36,8 @@ calibration_plot(object, newdata, Tstart, Thoriz = NULL,
 
 calibration_metrics(object, newdata, Tstart, Thoriz = NULL,
     Dt = NULL, df_ns = 3, \dots)
+
+tvBrier(object, newdata, Tstart, Thoriz = NULL, Dt = NULL, \dots)
 }
 
 \arguments{

@@ -182,3 +182,10 @@ calibration_metrics(jointFit, pbc2, Tstart = 5, Dt = 3)
 ```
 
 The ICI is the mean absolute difference between the observed and predicted probabilities, E50 is the median absolute difference, and E90 is the 90% percentile of the absolute differences.
+
+Finally, we calculate the Brier score as an overall measure of predictive performance:
+```{r}
+tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
+```
+
+
