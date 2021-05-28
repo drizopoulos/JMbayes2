@@ -318,8 +318,7 @@
 <code class="sourceCode R"><span class="fu"><a href="../reference/Accuracy%20Measures.html">calibration_metrics</a></span><span class="op">(</span><span class="va">jointFit</span>, <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
 <span class="co">#&gt;        ICI        E50        E90 </span>
 <span class="co">#&gt; 0.05203161 0.03034106 0.18190011</span></code></pre></div>
-<p>The ICI is the mean absolute difference between the observed and predicted probabilities, E50 is the median absolute difference, and E90 is the 90% percentile of the absolute differences.</p>
-<p>Finally, we calculate the Brier score as an overall measure of predictive performance:</p>
+<p>The ICI is the mean absolute difference between the observed and predicted probabilities, E50 is the median absolute difference, and E90 is the 90% percentile of the absolute differences. Finally, we calculate the Brier score as an overall measure of predictive performance. This is computed with the <code><a href="../reference/Accuracy%20Measures.html">tvBrier()</a></code> function:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/Accuracy%20Measures.html">tvBrier</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
 <span class="co">#&gt; </span>
@@ -328,6 +327,11 @@
 <span class="co">#&gt; Estimated Brier score: 0.1306</span>
 <span class="co">#&gt; At time: 8</span>
 <span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></code></pre></div>
+<p><strong>Notes:</strong></p>
+<ul>
+<li>To obtain valid estimates of the predictive accuracy measures (i.e., time-varying sensitivity, specificity, and Brier score) we need to account for censoring. A popular method to achieve this is via inverse probability of censoring weighting. For this approach to be valid, we need the model for the weights to be correctly specified. In standard survival analysis, this is achieved either using the Kaplan-Meier estimator or a Cox model for the censoring distribution. However, in the settings where joint models are used, it is often the case that the censoring mechanism may depend on the history of the longitudinal outcomes in a complex manner. This is especially the case when we consider multiple longitudinal outcomes in the analysis. Also, these outcomes may be recorded at different time points per patient and have missing data. Because of these reasons, in these settings, Kaplan-Meier-based or Cox-based censoring weights may be difficult to derive or be biased. The functions in <strong>JMbayes2</strong> that calculate the predictive accuracy measures using joint-model-based weights to account for censoring. These weights allow censoring to depend in any possible manner on the history of the longitudinal outcomes. However, they require that the model is appropriately calibrated.</li>
+<li>The calibration curve, produced by <code><a href="../reference/Accuracy%20Measures.html">calibration_plot()</a></code>, and the calibration metrics, produced by <code>calibration_metrics())</code>, are calculated using the procedure described in <a href="https://doi.org/10.1002/sim.8570">Austin et al., 2020</a>.</li>
+</ul>
 </div>
 </div>
   </div>

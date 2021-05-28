@@ -181,11 +181,15 @@ The syntax of the `calibration_plot()` function is almost identical to that of `
 calibration_metrics(jointFit, pbc2, Tstart = 5, Dt = 3)
 ```
 
-The ICI is the mean absolute difference between the observed and predicted probabilities, E50 is the median absolute difference, and E90 is the 90% percentile of the absolute differences.
-
-Finally, we calculate the Brier score as an overall measure of predictive performance:
+The ICI is the mean absolute difference between the observed and predicted probabilities, E50 is the median absolute difference, and E90 is the 90% percentile of the absolute differences. Finally, we calculate the Brier score as an overall measure of predictive performance. This is computed with the `tvBrier()` function:
 ```{r}
 tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 ```
+
+**Notes:**
+
+- To obtain valid estimates of the predictive accuracy measures (i.e., time-varying sensitivity, specificity, and Brier score) we need to account for censoring. A popular method to achieve this is via inverse probability of censoring weighting. For this approach to be valid, we need the model for the weights to be correctly specified. In standard survival analysis, this is achieved either using the Kaplan-Meier estimator or a Cox model for the censoring distribution. However, in the settings where joint models are used, it is often the case that the censoring mechanism may depend on the history of the longitudinal outcomes in a complex manner. This is especially the case when we consider multiple longitudinal outcomes in the analysis. Also, these outcomes may be recorded at different time points per patient and have missing data. Because of these reasons, in these settings, Kaplan-Meier-based or Cox-based censoring weights may be difficult to derive or be biased. The functions in **JMbayes2** that calculate the predictive accuracy measures using joint-model-based weights to account for censoring. These weights allow censoring to depend in any possible manner on the history of the longitudinal outcomes. However, they require that the model is appropriately calibrated.
+- The calibration curve, produced by `calibration_plot()`, and the calibration metrics, produced by `calibration_metrics())`, are calculated using the procedure described in [Austin et al., 2020](https://doi.org/10.1002/sim.8570).
+
 
 
