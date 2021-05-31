@@ -528,6 +528,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   field<mat> U_H2 = List2Field_mat(as<List>(model_data["U_H2"]));
   mat Wlong_bar = docall_cbindL(as<List>(model_data["Wlong_bar"]));
   mat Wlong_sds = docall_cbindL(as<List>(model_data["Wlong_sds"]));
+  mat W_sds = as<mat>(model_data["W_sds"]);
   uvec which_event = as<uvec>(model_data["which_event"]) - 1;
   uvec which_right = as<uvec>(model_data["which_right"]) - 1;
   uvec which_right_event = join_cols(which_event, which_right);
@@ -554,7 +555,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
       y, X, Xbar, Z, extra_parms, families, links, idL, idL_lp_fast, unq_idL,
       ///
       W0_H, W0_h, W0_H2, W_H, W_h, W_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
-      U_H, U_h, U_H2, Wlong_bar, Wlong_sds, any_event, any_interval, any_gammas,
+      U_H, U_h, U_H2, Wlong_bar, Wlong_sds, W_sds, any_event, any_interval, any_gammas,
       FunForms, FunForms_ind, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2,
       id_H_fast, id_h_fast, which_event, which_right_event, which_left,
       which_interval);
@@ -622,6 +623,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   field<mat> U_H2 = List2Field_mat(as<List>(model_data["U_H2"]));
   mat Wlong_bar = docall_cbindL(as<List>(model_data["Wlong_bar"]));
   mat Wlong_sds = docall_cbindL(as<List>(model_data["Wlong_sds"]));
+  mat W_sds = as<mat>(model_data["W_sds"]);
   uvec which_event = as<uvec>(model_data["which_event"]) - 1;
   uvec which_right = as<uvec>(model_data["which_right"]) - 1;
   uvec which_right_event = join_cols(which_event, which_right);
@@ -652,7 +654,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
       y, X, Xbar, Z, extra_parms, families, links, idL, idL_lp_fast, unq_idL,
       ///
       W0_H, W0_h, W0_H2, W_H, W_h, W_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
-      U_H, U_h, U_H2, Wlong_bar, Wlong_sds, any_event, any_interval, any_gammas,
+      U_H, U_h, U_H2, Wlong_bar, Wlong_sds, W_sds, any_event, any_interval, any_gammas,
       FunForms, FunForms_ind, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2,
       id_H_fast, id_h_fast, which_event, which_right_event, which_left,
       which_interval);

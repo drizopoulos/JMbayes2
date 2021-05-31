@@ -166,7 +166,7 @@ vec logLik_jm_stripped (
     const field<mat> &X_H, const field<mat> &X_h, const field<mat> &X_H2,
     const field<mat> &Z_H, const field<mat> &Z_h, const field<mat> &Z_H2,
     const field<mat> &U_H, const field<mat> &U_h, const field<mat> &U_H2,
-    const mat &Wlong_bar, const mat &Wlong_sds,
+    const mat &Wlong_bar, const mat &Wlong_sds, const mat &W_sds,
     const bool &any_event, const bool &any_interval, const bool &any_gammas,
     const field<uvec> &FunForms, const field<uvec> &FunForms_ind,
     const List &Funs_FunForms,
@@ -198,26 +198,28 @@ vec logLik_jm_stripped (
   vec WH_gammas(W0_H.n_rows);
   vec Wh_gammas(W0_h.n_rows);
   vec WH2_gammas(W0_H2.n_rows);
+  vec gammas_ = gammas % W_sds.t();
   if (any_gammas) {
-    WH_gammas = W_H * gammas;
+    WH_gammas = W_H * gammas_;
   }
   if (any_gammas && any_event) {
-    Wh_gammas = W_h * gammas;
+    Wh_gammas = W_h * gammas_;
   }
   if (any_gammas && any_interval) {
-    WH2_gammas = WH2_gammas * gammas;
+    WH2_gammas = W_H2 * gammas_;
   }
   mat Wlong_H =
     calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas_, b, id_H_,
                     FunForms, FunForms_ind, Funs_FunForms);
-  vec WlongH_alphas = Wlong_H * alphas;
+  vec alphas_ = alphas % Wlong_sds.t();
+  vec WlongH_alphas = Wlong_H * alphas_;
   mat Wlong_h(W0_h.n_rows, alphas.n_rows);
   vec Wlongh_alphas(W0_h.n_rows);
   if (any_event) {
     Wlong_h =
       calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas_, b, id_h,
                       FunForms, FunForms_ind, Funs_FunForms);
-    Wlongh_alphas = Wlong_h * alphas;
+    Wlongh_alphas = Wlong_h * alphas_;
   }
   mat Wlong_H2(W0_H2.n_rows, alphas.n_rows);
   vec WlongH2_alphas(W0_H2.n_rows);
@@ -225,7 +227,7 @@ vec logLik_jm_stripped (
     Wlong_H2 =
       calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas_, b, id_H_,
                       FunForms, FunForms_ind, Funs_FunForms);
-    WlongH2_alphas = Wlong_H2 * alphas;
+    WlongH2_alphas = Wlong_H2 * alphas_;
   }
   vec logLik_surv =
     log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
