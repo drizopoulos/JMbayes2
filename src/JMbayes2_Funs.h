@@ -201,6 +201,7 @@ mat docall_cbindF (const field<mat> &Mats) {
 
 uvec create_fast_ind (const uvec &group) {
   uword l = group.n_rows;
+  if (l == 1) return group - 1;
   uvec ind = find(group.rows(1, l - 1) != group.rows(0, l - 2));
   uword k = ind.n_rows;
   ind.insert_rows(k, 1);

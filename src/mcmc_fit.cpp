@@ -728,7 +728,6 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
   for (uword i = 0; i < idL_lp.n_elem; ++i) {
     ids.at(i) = create_fast_ind(idL_lp.at(i) + 1);
   }
-
   ////////////////////////////
   // MCMC Sample Parameters //
   ///////////////////////////

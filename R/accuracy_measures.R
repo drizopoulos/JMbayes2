@@ -125,8 +125,9 @@ print.tvROC <- function (x, digits = 4, ...) {
 }
 
 plot.tvROC <- function (x, legend = FALSE,
-                        optimal_cutoff = c("", "F1score", "Youden"), ...) {
-    plot(x$FP, x$TP, type = "l", xlab = "1 - Specificity", ylab = "Sensitivity")
+                        optimal_cutoff = c("", "F1score", "Youden"),
+                        xlab = "1 - Specificity", ylab = "Sensitivity", ...) {
+    plot(x$FP, x$TP, type = "l", xlab = xlab, ylab = ylab, ...)
     abline(a = 0, b = 1, lty = 3)
     optimal_cutoff <- match.arg(optimal_cutoff)
     if (optimal_cutoff == "F1score")
