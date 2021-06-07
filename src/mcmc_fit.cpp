@@ -587,8 +587,10 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   uword n = mean_b_mat.n_rows;
   field<mat> mean_b =
     mat2field(mean_b_mat, List2Field_uvec(as<List>(model_data["ind_RE"]), true));
-  vec det_post_vars(n);
-  for (uword i = 0; i < n; ++i) det_post_vars.at(i) = det(post_vars.slice(i));
+  vec log_det_post_vars(n);
+  for (uword i = 0; i < n; ++i) {
+    log_det_post_vars.at(i) = log_det_sympd(post_vars.slice(i));
+  }
   /////////////
   field<mat> y = List2Field_mat(as<List>(model_data["y"]));
   field<mat> X = List2Field_mat(as<List>(model_data["X"]));
@@ -658,7 +660,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
       FunForms, FunForms_ind, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2,
       id_H_fast, id_h_fast, which_event, which_right_event, which_left,
       which_interval);
-    oo += 0.5 * ((double)mean_b_mat.n_cols * log2pi + log(det_post_vars));
+    oo += 0.5 * ((double)mean_b_mat.n_cols * log2pi + log_det_post_vars);
     out.col(i) = oo;
   }
   out = out.t();
