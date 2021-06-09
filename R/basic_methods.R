@@ -706,10 +706,10 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         low <- fun_event(pred_Event[[ind + 1]])
         upp <- fun_event(pred_Event[[ind + 2]])
         times <- pred_Event[[time_var]]
-        ry <- range(preds, low, upp)
+        ry <- sort(fun_event(c(0, 1)))
         rx <- range(times)
         plot(rx, ry, type = "n", xlab = "", ylab = "", xlim = xlim,
-             axes = FALSE, col.axis = col_axis, col.lab = col_axis)
+             axes = FALSE, col.axis = col_axis, col.lab = col_axis, ylim = ry)
         if (box) box(col = col_axis)
         axis(axis_side, cex.axis = cex_axis, col = col_axis,
              col.ticks = col_axis, col.axis = col_axis)

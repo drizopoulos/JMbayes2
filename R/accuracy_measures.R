@@ -319,7 +319,7 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
                               add_density = TRUE, col = "red", lty = 1, lwd = 1,
                               col_dens = "grey",
                               xlab = "Predicted Probabilities",
-                              ylab = "Observed Probabilities", ...) {
+                              ylab = "Observed Probabilities", main = "", ...) {
     if (!inherits(object, "jm"))
         stop("Use only with 'jm' objects.\n")
     if (!is.data.frame(newdata) || nrow(newdata) == 0)
@@ -389,7 +389,8 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     obs_pi_u_t <- 1 - c(summary(survfit(cal_Cox, newdata = cal_DF), times = Thoriz)$surv)
     if (plot) {
         plot(probs_grid$preds, obs, type = "l", col = col, lwd = lwd, lty = lty,
-             xlab = xlab, ylab = ylab, xlim = c(0, 1), ylim = c(0, 1))
+             xlab = xlab, ylab = ylab, main = main, xlim = c(0, 1),
+             ylim = c(0, 1))
         abline(0, 1, lty = 2)
         if (add_density) {
             par(new = TRUE)
