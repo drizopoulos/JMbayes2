@@ -58,7 +58,7 @@ predicted probabilities used in the Cox model that assess calibration.}
 
 \item{add_density}{logical; should the kernal density estimation of the predicted probabilities be superimposed in the calibration plot.}
 
-\item{col, lwd, lty, col_dens, xlab, ylab. main}{graphical parameters.}
+\item{col, lwd, lty, col_dens, xlab, ylab, main}{graphical parameters.}
 
 \item{\dots}{additional arguments passed to \code{predict.jm()}.}
 }
