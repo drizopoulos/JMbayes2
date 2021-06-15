@@ -24,11 +24,11 @@ Predict method for object of class \code{"jm"}.
 \method{plot}{predict_jm}(x, x2 = NULL, subject = 1, outcomes = 1,
   fun_long = NULL, fun_event = NULL, CI_long = TRUE, CI_event = TRUE,
   xlab = "Follow-up Time", ylab_long = NULL, ylab_event = "Cumulative Risk",
-  lwd_long = 2, lwd_event = 2, col_line_long = "blue", col_line_event = "red",
-  pch_points = 16, col_points = "blue", cex_points = 1,
+  main = "", lwd_long = 2, lwd_event = 2, col_line_long = "blue",
+  col_line_event = "red", pch_points = 16, col_points = "blue", cex_points = 1,
   fill_CI_long = "#0000FF44", fill_CI_event = "#FF000044", cex_xlab = 1,
-  cex_ylab_long = 1, cex_ylab_event = 1, cex_axis = 1, col_axis = "black",
-  pos_ylab_long = c(0.1, 2, 0.08), bg = "white", \dots)
+  cex_ylab_long = 1, cex_ylab_event = 1, cex_main = 1, cex_axis = 1,
+  col_axis = "black", pos_ylab_long = c(0.1, 2, 0.08), bg = "white", \dots)
 }
 
 \arguments{
@@ -68,8 +68,8 @@ Predict method for object of class \code{"jm"}.
 
 \item{xlab, ylab_long, ylab_event}{characture strings or a chracter vector for \code{ylab_long} when multiple longitudinal outcomes are considered with the labels for the horizontal axis, and the two vertical axes.}
 
-\item{lwd_long, lwd_event, col_line_long, col_line_event,
-  fill_CI_long, fill_CI_event, cex_xlab, cex_ylab_long, cex_ylab_event,
+\item{lwd_long, lwd_event, col_line_long, col_line_event, main,
+  fill_CI_long, fill_CI_event, cex_xlab, cex_ylab_long, cex_ylab_event, cex_main,
   cex_axis, pch_points, col_points, cex_points, col_axis, bg}{graphical parameters; see \code{par}.}
 
 \item{pos_ylab_long}{controls the position of the y-axis labels when multiple longitudinal outcomes are plotted.}

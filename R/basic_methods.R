@@ -570,14 +570,15 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
                              fun_long = NULL, fun_event = NULL,
                              CI_long = TRUE, CI_event = TRUE,
                              xlab = "Follow-up Time", ylab_long = NULL,
-                             ylab_event = "Cumulative Risk", lwd_long = 2, lwd_event = 2,
+                             ylab_event = "Cumulative Risk", main = "",
+                             lwd_long = 2, lwd_event = 2,
                              col_line_long = "blue", col_line_event = "red",
                              pch_points = 16, col_points = "blue", cex_points = 1,
                              fill_CI_long = "#0000FF44",
                              fill_CI_event = "#FF000044", cex_xlab = 1,
-                             cex_ylab_long = 1, cex_ylab_event = 1, cex_axis = 1,
-                             col_axis = "black", pos_ylab_long = c(0.1, 2, 0.08),
-                             bg = "white", ...) {
+                             cex_ylab_long = 1, cex_ylab_event = 1, cex_main = 1,
+                             cex_axis = 1, col_axis = "black",
+                             pos_ylab_long = c(0.1, 2, 0.08), bg = "white", ...) {
     process_x <- attr(x, "process")
     pred_Long <- if (process_x == "longitudinal") x
     pred_Event <- if (process_x == "event") x
@@ -746,6 +747,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
             plot_event(cex_axis = cex_axis)
             mtext(ylab_event, 4, 1.5, cex = cex_ylab_event, col = col_axis)
             par(op)
+            mtext(main, 3, 1.5, cex = cex_main, col = col_axis)
         } else if (n_outcomes == 2) {
             # n_outcomes == 2
             op <- par(mfrow = c(2, 1), oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
@@ -767,6 +769,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
             plot_event(box = TRUE, cex_axis = 0.66 * cex_axis)
             mtext(ylab_event, 4, 1.5, cex = cex_ylab_event, col = col_axis)
             par(op)
+            mtext(main, 3, 1.5, cex = cex_main, col = col_axis)
         } else {
             # n_outcomes == 3
             op <- par(mfrow = c(3, 1), oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
@@ -792,6 +795,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
             plot_event(cex_axis = cex_axis)
             mtext(ylab_event, 4, 1.5, cex = cex_ylab_event, col = col_axis)
             par(op)
+            mtext(main, 3, 1.5, cex = cex_main, col = col_axis)
         }
     }
     invisible()
