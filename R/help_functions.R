@@ -408,12 +408,11 @@ slope <- function (x, eps = 0.001, direction = "both") {
     out
 }
 
-create_HC_X <- function(x, z, id, terms_FE, data, center = FALSE) {
+create_HC_X <- function(x, z, id, terms, data) {
     check_tv <- function (x, id) {
         !all(sapply(split(x, id),
                     function (z) all(abs(z - z[1L]) < .Machine$double.eps^0.5)))
     }
-    x <- scale(x, center = center, scale = FALSE)
     cnams_x <- colnames(x)
     cnams_z <- colnames(z)
     n_res <- ncol(z)
@@ -428,18 +427,22 @@ create_HC_X <- function(x, z, id, terms_FE, data, center = FALSE) {
         baseline <- x_notin_z[ind]
         X_HC[[1]] <- x[!duplicated(id), baseline, drop = FALSE]
         mat_HC[cbind(1, baseline)] <- 2 # baseline
-        }
+    }
     # remaining RE
     if (n_res > 1) {
         for (i in seq_len(n_res)[-1]) {
-            xint_in_z <- union(grep(paste0(cnams_z[i], ":"), cnams_x, fixed= TRUE),
-                               grep(paste0(":", cnams_z[i]), cnams_x, fixed= TRUE)) # interactions can be found as RE:var1, var1:RE, or var1:RE:var2
+            # interactions can be found as RE:var1, var1:RE, or var1:RE:var2
+            xint_in_z <- union(grep(paste0(cnams_z[i], ":"), cnams_x, 
+                                    fixed = TRUE),
+                               grep(paste0(":", cnams_z[i]), cnams_x, 
+                                    fixed = TRUE))
+            xint_in_z <- sort(xint_in_z)
             if (!length(xint_in_z)) next
             data_temp <- data
-            col_name <- colnames(data)[sapply(colnames(data), grepl, cnams_z[i], fixed= TRUE)]
+            col_name <- colnames(data)[sapply(colnames(data), grepl, cnams_z[i], 
+                                              fixed = TRUE)]
             data_temp[, col_name][] <- 1
-            x_temp <- scale(model.matrix.default(terms_FE, data = data_temp),
-                            center = center, scale = FALSE)
+            x_temp <- model.matrix.default(terms, data = data_temp)
             ind <- !apply(x_temp[, xint_in_z, drop = FALSE], 2L, check_tv,
                           id = id)
             if(any(ind)) {
@@ -465,11 +468,14 @@ create_X_dot <- function(nres, nfes_HC, z_in_x, x_in_z, X_HC, nT, unq_idL, xbas_
     for (j in seq_len(n_outcomes)) { # j-th outcome
         ids <- unq_idL[[j]] # ids present in outcome-j
         ids_rows <- (ids-1) * n_res # 1st row for each id
-        rows <- sum(nres[1:j-1]) + z_in_x[[j]] + rep(ids_rows, each= length(z_in_x[[j]]))
-        cols <- rep(sum(nfes_HC[1:j-1]) + x_in_z[[j]], times= length(ids))
-        M[cbind(rows, cols)] <- 1 # add 1 for each z_in_x
+        rows1 <- sum(nres[1:j-1]) + z_in_x[[j]] + rep(ids_rows, 
+                                                      each = length(z_in_x[[j]]))
+        cols1 <- sum(nfes_HC[1:j-1]) + match(names(x_in_z[[j]]), 
+                                             colnames(xbas_in_z[[j]])) 
+        cols1 <- rep(cols1, times = length(ids))
+        M[cbind(rows1, cols1)] <- 1 # add 1 for each z_in_x
         bas_cols <- xbas_in_z[[j]]
-        for (k in z_in_x[[j]]) { # k-th RE in z_in_x # improve: remove this loop here
+        for (k in seq_len(nres[j])) { # k-th RE
             if (!sum(bas_cols[k, ])) next
             M[sum(nres[1:j-1]) + k + ids_rows, sum(nfes_HC[1:j-1]) +
                   which(bas_cols[k, ])] <- X_HC[[j]][[k]]
