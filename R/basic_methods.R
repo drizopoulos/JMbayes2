@@ -729,8 +729,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         }
     }
     if (is.null(pred_Long)) {
-        plot_event(box = TRUE, 2, cex_axis = cex_axis, main = main,
-                   cex_main = cex_main)
+        plot_event(box = TRUE, 2, cex_axis = cex_axis)
         title(xlab = xlab, cex = cex_xlab)
         title(ylab = ylab_event, cex = cex_ylab_event)
         title(main = main, cex = cex_main)
@@ -803,7 +802,3 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
     }
     invisible()
 }
-
-
-
-
