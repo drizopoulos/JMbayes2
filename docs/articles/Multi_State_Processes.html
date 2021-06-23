@@ -51,7 +51,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-64</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-65</span>
       </span>
     </div>
 
@@ -120,13 +120,13 @@
 
       
 
-      </header><script src="Multi_State_Processes_files/header-attrs-2.8/header-attrs.js"></script><div class="row">
+      </header><script src="Multi_State_Processes_files/header-attrs-2.9/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Multi-State Processes</h1>
                         <h4 class="author">Grigorios Papageorgiou</h4>
             
-            <h4 class="date">2021-05-28</h4>
+            <h4 class="date">2021-06-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/master/vignettes/Multi_State_Processes.Rmd"><code>vignettes/Multi_State_Processes.Rmd</code></a></small>
       <div class="hidden name"><code>Multi_State_Processes.Rmd</code></div>
@@ -353,8 +353,8 @@
 <span class="co">#&gt;   y: 4033</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    18642.54 20576.05 -11561.90</span>
-<span class="co">#&gt; conditional 18939.54 20924.26 -13435.83</span>
+<span class="co">#&gt; marginal    17829.13 19487.11 -11049.53</span>
+<span class="co">#&gt; conditional 19695.63 20924.26 -13435.83</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                     </span>
@@ -383,7 +383,7 @@
 <span class="co">#&gt; iterations per chain: 10000 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 3 min</span></code></pre></div>
+<span class="co">#&gt; time: 3.2 min</span></code></pre></div>
 <p>which differs from a default call to <code><a href="../reference/jm.html">jm()</a></code> by the addition of the <code>functional_forms</code> argument by which we specify that we want an “interaction” between the value of the marker and each transition which translates into a separate association parameter for the longitudinal marker and each transition.</p>
 </div>
 </div>

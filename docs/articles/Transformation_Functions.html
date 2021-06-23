@@ -51,7 +51,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-64</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-65</span>
       </span>
     </div>
 
@@ -120,13 +120,13 @@
 
       
 
-      </header><script src="Transformation_Functions_files/header-attrs-2.8/header-attrs.js"></script><div class="row">
+      </header><script src="Transformation_Functions_files/header-attrs-2.9/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Transformation Functions for Functional Forms</h1>
                         <h4 class="author">Dimitris Rizopoulos</h4>
             
-            <h4 class="date">2021-05-28</h4>
+            <h4 class="date">2021-06-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/master/vignettes/Transformation_Functions.Rmd"><code>vignettes/Transformation_Functions.Rmd</code></a></small>
       <div class="hidden name"><code>Transformation_Functions.Rmd</code></div>
@@ -164,8 +164,8 @@
 <span class="co">#&gt;   hepatomegaly: 1884</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    3319.053 3475.143 -2117.734</span>
-<span class="co">#&gt; conditional 5070.749 5103.422 -2882.417</span>
+<span class="co">#&gt; marginal    3119.795 3100.114 -1565.582</span>
+<span class="co">#&gt; conditional 5199.221 5103.422 -2882.417</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                      </span>
@@ -188,7 +188,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 14 sec</span></code></pre></div>
+<span class="co">#&gt; time: 15 sec</span></code></pre></div>
 <p>In the output this is named as <code><a href="../reference/jm.html">value(hepatomegaly)</a></code> to denote that the current value functional form is used. That is, we assume that the risk at a specific time <span class="math inline">\(t\)</span> is associated with the value of the linear predictor of the longitudinal outcome at the same time point <span class="math inline">\(t\)</span>. In this particular case, the subject-specific linear predictor denotes the log odds of experiencing hepatomegaly at time <span class="math inline">\(t\)</span>.</p>
 </div>
 <div id="transformation-functions" class="section level2">
@@ -209,8 +209,8 @@
 <span class="co">#&gt;   hepatomegaly: 1884</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    3251.067 3340.481 -1795.600</span>
-<span class="co">#&gt; conditional 5190.393 5191.722 -2929.205</span>
+<span class="co">#&gt; marginal    3123.579 3109.284 -1581.404</span>
+<span class="co">#&gt; conditional 5259.924 5191.722 -2929.205</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                      </span>
@@ -233,7 +233,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 15 sec</span></code></pre></div>
+<span class="co">#&gt; time: 16 sec</span></code></pre></div>
 <p>Other available functions to use in the definition of the <code>functional_forms</code> argument are <code><a href="../reference/jm.html">vexp()</a></code> for calculating the exponent, <code><a href="../reference/jm.html">vlog()</a></code> for calculating the natural logarithm, and <code><a href="../reference/jm.html">vsqrt()</a></code> for calculating the square root.</p>
 <p>If we want to include the time-varying slope of the transformed linear predictor, we also have the <code><a href="../reference/jm.html">Dexpit()</a></code> and <code><a href="../reference/jm.html">Dexp()</a></code> functions available. As an example, we extend <code>jointFit2</code> by including the derivative of the <span class="math inline">\(\mbox{expit}()\)</span> transformation:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -251,8 +251,8 @@
 <span class="co">#&gt;   hepatomegaly: 1884</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    3325.532 4797.542 -3156.083</span>
-<span class="co">#&gt; conditional 5070.649 5117.333 -2912.951</span>
+<span class="co">#&gt; marginal    3174.677 3303.159 -1773.370</span>
+<span class="co">#&gt; conditional 5142.456 5117.333 -2912.951</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                      </span>
@@ -280,7 +280,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 17 sec</span></code></pre></div>
+<span class="co">#&gt; time: 18 sec</span></code></pre></div>
 <p>The call to <code><a href="../reference/jm.html">Dexpit(slope(hepatomegaly))</a></code> is internally transformed to <code>Dexpit(value(hepatomegaly)):slope(hepatomegaly)</code>, which calculates the derivative of the <span class="math inline">\(\mbox{expit}()\)</span> evaluated at the linear predictor times the derivative of the linear predictor. This is because <span class="math display">\[\frac{d}{dt} \mbox{expit}\{\eta(t)\} = \mbox{expit}\{\eta(t)\} \, \Bigl [ 1 - \mbox{expit}\{\eta(t)\} \Bigr ] \times \frac{d}{dt}\eta(t)\]</span></p>
 </div>
 <div id="the-slope-functional-form" class="section level2">
