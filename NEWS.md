@@ -1,3 +1,17 @@
+# JMbayes2 0.1.7
+
+## Major
+* Added the function `tvBrier()` for calculating time-varying Brier score for fitted joint models. Currently, only right-censored data are supported.
+
+* Added the functions `calibration_plot()` and `calibration_metrics()` for calculating time-varying calibration plot and calibration metrics for fitted joint models. Currently, only right-censored data are supported.
+
+* Added new section in the vignette for Dynamic Prediction (available on the [website of the package](https://drizopoulos.github.io/JMbayes2/)) to showcase the use of the functions mentioned above. 
+
+## Minor
+* Improved the plot method for dynamic predictions.
+
+* Several bug corrections.
+
 # JMbayes2 0.1.6
 
 ## Major
