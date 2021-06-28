@@ -530,6 +530,8 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     betas <- lapply(Mixed_objects, fixef)
     log_sigmas <- sapply(Mixed_objects, extract_log_sigmas)
     Data$has_sigmas <- as.integer(log_sigmas > -20)
+    # indicator denoting subject-specific sigmas
+    Data$ss_sigmas <- rep(FALSE, length(log_sigmas))
     D_lis <- lapply(Mixed_objects, extract_D)
     D <- bdiag(D_lis)
     b <- mapply2(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY))
