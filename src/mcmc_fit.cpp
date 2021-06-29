@@ -185,6 +185,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uword n_sds = sds.n_rows;
   uword n_L = vec(L(upper_part)).n_rows;
   uword n_sigmas = sigmas.n_rows;
+  // uword n_sigmas = n_field(sigmas);
   uword n_betas = betas_vec.n_rows;
   mat res_bs_gammas(n_iter, n_bs_gammas, fill::zeros);
   mat acceptance_bs_gammas(n_iter, n_bs_gammas, fill::zeros);
