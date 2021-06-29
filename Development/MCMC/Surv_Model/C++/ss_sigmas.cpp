@@ -4,11 +4,21 @@
 using namespace Rcpp;
 using namespace arma;
 
+
+uword n_field (const field<vec> &x) {
+    uword n = x.n_rows;
+    uword out = 0;
+    for (uword i = 0; i < n; ++i)
+        out += x.at(i).n_rows;
+    return out;
+}
+
 // [[Rcpp::export]]
 field<vec> create_sigmas_field (const field<vec> &sigmas,
                                 const uvec &ss_sigmas,
                                 const field<uvec> &idL) {
     uword n = sigmas.n_rows;
+    Rcpp::Rcout << "n is: " << n_field(sigmas);
     field<vec> out(n);
     for (uword i = 0; i < n; ++i) {
         vec sigmas_i = sigmas.at(i);
@@ -23,8 +33,6 @@ field<vec> create_sigmas_field (const field<vec> &sigmas,
     }
     return out;
 }
-
-
 
 
 
