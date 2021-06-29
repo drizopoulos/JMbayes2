@@ -40,4 +40,3 @@ idL2 <- lapply(idL, function (x) x - 1)
 benchmark(R = create_sigma_list(sigmas, ss_sigmas, idL),
           Cpp = create_sigmas_field(sigmas, ss_sigmas, idL2),
           replications = 120000)
-

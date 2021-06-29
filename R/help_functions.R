@@ -1244,7 +1244,7 @@ extract_mcmc_as_inits <- function(x_mcmc, i, nams_x, nams_special, ind_RE, dim_D
     )
 }
 
-extract_last_iterations <- function(x) {
+extract_last_iterations <- function (x) {
     x_mcmc <- x$mcmc
     n_chains <- x$control$n_chains
     nams_x <- names(x_mcmc)
@@ -1254,10 +1254,28 @@ extract_last_iterations <- function(x) {
     last_iter_x <- vector('list', n_chains)
     has_sigmas <- as.integer(x$initial_values$log_sigmas > -20)
     for (i in 1:n_chains) {
-        last_iter_x[[i]] <- extract_mcmc_as_inits(x_mcmc, i = i, nams_x = nams_x,
-                                                  nams_special = nams_special, ind_RE = ind_RE, dim_D,
-                                                  has_sigmas = has_sigmas)
+        last_iter_x[[i]] <-
+            extract_mcmc_as_inits(x_mcmc, i = i, nams_x = nams_x,
+                                  nams_special = nams_special, ind_RE = ind_RE,
+                                  dim_D, has_sigmas = has_sigmas)
     }
     last_iter_x
 }
+
+create_sigma_list <- function (sigmas, ss_sigmas, idL) {
+    n <- length(sigmas)
+    out <- vector("list", n)
+    for (i in 1:n) {
+        sigmas_i <- sigmas[[i]]
+        id_i <- idL[[i]]
+        if (ss_sigmas[i]) {
+            out[[i]] <- sigmas_i[id_i]
+        } else {
+            out[[i]] <- rep(sigmas_i, length(id_i))
+        }
+    }
+    out
+}
+
+lng_unq <- function (x) length(unique(x))
 

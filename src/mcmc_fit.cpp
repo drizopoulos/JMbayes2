@@ -117,6 +117,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<vec> betas = List2Field_vec(as<List>(initial_values["betas"]));
   vec betas_vec = docall_rbindF(betas);
   vec sigmas = exp(as<vec>(initial_values["log_sigmas"]));
+  //field<vec> sigmas = List2Field_vec(as<List>(initial_values["sigmas"]));
   uvec has_sigmas = as<uvec>(model_data["has_sigmas"]);
   // indexes or other useful things
   uvec upper_part = trimatu_ind(size(R),  1);

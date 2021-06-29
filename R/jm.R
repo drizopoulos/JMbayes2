@@ -531,19 +531,24 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     log_sigmas <- sapply(Mixed_objects, extract_log_sigmas)
     Data$has_sigmas <- as.integer(log_sigmas > -20)
     # indicator denoting subject-specific sigmas
-    Data$ss_sigmas <- rep(FALSE, length(log_sigmas))
+    ss_sigmas <- rep(FALSE, length(log_sigmas))
+    Data$ss_sigmas <- ss_sigmas
+    sigmas <- split(exp(log_sigmas), seq_along(log_sigmas))
+    sigmas[ss_sigmas] <-
+        mapply2(rep, x = sigmas[ss_sigmas],
+                length.out = lapply(idL_lp, lng_unq)[ss_sigmas])
     D_lis <- lapply(Mixed_objects, extract_D)
     D <- bdiag(D_lis)
     b <- mapply2(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY))
-    #init_surv <- init_vals_surv(Data, model_info, data, betas, b, con)
     bs_gammas <- rep(-0.1, ncol(W0_H))
     gammas <- if (inherits(Surv_object, "coxph")) coef(Surv_object) else
         -coef(Surv_object) / Surv_object$scale
     if (is.null(gammas)) gammas <- 0.0
     alphas <- rep(0.0, sum(sapply(U_H, ncol)))
-    initial_values <- list(betas = betas, log_sigmas = log_sigmas, D = D,
-                           b = b, bs_gammas = bs_gammas, gammas = gammas,
-                           alphas = alphas, tau_bs_gammas = rep(20, n_strata))
+    initial_values <- list(betas = betas, log_sigmas = log_sigmas,
+                           sigmas = sigmas, D = D, b = b, bs_gammas = bs_gammas,
+                           gammas = gammas, alphas = alphas,
+                           tau_bs_gammas = rep(20, n_strata))
     ############################################################################
     ############################################################################
     # Limits
