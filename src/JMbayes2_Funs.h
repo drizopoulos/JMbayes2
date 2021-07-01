@@ -742,7 +742,7 @@ uword n_field (const field<vec> &x) {
 field<vec> create_sigmas_field (const field<vec> &sigmas,
                                 const uvec &ss_sigmas,
                                 const field<uvec> &idL) {
-  uword n = sigmas.n_rows;
+  uword n = sigmas.size();
   field<vec> out(n);
   for (uword i = 0; i < n; ++i) {
     vec sigmas_i = sigmas.at(i);
@@ -756,6 +756,12 @@ field<vec> create_sigmas_field (const field<vec> &sigmas,
     }
   }
   return out;
+}
+
+vec scalar2vec (const double &x) {
+  vec v(1);
+  v.fill(x);
+  return v;
 }
 
 #endif
