@@ -35,10 +35,9 @@ field<vec> create_sigmas_field (const field<vec> &sigmas,
 }
 
 // [[Rcpp::export]]
- vec scalar2vec (const double &x) {
-     vec v(1);
-     v.fill(x);
-     return v;
+ vec test (const field<vec> &x, const uword &i) {
+     vec out = x.at(i);
+     return out;
  }
 
 
