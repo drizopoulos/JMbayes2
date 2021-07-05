@@ -254,35 +254,13 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   if (any_interval) {
     WlongH2_alphas = Wlong_H2 * alphas;
   }
-  //
-  uvec which_term_h = as<uvec>(model_data["which_term_h"]) - 1; //!! new //?? later split these elements in the different sections
-  uvec which_term_H = as<uvec>(model_data["which_term_H"]) - 1; //!! new
-  bool recurrent = as<bool>(model_data["recurrent"]); //!! new
-  vec alphaF = as<vec>(initial_values["alphaF"]); //!! new
-  vec frailty = as<vec>(initial_values["frailty"]); //!! new
-  alphaF.zeros(); //?? delete later
-  frailty.zeros(); //?? delete later 
-  mat res_alphaF(n_iter, 1, fill::zeros); //!! new
-  mat acceptance_alphaF(n_iter, 1, fill::zeros); //!! new
-  mat res_frailty(n_iter, frailty.n_elem, fill::zeros); //!! new
-  mat acceptance_frailty(n_iter, frailty.n_elem, fill::zeros); //!! new
-  vec alphaF_H(WH_gammas.n_rows, fill::ones); //!! new
-  vec alphaF_h(Wh_gammas.n_rows, fill::ones); //!! new
-  alphaF_H.rows(which_term_H).fill(alphaF.at(1)); //!! new
-  alphaF_h.rows(which_term_h).fill(alphaF.at(1)); //!! new
-  vec frailty_H(WH_gammas.n_rows, fill::zeros); //!! new
-  vec frailty_h(Wh_gammas.n_rows, fill::zeros); //!! new
-  frailty_h = frailty.rows(id_h); //!! new
-  frailty_H = frailty.rows(id_H_); //!! new
-  //
   vec logLik_surv =
     log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
              WH_gammas, Wh_gammas, WH2_gammas,
              WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
              log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
              which_event, which_right_event, which_left,
-             any_interval, which_interval,
-             recurrent, frailty_H, frailty_h, alphaF_H, alphaF_h); //!! new
+             any_interval, which_interval);
   double denominator_surv =
     sum(logLik_surv) +
     logPrior_surv(bs_gammas, gammas, alphas, mean_bs_gammas,
@@ -314,9 +292,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                      logLik_surv, denominator_surv, it,
                      /////
                      W0_H, W0_h, W0_H2, scale_bs_gammas, acceptance_bs_gammas,
-                     res_bs_gammas,
-                     recurrent, frailty_H, frailty_h, alphaF_H, alphaF_h //!! new
-                    );
+                     res_bs_gammas);
 
     ////////////////////////////////////////////////////////////////////////
 
@@ -348,10 +324,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     logLik_surv, denominator_surv, it,
                     /////
                     W_H, W_h, W_H2, scale_gammas, acceptance_gammas,
-                    res_gammas,
-                    //
-                    recurrent, frailty_H, frailty_h, alphaF_H, alphaF_h //!! new
-                    );
+                    res_gammas);
       res_W_std_gammas.at(it) = as_scalar(W_std * gammas);
 
       if (shrink_gammas) {
@@ -380,10 +353,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                   logLik_surv, denominator_surv, it,
                   /////
                   Wlong_H, Wlong_h, Wlong_H2, scale_alphas,
-                  acceptance_alphas, res_alphas,
-                  //
-                  recurrent, frailty_H, frailty_h, alphaF_H, alphaF_h //!! new
-                  );
+                  acceptance_alphas, res_alphas);
 
     res_Wlong_std_alphas.at(it) = as_scalar(Wlong_std * alphas);
 
@@ -419,10 +389,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              id_H_fast, id_h_fast, which_event, which_right_event, which_left,
              which_interval, any_event, any_interval, ni_event,
              L, sds, it, acceptance_b, res_b, res_b_last, save_random_effects,
-             n_burnin, n_iter, GK_k, cumsum_b, outprod_b,
-             //
-             recurrent, frailty_H, frailty_h, alphaF_H, alphaF_h //!! new
-             );
+             n_burnin, n_iter, GK_k, cumsum_b, outprod_b);
 
     ////////////////////////////////////////////////////////////////////
 
@@ -450,10 +417,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                  WH_gammas, Wh_gammas, WH2_gammas,
                  log_Pwk, log_Pwk2, id_H_fast, id_h_fast, which_event,
-                 which_right_event, which_left, which_interval, unq_idL, n_burnin,
-                 //
-                 recurrent, frailty_H, frailty_h, alphaF_H, alphaF_h //!! new
-                 );
+                 which_right_event, which_left, which_interval, unq_idL, n_burnin);
 
     // update intercepts
     for (uword j = 0; j < y.n_elem; ++j) {
@@ -501,9 +465,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("cumsum_b") = cumsum_b,
       Named("outprod_b") = outprod_b,
       Named("sigmas") = res_sigmas.rows(n_burnin, n_iter - 1),
-      Named("betas") = res_betas.rows(n_burnin, n_iter - 1),
-      Named("alphaF") = res_alphaF.rows(n_burnin, n_iter - 1),
-      Named("frailty") = res_frailty.rows(n_burnin, n_iter - 1)
+      Named("betas") = res_betas.rows(n_burnin, n_iter - 1)
     ),
     Named("acc_rate") = List::create(
       Named("bs_gammas") = mean(acceptance_bs_gammas.rows(n_burnin, n_iter - 1)),
@@ -513,9 +475,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       Named("L") = mean(acceptance_L.rows(n_burnin, n_iter - 1)),
       Named("b") = acceptance_b,
       Named("sigmas") = mean(acceptance_sigmas.rows(n_burnin, n_iter - 1)),
-      Named("betas") = acceptance_betas,
-      Named("alphaF") = mean(acceptance_alphaF.rows(n_burnin, n_iter - 1)),
-      Named("frailty") = acceptance_frailty
+      Named("betas") = acceptance_betas
     ),
     Named("logLik") = res_logLik.rows(n_burnin, n_iter - 1)
   );
@@ -589,12 +549,6 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   uvec id_H = as<uvec>(model_data["id_H"]) - 1;
   uvec id_H_fast = create_fast_ind(id_H + 1);
   uvec id_h_fast = create_fast_ind(id_h + 1);
-  //
-  uvec which_term_h = as<uvec>(model_data["which_term_h"]) - 1; //!! new
-  uvec which_term_H = as<uvec>(model_data["which_term_H"]) - 1; //!! new
-  bool recurrent = as<bool>(model_data["recurrent"]); //!! new
-  vec alphaF = as<vec>(thetas["alphaF"]); //!! new
-  vec frailty = as<vec>(thetas["frailty"]); //!! new
   /////////////
   vec out =
     logLik_jm_stripped(
@@ -606,9 +560,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
       U_H, U_h, U_H2, Wlong_bar, Wlong_sds, W_sds, any_event, any_interval, any_gammas,
       FunForms, FunForms_ind, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2,
       id_H_fast, id_h_fast, which_event, which_right_event, which_left,
-      which_interval,
-      recurrent, alphaF, frailty, which_term_H, which_term_h //!! new
-    );
+      which_interval);
   return out;
 }
 
@@ -694,12 +646,6 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   uvec id_H = as<uvec>(model_data["id_H"]) - 1;
   uvec id_H_fast = create_fast_ind(id_H + 1);
   uvec id_h_fast = create_fast_ind(id_h + 1);
-  //
-  uvec which_term_h = as<uvec>(model_data["which_term_h"]) - 1; //!! new
-  uvec which_term_H = as<uvec>(model_data["which_term_H"]) - 1; //!! new
-  bool recurrent = as<bool>(model_data["recurrent"]); //!! new
-  mat alphaF = trans(as<mat>(res_thetas["alphaF"])); //!! new
-  mat frailty = trans(as<mat>(res_thetas["frailty"])); //!! new
   /////////////
   mat out(n, K);
   field<vec> betas_i(betas.n_elem);
@@ -715,9 +661,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
       U_H, U_h, U_H2, Wlong_bar, Wlong_sds, W_sds, any_event, any_interval, any_gammas,
       FunForms, FunForms_ind, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2,
       id_H_fast, id_h_fast, which_event, which_right_event, which_left,
-      which_interval,
-      recurrent, alphaF.col(i), frailty.col(i), which_term_H, which_term_h //!! new
-    );
+      which_interval);
     oo += 0.5 * ((double)mean_b_mat.n_cols * log2pi + log_det_post_vars);
     out.col(i) = oo;
   }
@@ -872,7 +816,7 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
       WlongH2_alphas = Wlong_H2 * alphas_it;
     }
     vec logLik_surv =
-      log_surv_old(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, //!! new //?? update later
+      log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                WH_gammas, Wh_gammas, WH2_gammas,
                WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
                log_Pwk, log_Pwk2, indFast_H, indFast_h,
@@ -926,12 +870,13 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
         }
         //
         vec logLik_surv_proposed =
-          log_surv_old(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, //!! new //?? update later
-                       WH_gammas, Wh_gammas, WH2_gammas,
-                       WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                       log_Pwk, log_Pwk2, indFast_H, indFast_h,
-                       which_event, which_right_event, which_left,
-                       any_interval, which_interval);
+          log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                   WH_gammas, Wh_gammas, WH2_gammas,
+                   WlongH_alphas_proposed, Wlongh_alphas_proposed,
+                   WlongH2_alphas_proposed,
+                   log_Pwk, log_Pwk2, indFast_H, indFast_h,
+                   which_event, which_right_event, which_left,
+                   any_interval, which_interval);
         //
         vec logLik_re_proposed = log_re(proposed_b_mat, L_it, sds_it);
         //

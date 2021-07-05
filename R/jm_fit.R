@@ -167,11 +167,9 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     }
     parms <- c("bs_gammas", "tau_bs_gammas", "gammas", "alphas", "W_std_gammas",
                "Wlong_std_alphas", "D", paste0("betas", seq_along(model_data$X)),
-               "sigmas",
-               "alphaF", "frailty") #!! new
+               "sigmas")
     parms2 <- c("bs_gammas", "gammas", "alphas", "L", "sds", "betas", "b",
-                "sigmas",
-                "alphaF", "frailty") #!! new
+                "sigmas")
     if (control$save_random_effects) parms <- c(parms, "b")
     if (!length(attr(model_info$terms$terms_Surv_noResp, "term.labels")))
         parms <- parms[parms != "gammas"]
@@ -289,13 +287,10 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     res_thetas[["betas"]] <-
         lapply(mcmc_out$mcmc[grep("^betas", names(mcmc_out$mcmc))], function (m)
             do.call("rbind", m))
-    res_thetas$frailty <- do.call("rbind", mcmc_out$mcmc$frailty) #!! new
-    res_thetas$alphaF  <- do.call("rbind", mcmc_out$mcmc$alphaF) #!! new
     mcmc_out$mlogLik <- mlogLik_jm(res_thetas, statistics$Mean[["b"]],
                           statistics$post_vars, model_data, model_info, control)
     ind <- names(thetas) %in% c("sigmas", "bs_gammas", "gammas", "alphas",
-                                "tau_bs_gammas", 
-                                "alphaF", "frailty") #!! new
+                                "tau_bs_gammas")
     thetas[ind] <- lapply(thetas[ind], rbind)
     thetas$betas <- lapply(thetas$betas, rbind)
     dim(thetas[["D"]]) <- c(dim(thetas[["D"]]), 1L)
