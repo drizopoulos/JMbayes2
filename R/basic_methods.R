@@ -569,7 +569,7 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
 plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
                              fun_long = NULL, fun_event = NULL,
                              CI_long = TRUE, CI_event = TRUE,
-                             xlab = "Follow-up Time", ylab_long = NULL,
+                             xlab = "Follow-up Time", ylab_long = NULL, ylim_long = NULL,
                              ylab_event = "Cumulative Risk", main = "",
                              lwd_long = 2, lwd_event = 2,
                              col_line_long = "blue", col_line_event = "red",
@@ -649,6 +649,8 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
                 stop("'fun_long' needs to be a function or a list of functions.")
             }
         }
+		
+		
         col_line_long <- rep(col_line_long, length.out = n_outcomes)
         pch_points <- rep(pch_points, length.out = n_outcomes)
         col_points <- rep(col_points, length.out = n_outcomes)
@@ -667,6 +669,8 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
     xlim <- NULL
     if (!is.null(pred_Long)) xlim <- range(xlim, pred_Long[[time_var]])
     if (!is.null(pred_Event)) xlim <- range(xlim, pred_Event[[time_var]])
+	
+	
     plot_long_i <- function (outcome, add_xlab = FALSE, box = TRUE,
                              cex_axis = cex_axis) {
         ind <- pos_outcomes[outcome]
@@ -678,9 +682,22 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         times <- pred_Long[[time_var]]
         ry <- range(preds, low, upp)
         rx <- range(times)
+		#if (!is.null(ylim_long)) {ylim <- ylim_long} else {ylim <- range(f(ranges[[outcome]]), ry)} ## singular outcome, original workaround
+		
+		if (is.null(ylim_long)) {
+			ylim <- range(f(ranges[[outcome]]), ry)
+        } else {
+			if (is.vector(ylim_long)) ylim <- range(ylim_long)
+            if (is.list(ylim_long))  ylim <- range(ylim_long[n_outcomes]) #ylim <- rep(list(ylim_long), n_outcomes)
+            if (is.list(ylim_long) && (length(ylim_long) != n_outcomes)) {
+                stop("'ylim_long' needs to be either a singular vector, or list of vectors of the same length as outcomes.")
+            }
+        }
+		
         plot(rx, ry, type = "n", xaxt = "n", bty = if (box) "o" else "n",
              xlab = if (add_xlab) xlab  else "", xlim = xlim, col.axis = col_axis,
-             ylim = range(f(ranges[[outcome]]), ry), ylab = ylab_long[outcome],
+             ylim = ylim,
+			 ylab = ylab_long[outcome],
              cex.lab = cex_ylab_long, cex.axis = cex_axis, col.lab = col_axis,
              col.axis = col_axis)
         if (!add_xlab) {
