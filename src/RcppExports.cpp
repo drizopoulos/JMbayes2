@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // mcmc_cpp
 List mcmc_cpp(List model_data, List model_info, List initial_values, List priors, List control);
 RcppExport SEXP _JMbayes2_mcmc_cpp(SEXP model_dataSEXP, SEXP model_infoSEXP, SEXP initial_valuesSEXP, SEXP priorsSEXP, SEXP controlSEXP) {

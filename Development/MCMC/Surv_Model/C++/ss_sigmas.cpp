@@ -38,6 +38,17 @@ field<vec> create_sigmas_field (const field<vec> &sigmas,
  vec test (const field<vec> &x, const uword &i) {
      vec out = x.at(i);
      return out;
- }
+}
+
+// [[Rcpp::export]]
+List test_ones (const List &inits) {
+    vec alphas = as<vec>(inits["alphas"]);
+    vec lambdas = alphas.ones();
+    return List::create(
+        Named("alphas") = alphas,
+        Named("lambdas") = lambdas
+    );
+}
+
 
 

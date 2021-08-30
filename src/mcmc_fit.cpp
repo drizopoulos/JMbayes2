@@ -99,14 +99,14 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec bs_gammas = as<vec>(initial_values["bs_gammas"]);
   vec tau_bs_gammas = as<vec>(initial_values["tau_bs_gammas"]);
   vec gammas = as<vec>(initial_values["gammas"]);
-  vec lambda_gammas = gammas.ones();
+  vec lambda_gammas(gammas.n_rows, fill::ones);
   double tau_gammas = 1.0;
-  vec nu_gammas = gammas.ones();
+  vec nu_gammas(gammas.n_rows, fill::ones);
   double xi_gammas = 1.0;
   vec alphas = as<vec>(initial_values["alphas"]);
-  vec lambda_alphas = alphas.ones();
+  vec lambda_alphas(alphas.n_rows, fill::ones);
   double tau_alphas = 1.0;
-  vec nu_alphas = gammas.ones();
+  vec nu_alphas(alphas.n_rows, fill::ones);
   double xi_alphas = 1.0;
   field<mat> b = List2Field_mat(as<List>(initial_values["b"]));
   mat b_mat = docall_cbindF(b);
@@ -958,8 +958,8 @@ arma::mat cum_haz (const List &Data, const List &MCMC) {
   field<mat> U_H = List2Field_mat(as<List>(Data["U_H"]));
   mat Wlong_bar = docall_cbindL(as<List>(Data["Wlong_bar"]));
   mat Wlong_sds = docall_cbindL(as<List>(Data["Wlong_sds"]));
-  Wlong_bar = Wlong_bar.zeros();
-  Wlong_sds = Wlong_sds.ones();
+  Wlong_bar.zeros();
+  Wlong_sds.ones();
 
   bool any_gammas = as<bool>(Data["any_gammas"]);
   field<uvec> FunForms = List2Field_uvec(as<List>(Data["FunForms_cpp"]), true);
