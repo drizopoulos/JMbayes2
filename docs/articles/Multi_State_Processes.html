@@ -126,7 +126,7 @@
       <h1 data-toc-skip>Multi-State Processes</h1>
                         <h4 class="author">Grigorios Papageorgiou</h4>
             
-            <h4 class="date">2021-08-31</h4>
+            <h4 class="date">2021-09-03</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/master/vignettes/Multi_State_Processes.Rmd"><code>vignettes/Multi_State_Processes.Rmd</code></a></small>
       <div class="hidden name"><code>Multi_State_Processes.Rmd</code></div>
@@ -353,37 +353,37 @@
 <span class="co">#&gt;   y: 4033</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    17811.91 19381.54 -11262.73</span>
-<span class="co">#&gt; conditional 19683.84 20853.37 -13220.57</span>
+<span class="co">#&gt; marginal    17811.73 19313.46 -11685.39</span>
+<span class="co">#&gt; conditional 19679.96 20838.72 -13271.41</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                     </span>
 <span class="co">#&gt;        StdDev   Corr</span>
-<span class="co">#&gt; (Intr) 1.0162 (Intr)</span>
-<span class="co">#&gt; time   0.7039 0.0327</span>
+<span class="co">#&gt; (Intr) 1.0172 (Intr)</span>
+<span class="co">#&gt; time   0.7037 0.0299</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
 <span class="co">#&gt;                          Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; X                     -0.0980 0.0664 -0.2285 0.0362 0.1482 1.0221</span>
-<span class="co">#&gt; X:strata(transition)2  0.3955 0.1159  0.1987 0.6300 0.0000 1.3168</span>
-<span class="co">#&gt; X:strata(transition)3 -0.0301 0.0842 -0.1893 0.1386 0.7179 1.0849</span>
-<span class="co">#&gt; value(y):transition1   0.2442 0.0374  0.1703 0.3171 0.0000 1.0160</span>
-<span class="co">#&gt; value(y):transition2   0.2058 0.0716  0.0638 0.3384 0.0058 1.3430</span>
-<span class="co">#&gt; value(y):transition3   0.0089 0.0244 -0.0415 0.0548 0.6719 1.0406</span>
+<span class="co">#&gt; X                     -0.0994 0.0707 -0.2348 0.0387 0.1653 1.1147</span>
+<span class="co">#&gt; X:strata(transition)2  0.3698 0.1175  0.1538 0.5898 0.0000 1.4423</span>
+<span class="co">#&gt; X:strata(transition)3 -0.0270 0.0906 -0.2069 0.1469 0.7700 1.1549</span>
+<span class="co">#&gt; value(y):transition1   0.2449 0.0391  0.1676 0.3183 0.0000 1.0810</span>
+<span class="co">#&gt; value(y):transition2   0.2266 0.0712  0.0866 0.3556 0.0000 1.1628</span>
+<span class="co">#&gt; value(y):transition3   0.0077 0.0237 -0.0394 0.0535 0.7224 1.0367</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: y (family = gaussian, link = identity)</span>
 <span class="co">#&gt;                Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept) -0.4255 0.3902 -1.1980 0.3354 0.2636 1.0013</span>
-<span class="co">#&gt; time         0.3273 0.1032  0.1242 0.5323 0.0027 1.0020</span>
-<span class="co">#&gt; X            1.5319 0.0352  1.4622 1.6003 0.0000 1.0012</span>
-<span class="co">#&gt; sigma        1.2855 0.0431  1.2261 1.3929 0.0000 1.0088</span>
+<span class="co">#&gt; (Intercept) -0.4257 0.3887 -1.1886 0.3392 0.2666 1.0010</span>
+<span class="co">#&gt; time         0.3294 0.1032  0.1278 0.5334 0.0025 1.0013</span>
+<span class="co">#&gt; X            1.5319 0.0352  1.4617 1.6011 0.0000 1.0007</span>
+<span class="co">#&gt; sigma        1.2850 0.0434  1.2255 1.3936 0.0000 1.0078</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 10000 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 4 min</span></code></pre></div>
+<span class="co">#&gt; time: 3 min</span></code></pre></div>
 <p>which differs from a default call to <code><a href="../reference/jm.html">jm()</a></code> by the addition of the <code>functional_forms</code> argument by which we specify that we want an “interaction” between the value of the marker and each transition which translates into a separate association parameter for the longitudinal marker and each transition.</p>
 </div>
 </div>
