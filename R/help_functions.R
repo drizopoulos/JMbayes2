@@ -402,6 +402,7 @@ extract_log_sigmas <- function (object) {
 value <- area <- function (x) rep(1, NROW(x))
 vexpit <- Dexpit <- vexp <- Dexp <- function (x) rep(1, NROW(x))
 vsqrt <- vlog <- vlog2 <- vlog10 <- function (x) rep(1, NROW(x))
+poly2 <- poly3 <- poly4 <- function (x) rep(1, NROW(x))
 slope <- function (x, eps = 0.001, direction = "both") {
     out <- rep(1, NROW(x))
     temp <- list(eps = eps, direction = direction)
@@ -584,41 +585,60 @@ extractFuns_FunForms <- function (Form, data) {
         out[f("log2")] <- "log2"
         out[f("log10")] <- "log10"
         out[f("sqrt")] <- "sqrt"
-        out[f("square")] <- "square"
-        out[1L] # <- to change: if the same term different functions
+        out[f("poly2")] <- "poly2"
+        out[f("poly3")] <- "poly3"
+        out[f("poly4")] <- "poly4"
+        out[f("poly2(expit")] <- "poly2"
+        out[f("poly3(expit")] <- "poly3"
+        out[f("poly4(expit")] <- "poly4"
+        out
     }
-    mapply(get_fun, FForms, names(FForms))
+    mapply2(get_fun, FForms, names(FForms))
 }
 
 transf_eta <- function (eta, fun_nams) {
+    out <- matrix(0.0, NROW(eta), length(fun_nams))
     for (j in seq_along(fun_nams)) {
-        if (fun_nams[j] == "expit") {
-            eta[, j] <- plogis(eta[, j])
+        if (fun_nams[j] == "identity") {
+            out[, j] <- eta
+        } else if (fun_nams[j] == "expit") {
+            out[, j] <- plogis(eta)
         } else if (fun_nams[j] == "dexpit") {
-            eta[, j] <- plogis(eta[, j]) * plogis(eta[, j], lower.tail = FALSE)
+            out[, j] <- plogis(eta) * plogis(eta, lower.tail = FALSE)
         } else if (fun_nams[j] == "exp") {
-            eta[, j] <- exp(eta[, j])
+            out[, j] <- exp(eta)
         } else if (fun_nams[j] == "log") {
-            eta[, j] <- log(eta[, j])
+            out[, j] <- log(eta)
         } else if (fun_nams[j] == "sqrt") {
-            eta[, j] <- sqrt(eta[, j])
-        } else if (fun_nams[j] == "square") {
-            eta[, j] <- eta[, j] * eta[, j]
+            out[, j] <- sqrt(eta)
+        } else if (fun_nams[j] == "poly2") {
+            out[, j] <- eta * eta
+        } else if (fun_nams[j] == "poly3") {
+            out[, j] <- eta * eta * eta
+        } else if (fun_nams[j] == "poly4") {
+            out[, j] <- eta * eta * eta * eta
+        } else if (fun_nams[j] == "poly2(expit") {
+            out[, j] <- plogis(eta) * plogis(eta)
+        } else if (fun_nams[j] == "poly3(expit") {
+            out[, j] <- plogis(eta) * plogis(eta) * plogis(eta)
+        } else if (fun_nams[j] == "poly4(expit") {
+            out[, j] <- plogis(eta) * plogis(eta) * plogis(eta) * plogis(eta)
         }
     }
-    eta
+    out
 }
 
-create_Wlong <- function (eta, functional_forms, U, Funs_FunsForms) {
+create_Wlong <- function (eta, functional_forms, U, Funs_FunForms) {
     Wlong <- vector("list", length(eta))
     for (i in seq_along(functional_forms)) {
         FF_i <- functional_forms[[i]]
-        eta_i <- transf_eta(eta[[i]], Funs_FunsForms[[i]])
+        eta_i <- mapply2(transf_eta, split(eta[[i]], col(eta[[i]])),
+                         Funs_FunForms[[i]])
         U_i <- U[[i]]
-        Wlong_i <- matrix(1.0, nrow(eta_i), max(unlist(FF_i)))
+        Wlong_i <- matrix(1.0, nrow(U_i), ncol(U_i))
         for (j in seq_along(FF_i)) {
             ind <- FF_i[[j]]
-            Wlong_i[, ind] <- Wlong_i[, ind] * eta_i[, j]
+            Wlong_i[, ind] <- Wlong_i[, ind] * eta_i[[j]]
         }
         Wlong[[i]] <- U_i * Wlong_i
     }

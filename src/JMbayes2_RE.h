@@ -21,8 +21,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const field<mat> &U_H, const field<mat> &U_h, const field<mat> &U_H2,
                const mat &Wlong_bar, const mat &Wlong_sds, const field<vec> &betas,
                const vec &alphas, const uvec &id_H_, const uvec &id_h,
-               const field<uvec> &FunForms, const field<uvec> &FunForms_ind,
-               const List Funs_FunForms,
+               const field<uvec> &FunForms, const List Funs_FunForms,
                const field<mat> &X, const field<mat> &Z,
                const field<uvec> &idL, const field<mat> &y,  const vec &sigmas,
                const vec &extra_parms, const CharacterVector &families,
@@ -37,9 +36,9 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const uvec &which_interval, const bool &any_event,
                const bool &any_interval, const umat &ni_event,
                const mat &L, const vec &sds,
-               const uword &it, mat &acceptance_b, cube &res_b, cube &res_b_last, 
+               const uword &it, mat &acceptance_b, cube &res_b, cube &res_b_last,
                const bool &save_random_effects,
-               const uword &n_burnin, const uword &n_iter, 
+               const uword &n_burnin, const uword &n_iter,
                const uword &GK_k, mat &cumsum_b, cube &outprod_b) {
   uword n = b_mat.n_rows;
   uword nRE = b_mat.n_cols;
@@ -58,7 +57,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     // and calculate Wlong * alphas
     mat Wlong_H_proposed =
       calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas, proposed_b,
-                      id_H_, FunForms, FunForms_ind, Funs_FunForms);
+                      id_H_, FunForms, Funs_FunForms);
     vec WlongH_alphas_proposed = Wlong_H_proposed * alphas;
 
     mat Wlong_h_proposed(Wlong_h.n_rows, Wlong_h.n_cols);
@@ -66,7 +65,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     if (any_event) {
       Wlong_h_proposed =
         calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas, proposed_b,
-                        id_h, FunForms, FunForms_ind, Funs_FunForms);
+                        id_h, FunForms, Funs_FunForms);
       Wlongh_alphas_proposed = Wlong_h_proposed * alphas;
     }
     mat Wlong_H2_proposed(Wlong_H2.n_rows, Wlong_H2.n_cols);
@@ -74,7 +73,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     if (any_interval) {
       Wlong_H2_proposed =
         calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas,
-                        proposed_b, id_H_, FunForms, FunForms_ind, Funs_FunForms);
+                        proposed_b, id_H_, FunForms, Funs_FunForms);
       WlongH2_alphas_proposed = Wlong_H2_proposed * alphas;
     }
     // calculate logLik_Surv_proposed

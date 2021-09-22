@@ -522,7 +522,8 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         collapsed_functional_forms = collapsed_functional_forms,
         FunForms_cpp = lapply(FunForms_per_outcome, unlist),
         FunForms_ind = FunForms_ind(FunForms_per_outcome),
-        Funs_FunForms = Funs_FunForms, eps = eps, direction = direction
+        Funs_FunForms = lapply(Funs_FunForms, function (x) if (!is.list(x)) list(x) else x),
+        eps = eps, direction = direction
     )
     ############################################################################
     ############################################################################

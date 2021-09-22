@@ -2,7 +2,7 @@ export(area, calibration_metrics, calibration_plot, cumuplot, coef, compare_jm,
        crLong, densplot, family, fixef, gelman_diag,
        ggdensityplot, ggtraceplot, jm, model.frame, model.matrix, ranef, slope,
        terms, traceplot, tv, tvAUC, tvBrier, tvROC, value, vexpit, Dexpit, vexp,
-       Dexp, vlog, vlog2, vlog10, vsqrt)
+       Dexp, vlog, vlog2, vlog10, vsqrt, poly2, poly3, poly4)
 
 import(Rcpp)
 importFrom("utils", "glob2rx", "tail", "head", "combn")

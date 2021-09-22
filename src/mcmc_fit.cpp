@@ -68,7 +68,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
   field<uvec> FunForms = List2Field_uvec(as<List>(model_info["FunForms_cpp"]), true);
-  field<uvec> FunForms_ind = List2Field_uvec(as<List>(model_info["FunForms_ind"]), true);
   List Funs_FunForms = as<List>(model_info["Funs_FunForms"]);
   field<uvec> x_in_z = List2Field_uvec(as<List>(model_data["x_in_z"]), true);
   field<uvec> x_notin_z = List2Field_uvec(as<List>(model_data["x_notin_z"]), true);
@@ -382,7 +381,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              scale_b, ind_RE,
              X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
              Wlong_bar, Wlong_sds, betas, alphas, id_H_, id_h,
-             FunForms, FunForms_ind, Funs_FunForms, X, Z, idL, y, sigmas,
+             FunForms, Funs_FunForms, X, Z, idL, y, sigmas,
              extra_parms, families, links, idL_lp_fast, unq_idL,
              W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas,
              Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2,
@@ -412,7 +411,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  extra_parms, families, links, idL_lp_fast, mean_betas_nHC,
                  Tau_betas_nHC, x_notin_z,
                  X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
-                 Wlong_bar, Wlong_sds, id_H_, id_h, FunForms, FunForms_ind,
+                 Wlong_bar, Wlong_sds, id_H_, id_h, FunForms,
                  Funs_FunForms, alphas, any_event, any_interval,
                  W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                  WH_gammas, Wh_gammas, WH2_gammas,
@@ -540,7 +539,6 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
   field<uvec> FunForms = List2Field_uvec(as<List>(model_info["FunForms_cpp"]), true);
-  field<uvec> FunForms_ind = List2Field_uvec(as<List>(model_info["FunForms_ind"]), true);
   List Funs_FunForms = as<List>(model_info["Funs_FunForms"]);
   uvec id_H_ = as<uvec>(model_data["id_H_"]) - 1;
   uvec id_h = as<uvec>(model_data["id_h"]) - 1;
@@ -558,7 +556,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
       ///
       W0_H, W0_h, W0_H2, W_H, W_h, W_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
       U_H, U_h, U_H2, Wlong_bar, Wlong_sds, W_sds, any_event, any_interval, any_gammas,
-      FunForms, FunForms_ind, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2,
+      FunForms, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2,
       id_H_fast, id_h_fast, which_event, which_right_event, which_left,
       which_interval);
   return out;
@@ -637,7 +635,6 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
   field<uvec> FunForms = List2Field_uvec(as<List>(model_info["FunForms_cpp"]), true);
-  field<uvec> FunForms_ind = List2Field_uvec(as<List>(model_info["FunForms_ind"]), true);
   List Funs_FunForms = as<List>(model_info["Funs_FunForms"]);
   uvec id_H_ = as<uvec>(model_data["id_H_"]) - 1;
   uvec id_h = as<uvec>(model_data["id_h"]) - 1;
@@ -659,7 +656,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
       ///
       W0_H, W0_h, W0_H2, W_H, W_h, W_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
       U_H, U_h, U_H2, Wlong_bar, Wlong_sds, W_sds, any_event, any_interval, any_gammas,
-      FunForms, FunForms_ind, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2,
+      FunForms, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2,
       id_H_fast, id_h_fast, which_event, which_right_event, which_left,
       which_interval);
     oo += 0.5 * ((double)mean_b_mat.n_cols * log2pi + log_det_post_vars);
@@ -694,7 +691,6 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
   uword GK_k = as<uword>(control["GK_k"]);
   bool any_gammas = as<bool>(Data["any_gammas"]);
   field<uvec> FunForms = List2Field_uvec(as<List>(Data["FunForms_cpp"]), true);
-  field<uvec> FunForms_ind = List2Field_uvec(as<List>(Data["FunForms_ind"]), true);
   List Funs_FunForms = as<List>(Data["Funs_FunForms"]);
   //
   field<uvec> ind_RE = List2Field_uvec(as<List>(Data["ind_RE"]), true);
@@ -797,14 +793,14 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
     }
     mat Wlong_H =
       calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas_it, b,
-                      id_H_, FunForms, FunForms_ind, Funs_FunForms);
+                      id_H_, FunForms, Funs_FunForms);
     vec WlongH_alphas = Wlong_H * alphas_it;
     mat Wlong_h(W0_h.n_rows, Wlong_H.n_cols, fill::zeros);
     vec Wlongh_alphas(W0_h.n_rows, fill::zeros);
     if (any_event) {
       Wlong_h =
         calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas_it, b,
-                        id_h, FunForms, FunForms_ind, Funs_FunForms);
+                        id_h, FunForms, Funs_FunForms);
       Wlongh_alphas = Wlong_h * alphas_it;
     }
     mat Wlong_H2(W0_H2.n_rows, Wlong_H.n_cols, fill::zeros);
@@ -812,7 +808,7 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
     if (any_interval) {
       Wlong_H2 =
         calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas_it,
-                        b, id_H_, FunForms, FunForms_ind, Funs_FunForms);
+                        b, id_H_, FunForms, Funs_FunForms);
       WlongH2_alphas = Wlong_H2 * alphas_it;
     }
     vec logLik_surv =
@@ -846,8 +842,7 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
         //
         mat Wlong_H_proposed =
           calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds,
-                          betas_it, proposed_b, id_H_, FunForms,
-                          FunForms_ind, Funs_FunForms);
+                          betas_it, proposed_b, id_H_, FunForms, Funs_FunForms);
         vec WlongH_alphas_proposed = Wlong_H_proposed * alphas_it;
 
         mat Wlong_h_proposed(Wlong_h.n_rows, Wlong_h.n_cols);
@@ -856,7 +851,7 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
           Wlong_h_proposed =
             calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds,
                             betas_it, proposed_b, id_h, FunForms,
-                            FunForms_ind, Funs_FunForms);
+                            Funs_FunForms);
           Wlongh_alphas_proposed = Wlong_h_proposed * alphas_it;
         }
         mat Wlong_H2_proposed(Wlong_H2.n_rows, Wlong_H2.n_cols);
@@ -864,8 +859,7 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
         if (any_interval) {
           Wlong_H2_proposed =
             calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas_it,
-                            proposed_b, id_H_, FunForms, FunForms_ind,
-                            Funs_FunForms);
+                            proposed_b, id_H_, FunForms, Funs_FunForms);
           WlongH2_alphas_proposed = Wlong_H2_proposed * alphas_it;
         }
         //
@@ -963,7 +957,6 @@ arma::mat cum_haz (const List &Data, const List &MCMC) {
 
   bool any_gammas = as<bool>(Data["any_gammas"]);
   field<uvec> FunForms = List2Field_uvec(as<List>(Data["FunForms_cpp"]), true);
-  field<uvec> FunForms_ind = List2Field_uvec(as<List>(Data["FunForms_ind"]), true);
   List Funs_FunForms = as<List>(Data["Funs_FunForms"]);
 
   ///////////////////////
@@ -986,7 +979,7 @@ arma::mat cum_haz (const List &Data, const List &MCMC) {
     }
     mat Wlong_H =
       calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas_it, b_it,
-                      id_H_, FunForms, FunForms_ind, Funs_FunForms);
+                      id_H_, FunForms, Funs_FunForms);
     vec WlongH_alphas = Wlong_H * alphas_it;
     ///////////////////////
     vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;

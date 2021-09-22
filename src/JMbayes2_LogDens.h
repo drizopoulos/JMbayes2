@@ -168,8 +168,7 @@ vec logLik_jm_stripped (
     const field<mat> &U_H, const field<mat> &U_h, const field<mat> &U_H2,
     const mat &Wlong_bar, const mat &Wlong_sds, const mat &W_sds,
     const bool &any_event, const bool &any_interval, const bool &any_gammas,
-    const field<uvec> &FunForms, const field<uvec> &FunForms_ind,
-    const List &Funs_FunForms,
+    const field<uvec> &FunForms, const List &Funs_FunForms,
     const uvec &id_H_, const uvec &id_h,
     const vec &log_Pwk, const vec &log_Pwk2,
     const uvec &id_H_fast, const uvec &id_h_fast,
@@ -210,7 +209,7 @@ vec logLik_jm_stripped (
   }
   mat Wlong_H =
     calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas_, b, id_H_,
-                    FunForms, FunForms_ind, Funs_FunForms);
+                    FunForms, Funs_FunForms);
   vec alphas_ = alphas % Wlong_sds.t();
   vec WlongH_alphas = Wlong_H * alphas_;
   mat Wlong_h(W0_h.n_rows, alphas.n_rows);
@@ -218,7 +217,7 @@ vec logLik_jm_stripped (
   if (any_event) {
     Wlong_h =
       calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas_, b, id_h,
-                      FunForms, FunForms_ind, Funs_FunForms);
+                      FunForms, Funs_FunForms);
     Wlongh_alphas = Wlong_h * alphas_;
   }
   mat Wlong_H2(W0_H2.n_rows, alphas.n_rows);
@@ -226,7 +225,7 @@ vec logLik_jm_stripped (
   if (any_interval) {
     Wlong_H2 =
       calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas_, b, id_H_,
-                      FunForms, FunForms_ind, Funs_FunForms);
+                      FunForms, Funs_FunForms);
     WlongH2_alphas = Wlong_H2 * alphas_;
   }
   vec logLik_surv =

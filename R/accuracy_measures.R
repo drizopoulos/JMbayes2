@@ -39,9 +39,6 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     test1 <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
     if (!any(test1))
         stop("it seems that there are no events in the interval [Tstart, Thoriz).")
-    #test2 <- newdata[[Time_var]] > Thoriz & newdata[[event_var]] == 1
-    #if (!any(test2))
-    #    stop("it seems that there are no events after Thoriz.")
     newdata2 <- newdata
     newdata2[[Time_var]] <- Tstart
     newdata2[[event_var]] <- 0
@@ -182,9 +179,6 @@ tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     test1 <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
     if (!any(test1))
         stop("it seems that there are no events in the interval [Tstart, Thoriz).")
-    #test2 <- newdata[[Time_var]] > Thoriz & newdata[[event_var]] == 1
-    #if (!any(test2))
-    #    stop("it seems that there are no events after Thoriz.")
     newdata2 <- newdata
     newdata2[[Time_var]] <- Tstart
     newdata2[[event_var]] <- 0
@@ -356,9 +350,6 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     test1 <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
     if (!any(test1))
         stop("it seems that there are no events in the interval [Tstart, Thoriz).")
-    #test2 <- newdata[[Time_var]] > Thoriz & newdata[[event_var]] == 1
-    #if (!any(test2))
-    #    stop("it seems that there are no events after Thoriz.")
     newdata2 <- newdata
     newdata2[[Time_var]] <- Tstart
     newdata2[[event_var]] <- 0
@@ -453,9 +444,6 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     test1 <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
     if (!any(test1))
         stop("it seems that there are no events in the interval [Tstart, Thoriz).")
-    #test2 <- newdata[[Time_var]] > Thoriz & newdata[[event_var]] == 1
-    #if (!any(test2))
-    #    stop("it seems that there are no events after Thoriz.")
     newdata2 <- newdata
     newdata2[[Time_var]] <- Tstart
     newdata2[[event_var]] <- 0

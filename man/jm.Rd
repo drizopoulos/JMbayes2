@@ -11,8 +11,9 @@
 \alias{vlog2}
 \alias{vlog10}
 \alias{vsqrt}
-
-
+\alias{poly2}
+\alias{poly3}
+\alias{poly4}
 \alias{tv}
 
 \title{
@@ -43,6 +44,9 @@ vlog2(x)
 vlog10(x)
 
 vsqrt(x)
+poly2(x)
+poly3(x)
+poly4(x)
 
 tv(x, knots = NULL, ord = 2L)
 }
