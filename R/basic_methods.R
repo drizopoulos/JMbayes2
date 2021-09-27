@@ -545,14 +545,39 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
     time_var <- object$model_info$var_names$time_var
     Time_var <- object$model_info$var_names$Time_var
     event_var <- object$model_info$var_names$event_var
-    if (is.null(newdata[[Time_var]]) || is.null(newdata[[event_var]])) {
+    respVars <- unlist(object$model_info$var_names$respVars)
+    if (object$model_info$CR_MS && is.data.frame(newdata)) {
+        stop("for competing risks and multi-state models, argument 'newdata' ",
+             "must be a list of two data.frames, one for the longitudinal ",
+             "outcomes and one for the event process, the latter under the ",
+             "correct format.\n")
+    }
+    if (!is.data.frame(newdata)) {
+        if (!is.list(newdata) || length(newdata) != 2
+            || !names(newdata) %in% c("newdataL", "newdataE")) {
+            stop("'newdata' must be a list with two data.frame elements ",
+                 "named 'newdataL' and 'newdataE'.\n")
+        }
+        for (i in seq_along(respVars)) {
+            v <- respVars[i]
+            if (is.null(newdata$newdataE[[v]])) {
+                newdata$newdataE[[v]] <- rep(0.1, nrow(newdata$newdataE))
+            }
+        }
+
+        # Check variables formulas long if they appear in newdataE
+
+    }
+    if (is.data.frame(newdata) && (is.null(newdata[[Time_var]]) ||
+        is.null(newdata[[event_var]]))) {
         newdata[[event_var]] <- 0
         last_time <- function (x) max(x, na.rm = TRUE)
         f <- factor(newdata[[id_var]], unique(newdata[[id_var]]))
         newdata[[Time_var]] <- ave(newdata[[time_var]], f, FUN = last_time)
     }
     if (is.null(cores)) {
-        n <- length(unique(newdata[[object$model_info$var_names$idVar]]))
+        n <- if (!is.data.frame(newdata)) length(unique(newdata$newdataL[[id_var]]))
+        else length(unique(newdata[[id_var]]))
         cores <- if (n > 20) 4L else 1L
     }
     components_newdata <- get_components_newdata(object, newdata, n_samples,

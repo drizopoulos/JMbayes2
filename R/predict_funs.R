@@ -52,7 +52,7 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
     time_var <- object$model_info$var_names$time_var
 
     # set dataL as newdata; almost the same code as in jm()
-    dataL <- newdata
+    dataL <- if (!is.data.frame(newdata)) newdata[["newdataL"]] else newdata
     idL <- dataL[[idVar]]
     nY <- length(unique(idL))
     # order data by idL and time_var
@@ -116,9 +116,12 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
     terms_Surv <- object$model_info$terms$terms_Surv
     terms_Surv_noResp <- object$model_info$terms$terms_Surv_noResp
     type_censoring <- object$model_info$type_censoring
-    dataS <- newdata
-    idT <- dataS[[idVar]]
-    dataS <- dataS[tapply(row.names(dataS), factor(idT, unique(idT)), tail, 1L), ]
+    dataS <- if (!is.data.frame(newdata)) newdata[["newdataE"]] else newdata
+    CR_MS <- object$model_info$CR_MS
+    if (!CR_MS) {
+        idT <- dataS[[idVar]]
+        dataS <- dataS[tapply(row.names(dataS), factor(idT, unique(idT)), tail, 1L), ]
+    }
     idT <- dataS[[idVar]]
     mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
     if (!is.null(NAs_surv <- attr(mf_surv_dataS, "na.action"))) {
@@ -287,7 +290,7 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
                                                  dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, NULL,
                                                  eps, direction)
-        U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
+        U_H2 <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
     } else {
         W0_H2 <- W_H2 <- matrix(0.0)
         X_H2 <- Z_H2 <- U_H2 <- rep(list(matrix(0.0)), length(respVars))
@@ -382,8 +385,6 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
         out <- parallel::parLapply(cl, id_samples, sample_parallel,
                                    Data = Data, mcmc = mcmc, control = control)
         parallel::stopCluster(cl)
-        #out <- lapply(id_samples, sample_parallel, Data = Data, mcmc = mcmc,
-        #              control = control)
     } else {
         set.seed(seed)
         out <- list(sample_parallel(id_samples[[1L]], Data = Data, mcmc = mcmc,

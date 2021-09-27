@@ -22,7 +22,7 @@ jointFit <- jm(CoxFit, lmeFit, time_var = "year", functional_forms = fForms,
 
 summary(jointFit)
 
-
+save(list = "jointFit", file = "./Development/CI/model.RData")
 
 
 
