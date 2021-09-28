@@ -24,11 +24,12 @@ Predict method for object of class \code{"jm"}.
 \method{plot}{predict_jm}(x, x2 = NULL, subject = 1, outcomes = 1,
   fun_long = NULL, fun_event = NULL, CI_long = TRUE, CI_event = TRUE,
   xlab = "Follow-up Time", ylab_long = NULL, ylab_event = "Cumulative Risk",
-  main = "", lwd_long = 2, lwd_event = 2, col_line_long = "blue",
-  col_line_event = "red", pch_points = 16, col_points = "blue", cex_points = 1,
-  fill_CI_long = "#0000FF44", fill_CI_event = "#FF000044", cex_xlab = 1,
-  cex_ylab_long = 1, cex_ylab_event = 1, cex_main = 1, cex_axis = 1,
-  col_axis = "black", pos_ylab_long = c(0.1, 2, 0.08), bg = "white", \dots)
+  main = "", lwd_long = 2, lwd_event = 2, ylim_long_outcome_range = TRUE,
+  col_line_long = "blue", col_line_event = "red", pch_points = 16,
+  col_points = "blue", cex_points = 1, fill_CI_long = "#0000FF44",
+  fill_CI_event = "#FF000044", cex_xlab = 1, cex_ylab_long = 1,
+  cex_ylab_event = 1, cex_main = 1, cex_axis = 1, col_axis = "black",
+  pos_ylab_long = c(0.1, 2, 0.08), bg = "white", \dots)
 }
 
 \arguments{
@@ -72,7 +73,10 @@ Predict method for object of class \code{"jm"}.
   fill_CI_long, fill_CI_event, cex_xlab, cex_ylab_long, cex_ylab_event, cex_main,
   cex_axis, pch_points, col_points, cex_points, col_axis, bg}{graphical parameters; see \code{par}.}
 
-\item{pos_ylab_long}{controls the position of the y-axis labels when multiple longitudinal outcomes are plotted.}
+\item{pos_ylab_long}{controls the position of the y-axis labels when multiple
+longitudinal outcomes are plotted.}
+
+\item{ylim_long_outcome_range}{logical; if \code{TRUE}, the range of the y-axis spans across the range of the outcome in the data used to fit the model; not only the range of values of the specific subject being plotted.}
 
 \item{\dots}{extra aguments; currently none is used.}
 }

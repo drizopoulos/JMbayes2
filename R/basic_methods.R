@@ -564,16 +564,36 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
                 newdata$newdataE[[v]] <- rep(0.1, nrow(newdata$newdataE))
             }
         }
-
-        # Check variables formulas long if they appear in newdataE
-
+        termsL <- object$model_info$terms$terms_FE_noResp
+        all_vars <- unlist(lapply(termsL, all.vars), use.names = FALSE)
+        all_vars <- all_vars[!all_vars %in% time_var]
+        missing_vars <- all_vars[!all_vars %in% names(newdata$newdataE)]
+        if (length(missing_vars)) {
+            stop("the data.frame 'newdata$newdataE' should contain the ",
+                 "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
+        }
+        missing_vars <- all_vars[!all_vars %in% names(newdata$newdataL)]
+        if (length(missing_vars)) {
+            stop("the data.frame 'newdata$newdataL' should contain the ",
+                 "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
+        }
     }
-    if (is.data.frame(newdata) && (is.null(newdata[[Time_var]]) ||
-        is.null(newdata[[event_var]]))) {
-        newdata[[event_var]] <- 0
-        last_time <- function (x) max(x, na.rm = TRUE)
-        f <- factor(newdata[[id_var]], unique(newdata[[id_var]]))
-        newdata[[Time_var]] <- ave(newdata[[time_var]], f, FUN = last_time)
+    if (is.data.frame(newdata)) {
+        if (is.null(newdata[[event_var]])) newdata[[event_var]] <- 0
+        if (is.null(newdata[[Time_var]])) {
+            last_time <- function (x) max(x, na.rm = TRUE)
+            f <- factor(newdata[[id_var]], unique(newdata[[id_var]]))
+            newdata[[Time_var]] <- ave(newdata[[time_var]], f, FUN = last_time)
+        }
+        termsL <- object$model_info$terms$terms_FE_noResp
+        all_vars <- unlist(lapply(termsL, all.vars), use.names = FALSE)
+        all_vars <- all_vars[!all_vars %in% time_var]
+        all_vars <- c(all_vars, all.vars(object$model_info$terms$terms_Surv_noResp))
+        missing_vars <- all_vars[!all_vars %in% names(newdata)]
+        if (length(missing_vars)) {
+            stop("the data.frame 'newdata' should contain the ",
+                 "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
+        }
     }
     if (is.null(cores)) {
         n <- if (!is.data.frame(newdata)) length(unique(newdata$newdataL[[id_var]]))
@@ -597,6 +617,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
                              xlab = "Follow-up Time", ylab_long = NULL,
                              ylab_event = "Cumulative Risk", main = "",
                              lwd_long = 2, lwd_event = 2,
+                             ylim_long_outcome_range = TRUE,
                              col_line_long = "blue", col_line_event = "red",
                              pch_points = 16, col_points = "blue", cex_points = 1,
                              fill_CI_long = "#0000FF44",
@@ -703,9 +724,14 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         times <- pred_Long[[time_var]]
         ry <- range(preds, low, upp)
         rx <- range(times)
+        y_lim <- if (ylim_long_outcome_range) {
+            range(f(ranges[[outcome]]), ry)
+        } else {
+            ry
+        }
         plot(rx, ry, type = "n", xaxt = "n", bty = if (box) "o" else "n",
              xlab = if (add_xlab) xlab  else "", xlim = xlim, col.axis = col_axis,
-             ylim = range(f(ranges[[outcome]]), ry), ylab = ylab_long[outcome],
+             ylim = y_lim, ylab = ylab_long[outcome],
              cex.lab = cex_ylab_long, cex.axis = cex_axis, col.lab = col_axis,
              col.axis = col_axis)
         if (!add_xlab) {
