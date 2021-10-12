@@ -1,7 +1,9 @@
 data("pbc2", package = "JM")
+data("pbc2.id", package = "JM")
 pbc2 <- pbc2[c("id", "year", "serBilir", "prothrombin", "years", "status",
                "age", "sex")]
 
+pbc2.id <- pbc2.id[c("id", "years", "status", "age", "sex")]
 # we take as intermediate event prothrombin >= 12
 f <- function (x) {
     n <- length(x)
@@ -45,6 +47,8 @@ pbc2_CR <- do.call("rbind", lapply(splt, f))
 row.names(pbc2_CR) <- 1:nrow(pbc2_CR)
 
 rm(f, splt)
+
+pbc2.id$status2 <- as.numeric(pbc2.id$status != "alive")
 
 ####################################################################
 ####################################################################

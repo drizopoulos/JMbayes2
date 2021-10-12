@@ -606,8 +606,8 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
         predict_Long(object, components_newdata, newdata, newdata2, times, type,
                      type_pred, level, return_newdata)
     } else {
-        predict_Event(object, components_newdata, newdata, times, level,
-                      return_newdata)
+        predict_Event(object, components_newdata, newdata, newdata2, times,
+                      level, return_newdata)
     }
 }
 

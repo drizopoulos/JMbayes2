@@ -33,26 +33,38 @@ fix_NAs_preds <- function (preds, NAs, n) {
     }
 }
 
-get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
-                                    cores, seed) {
-    if (!exists(".Random.seed", envir = .GlobalEnv)) {
-        runif(1L)
+SurvData_HazardModel2 <- function (time_points, data, times, ids, time_var) {
+    unq_ids <- unique(ids)
+    fids <- factor(ids, levels = unq_ids)
+    if (!is.list(time_points)) {
+        stop("'time_points' should be a list.\n")
     }
-    RNGstate <- get(".Random.seed", envir = .GlobalEnv)
-    on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
+    tt <- time_points
+    spl_times <- split(times, fids)[unclass(fids)]
+    rownams_id <- split(row.names(data), fids)[unclass(fids)]
+    ind <- mapply2(findInterval, tt, spl_times)
+    ind[] <- lapply(ind, function (x) {x[x < 1] <- 1; x})
+    ind <- mapply2(`[`, rownams_id, ind)
+    data <- data[unlist(ind, use.names = FALSE), ]
+    data[[time_var]] <- unlist(time_points, use.names = FALSE)
+    row.names(data) <- seq_len(nrow(data))
+    data
+}
+
+
+prepare_Data_preds <- function (object, newdataL, newdataE) {
     # control
     control <- object$control
-    # check for tibbles
-    if (inherits(newdata, "tbl_df") || inherits(newdata, "tbl")) {
-        newdata <- as.data.frame(newdata)
-    }
-
     # extract idVar and time_var
     idVar <- object$model_info$var_names$idVar
     time_var <- object$model_info$var_names$time_var
-
     # set dataL as newdata; almost the same code as in jm()
-    dataL <- if (!is.data.frame(newdata)) newdata[["newdataL"]] else newdata
+    # check for tibbles
+    if (inherits(newdataL, "tbl_df") || inherits(newdataL, "tbl")) {
+        newdataL <- as.data.frame(newdataL)
+    }
+
+    dataL <- newdataL
     idL <- dataL[[idVar]]
     nY <- length(unique(idL))
     # order data by idL and time_var
@@ -116,12 +128,11 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
     terms_Surv <- object$model_info$terms$terms_Surv
     terms_Surv_noResp <- object$model_info$terms$terms_Surv_noResp
     type_censoring <- object$model_info$type_censoring
-    dataS <- if (!is.data.frame(newdata)) newdata[["newdataE"]] else newdata
-    CR_MS <- object$model_info$CR_MS
-    if (!CR_MS) {
-        idT <- dataS[[idVar]]
-        dataS <- dataS[tapply(row.names(dataS), factor(idT, unique(idT)), tail, 1L), ]
+    # check for tibbles
+    if (inherits(newdataE, "tbl_df") || inherits(newdataE, "tbl")) {
+        newdataE <- as.data.frame(newdataE)
     }
+    dataS <- newdataE
     idT <- dataS[[idVar]]
     mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
     if (!is.null(NAs_surv <- attr(mf_surv_dataS, "na.action"))) {
@@ -302,14 +313,248 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
     Z_h[] <- lapply(Z_h, docall_cbind)
     Z_H2[] <- lapply(Z_H2, docall_cbind)
 
-    W_bar <- object$W_bar
-    W_sds <- object$W_sds
-    W_H <- center_fun(W_H, W_bar, W_sds)
-    W_h <- center_fun(W_h, W_bar, W_sds)
-    W_H2 <- center_fun(W_H2, W_bar, W_sds)
+    #W_bar <- object$W_bar
+    #W_sds <- object$W_sds
+    #W_H <- center_fun(W_H, W_bar, W_sds)
+    #W_h <- center_fun(W_h, W_bar, W_sds)
+    #W_H2 <- center_fun(W_H2, W_bar, W_sds)
+    list(
+        nY = nY, times_y = times_y, respVars = respVars, strata = strata,
+        NAs_FE_dataL = NAs_FE_dataL, NAs_RE_dataL = NAs_RE_dataL,
+        ind_RE = object$model_data$ind_RE,
+        W0_H = W0_H, W0_h = W0_h, W0_H2 = W0_H2,
+        W_H = W_H, W_h = W_h, W_H2 = W_H2,
+        X_H = X_H, X_h = X_h, X_H2 = X_H2,
+        Z_H = Z_H, Z_h = Z_h, Z_H2 = Z_H2,
+        U_H = U_H, U_h = U_h, U_H2 = U_H2,
+        Wlong_bar = object$Wlong_bar, Wlong_sds = object$Wlong_sds,
+        idT = match(idT, unique(idT)), log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2,
+        id_H = id_H, id_H_ = id_H_, id_h = id_h, any_gammas = any_gammas,
+        which_event = which_event, which_right = which_right,
+        which_left = which_left, which_interval = which_interval,
+        ni_event = ni_event, FunForms_cpp = FunForms_cpp,
+        FunForms_ind = FunForms_ind, Funs_FunForms = Funs_FunForms,
+        X = X, Z = Z, y = y, family_names = family_names,
+        links = links, extra_parms = object$model_data$extra_parms,
+        unq_idL = unq_idL, idL_lp = idL_lp, idL = idL, last_times = last_times,
+        Time_start = Time_start
+    )
+}
+
+prepare_DataE_preds <- function (object, newdataL, newdataE,
+                                 low_limit, upp_limit, last_times) {
+    # control
+    control <- object$control
+    # extract idVar and time_var
+    idVar <- object$model_info$var_names$idVar
+    respVars <- unlist(object$model_info$var_names$respVars)
+    time_var <- object$model_info$var_names$time_var
+    # set dataL as newdata; almost the same code as in jm()
+    # check for tibbles
+    if (inherits(newdataL, "tbl_df") || inherits(newdataL, "tbl")) {
+        newdataL <- as.data.frame(newdataL)
+    }
+
+    dataL <- newdataL
+    idL <- dataL[[idVar]]
+    # order data by idL and time_var
+    if (is.null(dataL[[time_var]])) {
+        stop("the variable specified in agument 'time_var' cannot be found ",
+             "in the database of the longitudinal models.")
+    }
+    dataL <- dataL[order(idL, dataL[[time_var]]), ]
+    terms_FE_noResp <- object$model_info$terms$terms_FE_noResp
+    terms_RE <- object$model_info$terms$terms_RE
+    Xbar <- object$model_data$Xbar
+
+    ################################
+
+    # extract terms
+    terms_Surv <- object$model_info$terms$terms_Surv
+    terms_Surv_noResp <- object$model_info$terms$terms_Surv_noResp
+    # check for tibbles
+    if (inherits(newdataE, "tbl_df") || inherits(newdataE, "tbl")) {
+        newdataE <- as.data.frame(newdataE)
+    }
+    dataS <- newdataE
+    idT <- dataS[[idVar]]
+    mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
+    if (!is.null(NAs_surv <- attr(mf_surv_dataS, "na.action"))) {
+        idT <- idT[-NAs_surv]
+        dataS <- dataS[-NAs_surv, ]
+    }
+    idT <- factor(idT, levels = unique(idT))
+    nT <- length(unique(idT))
+    Surv_Response <- model.response(mf_surv_dataS)
+    delta <- unname(Surv_Response[, "status"])
+    which_event <- which(delta == 1)
+    which_right <- which(delta == 0)
+    which_left <- which(delta == 2)
+    which_interval <- which(delta == 3)
+    # extract strata if present otherwise all subjects in one stratum
+    ind_strata <- attr(terms_Surv, "specials")$strata
+    strata <- if (is.null(ind_strata)) {
+        rep(1, nrow(mf_surv_dataS))
+    } else {
+        unclass(mf_surv_dataS[[ind_strata]])
+    }
+    # create Gauss Kronrod points and weights
+    GK <- gaussKronrod(control$GK_k)
+    sk <- GK$sk
+    P <- c(upp_limit - low_limit) / 2
+    st <- outer(P, sk) + (c(upp_limit + low_limit) / 2)
+    log_Pwk <- unname(rep(log(P), each = length(sk)) +
+                          rep_len(log(GK$wk), length.out = length(st)))
+    P2 <- st2 <- log_Pwk2 <- rep(0.0, nT * control$GK_k)
+
+    # knots for the log baseline hazard function
+    knots <- control$knots
+
+    # indices
+    ni_event <- tapply(idT, idT, length)
+    ni_event <- cbind(c(0, head(cumsum(ni_event), -1)), cumsum(ni_event))
+    id_H <- rep(paste0(idT, "_", unlist(tapply(idT, idT, seq_along))),
+                each = control$GK_k)
+    id_H <- match(id_H, unique(id_H))
+    # id_H_ repeats each unique idT the number of quadrature points
+    id_H_ <- rep(idT, each = control$GK_k)
+    id_H_ <- match(id_H_, unique(id_H_))
+    id_h <- unclass(idT)
+
+    # Functional forms
+    functional_forms <- object$model_info$functional_forms
+    FunForms_per_outcome <- object$model_info$FunForms_per_outcome
+    collapsed_functional_forms <- object$model_info$collapsed_functional_forms
+    FunForms_cpp <- object$model_info$FunForms_cpp
+    FunForms_ind <- object$model_info$FunForms_ind
+    Funs_FunForms <- object$model_info$Funs_FunForms
+    eps <- object$model_info$eps
+    direction <- object$model_info$direction
+
+    # Design matrices
+    strata_H <- rep(strata, each = control$GK_k)
+    W0_H <- create_W0(c(t(st)), knots, control$Bsplines_degree + 1, strata_H)
+    dataS_H <- SurvData_HazardModel(st, dataS, last_times[unclass(idT)],
+                                    paste0(idT, "_", strata), time_var)
+    if (FALSE) {
+        idT. <- dataS_H[[idVar]]
+        ni_event <- tapply(idT., idT., length)
+        ni_event <- cbind(c(0, head(cumsum(ni_event), -1)), cumsum(ni_event))
+        id_H <- rep(paste0(idT., "_", unlist(tapply(idT., idT., seq_along))),
+                    each = control$GK_k)
+        id_H <- match(id_H, unique(id_H))
+        # id_H_ repeats each unique idT the number of quadrature points
+        id_H_ <- rep(idT., each = control$GK_k)
+        id_H_ <- match(id_H_, unique(id_H_))
+        id_h <- unclass(idT.)
+    }
+    mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
+    W_H <- construct_Wmat(terms_Surv_noResp, mf)
+    any_gammas <- as.logical(ncol(W_H))
+    if (!any_gammas) {
+        W_H <- matrix(0.0, nrow = nrow(W_H), ncol = 1L)
+    }
+    attr <- lapply(functional_forms, extract_attributes, data = dataS_H)
+    eps <- lapply(attr, "[[", 1L)
+    direction <- lapply(attr, "[[", 2L)
+    X_H <- design_matrices_functional_forms(st, terms_FE_noResp,
+                                            dataL, time_var, idVar, idT,
+                                            collapsed_functional_forms, Xbar,
+                                            eps, direction)
+    Z_H <- design_matrices_functional_forms(st, terms_RE,
+                                            dataL, time_var, idVar, idT,
+                                            collapsed_functional_forms, NULL,
+                                            eps, direction)
+    U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
+    if (length(which_event)) {
+        W0_h <- create_W0(Time_right, knots, control$Bsplines_degree + 1,
+                          strata)
+        dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start,
+                                        paste0(idT, "_", strata), time_var)
+        mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
+        W_h <- construct_Wmat(terms_Surv_noResp, mf)
+        if (!any_gammas) {
+            W_h <- matrix(0.0, nrow = nrow(W_h), ncol = 1L)
+        }
+        X_h <- design_matrices_functional_forms(Time_right, terms_FE_noResp,
+                                                dataL, time_var, idVar, idT,
+                                                collapsed_functional_forms, Xbar,
+                                                eps, direction)
+        Z_h <- design_matrices_functional_forms(Time_right, terms_RE,
+                                                dataL, time_var, idVar, idT,
+                                                collapsed_functional_forms, NULL,
+                                                eps, direction)
+        U_h <- lapply(functional_forms, construct_Umat, dataS = dataS_h)
+    } else {
+        W0_h <- W_h <- matrix(0.0)
+        X_h <- Z_h <- U_h <- rep(list(matrix(0.0)), length(respVars))
+    }
+    if (length(which_interval)) {
+        W0_H2 <- create_W0(c(t(st2)), knots, control$Bsplines_degree + 1,
+                           strata_H)
+        dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start,
+                                         paste0(idT, "_", strata), time_var)
+        mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
+        W_h <- construct_Wmat(terms_Surv_noResp, mf2)
+        if (!any_gammas) {
+            W_H2 <- matrix(0.0, nrow = nrow(W_H2), ncol = 1L)
+        }
+        X_H2 <- design_matrices_functional_forms(st, terms_FE_noResp,
+                                                 dataL, time_var, idVar, idT,
+                                                 collapsed_functional_forms, Xbar,
+                                                 eps, direction)
+        Z_H2 <- design_matrices_functional_forms(st, terms_RE,
+                                                 dataL, time_var, idVar, idT,
+                                                 collapsed_functional_forms, NULL,
+                                                 eps, direction)
+        U_H2 <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
+    } else {
+        W0_H2 <- W_H2 <- matrix(0.0)
+        X_H2 <- Z_H2 <- U_H2 <- rep(list(matrix(0.0)), length(respVars))
+    }
+    X_H[] <- lapply(X_H, docall_cbind)
+    X_h[] <- lapply(X_h, docall_cbind)
+    X_H2[] <- lapply(X_H2, docall_cbind)
+    Z_H[] <- lapply(Z_H, docall_cbind)
+    Z_h[] <- lapply(Z_h, docall_cbind)
+    Z_H2[] <- lapply(Z_H2, docall_cbind)
+    list(
+        ind_RE = object$model_data$ind_RE,
+        W0_H = W0_H, W0_h = W0_h, W0_H2 = W0_H2,
+        W_H = W_H, W_h = W_h, W_H2 = W_H2,
+        X_H = X_H, X_h = X_h, X_H2 = X_H2,
+        Z_H = Z_H, Z_h = Z_h, Z_H2 = Z_H2,
+        U_H = U_H, U_h = U_h, U_H2 = U_H2,
+        Wlong_bar = object$Wlong_bar, Wlong_sds = object$Wlong_sds,
+        idT = match(idT, unique(idT)), log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2,
+        id_H = id_H, id_H_ = id_H_, id_h = id_h, any_gammas = any_gammas,
+        which_event = which_event, which_right = which_right,
+        which_left = which_left, which_interval = which_interval,
+        ni_event = ni_event, FunForms_cpp = FunForms_cpp,
+        FunForms_ind = FunForms_ind, Funs_FunForms = Funs_FunForms,
+        strata = strata)
+}
+
+get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
+                                    cores, seed) {
+    if (!exists(".Random.seed", envir = .GlobalEnv)) {
+        runif(1L)
+    }
+    RNGstate <- get(".Random.seed", envir = .GlobalEnv)
+    on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
+
+    # prepare the data for calculations
+    newdataL <- if (!is.data.frame(newdata)) newdata[["newdataL"]] else newdata
+    newdataE <- if (!is.data.frame(newdata)) newdata[["newdataE"]] else newdata
+    if (!object$model_info$CR_MS) {
+        idT <- newdataE[[idVar <- object$model_info$var_names$idVar]]
+        keep_last_row <- tapply(row.names(newdataE), factor(idT, unique(idT)), tail, 1L)
+        newdataE <- newdataE[keep_last_row, ]
+    }
+    Data <- prepare_Data_preds(object, newdataL, newdataE)
 
     # MCMC sample
-    b <- lapply(sapply(Z, ncol), function (nc) matrix(0.0, nY, nc))
+    b <- lapply(sapply(Data$Z, ncol), function (nc) matrix(0.0, Data$nY, nc))
     M <- sum(sapply(object$mcmc$bs_gammas, nrow))
     get_param <- function (nam) {
         tht <- object$mcmc[[nam]]
@@ -331,25 +576,6 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
     for (i in seq_len(M)) {
         mcmc$D[, , i] <- lowertri2mat(D[i, ])
     }
-
-    Data <- list(
-        ind_RE = object$model_data$ind_RE,
-        W0_H = W0_H, W0_h = W0_h, W0_H2 = W0_H2,
-        W_H = W_H, W_h = W_h, W_H2 = W_H2,
-        X_H = X_H, X_h = X_h, X_H2 = X_H2,
-        Z_H = Z_H, Z_h = Z_h, Z_H2 = Z_H2,
-        U_H = U_H, U_h = U_h, U_H2 = U_H2,
-        Wlong_bar = object$Wlong_bar, Wlong_sds = object$Wlong_sds,
-        idT = match(idT, unique(idT)), log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2,
-        id_H = id_H, id_H_ = id_H_, id_h = id_h, any_gammas = any_gammas,
-        which_event = which_event, which_right = which_right,
-        which_left = which_left, which_interval = which_interval,
-        ni_event = ni_event, FunForms_cpp = FunForms_cpp,
-        FunForms_ind = FunForms_ind, Funs_FunForms = Funs_FunForms,
-        X = X, Z = Z, y = y, family_names = family_names,
-        links = links, extra_parms = object$model_data$extra_parms,
-        unq_idL = unq_idL, idL_lp = idL_lp, idL = idL
-    )
     if (n_samples > M) {
         warning("the number of samples cannot be greater than the number of ",
                 "MCMC iterations in the fitted model.")
@@ -422,11 +648,12 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
         }
         res
     }
-    list(mcmc = combine(out), X = X, Z = Z, y = y, times_y = times_y, id = idL,
-         ind_RE = object$model_data$ind_RE, links = links,
-         respVars = lapply(respVars, "[", 1L),
-         NAs = mapply2(c, NAs_FE_dataL, NAs_RE_dataL),
-         last_times = last_times)
+    list(mcmc = combine(out), X = Data$X, Z = Data$Z, y = Data$y,
+         times_y = Data$times_y, id = Data$idL,
+         ind_RE = Data$ind_RE, links = Data$links,
+         respVars = lapply(Data$respVars, "[", 1L),
+         NAs = mapply2(c, Data$NAs_FE_dataL, Data$NAs_RE_dataL),
+         last_times = Data$last_times, strata = Data$strata, idT = Data$idT)
 }
 
 predict_Long <- function (object, components_newdata, newdata, newdata2, times,
@@ -561,8 +788,8 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
     out
 }
 
-predict_Event <- function (object, components_newdata, newdata, times,
-                           level, return_newdata) {
+predict_Event_old <- function (object, components_newdata, newdata, newdata2,
+                           times, level, return_newdata) {
     control <- object$control
     terms_FE <- object$model_info$terms$terms_FE
     terms_FE_noResp <- object$model_info$terms$terms_FE_noResp
@@ -574,6 +801,8 @@ predict_Event <- function (object, components_newdata, newdata, times,
     type_censoring <- object$model_info$type_censoring
     dataL <- newdata
     Xbar <- object$model_data$Xbar
+    CR_MS <- object$model_info$CR_MS
+
     data_pred <- newdata
     idT <- data_pred[[idVar]]
     data_pred <- data_pred[tapply(row.names(data_pred),
@@ -598,7 +827,7 @@ predict_Event <- function (object, components_newdata, newdata, times,
         test <- sapply(last_times, function (lt, tt) all(tt <= lt), tt = times)
         if (any(test)) {
             stop("according to the definition of argument 'times', for some ",
-                 "subjects the last available time is\n\t larger than the ",
+                 "subjects the last available time is \nlarger than the ",
                  "maximum time to predict; redefine 'times' accordingly.")
         }
         f <- function (lt, tt, tm) c(lt, sort(tt[tt > lt & tt <= tm]))
@@ -620,10 +849,8 @@ predict_Event <- function (object, components_newdata, newdata, times,
     st <- outer(P, sk) + (c(upp_limit + low_limit) / 2)
     log_Pwk <- unname(rep(log(P), each = length(sk)) +
                           rep_len(log(GK$wk), length.out = length(st)))
-
     # knots
     knots <- control$knots
-
     # indices
     ni_event <- tapply(idT, idT, length)
     ni_event <- cbind(c(0, head(cumsum(ni_event), -1)), cumsum(ni_event))
@@ -644,8 +871,6 @@ predict_Event <- function (object, components_newdata, newdata, times,
     Funs_FunForms <- object$model_info$Funs_FunForms
     eps <- object$model_info$eps
     direction <- object$model_info$direction
-
-
     strata_H <- rep(strata, each = 7L)
     W0_H <- create_W0(c(t(st)), knots, control$Bsplines_degree + 1, strata_H)
     dataS_H <- SurvData_HazardModel(st, data_pred, Time_start,
@@ -681,6 +906,7 @@ predict_Event <- function (object, components_newdata, newdata, times,
         FunForms_cpp = FunForms_cpp, FunForms_ind = FunForms_ind,
         Funs_FunForms = Funs_FunForms
     )
+    # Data <- create_Data_pred_event(object, newdata, newdata2)
     H <- cum_haz(Data, components_newdata$mcmc)
     index <- rep(seq_along(times), n_times)
     for (i in seq_along(times)) {
@@ -711,3 +937,108 @@ predict_Event <- function (object, components_newdata, newdata, times,
     attr(res, "process") <- "event"
     res
 }
+
+
+predict_Event <- function (object, components_newdata, newdata, newdata2,
+                           times, level, return_newdata) {
+    # prepare the data for calculations
+    newdataL <- if (!is.data.frame(newdata)) newdata[["newdataL"]] else newdata
+    newdataE <- if (!is.data.frame(newdata)) newdata[["newdataE"]] else newdata
+    CR_MS <- object$model_info$CR_MS
+
+    # The definition of last_times needs to be checked for counting and interval
+    last_times <- components_newdata$last_times
+    if (CR_MS) {
+        last_times2 <- last_times
+        ff <- interaction(components_newdata$idT, components_newdata$strata)
+        last_times <- tapply(last_times, ff, tail, n = 1L)
+    }
+    t_max <- quantile(object$model_data$Time_right, probs = 0.9)
+    if (is.null(times) || !is.numeric(times)) {
+        times <- lapply(last_times, seq, to = t_max, length.out = 21L)
+    } else {
+        t_max <- max(object$model_data$Time_right)
+        test <- sapply(last_times, function (lt, tt) all(tt <= lt), tt = times)
+        if (any(test)) {
+            stop("according to the definition of argument 'times', for some ",
+                 "subjects the last available time is \nlarger than the ",
+                 "maximum time to predict; redefine 'times' accordingly.")
+        }
+        f <- function (lt, tt, tm) c(lt, sort(tt[tt > lt & tt <= tm]))
+        times <- lapply(last_times, f, tt = times, tm = t_max)
+    }
+    n_times <- sapply(times, length)
+
+    if (!CR_MS) {
+        idT <- newdataE[[idVar <- object$model_info$var_names$idVar]]
+        keep_last_row <- tapply(row.names(newdataE), factor(idT, unique(idT)), tail, 1L)
+        newdataE <- newdataE[keep_last_row, ]
+        newdataE <- newdataE[rep(seq_along(times), n_times), ]
+        newdataE[[object$model_info$var_names$time_var]] <- unlist(times, use.names = FALSE)
+        idT <- newdataE[[idVar]]
+        idT <- factor(idT, levels = unique(idT))
+        upp_limit <- unlist(times, use.names = FALSE)
+        g <- function (t0, t) c(t0, head(t, -1))
+        low_limit <- unlist(mapply2(g, last_times, times), use.names = FALSE)
+        Data <- prepare_DataE_preds(object, newdataL, newdataE, low_limit,
+                                    upp_limit, last_times)
+        H <- cum_haz(Data, components_newdata$mcmc)
+        index <- rep(seq_along(times), n_times)
+        for (i in seq_along(times)) {
+            H[index == i, ] <- colCumsums(H[index == i, ])
+        }
+        CIF <- 1.0 - pmax(exp(- H), .Machine$double.eps)
+    } else {
+        Data <- prepare_Data_preds(object, newdataL, newdataE)
+        idT <- Data$idT
+        H <- cum_haz(Data, components_newdata$mcmc)
+        S0 <- exp(- rowsum(H, idT, reorder = FALSE))
+        upp_limit <- unlist(times, use.names = FALSE)
+        g <- function (t0, t) c(t0, head(t, -1))
+        low_limit <- unlist(mapply2(g, last_times, times), use.names = FALSE)
+        GK <- gaussKronrod(object$control$GK_k)
+        sk <- GK$sk
+        P <- c(upp_limit - low_limit) / 2
+        st <- outer(P, sk) + (c(upp_limit + low_limit) / 2)
+        log_Pwk <- unname(rep(log(P), each = length(sk)) +
+                              rep_len(log(GK$wk), length.out = length(st)))
+        n_strata <- length(unique(Data$strata))
+        upp_limit2 <- rep(c(t(st)), n_strata)
+        low_limit2 <- 0 * upp_limit2
+        Data2 <- prepare_DataE_preds(object, newdataL, newdataE,
+                                     low_limit2, upp_limit2, last_times2)
+        idT_str <- unique(paste0(Data2$idT, "_", Data2$strata))
+        Data2$id_H <- rep(idT_str, each = sum(n_times) * object$control$GK_k^2)
+        Data2$id_H <- match(Data2$id_H, unique(Data2$id_H))
+        Data2$id_H_ <- 1 + 0 * Data2$id_H
+        log_H2 <- log(cum_haz(Data2, components_newdata$mcmc))
+        ind <- c(t(row(st)))
+        H2 <- rowsum.default(exp(log_Pwk + log_H2), ind, reorder = FALSE)
+    }
+    res <- list(pred = rowMeans(CIF),
+                low = rowQuantiles(CIF, probs = (1 - level) / 2),
+                upp = rowQuantiles(CIF, probs = (1 + level) / 2),
+                times = unlist(times, use.names = FALSE),
+                id = rep(levels(idT), n_times))
+    if (return_newdata) {
+        newdataE[["pred_CIF"]] <- res$pred
+        newdataE[["low_CIF"]] <- res$low
+        newdataE[["upp_CIF"]] <- res$upp
+        res <- newdataE
+    }
+    class(res) <- c("predict_jm", class(res))
+    attr(res, "id_var") <- object$model_info$var_names$idVar
+    attr(res, "time_var") <- object$model_info$var_names$time_var
+    attr(res, "resp_vars") <- object$model_info$var_names$respVars_form
+    attr(res, "ranges") <- ranges <- lapply(object$model_data$y, range,
+                                            na.rm = TRUE)
+    attr(res, "last_times") <- components_newdata$last_times
+    attr(res, "y") <- components_newdata$y
+    attr(res, "times_y") <- components_newdata$times_y
+    attr(res, "id") <- components_newdata$id
+    attr(res, "process") <- "event"
+    res
+}
+
+
+
