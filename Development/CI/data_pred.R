@@ -16,8 +16,8 @@ source("./Development/CI/prepare_data.R")
 Rcpp::sourceCpp('src/mcmc_fit.cpp')
 
 
-newdataL <- pbc2[pbc2$id == 14, ]
-newdataE <- pbc2_CR[pbc2_CR$id == 14, ]
+newdataL <- pbc2[pbc2$id %in% c(14, 13), ]
+newdataE <- pbc2_CR[pbc2_CR$id %in% c(14, 13), ]
 newdataE$event <- 0
 newdata <- list(newdataL = newdataL, newdataE = newdataE)
 
@@ -51,3 +51,40 @@ n_samples = 200L; n_mcmc = 55L; cores = NULL
 seed = 123L
 
 ##############
+
+
+t0 <- 5
+ND <- pbc2[pbc2$id %in% c(25, 93), ]
+ND <- ND[ND$year < t0, ]
+ND$status2 <- 0
+ND$years <- t0
+newdata <- ND
+
+predLong2 <- predict(jointFit2, newdata = ND,
+                     times = seq(t0, 12, length.out = 51),
+                     return_newdata = TRUE)
+predSurv <- predict(jointFit2, newdata = ND, process = "event",
+                    times = seq(t0, 12, length.out = 51),
+                    return_newdata = TRUE)
+
+plot(predLong2, predSurv)
+
+
+
+pbc2.id$event <- as.numeric(pbc2.id$status != "alive")
+CoxFit <- coxph(Surv(years, event) ~ age, data = pbc2.id)
+fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
+           random = ~ ns(year, 3) | id, control = lmeControl(opt = 'optim'))
+
+fm2 <- lme(prothrombin ~ ns(year, 2) * sex, data = pbc2,
+           random = ~ ns(year, 2) | id, control = lmeControl(opt = 'optim'))
+
+fm3 <- mixed_model(ascites ~ year * sex, data = pbc2,
+                   random = ~ year | id, family = binomial())
+
+jointFit <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year")
+
+
+
+
+

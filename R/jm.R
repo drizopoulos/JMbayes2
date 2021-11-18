@@ -403,7 +403,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     } else {
         create_W0(c(t(st)), con$knots, con$Bsplines_degree + 1, strata_H)
     }
-    dataS_H <- SurvData_HazardModel(st, dataS, Time_start,
+    dataS_H <- SurvData_HazardModel(split(st, row(st)), dataS, Time_start,
                                     paste0(idT, "_", strata), time_var)
     mf <- model.frame.default(terms_Surv_noResp, data = dataS_H)
     W_H <- construct_Wmat(terms_Surv_noResp, mf)
@@ -430,7 +430,8 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         } else {
             create_W0(Time_right, con$knots, con$Bsplines_degree + 1, strata)
         }
-        dataS_h <- SurvData_HazardModel(Time_right, dataS, Time_start,
+        dataS_h <- SurvData_HazardModel(split(Time_right, seq_along(Time_right)),
+                                        dataS, Time_start,
                                         paste0(idT, "_", strata), time_var)
         mf <- model.frame.default(terms_Surv_noResp, data = dataS_h)
         W_h <- construct_Wmat(terms_Surv_noResp, mf)
@@ -453,7 +454,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     if (length(which_interval)) {
         W0_H2 <- create_W0(c(t(st2)), con$knots, con$Bsplines_degree + 1,
                            strata_H)
-        dataS_H2 <- SurvData_HazardModel(st2, dataS, Time_start,
+        dataS_H2 <- SurvData_HazardModel(split(st2, row(st2)), dataS, Time_start,
                                          paste0(idT, "_", strata), time_var)
         mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
         W_H2 <- construct_Wmat(terms_Surv_noResp, mf2)
