@@ -990,18 +990,20 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
             if (direction_i == "both") {
                 if (is.list(time)) {
                     t1 <- lapply(time, function (t) t + eps_i)
-                    t2 <- lapply(time, function (t) pmax(t - eps_i, 0))
+                    t2 <- lapply(time, function (t)
+                        pmax(t - eps_i, sqrt(.Machine$double.eps)))
                 } else {
                     t1 <- time + eps_i
-                    t2 <- pmax(time - eps_i, 0)
+                    t2 <- pmax(time - eps_i, sqrt(.Machine$double.eps))
                 }
                 e <- 2 * eps_i
             } else {
                 t1 <- time
                 if (is.list(time)) {
-                    t2 <- lapply(time, function (t) pmax(t - eps_i, 0))
+                    t2 <- lapply(time, function (t)
+                        pmax(t - eps_i, sqrt(.Machine$double.eps)))
                 } else {
-                    t2 <- pmax(time - eps_i, 0)
+                    t2 <- pmax(time - eps_i, sqrt(.Machine$double.eps))
                 }
                 e <- eps_i
             }

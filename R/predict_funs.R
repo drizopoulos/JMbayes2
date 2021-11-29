@@ -476,7 +476,7 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
     if (length(which_interval)) {
         W0_H2 <- create_W0(c(t(st2)), knots, control$Bsplines_degree + 1,
                            strata_H)
-        dataS_H2 <- SurvData_HazardModel(split(st2, row(st2)), dataS, Time_start,
+        dataS_H2 <- SurvData_HazardModel(split(st2, row(st2)), dataS, last_times,
                                          paste0(idT, "_", strata), time_var,
                                          rep(index, each = control$GK_k))
         mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
@@ -1040,7 +1040,8 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
                 upp = rowQuantiles(CIF, probs = (1 + level) / 2),
                 times = unlist(times, use.names = FALSE),
                 id = rep(levels(idT), n_times),
-                "_strata" = rep(tapply(components_newdata$strata, ff, tail, 1), n_times))
+                "_strata" = if (CR_MS)
+                    rep(tapply(components_newdata$strata, ff, tail, 1), n_times))
     if (return_newdata) {
         newdataE[["pred_CIF"]] <- res$pred
         newdataE[["low_CIF"]] <- res$low

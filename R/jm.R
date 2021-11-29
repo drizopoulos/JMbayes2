@@ -256,7 +256,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         Time_right <- Time_stop
         trunc_Time <- Time_start # possible left truncation time
         Time_left <- rep(0.0, nrow(dataS))
-        con$GK_k <- 7L
+        if (!any(namc %in% "GK_k")) con$GK_k <- 7L
     } else if (type_censoring == "interval") {
         Time1 <-  unname(Surv_Response[, "time1"])
         Time2 <-  unname(Surv_Response[, "time2"])
