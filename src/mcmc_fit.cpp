@@ -988,4 +988,99 @@ arma::mat cum_haz (const List &Data, const List &MCMC) {
   return out;
 }
 
+// [[Rcpp::export]]
+arma::mat hSfun (const List &Data, const List &MCMC) {
+    ////////////////////////////
+    // MCMC Sample Parameters //
+    ///////////////////////////
+    cube b = as<cube>(MCMC["b"]);
+    mat bs_gammas = trans(as<mat>(MCMC["bs_gammas"]));
+    mat gammas = trans(as<mat>(MCMC["gammas"]));
+    mat alphas = trans(as<mat>(MCMC["alphas"]));
+    field<mat> betas = List2Field_mat(as<List>(MCMC["betas"]));
+    for (uword j = 0; j < betas.n_elem; ++j) betas.at(j) = trans(betas.at(j));
+    vec W_std_gammas = as<vec>(MCMC["W_std_gammas"]);
+    vec Wlong_std_alphas = as<vec>(MCMC["Wlong_std_alphas"]);
+    uword n_samples = bs_gammas.n_cols;
+
+    ////////////////////
+    // index vectors //
+    ///////////////////
+    vec log_Pwk = as<vec>(Data["log_Pwk"]);
+    uvec id_H = as<uvec>(Data["id_H"]) - 1;
+    uvec id_h = as<uvec>(Data["id_h"]) - 1;
+    uvec indFast_H = create_fast_ind(id_H + 1);
+    uvec id_H_ = as<uvec>(Data["id_H_"]) - 1;
+    uvec which_event = as<uvec>(Data["which_event"]) - 1;
+    uvec indFast_h = create_fast_ind(id_h + 1);
+    field<uvec> ind_RE = List2Field_uvec(as<List>(Data["ind_RE"]), true);
+
+    //////////////////////
+    // Design matrices //
+    /////////////////////
+    mat W0_H = as<mat>(Data["W0_H"]);
+    mat W_H = as<mat>(Data["W_H"]);
+    field<mat> X_H = List2Field_mat(as<List>(Data["X_H"]));
+    field<mat> Z_H = List2Field_mat(as<List>(Data["Z_H"]));
+    field<mat> U_H = List2Field_mat(as<List>(Data["U_H"]));
+    mat W0_h = as<mat>(Data["W0_h"]);
+    mat W_h = as<mat>(Data["W_h"]);
+    field<mat> X_h = List2Field_mat(as<List>(Data["X_h"]));
+    field<mat> Z_h = List2Field_mat(as<List>(Data["Z_h"]));
+    field<mat> U_h = List2Field_mat(as<List>(Data["U_h"]));
+    mat Wlong_bar = docall_cbindL(as<List>(Data["Wlong_bar"]));
+    mat Wlong_sds = docall_cbindL(as<List>(Data["Wlong_sds"]));
+    Wlong_bar.zeros();
+    Wlong_sds.ones();
+
+    bool any_gammas = as<bool>(Data["any_gammas"]);
+    field<uvec> FunForms = List2Field_uvec(as<List>(Data["FunForms_cpp"]), true);
+    List Funs_FunForms = as<List>(Data["Funs_FunForms"]);
+
+    ///////////////////////
+    // Calculation CIFs //
+    //////////////////////
+    field<vec> betas_it(betas.n_elem);
+    uvec H_unq = unique(id_H);
+    mat out(H_unq.n_rows, n_samples, fill::zeros);
+    for (uword it = 0; it < n_samples; ++it) {
+        field<mat> b_it = mat2field(b.slice(it), ind_RE);
+        vec bs_gammas_it = bs_gammas.col(it);
+        vec gammas_it = gammas.col(it);
+        vec alphas_it = alphas.col(it);
+        for (uword i = 0; i < betas.n_elem; ++i) betas_it.at(i) = betas.at(i).col(it);
+        ///////////////////////
+        vec W0H_bs_gammas = (W0_H * bs_gammas_it) - W_std_gammas.at(it) -
+            Wlong_std_alphas.at(it);
+        vec WH_gammas(W0_H.n_rows, fill::zeros);
+        if (any_gammas) {
+            WH_gammas = W_H * gammas_it;
+        }
+        mat Wlong_H =
+            calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas_it, b_it,
+                            id_H_, FunForms, Funs_FunForms);
+        vec WlongH_alphas = Wlong_H * alphas_it;
+        ///////////////////////
+        vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
+        vec temp = group_sum(log_Pwk + lambda_H, indFast_H);
+        ///////////////////////
+        vec W0h_bs_gammas = (W0_h * bs_gammas_it) - W_std_gammas.at(it) -
+            Wlong_std_alphas.at(it);
+        vec Wh_gammas(W0_h.n_rows, fill::zeros);
+        if (any_gammas) {
+            Wh_gammas = W_h * gammas_it;
+        }
+        mat Wlong_h =
+            calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas_it, b_it,
+                            id_h, FunForms, Funs_FunForms);
+        vec Wlongh_alphas = Wlong_h * alphas_it;
+        vec lambda_h(temp.n_rows);
+        lambda_h.rows(which_event) = W0h_bs_gammas.rows(which_event) +
+            Wh_gammas.rows(which_event) + Wlongh_alphas.rows(which_event);
+        temp.rows(which_event) += lambda_h.rows(which_event);
+        out.col(it) = temp;
+    }
+    return out;
+}
+
 

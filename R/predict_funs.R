@@ -1015,13 +1015,13 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
                                      index = rep(seq_along(n_times), n_times),
                                      index2 = rep(rep(seq_along(unique(idT)),
                                                       each = n_strata), n_times))
-
         idt_str <- rep(unique(Data2$idT), each = n_strata)
         n_times_id <- tapply(n_times, idt_str, sum)
         Data2$id_H <- rep(seq_along(st), each = object$control$GK_k)
         Data2$id_H_ <- rep(unique(idt_str), n_times_id * object$control$GK_k^2)
+        Data2$id_h <- rep(idt_str, n_times * object$control$GK_k)
 
-        log_hS <- log(cum_haz(Data2, components_newdata$mcmc))
+        log_hS <- hSfun(Data2, components_newdata$mcmc)
         ind <- c(t(row(st)))
         hS <- rowsum.default(exp(log_Pwk + log_hS), ind, reorder = FALSE)
 
@@ -1039,11 +1039,13 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
                 low = rowQuantiles(CIF, probs = (1 - level) / 2),
                 upp = rowQuantiles(CIF, probs = (1 + level) / 2),
                 times = unlist(times, use.names = FALSE),
-                id = rep(levels(idT), n_times))
+                id = rep(levels(idT), n_times),
+                "_strata" = rep(tapply(components_newdata$strata, ff, tail, 1), n_times))
     if (return_newdata) {
         newdataE[["pred_CIF"]] <- res$pred
         newdataE[["low_CIF"]] <- res$low
         newdataE[["upp_CIF"]] <- res$upp
+        newdataE[["_strata"]] <- res[["_strata"]]
         res <- newdataE
     }
     class(res) <- c("predict_jm", class(res))

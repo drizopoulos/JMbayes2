@@ -32,6 +32,18 @@ level = 0.95; return_newdata = TRUE
 n_samples = 200L; n_mcmc = 55L; cores = NULL
 seed = 123L
 
+predLong2 <- predict(jointFit, newdata = ND,
+                     times = seq(t0, 12, length.out = 51),
+                     return_newdata = TRUE)
+predSurv <- predict(jointFit, newdata = newdata, process = "event",
+                    return_newdata = TRUE)
+
+plot(predSurv)
+
+plot(predLong2, predSurv)
+
+
+
 ##############
 
 newdata <- pbc2[pbc2$id %in% c(14, 2), ]
@@ -85,6 +97,6 @@ fm3 <- mixed_model(ascites ~ year * sex, data = pbc2,
 jointFit <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year")
 
 
-
+prs <- predict(jointFit, newdata, process = "event")
 
 

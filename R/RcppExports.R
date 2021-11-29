@@ -21,3 +21,7 @@ cum_haz <- function(Data, MCMC) {
     .Call(`_JMbayes2_cum_haz`, Data, MCMC)
 }
 
+hSfun <- function(Data, MCMC) {
+    .Call(`_JMbayes2_hSfun`, Data, MCMC)
+}
+

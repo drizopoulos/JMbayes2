@@ -757,6 +757,9 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         preds <- fun_event(pred_Event[[ind]])
         low <- fun_event(pred_Event[[ind + 1]])
         upp <- fun_event(pred_Event[[ind + 2]])
+        strata <- pred_Event[["_strata"]]
+        if (is.null(strata)) strata <- rep(1, length(preds))
+        unq_strata <- unique(strata)
         times <- pred_Event[[time_var]]
         ry <- sort(fun_event(c(0, 1)))
         rx <- range(times)
@@ -765,11 +768,16 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         if (box) box(col = col_axis)
         axis(axis_side, cex.axis = cex_axis, col = col_axis,
              col.ticks = col_axis, col.axis = col_axis)
-        if (CI_event) {
-            polygon(c(times, rev(times)), c(low, rev(upp)), border = NA,
-                    col = fill_CI_event)
+        for (i in seq_along(unq_strata)) {
+            ind_str <- strata == unq_strata[i]
+            if (CI_event) {
+                polygon(c(times[ind_str], rev(times[ind_str])),
+                        c(low[ind_str], rev(upp[ind_str])), border = NA,
+                        col = fill_CI_event[i])
+            }
+            lines(times[ind_str], preds[ind_str], lwd = lwd_event,
+                  col = col_line_event[i])
         }
-        lines(times, preds, lwd = lwd_long, col = col_line_event)
     }
     if (is.null(pred_Event)) {
         for (i in seq_along(outcomes)) {

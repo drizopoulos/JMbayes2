@@ -81,3 +81,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// hSfun
+arma::mat hSfun(const List& Data, const List& MCMC);
+RcppExport SEXP _JMbayes2_hSfun(SEXP DataSEXP, SEXP MCMCSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const List& >::type Data(DataSEXP);
+    Rcpp::traits::input_parameter< const List& >::type MCMC(MCMCSEXP);
+    rcpp_result_gen = Rcpp::wrap(hSfun(Data, MCMC));
+    return rcpp_result_gen;
+END_RCPP
+}
