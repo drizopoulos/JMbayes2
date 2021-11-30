@@ -9,7 +9,7 @@ cd <- function (x, f, ..., eps = 0.001) {
         x2[i] <- x[i] - eps * ex[i]
         diff.f <- c(f(x1, ...) - f(x2, ...))
         diff.x <- x1[i] - x2[i]
-        res[i] <- diff.f/diff.x
+        res[i] <- diff.f / diff.x
     }
     res
 }
@@ -25,7 +25,7 @@ cd_vec <- function (x, f, ..., eps = 0.001) {
         x2[i] <- x[i] - eps * ex[i]
         diff.f <- c(f(x1, ...) - f(x2, ...))
         diff.x <- x1[i] - x2[i]
-        res[, i] <- diff.f/diff.x
+        res[, i] <- diff.f / diff.x
     }
     0.5 * (res + t(res))
 }
@@ -887,46 +887,10 @@ SurvData_HazardModel <- function (times_to_fill, data, times_data, ids,
     spl_times <- lapply(spl_times[index], function (x) if (x[1L] == 0) x else c(0, x))
     ind <- mapply2(findInterval, x = times_to_fill, vec = spl_times,
                    all.inside = first_val_zero)
-
-    #spl_times <- lapply(spl_times[index], function (x) c(0, x))
-    #ind <- mapply2(findInterval, times_to_fill, spl_times,
-    #               MoreArgs = list(all.inside = TRUE))
-
     rownams_id <- split(row.names(data), fids)
     ind <- mapply2(`[`, rownams_id[index], ind)
     data <- data[unlist(ind, use.names = FALSE), ]
     data[[time_var]] <- unlist(times_to_fill, use.names = FALSE)
-    row.names(data) <- seq_len(nrow(data))
-    data
-}
-
-LongData_HazardModel <- function (time_points, data, times, ids, idT, time_var) {
-    unq_ids <- unique(ids)
-    fids <- factor(ids, levels = unq_ids)
-    idT. <- match(idT, unique(idT))
-    tt <- if (is.list(time_points)) {
-        time_points
-    } else {
-        if (!is.matrix(time_points)) {
-            time_points <- as.matrix(time_points)
-        }
-        split(time_points, row(time_points))
-    }
-    spl_times <- split(times, fids)
-    rownams_id <- split(row.names(data), fids)
-    if (length(spl_times) < length(tt)) {
-        spl_times <- spl_times[idT.]
-        rownams_id <- rownams_id[idT.]
-    }
-    ind <- mapply2(findInterval, tt, spl_times)
-    ind[] <- lapply(ind, function (x) {x[x < 1] <- 1; x})
-    ind <- mapply2(`[`, rownams_id, ind)
-    data <- data[unlist(ind, use.names = FALSE), ]
-    data[[time_var]] <- if (is.matrix(time_points)) {
-        c(t(time_points))
-    } else {
-        unlist(time_points, use.names = FALSE)
-    }
     row.names(data) <- seq_len(nrow(data))
     data
 }
@@ -996,7 +960,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                     t1 <- time + eps_i
                     t2 <- pmax(time - eps_i, sqrt(.Machine$double.eps))
                 }
-                e <- 2 * eps_i
+                e <- c(mapply("-", t1, t2))
             } else {
                 t1 <- time
                 if (is.list(time)) {
