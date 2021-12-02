@@ -25,11 +25,13 @@ Predict method for object of class \code{"jm"}.
   fun_long = NULL, fun_event = NULL, CI_long = TRUE, CI_event = TRUE,
   xlab = "Follow-up Time", ylab_long = NULL, ylab_event = "Cumulative Risk",
   main = "", lwd_long = 2, lwd_event = 2, ylim_long_outcome_range = TRUE,
-  col_line_long = "blue", col_line_event = "red", pch_points = 16,
-  col_points = "blue", cex_points = 1, fill_CI_long = "#0000FF44",
-  fill_CI_event = "#FF000044", cex_xlab = 1, cex_ylab_long = 1,
-  cex_ylab_event = 1, cex_main = 1, cex_axis = 1, col_axis = "black",
-  pos_ylab_long = c(0.1, 2, 0.08), bg = "white", \dots)
+  col_line_long = "#0000FF",
+  col_line_event = c("#FF0000", "#03BF3D", "#8000FF"), pch_points = 16,
+  col_points = "blue", cex_points = 1, fill_CI_long = "#0000FF4D",
+  fill_CI_event = c("#FF00004D", "#03BF3D4D", "#8000FF4D"), cex_xlab = 1,
+  cex_ylab_long = 1, cex_ylab_event = 1, cex_main = 1, cex_axis = 1,
+  col_axis = "black", pos_ylab_long = c(0.1, 2, 0.08), bg = "white",
+  \dots)
 }
 
 \arguments{

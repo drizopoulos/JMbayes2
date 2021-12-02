@@ -1062,7 +1062,7 @@ arma::mat hSfun (const List &Data, const List &MCMC) {
         vec WlongH_alphas = Wlong_H * alphas_it;
         ///////////////////////
         vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
-        vec temp = group_sum(log_Pwk + lambda_H, indFast_H);
+        vec temp = -group_sum(exp(log_Pwk + lambda_H), indFast_H);
         ///////////////////////
         vec W0h_bs_gammas = (W0_h * bs_gammas_it) - W_std_gammas.at(it) -
             Wlong_std_alphas.at(it);

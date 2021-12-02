@@ -618,13 +618,15 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
                              ylab_event = "Cumulative Risk", main = "",
                              lwd_long = 2, lwd_event = 2,
                              ylim_long_outcome_range = TRUE,
-                             col_line_long = "blue", col_line_event = "red",
+                             col_line_long = "#0000FF",
+                             col_line_event = c("#FF0000", "#03BF3D", "#8000FF"),
                              pch_points = 16, col_points = "blue", cex_points = 1,
-                             fill_CI_long = "#0000FF44",
-                             fill_CI_event = "#FF000044", cex_xlab = 1,
-                             cex_ylab_long = 1, cex_ylab_event = 1, cex_main = 1,
-                             cex_axis = 1, col_axis = "black",
-                             pos_ylab_long = c(0.1, 2, 0.08), bg = "white", ...) {
+                             fill_CI_long = "#0000FF4D",
+                             fill_CI_event = c("#FF00004D", "#03BF3D4D", "#8000FF4D"),
+                             cex_xlab = 1, cex_ylab_long = 1, cex_ylab_event = 1,
+                             cex_main = 1, cex_axis = 1, col_axis = "black",
+                             pos_ylab_long = c(0.1, 2, 0.08), bg = "white",
+                             ...) {
     process_x <- attr(x, "process")
     pred_Long <- if (process_x == "longitudinal") x
     pred_Event <- if (process_x == "event") x
@@ -760,6 +762,8 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         strata <- pred_Event[["_strata"]]
         if (is.null(strata)) strata <- rep(1, length(preds))
         unq_strata <- unique(strata)
+        col_line_event <- rep(col_line_event, length.out = length(unq_strata))
+        fill_CI_event <- rep(fill_CI_event, length.out = length(unq_strata))
         times <- pred_Event[[time_var]]
         ry <- sort(fun_event(c(0, 1)))
         rx <- range(times)

@@ -16,8 +16,8 @@ source("./Development/CI/prepare_data.R")
 Rcpp::sourceCpp('src/mcmc_fit.cpp')
 
 
-newdataL <- pbc2[pbc2$id %in% c(14, 13), ]
-newdataE <- pbc2_CR[pbc2_CR$id %in% c(14, 13), ]
+newdataL <- pbc2[pbc2$id %in% c(14, 7), ]
+newdataE <- pbc2_CR[pbc2_CR$id %in% c(14, 7), ]
 newdataE$event <- 0
 newdata <- list(newdataL = newdataL, newdataE = newdataE)
 
@@ -32,8 +32,8 @@ level = 0.95; return_newdata = TRUE
 n_samples = 200L; n_mcmc = 55L; cores = NULL
 seed = 123L
 
-predLong2 <- predict(jointFit, newdata = ND,
-                     times = seq(t0, 12, length.out = 51),
+predLong2 <- predict(jointFit, newdata = newdata,
+                     times = seq(5, 12, length.out = 51),
                      return_newdata = TRUE)
 predSurv <- predict(jointFit, newdata = newdata, process = "event",
                     return_newdata = TRUE)

@@ -14,7 +14,7 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     if (is.null(Thoriz))
         Thoriz <- Tstart + Dt
     type_censoring <- object$model_info$type_censoring
-    if (type_censoring != "right")
+    if (object$model_info$CR_MS)
         stop("'tvROC()' currently only works for right censored data.")
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
@@ -156,7 +156,7 @@ tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     if (is.null(Thoriz))
         Thoriz <- Tstart + Dt
     type_censoring <- object$model_info$type_censoring
-    if (type_censoring != "right")
+    if (object$model_info$CR_MS)
         stop("'tvROC()' currently only works for right censored data.")
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
@@ -325,7 +325,7 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     if (is.null(Thoriz))
         Thoriz <- Tstart + Dt
     type_censoring <- object$model_info$type_censoring
-    if (type_censoring != "right")
+    if (object$model_info$CR_MS)
         stop("'tvROC()' currently only works for right censored data.")
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
@@ -419,7 +419,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     if (is.null(Thoriz))
         Thoriz <- Tstart + Dt
     type_censoring <- object$model_info$type_censoring
-    if (type_censoring != "right")
+    if (object$model_info$CR_MS)
         stop("'tvROC()' currently only works for right censored data.")
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
