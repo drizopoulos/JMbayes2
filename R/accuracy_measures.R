@@ -26,16 +26,21 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
         stop("cannot find the '", id_var, "' variable in newdata.", sep = "")
     if (is.null(newdata[[time_var]]))
         stop("cannot find the '", time_var, "' variable in newdata.", sep = "")
-    if (is.null(newdata[[Time_var]]))
-        stop("cannot find the '", Time_var, "' variable in newdata.", sep = "")
+    if (any(sapply(Time_var, function (nmn) is.null(newdata[[nmn]]))))
+        stop("cannot find the '", paste(Time_var, collapse = ", "),
+             "' variable(s) in newdata.", sep = "")
     if (is.null(newdata[[event_var]]))
         stop("cannot find the '", event_var, "' variable in newdata.", sep = "")
-    newdata <- newdata[newdata[[Time_var]] > Tstart, ]
+    tt <- if (type_censoring == "right") newdata[[Time_var]] else newdata[[Time_var[2L]]]
+    newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
+    id <- newdata[[id_var]]
+    id <- match(id, unique(id))
+    tt <- ave(tt, id, FUN = function (t) rep(tail(t, 1L) > Tstart, length(t)))
+    newdata <- newdata[as.logical(tt), ]
     newdata <- newdata[newdata[[time_var]] <= Tstart, ]
     if (!nrow(newdata))
         stop("there are no data on subjects who had an observed event time after Tstart",
              "and longitudinal measurements before Tstart.")
-    newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
     test1 <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
     if (!any(test1))
         stop("it seems that there are no events in the interval [Tstart, Thoriz).")
@@ -168,8 +173,9 @@ tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
         stop("cannot find the '", id_var, "' variable in newdata.", sep = "")
     if (is.null(newdata[[time_var]]))
         stop("cannot find the '", time_var, "' variable in newdata.", sep = "")
-    if (is.null(newdata[[Time_var]]))
-        stop("cannot find the '", Time_var, "' variable in newdata.", sep = "")
+    if (any(sapply(Time_var, function (nmn) is.null(newdata[[nmn]]))))
+        stop("cannot find the '", paste(Time_var, collapse = ", "),
+             "' variable(s) in newdata.", sep = "")
     if (is.null(newdata[[event_var]]))
         stop("cannot find the '", event_var, "' variable in newdata.", sep = "")
     newdata <- newdata[order(newdata[[Time_var]]), ]
@@ -337,8 +343,9 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
         stop("cannot find the '", id_var, "' variable in newdata.", sep = "")
     if (is.null(newdata[[time_var]]))
         stop("cannot find the '", time_var, "' variable in newdata.", sep = "")
-    if (is.null(newdata[[Time_var]]))
-        stop("cannot find the '", Time_var, "' variable in newdata.", sep = "")
+    if (any(sapply(Time_var, function (nmn) is.null(newdata[[nmn]]))))
+        stop("cannot find the '", paste(Time_var, collapse = ", "),
+             "' variable(s) in newdata.", sep = "")
     if (is.null(newdata[[event_var]]))
         stop("cannot find the '", event_var, "' variable in newdata.", sep = "")
     newdata <- newdata[newdata[[Time_var]] > Tstart, ]
@@ -431,8 +438,9 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
         stop("cannot find the '", id_var, "' variable in newdata.", sep = "")
     if (is.null(newdata[[time_var]]))
         stop("cannot find the '", time_var, "' variable in newdata.", sep = "")
-    if (is.null(newdata[[Time_var]]))
-        stop("cannot find the '", Time_var, "' variable in newdata.", sep = "")
+    if (any(sapply(Time_var, function (nmn) is.null(newdata[[nmn]]))))
+        stop("cannot find the '", paste(Time_var, collapse = ", "),
+             "' variable(s) in newdata.", sep = "")
     if (is.null(newdata[[event_var]]))
         stop("cannot find the '", event_var, "' variable in newdata.", sep = "")
     newdata <- newdata[newdata[[Time_var]] > Tstart, ]

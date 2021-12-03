@@ -848,7 +848,6 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
         upp_limit <- unlist(times, use.names = FALSE)
         gg <- function (t0, t) c(t0, head(t, -1))
         low_limit <- unlist(mapply2(gg, last_times, times), use.names = FALSE)
-        #low_limit <- rep(last_times, n_times)
         GK <- gaussKronrod(object$control$GK_k)
         sk <- GK$sk
         P <- c(upp_limit - low_limit) / 2

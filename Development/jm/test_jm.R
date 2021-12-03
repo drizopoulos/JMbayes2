@@ -110,19 +110,30 @@ control = NULL
 ################################################################################
 
 
-fm <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
-CoxFit <- coxph(Surv(years, status2) ~ 1, data = pbc2.id)
-ff <- list("log(serBilir)" = ~ area(log(serBilir)))
-test <- jm(CoxFit, fm, time_var = "year")
-summary(test)
+pbc <- pbc2[c("id", "serBilir", "drug", "year", "years", "status2", "spiders")]
+pbc$start <- pbc$year
+splitID <- split(pbc[c("start", "years")], pbc$id)
+pbc$stop <- unlist(lapply(splitID,
+                          function(d) c(d$start[-1], d$years[1]) ))
+
+pbc$event <- with(pbc, ave(status2, id,
+                           FUN = function(x) c(rep(0, length(x) - 1), x[1])))
+pbc <- pbc[!is.na(pbc$spiders), ]
+pbc <- pbc[pbc$start != 0, ]
+
+
+fm1 <- lme(log(serBilir) ~ drug * ns(year, 2), data = pbc, random = ~ ns(year, 2) | id)
+
+tdCox.pbc <- coxph(Surv(start, stop, event) ~ drug * spiders, data = pbc)
 
 
 ####
 
-Surv_object = CoxFit
-Mixed_objects = fm
-time_var = "year"
+Surv_object = tdCox.pbc
+Mixed_objects = fm1
+time_var = 'year'
 functional_forms = NULL
+recurrent = FALSE
 data_Surv = NULL
 id_var = NULL
 priors = NULL

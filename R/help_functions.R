@@ -864,13 +864,19 @@ jitter2 <- function (x, factor = 2) {
     }
 }
 
+# times_to_fill = split(st, row(st))
+# data = dataS
+# times_data = Time_start
+# ids = paste0(idT, "_", strata)
+# index = NULL
+
 SurvData_HazardModel <- function (times_to_fill, data, times_data, ids,
                                    time_var, index = NULL) {
     unq_ids <- unique(ids)
     fids <- factor(ids, levels = unq_ids)
     # checks
     if (is.null(index)) {
-        index <- seq_along(unq_ids)
+        index <- match(ids, unq_ids)
     }
     if (length(times_to_fill) != length(unq_ids) && is.null(index)) {
         stop("length 'times_to_fill' does not match the length of unique 'ids'.")
