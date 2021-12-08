@@ -864,11 +864,11 @@ jitter2 <- function (x, factor = 2) {
     }
 }
 
-# times_to_fill = split(st, row(st))
-# data = dataS
-# times_data = Time_start
-# ids = paste0(idT, "_", strata)
-# index = NULL
+# times_to_fill = t2
+# data = data
+# times_data = data[[timeVar]]
+# ids = data[[idVar]]
+# index = match(idT, unique(idT))
 
 SurvData_HazardModel <- function (times_to_fill, data, times_data, ids,
                                    time_var, index = NULL) {
@@ -926,7 +926,7 @@ LongData_HazardModel <- function (times_to_fill, data, times_data, ids,
     }
     spl_times <- split(times_data, fids)
     first_val_zero <- sapply(spl_times[index], "[", 1L) != 0
-    spl_times <- lapply(spl_times[index], function (x) if (x[1L] == 0) x else c(0, x))
+    spl_times <- lapply(spl_times[index], function (x) if (x[1L] == 0) {x[1L] <- -1e04; x} else c(-1e04, x))
     ind <- mapply2(findInterval, x = times_to_fill, vec = spl_times,
                    all.inside = first_val_zero)
     rownams_id <- split(row.names(data), fids)
@@ -960,23 +960,20 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
             if (direction_i == "both") {
                 if (is.list(time)) {
                     t1 <- lapply(time, function (t) t + eps_i)
-                    t2 <- lapply(time, function (t)
-                        pmax(t - eps_i, sqrt(.Machine$double.eps)))
+                    t2 <- lapply(time, function (t) t - eps_i)
                 } else {
                     t1 <- time + eps_i
-                    t2 <- pmax(time - eps_i, sqrt(.Machine$double.eps))
+                    t2 <- time - eps_i
                 }
-                e <- c(mapply("-", t1, t2))
             } else {
                 t1 <- time
                 if (is.list(time)) {
-                    t2 <- lapply(time, function (t)
-                        pmax(t - eps_i, sqrt(.Machine$double.eps)))
+                    t2 <- lapply(time, function (t) t - eps_i)
                 } else {
-                    t2 <- pmax(time - eps_i, sqrt(.Machine$double.eps))
+                    t2 <- time - eps_i
                 }
-                e <- eps_i
             }
+            e <- c(mapply("-", t1, t2))
             terms_i <- terms[[i]]
             D1 <- LongData_HazardModel(t1, data, data[[timeVar]],
                                        data[[idVar]], timeVar,
