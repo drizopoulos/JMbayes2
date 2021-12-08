@@ -2,21 +2,21 @@
   "index_name": "drizopoulos",
   "start_urls": [
     {
-      "url": "https://drizopoulos.github.io/JMbayes2//index.html",
+      "url": "https://drizopoulos.github.io/JMbayes2/index.html",
       "selectors_key": "homepage",
       "tags": [
         "homepage"
       ]
     },
     {
-      "url": "https://drizopoulos.github.io/JMbayes2//reference",
+      "url": "https://drizopoulos.github.io/JMbayes2/reference",
       "selectors_key": "reference",
       "tags": [
         "reference"
       ]
     },
     {
-      "url": "https://drizopoulos.github.io/JMbayes2//articles",
+      "url": "https://drizopoulos.github.io/JMbayes2/articles",
       "selectors_key": "articles",
       "tags": [
         "articles"
@@ -30,7 +30,7 @@
     "/articles/index.html"
   ],
   "sitemap_urls": [
-    "https://drizopoulos.github.io/JMbayes2//sitemap.xml"
+    "https://drizopoulos.github.io/JMbayes2/sitemap.xml"
   ],
   "selectors": {
     "homepage": {

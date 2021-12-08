@@ -39,6 +39,8 @@
 </script>
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -51,18 +53,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1-8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-84</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="articles/JMbayes2.html">Get started</a>
 </li>
@@ -99,7 +95,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/drizopoulos/JMbayes2/">
+  <a href="https://github.com/drizopoulos/JMbayes2/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -122,102 +118,111 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="jmbayes2-extended-joint-models-for-longitudinal-and-time-to-event-data-" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#jmbayes2-extended-joint-models-for-longitudinal-and-time-to-event-data-" class="anchor"></a>JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data <img src="reference/figures/logo.png" align="right" alt="" width="160">
+<div class="section level1">
+<div class="page-header"><h1 id="jmbayes2-extended-joint-models-for-longitudinal-and-time-to-event-data-">JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data <img src="reference/figures/logo.png" align="right" alt="" width="160"><a class="anchor" aria-label="anchor" href="#jmbayes2-extended-joint-models-for-longitudinal-and-time-to-event-data-"></a>
 </h1></div>
 <!-- badges: start -->
 
 <p>The package <strong>JMbayes2</strong> fits joint models for longitudinal and time-to-event data. It can accommodate multiple longitudinal outcomes of different type (e.g., continuous, dichotomous, ordinal, counts), and assuming different distributions, i.e., Gaussian, Student’s-t, Gamma, Beta, unit Lindley, censored Normal, Binomial, Poisson, Negative Binomial, and Beta-Binomial. For the event time process, right, left and interval censored data can be handled, while competing risks and multi-state processes are also covered.</p>
 <p><strong>JMbayes2</strong> fits joint models using Markov chain Monte Carlo algorithms implemented in C++. Besides the main modeling function, the package also provides a number of functions to summarize and visualize the results.</p>
-<div id="installation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#installation" class="anchor"></a>Installation</h2>
-<p><strong>JMbayes2</strong> can be installed from <a href="https://cran.r-project.org/">CRAN</a>:</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p><strong>JMbayes2</strong> can be installed from <a href="https://cran.r-project.org/" class="external-link">CRAN</a>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"JMbayes2"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"JMbayes2"</span><span class="op">)</span></code></pre></div>
 <p>The development version can be installed from GitHub:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># install.packages("remotes")</span>
-<span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span><span class="op">(</span><span class="st">"drizopoulos/jmbayes2"</span><span class="op">)</span></code></pre></div>
+<span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"drizopoulos/jmbayes2"</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="minimal-example" class="section level2">
-<h2 class="hasAnchor">
-<a href="#minimal-example" class="anchor"></a>Minimal Example</h2>
-<p>To fit a joint model in <strong>JMbayes2</strong> we first need to fit separately the mixed-effects models for the longitudinal outcomes and a Cox or accelerated failure time (AFT) model for the event process. The mixed models need to be fitted with function <code>lme()</code> from the <a href="https://cran.r-project.org/package=nlme"><strong>nlme</strong></a> package or function <code>mixed_model()</code> from the <a href="https://cran.r-project.org/package=GLMMadaptive"><strong>GLMMadaptive</strong></a> package. The Cox or AFT model need to be fitted with function <code>coxph()</code> or function <code>survreg()</code> from the <a href="https://cran.r-project.org/package=survival"><strong>survival</strong></a> package. The resulting model objects are passed as arguments in the <code><a href="reference/jm.html">jm()</a></code> function that fits the corresponding joint model. We illustrate this procedure for a joint model with three longitudinal outcomes using the PBC dataset:</p>
+<div class="section level2">
+<h2 id="minimal-example">Minimal Example<a class="anchor" aria-label="anchor" href="#minimal-example"></a>
+</h2>
+<p>To fit a joint model in <strong>JMbayes2</strong> we first need to fit separately the mixed-effects models for the longitudinal outcomes and a Cox or accelerated failure time (AFT) model for the event process. The mixed models need to be fitted with function <code>lme()</code> from the <a href="https://cran.r-project.org/package=nlme" class="external-link"><strong>nlme</strong></a> package or function <code>mixed_model()</code> from the <a href="https://cran.r-project.org/package=GLMMadaptive" class="external-link"><strong>GLMMadaptive</strong></a> package. The Cox or AFT model need to be fitted with function <code>coxph()</code> or function <code>survreg()</code> from the <a href="https://cran.r-project.org/package=survival" class="external-link"><strong>survival</strong></a> package. The resulting model objects are passed as arguments in the <code><a href="reference/jm.html">jm()</a></code> function that fits the corresponding joint model. We illustrate this procedure for a joint model with three longitudinal outcomes using the PBC dataset:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Cox model for the composite event death or transplantation</span>
-<span class="va">pbc2.id</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">'alive'</span><span class="op">)</span>
+<span class="va">pbc2.id</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">'alive'</span><span class="op">)</span>
 <span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span>
 
 <span class="co"># a linear mixed model for log serum bilirubin</span>
-<span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span>
+<span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span>
 
 <span class="co"># a linear mixed model for the prothrombin time</span>
 <span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span>
 
 <span class="co"># a mixed effects logistic regression model for ascites</span>
 <span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,
-                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
+                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
 
 <span class="co"># the joint model that links all sub-models</span>
-<span class="va">jointFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,
+<span class="va">jointFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,
                 n_iter <span class="op">=</span> <span class="fl">12000L</span>, n_burnin <span class="op">=</span> <span class="fl">2000L</span>, n_thin <span class="op">=</span> <span class="fl">5L</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">jointFit</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jointFit</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="links">
-<h2>Links</h2>
+<h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li>Download from CRAN at <br><a href="https://cloud.r-project.org/package=JMbayes2">https://​cloud.r-project.org/​package=JMbayes2</a>
-</li>
-<li>Browse source code at <br><a href="https://github.com/drizopoulos/JMbayes2/">https://​github.com/​drizopoulos/​JMbayes2/​</a>
-</li>
-<li>Report a bug at <br><a href="https://github.com/drizopoulos/JMbayes2/issues">https://​github.com/​drizopoulos/​JMbayes2/​issues</a>
-</li>
+<li><a href="https://cloud.r-project.org/package=JMbayes2" class="external-link">View on CRAN</a></li>
+<li><a href="https://github.com/drizopoulos/JMbayes2/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/drizopoulos/JMbayes2/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
+
 <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li>GPL (&gt;= 3)</li>
 </ul>
 </div>
-<div class="developers">
-<h2>Developers</h2>
+
+
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
 <ul class="list-unstyled">
-<li>
-<a href="http://www.drizopoulos.com/">Dimitris Rizopoulos</a> <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0001-9397-0900" target="orcid.widget" aria-label="ORCID"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
-<li>
-<a href="https://gregpapageorgiou.com/">Grigorios Papageorgiou</a> <br><small class="roles"> Author </small>  </li>
-<li>
-<a href="https://pafonso.com/">Pedro Miranda Afonso</a> <br><small class="roles"> Author </small>  </li>
+<li><a href="authors.html#citation">Citing JMbayes2</a></li>
 </ul>
 </div>
 
-  <div class="dev-status">
-<h2>Dev status</h2>
+<div class="developers">
+<h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li><a href="https://cran.r-project.org/package=JMbayes2"><img src="https://www.r-pkg.org/badges/version-last-release/JMbayes2" alt="CRAN_Status_Badge"></a></li>
-<li><a href="https://cran.r-project.org/package=JMbayes2"><img src="https://cranlogs.r-pkg.org/badges/grand-total/JMbayes2"></a></li>
-<li><a href="https://cran.r-project.org/package=JMbayes2"><img src="https://cranlogs.r-pkg.org/badges/JMbayes2" alt="Download counter"></a></li>
-<li><a href="https://www.rdocumentation.org/packages/JMbayes2"><img src="https://www.rdocumentation.org/badges/version/JMbayes2" alt="Rdoc"></a></li>
-<li><a href="https://github.com/drizopoulos/JMbayes/actions"><img src="https://github.com/drizopoulos/JMbayes2/workflows/R-CMD-check/badge.svg" alt="R build status"></a></li>
+<li>
+<a href="http://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a> <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0001-9397-0900" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li>
+<a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a> <br><small class="roles"> Author </small>  </li>
+<li>
+<a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a> <br><small class="roles"> Author </small>  </li>
 </ul>
 </div>
+
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://cran.r-project.org/package=JMbayes2" class="external-link"><img src="https://www.r-pkg.org/badges/version-last-release/JMbayes2" alt="CRAN_Status_Badge"></a></li>
+<li><a href="https://cran.r-project.org/package=JMbayes2" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/JMbayes2"></a></li>
+<li><a href="https://cran.r-project.org/package=JMbayes2" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/JMbayes2" alt="Download counter"></a></li>
+<li><a href="https://www.rdocumentation.org/packages/JMbayes2" class="external-link"><img src="https://www.rdocumentation.org/badges/version/JMbayes2" alt="Rdoc"></a></li>
+<li><a href="https://github.com/drizopoulos/JMbayes/actions" class="external-link"><img src="https://github.com/drizopoulos/JMbayes2/workflows/R-CMD-check/badge.svg" alt="R build status"></a></li>
+</ul>
 </div>
+
+  </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by <a href="http://www.drizopoulos.com/">Dimitris Rizopoulos</a>, <a href="https://gregpapageorgiou.com/">Grigorios Papageorgiou</a>, <a href="https://pafonso.com/">Pedro Miranda Afonso</a>.</p>
+  <p></p>
+<p>Developed by <a href="http://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
 </div>
 
       </footer>
