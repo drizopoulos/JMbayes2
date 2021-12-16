@@ -65,3 +65,43 @@ priors = NULL
 control = NULL
 
 
+lmeFit <- lme(log(serBilir) ~ ns(year, 2, B = c(0, 15)), data = pbc2,
+              random = ~ ns(year, 2, B = c(0, 15)) | id)
+
+CoxFit <- coxph(Surv(start, stop, event) ~ strata(CR) * (age + sex),
+                data = pbc2_CR)
+
+fForms <- ~ value(log(serBilir)) + value(log(serBilir)):CR
+
+jointFit <- jm(CoxFit, lmeFit, time_var = "year", functional_forms = fForms,
+               n_iter = 15000L, n_burnin = 5000L)
+
+summary(jointFit)
+
+
+newdataL <- pbc2[pbc2$id %in% c(81), ]
+newdataL$status2 <- 0
+newdataE <- pbc2_CR[pbc2_CR$id %in% c(81), ]
+newdataE$event <- 0
+newdataE <- newdataE[c(1, 3), ]
+newdata <- list(newdataL = newdataL, newdataE = newdataE)
+
+n <- nrow(newdataL)
+for (i in seq_len(n)[-1]) {
+   t0 <- newdataL$year[i]
+   newdataL_i <- newdataL[newdataL$year <= t0, ]
+   newdataL_i$years <- t0
+   newdataE_i <- newdataE
+   newdataE_i$stop <- t0 + 1e-06
+   newdata_i <- list(newdataL = newdataL_i, newdataE = newdataE_i)
+   ###
+   predLong <- predict(jointFit, newdata = newdata_i,
+                       times = seq(t0, 15, length.out = 51),
+                       return_newdata = TRUE)
+   predSurv <- predict(jointFit, newdata = newdata_i, process = "event",
+                       return_newdata = TRUE)
+   plot(predLong, predSurv, subject = 1)
+}
+
+
+
