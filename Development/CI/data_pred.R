@@ -66,7 +66,7 @@ times = NULL
 process = "event"
 type_pred = "response"
 type = "subject_specific"
-level = 0.95; return_newdata = TRUE
+level = 0.95; return_newdata = TRUE; return_mcmc = FALSE
 n_samples = 200L; n_mcmc = 55L; cores = NULL
 seed = 123L
 

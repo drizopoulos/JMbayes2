@@ -845,8 +845,8 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
             H[index == i, ] <- colCumsums(H[index == i, ])
         }
         CIF <- 1.0 - pmax(exp(- H), .Machine$double.eps)
-        newdataE <- newdataE[rep(seq_along(times), n_times), ]
-        newdataE[[object$model_info$var_names$time_var]] <-
+        newdataE2 <- newdataE2[rep(seq_along(times), n_times), ]
+        newdataE2[[object$model_info$var_names$time_var]] <-
             unlist(times, use.names = FALSE)
     } else {
         Data <- prepare_Data_preds(object, newdataL, newdataE)
