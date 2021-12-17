@@ -644,7 +644,7 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
 }
 
 predict_Long <- function (object, components_newdata, newdata, newdata2, times,
-                          type, type_pred, level, return_newdata) {
+                          type, type_pred, level, return_newdata, return_mcmc) {
     # Predictions for newdata
     newdataL <- if (!is.data.frame(newdata)) newdata[["newdataL"]] else newdata
     betas <- components_newdata$mcmc[["betas"]]
@@ -669,7 +669,8 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
     }
     res1 <- list(preds = lapply(out, rowMeans, na.rm = TRUE),
                  low = lapply(out, rowQuantiles, probs = (1 - level) / 2),
-                 upp = lapply(out, rowQuantiles, probs = (1 + level) / 2))
+                 upp = lapply(out, rowQuantiles, probs = (1 + level) / 2),
+                 mcmc = if (return_mcmc) out)
     if (return_newdata) {
         n <- nrow(newdataL)
         preds <- mapply2(fix_NAs_preds, res1$preds, components_newdata$NAs,
@@ -715,10 +716,11 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
         newdata2[[time_var]] <- unlist(times, use.names = FALSE)
     }
     if (!is.null(newdata2)) {
+        newdataL2 <- if (!is.data.frame(newdata2)) newdata2[["newdataL"]] else newdata2
         terms_FE_noResp <- object$model_info$terms$terms_FE_noResp
         terms_RE <- object$model_info$terms$terms_RE
-        mf_FE <- lapply(terms_FE_noResp, model.frame.default, data = newdata2)
-        mf_RE <- lapply(terms_RE, model.frame.default, data = newdata2)
+        mf_FE <- lapply(terms_FE_noResp, model.frame.default, data = newdataL2)
+        mf_RE <- lapply(terms_RE, model.frame.default, data = newdataL2)
         NAs_FE <- lapply(mf_FE, attr, "na.action")
         NAs_RE <- lapply(mf_RE, attr, "na.action")
         mf_FE <- mapply2(fix_NAs_fixed, mf_FE, NAs_FE, NAs_RE)
@@ -726,7 +728,7 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
         X <- mapply2(model.matrix.default, terms_FE_noResp, mf_FE)
         Z <- mapply2(model.matrix.default, terms_RE, mf_RE)
         NAs <- mapply2(c, NAs_FE, NAs_RE)
-        idL <- newdata2[[object$model_info$var_names$idVar]]
+        idL <- newdataL2[[object$model_info$var_names$idVar]]
         unq_id <- unique(idL)
         idL <- mapply2(exclude_NAs, NAs_FE, NAs_RE, MoreArgs = list(id = idL))
         idL <- lapply(idL, match, table = unq_id)
@@ -745,9 +747,10 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
         }
         res2 <- list(preds = lapply(out, rowMeans, na.rm = TRUE),
                      low = lapply(out, rowQuantiles, probs = (1 - level) / 2),
-                     upp = lapply(out, rowQuantiles, probs = (1 + level) / 2))
+                     upp = lapply(out, rowQuantiles, probs = (1 + level) / 2),
+                     mcmc = if (return_mcmc) out)
         if (return_newdata) {
-            n <- nrow(newdata2)
+            n <- nrow(newdataL2)
             preds <- mapply2(fix_NAs_preds, res2$preds, NAs,
                              MoreArgs = list(n = n))
             names(preds) <- paste0("pred_", components_newdata$respVars)
@@ -759,7 +762,7 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
             names(upp) <- paste0("upp_", components_newdata$respVars)
             l <- c(preds, low, upp)
             l <- l[c(matrix(seq_along(l), ncol = length(preds), byrow = TRUE))]
-            res2 <- cbind(newdata2, as.data.frame(do.call("cbind", l)))
+            res2 <- cbind(newdataL2, as.data.frame(do.call("cbind", l)))
         }
     }
     out <- if (is.null(newdata2)) {
@@ -783,10 +786,15 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
 }
 
 predict_Event <- function (object, components_newdata, newdata, newdata2,
-                           times, level, return_newdata) {
+                           times, level, return_newdata, return_mcmc) {
     # prepare the data for calculations
     newdataL <- if (!is.data.frame(newdata)) newdata[["newdataL"]] else newdata
     newdataE <- if (!is.data.frame(newdata)) newdata[["newdataE"]] else newdata
+    if (!is.null(newdata2)) {
+        newdataE2 <- if (!is.data.frame(newdata2)) newdata2[["newdataE"]] else newdata2
+    } else {
+        newdataE2 <- newdataE
+    }
     CR_MS <- object$model_info$CR_MS
 
     # The definition of last_times needs to be checked for counting and interval
@@ -857,9 +865,9 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
         n_strata <- length(unique(Data$strata))
         upp_limit2 <- c(t(st))
         low_limit2 <- 0 * upp_limit2
-        last_row_str <- tapply(row.names(newdataE), ff, tail, n = 1L)
-        newdataE[[object$model_info$var_names$event_var]] <- 1
-        Data2 <- prepare_DataE_preds(object, newdataL, newdataE,
+        last_row_str <- tapply(row.names(newdataE2), ff, tail, n = 1L)
+        newdataE2[[object$model_info$var_names$event_var]] <- 1
+        Data2 <- prepare_DataE_preds(object, newdataL, newdataE2,
                                      low_limit2, upp_limit2, last_times2,
                                      n_times, st0 = st,
                                      index = rep(seq_along(n_times), n_times),
@@ -881,9 +889,9 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
             hS[index == i, ] <- colCumsums(hS[index == i, ])
         }
         CIF <- hS / S0[rep(unique(idt_str), n_times_id), ]
-        newdataE <- newdataE[last_row_str, ]
-        newdataE <- newdataE[rep(seq_along(times), n_times), ]
-        newdataE[[object$model_info$var_names$time_var]] <-
+        newdataE2 <- newdataE2[last_row_str, ]
+        newdataE2 <- newdataE2[rep(seq_along(times), n_times), ]
+        newdataE2[[object$model_info$var_names$time_var]] <-
             unlist(times, use.names = FALSE)
     }
     res <- list(pred = rowMeans(CIF),
@@ -892,13 +900,15 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
                 times = unlist(times, use.names = FALSE),
                 id = rep(levels(idT), n_times),
                 "_strata" = if (CR_MS)
-                    rep(tapply(components_newdata$strata, ff, tail, 1), n_times))
+                    rep(tapply(components_newdata$strata, ff, tail, 1), n_times),
+                mcmc = if (return_mcmc) CIF
+            )
     if (return_newdata) {
-        newdataE[["pred_CIF"]] <- res$pred
-        newdataE[["low_CIF"]] <- res$low
-        newdataE[["upp_CIF"]] <- res$upp
-        newdataE[["_strata"]] <- res[["_strata"]]
-        res <- newdataE
+        newdataE2[["pred_CIF"]] <- res$pred
+        newdataE2[["low_CIF"]] <- res$low
+        newdataE2[["upp_CIF"]] <- res$upp
+        newdataE2[["_strata"]] <- res[["_strata"]]
+        res <- newdataE2
     }
     class(res) <- c("predict_jm", class(res))
     attr(res, "id_var") <- object$model_info$var_names$idVar

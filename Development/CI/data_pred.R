@@ -16,14 +16,22 @@ source("./Development/CI/prepare_data.R")
 Rcpp::sourceCpp('src/mcmc_fit.cpp')
 
 
-newdataL <- pbc2[pbc2$id %in% c(14, 7), ]
-newdataE <- pbc2_CR[pbc2_CR$id %in% c(14, 7), ]
+newdataL <- pbc2[pbc2$id %in% 2, ]
+newdataE <- pbc2_CR[pbc2_CR$id %in% 2, ]
 newdataE$event <- 0
+newdataE$stop <- 8.84
 newdata <- list(newdataL = newdataL, newdataE = newdataE)
+##
+newdataL2 <- tail(newdataL, 1)
+newdataL2$IE <- 1
+newdataL2$S <- newdataL2$year
+newdataE2 <- newdataE
+newdataE2$IE <- 1
+newdata2 <- list(newdataL = newdataL2, newdataE = newdataE2)
 
 object = jointFit
 newdata = newdata
-newdata2 = NULL
+newdata2 = newdata2
 times = NULL
 process = "event"
 type_pred = "response"

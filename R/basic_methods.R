@@ -536,8 +536,8 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
                         type_pred = c("response", "link"),
                         type = c("subject_specific", "mean_subject"),
                         level = 0.95, return_newdata = FALSE,
-                        n_samples = 200L, n_mcmc = 55L, cores = NULL,
-                        seed = 123L, ...) {
+                        return_mcmc = FALSE, n_samples = 200L, n_mcmc = 55L,
+                        cores = NULL, seed = 123L, ...) {
     process <- match.arg(process)
     type_pred <- match.arg(type_pred)
     type <- match.arg(type)
@@ -595,6 +595,49 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
                  "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
         }
     }
+    if (!is.null(newdata2) && !is.data.frame(newdata2)) {
+        if (!is.list(newdata2) || length(newdata2) != 2
+            || !names(newdata2) %in% c("newdataL", "newdataE")) {
+            stop("'newdata' must be a list with two data.frame elements ",
+                 "named 'newdataL' and 'newdataE'.\n")
+        }
+        for (i in seq_along(respVars)) {
+            v <- respVars[i]
+            if (is.null(newdata2$newdataE[[v]])) {
+                newdata2$newdataE[[v]] <- rep(0.1, nrow(newdata2$newdataE))
+            }
+        }
+        termsL <- object$model_info$terms$terms_FE_noResp
+        all_vars <- unlist(lapply(termsL, all.vars), use.names = FALSE)
+        all_vars <- all_vars[!all_vars %in% time_var]
+        missing_vars <- all_vars[!all_vars %in% names(newdata2$newdataE)]
+        if (length(missing_vars)) {
+            stop("the data.frame 'newdata2$newdataE' should contain the ",
+                 "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
+        }
+        missing_vars <- all_vars[!all_vars %in% names(newdata2$newdataL)]
+        if (length(missing_vars)) {
+            stop("the data.frame 'newdata2$newdataL' should contain the ",
+                 "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
+        }
+    }
+    if (!is.null(newdata2) && is.data.frame(newdata2)) {
+        if (is.null(newdata2[[event_var]])) newdata2[[event_var]] <- 0
+        if (is.null(newdata2[[Time_var]])) {
+            last_time <- function (x) max(x, na.rm = TRUE)
+            f <- factor(newdata2[[id_var]], unique(newdata2[[id_var]]))
+            newdata[[Time_var]] <- ave(newdata2[[time_var]], f, FUN = last_time)
+        }
+        termsL <- object$model_info$terms$terms_FE_noResp
+        all_vars <- unlist(lapply(termsL, all.vars), use.names = FALSE)
+        all_vars <- all_vars[!all_vars %in% time_var]
+        all_vars <- c(all_vars, all.vars(object$model_info$terms$terms_Surv_noResp))
+        missing_vars <- all_vars[!all_vars %in% names(newdata2)]
+        if (length(missing_vars)) {
+            stop("the data.frame 'newdata2' should contain the ",
+                 "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
+        }
+    }
     if (is.null(cores)) {
         n <- if (!is.data.frame(newdata)) length(unique(newdata$newdataL[[id_var]]))
         else length(unique(newdata[[id_var]]))
@@ -604,10 +647,10 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
                                                  n_mcmc, cores, seed)
     if (process == "longitudinal") {
         predict_Long(object, components_newdata, newdata, newdata2, times, type,
-                     type_pred, level, return_newdata)
+                     type_pred, level, return_newdata, return_mcmc)
     } else {
         predict_Event(object, components_newdata, newdata, newdata2, times,
-                      level, return_newdata)
+                      level, return_newdata, return_mcmc)
     }
 }
 
