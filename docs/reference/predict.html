@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-84</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-85</span>
       </span>
     </div>
 
@@ -94,7 +94,7 @@
   process <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"longitudinal"</span>, <span class="st">"event"</span><span class="op">)</span>,
   type_pred <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"response"</span>, <span class="st">"link"</span><span class="op">)</span>,
   type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"subject_specific"</span>, <span class="st">"mean_subject"</span><span class="op">)</span>,
-  level <span class="op">=</span> <span class="fl">0.95</span>, return_newdata <span class="op">=</span> <span class="cn">FALSE</span>,
+  level <span class="op">=</span> <span class="fl">0.95</span>, return_newdata <span class="op">=</span> <span class="cn">FALSE</span>, return_mcmc <span class="op">=</span> <span class="cn">FALSE</span>,
   n_samples <span class="op">=</span> <span class="fl">200L</span>, n_mcmc <span class="op">=</span> <span class="fl">55L</span>, cores <span class="op">=</span> <span class="cn">NULL</span>, seed <span class="op">=</span> <span class="fl">123L</span>,
   <span class="va">...</span><span class="op">)</span>
 
@@ -130,6 +130,8 @@
 <dd><p>the level of the credible interval.</p></dd>
 <dt>return_newdata</dt>
 <dd><p>logical; should <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> return the predictions as extra columns in <code>newdata</code> and <code>newdata2</code>.</p></dd>
+<dt>return_mcmc</dt>
+<dd><p>logical; if <code>TRUE</code> the mcmc sample for the predictions is returned. It can be <code>TRUE</code> only in conjuction with <code>return_newdata</code> being <code>FALSE</code>.</p></dd>
 <dt>n_samples</dt>
 <dd><p>the number of samples to use from the original MCMC sample of <code>object</code>.</p></dd>
 <dt>n_mcmc</dt>

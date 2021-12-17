@@ -68,3 +68,18 @@ jFit_CR <- jm(CoxFit_CR, list(fm1, fm2), time_var = "year",
 summary(jFit_CR)
 ```
 
+## Dynamic Predictions
+```{r}
+ND_long <- pbc2[pbc2$id == 81, ]
+ND_event <- pbc2.idCR[pbc2.idCR$id == 81, ]
+ND_event$status2 <- 0
+ND <- list(newdataL = ND_long, newdataE = ND_event)
+
+predLong <- predict(jFit_CR, newdata = ND, return_newdata = TRUE,
+                    times = seq(6.5, 15, length = 25))
+
+predEvent <- predict(jFit_CR, newdata = ND, return_newdata = TRUE,
+                     process = "event")
+
+plot(predLong, predEvent, outcomes = 1:2)
+```
