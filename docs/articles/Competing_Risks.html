@@ -122,7 +122,7 @@
       <h1 data-toc-skip>Competing Risks</h1>
                         <h4 data-toc-skip class="author">Dimitris Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2021-12-17</h4>
+            <h4 data-toc-skip class="date">2021-12-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Competing_Risks.Rmd" class="external-link"><code>vignettes/Competing_Risks.Rmd</code></a></small>
       <div class="hidden name"><code>Competing_Risks.Rmd</code></div>
@@ -242,25 +242,28 @@
 <span class="co">#&gt; iterations per chain: 25000 </span>
 <span class="co">#&gt; burn-in per chain: 5000 </span>
 <span class="co">#&gt; thinning: 5 </span>
-<span class="co">#&gt; time: 7.6 min</span></code></pre></div>
+<span class="co">#&gt; time: 8.8 min</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="dynamic-predictions">Dynamic Predictions<a class="anchor" aria-label="anchor" href="#dynamic-predictions"></a>
 </h2>
+<p>Based on the fitted competing risks joint model, we will illustrate how (dynamic) predictions for the cause-specific cumulative risk probabilities can be calculated. As an example, we will show these calculations for Patient 81 from the PBC dataset. First, we extract the data of this subject.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">ND_long</span> <span class="op">&lt;-</span> <span class="va">pbc2</span><span class="op">[</span><span class="va">pbc2</span><span class="op">$</span><span class="va">id</span> <span class="op">==</span> <span class="fl">81</span>, <span class="op">]</span>
 <span class="va">ND_event</span> <span class="op">&lt;-</span> <span class="va">pbc2.idCR</span><span class="op">[</span><span class="va">pbc2.idCR</span><span class="op">$</span><span class="va">id</span> <span class="op">==</span> <span class="fl">81</span>, <span class="op">]</span>
 <span class="va">ND_event</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fl">0</span>
-<span class="va">ND</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>newdataL <span class="op">=</span> <span class="va">ND_long</span>, newdataE <span class="op">=</span> <span class="va">ND_event</span><span class="op">)</span>
-
-<span class="va">predLong</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jFit_CR</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span>,
+<span class="va">ND</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>newdataL <span class="op">=</span> <span class="va">ND_long</span>, newdataE <span class="op">=</span> <span class="va">ND_event</span><span class="op">)</span></code></pre></div>
+<p>The first line extracts the longitudinal measurements, and the second line extracts the event times per cause (i.e., death and transplantation). This particular patient died at 6.95 years, but to make the calculation of cause-specific cumulative risk more relevant, we presume that she did not have the event, and we set event status variable <code>status2</code> to zero. The last line combines the two datasets in a list. <em>Note:</em> this last step is a prerequisite from the <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> method for competing risks joint model. That is, the datasets provided in the arguments <code>newdata</code> and <code>newdata2</code> need to be named lists with two components. The first component needs to be named <code>newdataL</code> and contain the dataset with longitudinal measurements, and the second component needs to be named <code>newdataE</code> and contain the dataset with the event information.</p>
+<p>The predictions are calculated using the <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> method. The first call to this function calculates the prediction for the longitudinal outcomes at the times provides in the <code>times</code> argument, and the second call calculates the cause-specific cumulative risk probabilities. By setting the argument <code>return_newdata</code> to <code>TRUE</code> in both calls, we can use the corresponding <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method to depict the predictions:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">predLong</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jFit_CR</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span>,
                     times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">6.5</span>, <span class="fl">15</span>, length <span class="op">=</span> <span class="fl">25</span><span class="op">)</span><span class="op">)</span>
 
 <span class="va">predEvent</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jFit_CR</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span>,
                      process <span class="op">=</span> <span class="st">"event"</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong</span>, <span class="va">predEvent</span>, outcomes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
-<p><img src="Competing_Risks_files/figure-html/unnamed-chunk-1-1.png" width="700"></p>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong</span>, <span class="va">predEvent</span>, outcomes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="Competing_Risks_files/figure-html/CIFs-1.png" width="700"></p>
 </div>
 </div>
   </div>
