@@ -94,10 +94,16 @@ CoxFit <- coxph(Surv(start, stop, event) ~ strata(CR) * (age + sex + IE),
 
 # In the functional forms we specify that the effect of the longitudinal
 # biomarker is different after the IE status, and different per cause
+dummy <- function (f, lvl) as.numeric(f == lvl)
+fForms <- ~ value(log(serBilir)):dummy(CR, "transplanted") +
+    value(log(serBilir)):dummy(CR, "dead"):dummy(IE, 0) +
+    value(log(serBilir)):dummy(CR, "dead"):dummy(IE, 1)
+
 fForms <- ~ value(log(serBilir)) + value(log(serBilir)):IE +
     value(log(serBilir)):CR + value(log(serBilir)):IE:CR
 
 jointFit <- jm(CoxFit, lmeFit, time_var = "year", functional_forms = fForms,
+               priors = list(Tau_alphas = list(diag(20000, 1), diag(1), diag(1))),
                n_iter = 15000L, n_burnin = 5000L)
 
 summary(jointFit)
