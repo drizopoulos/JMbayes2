@@ -39,7 +39,9 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const uword &it, mat &acceptance_b, cube &res_b, cube &res_b_last,
                const bool &save_random_effects,
                const uword &n_burnin, const uword &n_iter,
-               const uword &GK_k, mat &cumsum_b, cube &outprod_b) {
+               const uword &GK_k, mat &cumsum_b, cube &outprod_b,
+               const bool &recurrent,
+               const vec &frailtyH_sigmaF_alphaF, const vec &frailtyh_sigmaF_alphaF) {
   uword n = b_mat.n_rows;
   uword nRE = b_mat.n_cols;
   // calculate denominator_b
@@ -84,9 +86,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                WlongH2_alphas_proposed,
                log_Pwk, log_Pwk2, indFast_H, indFast_h,
                which_event, which_right_event, which_left,
-               any_interval, which_interval);
-
-
+               any_interval, which_interval,
+               recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
     // logLik_re
     vec logLik_re_proposed = log_re(proposed_b_mat, L, sds);
     // calculate the numerator
@@ -101,7 +102,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
         acc_i = 1.0;
         if (it > n_burnin - 1) acceptance_b.at(i, j) += 1.0;
         b_mat.row(i) = proposed_b_mat.row(i);
-        denominator_b.at(i) = numerator_b.at(i);
+        denominator_b.at(i) = numerator_b.at(i); //?? I think this is not needed
         logLik_long.at(i) = logLik_long_proposed.at(i);
         logLik_surv.at(i) = logLik_surv_proposed.at(i);
         logLik_re.at(i) = logLik_re_proposed.at(i);
@@ -144,6 +145,80 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
   }
   b = mat2field(b_mat, ind_RE);
   eta = linpred_mixed(X, betas, Z, b, idL);
+}
+
+void update_frailty (vec &frailty, mat &res_frailty, mat &acceptance_frailty, 
+                     vec &scale_frailty, vec &frailty_H, vec &frailty_h,
+                     vec &logLik_surv, vec &logLik_frailty,
+                     const bool &recurrent,
+                     const vec &alphaF_H, const vec &alphaF_h,
+                     //
+                     const vec &WlongH_alphas, const vec &Wlongh_alphas,
+                     const vec &WlongH2_alphas,
+                     const uvec &id_H_, const uvec &id_h,
+                     const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
+                     const vec &W0H2_bs_gammas, const vec &WH_gammas,
+                     const vec &Wh_gammas, const vec &WH2_gammas,
+                     const vec &log_Pwk, const vec &log_Pwk2,
+                     const uvec &indFast_H, const uvec &indFast_h,
+                     const uvec &which_event, const uvec &which_right_event,
+                     const uvec &which_left, const uvec &which_interval,
+                     const bool &any_interval,
+                     const uword &n_burnin, const uword &it,
+                     const vec &sigmaF,
+                     vec &frailtyH_sigmaF_alphaF, vec &frailtyh_sigmaF_alphaF
+) {
+  uword n = frailty.n_rows;
+  // calculate denominator
+  vec denominator_frailty = logLik_surv + logLik_frailty;
+  // propose new frailty
+  vec frailty_proposed = propose_rnorm_vec(frailty, scale_frailty);
+  // calculate logLik_Surv_proposed
+  vec frailty_H_proposed(frailty_H.n_rows, fill::zeros);
+  vec frailty_h_proposed(frailty_h.n_rows, fill::zeros);
+  frailty_H_proposed = frailty_proposed.rows(id_H_);
+  frailty_h_proposed = frailty_proposed.rows(id_h);
+  vec proposed_frailtyH_sigmaF_alphaF(WH_gammas.n_rows, fill::zeros);
+  vec proposed_frailtyh_sigmaF_alphaF(which_event.n_rows, fill::zeros);
+  proposed_frailtyH_sigmaF_alphaF = frailty_H_proposed % alphaF_H * sigmaF;
+  proposed_frailtyh_sigmaF_alphaF = frailty_h_proposed.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
+  vec logLik_surv_proposed =
+    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+             WH_gammas, Wh_gammas, WH2_gammas,
+             WlongH_alphas, Wlongh_alphas,
+             WlongH2_alphas,
+             log_Pwk, log_Pwk2, indFast_H, indFast_h,
+             which_event, which_right_event, which_left,
+             any_interval, which_interval,
+             recurrent, 
+             proposed_frailtyH_sigmaF_alphaF, proposed_frailtyh_sigmaF_alphaF);
+  // logLik_frailty_proposed
+  vec logLik_frailty_proposed = log_dnorm(frailty_proposed, vec(frailty.n_elem, fill::zeros), 1.0);
+  // calculate the numerator
+  vec numerator_frailty = logLik_surv_proposed + logLik_frailty_proposed;
+  // log_ratio
+  vec log_ratio = numerator_frailty - denominator_frailty;
+  for (uword i = 0; i < n; ++i) {
+    double acc_i(0.0);
+    if (std::isfinite(log_ratio.at(i)) &&
+        exp(log_ratio.at(i)) > R::runif(0.0, 1.0)) {
+      acc_i = 1.0;
+      if (it > n_burnin - 1) acceptance_frailty.at(i, 0) += 1.0;
+      frailty.at(i) = frailty_proposed.at(i);
+      logLik_surv.at(i) = logLik_surv_proposed.at(i);
+      logLik_frailty.at(i) = logLik_frailty_proposed.at(i);
+    }
+    if (it > 19) {
+      scale_frailty.at(i) =
+        robbins_monro(scale_frailty.at(i), acc_i, it);
+    }
+  }
+  frailty_H = frailty.rows(id_H_);
+  frailty_h = frailty.rows(id_h);
+  res_frailty.row(it) = frailty.t();
+  frailtyH_sigmaF_alphaF = frailty_H % alphaF_H * sigmaF;
+  frailtyh_sigmaF_alphaF = frailty_h.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
+  // if (save_random_effects) //?? I might need to update this later to save the frailty too
 }
 
 #endif
