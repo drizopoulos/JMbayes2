@@ -51,9 +51,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    const uvec &id_H_fast, const uvec &id_h_fast,
                    const uvec &which_event, const uvec &which_right_event, const uvec &which_left,
                    const uvec &which_interval, const field<uvec> &unq_idL,
-                   const uword &n_burnin,
-                   const bool &recurrent,
-                   const vec &frailtyH_sigmaF_alphaF, const vec &frailtyh_sigmaF_alphaF) {
+                   const uword &n_burnin) {
   uword n_b = b_mat.n_rows;
   // FE in HC - Gibbs sampling
   vec betas_vec = docall_rbindF(betas);
@@ -119,8 +117,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                          WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
                          log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
                          which_event, which_right_event, which_left,
-                         any_interval, which_interval,
-                         recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
+                         any_interval, which_interval);
 
   ///////////////////////////////////////////////////////////////////////////////
   // FE outside HC - Metropolis-Hastings sampling
@@ -185,8 +182,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    WlongH_alphas_prop, Wlongh_alphas_prop, WlongH2_alphas_prop,
                    log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
                    which_event, which_right_event, which_left,
-                   any_interval, which_interval,
-                   recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
+                   any_interval, which_interval);
         // numerator
         double numerator_j =
           sum_logLik_long_j_prop + sum(logLik_surv_prop) + logPrior_j_prop;
