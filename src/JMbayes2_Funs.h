@@ -304,12 +304,6 @@ mat propose_mvnorm_mat (const int &n, const cube &S, const vec &scale) {
   return out.t();
 }
 
-vec propose_rnorm_vec (const vec &thetas, const vec &scale) {
-  vec proposed_thetas = thetas;
-  proposed_thetas = scale % randn(thetas.n_rows) + thetas;
-  return proposed_thetas;
-}
-
 vec propose_mvnorm_vec (const mat &U, const double &scale) {
   uword ncols = U.n_cols;
   vec res = scale * trans(rnorm_mat(1, ncols) * U);
