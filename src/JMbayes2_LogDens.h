@@ -96,46 +96,7 @@ vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
                  const vec &WlongH2_alphas, const vec &log_Pwk, const vec &log_Pwk2,
                  const uvec &indFast_H, const uvec &indFast_h, const uvec &which_event,
                  const uvec &which_right_event, const uvec &which_left,
-                 const bool &any_interval, const uvec &which_interval,
-                 const bool &recurrent,
-                 const vec &frailtyH_sigmaF_alphaF, const vec &frailtyh_sigmaF_alphaF) {
-  vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
-  if(recurrent) {
-    lambda_H += frailtyH_sigmaF_alphaF;
-  }
-  vec H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
-  uword n = H.n_rows;
-  vec lambda_h(n);
-  lambda_h.rows(which_event) = W0h_bs_gammas.rows(which_event) +
-    Wh_gammas.rows(which_event) + Wlongh_alphas.rows(which_event);
-  if(recurrent) {
-    lambda_h.rows(which_event) += frailtyh_sigmaF_alphaF;
-  }
-  vec out(n);
-  out.rows(which_right_event) = - H.rows(which_right_event);
-  out.rows(which_event) += lambda_h.rows(which_event);
-  out.rows(which_left) = log1p(- exp(- H.rows(which_left)));
-  vec lambda_H2(lambda_H.n_rows);
-  vec H2(n);
-  if (any_interval) {
-    lambda_H2 = W0H2_bs_gammas + WH2_gammas + WlongH2_alphas;
-    H2 = group_sum(exp(log_Pwk2 + lambda_H2), indFast_H);
-    out.rows(which_interval) = - H.rows(which_interval) +
-      log(- expm1(- H2.rows(which_interval)));
-  }
-  out = group_sum(out, indFast_h);
-  return out;
-}
-
-//?? delete later, still used in simulate_REs() in mcmc_fit.cpp
-vec log_surv_old (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
-                  const vec &W0H2_bs_gammas, const vec &WH_gammas,
-                  const vec &Wh_gammas, const vec &WH2_gammas,
-                  const vec &WlongH_alphas, const vec &Wlongh_alphas,
-                  const vec &WlongH2_alphas, const vec &log_Pwk, const vec &log_Pwk2,
-                  const uvec &indFast_H, const uvec &indFast_h, const uvec &which_event,
-                  const uvec &which_right_event, const uvec &which_left,
-                  const bool &any_interval, const uvec &which_interval) {
+                 const bool &any_interval, const uvec &which_interval) {
   vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
   vec H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
   uword n = H.n_rows;
@@ -212,10 +173,7 @@ vec logLik_jm_stripped (
     const vec &log_Pwk, const vec &log_Pwk2,
     const uvec &id_H_fast, const uvec &id_h_fast,
     const uvec &which_event, const uvec &which_right_event,
-    const uvec &which_left, const uvec &which_interval,
-    const bool &recurrent, const vec &alphaF, const vec &frailty,
-    const uvec &which_term_H, const uvec &which_term_h, const bool &any_terminal,
-    const vec &sigmaF) {
+    const uvec &which_left, const uvec &which_interval) {
   uword n = b.at(0).n_rows;
   /////////////
   field<vec> betas_ = betas;
@@ -270,35 +228,16 @@ vec logLik_jm_stripped (
                       FunForms, Funs_FunForms);
     WlongH2_alphas = Wlong_H2 * alphas_;
   }
-  vec alphaF_H(WH_gammas.n_rows, fill::ones);
-  vec alphaF_h(Wh_gammas.n_rows, fill::ones);
-  if(any_terminal) {
-    alphaF_H.rows(which_term_H).fill(alphaF.at(0));
-    alphaF_h.rows(which_term_h).fill(alphaF.at(0));
-  }
-  vec frailty_H(WH_gammas.n_rows, fill::zeros);
-  vec frailty_h(Wh_gammas.n_rows, fill::zeros);
-  frailty_h = frailty.rows(id_h);
-  frailty_H = frailty.rows(id_H_);
-  vec frailtyH_sigmaF_alphaF(WH_gammas.n_rows, fill::zeros);
-  vec frailtyh_sigmaF_alphaF(which_event.n_rows, fill::zeros);
-  frailtyH_sigmaF_alphaF = frailty_H % alphaF_H * sigmaF;
-  frailtyh_sigmaF_alphaF = frailty_h.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
   vec logLik_surv =
     log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
              WH_gammas, Wh_gammas, WH2_gammas,
              WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
              log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
              which_event, which_right_event, which_left,
-             any_interval, which_interval,
-             recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
+             any_interval, which_interval);
   mat b_mat = docall_cbindF(b);
   vec logLik_re = log_re(b_mat, L, sds);
   vec out = logLik_long + logLik_surv + logLik_re;
-  if(recurrent) {
-    vec logLik_frailty = log_dnorm(frailty, vec(frailty.n_elem, fill::zeros), 1.0); 
-    out += logLik_frailty;
-  }
   return out;
 }
 
