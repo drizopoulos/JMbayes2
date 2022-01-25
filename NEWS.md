@@ -1,3 +1,10 @@
+# JMbayes2 0.2.0
+
+## Major
+* Dynamic predictions for competing risks data can now be computed. An example is given in the Competing Risks vignette.
+
+* Function `jm()` can now fit joint models with recurrent event and terminating event processes.
+
 # JMbayes2 0.1.7
 
 ## Major
