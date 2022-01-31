@@ -36,8 +36,8 @@ ggtraceplot(object, \dots)
            "tau_bs_gammas", "gammas", "alphas"),
   size = 1, alpha = 0.8,
   theme = c('standard', 'catalog', 'metro',
-                'pastel', 'beach', 'moonlight', 'goo', 'sunset'),
-  grid = FALSE, gridrows = 3, gridcols = 1, \dots)
+                'pastel', 'beach', 'moonlight', 'goo', 'sunset', 'custom'),
+  grid = FALSE, gridrows = 3, gridcols = 1, custom_theme = NULL, \dots)
 
 gelman_diag(object, \dots)
 
@@ -58,8 +58,8 @@ ggdensityplot(object, \dots)
            "tau_bs_gammas", "gammas", "alphas"),
   size = 1, alpha = 0.6,
   theme = c('standard', 'catalog', 'metro', 'pastel',
-                'beach', 'moonlight', 'goo', 'sunset'),
-  grid = FALSE, gridrows = 3, gridcols = 1, \dots)
+                'beach', 'moonlight', 'goo', 'sunset', 'custom'),
+  grid = FALSE, gridrows = 3, gridcols = 1, custom_theme = NULL, \dots)
 
 cumuplot(object, \dots)
 
@@ -74,10 +74,11 @@ cumuplot(object, \dots)
 \item{parm}{a character string specifying which parameters of the joint model to plot. Possible options are \code{'all'}, \code{'betas'}, \code{'alphas'}, \code{'sigmas'}, \code{'D'}, \code{'bs_gammas'}, \code{'tau_bs_gammas'}, or \code{'gammas'}.\cr}
 \item{size}{the width of the traceplot line in mm. Defaults to 1.}
 \item{alpha}{the opacity level of the traceplot line. Defaults to 0.8.}
-\item{theme}{a character string specifying the color theme to be used. Possible options are \code{'standard'}, \code{'catalog'}, \code{'metro'}, \code{'pastel'}, \code{'beach'}, \code{'moonlight'}, \code{'goo'}, or \code{'sunset'}. \cr}
+\item{theme}{a character string specifying the color theme to be used. Possible options are \code{'standard'}, \code{'catalog'}, \code{'metro'}, \code{'pastel'}, \code{'beach'}, \code{'moonlight'}, \code{'goo'}, or \code{'sunset'}. Note that this option supports fitted objects with up to three chains. If you have an object with more chains then the colors are either automatically chosen, or you can specify your own custom color theme via argument \code{custom_theme}. \cr}
 \item{grid}{logical; defaults to \code{FALSE}. If \code{TRUE}, the plots are returned in grids split over multiple pages. For more details see the documentation for \code{\link[gridExtra:arrangeGrob]{gridExtra::marrangeGrob()}}. \cr}
 \item{gridrows}{number of rows per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 3.}
 \item{gridcols}{number of columns per page for the grid. Only relevant when using \code{grid = TRUE}. Defaults to 1.}
+\item{custom_theme}{A named character vector with elements equal to the number of chains (\code{n_chains}). The name of each element should be the number corresponding to the respective chain. Defaults to \code{NULL}.}
 \item{\dots}{further arguments passed to the corresponding function from the \bold{coda} package.}
 }
 
@@ -132,10 +133,12 @@ cumuplot(fit_jm, parm = "betas")
 # trace plot for the fixed effects in the linear mixed submodels
 ggtraceplot(fit_jm, parm = "betas")
 ggtraceplot(fit_jm, parm = "betas", grid = TRUE)
+ggtraceplot(fit_jm, parm = "betas", custom_theme = c('1' = 'black'))
 
 # trace plot for the fixed effects in the linear mixed submodels
 ggdensityplot(fit_jm, parm = "betas")
 ggdensityplot(fit_jm, parm = "betas", grid = TRUE)
+ggdensityplot(fit_jm, parm = "betas", custom_theme = c('1' = 'black'))
 }
 }
 
