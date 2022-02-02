@@ -898,10 +898,10 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
         for (m in seq_len(ncol(S0))) {
             CIF[, m] <- rowSums(exp(log_Pwk + log_hH[, , m]))
         }
-        #index <- rep(seq_along(times), n_times)
-        #for (i in seq_along(times)) {
-        #    CIF[index == i, ] <- colCumsums(CIF[index == i, ])
-        #}
+        index <- rep(seq_along(times), n_times)
+        for (i in seq_along(times)) {
+            CIF[index == i, ] <- colCumsums(CIF[index == i, ])
+        }
         idt_str <- rep(unique(idT), each = n_strata)
         n_times_id <- tapply(n_times, idt_str, sum)
         CIF <- CIF / S0[rep(unique(idt_str), n_times_id), ]
