@@ -16,10 +16,10 @@ source("./Development/CI/prepare_data.R")
 Rcpp::sourceCpp('src/mcmc_fit.cpp')
 
 
-newdataL <- pbc2[pbc2$id %in% 2, ]
-newdataE <- pbc2_CR[pbc2_CR$id %in% 2, ]
+newdataL <- pbc2[pbc2$id %in% c(2, 81), ]
+newdataE <- pbc2_CR[pbc2_CR$id %in% c(2, 81), ]
 newdataE$event <- 0
-newdataE$stop <- 8.84
+newdataE$stop <- c(9, 9, 3.175994, 7, 3.175994, 7)
 newdata <- list(newdataL = newdataL, newdataE = newdataE)
 ##
 newdataL2 <- tail(newdataL, 1)
@@ -29,10 +29,15 @@ newdataE2 <- newdataE
 newdataE2$IE <- 1
 newdata2 <- list(newdataL = newdataL2, newdataE = newdataE2)
 
-object = jointFit
-newdata = newdata
-newdata2 = newdata2
-times = NULL
+ND_long <- pbc2[pbc2$id %in% c(12, 81), ]
+ND_event <- pbc2.idCR[pbc2.idCR$id %in% c(12, 81), ]
+ND_event$status2 <- 0
+ND <- list(newdataL = ND_long, newdataE = ND_event)
+
+object = jointFit3
+newdata = ND
+newdata2 = NULL #newdata2
+times = c(7.1, 8.1, 9.1)
 process = "event"
 type_pred = "response"
 type = "subject_specific"
@@ -106,5 +111,35 @@ jointFit <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year")
 
 
 prs <- predict(jointFit, newdata, process = "event")
+
+
+fm1 <- lme(log(serBilir) ~ poly(year, 2) * drug, data = pbc2,
+           random = ~ poly(year, 2) | id)
+
+CR_forms <- list(
+    "log(serBilir)" = ~ value(log(serBilir)):CR
+)
+CoxFit_CR <- coxph(Surv(years, status2) ~ (age + drug) * strata(CR),
+                   data = pbc2.idCR)
+
+jointFit4 <- jm(CoxFit_CR, list(fm1), time_var = "year",
+                functional_forms = CR_forms)
+
+
+ND_long <- pbc2[pbc2$id == 81, ]
+ND_event <- pbc2.idCR[pbc2.idCR$id == 81, ]
+ND_event$status2 <- 0
+ND <- list(newdataL = ND_long, newdataE = ND_event)
+
+predLong <- predict(jointFit3, newdata = ND, return_newdata = TRUE,
+                    times = seq(6.5, 15, length = 25))
+
+predEvent <- predict(jointFit3, newdata = ND, return_newdata = TRUE,
+                     process = "event")
+
+plot(predLong, predEvent, outcomes = 1:2, pos_ylab_long = c(0.1, 20))
+plot(predLong, predEvent, outcomes = 1, pos_ylab_long = c(0.1, 20))
+
+
 
 

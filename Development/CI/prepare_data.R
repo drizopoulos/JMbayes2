@@ -1,9 +1,9 @@
 data("pbc2", package = "JM")
 data("pbc2.id", package = "JM")
 pbc2 <- pbc2[c("id", "year", "serBilir", "prothrombin", "years", "status",
-               "age", "sex")]
+               "age", "sex", "drug")]
 
-pbc2.id <- pbc2.id[c("id", "years", "status", "age", "sex")]
+pbc2.id <- pbc2.id[c("id", "years", "status", "age", "sex", "drug")]
 # we take as intermediate event prothrombin >= 12
 f <- function (x) {
     n <- length(x)
@@ -26,7 +26,7 @@ row.names(pbc2) <- 1:nrow(pbc2)
 
 ####
 pbc2_CR <- pbc2[c("id", "years", "status", "status2", "IE", "year", "age",
-                  "sex")]
+                  "sex", "drug")]
 pbc2_CR <- pbc2_CR[!duplicated(pbc2_CR[c("id", "years", "status", "IE")]), ]
 pbc2_CR$start <- pbc2_CR$year
 splt <- split(pbc2_CR[c("id", "start", "years")], pbc2_CR$id)
@@ -45,6 +45,10 @@ f <- function (d) {
 }
 pbc2_CR <- do.call("rbind", lapply(splt, f))
 row.names(pbc2_CR) <- 1:nrow(pbc2_CR)
+
+pbc2.idCR <- crLong(pbc2.id, statusVar = "status", censLevel = "alive",
+                    nameStrata = "CR")
+
 
 rm(f, splt)
 

@@ -70,6 +70,17 @@ vec group_sum (const vec &x, const uvec &ind) {
   return out;
 }
 
+vec group_sum2 (const vec &x, const uvec &ind) {
+    uvec tt = unique(ind);
+    uword n = tt.n_rows;
+    uvec ind2 = ind - 1;
+    vec out(n);
+    for (uword i = 0; i < n; ++i) {
+        out.at(i) = sum(x.elem(find(ind2 == i)));
+    }
+    return out;
+}
+
 vec create_init_scale(const uword &n, const double &fill_val = 0.1) {
   vec out(n);
   out.fill(fill_val);

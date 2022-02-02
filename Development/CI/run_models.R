@@ -30,7 +30,26 @@ CoxFit <- coxph(Surv(years, status2) ~ age + sex, data = pbc2.id)
 jointFit2 <- jm(CoxFit, lmeFit, time_var = "year")
 
 
-save(list = c("jointFit", "jointFit2"),
+pbc2.idCR <- crLong(pbc2.id, statusVar = "status", censLevel = "alive",
+                    nameStrata = "CR")
+
+CoxFit_CR <- coxph(Surv(years, status2) ~ (age + drug) * strata(CR),
+                   data = pbc2.idCR)
+
+fm1 <- lme(log(serBilir) ~ poly(year, 2) * drug, data = pbc2,
+           random = ~ poly(year, 2) | id)
+fm2 <- lme(prothrombin ~ year * drug, data = pbc2, random = ~ year | id)
+
+CR_forms <- list(
+    "log(serBilir)" = ~ value(log(serBilir)):CR,
+    "prothrombin" = ~ value(prothrombin):CR
+)
+
+jointFit3 <- jm(CoxFit_CR, list(fm1, fm2), time_var = "year",
+              functional_forms = CR_forms,
+              n_iter = 25000L, n_burnin = 5000L, n_thin = 5L)
+
+save(list = c("jointFit", "jointFit2", "jointFit3"),
      file = "./Development/CI/model.RData")
 
 ################################################################################

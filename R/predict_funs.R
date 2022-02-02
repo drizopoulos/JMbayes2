@@ -418,7 +418,11 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
     direction <- object$model_info$direction
 
     # Design matrices
-    strata_H <- rep(strata, each = control$GK_k)
+    strata_H <- if (object$model_info$CR_MS) {
+        rep(rep(rep(strata, n_times), each = control$GK_k), each = control$GK_k)
+    } else {
+        rep(strata, each = control$GK_k)
+    }
     W0_H <- create_W0(c(t(st)), knots, control$Bsplines_degree + 1, strata_H)
     dataS_H <- SurvData_HazardModel(split(st, row(st)), dataS, last_times,
                                     paste0(idT, "_", strata), time_var,
@@ -445,7 +449,7 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
                                             collapsed_functional_forms, Xbar,
                                             eps, direction)
     Z_H <- design_matrices_functional_forms(split(st, row(st)), terms_RE,
-                                            dataL, time_var, idVar,index2_H,
+                                            dataL, time_var, idVar, index2_H,
                                             collapsed_functional_forms, NULL,
                                             eps, direction)
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
@@ -856,39 +860,51 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
         upp_limit <- unlist(times, use.names = FALSE)
         gg <- function (t0, t) c(t0, head(t, -1))
         low_limit <- unlist(mapply2(gg, last_times, times), use.names = FALSE)
-        GK <- gaussKronrod(object$control$GK_k)
+        GK_k <- object$control$GK_k
+        GK <- gaussKronrod(GK_k)
         sk <- GK$sk
         P <- c(upp_limit - low_limit) / 2
         st <- outer(P, sk) + (c(upp_limit + low_limit) / 2)
         log_Pwk <- unname(rep(log(P), each = length(sk)) +
                               rep_len(log(GK$wk), length.out = length(st)))
         n_strata <- length(unique(Data$strata))
-        upp_limit2 <- c(t(st))
-        low_limit2 <- 0 * upp_limit2
-        last_row_str <- tapply(row.names(newdataE2), ff, tail, n = 1L)
-        newdataE2[[object$model_info$var_names$event_var]] <- 1
-        Data2 <- prepare_DataE_preds(object, newdataL, newdataE2,
-                                     low_limit2, upp_limit2, last_times2,
-                                     n_times, st0 = st,
-                                     index = rep(seq_along(n_times), n_times),
-                                     index2 = rep(rep(seq_along(unique(idT)),
-                                                      each = n_strata), n_times))
-        idt_str <- rep(unique(Data2$idT), each = n_strata)
-        n_times_id <- tapply(n_times, idt_str, sum)
-        Data2$id_H <- rep(seq_along(st), each = object$control$GK_k)
-        Data2$id_H_ <- rep(unique(idt_str), n_times_id * object$control$GK_k^2)
-        Data2$id_h <- rep(idt_str, n_times * object$control$GK_k)
-        Data2$which_event <- seq_len(nrow(Data2$W0_h))
-
-        log_hS <- hSfun(Data2, components_newdata$mcmc)
-        ind <- c(t(row(st)))
-        hS <- rowsum.default(exp(log_Pwk + log_hS), ind, reorder = FALSE)
-
-        index <- rep(seq_along(times), n_times)
-        for (i in seq_along(times)) {
-            hS[index == i, ] <- colCumsums(hS[index == i, ])
+        ind_times <- c(sapply(n_times, seq_len))
+        Time_var <- object$model_info$var_names$Time_var
+        if (object$model_info$type_censoring == "counting") {
+            Time_var <- Time_var[2L]
         }
-        CIF <- hS / S0[rep(unique(idt_str), n_times_id), ]
+        strata <- Data$strata
+        n_ts <- max(n_times)
+        idT2 <- rep(unique(idT), each = n_strata)
+        event_var <- object$model_info$var_names$event_var
+        last_row_str <- tapply(row.names(newdataE2), ff, tail, n = 1L)
+        last_row_str <- match(last_row_str, row.names(newdataE2))
+        newdataE2[last_row_str, event_var] <- 1
+        newdataE2_i <- newdataE2
+        H <- log_h <- array(0.0, dim = c(dim(st), ncol(S0)))
+        for (q in seq_len(GK_k)) {
+            for (t in seq_len(n_ts)) {
+                ind <- which(ind_times == t)
+                newdataE2_i[last_row_str, Time_var] <- st[ind, q]
+                Data <- prepare_Data_preds(object, newdataL, newdataE2_i)
+                HH <- cum_haz(Data, components_newdata$mcmc)
+                H[ind, q, ] <- rowsum(HH, idT, reorder = FALSE)[idT2, ]
+                log_h[ind, q, ] <- hSfun(Data, components_newdata$mcmc)[last_row_str, ]
+            }
+        }
+        log_hH <- log_h - H
+        CIF <- matrix(0.0, dim(log_hH)[1L], dim(log_hH)[3L])
+        log_Pwk <- matrix(log_Pwk, nrow = nrow(st), byrow = TRUE)
+        for (m in seq_len(ncol(S0))) {
+            CIF[, m] <- rowSums(exp(log_Pwk + log_hH[, , m]))
+        }
+        #index <- rep(seq_along(times), n_times)
+        #for (i in seq_along(times)) {
+        #    CIF[index == i, ] <- colCumsums(CIF[index == i, ])
+        #}
+        idt_str <- rep(unique(idT), each = n_strata)
+        n_times_id <- tapply(n_times, idt_str, sum)
+        CIF <- CIF / S0[rep(unique(idt_str), n_times_id), ]
         newdataE2 <- newdataE2[last_row_str, ]
         newdataE2 <- newdataE2[rep(seq_along(times), n_times), ]
         newdataE2[[object$model_info$var_names$time_var]] <-
