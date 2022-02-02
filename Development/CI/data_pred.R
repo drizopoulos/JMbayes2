@@ -141,5 +141,8 @@ plot(predLong, predEvent, outcomes = 1:2, pos_ylab_long = c(0.1, 20))
 plot(predLong, predEvent, outcomes = 1, pos_ylab_long = c(0.1, 20))
 
 
+predEvent <- predict(jointFit3, newdata = ND, process = "event",
+                     return_mcmc = T)
 
+rowSums(matrix(predEvent$mcmc[, 21], nc = 2))
 
