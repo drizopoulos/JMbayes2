@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-85</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-99</span>
       </span>
     </div>
 
@@ -122,7 +122,7 @@
       <h1 data-toc-skip>Non-Gaussian Mixed Models</h1>
                         <h4 data-toc-skip class="author">Dimitris Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2021-12-17</h4>
+            <h4 data-toc-skip class="date">2022-02-03</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Non_Gaussian_Mixed_Models.Rmd" class="external-link"><code>vignettes/Non_Gaussian_Mixed_Models.Rmd</code></a></small>
       <div class="hidden name"><code>Non_Gaussian_Mixed_Models.Rmd</code></div>
@@ -131,13 +131,13 @@
 
     
     
-<div class="section level1">
-<h1 id="non-gaussian-joint-models-with-jmbayes2">Non-Gaussian Joint Models with JMbayes2<a class="anchor" aria-label="anchor" href="#non-gaussian-joint-models-with-jmbayes2"></a>
-</h1>
-<p>Taking advantage of the versatility of the <a href="https://drizopoulos.github.io/GLMMadaptive/" class="external-link"><strong>GLMMadaptive</strong></a> package, <strong>JMbayes2</strong> can fit joint models with several different types of mixed-effects models. The following examples illustrate these capabilities. All examples have the same structure, namely, first, a short motivation for each mixed-model is give, followed by a piece of R code simulating data from a joint model with the respective mixed-effect sub-model, closing by the syntax to fit the joint model. In this last part, the main difference per example is the call to <code>mixed_model()</code>.</p>
 <div class="section level2">
-<h2 id="beta-mixed-models">Beta mixed models<a class="anchor" aria-label="anchor" href="#beta-mixed-models"></a>
+<h2 id="non-gaussian-joint-models-with-jmbayes2">Non-Gaussian Joint Models with JMbayes2<a class="anchor" aria-label="anchor" href="#non-gaussian-joint-models-with-jmbayes2"></a>
 </h2>
+<p>Taking advantage of the versatility of the <a href="https://drizopoulos.github.io/GLMMadaptive/" class="external-link"><strong>GLMMadaptive</strong></a> package, <strong>JMbayes2</strong> can fit joint models with several different types of mixed-effects models. The following examples illustrate these capabilities. All examples have the same structure, namely, first, a short motivation for each mixed-model is give, followed by a piece of R code simulating data from a joint model with the respective mixed-effect sub-model, closing by the syntax to fit the joint model. In this last part, the main difference per example is the call to <code>mixed_model()</code>.</p>
+<div class="section level3">
+<h3 id="beta-mixed-models">Beta mixed models<a class="anchor" aria-label="anchor" href="#beta-mixed-models"></a>
+</h3>
 <p>With very few exceptions, continuous outcomes that we wish to analyze have some natural bounds. For example, the levels of blood biomarker for a set of patients. However, often, the majority of the observations are located far away from these natural bounds, and an assumption of a normal distribution for the outcome can be safely done. In some settings though, we can have outcomes for which a substantial percentage of the observations are located near the boundaries leading to skewed or U-shaped distributions. For such longitudinal outcomes, a linear mixed model with normal error terms often does not provide a good fit. A natural alternative is to select a distribution that respects the bounded nature of the outcome. The most well-known distribution for such outcomes is the Beta distribution defined in the <span class="math inline">\((0, 1)\)</span> interval (<em>note:</em> a bounded outcome <span class="math inline">\(Y^*\)</span> in the <span class="math inline">\((a, b)\)</span> interval can be transformed to the <span class="math inline">\(Y = (Y^* - a) / (b - a)\)</span> in the <span class="math inline">\((0, 1)\)</span> interval).</p>
 <p>The following piece of code illustrates how to simulate data from a joint model with a Beta mixed effects model. The default functional form is assumed, i.e., that the linear predictor <span class="math inline">\(\eta(t)\)</span> of the mixed model is associated with the hazard of an event at time <span class="math inline">\(t\)</span>. The linear predictor is related to the mean <span class="math inline">\(\mu(t)\)</span> of the Beta distribution under the logit link function, i.e., <span class="math inline">\(\log[\mu(t) / \{1 - \mu(t)\}] = \eta(t)\)</span>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -238,41 +238,41 @@
 <span class="co">#&gt;   y: 1182</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                   DIC      WAIC       LPML</span>
-<span class="co">#&gt; marginal    -3445.939 -3378.199   811.2289</span>
-<span class="co">#&gt; conditional -2728.286 -2055.567 -1639.9576</span>
+<span class="co">#&gt; marginal    -3450.017 -3380.026   883.3837</span>
+<span class="co">#&gt; conditional -2732.619 -2047.928 -1825.7723</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                     </span>
 <span class="co">#&gt;        StdDev   Corr</span>
-<span class="co">#&gt; (Intr) 0.8403 (Intr)</span>
-<span class="co">#&gt; time   0.5223 0.0357</span>
+<span class="co">#&gt; (Intr) 0.8345 (Intr)</span>
+<span class="co">#&gt; time   0.5206 0.0401</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
-<span class="co">#&gt;             Mean  StDev    2.5%  97.5%     P   Rhat</span>
-<span class="co">#&gt; sexfemale 0.0466 0.2979 -0.5272 0.6351 0.876 1.0239</span>
-<span class="co">#&gt; value(y)  0.8134 0.0948  0.6315 1.0097 0.000 1.0497</span>
+<span class="co">#&gt;             Mean  StDev    2.5%  97.5%      P   Rhat</span>
+<span class="co">#&gt; sexfemale 0.0519 0.3129 -0.5443 0.6762 0.8813 1.0306</span>
+<span class="co">#&gt; value(y)  0.8237 0.0907  0.6512 1.0215 0.0000 1.0919</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: y (family = beta, link = logit)</span>
 <span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)    -2.7047 0.3691 -3.4687 -2.0348 0.0000 1.0016</span>
-<span class="co">#&gt; sexfemale      -0.0450 0.5077 -1.0695  0.9476 0.9280 1.0013</span>
-<span class="co">#&gt; time            0.4077 0.1109  0.1926  0.6254 0.0000 1.0010</span>
-<span class="co">#&gt; sexfemale:time -0.0702 0.1504 -0.3706  0.2266 0.6427 1.0010</span>
-<span class="co">#&gt; sigma           6.4129 0.6345  5.2192  7.6943 0.0000 1.0309</span>
+<span class="co">#&gt; (Intercept)    -2.7040 0.3729 -3.5028 -2.0194 0.0000 1.0016</span>
+<span class="co">#&gt; sexfemale      -0.0444 0.5132 -1.0536  0.9672 0.9353 1.0048</span>
+<span class="co">#&gt; time            0.4079 0.1119  0.1958  0.6358 0.0000 1.0026</span>
+<span class="co">#&gt; sexfemale:time -0.0689 0.1524 -0.3768  0.2260 0.6504 1.0029</span>
+<span class="co">#&gt; sigma           6.3734 0.6207  5.1487  7.5862 0.0000 1.0229</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 17 sec</span></code></pre></div>
+<span class="co">#&gt; time: 19 sec</span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
 </div>
-<div class="section level2">
-<h2 id="censored-linear-mixed-models">Censored linear mixed models<a class="anchor" aria-label="anchor" href="#censored-linear-mixed-models"></a>
-</h2>
+<div class="section level3">
+<h3 id="censored-linear-mixed-models">Censored linear mixed models<a class="anchor" aria-label="anchor" href="#censored-linear-mixed-models"></a>
+</h3>
 <p>Some continuous longitudinal outcomes may have a censored nature. A typical example of such outcomes is when we have limit of detection issues. That is, the values of the outcome cannot be detected below a specified threshold having to do with the (laboratory) equipment used to determine the measurements. In these settings and even if the complete data follow a normal distribution the observed censored data cannot be analyzed with a standard mixed model. The <code>mixed_model()</code> function can accommodate such outcomes using the <code>censored.normal()</code> family object.</p>
 <p>The following piece of code simulates data from a joint model with a linear mixed model for the longitudinal outcomes, but applies censoring in the realized longitudinal observations.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -373,38 +373,38 @@
 <span class="co">#&gt;   cbind(y, ind): 1346</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    3942.073 5177.964 -3807.751</span>
-<span class="co">#&gt; conditional 4936.067 8088.054 -7456.891</span>
+<span class="co">#&gt; marginal    3944.479 5158.480 -3607.168</span>
+<span class="co">#&gt; conditional 4942.614 8082.614 -7775.281</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                     </span>
 <span class="co">#&gt;        StdDev   Corr</span>
-<span class="co">#&gt; (Intr) 1.0208 (Intr)</span>
-<span class="co">#&gt; time   0.6845 0.1142</span>
+<span class="co">#&gt; (Intr) 1.0162 (Intr)</span>
+<span class="co">#&gt; time   0.6827 0.1112</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
 <span class="co">#&gt;                        Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; sexfemale            0.4701 0.4481 -0.3848 1.3556 0.2887 1.0072</span>
-<span class="co">#&gt; value(cbind(y, ind)) 0.7389 0.0788  0.5875 0.8940 0.0000 1.0708</span>
+<span class="co">#&gt; sexfemale            0.4719 0.4490 -0.3919 1.3783 0.2989 1.0231</span>
+<span class="co">#&gt; value(cbind(y, ind)) 0.7369 0.0723  0.6042 0.8847 0.0000 1.0127</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: cbind(y, ind) (family = censored normal, link = identity)</span>
 <span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)    -2.2779 0.3443 -2.9783 -1.6163 0.0000 1.0022</span>
-<span class="co">#&gt; sexfemale      -0.0286 0.4576 -0.9600  0.8766 0.9569 1.0011</span>
-<span class="co">#&gt; time            0.3347 0.1379  0.0678  0.6086 0.0153 1.0027</span>
-<span class="co">#&gt; sexfemale:time -0.1236 0.1863 -0.4992  0.2430 0.4969 1.0003</span>
-<span class="co">#&gt; sigma           0.6848 0.0630  0.5818  0.8279 0.0000 1.0177</span>
+<span class="co">#&gt; (Intercept)    -2.2792 0.3385 -2.9567 -1.6202 0.0000 1.0001</span>
+<span class="co">#&gt; sexfemale      -0.0300 0.4604 -0.9389  0.8670 0.9522 1.0005</span>
+<span class="co">#&gt; time            0.3354 0.1354  0.0676  0.6013 0.0129 1.0026</span>
+<span class="co">#&gt; sexfemale:time -0.1227 0.1881 -0.4962  0.2435 0.5171 1.0005</span>
+<span class="co">#&gt; sigma           0.6826 0.0593  0.5833  0.8143 0.0000 1.0142</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 12 sec</span></code></pre></div>
+<span class="co">#&gt; time: 13 sec</span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="studentss-t-mixed-models">Students’s-t mixed models<a class="anchor" aria-label="anchor" href="#studentss-t-mixed-models"></a>
-</h2>
+<div class="section level3">
+<h3 id="studentss-t-mixed-models">Students’s-t mixed models<a class="anchor" aria-label="anchor" href="#studentss-t-mixed-models"></a>
+</h3>
 <p>Outlying observations is common occurring issue in practice. Several methods have been proposed in the literature for identifying such observations in the context of longitudinal data. However, removing such values from the analysis is in general not recommended unless we also have external information why these values are outlying. Hence, in these settings we would need to fit mixed models to accommodate these observations. A well-known approach to achieve this is to replace the normal distribution for the error terms in the linear mixed model with a Student’s-t distribution that has heavier tails and allows for such values.</p>
 <p>The following syntax simulates data from a joint model with a Student’s-t mixed effects model:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -502,40 +502,40 @@
 <span class="co">#&gt;   y: 1347</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC      WAIC      LPML</span>
-<span class="co">#&gt; marginal    6081.531  8559.319 -4142.898</span>
-<span class="co">#&gt; conditional 7173.187 10917.770 -5577.188</span>
+<span class="co">#&gt; marginal    6099.120  8580.923 -4025.727</span>
+<span class="co">#&gt; conditional 7199.499 10986.952 -5653.860</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                     </span>
 <span class="co">#&gt;        StdDev   Corr</span>
-<span class="co">#&gt; (Intr) 1.0473 (Intr)</span>
-<span class="co">#&gt; time   0.7050 0.0404</span>
+<span class="co">#&gt; (Intr) 1.0491 (Intr)</span>
+<span class="co">#&gt; time   0.7045 0.0347</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
-<span class="co">#&gt;              Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; sexfemale -0.0135 0.2696 -0.5286 0.5289 0.9547 1.0050</span>
-<span class="co">#&gt; value(y)   0.4942 0.0605  0.3785 0.6159 0.0000 1.0341</span>
+<span class="co">#&gt;              Mean  StDev    2.5%  97.5%      P  Rhat</span>
+<span class="co">#&gt; sexfemale -0.0083 0.2763 -0.5565 0.5258 0.9682 1.013</span>
+<span class="co">#&gt; value(y)   0.4900 0.0592  0.3721 0.6029 0.0000 1.024</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: y (family = Student's-t, link = identity)</span>
 <span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)    -2.3589 0.4536 -3.2729 -1.4783 0.0000 1.0023</span>
-<span class="co">#&gt; sexfemale      -0.1215 0.6460 -1.3795  1.1512 0.8616 1.0005</span>
-<span class="co">#&gt; time            0.3054 0.1532  0.0087  0.6082 0.0438 1.0031</span>
-<span class="co">#&gt; sexfemale:time -0.0375 0.2082 -0.4531  0.3713 0.8627 1.0000</span>
+<span class="co">#&gt; (Intercept)    -2.3619 0.4480 -3.2414 -1.4987 0.0000 1.0013</span>
+<span class="co">#&gt; sexfemale      -0.1159 0.6707 -1.4469  1.1986 0.8724 1.0012</span>
+<span class="co">#&gt; time            0.3073 0.1510  0.0171  0.6013 0.0416 1.0029</span>
+<span class="co">#&gt; sexfemale:time -0.0393 0.2142 -0.4652  0.3807 0.8513 1.0003</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 12 sec</span></code></pre></div>
+<span class="co">#&gt; time: 13 sec</span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
 </div>
-<div class="section level2">
-<h2 id="negative-binomial-mixed-models">Negative binomial mixed models<a class="anchor" aria-label="anchor" href="#negative-binomial-mixed-models"></a>
-</h2>
+<div class="section level3">
+<h3 id="negative-binomial-mixed-models">Negative binomial mixed models<a class="anchor" aria-label="anchor" href="#negative-binomial-mixed-models"></a>
+</h3>
 <p>Count longitudinal outcomes are typically modeled with the Poisson distribution. However, often these outcomes exhibit more variance than what is allowed from the Poisson distribution leading to the well-known problem of over-dispersion. To accommodate this over-dispersion typically the Negative Binomial distribution is used.</p>
 <p>The following piece of code simulates data from a joint model for count longitudinal data that follow the Negative Binomial distribution:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -635,41 +635,41 @@
 <span class="co">#&gt;   y: 3842</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    22131.66 22045.18 -11026.39</span>
-<span class="co">#&gt; conditional 23725.00 23564.76 -12561.78</span>
+<span class="co">#&gt; marginal    22130.00 22043.16 -11025.00</span>
+<span class="co">#&gt; conditional 23720.47 23556.40 -12555.58</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                      </span>
 <span class="co">#&gt;        StdDev   Corr </span>
-<span class="co">#&gt; (Intr) 1.0202 (Intr) </span>
-<span class="co">#&gt; time   0.5631 -0.0656</span>
+<span class="co">#&gt; (Intr) 1.0152 (Intr) </span>
+<span class="co">#&gt; time   0.5660 -0.0678</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
-<span class="co">#&gt;             Mean  StDev   2.5% 97.5% P   Rhat</span>
-<span class="co">#&gt; sexfemale 0.5793 0.1783 0.2343 0.931 0 1.0029</span>
-<span class="co">#&gt; value(y)  0.7528 0.0554 0.6494 0.864 0 1.0186</span>
+<span class="co">#&gt;             Mean  StDev   2.5%  97.5% P   Rhat</span>
+<span class="co">#&gt; sexfemale 0.5926 0.1691 0.2774 0.9312 0 1.0034</span>
+<span class="co">#&gt; value(y)  0.7603 0.0561 0.6600 0.8699 0 1.0174</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: y (family = negative binomial, link = log)</span>
 <span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)     0.7149 0.1812  0.3633  1.0697 0.0007 1.0028</span>
-<span class="co">#&gt; sexfemale      -0.6115 0.2659 -1.1357 -0.0743 0.0207 1.0020</span>
-<span class="co">#&gt; time            0.9119 0.0961  0.7257  1.1008 0.0000 1.0032</span>
-<span class="co">#&gt; sexfemale:time -0.5118 0.1312 -0.7675 -0.2495 0.0000 1.0029</span>
-<span class="co">#&gt; sigma           1.8792 0.0952  1.6913  2.0569 0.0000 1.0132</span>
+<span class="co">#&gt; (Intercept)     0.7144 0.1766  0.3655  1.0619 0.0000 1.0021</span>
+<span class="co">#&gt; sexfemale      -0.6164 0.2617 -1.1268 -0.1084 0.0191 1.0017</span>
+<span class="co">#&gt; time            0.9130 0.0935  0.7293  1.0970 0.0000 1.0032</span>
+<span class="co">#&gt; sexfemale:time -0.5101 0.1280 -0.7540 -0.2602 0.0000 1.0030</span>
+<span class="co">#&gt; sigma           1.8781 0.0948  1.6895  2.0614 0.0000 1.0037</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 23 sec</span></code></pre></div>
+<span class="co">#&gt; time: 27 sec</span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
 </div>
-<div class="section level2">
-<h2 id="beta-binomial-longitudinal-outcomes">Beta-binomial longitudinal outcomes<a class="anchor" aria-label="anchor" href="#beta-binomial-longitudinal-outcomes"></a>
-</h2>
+<div class="section level3">
+<h3 id="beta-binomial-longitudinal-outcomes">Beta-binomial longitudinal outcomes<a class="anchor" aria-label="anchor" href="#beta-binomial-longitudinal-outcomes"></a>
+</h3>
 <p>As for count data also for Binomial data we may have the over-dispersion problem. In this case, we can change to standard Binomial distribution to a Beta-Binomial one to accommodate this.</p>
 <p>The following piece of code simulates data from a joint model for binomial longitudinal data that follow the Beta-Binomial distribution:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -773,34 +773,34 @@
 <span class="co">#&gt;   cbind(y, 20 - y): 2837</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    12106.44 12040.25 -6066.198</span>
-<span class="co">#&gt; conditional 14184.23 14159.15 -8663.768</span>
+<span class="co">#&gt; marginal    12111.42 12043.71 -6040.707</span>
+<span class="co">#&gt; conditional 14172.68 14142.71 -8617.415</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                      </span>
 <span class="co">#&gt;        StdDev   Corr </span>
-<span class="co">#&gt; (Intr) 1.1136 (Intr) </span>
-<span class="co">#&gt; time   0.7463 -0.0334</span>
+<span class="co">#&gt; (Intr) 1.1099 (Intr) </span>
+<span class="co">#&gt; time   0.7476 -0.0324</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
 <span class="co">#&gt;                           Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; sexfemale               0.4451 0.3282 -0.1982 1.0914 0.1722 1.0145</span>
-<span class="co">#&gt; value(cbind(y, 20 - y)) 0.7242 0.0639  0.6178 0.8618 0.0000 1.0232</span>
+<span class="co">#&gt; sexfemale               0.4483 0.3289 -0.1702 1.1190 0.1564 1.0100</span>
+<span class="co">#&gt; value(cbind(y, 20 - y)) 0.7322 0.0577  0.6284 0.8448 0.0000 1.0593</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: cbind(y, 20 - y) (family = beta binomial, link = logit)</span>
 <span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)    -2.2482 0.2592 -2.7807 -1.7607 0.0000 1.0053</span>
-<span class="co">#&gt; sexfemale      -0.2831 0.3493 -0.9627  0.3944 0.4109 1.0042</span>
-<span class="co">#&gt; time            0.3457 0.1021  0.1452  0.5443 0.0004 1.0058</span>
-<span class="co">#&gt; sexfemale:time -0.1877 0.1356 -0.4502  0.0784 0.1676 1.0052</span>
-<span class="co">#&gt; sigma           4.9537 0.3463  4.2915  5.6459 0.0000 1.0059</span>
+<span class="co">#&gt; (Intercept)    -2.2473 0.2651 -2.7986 -1.7532 0.0000 1.0065</span>
+<span class="co">#&gt; sexfemale      -0.2854 0.3461 -0.9601  0.4051 0.4091 1.0026</span>
+<span class="co">#&gt; time            0.3460 0.1026  0.1426  0.5504 0.0007 1.0079</span>
+<span class="co">#&gt; sexfemale:time -0.1865 0.1334 -0.4469  0.0775 0.1660 1.0049</span>
+<span class="co">#&gt; sigma           4.9695 0.3417  4.3168  5.6566 0.0000 1.0180</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 45 sec</span></code></pre></div>
+<span class="co">#&gt; time: 47 sec</span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -825,7 +825,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer>

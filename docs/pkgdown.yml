@@ -1,5 +1,5 @@
 pandoc: 2.14.0.3
-pkgdown: 2.0.1
+pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
   Competing_Risks: Competing_Risks.html
@@ -8,7 +8,7 @@ articles:
   Multi_State_Processes: Multi_State_Processes.html
   Non_Gaussian_Mixed_Models: Non_Gaussian_Mixed_Models.html
   Transformation_Functions: Transformation_Functions.html
-last_built: 2021-12-17T20:22Z
+last_built: 2022-02-03T08:56Z
 urls:
   reference: https://drizopoulos.github.io/JMbayes2/reference
   article: https://drizopoulos.github.io/JMbayes2/articles

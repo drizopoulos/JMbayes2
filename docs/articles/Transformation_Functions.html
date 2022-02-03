@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-85</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-99</span>
       </span>
     </div>
 
@@ -122,7 +122,7 @@
       <h1 data-toc-skip>Transformation Functions for Functional Forms</h1>
                         <h4 data-toc-skip class="author">Dimitris Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2021-12-17</h4>
+            <h4 data-toc-skip class="date">2022-02-03</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Transformation_Functions.Rmd" class="external-link"><code>vignettes/Transformation_Functions.Rmd</code></a></small>
       <div class="hidden name"><code>Transformation_Functions.Rmd</code></div>
@@ -131,12 +131,12 @@
 
     
     
-<div class="section level1">
-<h1 id="functional-forms">Functional Forms<a class="anchor" aria-label="anchor" href="#functional-forms"></a>
-</h1>
 <div class="section level2">
-<h2 id="simplified-syntax">Simplified Syntax<a class="anchor" aria-label="anchor" href="#simplified-syntax"></a>
+<h2 id="functional-forms">Functional Forms<a class="anchor" aria-label="anchor" href="#functional-forms"></a>
 </h2>
+<div class="section level3">
+<h3 id="simplified-syntax">Simplified Syntax<a class="anchor" aria-label="anchor" href="#simplified-syntax"></a>
+</h3>
 <p>We have <a href="https://drizopoulos.github.io/JMbayes2/articles/JMbayes2.html#functional-forms-1">previously seen</a> that function <code><a href="../reference/jm.html">jm()</a></code> via its <code>functional_forms</code> argument allows the specification of different functional forms to link the longitudinal and event time outcomes. This argument accepts either single formula or a list of formulas per longitudinal outcome with the terms we wish to include.</p>
 <p>We will illustrate some of these possibilities using the PBC dataset. We start by fitting a Cox model for the composite event transplantation or death, including sex as a baseline covariate:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -160,36 +160,36 @@
 <span class="co">#&gt;   hepatomegaly: 1884</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    3120.600 3099.992 -1559.872</span>
-<span class="co">#&gt; conditional 5186.929 5091.814 -2866.465</span>
+<span class="co">#&gt; marginal    3120.778 3102.739 -1566.649</span>
+<span class="co">#&gt; conditional 5207.119 5121.171 -2938.331</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                      </span>
 <span class="co">#&gt;        StdDev   Corr </span>
-<span class="co">#&gt; (Intr) 3.5818 (Intr) </span>
-<span class="co">#&gt; year   0.5945 -0.2025</span>
+<span class="co">#&gt; (Intr) 3.6028 (Intr) </span>
+<span class="co">#&gt; year   0.6085 -0.2018</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
 <span class="co">#&gt;                        Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; sexfemale           -0.4499 0.3111 -1.0347 0.1757 0.1393 1.0016</span>
-<span class="co">#&gt; value(hepatomegaly)  0.3083 0.0461  0.2226 0.4027 0.0000 1.0112</span>
+<span class="co">#&gt; sexfemale           -0.4489 0.3100 -1.0290 0.1882 0.1542 1.0066</span>
+<span class="co">#&gt; value(hepatomegaly)  0.3033 0.0511  0.2183 0.4083 0.0000 1.0441</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)</span>
 <span class="co">#&gt;               Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept) 0.0713 0.4146 -0.7553 0.8912 0.8509 1.0005</span>
-<span class="co">#&gt; year        0.2950 0.1278  0.0475 0.5517 0.0202 1.0030</span>
+<span class="co">#&gt; (Intercept) 0.0756 0.4216 -0.7401 0.9128 0.8618 1.0023</span>
+<span class="co">#&gt; year        0.2960 0.1328  0.0376 0.5550 0.0251 1.0035</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 13 sec</span></code></pre></div>
+<span class="co">#&gt; time: 14 sec</span></code></pre></div>
 <p>In the output this is named as <code>value(hepatomegaly)</code> to denote that the current value functional form is used. That is, we assume that the risk at a specific time <span class="math inline">\(t\)</span> is associated with the value of the linear predictor of the longitudinal outcome at the same time point <span class="math inline">\(t\)</span>. In this particular case, the subject-specific linear predictor denotes the log odds of experiencing hepatomegaly at time <span class="math inline">\(t\)</span>.</p>
 </div>
-<div class="section level2">
-<h2 id="transformation-functions">Transformation Functions<a class="anchor" aria-label="anchor" href="#transformation-functions"></a>
-</h2>
+<div class="section level3">
+<h3 id="transformation-functions">Transformation Functions<a class="anchor" aria-label="anchor" href="#transformation-functions"></a>
+</h3>
 <p>The fact that the default version of the current value functional form is on the linear predictor scale of the mixed model may be problematic to interpret when this linear predictor is connected with a nonlinear link function to mean of the longitudinal outcome. In these situations we may want to transform the subject-specific linear predictor back to the scale of the outcome. To achieve this we can use a transformation function. Continuing on the previous example, we update <code>jointFit1</code> by now linking the expit transformation of the linear predictor (i.e., <span class="math inline">\(\mbox{expit}(x) = \exp(x) / \{1 + \exp(x)\}\)</span>) with the risk of an event. This is done using the <code><a href="../reference/jm.html">vexpit()</a></code> function:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">jointFit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">jointFit1</span>, functional_forms <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">vexpit</a></span><span class="op">(</span><span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">hepatomegaly</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
@@ -205,31 +205,31 @@
 <span class="co">#&gt;   hepatomegaly: 1884</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    3110.147 3096.517 -1581.773</span>
-<span class="co">#&gt; conditional 5186.911 5125.717 -2917.503</span>
+<span class="co">#&gt; marginal    3106.499 3091.590 -1563.564</span>
+<span class="co">#&gt; conditional 5181.813 5126.109 -2896.784</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                      </span>
 <span class="co">#&gt;        StdDev   Corr </span>
-<span class="co">#&gt; (Intr) 3.5835 (Intr) </span>
-<span class="co">#&gt; year   0.5867 -0.3525</span>
+<span class="co">#&gt; (Intr) 3.6117 (Intr) </span>
+<span class="co">#&gt; year   0.5838 -0.3671</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
-<span class="co">#&gt;                                Mean  StDev    2.5%  97.5%     P   Rhat</span>
-<span class="co">#&gt; sexfemale                   -0.3740 0.2803 -0.9038 0.1727 0.186 1.0101</span>
-<span class="co">#&gt; vexpit(value(hepatomegaly))  3.0148 0.4460  2.2086 3.9557 0.000 1.0334</span>
+<span class="co">#&gt;                                Mean  StDev    2.5%  97.5%      P   Rhat</span>
+<span class="co">#&gt; sexfemale                   -0.3494 0.2782 -0.8719 0.2112 0.2233 1.0011</span>
+<span class="co">#&gt; vexpit(value(hepatomegaly))  2.9775 0.4486  2.1586 3.8851 0.0000 1.0338</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)</span>
 <span class="co">#&gt;               Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept) 0.0767 0.4335 -0.7634 0.9608 0.8669 1.0023</span>
-<span class="co">#&gt; year        0.2412 0.1326 -0.0162 0.5092 0.0647 1.0081</span>
+<span class="co">#&gt; (Intercept) 0.0662 0.4269 -0.7598 0.8911 0.8791 1.0041</span>
+<span class="co">#&gt; year        0.2424 0.1280 -0.0050 0.4961 0.0556 1.0140</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 14 sec</span></code></pre></div>
+<span class="co">#&gt; time: 17 sec</span></code></pre></div>
 <p>Other available functions to use in the definition of the <code>functional_forms</code> argument are <code><a href="../reference/jm.html">vexp()</a></code> for calculating the exponent, <code><a href="../reference/jm.html">vlog()</a></code> for calculating the natural logarithm, and <code><a href="../reference/jm.html">vsqrt()</a></code> for calculating the square root.</p>
 <p>If we want to include the time-varying slope of the transformed linear predictor, we also have the <code><a href="../reference/jm.html">Dexpit()</a></code> and <code><a href="../reference/jm.html">Dexp()</a></code> functions available. As an example, we extend <code>jointFit2</code> by including the derivative of the <span class="math inline">\(\mbox{expit}()\)</span> transformation:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -247,41 +247,41 @@
 <span class="co">#&gt;   hepatomegaly: 1884</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    3100.369 3082.408 -1548.422</span>
-<span class="co">#&gt; conditional 5131.515 5060.458 -2848.379</span>
+<span class="co">#&gt; marginal    3106.032 3088.805 -1559.952</span>
+<span class="co">#&gt; conditional 5157.634 5091.288 -2889.611</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                      </span>
 <span class="co">#&gt;        StdDev   Corr </span>
-<span class="co">#&gt; (Intr) 3.6134 (Intr) </span>
-<span class="co">#&gt; year   0.5869 -0.4937</span>
+<span class="co">#&gt; (Intr) 3.6769 (Intr) </span>
+<span class="co">#&gt; year   0.6088 -0.5112</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
 <span class="co">#&gt;                                                    Mean  StDev    2.5%   97.5%</span>
-<span class="co">#&gt; sexfemale                                       -0.3365 0.2943 -0.8889  0.2720</span>
-<span class="co">#&gt; vexpit(value(hepatomegaly))                      3.0420 0.4838  2.1331  4.0335</span>
-<span class="co">#&gt; Dexpit(value(hepatomegaly)):slope(hepatomegaly) -0.8997 0.3716 -1.6795 -0.2231</span>
+<span class="co">#&gt; sexfemale                                       -0.3383 0.3003 -0.8947  0.2564</span>
+<span class="co">#&gt; vexpit(value(hepatomegaly))                      3.0334 0.4753  2.1218  4.0257</span>
+<span class="co">#&gt; Dexpit(value(hepatomegaly)):slope(hepatomegaly) -0.8560 0.3695 -1.6331 -0.2087</span>
 <span class="co">#&gt;                                                      P   Rhat</span>
-<span class="co">#&gt; sexfemale                                       0.2673 1.0050</span>
-<span class="co">#&gt; vexpit(value(hepatomegaly))                     0.0000 1.0390</span>
-<span class="co">#&gt; Dexpit(value(hepatomegaly)):slope(hepatomegaly) 0.0138 1.0431</span>
+<span class="co">#&gt; sexfemale                                       0.2596 1.0037</span>
+<span class="co">#&gt; vexpit(value(hepatomegaly))                     0.0000 1.0041</span>
+<span class="co">#&gt; Dexpit(value(hepatomegaly)):slope(hepatomegaly) 0.0120 1.0756</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)</span>
 <span class="co">#&gt;               Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept) 0.1518 0.4324 -0.6968 0.9967 0.7158 1.0005</span>
-<span class="co">#&gt; year        0.1576 0.1276 -0.0904 0.4056 0.2213 1.0044</span>
+<span class="co">#&gt; (Intercept) 0.1501 0.4608 -0.7516 1.0587 0.7416 1.0018</span>
+<span class="co">#&gt; year        0.1567 0.1341 -0.1018 0.4217 0.2400 1.0097</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 16 sec</span></code></pre></div>
+<span class="co">#&gt; time: 19 sec</span></code></pre></div>
 <p>The call to <code>Dexpit(slope(hepatomegaly))</code> is internally transformed to <code>Dexpit(value(hepatomegaly)):slope(hepatomegaly)</code>, which calculates the derivative of the <span class="math inline">\(\mbox{expit}()\)</span> evaluated at the linear predictor times the derivative of the linear predictor. This is because <span class="math display">\[\frac{d}{dt} \mbox{expit}\{\eta(t)\} = \mbox{expit}\{\eta(t)\} \, \Bigl [ 1 - \mbox{expit}\{\eta(t)\} \Bigr ] \times \frac{d}{dt}\eta(t)\]</span></p>
 </div>
-<div class="section level2">
-<h2 id="the-slope-functional-form">The Slope Functional Form<a class="anchor" aria-label="anchor" href="#the-slope-functional-form"></a>
-</h2>
+<div class="section level3">
+<h3 id="the-slope-functional-form">The Slope Functional Form<a class="anchor" aria-label="anchor" href="#the-slope-functional-form"></a>
+</h3>
 <p>As we have seen in previous examples, the <code><a href="../reference/jm.html">slope()</a></code> function is used to specify the slope functional form <span class="math inline">\(d \eta(t)/dt\)</span>. According to the <a href="https://en.wikipedia.org/wiki/Derivative#Rigorous_definition" class="external-link">definition of the derivative</a>, this corresponds to the change in the longitudinal profile <span class="math inline">\(\{\eta(t + \varepsilon) - \eta(t)\}/ \varepsilon\)</span> as <span class="math inline">\(\varepsilon\)</span> approaches zero. However, the interpretation of this term may be challenging in some settings. A possible alternative would be to increase the value of <span class="math inline">\(\varepsilon\)</span>, e.g., <span class="math inline">\(\varepsilon = 1\)</span>. For example, if the time scale is years, this would quantify the change of the longitudinal profile in the last year before <span class="math inline">\(t\)</span>.</p>
 <p>To fit a joint model with such a term, we can use the <code>eps</code> and <code>direction</code> arguments of the <code><a href="../reference/jm.html">slope()</a></code> function. We illustrate this in the following example, in which we use the serum bilirubin</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -299,28 +299,28 @@
 <p>We compare the two fits</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jFit1</span><span class="op">)</span><span class="op">$</span><span class="va">Survival</span>
-<span class="co">#&gt;                            Mean     StDev       2.5%     97.5%            P</span>
-<span class="co">#&gt; sexfemale            -0.1733937 0.3029635 -0.7427807 0.4188802 0.5766666667</span>
-<span class="co">#&gt; value(log(serBilir))  1.2126874 0.1416057  0.9244803 1.4798503 0.0000000000</span>
-<span class="co">#&gt; slope(log(serBilir))  2.7172812 0.7055945  1.4005448 4.1032143 0.0006666667</span>
+<span class="co">#&gt;                           Mean     StDev       2.5%     97.5%         P</span>
+<span class="co">#&gt; sexfemale            -0.175060 0.3035789 -0.7679787 0.4278808 0.5633333</span>
+<span class="co">#&gt; value(log(serBilir))  1.200291 0.1337280  0.9413599 1.4690155 0.0000000</span>
+<span class="co">#&gt; slope(log(serBilir))  2.650226 0.7417528  1.1946394 4.2852976 0.0000000</span>
 <span class="co">#&gt;                          Rhat</span>
-<span class="co">#&gt; sexfemale            1.008745</span>
-<span class="co">#&gt; value(log(serBilir)) 1.023891</span>
-<span class="co">#&gt; slope(log(serBilir)) 1.032706</span>
+<span class="co">#&gt; sexfemale            1.014335</span>
+<span class="co">#&gt; value(log(serBilir)) 1.008638</span>
+<span class="co">#&gt; slope(log(serBilir)) 1.017037</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jFit2</span><span class="op">)</span><span class="op">$</span><span class="va">Survival</span>
 <span class="co">#&gt;                                                         Mean     StDev</span>
-<span class="co">#&gt; sexfemale                                         -0.1593314 0.2993621</span>
-<span class="co">#&gt; value(log(serBilir))                               1.1948176 0.1342905</span>
-<span class="co">#&gt; slope(log(serBilir), eps = 1, direction = "back")  2.5148378 0.7664213</span>
+<span class="co">#&gt; sexfemale                                         -0.1598636 0.3003916</span>
+<span class="co">#&gt; value(log(serBilir))                               1.1889780 0.1360777</span>
+<span class="co">#&gt; slope(log(serBilir), eps = 1, direction = "back")  2.5348042 0.7263611</span>
 <span class="co">#&gt;                                                         2.5%     97.5%</span>
-<span class="co">#&gt; sexfemale                                         -0.7410905 0.4176198</span>
-<span class="co">#&gt; value(log(serBilir))                               0.9327300 1.4569390</span>
-<span class="co">#&gt; slope(log(serBilir), eps = 1, direction = "back")  1.1211453 4.1156464</span>
-<span class="co">#&gt;                                                              P     Rhat</span>
-<span class="co">#&gt; sexfemale                                         0.6004444444 1.001938</span>
-<span class="co">#&gt; value(log(serBilir))                              0.0000000000 1.008675</span>
-<span class="co">#&gt; slope(log(serBilir), eps = 1, direction = "back") 0.0004444444 1.026014</span></code></pre></div>
+<span class="co">#&gt; sexfemale                                         -0.7288346 0.4359363</span>
+<span class="co">#&gt; value(log(serBilir))                               0.9208692 1.4540478</span>
+<span class="co">#&gt; slope(log(serBilir), eps = 1, direction = "back")  1.1490629 4.1628415</span>
+<span class="co">#&gt;                                                           P     Rhat</span>
+<span class="co">#&gt; sexfemale                                         0.5797778 1.003257</span>
+<span class="co">#&gt; value(log(serBilir))                              0.0000000 1.028793</span>
+<span class="co">#&gt; slope(log(serBilir), eps = 1, direction = "back") 0.0000000 1.024939</span></code></pre></div>
 </div>
 </div>
   </div>
@@ -342,7 +342,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer>

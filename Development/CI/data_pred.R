@@ -147,3 +147,82 @@ predEvent <- predict(jointFit3, newdata = ND, process = "event",
 
 rowSums(matrix(predEvent$mcmc[, 21], nc = 2))
 
+
+###############################################################################
+
+fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
+           random = ~ ns(year, 3) | id, control = lmeControl(opt = 'optim'))
+
+fm2 <- lme(prothrombin ~ ns(year, 2) * sex, data = pbc2,
+           random = ~ ns(year, 2) | id, control = lmeControl(opt = 'optim'))
+
+fm3 <- mixed_model(ascites ~ year * sex, data = pbc2,
+                   random = ~ year | id, family = binomial())
+pbc2.id$event <- as.numeric(pbc2.id$status != "alive")
+CoxFit <- coxph(Surv(years, event) ~ drug + age, data = pbc2.id)
+jointFit <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year")
+
+t0 <- 5
+ND <- pbc2[pbc2$id %in% c(25, 93), ]
+ND <- ND[ND$year < t0, ]
+ND$status2 <- 0
+ND$years <- t0
+
+
+object = jointFit
+newdata = ND
+newdata2 = NULL
+times = NULL
+process = "event"
+type_pred = "response"
+type = "subject_specific"
+level = 0.95; return_newdata = TRUE; return_mcmc = FALSE
+n_samples = 200L; n_mcmc = 55L; cores = NULL
+seed = 123L
+
+
+predLong1 <- predict(jointFit, newdata = ND, return_newdata = TRUE)
+plot(predLong1)
+predLong2 <- predict(jointFit, newdata = ND,
+                     times = seq(t0, 12, length.out = 51),
+                     return_newdata = TRUE)
+plot(predLong2, outcomes = 2, subject = 93)
+
+predSurv <- predict(jointFit, newdata = ND, process = "event",
+                    times = seq(t0, 12, length.out = 51),
+                    return_newdata = TRUE)
+
+plot(predLong2, predSurv)
+
+cols <- c('#F25C78', '#D973B5', '#F28322')
+plot(predLong2, predSurv, outcomes = 1:3, subject = 93,
+     fun_long = list(exp, identity, identity),
+     fun_event = function (x) 1 - x,
+     ylab_event = "Survival Probabilities",
+     ylab_long = c("Serum Bilirubin", "Prothrombin", "Ascites"),
+     bg = '#132743', col_points = cols, col_line_long = cols,
+     col_line_event = '#F7F7FF', col_axis = "white",
+     fill_CI_long = c("#F25C7880", "#D973B580", "#F2832280"),
+     fill_CI_event = "#F7F7FF80",
+     pos_ylab_long = c(1.9, 1.9, 0.08))
+
+
+x = predLong2; x2 = predSurv; subject = 1; outcomes = 1;
+fun_long = NULL; fun_event = NULL
+CI_long = TRUE; CI_event = TRUE;
+xlab = "Follow-up Time"; ylab_long = NULL
+ylab_event = "Cumulative Risk"; main = "";
+lwd_long = 2; lwd_event = 2
+ylim_long_outcome_range = TRUE
+col_line_long = "#0000FF"
+col_line_event = c("#FF0000", "#03BF3D", "#8000FF")
+pch_points = 16; col_points = "blue"; cex_points = 1;
+fill_CI_long = "#0000FF4D"
+fill_CI_event = c("#FF00004D", "#03BF3D4D", "#8000FF4D")
+cex_xlab = 1; cex_ylab_long = 1; cex_ylab_event = 1
+cex_main = 1; cex_axis = 1; col_axis = "black"
+pos_ylab_long = c(0.1, 2, 0.08); bg = "white"
+
+
+
+

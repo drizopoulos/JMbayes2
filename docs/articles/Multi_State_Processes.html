@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-85</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-99</span>
       </span>
     </div>
 
@@ -122,7 +122,7 @@
       <h1 data-toc-skip>Multi-State Processes</h1>
                         <h4 data-toc-skip class="author">Grigorios Papageorgiou</h4>
             
-            <h4 data-toc-skip class="date">2021-12-17</h4>
+            <h4 data-toc-skip class="date">2022-02-03</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Multi_State_Processes.Rmd" class="external-link"><code>vignettes/Multi_State_Processes.Rmd</code></a></small>
       <div class="hidden name"><code>Multi_State_Processes.Rmd</code></div>
@@ -131,18 +131,18 @@
 
     
     
-<div class="section level1">
-<h1 id="multi-state-processes">Multi-state Processes<a class="anchor" aria-label="anchor" href="#multi-state-processes"></a>
-</h1>
 <div class="section level2">
-<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+<h2 id="multi-state-processes">Multi-state Processes<a class="anchor" aria-label="anchor" href="#multi-state-processes"></a>
 </h2>
+<div class="section level3">
+<h3 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h3>
 <p>It is very often the case that a subject may transition between multiple states and we are interested to assess the association of longitudinal marker(s) with each of these transitions. In this vignette we will illustrate how to do so using <strong>JMbayes2</strong>.</p>
 <p>We will consider a simple case with one longitudinal outcome and a three-state (illness-death) model, but this application can be extended for the cases of multiple longitudinal markers and more than three states.</p>
 </div>
-<div class="section level2">
-<h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
-</h2>
+<div class="section level3">
+<h3 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
+</h3>
 <p>First we will simulate data from a joint model with a single linear mixed effects model and a multi-state process with three possible states. The multi-state process can be visualized as:</p>
 <p><img src="Multi_State_Processes_files/figure-html/ms_figure-1.png" width="700"></p>
 <p>where all subjects start from state “Healthy” and then can transition to either state “Illness” and then state “Death” or directly to state “Death”. In this case, states “Healthy” and “Illness” are <em>transient</em> states as the subject, when occupying these states, can still transition to other states whereas “Death” is an absorbing state as when a subject reaches this state then no further transitions can occur. This means that three transitions are possible: <span class="math inline">\(1 \rightarrow 2\)</span>, <span class="math inline">\(1 \rightarrow 3\)</span> and <span class="math inline">\(2 \rightarrow 3\)</span> with transition intensities <span class="math inline">\(h_{12}\left(t\right)\)</span>, <span class="math inline">\(h_{13}\left(t\right)\)</span> and <span class="math inline">\(h_{23}\left(t\right)\)</span> respectively.</p>
@@ -322,9 +322,9 @@
 <span class="co">#&gt; 2.2  2          1        3          2 0.000000 1.552122      0 7.673231</span></code></pre></div>
 <p>for example subject 1 experienced the following transition: <span class="math inline">\(1 \rightarrow 2\)</span> and therefore is represented in 3 rows, one for each transition, because all of these transitions were plausible. On the other hand subject 2 is only represented by two rows, only for transitions <span class="math inline">\(1 \rightarrow 2\)</span> and <span class="math inline">\(1 \rightarrow 3\)</span> since these are the only transitions that are possible from state 1. That is, since subject 2 never actually transitioned to state 2, transition <span class="math inline">\(2 \rightarrow 3\)</span> was never possible and therefore no row for this transition is in the dataset. It is also important to note that the time in the dataset follows the counting process formulation with intervals specified by <code>Tstart</code> and <code>Tstop</code> and that there is a variable (in this case <code>transition</code>) which indicates to which transition the row correspond to.</p>
 </div>
-<div class="section level2">
-<h2 id="fitting-the-model">Fitting the model<a class="anchor" aria-label="anchor" href="#fitting-the-model"></a>
-</h2>
+<div class="section level3">
+<h3 id="fitting-the-model">Fitting the model<a class="anchor" aria-label="anchor" href="#fitting-the-model"></a>
+</h3>
 <p>As soon data in the appropriate format are available, fitting the model is very straightforward. First we fit a linear mixed model using the <code>lme()</code> function from package <strong>nlme</strong>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mixedmodel</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">X</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">DF</span><span class="op">)</span></code></pre></div>
@@ -349,37 +349,37 @@
 <span class="co">#&gt;   y: 4033</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC      LPML</span>
-<span class="co">#&gt; marginal    17811.91 19381.54 -11262.73</span>
-<span class="co">#&gt; conditional 19683.84 20853.37 -13220.57</span>
+<span class="co">#&gt; marginal    17843.26 19494.07 -10740.64</span>
+<span class="co">#&gt; conditional 19708.83 20957.42 -13342.78</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                     </span>
 <span class="co">#&gt;        StdDev   Corr</span>
-<span class="co">#&gt; (Intr) 1.0162 (Intr)</span>
-<span class="co">#&gt; time   0.7039 0.0327</span>
+<span class="co">#&gt; (Intr) 1.0177 (Intr)</span>
+<span class="co">#&gt; time   0.7048 0.0270</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
 <span class="co">#&gt;                          Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; X                     -0.0980 0.0664 -0.2285 0.0362 0.1482 1.0221</span>
-<span class="co">#&gt; X:strata(transition)2  0.3955 0.1159  0.1987 0.6300 0.0000 1.3168</span>
-<span class="co">#&gt; X:strata(transition)3 -0.0301 0.0842 -0.1893 0.1386 0.7179 1.0849</span>
-<span class="co">#&gt; value(y):transition1   0.2442 0.0374  0.1703 0.3171 0.0000 1.0160</span>
-<span class="co">#&gt; value(y):transition2   0.2058 0.0716  0.0638 0.3384 0.0058 1.3430</span>
-<span class="co">#&gt; value(y):transition3   0.0089 0.0244 -0.0415 0.0548 0.6719 1.0406</span>
+<span class="co">#&gt; X                     -0.1028 0.0674 -0.2356 0.0312 0.1293 1.0511</span>
+<span class="co">#&gt; X:strata(transition)2  0.3629 0.0970  0.1837 0.5445 0.0000 1.2748</span>
+<span class="co">#&gt; X:strata(transition)3 -0.0262 0.0853 -0.1898 0.1455 0.7381 1.1613</span>
+<span class="co">#&gt; value(y):transition1   0.2468 0.0374  0.1699 0.3215 0.0000 1.0393</span>
+<span class="co">#&gt; value(y):transition2   0.2358 0.0695  0.0931 0.3627 0.0000 1.1096</span>
+<span class="co">#&gt; value(y):transition3   0.0086 0.0242 -0.0407 0.0542 0.7253 1.0607</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: y (family = gaussian, link = identity)</span>
 <span class="co">#&gt;                Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept) -0.4255 0.3902 -1.1980 0.3354 0.2636 1.0013</span>
-<span class="co">#&gt; time         0.3273 0.1032  0.1242 0.5323 0.0027 1.0020</span>
-<span class="co">#&gt; X            1.5319 0.0352  1.4622 1.6003 0.0000 1.0012</span>
-<span class="co">#&gt; sigma        1.2855 0.0431  1.2261 1.3929 0.0000 1.0088</span>
+<span class="co">#&gt; (Intercept) -0.4278 0.4011 -1.2193 0.3788 0.2792 1.0004</span>
+<span class="co">#&gt; time         0.3312 0.1053  0.1256 0.5408 0.0027 1.0002</span>
+<span class="co">#&gt; X            1.5321 0.0359  1.4617 1.6018 0.0000 1.0013</span>
+<span class="co">#&gt; sigma        1.2867 0.0454  1.2245 1.4025 0.0000 1.0002</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 10000 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 3 min</span></code></pre></div>
+<span class="co">#&gt; time: 3.4 min</span></code></pre></div>
 <p>which differs from a default call to <code><a href="../reference/jm.html">jm()</a></code> by the addition of the <code>functional_forms</code> argument by which we specify that we want an “interaction” between the value of the marker and each transition which translates into a separate association parameter for the longitudinal marker and each transition.</p>
 </div>
 </div>
@@ -402,7 +402,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer>
