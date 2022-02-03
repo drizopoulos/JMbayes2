@@ -125,19 +125,20 @@ CoxFit_CR <- coxph(Surv(years, status2) ~ (age + drug) * strata(CR),
 jointFit4 <- jm(CoxFit_CR, list(fm1), time_var = "year",
                 functional_forms = CR_forms)
 
-
-ND_long <- pbc2[pbc2$id == 81, ]
-ND_event <- pbc2.idCR[pbc2.idCR$id == 81, ]
+ii <- 1:5
+ND_long <- pbc2[pbc2$id == 25, ][ii, ]
+ND_event <- pbc2.idCR[pbc2.idCR$id == 25, ]
 ND_event$status2 <- 0
+ND_event$years <- max(ND_long[["year"]])
 ND <- list(newdataL = ND_long, newdataE = ND_event)
 
-predLong <- predict(jointFit3, newdata = ND, return_newdata = TRUE,
-                    times = seq(6.5, 15, length = 25))
+predLong <- predict(jointFit4, newdata = ND, return_newdata = TRUE,
+                    times = seq(0.5, 25, length = 25))
 
-predEvent <- predict(jointFit3, newdata = ND, return_newdata = TRUE,
+predEvent <- predict(jointFit4, newdata = ND, return_newdata = TRUE,
                      process = "event")
 
-plot(predLong, predEvent, outcomes = 1:2, pos_ylab_long = c(0.1, 20))
+#plot(predLong, predEvent, outcomes = 1:2, pos_ylab_long = c(0.1, 20))
 plot(predLong, predEvent, outcomes = 1, pos_ylab_long = c(0.1, 20))
 
 
