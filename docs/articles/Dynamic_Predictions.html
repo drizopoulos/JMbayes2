@@ -218,11 +218,9 @@
      fill_CI_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#F25C7880"</span>, <span class="st">"#D973B580"</span>, <span class="st">"#F2832280"</span><span class="op">)</span>,
      fill_CI_event <span class="op">=</span> <span class="st">"#F7F7FF80"</span>,
      pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.9</span>, <span class="fl">1.9</span>, <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">#&gt; Warning in min(x): no non-missing arguments to min; returning Inf</span>
-<span class="co">#&gt; Warning in max(x): no non-missing arguments to max; returning -Inf</span></code></pre>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-12-1.png" width="816" style="display: block; margin: auto;"></p>
 <p>We evaluate the discriminative capability of the model using ROC methodology. We calculate the components of the ROC curve using information up to year five, and we are interested in events occurring within a three-year window. That is discriminating between patients who will get the event in the interval <code>(t0, t0 + Dt]</code>, (i.e., in our case <span class="math inline">\(T_j \in (5, 8]\)</span>) from patients who will survive at least 9 years (i.e., <span class="math inline">\(T_j &gt; 8\)</span>). The calculations are performed with the following call to <code><a href="../reference/accuracy.html">tvROC()</a></code>:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pbc2</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">pbc2</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span>
 <span class="va">roc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">tvROC</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
 <span class="va">roc</span>
@@ -298,7 +296,7 @@
 <span class="co">#&gt; 63    0.98 1.00000000 0.006498591 1.00000000 0.001555798</span></code></pre></div>
 <p>In the first line we define the event indicator as we did in the <code>pbc2.id</code> data.frame. The cut-point with the asterisk on the right maximizes the <a href="https://en.wikipedia.org/wiki/Youden%27s_J_statistic" class="external-link">Youden’s index</a>. To depict the ROC curve, we use the corresponding <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method: <img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-14-1.png" width="816" style="display: block; margin: auto;"></p>
 <p>The area under the ROC curve is calculated with the <code><a href="../reference/accuracy.html">tvAUC()</a></code> function:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/accuracy.html">tvAUC</a></span><span class="op">(</span><span class="va">roc</span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;  Time-dependent AUC for the Joint Model jointFit</span>
@@ -309,12 +307,12 @@
 <p>This function either accepts an object of class <code>tvROC</code> or of class <code>jm</code>. In the latter case, the user must also provide the <code>newdata</code>, <code>Tstart</code> and <code>Dt</code> or <code>Thoriz</code> arguments. Here we have used the same dataset as the one to fit the model, but, in principle, discrimination could be (better) assessed in another dataset.</p>
 <p>To assess the accuracy of the predictions we produce a calibration plot: <img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-16-1.png" width="816" style="display: block; margin: auto;"></p>
 <p>The syntax of the <code><a href="../reference/accuracy.html">calibration_plot()</a></code> function is almost identical to that of <code><a href="../reference/accuracy.html">tvROC()</a></code>. The kernel density estimation is of the estimated probabilities <span class="math inline">\(\pi_j(t + \Delta t \mid t) = \pi_j(8 \mid 5)\)</span> for all individuals at risk at year <code>t0</code> in the data frame provided in the <code>newdata</code> argument. Using the <code><a href="../reference/accuracy.html">calibration_metrics()</a></code> function we can also calculate metrics for the accuracy of predictions:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/accuracy.html">calibration_metrics</a></span><span class="op">(</span><span class="va">jointFit</span>, <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
 <span class="co">#&gt;        ICI        E50        E90 </span>
 <span class="co">#&gt; 0.04380478 0.02027983 0.11170119</span></code></pre></div>
 <p>The ICI is the mean absolute difference between the observed and predicted probabilities, E50 is the median absolute difference, and E90 is the 90% percentile of the absolute differences. Finally, we calculate the Brier score as an overall measure of predictive performance. This is computed with the <code><a href="../reference/accuracy.html">tvBrier()</a></code> function:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/accuracy.html">tvBrier</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Prediction Error for the Joint Model jointFit</span>
