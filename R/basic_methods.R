@@ -367,7 +367,7 @@ ggtraceplot.jm <- function(object,
                            theme = c('standard', 'catalog', 'metro',
                                      'pastel', 'beach', 'moonlight', 'goo',
                                      'sunset', 'custom'), grid = FALSE,
-                           gridrows = 3, gridcols = 1, custom_theme = NULL, 
+                           gridrows = 3, gridcols = 1, custom_theme = NULL,
                            ...) {
   chain <- iteration <- NULL
   parm <- match.arg(parm)
@@ -376,7 +376,7 @@ ggtraceplot.jm <- function(object,
   n_parms <- length(unique(ggdata$parm))
   n_chains <- object$control$n_chains
   if(!is.null(custom_theme)) {
-    if (length(custom_theme) != n_chains) 
+    if (length(custom_theme) != n_chains)
       stop('User specified custom color themes should be a named character vector with one color specified for each chain')
     coltheme <- 'custom'
     ggcolthemes[[coltheme]] <- custom_theme
@@ -397,7 +397,7 @@ ggtraceplot.jm <- function(object,
           geom_line(aes(x = iteration, y = value, color = chain),
                     size = size, alpha = alpha) +
           ggtitle(paste('Traceplot of ', unique(ggdata$parm)[i])) +
-          theme_bw() + theme(plot.title = element_text(hjust=0.5)) + 
+          theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
           guides(color = guide_legend(override.aes = list(alpha = 1)))
       }
     }
@@ -418,7 +418,7 @@ ggtraceplot.jm <- function(object,
           geom_line(aes(x = iteration, y = value, color = chain),
                     size = size, alpha = alpha) +
           ggtitle(paste('Traceplot of ', unique(ggdata$parm)[i])) +
-          theme_bw() + theme(plot.title = element_text(hjust=0.5)) + 
+          theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
           guides(color = guide_legend(override.aes = list(alpha = 1)))
         print(g)
       }
@@ -444,7 +444,7 @@ ggdensityplot.jm <- function(object,
     n_parms <- length(unique(ggdata$parm))
     n_chains <- object$control$n_chains
     if(!is.null(custom_theme)) {
-      if (length(custom_theme) != n_chains) 
+      if (length(custom_theme) != n_chains)
         stop('User specified custom color themes should be a named character vector with one color specified for each chain')
       coltheme <- 'custom'
       ggcolthemes[[coltheme]] <- custom_theme
@@ -565,7 +565,7 @@ print.compare_jm <- function (x, ...) {
     cat("\nThe criteria are calculated based on the", x$type, "log-likelihood.")
 }
 
-crLong <- function (data, statusVar, censLevel, nameStrata = "strata",
+crisk_setup <- function (data, statusVar, censLevel, nameStrata = "strata",
           nameStatus = "status2") {
     n <- nrow(data)
     status <- data[[statusVar]]

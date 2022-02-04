@@ -1,5 +1,5 @@
-\name{crLong}
-\alias{crLong}
+\name{crisk_setup}
+\alias{crisk_setup}
 
 \title{ Transform Competing Risks Data in Long Format }
 
@@ -10,7 +10,7 @@
 }
 
 \usage{
-crLong(data, statusVar, censLevel,
+crisk_setup(data, statusVar, censLevel,
     nameStrata = "strata", nameStatus = "status2")
 }
 
@@ -34,7 +34,7 @@ crLong(data, statusVar, censLevel,
 }
 
 \references{
-Rizopoulos, D. (2012) \emph{Joint Models for Longitudinal and Time-to-Event Data: with 
+Rizopoulos, D. (2012) \emph{Joint Models for Longitudinal and Time-to-Event Data: with
 Applications in R}. Boca Raton: Chapman and Hall/CRC.
 
 Putter, H., Fiocco, M., and Geskus, R. (2007). Tutorial in biostatistics:
@@ -47,7 +47,7 @@ Competing risks and multi-state models. \emph{Statistics in Medicine} \bold{26},
 }
 
 \examples{
-head(crLong(pbc2.id, "status", "alive"))
+head(crisk_setup(pbc2.id, "status", "alive"))
 }
 
 \keyword{methods}
