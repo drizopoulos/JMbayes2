@@ -21,9 +21,8 @@ library("JMbayes2")
 
 # Competing Risks
 ## Prepare data
-The first step to fit a joint model for competing events in **JMbayes2** is to prepare the data for the event process. If there are $K$ competing events, then each subject has $K$ rows, one for each possible cause. The
-observed event time $T_i$ of each subject is repeated $K$ times, and there are two indicator variables, namely one identifying the cause, and one indicating whether the corresponding event type is the one that occurred. Standard survival datasets that included a single row
-per patient, can be easily transformed to the competing risks long format using function `crisk_setup()`. This function accepts as main arguments the survival data in the standard format that has a single row per patient, the name of the status variable, and the level in this status variable that corresponds to censoring. We illustrate this using as an example the PBC data, in which we treat as competing risks transplantation and death:
+The first step to fit a joint model for competing events in **JMbayes2** is to prepare the data for the event process. If there are $K$ competing events, then each subject needs to have $K$ rows, one for each possible cause. The observed event time $T_i$ of each subject is repeated $K$ times, and there are two indicator variables, namely one identifying the cause, and one indicating whether the corresponding event type is the one that occurred. Standard survival datasets that included a single row
+per patient, can be easily transformed to the competing risks long format using function `crisk_setup()`. This function accepts as main arguments the survival data in the standard format that has a single row per patient, the name of the status variable, and the level in this status variable that corresponds to censoring. We illustrate the use of this function in the PBC data, in which we treat as competing risks transplantation and death:
 ```{r, "prepare_data"}
 pbc2.id[pbc2.id$id %in% c(1, 2, 5), c("id", "years", "status")]
 
@@ -44,7 +43,7 @@ CoxFit_CR <- coxph(Surv(years, status2) ~ (age + drug) * strata(CR),
                      data = pbc2.idCR)
 ```
 
-For the longitudinal process, we include two longitudinal outcomes, namely serum bilirubin and the prothrombin time. For the former we use quadratic orthogonal polynomials in the fixed- and random-effects parts. and for the latter linear evolutions:
+For the longitudinal process, we include two longitudinal outcomes, namely serum bilirubin and the prothrombin time. For the former we use quadratic orthogonal polynomials in the fixed- and random-effects parts, and for the latter linear evolutions:
 ```{r, "mixed models"}
 fm1 <- lme(log(serBilir) ~ poly(year, 2) * drug, data = pbc2, 
            random = ~ poly(year, 2) | id)
@@ -69,7 +68,7 @@ jFit_CR <- jm(CoxFit_CR, list(fm1, fm2), time_var = "year",
 summary(jFit_CR)
 ```
 
-## Dynamic Predictions
+## Dynamic predictions
 Based on the fitted competing risks joint model, we will illustrate how (dynamic) predictions for the cause-specific cumulative risk probabilities can be calculated. As an example, we will show these calculations for Patient 81 from the PBC dataset. First, we extract the data of this subject. 
 ```{r, "data_P81"}
 ND_long <- pbc2[pbc2$id == 81, ]
@@ -77,9 +76,9 @@ ND_event <- pbc2.idCR[pbc2.idCR$id == 81, ]
 ND_event$status2 <- 0
 ND <- list(newdataL = ND_long, newdataE = ND_event)
 ```
-The first line extracts the longitudinal measurements, and the second line extracts the event times per cause (i.e., death and transplantation). This particular patient died at 6.95 years, but to make the calculation of cause-specific cumulative risk more relevant, we presume that she did not have the event, and we set event status variable `status2` to zero. The last line combines the two datasets in a list. *Note:* this last step is a prerequisite from the `predict()` method for competing risks joint model. That is, the datasets provided in the arguments `newdata` and `newdata2` need to be named lists with two components. The first component needs to be named `newdataL` and contain the dataset with longitudinal measurements, and the second component needs to be named `newdataE` and contain the dataset with the event information.
+The first line extracts the longitudinal measurements, and the second line extracts the event times per cause (i.e., death and transplantation). This particular patient died at 6.95 years, but to make the calculation of cause-specific cumulative risk more relevant, we presume that she did not have the event, and we set the event status variable `status2` to zero. The last line combines the two datasets in a list. *Note:* this last step is a prerequisite from the `predict()` method for competing risks joint model. That is, the datasets provided in the arguments `newdata` and `newdata2` need to be named lists with two components. The first component needs to be named `newdataL` and contain the dataset with the longitudinal measurements, and the second component needs to be named `newdataE` and contain the dataset with the event information.
 
-The predictions are calculated using the `predict()` method. The first call to this function calculates the prediction for the longitudinal outcomes at the times provides in the `times` argument, and the second call calculates the cause-specific cumulative risk probabilities. By setting the argument `return_newdata` to `TRUE` in both calls, we can use the corresponding `plot()` method to depict the predictions:
+The predictions are calculated using the `predict()` method. The first call to this function calculates the prediction for the longitudinal outcomes at the times provided in the `times` argument, and the second call calculates the cause-specific cumulative risk probabilities. By setting the argument `return_newdata` to `TRUE` in both calls, we can use the corresponding `plot()` method to depict the predictions:
 ```{r, "CIFs"}
 predLong <- predict(jFit_CR, newdata = ND, return_newdata = TRUE,
                     times = seq(6.5, 15, length = 25))

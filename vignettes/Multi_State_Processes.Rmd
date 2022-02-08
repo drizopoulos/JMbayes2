@@ -21,7 +21,7 @@ library("JMbayes2")
 
 # Multi-state Processes
 ## Introduction
-It is very often the case that a subject may transition between multiple states and we are interested to assess the association of longitudinal marker(s) with each of these transitions. In this vignette we will illustrate how to do so using **JMbayes2**. 
+It is often the case that a subject may transition between multiple states and we are interested to assess the association of longitudinal marker(s) with each of these transitions. In this vignette we will illustrate how to achieve this using **JMbayes2**. 
 
 We will consider a simple case with one longitudinal outcome and a three-state (illness-death) model, but this application can be extended for the cases of multiple longitudinal markers and more than three states. 
 
@@ -237,7 +237,7 @@ The data for the multi-state process need to be in the appropriate long format:
 head(data_mstate, n = 5L)
 ```
 
-for example subject 1 experienced the following transition: $1 \rightarrow 2$ and therefore is represented in 3 rows, one for each transition, because all of these transitions were plausible. On the other hand subject 2 is only represented by two rows, only for transitions $1 \rightarrow 2$ and $1 \rightarrow 3$ since these are the only transitions that are possible from state 1. That is, since subject 2 never actually transitioned to state 2, transition $2 \rightarrow 3$ was never possible and therefore no row for this transition is in the dataset. It is also important to note that the time in the dataset follows the counting process formulation with intervals specified by `Tstart` and `Tstop` and that there is a variable (in this case `transition`) which indicates to which transition the row correspond to.
+for example subject 1 experienced the following transition: $1 \rightarrow 2$ and therefore is represented in 3 rows, one for each transition, because all of these transitions were plausible. On the other hand subject 2 is only represented by two rows, only for transitions $1 \rightarrow 2$ and $1 \rightarrow 3$ since these are the only transitions that are possible from state 1. That is, since subject 2 never actually transitioned to state 2, transition $2 \rightarrow 3$ was never possible and therefore no row for this transition is in the dataset. It is also important to note that the time in the dataset follows the counting process formulation with intervals specified by `Tstart` and `Tstop` and that there is a variable (in this case `transition`) which indicates to which transition the row corresponds to.
 
 ## Fitting the model
 

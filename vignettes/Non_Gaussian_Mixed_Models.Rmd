@@ -20,7 +20,7 @@ library("JMbayes2")
 ```
 
 # Non-Gaussian Joint Models with JMbayes2
-Taking advantage of the versatility of the [**GLMMadaptive**](https://drizopoulos.github.io/GLMMadaptive/) package, **JMbayes2** can fit joint models with several different types of mixed-effects models. The following examples illustrate these capabilities. All examples have the same structure, namely, first, a short motivation for each mixed-model is give, followed by a piece of R code simulating data from a joint model with the respective mixed-effect sub-model, closing by the syntax to fit the joint model. In this last part, the main difference per example is the call to `mixed_model()`.
+Taking advantage of the versatility of the [**GLMMadaptive**](https://drizopoulos.github.io/GLMMadaptive/) package, **JMbayes2** can fit joint models with several different types of mixed-effects models. The following examples illustrate these capabilities. All examples have the same structure, namely, first, a short motivation for each mixed-model is given, followed by a piece of R code simulating data from a joint model with the respective mixed-effects sub-model, closing by the syntax to fit the joint model. In this last part, the main difference per example is the call to `mixed_model()`.
 
 
 ## Beta mixed models
@@ -220,7 +220,7 @@ summary(jointFit)
 
 
 ## Students's-t mixed models
-Outlying observations is common occurring issue in practice. Several methods have been proposed in the literature for identifying such observations in the context of longitudinal data. However, removing such values from the analysis is in general not recommended unless we also have external information why these values are outlying. Hence, in these settings we would need to fit mixed models to accommodate these observations. A well-known approach to achieve this is to replace the normal distribution for the error terms in the linear mixed model with a Student's-t distribution that has heavier tails and allows for such values.
+Outlying observations is a common occurring issue in practice. Several methods have been proposed in the literature for identifying such observations in the context of longitudinal data. However, removing such values from the analysis is in general not recommended unless we also have external information why these values are outlying. Hence, in these settings we would need to fit mixed models to accommodate these observations. A well-known approach to achieve this is to replace the normal distribution for the error terms in the linear mixed model with a Student's-t distribution that has heavier tails.
 
 The following syntax simulates data from a joint model with a Student's-t mixed effects model:
 ```{r, "simulate_Std-t"}
