@@ -87,7 +87,8 @@ predLong <- predict(jFit_CR, newdata = ND, return_newdata = TRUE,
 predEvent <- predict(jFit_CR, newdata = ND, return_newdata = TRUE,
                      process = "event")
 
+str_ind <- unique(predEvent[["_strata"]])
 plot(predLong, predEvent, outcomes = 1:2, pos_ylab_long = c(0.1, 20))
-legend(x = 6.8, y = 0.9, legend = levels(pbc2.idCR$CR), 
+legend(x = 8.1, y = 0.45, legend = levels(pbc2.idCR$CR)[str_ind], 
        lty = 1, lwd = 2, col = c("#FF0000", "#03BF3D"), bty = "n", cex = 0.8)
 ```

@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1-99</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-0</span>
       </span>
     </div>
 
@@ -122,7 +122,7 @@
       <h1 data-toc-skip>Competing Risks</h1>
                         <h4 data-toc-skip class="author">Dimitris Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2022-02-03</h4>
+            <h4 data-toc-skip class="date">2022-02-08</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Competing_Risks.Rmd" class="external-link"><code>vignettes/Competing_Risks.Rmd</code></a></small>
       <div class="hidden name"><code>Competing_Risks.Rmd</code></div>
@@ -137,7 +137,7 @@
 <div class="section level3">
 <h3 id="prepare-data">Prepare data<a class="anchor" aria-label="anchor" href="#prepare-data"></a>
 </h3>
-<p>The first step to fit a joint model for competing events in <strong>JMbayes2</strong> is to prepare the data for the event process. If there are <span class="math inline">\(K\)</span> competing events, then each subject has <span class="math inline">\(K\)</span> rows, one for each possible cause. The observed event time <span class="math inline">\(T_i\)</span> of each subject is repeated <span class="math inline">\(K\)</span> times, and there are two indicator variables, namely one identifying the cause, and one indicating whether the corresponding event type is the one that occurred. Standard survival datasets that included a single row per patient, can be easily transformed to the competing risks long format using function <code><a href="../reference/crLong.html">crLong()</a></code>. This function accepts as main arguments the survival data in the standard format that has a single row per patient, the name of the status variable, and the level in this status variable that corresponds to censoring. We illustrate this using as an example the PBC data, in which we treat as competing risks transplantation and death:</p>
+<p>The first step to fit a joint model for competing events in <strong>JMbayes2</strong> is to prepare the data for the event process. If there are <span class="math inline">\(K\)</span> competing events, then each subject has <span class="math inline">\(K\)</span> rows, one for each possible cause. The observed event time <span class="math inline">\(T_i\)</span> of each subject is repeated <span class="math inline">\(K\)</span> times, and there are two indicator variables, namely one identifying the cause, and one indicating whether the corresponding event type is the one that occurred. Standard survival datasets that included a single row per patient, can be easily transformed to the competing risks long format using function <code><a href="../reference/cr_setup.html">crisk_setup()</a></code>. This function accepts as main arguments the survival data in the standard format that has a single row per patient, the name of the status variable, and the level in this status variable that corresponds to censoring. We illustrate this using as an example the PBC data, in which we treat as competing risks transplantation and death:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pbc2.id</span><span class="op">[</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"years"</span>, <span class="st">"status"</span><span class="op">)</span><span class="op">]</span>
 <span class="co">#&gt;   id     years       status</span>
@@ -145,10 +145,11 @@
 <span class="co">#&gt; 2  2 14.152338        alive</span>
 <span class="co">#&gt; 5  5  4.120578 transplanted</span>
 
-<span class="va">pbc2.idCR</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crLong.html">crLong</a></span><span class="op">(</span><span class="va">pbc2.id</span>, statusVar <span class="op">=</span> <span class="st">"status"</span>, censLevel <span class="op">=</span> <span class="st">"alive"</span>, 
-                    nameStrata <span class="op">=</span> <span class="st">"CR"</span><span class="op">)</span>
+<span class="va">pbc2.idCR</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cr_setup.html">crisk_setup</a></span><span class="op">(</span><span class="va">pbc2.id</span>, statusVar <span class="op">=</span> <span class="st">"status"</span>, censLevel <span class="op">=</span> <span class="st">"alive"</span>, 
+                         nameStrata <span class="op">=</span> <span class="st">"CR"</span><span class="op">)</span>
 
-<span class="va">pbc2.idCR</span><span class="op">[</span><span class="va">pbc2.idCR</span><span class="op">$</span><span class="va">id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"years"</span>, <span class="st">"status"</span>, <span class="st">"status2"</span>, <span class="st">"CR"</span><span class="op">)</span><span class="op">]</span>
+<span class="va">pbc2.idCR</span><span class="op">[</span><span class="va">pbc2.idCR</span><span class="op">$</span><span class="va">id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span>, 
+          <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"years"</span>, <span class="st">"status"</span>, <span class="st">"status2"</span>, <span class="st">"CR"</span><span class="op">)</span><span class="op">]</span>
 <span class="co">#&gt;     id     years       status status2           CR</span>
 <span class="co">#&gt; 1    1  1.095170         dead       1         dead</span>
 <span class="co">#&gt; 1.1  1  1.095170         dead       0 transplanted</span>
@@ -251,7 +252,7 @@
 <span class="co">#&gt; iterations per chain: 25000 </span>
 <span class="co">#&gt; burn-in per chain: 5000 </span>
 <span class="co">#&gt; thinning: 5 </span>
-<span class="co">#&gt; time: 7.6 min</span></code></pre></div>
+<span class="co">#&gt; time: 7.7 min</span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="dynamic-predictions">Dynamic Predictions<a class="anchor" aria-label="anchor" href="#dynamic-predictions"></a>
@@ -271,8 +272,9 @@
 <span class="va">predEvent</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jFit_CR</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span>,
                      process <span class="op">=</span> <span class="st">"event"</span><span class="op">)</span>
 
+<span class="va">str_ind</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">predEvent</span><span class="op">[[</span><span class="st">"_strata"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong</span>, <span class="va">predEvent</span>, outcomes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">6.8</span>, y <span class="op">=</span> <span class="fl">0.9</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">pbc2.idCR</span><span class="op">$</span><span class="va">CR</span><span class="op">)</span>, 
+<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">8.1</span>, y <span class="op">=</span> <span class="fl">0.45</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">pbc2.idCR</span><span class="op">$</span><span class="va">CR</span><span class="op">)</span><span class="op">[</span><span class="va">str_ind</span><span class="op">]</span>, 
        lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#FF0000"</span>, <span class="st">"#03BF3D"</span><span class="op">)</span>, bty <span class="op">=</span> <span class="st">"n"</span>, cex <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></code></pre></div>
 <p><img src="Competing_Risks_files/figure-html/CIFs-1.png" width="700"></p>
 </div>
