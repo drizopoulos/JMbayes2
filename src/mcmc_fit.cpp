@@ -23,6 +23,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uvec which_right_event = join_cols(which_event, which_right);
   uvec which_left = as<uvec>(model_data["which_left"]) - 1;
   uvec which_interval = as<uvec>(model_data["which_interval"]) - 1;
+  uvec which_term_h = as<uvec>(model_data["which_term_h"]) - 1;
+  uvec which_term_H = as<uvec>(model_data["which_term_H"]) - 1;
   //
   mat W0_H = as<mat>(model_data["W0_H"]);
   mat W0_h = as<mat>(model_data["W0_h"]);
@@ -74,6 +76,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
   field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
+  bool any_terminal = !which_term_h.is_empty();
+  bool recurrent = as<bool>(model_info["recurrent"]);
   //
   field<uvec> ind_FE = List2Field_uvec(as<List>(model_data["ind_FE"]), true);
   uvec ind_FE_HC = as<uvec>(model_data["ind_FE_HC"]) - 1;
@@ -117,6 +121,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec betas_vec = docall_rbindF(betas);
   vec sigmas = exp(as<vec>(initial_values["log_sigmas"]));
   //field<vec> sigmas = List2Field_vec(as<List>(initial_values["sigmas"]));
+  vec alphaF = as<vec>(initial_values["alphaF"]);
+  vec sigmaF = as<vec>(initial_values["sigmaF"]);
+  vec frailty = as<vec>(initial_values["frailty"]);
   uvec has_sigmas = as<uvec>(model_data["has_sigmas"]);
   // indexes or other useful things
   uvec upper_part = trimatu_ind(size(R),  1);
@@ -174,6 +181,16 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec Tau_mean_betas_HC = Tau_betas_HC * mean_betas_HC;
   field<vec> mean_betas_nHC = List2Field_vec(as<List>(priors["mean_betas_nHC"]));
   field<mat> Tau_betas_nHC = List2Field_mat(as<List>(priors["Tau_betas_nHC"]));
+  vec mean_alphaF = as<vec>(priors["mean_alphaF"]);
+  mat Tau_alphaF = as<mat>(priors["Tau_alphaF"]);
+  vec lambda_alphaF(alphaF.n_rows, fill::ones);
+  double tau_alphaF = 1.0;
+  bool shrink_alphaF = false;
+  bool gamma_prior_sigmaF = as<bool>(priors["gamma_prior_sigmaF"]);
+  double sigmaF_df = as<double>(priors["sigmaF_df"]);
+  vec sigmaF_sigmas = as<vec>(priors["sigmaF_sigmas"]);
+  double sigmaF_shape = as<double>(priors["sigmaF_shape"]);
+  vec sigmaF_mean = as<vec>(priors["sigmaF_mean"]);
   // store results
   uword n_b = b_mat.n_rows;
   uword n_bs_gammas = bs_gammas.n_rows;
@@ -213,6 +230,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat res_betas(n_iter, n_betas, fill::zeros);
   field<vec> acceptance_betas = create_storage(x_notin_z);
   mat res_logLik(n_iter, n_b, fill::zeros);
+  mat res_alphaF(n_iter, 1, fill::zeros);
+  mat acceptance_alphaF(n_iter, 1, fill::zeros);
+  mat res_sigmaF(n_iter, 1, fill::zeros);
+  mat acceptance_sigmaF(n_iter, 1, fill::zeros);
+  mat res_frailty(n_iter, frailty.n_rows, fill::zeros);
+  mat acceptance_frailty(frailty.n_rows, 1, fill::zeros);
   // scales
   vec scale_bs_gammas = create_init_scale(n_bs_gammas);
   vec scale_gammas = create_init_scale(n_gammas);
@@ -222,6 +245,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat scale_b = mat(n_b,  b_mat.n_cols, fill::ones) * 0.1;
   vec scale_sigmas = create_init_scale(n_sigmas);
   field<vec> scale_betas = create_init_scaleF(x_notin_z);
+  vec scale_alphaF = create_init_scale(1);
+  vec scale_sigmaF = create_init_scale(1);
+  vec scale_frailty = vec(frailty.n_rows, fill::ones) * 0.5;
   // preliminaries
   vec W0H_bs_gammas = W0_H * bs_gammas;
   vec W0h_bs_gammas(W0_h.n_rows);
@@ -253,39 +279,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   if (any_interval) {
     WlongH2_alphas = Wlong_H2 * alphas;
   }
-  uvec which_term_h = as<uvec>(model_data["which_term_h"]) - 1; // recurrence //?? later split these elements in the different sections
-  uvec which_term_H = as<uvec>(model_data["which_term_H"]) - 1;
-  bool any_terminal = !which_term_h.is_empty();
-  bool recurrent = as<bool>(model_data["recurrent"]);
-  vec alphaF = as<vec>(initial_values["alphaF"]); // alphaF
-  vec mean_alphaF = as<vec>(priors["mean_alphaF"]);
-  mat Tau_alphaF = as<mat>(priors["Tau_alphaF"]);
-  vec lambda_alphaF(alphaF.n_rows, fill::ones);
-  double tau_alphaF = 1.0;
-  bool shrink_alphaF = false; //?? check this with Dimitris
-  vec scale_alphaF = create_init_scale(1);
-  mat res_alphaF(n_iter, 1, fill::zeros);
-  mat acceptance_alphaF(n_iter, 1, fill::zeros);
   vec alphaF_H(WH_gammas.n_rows, fill::ones);
   vec alphaF_h(Wh_gammas.n_rows, fill::ones);
   if(any_terminal) {
     alphaF_H.rows(which_term_H).fill(alphaF.at(0));
     alphaF_h.rows(which_term_h).fill(alphaF.at(0));
   }
-  vec sigmaF = as<vec>(initial_values["sigmaF"]); // sigmaF
-  bool gamma_prior_sigmaF = as<bool>(priors["gamma_prior_sigmaF"]);
-  double sigmaF_df = as<double>(priors["sigmaF_df"]);
-  vec sigmaF_sigmas = as<vec>(priors["sigmaF_sigmas"]);
-  double sigmaF_shape = as<double>(priors["sigmaF_shape"]);
-  vec sigmaF_mean = as<vec>(priors["sigmaF_mean"]);
-  vec scale_sigmaF = create_init_scale(1);
-  mat res_sigmaF(n_iter, 1, fill::zeros);
-  mat acceptance_sigmaF(n_iter, 1, fill::zeros);
-  vec frailty = as<vec>(initial_values["frailty"]); // frailty
-  mat res_frailty(n_iter, frailty.n_rows, fill::zeros);
-  mat acceptance_frailty(frailty.n_rows, 1, fill::zeros);
-  vec scale_frailty = vec(frailty.n_rows, fill::ones) * 0.5; //?? check with Dimitris
-  //vec scale_frailty = create_init_scale(frailty.n_rows);
   vec frailty_H(WH_gammas.n_rows, fill::zeros);
   vec frailty_h(Wh_gammas.n_rows, fill::zeros);
   frailty_h = frailty.rows(id_h);
@@ -294,6 +293,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec frailtyh_sigmaF_alphaF(which_event.n_rows, fill::zeros);
   frailtyH_sigmaF_alphaF = frailty_H % alphaF_H * sigmaF;
   frailtyh_sigmaF_alphaF = frailty_h.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
+  //
   vec logLik_surv =
     log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
              WH_gammas, Wh_gammas, WH2_gammas,
@@ -683,7 +683,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   uvec which_term_h = as<uvec>(model_data["which_term_h"]) - 1; // recurrence
   uvec which_term_H = as<uvec>(model_data["which_term_H"]) - 1;
   bool any_terminal = !which_term_h.is_empty();
-  bool recurrent = as<bool>(model_data["recurrent"]);
+  bool recurrent = as<bool>(model_info["recurrent"]);
   vec alphaF = as<vec>(thetas["alphaF"]);
   vec frailty = as<vec>(thetas["frailty"]);
   vec sigmaF = as<vec>(thetas["sigmaF"]);
@@ -788,7 +788,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   uvec which_term_h = as<uvec>(model_data["which_term_h"]) - 1; // recurrence
   uvec which_term_H = as<uvec>(model_data["which_term_H"]) - 1;
   bool any_terminal = !which_term_h.is_empty();
-  bool recurrent = as<bool>(model_data["recurrent"]);
+  bool recurrent = as<bool>(model_info["recurrent"]);
   mat alphaF = trans(as<mat>(res_thetas["alphaF"]));
   mat frailty = trans(as<mat>(res_thetas["frailty"]));
   mat sigmaF = trans(as<mat>(res_thetas["sigmaF"]));
@@ -963,7 +963,7 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
       WlongH2_alphas = Wlong_H2 * alphas_it;
     }
     vec logLik_surv =
-      log_surv_old(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, //?? update later
+      log_surv_old(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                    WH_gammas, Wh_gammas, WH2_gammas,
                    WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
                    log_Pwk, log_Pwk2, indFast_H, indFast_h,
@@ -1015,7 +1015,7 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
         }
         //
         vec logLik_surv_proposed =
-          log_surv_old(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, //?? update later
+          log_surv_old(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                        WH_gammas, Wh_gammas, WH2_gammas,
                        WlongH_alphas_proposed, Wlongh_alphas_proposed,
                        WlongH2_alphas_proposed,

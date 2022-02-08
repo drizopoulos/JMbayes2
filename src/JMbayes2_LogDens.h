@@ -127,7 +127,7 @@ vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
   return out;
 }
 
-//?? delete later, still used in simulate_REs() in mcmc_fit.cpp
+//?? remove later, still used in simulate_REs() in mcmc_fit.cpp
 vec log_surv_old (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
               const vec &W0H2_bs_gammas, const vec &WH_gammas,
               const vec &Wh_gammas, const vec &WH2_gammas,

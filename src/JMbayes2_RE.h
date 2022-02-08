@@ -216,7 +216,6 @@ void update_frailty (vec &frailty, mat &res_frailty, mat &acceptance_frailty,
   res_frailty.row(it) = frailty.t();
   frailtyH_sigmaF_alphaF = frailty_H % alphaF_H * sigmaF;
   frailtyh_sigmaF_alphaF = frailty_h.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
-  // if (save_random_effects) //?? I might need to update this later to save the frailty too
 }
 
 #endif

@@ -509,8 +509,8 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                  W0_H2 = W0_H2, W_H2 = W_H2, X_H2 = X_H2, Z_H2 = Z_H2, U_H2 = U_H2,
                  log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2,
                  ind_RE = ind_RE, extra_parms = extra_parms,
-                 recurrent = !isFALSE(recurrent), #?? recurrent is probably better in the model info
-                 which_term_h = which(strata == 2), which_term_H = which(strata_H == 2)) #?? not sure if all terminal strata will be 2 (could it be other value?)
+                 which_term_h = which(strata == max(strata)), 
+                 which_term_H = which(strata_H == max(strata)))
     ############################################################################
     ############################################################################
     # objects to export
@@ -532,7 +532,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         FunForms_cpp = lapply(FunForms_per_outcome, unlist),
         FunForms_ind = FunForms_ind(FunForms_per_outcome),
         Funs_FunForms = lapply(Funs_FunForms, function (x) if (!is.list(x)) list(x) else x),
-        eps = eps, direction = direction
+        eps = eps, direction = direction, recurrent = !isFALSE(recurrent)
     )
     ############################################################################
     ############################################################################
@@ -555,9 +555,9 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         -coef(Surv_object) / Surv_object$scale
     if (is.null(gammas)) gammas <- 0.0
     alphas <- rep(0.0, sum(sapply(U_H, ncol)))
-    frailty <- rep(0.0, nT) #?? not sure what would be the ideal initial
+    frailty <- rep(0.0, nT)
     alphaF <- 0.0
-    sigmaF <- 0.1 #?? not sure if this would be the ideal value
+    sigmaF <- 0.1
     initial_values <- list(betas = betas, log_sigmas = log_sigmas,
                            sigmas = sigmas, D = D, b = b, bs_gammas = bs_gammas,
                            gammas = gammas, alphas = alphas,
@@ -619,7 +619,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 sigmaF_df = 3.0,
                 sigmaF_sigmas = 5.0,
                 sigmaF_shape = 0.25/0.4,
-                sigmaF_mean = 0.25) #?? not sure if this is the value that we need, for the other sigmas we use exp(log_sigmas)
+                sigmaF_mean = 0.25)
     if (is.null(priors) || !is.list(priors)) {
         priors <- prs
     } else {
