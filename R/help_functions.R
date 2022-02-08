@@ -1268,3 +1268,42 @@ create_sigma_list <- function (sigmas, ss_sigmas, idL) {
 
 lng_unq <- function (x) length(unique(x))
 
+rc_setup <- function(rc_data, trm_data, 
+                     rc_idVar = "id", rc_statusVar = "status", 
+                     rc_startVar = "start", rc_stopVar = "stop",
+                     trm_idVar = "id", trm_statusVar = "status", 
+                     trm_stopVar = "stop",
+                     nameStrata = "strata") {
+    # warnings
+    if(!setequal(rc_data[[rc_idVar]],  trm_data[[trm_idVar]])) {
+        stop("The groups/subjects in both datasets do not seem to match.")
+    }
+    if(any(rc_data[[rc_startVar]]>rc_data[[rc_stopVar]])) {
+        stop(paste0("'", rc_stopVar, "' cannot be smaller than '", rc_startVar,".'"))
+    }
+    rc_bol <- c(rc_idVar, rc_statusVar, rc_startVar, rc_stopVar) %in% names(rc_data)
+    if(any(!rc_bol)) {
+        stop(paste0("\nThe variable '", c(rc_idVar, rc_statusVar, rc_startVar, rc_stopVar)[!rc_bol],
+                    "' is not present in 'rc_data' dataset."))
+    }
+    trm_bol <- c(trm_idVar, trm_statusVar, trm_stopVar) %in% names(trm_data)
+    if(any(!trm_bol)) {
+        stop(paste0("\nThe variable '", c(trm_idVar, trm_statusVar, trm_stopVar)[!trm_bol],
+                    "' is not present in 'trm_data' dataset."))
+    }
+    # sort datasets by id (& start time)
+    rc_data <- rc_data[order(rc_data[[rc_idVar]], rc_data[[rc_startVar]]), ]
+    trm_data <- trm_data[order(trm_data[[trm_idVar]]), ]
+    # create new dataset
+    tail_rows <- cumsum(rle(rc_data[[rc_idVar]])$length)
+    new_rows <- sort(c(seq_along(rc_data[[rc_idVar]]), tail_rows))
+    st_data <- rc_data[new_rows, ]
+    st_data[[nameStrata]] <- 1
+    tail_rows <- tail_rows + seq_along(tail_rows)
+    st_data[[nameStrata]][tail_rows] <- 2
+    st_data[[nameStrata]] <- as.factor(st_data[[nameStrata]])
+    st_data[[rc_startVar]][tail_rows] <- 0
+    st_data[[rc_stopVar]][tail_rows]  <- trm_data[[trm_stopVar]]
+    st_data[[rc_statusVar]][tail_rows] <- trm_data[[trm_statusVar]]
+    return(st_data)
+}
