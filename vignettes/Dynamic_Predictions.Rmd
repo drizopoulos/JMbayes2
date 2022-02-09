@@ -43,9 +43,9 @@ $[b_j \mid T_j^* > t, \mathcal Y_j(t), \tilde \theta]$.
 
 Replicating these steps $L$ times, we can estimate the conditional cumulative risk probabilities
 by 
-$$1 - \frac{1}{L} \sum_{l=1}^L \frac{S \bigl \{u \mid \mathcal H_j(u, \tilde b_j^{(l)}), 
-\tilde \theta^{(l)} \bigr \}}{S \bigl \{t \mid \mathcal H_j(t, \tilde b_j^{(l)}), 
-\tilde \theta^{(l)} \bigr \}},$$
+$$1 - \frac{1}{L} \sum_{l=1}^L \frac{S(u \mid \tilde b_j^{(l)}, 
+\tilde \theta^{(l)})}{S(t \mid \tilde b_j^{(l)}, 
+\tilde \theta^{(l)})},$$
 and their standard error by calculating the standard deviation across the Monte Carlo 
 samples.
 

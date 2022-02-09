@@ -146,9 +146,9 @@
 <li><p>Sample a value <span class="math inline">\(\tilde b_j\)</span> from the posterior of the random effects <span class="math inline">\([b_j \mid T_j^* &gt; t, \mathcal Y_j(t), \tilde \theta]\)</span>.</p></li>
 <li><p>Compute the ratio of survival probabilities <span class="math inline">\(S(u \mid \tilde b_j, \tilde \theta) \Big / S(t \mid \tilde b_j, \tilde \theta)\)</span>.</p></li>
 </ol>
-<p>Replicating these steps <span class="math inline">\(L\)</span> times, we can estimate the conditional cumulative risk probabilities by <span class="math display">\[1 - \frac{1}{L} \sum_{l=1}^L \frac{S \bigl \{u \mid \mathcal H_j(u, \tilde b_j^{(l)}), 
-\tilde \theta^{(l)} \bigr \}}{S \bigl \{t \mid \mathcal H_j(t, \tilde b_j^{(l)}), 
-\tilde \theta^{(l)} \bigr \}},\]</span> and their standard error by calculating the standard deviation across the Monte Carlo samples.</p>
+<p>Replicating these steps <span class="math inline">\(L\)</span> times, we can estimate the conditional cumulative risk probabilities by <span class="math display">\[1 - \frac{1}{L} \sum_{l=1}^L \frac{S(u \mid \tilde b_j^{(l)}, 
+\tilde \theta^{(l)})}{S(t \mid \tilde b_j^{(l)}, 
+\tilde \theta^{(l)})},\]</span> and their standard error by calculating the standard deviation across the Monte Carlo samples.</p>
 </div>
 <div class="section level3">
 <h3 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
