@@ -854,7 +854,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         upp <- fun_event(pred_Event[[ind + 2]])
         strata <- pred_Event[["_strata"]]
         if (is.null(strata)) strata <- rep(1, length(preds))
-        unq_strata <- unique(strata)
+        unq_strata <- sort(unique(strata))
         col_line_event <- rep(col_line_event, length.out = length(unq_strata))
         fill_CI_event <- rep(fill_CI_event, length.out = length(unq_strata))
         times <- pred_Event[[time_var]]
@@ -959,10 +959,10 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
     invisible()
 }
 
-rc_setup <- function(rc_data, trm_data, 
-                     rc_idVar = "id", rc_statusVar = "status", 
+rc_setup <- function(rc_data, trm_data,
+                     rc_idVar = "id", rc_statusVar = "status",
                      rc_startVar = "start", rc_stopVar = "stop",
-                     trm_idVar = "id", trm_statusVar = "status", 
+                     trm_idVar = "id", trm_statusVar = "status",
                      trm_stopVar = "stop",
                      nameStrata = "strata", nameStatus = "status") {
   # warnings

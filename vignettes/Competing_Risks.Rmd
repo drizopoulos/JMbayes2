@@ -34,7 +34,7 @@ pbc2.idCR[pbc2.idCR$id %in% c(1, 2, 5),
 ```
 
 Note that each patient is now represented by two rows (we have two possible causes of
-discontinuation from the study, death and transplantation), the time variable `years` is identical in both rows of each patient, variable `CR` denotes the cause for the specific line of the long dataset, and variable `status2` equals 1 if the corresponding event occurred. 
+discontinuation from the study, death and transplantation), the event time variable `years` is identical in both rows of each patient, variable `CR` denotes the cause for the specific line of the long dataset, and variable `status2` equals 1 if the corresponding event occurred. 
 
 ## Fit models
 For the event process, we specify cause-specific relative risks models. Using dataset `pbc2.idCR`, we fit the corresponding cause-specific Cox regressions by including the interaction terms of age and treatment with variable `CR`, which is treated as a stratification variable using the `strata()` function:
@@ -59,7 +59,7 @@ CR_forms <- list(
 )
 ```
 
-Finally, the competing risks joint model is fitted with the following call to `jm()` (due to the complexity of the model we have increased the number of MCMC iterations and the burn-in period per chain):
+Finally, the competing risks joint model is fitted with the following call to `jm()` (due to the complexity of the model, we have increased the number of MCMC iterations and the burn-in period per chain):
 ```{r, "joint model"}
 jFit_CR <- jm(CoxFit_CR, list(fm1, fm2), time_var = "year", 
               functional_forms = CR_forms, 
@@ -86,8 +86,7 @@ predLong <- predict(jFit_CR, newdata = ND, return_newdata = TRUE,
 predEvent <- predict(jFit_CR, newdata = ND, return_newdata = TRUE,
                      process = "event")
 
-str_ind <- unique(predEvent[["_strata"]])
 plot(predLong, predEvent, outcomes = 1:2, pos_ylab_long = c(0.1, 20))
-legend(x = 8.1, y = 0.45, legend = levels(pbc2.idCR$CR)[str_ind], 
+legend(x = 8.1, y = 0.45, legend = levels(pbc2.idCR$CR), 
        lty = 1, lwd = 2, col = c("#FF0000", "#03BF3D"), bty = "n", cex = 0.8)
 ```

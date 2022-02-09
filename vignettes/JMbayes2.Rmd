@@ -39,9 +39,9 @@ jointFit1 <- jm(CoxFit, fm1, time_var = "year")
 summary(jointFit1)
 ```
 
-The output of the `summary()` method provides some descriptive statistics of the sample at hand, followed by some fit statistics based on the marginal (random effects are integrated out using the Laplace approximation) and conditional on the random effects log-likelihood functions, followed by the estimated variance-covariance matrix for the random effects, followed by the estimates for the survival submodel, followed by the estimates for the longitudinal submodel(s), and finally some information for the MCMC.
+The output of the `summary()` method provides some descriptive statistics of the sample at hand, followed by some fit statistics based on the marginal (random effects are integrated out using the Laplace approximation) and conditional on the random effects log-likelihood functions, followed by the estimated variance-covariance matrix for the random effects, followed by the estimates for the survival submodel, followed by the estimates for the longitudinal submodel(s), and finally some information for the MCMC fitting algorithm.
 
-By default, `jm()` adds the subject-specific linear predictor of the mixed model as a time-varying covariate in the survival relative risk model. In the output this is named as `value(log(serBilir))` to denote that, by default, the current value functional form is used. That is, we assume that the risk at a specific time $t$ is associated with the value of the linear predictor of the longitudinal outcome at the same time point $t$.
+By default, `jm()` adds the subject-specific linear predictor of the mixed model as a time-varying covariate in the survival relative risk model. In the output this is named as `value(log(serBilir))` to denote that, by default, the current value functional form is used. That is, we assume that the instantaneous risk of an event at a specific time $t$ is associated with the value of the linear predictor of the longitudinal outcome at the same time point $t$.
 
 Standard MCMC diagnostics are available to evaluate convergence. For example, the traceplot for the association coefficient `value(log(serBilir))` is produced with the following syntax:
 ```{r, fig.align='center'}
