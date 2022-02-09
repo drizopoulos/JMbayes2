@@ -144,6 +144,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
         colnames(out[[i]][["mcmc"]][["sigmas"]]) <-
             paste0("sigmas_",
                    seq_along(out[[i]][["mcmc"]][["sigmas"]][1, ]))
+        colnames(out[[i]][["mcmc"]][["sigmaF"]]) <- "sigma_frailty"
     }
     # drop sigmas that are not needed
     has_sigmas <- initial_values$log_sigmas > -20.0

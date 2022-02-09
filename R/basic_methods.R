@@ -131,7 +131,7 @@ summary.jm <- function (object, ...) {
                 families = families, respVars = respVars,
                 events = object$model_data$delta,
                 control = object$control, time = object$running_time,
-                call = object$call)
+                call = object$call, recurrent = object$model_info$recurrent)
     tab_f <- function(name) {
         out <- data.frame(Mean = object$statistics$Mean[[name]],
                           StDev = object$statistics$SD[[name]],
@@ -163,6 +163,7 @@ summary.jm <- function (object, ...) {
         }
     }
     out$Survival <- do.call(rbind, list(tab_f("gammas"), tab_f("alphas")))
+    out$sigmaF <- tab_f("sigmaF")[c(1, 3, 4)]
     out$fit_stats <- object$fit_stats
     class(out) <- "summary.jm"
     out
@@ -211,6 +212,10 @@ print.summary.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) 
         rownames(mat) <- rownames(D)
     }
     print(noquote(mat), digits = digits)
+    if(x$recurrent) {
+      cat("\nFrailty standard deviation:\n")
+      print(round(x[["sigmaF"]], digits))
+    }
     cat("\nSurvival Outcome:\n")
     print(round(x[["Survival"]], digits))
     n_outcomes <- length(x$families)
@@ -262,6 +267,10 @@ print.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) {
         rownames(mat) <- rownames(D)
     }
     print(noquote(mat), digits = digits)
+    if(xx$recurrent) {
+      cat("\nFrailty standard deviation:\n")
+      print(round(xx[["sigmaF"]], digits))
+    }
     cat("\nSurvival Outcome:\n")
     print(round(xx[["Survival"]], digits))
     n_outcomes <- length(xx$families)
