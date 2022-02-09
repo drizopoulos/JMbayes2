@@ -122,7 +122,7 @@
       <h1 data-toc-skip>Transformation Functions for Functional Forms</h1>
                         <h4 data-toc-skip class="author">Dimitris Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2022-02-08</h4>
+            <h4 data-toc-skip class="date">2022-02-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Transformation_Functions.Rmd" class="external-link"><code>vignettes/Transformation_Functions.Rmd</code></a></small>
       <div class="hidden name"><code>Transformation_Functions.Rmd</code></div>
@@ -135,9 +135,9 @@
 <h2 id="functional-forms">Functional Forms<a class="anchor" aria-label="anchor" href="#functional-forms"></a>
 </h2>
 <div class="section level3">
-<h3 id="simplified-syntax">Simplified Syntax<a class="anchor" aria-label="anchor" href="#simplified-syntax"></a>
+<h3 id="simplified-syntax">Simplified syntax<a class="anchor" aria-label="anchor" href="#simplified-syntax"></a>
 </h3>
-<p>We have <a href="https://drizopoulos.github.io/JMbayes2/articles/JMbayes2.html#functional-forms-1">previously seen</a> that function <code><a href="../reference/jm.html">jm()</a></code> via its <code>functional_forms</code> argument allows the specification of different functional forms to link the longitudinal and event time outcomes. This argument accepts either single formula or a list of formulas per longitudinal outcome with the terms we wish to include.</p>
+<p>We have <a href="https://drizopoulos.github.io/JMbayes2/articles/JMbayes2.html#functional-forms-1">previously seen</a> that function <code><a href="../reference/jm.html">jm()</a></code> via its <code>functional_forms</code> argument allows the specification of different functional forms to link the longitudinal and event time outcomes. This argument accepts either a single formula or a list of formulas per longitudinal outcome with the terms we wish to include.</p>
 <p>We will illustrate some of these possibilities using the PBC dataset. We start by fitting a Cox model for the composite event transplantation or death, including sex as a baseline covariate:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">'alive'</span><span class="op">)</span>
@@ -184,11 +184,11 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 15 sec</span></code></pre></div>
+<span class="co">#&gt; time: 14 sec</span></code></pre></div>
 <p>In the output this is named as <code>value(hepatomegaly)</code> to denote that the current value functional form is used. That is, we assume that the risk at a specific time <span class="math inline">\(t\)</span> is associated with the value of the linear predictor of the longitudinal outcome at the same time point <span class="math inline">\(t\)</span>. In this particular case, the subject-specific linear predictor denotes the log odds of experiencing hepatomegaly at time <span class="math inline">\(t\)</span>.</p>
 </div>
 <div class="section level3">
-<h3 id="transformation-functions">Transformation Functions<a class="anchor" aria-label="anchor" href="#transformation-functions"></a>
+<h3 id="transformation-functions">Transformation functions<a class="anchor" aria-label="anchor" href="#transformation-functions"></a>
 </h3>
 <p>The fact that the default version of the current value functional form is on the linear predictor scale of the mixed model may be problematic to interpret when this linear predictor is connected with a nonlinear link function to mean of the longitudinal outcome. In these situations we may want to transform the subject-specific linear predictor back to the scale of the outcome. To achieve this we can use a transformation function. Continuing on the previous example, we update <code>jointFit1</code> by now linking the expit transformation of the linear predictor (i.e., <span class="math inline">\(\mbox{expit}(x) = \exp(x) / \{1 + \exp(x)\}\)</span>) with the risk of an event. This is done using the <code><a href="../reference/jm.html">vexpit()</a></code> function:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -229,7 +229,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 17 sec</span></code></pre></div>
+<span class="co">#&gt; time: 16 sec</span></code></pre></div>
 <p>Other available functions to use in the definition of the <code>functional_forms</code> argument are <code><a href="../reference/jm.html">vexp()</a></code> for calculating the exponent, <code><a href="../reference/jm.html">vlog()</a></code> for calculating the natural logarithm, and <code><a href="../reference/jm.html">vsqrt()</a></code> for calculating the square root.</p>
 <p>If we want to include the time-varying slope of the transformed linear predictor, we also have the <code><a href="../reference/jm.html">Dexpit()</a></code> and <code><a href="../reference/jm.html">Dexp()</a></code> functions available. As an example, we extend <code>jointFit2</code> by including the derivative of the <span class="math inline">\(\mbox{expit}()\)</span> transformation:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -276,11 +276,11 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 19 sec</span></code></pre></div>
+<span class="co">#&gt; time: 18 sec</span></code></pre></div>
 <p>The call to <code>Dexpit(slope(hepatomegaly))</code> is internally transformed to <code>Dexpit(value(hepatomegaly)):slope(hepatomegaly)</code>, which calculates the derivative of the <span class="math inline">\(\mbox{expit}()\)</span> evaluated at the linear predictor times the derivative of the linear predictor. This is because <span class="math display">\[\frac{d}{dt} \mbox{expit}\{\eta(t)\} = \mbox{expit}\{\eta(t)\} \, \Bigl [ 1 - \mbox{expit}\{\eta(t)\} \Bigr ] \times \frac{d}{dt}\eta(t)\]</span></p>
 </div>
 <div class="section level3">
-<h3 id="the-slope-functional-form">The Slope Functional Form<a class="anchor" aria-label="anchor" href="#the-slope-functional-form"></a>
+<h3 id="the-slope-functional-form">The Slope functional form<a class="anchor" aria-label="anchor" href="#the-slope-functional-form"></a>
 </h3>
 <p>As we have seen in previous examples, the <code><a href="../reference/jm.html">slope()</a></code> function is used to specify the slope functional form <span class="math inline">\(d \eta(t)/dt\)</span>. According to the <a href="https://en.wikipedia.org/wiki/Derivative#Rigorous_definition" class="external-link">definition of the derivative</a>, this corresponds to the change in the longitudinal profile <span class="math inline">\(\{\eta(t + \varepsilon) - \eta(t)\}/ \varepsilon\)</span> as <span class="math inline">\(\varepsilon\)</span> approaches zero. However, the interpretation of this term may be challenging in some settings. A possible alternative would be to increase the value of <span class="math inline">\(\varepsilon\)</span>, e.g., <span class="math inline">\(\varepsilon = 1\)</span>. For example, if the time scale is years, this would quantify the change of the longitudinal profile in the last year before <span class="math inline">\(t\)</span>.</p>
 <p>To fit a joint model with such a term, we can use the <code>eps</code> and <code>direction</code> arguments of the <code><a href="../reference/jm.html">slope()</a></code> function. We illustrate this in the following example, in which we use the serum bilirubin</p>

@@ -122,7 +122,7 @@
       <h1 data-toc-skip>Univariate and Multivariate Joint Models</h1>
                         <h4 data-toc-skip class="author">Dimitris Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2022-02-08</h4>
+            <h4 data-toc-skip class="date">2022-02-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/JMbayes2.Rmd" class="external-link"><code>vignettes/JMbayes2.Rmd</code></a></small>
       <div class="hidden name"><code>JMbayes2.Rmd</code></div>
@@ -185,9 +185,9 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 14 sec</span></code></pre></div>
-<p>The output of the <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method provides some descriptive statistics of the sample at hand, followed by some fit statistics based on the marginal (random effects are integrated out using the Laplace approximation) and conditional on the random effects log-likelihood functions, followed by the estimated variance-covariance matrix for the random effects, followed by the estimates for the survival submodel, followed by the estimates for the longitudinal submodel(s), and finally some information for the MCMC.</p>
-<p>By default, <code><a href="../reference/jm.html">jm()</a></code> adds the subject-specific linear predictor of the mixed model as a time-varying covariate in the survival relative risk model. In the output this is named as <code>value(log(serBilir))</code> to denote that, by default, the current value functional form is used. That is, we assume that the risk at a specific time <span class="math inline">\(t\)</span> is associated with the value of the linear predictor of the longitudinal outcome at the same time point <span class="math inline">\(t\)</span>.</p>
+<span class="co">#&gt; time: 15 sec</span></code></pre></div>
+<p>The output of the <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method provides some descriptive statistics of the sample at hand, followed by some fit statistics based on the marginal (random effects are integrated out using the Laplace approximation) and conditional on the random effects log-likelihood functions, followed by the estimated variance-covariance matrix for the random effects, followed by the estimates for the survival submodel, followed by the estimates for the longitudinal submodel(s), and finally some information for the MCMC fitting algorithm.</p>
+<p>By default, <code><a href="../reference/jm.html">jm()</a></code> adds the subject-specific linear predictor of the mixed model as a time-varying covariate in the survival relative risk model. In the output this is named as <code>value(log(serBilir))</code> to denote that, by default, the current value functional form is used. That is, we assume that the instantaneous risk of an event at a specific time <span class="math inline">\(t\)</span> is associated with the value of the linear predictor of the longitudinal outcome at the same time point <span class="math inline">\(t\)</span>.</p>
 <p>Standard MCMC diagnostics are available to evaluate convergence. For example, the traceplot for the association coefficient <code>value(log(serBilir))</code> is produced with the following syntax:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/coda_methods.html">ggtraceplot</a></span><span class="op">(</span><span class="va">jointFit1</span>, <span class="st">"alphas"</span><span class="op">)</span></code></pre></div>
@@ -269,11 +269,11 @@
 <span class="co">#&gt; iterations per chain: 12000 </span>
 <span class="co">#&gt; burn-in per chain: 2000 </span>
 <span class="co">#&gt; thinning: 5 </span>
-<span class="co">#&gt; time: 1.7 min</span></code></pre></div>
+<span class="co">#&gt; time: 1.6 min</span></code></pre></div>
 <p>The output for the survival submodel contains now the estimated coefficients for <code>value(prothrombin)</code> and <code>value(ascites)</code>, and parameter estimates for all three longitudinal submodels.</p>
 </div>
 <div class="section level3">
-<h3 id="functional-forms">Functional Forms<a class="anchor" aria-label="anchor" href="#functional-forms"></a>
+<h3 id="functional-forms">Functional forms<a class="anchor" aria-label="anchor" href="#functional-forms"></a>
 </h3>
 <p>As mentioned above, the default call to <code><a href="../reference/jm.html">jm()</a></code> includes the subject-specific linear predictors of the mixed-effects models as time-varying covariates in the relative risk model. However, this is just one of the many possibilities we have to link the longitudinal and survival outcomes. The argument <code>functional_forms</code> of <code><a href="../reference/jm.html">jm()</a></code> provides additional options. Based on previous experience, two extra functional forms are provided, namely, the time-varying slope and the time-varying <em>normalized</em> area/cumulative-effect. The time-varying slope is the first order derivative of the subject-specific linear predictor of the mixed-effect model with respect to the (follow-up) time variable. The time-varying <em>normalized</em> area/cumulative-effect is the integral of the subject-specific linear predictor of the mixed-effect model from zero to the current (follow-up) time <span class="math inline">\(t\)</span> divided by <span class="math inline">\(t\)</span>. The integral is the area under the subject-specific longitudinal profile; by dividing the integral by <span class="math inline">\(t\)</span> we obtain the average of the subject-specific longitudinal profile over the corresponding period <span class="math inline">\((0, t)\)</span>.</p>
 <p>To illustrate how the <code>functional_forms</code> argument can be used to specify these functional forms, we update the joint model <code>jointFit2</code> by including the time-varying slope of log serum bilirubin instead of the value, and also the interaction of this slope with sex, and for prothrombin we include the normalized cumulative effect. For ascites, we keep the value functional form. The corresponding syntax to fit this model is:</p>

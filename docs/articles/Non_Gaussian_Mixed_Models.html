@@ -122,7 +122,7 @@
       <h1 data-toc-skip>Non-Gaussian Mixed Models</h1>
                         <h4 data-toc-skip class="author">Dimitris Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2022-02-08</h4>
+            <h4 data-toc-skip class="date">2022-02-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Non_Gaussian_Mixed_Models.Rmd" class="external-link"><code>vignettes/Non_Gaussian_Mixed_Models.Rmd</code></a></small>
       <div class="hidden name"><code>Non_Gaussian_Mixed_Models.Rmd</code></div>
@@ -134,7 +134,7 @@
 <div class="section level2">
 <h2 id="non-gaussian-joint-models-with-jmbayes2">Non-Gaussian Joint Models with JMbayes2<a class="anchor" aria-label="anchor" href="#non-gaussian-joint-models-with-jmbayes2"></a>
 </h2>
-<p>Taking advantage of the versatility of the <a href="https://drizopoulos.github.io/GLMMadaptive/" class="external-link"><strong>GLMMadaptive</strong></a> package, <strong>JMbayes2</strong> can fit joint models with several different types of mixed-effects models. The following examples illustrate these capabilities. All examples have the same structure, namely, first, a short motivation for each mixed-model is give, followed by a piece of R code simulating data from a joint model with the respective mixed-effect sub-model, closing by the syntax to fit the joint model. In this last part, the main difference per example is the call to <code>mixed_model()</code>.</p>
+<p>Taking advantage of the versatility of the <a href="https://drizopoulos.github.io/GLMMadaptive/" class="external-link"><strong>GLMMadaptive</strong></a> package, <strong>JMbayes2</strong> can fit joint models with several different types of mixed-effects models. The following examples illustrate these capabilities. All examples have the same structure, namely, first, a short motivation for each mixed-model is given, followed by a piece of R code simulating data from a joint model with the respective mixed-effects sub-model, closing by the syntax to fit the joint model. In this last part, the main difference per example is the call to <code>mixed_model()</code>.</p>
 <div class="section level3">
 <h3 id="beta-mixed-models">Beta mixed models<a class="anchor" aria-label="anchor" href="#beta-mixed-models"></a>
 </h3>
@@ -400,12 +400,12 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 12 sec</span></code></pre></div>
+<span class="co">#&gt; time: 13 sec</span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="studentss-t-mixed-models">Students’s-t mixed models<a class="anchor" aria-label="anchor" href="#studentss-t-mixed-models"></a>
 </h3>
-<p>Outlying observations is common occurring issue in practice. Several methods have been proposed in the literature for identifying such observations in the context of longitudinal data. However, removing such values from the analysis is in general not recommended unless we also have external information why these values are outlying. Hence, in these settings we would need to fit mixed models to accommodate these observations. A well-known approach to achieve this is to replace the normal distribution for the error terms in the linear mixed model with a Student’s-t distribution that has heavier tails and allows for such values.</p>
+<p>Outlying observations is a common occurring issue in practice. Several methods have been proposed in the literature for identifying such observations in the context of longitudinal data. However, removing such values from the analysis is in general not recommended unless we also have external information why these values are outlying. Hence, in these settings we would need to fit mixed models to accommodate these observations. A well-known approach to achieve this is to replace the normal distribution for the error terms in the linear mixed model with a Student’s-t distribution that has heavier tails.</p>
 <p>The following syntax simulates data from a joint model with a Student’s-t mixed effects model:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span>
@@ -662,7 +662,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 25 sec</span></code></pre></div>
+<span class="co">#&gt; time: 24 sec</span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -800,7 +800,7 @@
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 53 sec</span></code></pre></div>
+<span class="co">#&gt; time: 47 sec</span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>

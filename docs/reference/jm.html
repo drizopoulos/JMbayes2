@@ -128,7 +128,7 @@
 <dt>time_var</dt>
 <dd><p>a <code>character</code> string indicating the time variable in the mixed-effects model(s).</p></dd>
 <dt>recurrent</dt>
-<dd><p>logical; if TRUE a recurrent and terminal event model is fitted - not working yet.</p></dd>
+<dd><p>a <code>character</code> string indicating "calendar" or "gap" timescale to fit a recurrent event model.</p></dd>
 <dt>functional_forms</dt>
 <dd><p>a <code>list</code> of formulas. Each formula corresponds to one longitudinal outcome and specifies the association structure between that outcome and the survival submodel as well as any interaction terms between the components of the longitudinal outcome and the survival submodel. See <b>Examples</b>.</p></dd>
 <dt>data_Surv</dt>
@@ -434,7 +434,7 @@ and <code>"backward"</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> iterations per chain: 11000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> burn-in per chain: 1000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> thinning: 1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> time: 34 sec</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> time: 33 sec</span>
 <span class="r-in"><span class="fu"><a href="coda_methods.html">traceplot</a></span><span class="op">(</span><span class="va">joint_model_fit_1</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="jm-1.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="jm-2.png" alt="" width="700" height="433"></span>
