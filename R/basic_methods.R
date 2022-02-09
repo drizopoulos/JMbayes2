@@ -958,3 +958,44 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
     }
     invisible()
 }
+
+rc_setup <- function(rc_data, trm_data, 
+                     rc_idVar = "id", rc_statusVar = "status", 
+                     rc_startVar = "start", rc_stopVar = "stop",
+                     trm_idVar = "id", trm_statusVar = "status", 
+                     trm_stopVar = "stop",
+                     nameStrata = "strata", nameStatus = "status") {
+  # warnings
+  if(!setequal(rc_data[[rc_idVar]],  trm_data[[trm_idVar]])) {
+    stop("The groups/subjects in both datasets do not seem to match.")
+  }
+  if(any(rc_data[[rc_startVar]]>rc_data[[rc_stopVar]])) {
+    stop(paste0("'", rc_stopVar, "' cannot be smaller than '", rc_startVar,".'"))
+  }
+  rc_bol <- c(rc_idVar, rc_statusVar, rc_startVar, rc_stopVar) %in% names(rc_data)
+  if(any(!rc_bol)) {
+    stop(paste0("\nThe variable '", c(rc_idVar, rc_statusVar, rc_startVar, rc_stopVar)[!rc_bol],
+                "' is not present in 'rc_data' dataset."))
+  }
+  trm_bol <- c(trm_idVar, trm_statusVar, trm_stopVar) %in% names(trm_data)
+  if(any(!trm_bol)) {
+    stop(paste0("\nThe variable '", c(trm_idVar, trm_statusVar, trm_stopVar)[!trm_bol],
+                "' is not present in 'trm_data' dataset."))
+  }
+  # sort datasets by id (& start time)
+  rc_data <- rc_data[order(rc_data[[rc_idVar]], rc_data[[rc_startVar]]), ]
+  trm_data <- trm_data[order(trm_data[[trm_idVar]]), ]
+  # create new dataset
+  tail_rows <- cumsum(rle(rc_data[[rc_idVar]])$length)
+  new_rows <- sort(c(seq_along(rc_data[[rc_idVar]]), tail_rows))
+  dataOut <- rc_data[new_rows, , drop = FALSE]
+  dataOut[[nameStrata]] <- 1
+  tail_rows <- tail_rows + seq_along(tail_rows)
+  dataOut[[nameStrata]][tail_rows] <- 2
+  dataOut[[nameStrata]] <- as.factor(dataOut[[nameStrata]])
+  dataOut[[rc_startVar]][tail_rows] <- 0
+  dataOut[[rc_stopVar]][tail_rows]  <- trm_data[[trm_stopVar]]
+  dataOut[[nameStatus]] <- dataOut[[rc_statusVar]]
+  dataOut[[nameStatus]][tail_rows] <- trm_data[[trm_statusVar]]
+  dataOut
+}
