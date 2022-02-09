@@ -3,7 +3,7 @@
 ## Major
 * Dynamic predictions for competing risks data can now be computed. An example is given in the Competing Risks vignette.
 
-* Function `jm()` can now fit joint models with recurrent event and terminating event processes.
+* Function `jm()` can now fit joint models with a recurrent event process with or without a terminating event. The model accommodates discontinuous risk intervals, and the time can be defined in terms of the gap or calendar timescale. An example is given in the Recurrent Events vignette.
 
 # JMbayes2 0.1.7
 
