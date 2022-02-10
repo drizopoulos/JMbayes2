@@ -364,7 +364,7 @@ gen_data <- function(){
       tstop <- if(!inherits(root, "try-error")) root else NA
       start_times[[j]] <- tstart
       stop_times[[j]] <- tstart + tstop
-      dur <- 0# runif(1, 0, 0.05) # recurrent event duration
+      dur <- runif(1, 0, 0.1) # recurrent event duration
       tstart <- tstart + tstop + dur
       id_times[[j]] <- ter$id[i]
       j <- j + 1
