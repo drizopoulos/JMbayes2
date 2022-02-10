@@ -1,0 +1,512 @@
+---
+title: "Recurrent Events"
+author: "Pedro Miranda Afonso"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Recurrent Events}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("JMbayes2")
+```
+
+# Recurrent events
+
+## Introduction
+
+In **JMbayes2** is now possible to fit joint models with a recurrent event process. Recurrent events are correlated events that may occur more than once over the follow-up period for a given subject. Compared to previously proposed joint models for recurrent events, we allow, for the first time, the accommodation of multiple longitudinal markers with different distributions. 
+
+Our implementation allows the specification of various functional forms to link these markers with the risk of recurrent and terminal events. Furthermore, it enables the risk intervals to be defined in terms of the *gap* or *calendar* timescales. The two timescales use a different zero-time reference. The *calendar* uses the study entry, while the *gap* uses the end of the previous event (Figure 1). *Gap* assumes a renewal after each event and resets the time to zero.
+
+<br>
+
+```{r timescale, fig.align = "center", fig.width = 5.5, echo = FALSE, fig.cap = "<b>Figure 1</b> Visual representation of an hazard function under the gap or calendar timescale. During the folow-up the subject experienced three events."}
+col_f <- function(color, percent = 50) {
+  rgb.col <- col2rgb(color)
+  new.col <- rgb(rgb.col[1], rgb.col[2], rgb.col[3], max = 255,
+                 alpha = (100 - percent) * 255 / 100)
+  return(new.col)
+}
+
+set.seed(2021)
+phi <- 0.3 # weibull scale
+sigma_t <- 0.8  # weibull shape
+s_i <- 3 # number of recurrent events
+col1 <- "#002D6D" # EMC dark blue
+col2 <- NULL
+grey <- "#d6d6d6"
+dur <- runif(s_i, 0, 10) # duration of the events
+dur <- rep(0, s_i)
+
+# functions
+hzd <- function(t, sigma_t, phi, eta = 0) phi * sigma_t * t^(sigma_t-1)  * exp(eta) # hazard function
+
+# surival times
+ev_start <- sort(runif(s_i, 0, 200))
+ev_stop <- ev_start + dur 
+
+t <- seq(1, 200, length.out = 10000)
+
+# calendar
+h1 <- hzd(t, sigma_t = sigma_t, phi = phi)
+h2 <- hzd(t, sigma_t = sigma_t, phi = phi, eta = 0.25)
+
+bol <- mapply(function(start, stop) t >= start & t <= stop, ev_start, ev_stop)
+bol <- apply(bol, 1, any)
+h1[bol] <- 0
+h2[bol] <- 0
+
+par(fig = c(0, 1, 0.5, 1-0.1))
+par(mar = c(0, 4.1, 0, 2.1))
+plot(0, type = "n", ylim = c(0, max(h1, h2)), xlim = c(0, 200), 
+     ylab = "", xaxt = 'n', yaxt = 'n', yaxs = "i")
+axis(2, labels = FALSE, tck = -0.03)
+mtext("Hazard", 2, 0.75)
+axis(3, at = ev_start, labels = seq_along(ev_start), tck = -0.03,
+     mgp = c(3, .5, 0))
+
+par_usr <- par("usr")
+for(i in seq_len(s_i)){
+  rect(ev_start[i], par_usr[3], ev_stop[i], par_usr[4], 
+       col = col_f(grey, 50), border = NA)
+}
+lines(t, h2, lwd = 2, col = col2)
+lines(t, h1, lwd = 2, col = col1)
+abline(v = ev_start, lty = 2)
+mtext("Calendar", 3, -2, font = 2)
+
+# gap
+par(fig = c(0, 1, 0.1, 0.5), new = TRUE)
+plot(0, type = "n", ylim = c(0, max(h1, h2)), xlim = c(0, 200), 
+     ylab = "", xaxt = 'n', yaxt = 'n', yaxs = "i")
+mtext("Gap", 3, -2, font = 2)
+axis(1, labels = FALSE, tck = -0.03)
+mtext("Time", 1, 0.5)
+axis(2, labels = FALSE, tck = -0.03)
+mtext("Hazard", 2, 0.75)
+
+h1 <- hzd(t, sigma_t = sigma_t, phi = phi)
+h2 <- hzd(t, sigma_t = sigma_t, phi = phi, eta = 0.25)
+
+risk_start <- c(0, ev_stop)
+risk_stop  <- c(ev_start, 200)
+
+bol <- mapply(function(start, stop) t >= start & t <= stop, risk_start, risk_stop)
+h1  <- apply(bol, 2, function(col) {
+  res <- numeric(length(col))
+  res[col] <- h1[seq_len(sum(col))]
+  res
+})
+h1 <- rowSums(h1)
+
+h2 <- apply(bol, 2, function(col) {
+  res <- numeric(length(col))
+  res[col] <- h2[seq_len(sum(col))]
+  res
+})
+h2 <- rowSums(h2)
+
+par_usr <- par("usr")
+for(i in seq_len(s_i)){
+  rect(ev_start[i], par_usr[3], ev_stop[i], par_usr[4], 
+       col = col_f(grey, 50), border = NA)
+}
+lines(t, h2, lwd = 2, col = col2)
+lines(t, h1, lwd = 2, col = col1)
+abline(v = ev_start, lty = 2)
+
+```
+
+<br>
+
+The model also accommodates discontinuous risk intervals, i.e., periods in which the subject is not at risk of experiencing the recurring event (Figure 2). For example, while a patient is in the hospital, they are not at risk of being hospitalized again.
+
+<br>
+
+```{r disc_risk, fig.align = "center", fig.width = 5.5, echo = FALSE, fig.cap = "<b>Figure 2</b> Visual representation of an hazard function under the gap or calendar timescale, while accounting for non-risk periods (gray areas). During the folow-up the subject experienced three events."}
+set.seed(2021)
+phi <- 0.3 # weibull scale
+sigma_t <- 0.8  # weibull shape
+s_i <- 3 # number of recurrent events
+col1 <- "#002D6D" # EMC dark blue
+col2 <- NULL
+grey <- "#d6d6d6"
+dur <- runif(s_i, 0, 10) # duration of the events
+#dur <- rep(0, s_i)
+
+# functions
+hzd <- function(t, sigma_t, phi, eta = 0) phi * sigma_t * t^(sigma_t-1)  * exp(eta) # hazard function
+
+# surival times
+ev_start <- sort(runif(s_i, 0, 200))
+ev_stop <- ev_start + dur 
+
+t <- seq(1, 200, length.out = 10000)
+
+# calendar
+h1 <- hzd(t, sigma_t = sigma_t, phi = phi)
+h2 <- hzd(t, sigma_t = sigma_t, phi = phi, eta = 0.25)
+
+bol <- mapply(function(start, stop) t >= start & t <= stop, ev_start, ev_stop)
+bol <- apply(bol, 1, any)
+h1[bol] <- 0
+h2[bol] <- 0
+
+par(fig = c(0, 1, 0.5, 1-0.1))
+par(mar = c(0, 4.1, 0, 2.1))
+plot(0, type = "n", ylim = c(0, max(h1, h2)), xlim = c(0, 200), 
+     ylab = "", xaxt = 'n', yaxt = 'n', yaxs = "i")
+axis(2, labels = FALSE, tck = -0.03)
+mtext("Hazard", 2, 0.75)
+axis(3, at = ev_start, labels = seq_along(ev_start), tck = -0.03,
+     mgp = c(3, .5, 0))
+
+par_usr <- par("usr")
+for(i in seq_len(s_i)){
+  rect(ev_start[i], par_usr[3], ev_stop[i], par_usr[4], 
+       col = col_f(grey, 50), border = NA)
+}
+lines(t, h2, lwd = 2, col = col2)
+lines(t, h1, lwd = 2, col = col1)
+abline(v = ev_start, lty = 2)
+mtext("Calendar", 3, -2, font = 2)
+
+# gap
+par(fig = c(0, 1, 0.1, 0.5), new = TRUE)
+plot(0, type = "n", ylim = c(0, max(h1, h2)), xlim = c(0, 200), 
+     ylab = "", xaxt = 'n', yaxt = 'n', yaxs = "i")
+mtext("Gap", 3, -2, font = 2)
+axis(1, labels = FALSE, tck = -0.03)
+mtext("Time", 1, 0.5)
+axis(2, labels = FALSE, tck = -0.03)
+mtext("Hazard", 2, 0.75)
+
+h1 <- hzd(t, sigma_t = sigma_t, phi = phi)
+h2 <- hzd(t, sigma_t = sigma_t, phi = phi, eta = 0.25)
+
+risk_start <- c(0, ev_stop)
+risk_stop  <- c(ev_start, 200)
+
+bol <- mapply(function(start, stop) t >= start & t <= stop, risk_start, risk_stop)
+h1  <- apply(bol, 2, function(col) {
+  res <- numeric(length(col))
+  res[col] <- h1[seq_len(sum(col))]
+  res
+})
+h1 <- rowSums(h1)
+
+h2 <- apply(bol, 2, function(col) {
+  res <- numeric(length(col))
+  res[col] <- h2[seq_len(sum(col))]
+  res
+})
+h2 <- rowSums(h2)
+
+par_usr <- par("usr")
+for(i in seq_len(s_i)){
+  rect(ev_start[i], par_usr[3], ev_stop[i], par_usr[4], 
+       col = col_f(grey, 50), border = NA)
+}
+lines(t, h2, lwd = 2, col = col2)
+lines(t, h1, lwd = 2, col = col1)
+abline(v = ev_start, lty = 2)
+
+```
+
+<br>
+
+A joint model with $p$ longitudinal markers, a terminal event process, and a recurrent event process can be described as follows,
+
+$$\small{\require{color}
+\begin{cases}
+y_{1_i}(t)= \colorbox{#79FCFD80}{$ x_{1_i}(t)^\top\beta_1 +  z_{1_i}(t)^\top b_{1_i}$} + \varepsilon_1(t) = \colorbox{#79FCFD80}{$ \eta_{1_i}(t)$} + \varepsilon_1(t) & \text{Longitudinal marker 1}\\
+\vdots \\
+y_{p_i}(t)= \colorbox{#FCFF5580}{$ x_{p_i}(t)^\top\beta_p +  z_{p_i}(t)^\top b_{p_i}$} + \varepsilon_p(t) = \colorbox{#FCFF5580}{$ \eta_{p_i}(t)$} + \varepsilon_p(t) & \text{Longitudinal marker p}\\
+h_{T_i}(t)= h_{T_0}(t)\exp\left\{  w_{T_i}(t)^\top \gamma_T + \colorbox{#79FCFD80}{$\mathcal{f}_{T_1}\left\{\eta_{1_i}(t)\right\}$} \alpha_{T_1} + \dots + \colorbox{#FCFF5580}{$\mathcal{f}_{T_p}\left\{\eta_{p_i}(t)\right\}$} \alpha_{T_p} + \colorbox{#5FFFAB80}{$b_{F_i}$} \alpha_{F} \right\} & \text{Terminal event}\\
+h_{R_i}(t)= h_{R_0}(t)\exp\left\{  w_{R_i}(t)^\top \gamma_R + \colorbox{#79FCFD80}{$\mathcal{f}_{R_1}\left\{\eta_{2_i}(t)\right\}$} \alpha_{R_1} + \dots + \colorbox{#FCFF5580}{$\mathcal{f}_{R_p}\left\{\eta_{p_i}(t)\right\}$} \alpha_{R_p} + \colorbox{#5FFFAB80}{$b_{F_i}$} \right\} & \text{Recurrent event}\\
+\end{cases},
+}
+$$
+<br>
+$$
+\begin{pmatrix} \colorbox{#79FCFD80}{$b_{1_i}$} \\ \vdots \\ \colorbox{#FCFF5580}{$b_{p_i}$} \\ \colorbox{#5FFFAB80}{$b_{F_i}$}\end{pmatrix} \sim MVN \left(0, \begin{pmatrix}D & 0 \\ & \sigma^2_F\end{pmatrix}\right), \qquad
+\varepsilon(t) \sim N \left(0, \sigma^2\right),
+$$
+<br>
+
+where $i=1,\dots,\text{n subjects}$. The longitudinal processes are expressed through linear mixed-effects models, while the terminal and recurrence processes are described through proportional hazard models. The multiple processes are related via a latent structure of random effects, highlighted by the same color. $\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}$ and $\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}$ describe the functional forms that links the longitudinal marker $j$ with the risk of the recurrent and terminal events, respectively. The frailty $b_{F_i}$ is a random effect that accounts for the correlation intra-subjects due to unobserved individual-level characteristics.
+
+
+## Example
+
+### Data
+
+For the purpose of example, we simulate data from a joint model with three outcomes: one longitudinal outcome, one terminal failure-time, and one recurrent failure-time. We assume that the underlying value of the longitudinal outcome is associated with both risk models and use the *gap* timescale. The reader can easily extend this example to accommodate multiple longitudinal markers with other forms of association, exclude the terminal event, or use a different timescale.
+
+```{r gen_data}
+gen_data <- function(){
+  n <- 500 # desired number of subjects 
+  n_i <- 15  # number of (planned) encounters per unit
+  tmax <- 7 # maximum follow-up time (type I censoring)
+  scale <- "gap" # hazard timescale
+  ##############################################################################
+  n_scl <- 1.5
+  n_target <- n
+  n <- n * n_scl
+  # longitudinal outcome 1/2
+  ## param true values
+  betas <- c("Intercept" = 6.94, "Time1" = 1.30, "Time2" = 1.84, "Time3" = 1.82)
+  sigma_y <- 0.6 # measurement error sd
+  D <- matrix(0, 4, 4)
+  D[lower.tri(D, TRUE)] <- c(0.71, 0.33, 0.07, 1.26, 2.68, 3.81, 4.35, 7.62, 5.4, 8)
+  D <- D + t(D)
+  diag(D) <- diag(D) * 0.5
+  b <- MASS::mvrnorm(n, rep(0, nrow(D)), D)
+  Bkn <- c(0, 7)
+  kn <- c(1, 3)
+  remove(D)
+  ##############################################################################
+  # terminal outcome
+  ## param true values
+  gammas_t <- c("(Intercept)" = -9, "Group" = 0.5, "Age" = 0.05) # phi = exp(Intercept)
+  sigma_t <- 2
+  alpha_t <- 0.5 # association biomarker
+  alphaF <- 0.25 # association frailty
+  sigmaF <- 0.25 # frailty SD
+  frailty <- rnorm(n, mean = 0, sd = sigmaF)
+  ## terminal data
+  group <- rep(0:1, each = n/2)
+  age <- runif(n, 30, 70)
+  W_t <- cbind("(Intercept)" = 1, "Group" = group, "Age" = age)
+  eta_t <- as.vector(W_t %*% gammas_t + alphaF * frailty) 
+  invS_t <- function(t, u, i) {
+    h <- function(s) { 
+      NS <- splines::ns(s, knots = kn, Boundary.knots = Bkn)
+      X <- cbind(1, NS)
+      Z <- cbind(1, NS)
+      eta_y <- as.vector(X %*% betas + rowSums(Z * b[rep(i, nrow(Z)), ]))
+      exp(log(sigma_t) + (sigma_t - 1) * log(s) + eta_t[i] + eta_y * alpha_t) 
+    }
+    integrate(h, lower = 0, upper = t)$value + log(u)
+  }
+  u_t <- runif(n)
+  ter_times <- numeric(n)
+  for(i in seq_len(n)) {
+    root <- try(uniroot(invS_t, interval = c(1e-05, 250), # arbitrary upper limit
+                        u = u_t[i], i = i)$root, TRUE)  
+    ter_times[i] <- if (!inherits(root, "try-error")) root else NA
+  }
+  ter_na <- !is.na(ter_times)
+  if(sum(ter_na) < n_target) stop("Not enough patients. Increase 'n_scl'.")
+  rmv_ids <- sample(which(ter_na), sum(ter_na) - n_target)
+  ter_na[rmv_ids] <- FALSE # remove the excess of subjects
+  ter <- data.frame(id    = seq_len(n)[ter_na],
+                     time  = ter_times[ter_na],
+                     group = group[ter_na],
+                     age   = age[ter_na])
+  frailty <- frailty[ter_na]
+  b <- b[ter_na, , drop = FALSE]
+  cens_times <- tmax
+  ter$status <- as.numeric(ter$time <= cens_times) # event indicator
+  ter$time <- pmin(ter$time, cens_times) # add censoring time
+  remove(gammas_t, sigma_t, group, W_t, eta_t, alpha_t, invS_t, u_t, i, root, 
+         n_target, rmv_ids, ter_times, cens_times, n, alphaF, age, ter_na,
+         sigmaF)
+  ##############################################################################
+  # recurring outcome
+  ## param true values
+  gammas_r <- c("(Intercept)" = -9+3, "Group" = 0.5, "Age" = 0.05) # phi = exp(Intercept)
+  sigma_r <- 2
+  alpha_r <- 0.5 # association biomarker
+  ## recurring data
+  W_r <- cbind("(Intercept)" = 1, "Group" = ter$group, "Age" = ter$age)
+  eta_r <- as.vector(W_r %*% gammas_r + frailty)
+  if(scale == "gap") {
+    invS_r <- function(t, u, i, tstart) {
+      h <- function(s) { 
+        NS <- splines::ns(s + tstart, knots = kn, Boundary.knots = Bkn)
+        X <- cbind(1, NS)
+        Z <- cbind(1, NS)
+        eta_y <- as.vector(X %*% betas + rowSums(Z * b[rep(i, nrow(Z)), ]))
+        exp(log(sigma_r) + (sigma_r - 1) * log(s) + eta_r[i] + eta_y * alpha_r) 
+      }
+      integrate(h, lower = 0, upper = t)$value + log(u)
+    }
+  } else if(scale == "calendar") {
+    invS_r <- function(t, u, i, tstart) {
+      h <- function(s) { 
+        NS <- splines::ns(s + tstart, knots = kn, Boundary.knots = Bkn)
+        X <- cbind(1, NS)
+        Z <- cbind(1, NS)
+        eta_y <- as.vector(X %*% betas + rowSums(Z * b[rep(i, nrow(Z)), ]))
+        exp(log(sigma_r) + (sigma_r - 1) * log(s + tstart) + eta_r[i] + eta_y * alpha_r) 
+      }
+      integrate(h, lower = 0, upper = t)$value + log(u)
+    }
+  }
+  stop_times <- start_times <- id_times <- list()
+  j <- 1
+  for(i in seq_along(ter$id)) {
+    tstart <- 0
+    while(!is.na(tstart) & tstart < ter$time[i]) {
+      u_r <- runif(1)
+      root <- try(uniroot(invS_r, interval = c(1e-05, 250), # arbitrary upper limit
+                          u = u_r, i = i, tstart = tstart)$root, TRUE)  
+      tstop <- if(!inherits(root, "try-error")) root else NA
+      start_times[[j]] <- tstart
+      stop_times[[j]] <- tstart + tstop
+      dur <- 0# runif(1, 0, 0.05) # recurrent event duration
+      tstart <- tstart + tstop + dur
+      id_times[[j]] <- ter$id[i]
+      j <- j + 1
+    }
+  }
+  rec <- data.frame(id     = unlist(id_times),                       
+                    tstart = unlist(start_times),
+                    tstop  = unlist(stop_times))
+  rec$id  <- match(rec$id, unique(rec$id)) # rename IDs
+  rec$group <- ter$group[rec$id]
+  rec$age <- ter$age[rec$id]
+  rec$Stime <- ter$time[rec$id]
+  rec$status <- as.numeric(!is.na(rec$tstop) & rec$tstop < rec$Stime)  # event indicator
+  rec$tstop <- pmin(rec$tstop, rec$Stime, na.rm = TRUE) # add cens time
+  rec$Stime <- NULL
+  ter$id <- seq_along(ter$id)
+  remove(gammas_r, sigma_r, W_r, eta_r, alpha_r, invS_r, stop_times, start_times, 
+         id_times, dur, j, i, tstart, u_r, root, tstop)
+  ##############################################################################
+  # longitudinal outcome 2/2
+  long <- data.frame(id   = rep(ter$id, each = n_i),
+                     time = c(replicate(length(ter$id), c(0, sort(runif(n_i - 1, 1, tmax))))))
+  X <- model.matrix(~ 1 + splines::ns(time, knots = kn, Boundary.knots = Bkn), 
+                    data = long)
+  Z <- model.matrix(~ 1 + splines::ns(time, knots = kn, Boundary.knots = Bkn), 
+                    data = long)
+  eta_y <- as.vector(X %*% betas + rowSums(Z * b[long$id, ]))
+  long$y <- rnorm(length(eta_y), eta_y, sigma_y)
+  long_cens <- long$time <= rep(ter$time, times = rle(long$id)$lengths) 
+  long <- long[long_cens, , drop = FALSE] # drop censored encounters
+  remove(kn, Bkn, X, betas, Z, b, eta_y, sigma_y, n_i, tmax, long_cens, scale)
+  ##############################################################################
+  # return
+  list(long = long, ter = ter, rec = rec)
+}
+set.seed(2022); fake_data <- gen_data()
+term_data <- fake_data$ter # terminal event data
+recu_data <- fake_data$rec # recurrent events data
+lme_data <- fake_data$long # longitudial marker data
+```
+
+We now have three data frames, each one reporting to a different outcome. To be able to fit the joint model the user needs to organize their failure-time data in the counting process formulation by combining the data for the terminal and recurrent events. Using then a strata variable to distinguish between both. To make this task easier we made available the function `rc_setup`. 
+
+```{r trf_data1}
+cox_data <- rc_setup(rc_data = recu_data, trm_data = term_data,
+                     rc_idVar = "id", rc_statusVar = "status",
+                     rc_startVar = "tstart", rc_stopVar = "tstop",
+                     trm_idVar = "id", trm_statusVar = "status",
+                     trm_stopVar = "time",
+                     nameStrata = "strata", nameStatus = "status")
+```
+
+Each subject has as many rows in the new data frame as the number of their recurrent risk periods plus one for the terminal event. The data frame follows the counting process formulation with the risk intervals delimited by `start` and `stop` variables. The `strata` variable denotes if the type of event, `1` if recurrent or `2` terminal. The `status` equals `1` if the subject had an event and `0` otherwise. As shown below and in Figure 3, the subject 1 experienced seven recurrent events during the follow up; the eighth recurrent event was censored by the terminal event. 
+
+```{r trf_data2}
+cox_data[cox_data$id == 1, c("id", "tstart", "tstop", "status", "strata")]
+```
+
+```{r trf_data3, echo = FALSE, fig.width = 5.5, echo = FALSE, fig.cap = "<b>Figure 3</b> Visual representation of the failure-time data during the follow-up for subject 1. The horizontal black line denotes risk periods, while the blue line non-risk periods. 'R' and 'T' represent a recurrent and terminal event, respectively."}
+
+data <- cox_data[cox_data$id == 1,]
+
+col_seg1 <- 1
+col_seg2 <- "#002D6D" # EMC dark blue
+lwd_seg1 <- 1
+lwd_seg2 <- 10
+xlim <- c(0, ceiling(max(data$tstop)))
+ylim <- c(0.75, length(unique(data$id)) + 0.25)
+
+par(mar = c(2.5, 4.1, 3, 2.1))
+plot(NA, type = "n", xlim = xlim, ylim = ylim, 
+     ylab = "", xlab = "", xaxt = "n", yaxt = "n", 
+     yaxs = "i", bty = "n")
+axis(1, at = seq(min(xlim), max(xlim), by = 1), 
+     tcl = -.35, mgp = c(3, .5, 0),
+     col.axis = '#515151', col.ticks = '#515151', col = "#d6d6d6")
+mtext("Time", side = 1, line = 1.5, col = '#515151')
+abline(v = c(0, max(xlim)), lty = 3, xpd = FALSE, col = "#d6d6d6")
+axis(2, at = unique(data$id), labels = paste0("ID ", unique(data$id)), col = NA, las = 2)
+axis(3, at= 0, labels = "Study\nstart", cex.axis = 1, col.axis = '#515151', col.ticks = '#515151')
+axis(3, at= max(xlim), labels= "Study\nend", cex.axis = 1, col.axis = '#515151', col.ticks = '#515151')
+
+ids <- unique(data$id)
+# follow up
+for(i in ids) {
+  segments(x0 = min(data$tstart[data$id == i]), 
+           x1 = max(data$tstop[data$id == i]),
+           y0 = i, y1 = i, col = col_seg1, lwd = lwd_seg1, lend = 'butt')
+}
+# recurrent events
+for(i in unique(data$id)) {
+  data_temp <- data[data$strata == 1 & data$id == i, ]
+  segments(x0 = head(data_temp$tstop, -1), x1 = tail(data_temp$tstart, -1),
+           y0 = data_temp$id, y1 = data_temp$id, 
+           col = col_seg2, lwd = lwd_seg2, lend = 'butt')
+  mid_points <- (head(data_temp$tstop, -1) + tail(data_temp$tstart, -1))/2
+  text(x = mid_points, y = data_temp$id, labels = "R", pos = 3)
+}
+# terminal events
+for(i in unique(data$id)) {
+  data_temp <- data[data$strata == 2 & data$id == i, ]
+  segments(x0 = data_temp$tstop, x1 = data_temp$tstop + 0.02,
+           y0 = data_temp$id, y1 = data_temp$id, 
+           col = col_seg2, lwd = lwd_seg2, lend = 'butt')
+  text(x = data_temp$tstop, y = data_temp$id, 
+       labels = c("C", "T")[data_temp$status + 1], pos = 1)
+}
+
+```
+
+### Fitting the model
+
+The user then needs to use the `nlme::lme()` function to first fit the linear mixed model that describes the longitudinal outcome. 
+
+```{r fit_lme}
+
+lme_fit <- lme(y ~ ns(time, k =  c(1, 3), B = c(0, 7)), 
+               random = list(id = pdDiag(form = ~ ns(time, k = c(1, 3), 
+                                                       B = c(0, 7)))),
+               data = lme_data,
+               control = lmeControl(opt = "optim", niterEM = 45))
+
+```
+
+Then, the `survival::coxph()` to fit a stratified Cox model using the transformed data.
+
+```{r fit_cox}
+
+cox_fit <- coxph(Surv(tstart, tstop, status) ~ (group + age) * strata(strata),
+                 data = cox_data)
+
+```
+
+These models then serve as arguments in our `jm()` function. The user specifies the desired functional forms for the mixed model in each relative-risk model. And with the recurrent argument specifies the desired timescale.
+
+```{r fit_jm}
+
+jm_fit <- jm(cox_fit, lme_fit, time_var = "time", recurrent = "gap",
+             functional_forms = list("y" = ~ value(y) * strata))
+summary(jm_fit)
+
+```
+
+
+
