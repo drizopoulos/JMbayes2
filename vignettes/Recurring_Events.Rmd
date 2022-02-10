@@ -470,7 +470,7 @@ for(i in unique(data$id)) {
            y0 = data_temp$id, y1 = data_temp$id, 
            col = col_seg2, lwd = lwd_seg2, lend = 'butt')
   text(x = data_temp$tstop, y = data_temp$id, 
-       labels = c("C", "T")[data_temp$status + 1], pos = 1)
+       labels = c("C", "T")[data_temp$status + 1], pos = 3)
 }
 
 ```
