@@ -28,4 +28,6 @@
 ^vignettes/Transformation_Functions.Rmd$
 ^vignettes/Multi_State_Processes.Rmd$
 ^vignettes/Dynamic_Predictions.Rmd$
+^vignettes/Recurring_Events.Rmd$
+
 
