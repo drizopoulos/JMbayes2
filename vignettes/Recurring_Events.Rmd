@@ -23,11 +23,7 @@ library("JMbayes2")
 
 ## Introduction
 
-In **JMbayes2** is now possible to fit joint models with a recurrent event process. Recurrent events are correlated events that may occur more than once over the follow-up period for a given subject. Compared to previously proposed joint models for recurrent events, we allow, for the first time, the accommodation of multiple longitudinal markers with different distributions. 
-
-Our implementation allows the specification of various functional forms to link these markers with the risk of recurrent and terminal events. Furthermore, it enables the risk intervals to be defined in terms of the *gap* or *calendar* timescales. The two timescales use a different zero-time reference. The *calendar* uses the study entry, while the *gap* uses the end of the previous event (Figure 1). *Gap* assumes a renewal after each event and resets the time to zero.
-
-<br>
+**JMbayes2** provides also the capability to fit joint models with a recurrent event process possibly combined with a terminating event. Recurrent events are correlated events that may occur more than once over the follow-up period for a given subject. Our current implementation allows for multiple longitudinal markers with different distributions, and various functional forms to link these markers with the risk of recurrent and terminal events. Furthermore, it enables the risk intervals to be defined in terms of the *gap* or *calendar* timescales. The two timescales use a different zero-time reference. The *calendar* uses the study entry, while the *gap* uses the end of the previous event (Figure 1). *Gap* assumes a renewal after each event and resets the time to zero.
 
 ```{r timescale, fig.align = "center", fig.width = 5.5, echo = FALSE, fig.cap = "<b>Figure 1</b> Visual representation of an hazard function under the gap or calendar timescale. During the folow-up the subject experienced three events."}
 col_f <- function(color, percent = 50) {
@@ -126,11 +122,7 @@ abline(v = ev_start, lty = 2)
 
 ```
 
-<br>
-
 The model also accommodates discontinuous risk intervals, i.e., periods in which the subject is not at risk of experiencing the recurring event (Figure 2). For example, while a patient is in the hospital, they are not at risk of being hospitalized again.
-
-<br>
 
 ```{r disc_risk, fig.align = "center", fig.width = 5.5, echo = FALSE, fig.cap = "<b>Figure 2</b> Visual representation of an hazard function under the gap or calendar timescale, while accounting for non-risk periods (gray areas). During the folow-up the subject experienced three events."}
 set.seed(2021)
@@ -222,10 +214,7 @@ abline(v = ev_start, lty = 2)
 
 ```
 
-<br>
-
-A joint model with $p$ longitudinal markers, a terminal event process, and a recurrent event process can be described as follows,
-
+A joint model with $p$ normally distributed longitudinal markers, a terminal event process, and a recurrent event process can be described as follows:
 $$\small{\require{color}
 \begin{cases}
 y_{1_i}(t)= \colorbox{#79FCFD80}{$ x_{1_i}(t)^\top\beta_1 +  z_{1_i}(t)^\top b_{1_i}$} + \varepsilon_1(t) = \colorbox{#79FCFD80}{$ \eta_{1_i}(t)$} + \varepsilon_1(t) & \text{Longitudinal marker 1}\\
@@ -243,7 +232,7 @@ $$
 $$
 <br>
 
-where $i=1,\dots,\text{n subjects}$. The longitudinal processes are expressed through linear mixed-effects models, while the terminal and recurrence processes are described through proportional hazard models. The multiple processes are related via a latent structure of random effects, highlighted by the same color. $\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}$ and $\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}$ describe the functional forms that links the longitudinal marker $j$ with the risk of the recurrent and terminal events, respectively. The frailty $b_{F_i}$ is a random effect that accounts for the correlation intra-subjects due to unobserved individual-level characteristics.
+where $i = 1, \ldots, n$. The longitudinal processes are expressed through linear mixed-effects models, while the terminal and recurrence processes are described through proportional hazard models. The multiple processes are related via a latent structure of random effects, highlighted by the same color. $\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}$ and $\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}$ describe the functional forms that links the longitudinal marker $j$ with the risk of the recurrent and terminal events, respectively. The frailty $b_{F_i}$ is a random effect that accounts for the correlations in the recurrent events. The coefficient $\alpha_{F}$ quantifies the strength of the association between the terminating and recurrent event processes.
 
 
 ## Example
@@ -255,7 +244,7 @@ For the purpose of example, we simulate data from a joint model with three outco
 ```{r gen_data}
 gen_data <- function(){
   n <- 500 # desired number of subjects 
-  n_i <- 15  # number of (planned) encounters per unit
+  n_i <- 15  # number of (planned) measurements per subject
   tmax <- 7 # maximum follow-up time (type I censoring)
   scale <- "gap" # hazard timescale
   ##############################################################################
@@ -406,8 +395,7 @@ recu_data <- fake_data$rec # recurrent events data
 lme_data <- fake_data$long # longitudial marker data
 ```
 
-We now have three data frames, each one reporting to a different outcome. To be able to fit the joint model the user needs to organize their failure-time data in the counting process formulation by combining the data for the terminal and recurrent events. Using then a strata variable to distinguish between both. To make this task easier we made available the function `rc_setup`. 
-
+We now have three data frames, each one corresponding to a different outcome. To fit the joint model, the user needs to organize the failure-time data in the counting process formulation by combining the data for the terminal and recurrent events. Using then a strata variable to distinguish between the two processes. To facilitate this, we provide in the package the `rc_setup()` function: 
 ```{r trf_data1}
 cox_data <- rc_setup(rc_data = recu_data, trm_data = term_data,
                      rc_idVar = "id", rc_statusVar = "status",
@@ -477,8 +465,7 @@ for(i in unique(data$id)) {
 
 ### Fitting the model
 
-The user then needs to use the `nlme::lme()` function to first fit the linear mixed model that describes the longitudinal outcome. 
-
+The user then needs to use the `nlme::lme()` function to first fit the linear mixed model that describes the longitudinal outcome,
 ```{r fit_lme}
 
 lme_fit <- lme(y ~ ns(time, k =  c(1, 3), B = c(0, 7)), 
@@ -489,8 +476,7 @@ lme_fit <- lme(y ~ ns(time, k =  c(1, 3), B = c(0, 7)),
 
 ```
 
-Then, the `survival::coxph()` to fit a stratified Cox model using the transformed data.
-
+Then, the `survival::coxph()` to fit a stratified Cox model using the transformed data,
 ```{r fit_cox}
 
 cox_fit <- coxph(Surv(tstart, tstop, status) ~ (group + age) * strata(strata),
@@ -498,14 +484,13 @@ cox_fit <- coxph(Surv(tstart, tstop, status) ~ (group + age) * strata(strata),
 
 ```
 
-These models then serve as arguments in our `jm()` function. The user specifies the desired functional forms for the mixed model in each relative-risk model. And with the recurrent argument specifies the desired timescale.
-
+These models then provided as arguments in the `jm()` function. The user specifies the desired functional forms for the mixed model in each relative-risk model. And with the `recurrent` argument specifies the desired timescale,
 ```{r fit_jm}
 
 jm_fit <- jm(cox_fit, lme_fit, time_var = "time", recurrent = "gap",
-             functional_forms = list("y" = ~ value(y) * strata))
-summary(jm_fit)
+             functional_forms =  ~ value(y) * strata)
 
+summary(jm_fit)
 ```
 
 
