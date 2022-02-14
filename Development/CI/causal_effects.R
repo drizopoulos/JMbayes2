@@ -30,7 +30,7 @@ fForms <- ~ value(log(serBilir)):dummy(CR, "transplanted") +
     value(log(serBilir)):dummy(CR, "dead"):dummy(IE, 1)
 
 # To specify that the biomarker has no effect on the risk of transplantation, we
-# contraint the corresponding association parameter alpha via the prior (i.e.,
+# constraint the corresponding association parameter alpha via the prior (i.e.,
 # we assume prior mean zero and prior precision 20000)
 jointFit <- jm(CoxFit, lmeFit, time_var = "year", functional_forms = fForms,
                priors = list(Tau_alphas = list(diag(20000, 1), diag(1), diag(1))),
@@ -114,3 +114,13 @@ conditional_causal_effect
 # window Delta_t
 t0 <- 3
 Delta_t <- 2
+
+# We need the subset of patients who were event-free at t0 and who did not have
+# the intermediate event yet
+R_long <- pbc2[pbc2$year <= t0 & pbc2$years > t0, ]
+event_times <- with(pbc2_CR, tapply(stop, id, max))
+IEs <- with(pbc2_CR, tapply(IE, id, max))
+R_event <- pbc2_CR[pbc2_CR$stop > t0, ]
+
+
+

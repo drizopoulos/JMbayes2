@@ -232,15 +232,13 @@ $$
 $$
 <br>
 
-where $i = 1, \ldots, n$. The longitudinal processes are expressed through linear mixed-effects models, while the terminal and recurrence processes are described through proportional hazard models. The longitudinal and event time processes are linked via a latent structure of random effects, highlighted by the same color in the equations above. The terms $\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}$ and $\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}$ describe the functional forms that link the longitudinal marker $j$ with the risk of the recurrent and terminal events, respectively. The frailty $b_{F_i}$ is a random effect that accounts for the correlations in the recurrent events. The coefficient $\alpha_{F}$ quantifies the strength of the association between the terminal and recurrent event processes. For notational simplicity, in the formulation presented above we have shown normally distributed longitudinal outcomes; however, **JMbayes2** provides the option to consider longitudinal outcomes with [different distributions](https://drizopoulos.github.io/JMbayes2/articles/Non_Gaussian_Mixed_Models.html).
+where $i = 1, \ldots, n$. For the longitudinal outcomes we specify linear mixed-effects models, and for the terminal and recurrence processes, we use proportional hazard models. The longitudinal and event time processes are linked via a latent structure of random effects, highlighted by the same color in the equations above. The terms $\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}$ and $\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}$ describe the functional forms that link the longitudinal marker $j$ with the risk of the recurrent and terminal events, respectively. The frailty $b_{F_i}$ is a random effect that accounts for the correlations in the recurrent events. The coefficient $\alpha_{F}$ quantifies the strength of the association between the terminal and recurrent event processes. For notational simplicity, in the formulation presented above we have shown normally distributed longitudinal outcomes; however, **JMbayes2** provides the option to consider longitudinal outcomes with [different distributions](https://drizopoulos.github.io/JMbayes2/articles/Non_Gaussian_Mixed_Models.html).
 
 
 ## Example
 
 ### Data
-
-For the purpose of example, we simulate data from a joint model with three outcomes: one longitudinal outcome, one terminal failure-time, and one recurrent failure-time. We assume that the underlying value of the longitudinal outcome is associated with both risk models and use the *gap* timescale. The reader can easily extend this example to accommodate multiple longitudinal markers with other forms of association, exclude the terminal event, or use a different timescale.
-
+We simulate data from a joint model with three outcomes: one longitudinal outcome, one terminal failure-time, and one recurrent failure-time. We assume that the underlying value of the longitudinal outcome is associated with both risk models and use the *gap* timescale. The reader can easily extend this example to accommodate multiple longitudinal markers with other forms of association, exclude the terminal event, or use a different timescale.
 ```{r gen_data}
 gen_data <- function(){
   n <- 500 # desired number of subjects 
@@ -416,7 +414,7 @@ cox_data[cox_data$id == 1, c("id", "tstart", "tstop", "status", "strata")]
 data <- cox_data[cox_data$id == 1,]
 
 col_seg1 <- 1
-col_seg2 <- "#002D6D" # EMC dark blue
+col_seg2 <- "#002D6D"
 lwd_seg1 <- 1
 lwd_seg2 <- 10
 xlim <- c(0, ceiling(max(data$tstop)))
@@ -427,7 +425,7 @@ plot(NA, type = "n", xlim = xlim, ylim = ylim,
      ylab = "", xlab = "", xaxt = "n", yaxt = "n", 
      yaxs = "i", bty = "n")
 axis(1, at = seq(min(xlim), max(xlim), by = 1), 
-     tcl = -.35, mgp = c(3, .5, 0),
+     tcl = -0.35, mgp = c(3, .5, 0),
      col.axis = '#515151', col.ticks = '#515151', col = "#d6d6d6")
 mtext("Time", side = 1, line = 1.5, col = '#515151')
 abline(v = c(0, max(xlim)), lty = 3, xpd = FALSE, col = "#d6d6d6")
@@ -436,7 +434,7 @@ axis(3, at= 0, labels = "Study\nstart", cex.axis = 1, col.axis = '#515151', col.
 axis(3, at= max(xlim), labels= "Study\nend", cex.axis = 1, col.axis = '#515151', col.ticks = '#515151')
 
 ids <- unique(data$id)
-# follow up
+# follow-up
 for(i in ids) {
   segments(x0 = min(data$tstart[data$id == i]), 
            x1 = max(data$tstop[data$id == i]),
@@ -460,33 +458,26 @@ for(i in unique(data$id)) {
   text(x = data_temp$tstop, y = data_temp$id, 
        labels = c("C", "T")[data_temp$status + 1], pos = 3)
 }
-
 ```
 
 ### Fitting the model
-
 The user then needs to use the `nlme::lme()` function to first fit the linear mixed model that describes the longitudinal outcome,
 ```{r fit_lme}
-
 lme_fit <- lme(y ~ ns(time, k =  c(1, 3), B = c(0, 7)), 
                random = list(id = pdDiag(form = ~ ns(time, k = c(1, 3), 
                                                        B = c(0, 7)))),
                data = lme_data,
                control = lmeControl(opt = "optim", niterEM = 45))
-
 ```
 
-Then, the `survival::coxph()` to fit a stratified Cox model using the transformed data,
+Then, we use the `survival::coxph()` function to fit a stratified Cox model using the transformed data,
 ```{r fit_cox}
-
 cox_fit <- coxph(Surv(tstart, tstop, status) ~ (group + age) * strata(strata),
                  data = cox_data)
-
 ```
 
-These models then provided as arguments in the `jm()` function. The user specifies the desired functional forms for the mixed model in each relative-risk model. And with the `recurrent` argument specifies the desired timescale,
+These models are then provided as arguments in the `jm()` function. The user specifies the desired functional forms for the mixed model in each relative-risk model. And with the `recurrent` argument specifies the desired timescale,
 ```{r fit_jm}
-
 jm_fit <- jm(cox_fit, lme_fit, time_var = "time", recurrent = "gap",
              functional_forms =  ~ value(y) * strata)
 
