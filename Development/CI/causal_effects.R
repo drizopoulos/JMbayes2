@@ -166,6 +166,49 @@ get_marginal_effect <- function (Data_Long, Data_Event, t0, Delta_t, object) {
              CIF_withoutIE$pred[CIF_withoutIE$times > t0])
 }
 
+make_bootSample <- function (Data_Long, Data_Event, id_var = "id", seed = 1L) {
+    if (!exists(".Random.seed", envir = .GlobalEnv))
+        runif(1)
+    RNGstate <- get(".Random.seed", envir = .GlobalEnv)
+    on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
+    ids <- Data_Long[[id_var]]
+    unq_ids <- unique(ids)
+    ids <- factor(ids, levels = unq_ids)
+    set.seed(seed)
+    new_ids <- sample(unq_ids, replace = TRUE)
+    new_Data_Long <- new_Data_Event <- vector("list", length(unq_ids))
+    for (i in seq_along(unq_ids)) {
+        keep <- Data_Long[[id_var]] == new_ids[i]
+        dataL_i <- Data_Long[keep, ]
+        dataL_i[[id_var]] <- i
+        new_Data_Long[[i]] <- dataL_i
+        ##
+        keep <- Data_Event[[id_var]] == new_ids[i]
+        dataE_i <- Data_Event[keep, ]
+        dataE_i[[id_var]] <- i
+        new_Data_Event[[i]] <- dataE_i
+    }
+    list(Data_Long = do.call("rbind", new_Data_Long),
+         Data_Event = do.call("rbind", new_Data_Event))
+}
 
-marginal_effect <- get_marginal_effect(pbc2, pbc2_CR, t0 = 3, Delta_t = 2, jointFit)
+
+# the marginal effect in the original data
+marginal_effect <- get_marginal_effect(pbc2, pbc2_CR, t0, Delta_t, jointFit)
+
+
+# the marginal effect in M Bootstrap samples
+M <- 10
+Marginal_Effects <- numeric(M)
+for (m in seq_len(M)) {
+    Data_m <- make_bootSample(pbc2, pbc2_CR, seed = m)
+    meffect <- get_marginal_effect(Data_m$Data_Long, Data_m$Data_Event,
+                                   t0, Delta_t, jointFit)
+    Marginal_Effects[m] <- meffect
+}
+
+var(Marginal_Effects)
+
+
+
 
