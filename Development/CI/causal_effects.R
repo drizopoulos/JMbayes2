@@ -110,17 +110,62 @@ conditional_causal_effect
 # at risk,
 
 # We specify the follow-up time t0 at which we want to calculate the
-# conditional causal effect, and the length of the medically-relevant time
+# marginal causal effect, and the length of the medically-relevant time
 # window Delta_t
 t0 <- 3
 Delta_t <- 2
 
-# We need the subset of patients who were event-free at t0 and who did not have
-# the intermediate event yet
-R_long <- pbc2[pbc2$year <= t0 & pbc2$years > t0, ]
-event_times <- with(pbc2_CR, tapply(stop, id, max))
-IEs <- with(pbc2_CR, tapply(IE, id, max))
-R_event <- pbc2_CR[pbc2_CR$stop > t0, ]
+# We are going the create a function such that we can later calculate the variance
+
+get_marginal_effect <- function (Data_Long, Data_Event, t0, Delta_t, object) {
+    # We need the subset of patients who were event-free at t0 and who did not have
+    # the intermediate event yet;
+    time_var <- object$model_info$var_names$time_var
+    # first, we keep the longitudinal measurements before t0 for patients who
+    # were at risk at t0
+    R_long <- Data_Long[Data_Long[[time_var]] <= t0 & Data_Long$years > t0, ]
+    R_long$id <- factor(R_long$id)
+    # then we want to keep only the patients who did not have the IE yet
+    keep <- function (x) rep(all(x == 0), length(x))
+    no_IEs_before_t0 <- with(R_long, ave(IE, id, FUN = keep))
+    R_long <- R_long[as.logical(no_IEs_before_t0), ]
+
+    # we keep the same patients in the event times database
+    R_event <- Data_Event[Data_Event$id %in% unique(R_long$id), ]
+    R_event$id <- factor(R_event$id)
+    # there are some patients who had an IE after t0; we need
+    # to remove these lines from R_event
+    R_event <- R_event[R_event$IE == 0, ]
+    # we set the stop time to t0
+    R_event$stop <- t0
+    # we set the event to zero
+    R_event$event <- 0
+
+    ###########
+
+    # we calculate the CIFs with IE
+    newdata_withoutIE <- list(newdataL = R_long, newdataE = R_event)
+
+    CIF_withoutIE <- predict(object, newdata = newdata_withoutIE,
+                             process = "event", times = t0 + Delta_t,
+                             return_mcmc = TRUE)
+
+    # we create a copy of R_event and we set IE to one, and we calculate
+    # the CIF with an IE after t0 (using 'newdata2')
+    R_event2 <- R_event
+    R_event2$IE <- 1
+    newdata_withIE <- list(newdataL = R_long, newdataE = R_event2)
+
+    CIF_withIE <- predict(object, newdata = newdata_withoutIE,
+                          newdata2 = newdata_withIE,
+                          process = "event", times = t0 + Delta_t,
+                          return_mcmc = TRUE)
+
+    # the marginal effect is the mean over the conditional effects
+    mean(CIF_withIE$pred[CIF_withIE$times > t0] -
+             CIF_withoutIE$pred[CIF_withoutIE$times > t0])
+}
 
 
+marginal_effect <- get_marginal_effect(pbc2, pbc2_CR, t0 = 3, Delta_t = 2, jointFit)
 
