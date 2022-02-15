@@ -198,7 +198,7 @@ marginal_effect <- get_marginal_effect(pbc2, pbc2_CR, t0, Delta_t, jointFit)
 
 
 # the marginal effect in M Bootstrap samples
-M <- 10
+M <- 20
 Marginal_Effects <- numeric(M)
 for (m in seq_len(M)) {
     Data_m <- make_bootSample(pbc2, pbc2_CR, seed = m)
@@ -208,6 +208,12 @@ for (m in seq_len(M)) {
 }
 
 var(Marginal_Effects)
+
+
+# the same as above with the function
+effects <- causal_effects(jointFit, pbc2, pbc2_CR, t0 = 3, Dt = 2,
+                          IE_var = "IE", extra_objects = "dummy")
+
 
 
 

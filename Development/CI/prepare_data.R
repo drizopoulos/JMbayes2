@@ -46,7 +46,7 @@ f <- function (d) {
 pbc2_CR <- do.call("rbind", lapply(splt, f))
 row.names(pbc2_CR) <- 1:nrow(pbc2_CR)
 
-pbc2.idCR <- crLong(pbc2.id, statusVar = "status", censLevel = "alive",
+pbc2.idCR <- crisk_setup(pbc2.id, statusVar = "status", censLevel = "alive",
                     nameStrata = "CR")
 
 
