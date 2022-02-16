@@ -184,7 +184,7 @@ causal_effects <- function (object, Data_Long, Data_Event, t0, Dt, IE_var,
                                Dt = Dt, vars = vars)
     parallel::stopCluster(cl)
     out <- do.call('rbind', out)
-    var_effects <- matrixStats::colVars(out) + attr(effect, "var")
+    var_effects <- matrixStats::colVars(out) + attr(effects, "var")
     names(var_effects) <- names(effects)
     attr(effects, "var") <- NULL
     list("effects" = effects, "var_effects" = var_effects)
