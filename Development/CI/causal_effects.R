@@ -162,6 +162,7 @@ get_marginal_effect <- function (Data_Long, Data_Event, t0, Delta_t, object) {
                           return_mcmc = TRUE)
 
     # the marginal effect is the mean over the conditional effects
+    # *** Not correct, does not account for strata
     mean(CIF_withIE$pred[CIF_withIE$times > t0] -
              CIF_withoutIE$pred[CIF_withoutIE$times > t0])
 }

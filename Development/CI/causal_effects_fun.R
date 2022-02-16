@@ -1,13 +1,15 @@
-object = jointFit
-Data_Long = pbc2
-Data_Event = pbc2_CR
-t0 = 3
-Dt = 2
-IE_var = "IE"
-B = 50L
-cores = max(parallel::detectCores(logical = FALSE) - 1, 1)
-extra_objects = "dummy"
-seed = 1L
+if (FALSE) {
+    object = jointFit
+    Data_Long = pbc2
+    Data_Event = pbc2_CR
+    t0 = 3
+    Dt = 2
+    IE_var = "IE"
+    B = 50L
+    cores = max(parallel::detectCores(logical = FALSE) - 1, 1)
+    extra_objects = "dummy"
+    seed = 1L
+}
 
 causal_effects <- function (object, Data_Long, Data_Event, t0, Dt, IE_var,
                             B = 50L, cores = max(parallel::detectCores() - 1, 1),
@@ -101,26 +103,32 @@ causal_effects <- function (object, Data_Long, Data_Event, t0, Dt, IE_var,
     # a function to calculate the causal effect in the presence and absence of
     # the IE
     get_effect <- function (object, Data_Long, Data_Event, t0, Dt, vars) {
-        Data_i <- get_data(Data_Long, Data_Event, t0, Dt, vars)
+        Data <- get_data(Data_Long, Data_Event, t0, Dt, vars)
         # we calculate the CIFs without IE
-        newdata_withoutIE <- list(newdataL = Data_i[["newdataL"]],
-                                  newdataE = Data_i[["newdataE"]])
+        newdata_withoutIE <- list(newdataL = Data[["newdataL"]],
+                                  newdataE = Data[["newdataE"]])
 
         CIF_withoutIE <- predict(object, newdata = newdata_withoutIE,
                                  process = "event", times = t0 + Dt,
                                  return_mcmc = TRUE)
 
         # we calculate the CIFs with IE
-        newdata_withIE <- list(newdataL = Data_i[["newdataL"]],
-                               newdataE = Data_i[["newdataE2"]])
+        newdata_withIE <- list(newdataL = Data[["newdataL"]],
+                               newdataE = Data[["newdataE2"]])
         CIF_withIE <- predict(object, newdata = newdata_withoutIE,
                               newdata2 = newdata_withIE,
                               process = "event", times = t0 + Dt,
                               return_mcmc = TRUE)
 
         # the marginal effect is the mean over the conditional effects
-        mean(CIF_withIE$pred[CIF_withIE$times > t0] -
-                 CIF_withoutIE$pred[CIF_withoutIE$times > t0])
+        ind <- CIF_withIE$times > t0
+        strata <- CIF_withIE[["_strata"]][ind]
+        ee <- CIF_withIE$pred[ind] - CIF_withoutIE$pred[ind]
+        effect <- tapply(ee, strata, mean)
+        ee_mcmc <- CIF_withIE$mcmc[ind, ] - CIF_withoutIE$mcmc[ind, ]
+        vv <- rowsum(ee_mcmc, strata, reorder = FALSE) / sum(strata == 1)
+        attr(effect, "var") <- matrixStats::rowVars(vv)
+        effect
     }
     # a function to create a Bootstrap sample
     make_bootSample <- function (Data_Long, Data_Event, id_var) {
@@ -145,7 +153,7 @@ causal_effects <- function (object, Data_Long, Data_Event, t0, Dt, IE_var,
     }
     #######################################################
     # causal effect in the original data
-    effect <- get_effect(object, Data_Long, Data_Event, t0, Dt, vars)
+    effects <- get_effect(object, Data_Long, Data_Event, t0, Dt, vars)
     # run Bootstrap
     if (!exists(".Random.seed", envir = .GlobalEnv))
         runif(1L)
@@ -155,12 +163,13 @@ causal_effects <- function (object, Data_Long, Data_Event, t0, Dt, IE_var,
                                      length.out = B))
     boot_parallel <- function (samples, object, Data_Long, Data_Event, t0,
                                Dt, vars) {
-        out <- numeric(length(samples))
+        str <- object$model_data$strata
+        out <- matrix(0.0, length(samples), length(unique(str)))
         for (b in seq_along(samples)) {
             boot <- make_bootSample(Data_Long, Data_Event, vars['id_var'])
-            meffect <- get_effect(object, boot$Data_Long, boot$Data_Event,
-                                  t0, Dt, vars)
-            out[b] <- meffect
+            meffects <- get_effect(object, boot$Data_Long, boot$Data_Event,
+                                   t0, Dt, vars)
+            out[b, ] <- meffects
         }
         out
     }
@@ -174,6 +183,9 @@ causal_effects <- function (object, Data_Long, Data_Event, t0, Dt, IE_var,
                                Data_Event = Data_Event, t0 = t0,
                                Dt = Dt, vars = vars)
     parallel::stopCluster(cl)
-    out <- unlist(out)
-    list("effect" = effect, "var_effect" = var(out))
+    out <- do.call('rbind', out)
+    var_effects <- matrixStats::colVars(out) + attr(effect, "var")
+    names(var_effects) <- names(effects)
+    attr(effects, "var") <- NULL
+    list("effects" = effects, "var_effects" = var_effects)
 }
