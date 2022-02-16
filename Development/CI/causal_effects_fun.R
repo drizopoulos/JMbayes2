@@ -100,8 +100,8 @@ causal_effects <- function (object, Data_Long, Data_Event, t0, Dt, IE_var,
         ###########################################################
         list(newdataL = R_long, newdataE = R_event, newdataE2 = R_event2)
     }
-    # a function to calculate the causal effect in the presence and absence of
-    # the IE
+    # a function to calculate the causal effects (per stratum) in the presence
+    # and absence of the IE
     get_effect <- function (object, Data_Long, Data_Event, t0, Dt, vars) {
         Data <- get_data(Data_Long, Data_Event, t0, Dt, vars)
         # we calculate the CIFs without IE
@@ -152,9 +152,9 @@ causal_effects <- function (object, Data_Long, Data_Event, t0, Dt, IE_var,
              Data_Event = do.call("rbind", new_Data_Event))
     }
     #######################################################
-    # causal effect in the original data
+    # causal effects in the original data
     effects <- get_effect(object, Data_Long, Data_Event, t0, Dt, vars)
-    # run Bootstrap
+    # run Bootstrap in parallel
     if (!exists(".Random.seed", envir = .GlobalEnv))
         runif(1L)
     RNGstate <- get(".Random.seed", envir = .GlobalEnv)
