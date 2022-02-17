@@ -826,10 +826,15 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         low <- f(pred_Long[[ind + 1]])
         upp <- f(pred_Long[[ind + 2]])
         times <- pred_Long[[time_var]]
-        ry <- range(preds, low, upp)
-        rx <- range(times)
+        na_preds <- is.na(preds)
+        preds <- preds[!na_preds]
+        low <- low[!na_preds]
+        upp <- upp[!na_preds]
+        times <- times[!na_preds]
+        ry <- range(preds, low, upp, na.rm = TRUE)
+        rx <- range(times, na.rm = TRUE)
         y_lim <- if (ylim_long_outcome_range) {
-            range(f(ranges[[outcome]]), ry)
+            range(f(ranges[[outcome]]), ry, na.rm = TRUE)
         } else {
             ry
         }
@@ -868,7 +873,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         fill_CI_event <- rep(fill_CI_event, length.out = length(unq_strata))
         times <- pred_Event[[time_var]]
         ry <- sort(fun_event(c(0, 1)))
-        rx <- range(times)
+        rx <- range(times, na.rm = TRUE)
         plot(rx, ry, type = "n", xlab = "", ylab = "", xlim = xlim,
              axes = FALSE, col.axis = col_axis, col.lab = col_axis, ylim = ry)
         if (box) box(col = col_axis)
