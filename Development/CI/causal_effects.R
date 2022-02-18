@@ -156,9 +156,12 @@ Data <- get_data(pbc2, pbc2_CR, t0 = 3, Dt = 2, object = jointFit, IE_var = "IE"
 
 # First, we find the last serum bilirubin measurement per subject
 last <- with(Data$newdataL, tapply(serBilir, id, tail, n = 1L))
-# we find for which subjects this measurement was above 3
+# we find id of the subjects with this measurement above 3
 ids <- names(last)[last > 2]
-
+# we keep only these subjects in the respective datasets in Data
+Data$newdataL <- Data$newdataL[Data$newdataL$id %in% ids, ]
+Data$newdataE <- Data$newdataE[Data$newdataE$id %in% ids, ]
+Data$newdataE2 <- Data$newdataE2[Data$newdataE2$id %in% ids, ]
 
 # we calculate the effects
 mc_causal_effect <-
