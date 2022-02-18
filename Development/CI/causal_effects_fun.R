@@ -197,7 +197,7 @@ causal_effects <- function (object, Data_Long, Data_Event, Data_Event2, t0, Dt,
         attr(effect, "var") <- matrixStats::rowVars(vv)
         effect
     }
-    # a function to create a Bootstrap sample
+    # a function to create a non-parametric Bootstrap sample
     make_bootSample <- function (Data_Long, Data_Event, Data_Event2, id_var) {
         ids <- Data_Long[[id_var]]
         unq_ids <- unique(ids)

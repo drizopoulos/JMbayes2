@@ -112,25 +112,58 @@ conditional_causal_effect
 # Marginal Causal Effects -
 #--------------------------
 
-# To calculate the marginal causal effect, we will average over the subjects
-# at risk,
+# To calculate the marginal causal effect, we will average over the
+# respective group subjects
 
 # We specify the follow-up time t0 at which we want to calculate the
 # marginal causal effect, and the length of the medically-relevant time
-# window Delta_t
+# window Dt
 
-# we get the data of the subjects at risk at t0 and with two datasets for the
-# event outcome, one in which the IE is set at zero and on in which it is set
-# at one
+# We get the data of the subjects at risk at t0 and who did not have the IE yet;
+# we also create two datasets for the event outcome, one in which the IE is set
+# at zero and on in which it is set at one. The second one is used in the
+# 'newdata2' argument of the predict() method.
 Data <- get_data(pbc2, pbc2_CR, t0 = 3, Dt = 2, object = jointFit, IE_var = "IE")
+
+# we calculate the effects
+marginal_causal_effect <-
+    causal_effects(jointFit, Data$newdataL, Data$newdataE, Data$newdataE2,
+                   t0 = 3, Dt = 2, extra_objects = "dummy", B = 5,
+                   calculate_CI = TRUE)
+
+
+
+#--------------------------------------
+# Marginal-Conditional Causal Effects -
+#--------------------------------------
+
+# To calculate the marginal-conditional causal effect, we will average over
+# the respective group subjects
+
+# We specify the follow-up time t0 at which we want to calculate the
+# marginal causal effect, and the length of the medically-relevant time
+# window Dt
+
+# We get the data of the subjects at risk at t0 and who did not have the IE yet;
+# we also create two datasets for the event outcome, one in which the IE is set
+# at zero and on in which it is set at one. The second one is used in the
+# 'newdata2' argument of the predict() method.
+Data <- get_data(pbc2, pbc2_CR, t0 = 3, Dt = 2, object = jointFit, IE_var = "IE")
+
+# This is the same as above for the marginal effect, but we now want to put
+# the extra restriction that we want to keep the subjects who had their last
+# serum bilirubin measurement above the value of 2.
+
+# First, we find the last serum bilirubin measurement per subject
+last <- with(Data$newdataL, tapply(serBilir, id, tail, n = 1L))
+# we find for which subjects this measurement was above 3
+ids <- names(last)[last > 2]
 
 
 # we calculate the effects
-effects <- causal_effects(jointFit, Data$newdataL, Data$newdataE, Data$newdataE2,
-                          t0 = 3, Dt = 2, extra_objects = "dummy", B = 5,
-                          calculate_CI = TRUE)
-
-
-
+mc_causal_effect <-
+    causal_effects(jointFit, Data$newdataL, Data$newdataE, Data$newdataE2,
+                   t0 = 3, Dt = 2, extra_objects = "dummy", B = 5,
+                   calculate_CI = TRUE)
 
 
