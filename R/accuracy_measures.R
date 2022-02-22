@@ -405,8 +405,8 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
 
 calibration_metrics <- function (object, newdata, Tstart, Thoriz = NULL,
                                  Dt = NULL, df_ns = 3, ...) {
-    comps <- calibration_plot(object, newdata, Tstart, Dt = Dt, df_ns = df_ns,
-                              plot = FALSE)
+    comps <- calibration_plot(object, newdata, Tstart, Thoriz = Thoriz, Dt = Dt,
+                              df_ns = df_ns, plot = FALSE)
     diff <- abs(as.vector(comps$pi_u_t) - comps$obs_pi_u_t)
     ICI <- mean(diff)
     E50 <- median(diff)
