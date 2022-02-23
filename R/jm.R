@@ -65,6 +65,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
              "in the database of the longitudinal models.")
     }
     dataL <- dataL[order(idL, dataL[[time_var]]), ]
+    idL <- dataL[[idVar]]
 
     # extract terms from mixed models
     terms_FE <- lapply(Mixed_objects, extract_terms, which = "fixed", data = dataL)
@@ -81,7 +82,9 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     # in parallel across outcomes (i.e., we will allow that some subjects may have no data
     # for some outcomes)
     NAs_FE_dataL <- lapply(mf_FE_dataL, attr, "na.action")
+    NAs_FE_dataL <- lapply(NAs_FE_dataL, unname)
     NAs_RE_dataL <- lapply(mf_RE_dataL, attr, "na.action")
+    NAs_RE_dataL <- lapply(NAs_RE_dataL, unname)
     mf_FE_dataL <- mapply2(fix_NAs_fixed, mf_FE_dataL, NAs_FE_dataL, NAs_RE_dataL)
     mf_RE_dataL <- mapply2(fix_NAs_random, mf_RE_dataL, NAs_RE_dataL, NAs_FE_dataL)
 
@@ -110,7 +113,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     unq_id <- unique(idL)
     idL <- mapply2(exclude_NAs, NAs_FE_dataL, NAs_RE_dataL,
                    MoreArgs = list(id = idL))
-    idL <- lapply(idL, match, table = unq_id)
+    idL[] <- lapply(idL, match, table = unq_id)
     # the index variable idL_lp is to be used to subset the random effects of each outcome
     # such that to calculate the Zb part of the model as rowSums(Z * b[idL_lp, ]). This
     # means that for outcomes that miss some subjects, we recode the id variable from 1
@@ -509,7 +512,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                  W0_H2 = W0_H2, W_H2 = W_H2, X_H2 = X_H2, Z_H2 = Z_H2, U_H2 = U_H2,
                  log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2,
                  ind_RE = ind_RE, extra_parms = extra_parms,
-                 which_term_h = which(strata == max(strata)), 
+                 which_term_h = which(strata == max(strata)),
                  which_term_H = which(strata_H == max(strata)))
     ############################################################################
     ############################################################################
