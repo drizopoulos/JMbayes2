@@ -82,9 +82,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     # in parallel across outcomes (i.e., we will allow that some subjects may have no data
     # for some outcomes)
     NAs_FE_dataL <- lapply(mf_FE_dataL, attr, "na.action")
-    NAs_FE_dataL <- lapply(NAs_FE_dataL, unname)
     NAs_RE_dataL <- lapply(mf_RE_dataL, attr, "na.action")
-    NAs_RE_dataL <- lapply(NAs_RE_dataL, unname)
     mf_FE_dataL <- mapply2(fix_NAs_fixed, mf_FE_dataL, NAs_FE_dataL, NAs_RE_dataL)
     mf_RE_dataL <- mapply2(fix_NAs_random, mf_RE_dataL, NAs_RE_dataL, NAs_FE_dataL)
 
@@ -200,6 +198,9 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     Time_var <- head(av, -1L)
     event_var <- tail(av, 1L)
     # survival times
+    if (!is.null(NAs_surv <- attr(mf_surv_dataS, "na.action"))) {
+        dataS <- dataS[-NAs_surv, ]
+    }
     Surv_Response <- model.response(mf_surv_dataS)
     type_censoring <- attr(Surv_Response, "type")
     if (is.null(dataS[[idVar]])) {
@@ -212,10 +213,6 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         }
     } else {
         idT <- dataS[[idVar]]
-    }
-    if (!is.null(NAs_surv <- attr(mf_surv_dataS, "na.action"))) {
-        idT <- idT[-NAs_surv]
-        dataS <- dataS[-NAs_surv, ]
     }
     idT <- factor(idT, levels = unique(idT))
 
@@ -241,6 +238,8 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 "We set internally the datasets in the same order, but it would be best ",
                 "that you do it beforehand on your own.")
         dataS <- dataS[order(idT), ]
+        idT <- dataS[[id_var]]
+        idT <- factor(idT, levels = unique(idT))
         mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
         Surv_Response <- model.response(mf_surv_dataS)
     }
@@ -555,7 +554,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     b <- mapply2(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY))
     bs_gammas <- rep(-0.1, ncol(W0_H))
     gammas <- if (inherits(Surv_object, "coxph")) coef(Surv_object) else
-        -coef(Surv_object) / Surv_object$scale
+        -coef(Surv_object)[-1L] / Surv_object$scale
     if (is.null(gammas)) gammas <- 0.0
     alphas <- rep(0.0, sum(sapply(U_H, ncol)))
     frailty <- rep(0.0, nT)
