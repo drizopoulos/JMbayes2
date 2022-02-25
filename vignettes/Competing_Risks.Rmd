@@ -88,7 +88,7 @@ predEvent <- predict(jFit_CR, newdata = ND, return_newdata = TRUE,
 
 plot(predLong, predEvent, outcomes = 1:2, ylim_long_outcome_range = FALSE,
      col_line_event = c("#03BF3D", "#FF0000"), 
-     fill_CI_event = c("#03BF3D4D", "#FF00004D"), pos_ylab_long = c(0.1, 20))
+     fill_CI_event = c("#03BF3D4D", "#FF00004D"), pos_ylab_long = c(1.5, 11.5))
 legend(x = 8.1, y = 0.45, legend = levels(pbc2.idCR$CR), 
        lty = 1, lwd = 2, col = c("#03BF3D", "#FF0000"), bty = "n", cex = 0.8)
 ```
