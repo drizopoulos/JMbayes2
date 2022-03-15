@@ -140,6 +140,7 @@ summary.jm <- function (object, ...) {
                           P = object$statistics$P[[name]],
                           row.names = names(object$statistics$P[[name]]),
                           check.names = FALSE)
+        if(rownames(out)[1] == "alpha_frailty") rownames(out) <- "frailty"
         Rhat <- object$statistics$Rhat[[name]][, 1L]
         if (!is.null(Rhat))
             out$Rhat <- Rhat
@@ -162,7 +163,12 @@ summary.jm <- function (object, ...) {
             row.names(out[[nam_outcome]])[k + 1] <- "sigma"
         }
     }
-    out$Survival <- do.call(rbind, list(tab_f("gammas"), tab_f("alphas")))
+    if(out$recurrent) {
+      out$Survival <- do.call(rbind, list(tab_f("gammas"), tab_f("alphas"), 
+                                          tab_f("alphaF")))
+    } else {
+      out$Survival <- do.call(rbind, list(tab_f("gammas"), tab_f("alphas"))) 
+    }
     out$sigmaF <- tab_f("sigmaF")[c(1, 3, 4)]
     out$fit_stats <- object$fit_stats
     class(out) <- "summary.jm"
