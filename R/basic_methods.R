@@ -1009,9 +1009,9 @@ rc_setup <- function(rc_data, trm_data,
   tail_rows <- cumsum(rle(rc_data[[rc_idVar]])$length)
   new_rows <- sort(c(seq_along(rc_data[[rc_idVar]]), tail_rows))
   dataOut <- rc_data[new_rows, , drop = FALSE]
-  dataOut[[nameStrata]] <- 1
+  dataOut[[nameStrata]] <- "Rec"
   tail_rows <- tail_rows + seq_along(tail_rows)
-  dataOut[[nameStrata]][tail_rows] <- 2
+  dataOut[[nameStrata]][tail_rows] <- "Ter"
   dataOut[[nameStrata]] <- as.factor(dataOut[[nameStrata]])
   dataOut[[rc_startVar]][tail_rows] <- 0
   dataOut[[rc_stopVar]][tail_rows]  <- trm_data[[trm_stopVar]]
