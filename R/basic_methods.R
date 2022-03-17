@@ -1017,5 +1017,6 @@ rc_setup <- function(rc_data, trm_data,
   dataOut[[rc_stopVar]][tail_rows]  <- trm_data[[trm_stopVar]]
   dataOut[[nameStatus]] <- dataOut[[rc_statusVar]]
   dataOut[[nameStatus]][tail_rows] <- trm_data[[trm_statusVar]]
+  rownames(dataOut) <- seq_len(nrow(dataOut))
   dataOut
 }
