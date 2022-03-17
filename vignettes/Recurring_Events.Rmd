@@ -484,5 +484,5 @@ jm_fit <- jm(cox_fit, lme_fit, time_var = "time", recurrent = "gap",
 summary(jm_fit)
 ```
 
-
+One can find the association parameters between the underlying value of the longitudinal outcome and the recurrent and terminating event processes in the summary output as `value(y):strataRec` ($\alpha_{R_1}$) and `value(y):strataTer` ($\alpha_{T_1}$), respectively. $\exp\{\alpha_{R_1}\}$ denotes the relative increase in the risk of the next recurrent event at time $t$ that results from one unit increase in $\eta_{1_i}(t)$ since <u>the end of the previous event</u>. This is the time reference because we are using the gap timescale. Alternatively, if we were using the calendar timescale, it would be <u>the entry time in the study</u>. The association parameter for the frailty term in the terminal risk model, $\alpha_{F}$, is identified in the output as `frailty`. The `sigma_frailty` refers to the frailty standard deviation, $\sigma_F$.
 
