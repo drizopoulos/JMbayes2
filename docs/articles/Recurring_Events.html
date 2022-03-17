@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-4</span>
       </span>
     </div>
 
@@ -66,7 +66,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -125,7 +125,7 @@
       <h1 data-toc-skip>Recurrent Events</h1>
                         <h4 data-toc-skip class="author">Pedro Miranda Afonso</h4>
             
-            <h4 data-toc-skip class="date">2022-02-25</h4>
+            <h4 data-toc-skip class="date">2022-03-17</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Recurring_Events.Rmd" class="external-link"><code>vignettes/Recurring_Events.Rmd</code></a></small>
       <div class="hidden name"><code>Recurring_Events.Rmd</code></div>
@@ -337,17 +337,17 @@ h_{R_i}(t)= h_{R_0}(t)\exp\left\{  w_{R_i}(t)^\top \gamma_R + \colorbox{#79FCFD8
 <p>Each subject has as many rows in the new data frame as the number of their recurrent risk periods plus one for the terminal event. The data frame follows the counting process formulation with the risk intervals delimited by <code>start</code> and <code>stop</code> variables. The <code>strata</code> variable denotes if the type of event, <code>1</code> if recurrent or <code>2</code> terminal. The <code>status</code> equals <code>1</code> if the subject had an event and <code>0</code> otherwise. As shown below and in Figure 3, the subject 1 experienced seven recurrent events during the follow up; the eighth recurrent event was censored by the terminal event.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">cox_data</span><span class="op">[</span><span class="va">cox_data</span><span class="op">$</span><span class="va">id</span> <span class="op">==</span> <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"tstart"</span>, <span class="st">"tstop"</span>, <span class="st">"status"</span>, <span class="st">"strata"</span><span class="op">)</span><span class="op">]</span>
-<span class="co">#&gt;     id    tstart     tstop status strata</span>
-<span class="co">#&gt; 1    1 0.0000000 0.3756627      1      1</span>
-<span class="co">#&gt; 2    1 0.4275324 0.7832841      1      1</span>
-<span class="co">#&gt; 3    1 0.8724938 1.0863887      1      1</span>
-<span class="co">#&gt; 4    1 1.1212953 1.8741434      1      1</span>
-<span class="co">#&gt; 5    1 1.9372355 2.7843451      1      1</span>
-<span class="co">#&gt; 6    1 2.7906559 3.4618622      1      1</span>
-<span class="co">#&gt; 7    1 3.5166929 3.5830169      1      1</span>
-<span class="co">#&gt; 8    1 3.6251219 4.0375415      0      1</span>
-<span class="co">#&gt; 8.1  1 0.0000000 4.0375415      1      2</span></code></pre></div>
-<div class="figure">
+<span class="co">#&gt;   id    tstart     tstop status strata</span>
+<span class="co">#&gt; 1  1 0.0000000 0.3756627      1    Rec</span>
+<span class="co">#&gt; 2  1 0.4275324 0.7832841      1    Rec</span>
+<span class="co">#&gt; 3  1 0.8724938 1.0863887      1    Rec</span>
+<span class="co">#&gt; 4  1 1.1212953 1.8741434      1    Rec</span>
+<span class="co">#&gt; 5  1 1.9372355 2.7843451      1    Rec</span>
+<span class="co">#&gt; 6  1 2.7906559 3.4618622      1    Rec</span>
+<span class="co">#&gt; 7  1 3.5166929 3.5830169      1    Rec</span>
+<span class="co">#&gt; 8  1 3.6251219 4.0375415      0    Rec</span>
+<span class="co">#&gt; 9  1 0.0000000 4.0375415      1    Ter</span></code></pre></div>
+<div class="figure" style="text-align: center">
 <img src="Recurring_Events_files/figure-html/trf_data3-1.png" alt="&lt;b&gt;Figure 3&lt;/b&gt; Visual representation of the failure-time data during the follow-up for subject 1. The horizontal black line denotes risk periods, while the blue line non-risk periods. 'R' and 'T' represent a recurrent and terminal event, respectively." width="528"><p class="caption">
 <b>Figure 3</b> Visual representation of the failure-time data during the follow-up for subject 1. The horizontal black line denotes risk periods, while the blue line non-risk periods. ‘R’ and ‘T’ represent a recurrent and terminal event, respectively.
 </p>
@@ -365,18 +365,18 @@ h_{R_i}(t)= h_{R_0}(t)\exp\left\{  w_{R_i}(t)^\top \gamma_R + \colorbox{#79FCFD8
                control <span class="op">=</span> <span class="fu">lmeControl</span><span class="op">(</span>opt <span class="op">=</span> <span class="st">"optim"</span>, niterEM <span class="op">=</span> <span class="fl">45</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Then, we use the <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code> function to fit a stratified Cox model using the transformed data,</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="op">(</span><span class="va">group</span> <span class="op">+</span> <span class="va">age</span><span class="op">)</span> <span class="op">*</span> <span class="fu">strata</span><span class="op">(</span><span class="va">strata</span><span class="op">)</span>,
+<code class="sourceCode R"><span class="va">cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="op">(</span><span class="va">group</span> <span class="op">+</span> <span class="va">age</span><span class="op">)</span> <span class="op">:</span> <span class="fu">strata</span><span class="op">(</span><span class="va">strata</span><span class="op">)</span>,
                  data <span class="op">=</span> <span class="va">cox_data</span><span class="op">)</span></code></pre></div>
 <p>These models are then provided as arguments in the <code><a href="../reference/jm.html">jm()</a></code> function. The user specifies the desired functional forms for the mixed model in each relative-risk model. And with the <code>recurrent</code> argument specifies the desired timescale,</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">jm_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">cox_fit</span>, <span class="va">lme_fit</span>, time_var <span class="op">=</span> <span class="st">"time"</span>, recurrent <span class="op">=</span> <span class="st">"gap"</span>,
-             functional_forms <span class="op">=</span>  <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">*</span> <span class="va">strata</span><span class="op">)</span>
+             functional_forms <span class="op">=</span>  <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">:</span> <span class="va">strata</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jm_fit</span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Call:</span>
 <span class="co">#&gt; jm(Surv_object = cox_fit, Mixed_objects = lme_fit, time_var = "time", </span>
-<span class="co">#&gt;     recurrent = "gap", functional_forms = ~value(y) * strata)</span>
+<span class="co">#&gt;     recurrent = "gap", functional_forms = ~value(y):strata)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Data Descriptives:</span>
 <span class="co">#&gt; Number of Groups: 500        Number of events: 2250 (81.6%)</span>
@@ -384,52 +384,60 @@ h_{R_i}(t)= h_{R_0}(t)\exp\left\{  w_{R_i}(t)^\top \gamma_R + \colorbox{#79FCFD8
 <span class="co">#&gt;   y: 3075</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                  DIC     WAIC       LPML</span>
-<span class="co">#&gt; marginal    13140.19 13213.38  -6990.955</span>
-<span class="co">#&gt; conditional 19472.52 18930.07 -10270.700</span>
+<span class="co">#&gt; marginal    13152.00 13294.89  -7324.842</span>
+<span class="co">#&gt; conditional 19514.46 18964.49 -10269.300</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Random-effects covariance matrix:</span>
 <span class="co">#&gt;                                                            </span>
 <span class="co">#&gt;                        StdDev   Corr                       </span>
-<span class="co">#&gt; (Intr)                 0.7920 (Intr) n(,k=c(1,3),B=c(0,7))1</span>
-<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))1 1.6326 0.3177                       </span>
-<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))2 2.3391 0.0601 0.6277                </span>
-<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))3 2.5483 0.5640 0.7549                </span>
+<span class="co">#&gt; (Intr)                 0.7889 (Intr) n(,k=c(1,3),B=c(0,7))1</span>
+<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))1 1.6145 0.3107                       </span>
+<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))2 2.3670 0.0554 0.6360                </span>
+<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))3 2.6158 0.5415 0.7548                </span>
 <span class="co">#&gt;                                              </span>
 <span class="co">#&gt;                                              </span>
 <span class="co">#&gt; (Intr)                 n(,k=c(1,3),B=c(0,7))2</span>
 <span class="co">#&gt; n(,k=c(1,3),B=c(0,7))1                       </span>
 <span class="co">#&gt; n(,k=c(1,3),B=c(0,7))2                       </span>
-<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))3 0.5999                </span>
+<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))3 0.6141                </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Frailty standard deviation:</span>
-<span class="co">#&gt;                 Mean   2.5%  97.5%</span>
-<span class="co">#&gt; sigma_frailty 0.2187 0.0146 0.3302</span>
+<span class="co">#&gt;                Mean   2.5%  97.5%</span>
+<span class="co">#&gt; sigma_frailty 0.228 0.0868 0.3309</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Survival Outcome:</span>
-<span class="co">#&gt;                          Mean  StDev    2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; group                  0.4791 0.0907  0.3000 0.6560 0.0000 1.0100</span>
-<span class="co">#&gt; age                    0.0503 0.0029  0.0445 0.0562 0.0000 1.0143</span>
-<span class="co">#&gt; group:strata(strata)2 -0.0249 0.1234 -0.2595 0.2385 0.8353 1.0163</span>
-<span class="co">#&gt; age:strata(strata)2   -0.0003 0.0045 -0.0090 0.0087 0.9436 1.2005</span>
-<span class="co">#&gt; value(y)               0.5145 0.0266  0.4643 0.5693 0.0000 1.0551</span>
-<span class="co">#&gt; value(y):strata2       0.0099 0.0430 -0.0682 0.0875 0.8704 1.3037</span>
+<span class="co">#&gt;                            Mean  StDev    2.5%  97.5%      P   Rhat</span>
+<span class="co">#&gt; group:strata(strata)Rec  0.4831 0.0920  0.3042 0.6626 0.0000 1.0016</span>
+<span class="co">#&gt; group:strata(strata)Ter  0.4359 0.1085  0.2252 0.6512 0.0004 1.0157</span>
+<span class="co">#&gt; age:strata(strata)Rec    0.0508 0.0031  0.0450 0.0567 0.0000 1.0646</span>
+<span class="co">#&gt; age:strata(strata)Ter    0.0472 0.0041  0.0383 0.0552 0.0000 1.0764</span>
+<span class="co">#&gt; value(y):strataRec       0.5160 0.0254  0.4665 0.5664 0.0000 1.0339</span>
+<span class="co">#&gt; value(y):strataTer       0.4771 0.0321  0.4112 0.5305 0.0000 1.0701</span>
+<span class="co">#&gt; frailty                 -0.3408 0.4905 -1.4095 0.5991 0.4444 1.0242</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Longitudinal Outcome: y (family = gaussian, link = identity)</span>
 <span class="co">#&gt;                          Mean  StDev   2.5%  97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)            6.9828 0.1123 6.7613 7.2064 0.0000 1.0036</span>
-<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))1 1.2457 0.2113 0.8335 1.6768 0.0000 1.1051</span>
-<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))2 1.6099 0.4726 0.6691 2.5094 0.0000 1.0001</span>
-<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))3 1.5582 0.6385 0.3496 2.7784 0.0144 1.0054</span>
-<span class="co">#&gt; sigma                  0.6147 0.0112 0.5928 0.6368 0.0000 1.0198</span>
+<span class="co">#&gt; (Intercept)            6.9837 0.1116 6.7636 7.2112 0.0000 1.0008</span>
+<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))1 1.2204 0.2067 0.8288 1.6377 0.0000 1.0981</span>
+<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))2 1.6149 0.4896 0.6849 2.5836 0.0000 1.0255</span>
+<span class="co">#&gt; n(,k=c(1,3),B=c(0,7))3 1.5904 0.6612 0.3921 2.9376 0.0031 1.0435</span>
+<span class="co">#&gt; sigma                  0.6146 0.0112 0.5930 0.6375 0.0000 1.0204</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; MCMC summary:</span>
 <span class="co">#&gt; chains: 3 </span>
 <span class="co">#&gt; iterations per chain: 3500 </span>
 <span class="co">#&gt; burn-in per chain: 500 </span>
 <span class="co">#&gt; thinning: 1 </span>
-<span class="co">#&gt; time: 2.2 min</span></code></pre></div>
+<span class="co">#&gt; time: 2.1 min</span></code></pre></div>
+<p>One can find the association parameters between the underlying value of the longitudinal outcome and the recurrent and terminating event processes in the summary output as <code>value(y):strataRec</code> (<span class="math inline">\(\alpha_{R_1}\)</span>) and <code>value(y):strataTer</code> (<span class="math inline">\(\alpha_{T_1}\)</span>), respectively. <span class="math inline">\(\exp\{\alpha_{R_1}\}\)</span> denotes the relative increase in the risk of the next recurrent event at time <span class="math inline">\(t\)</span> that results from one unit increase in <span class="math inline">\(\eta_{1_i}(t)\)</span> since <u>the end of the previous event</u><a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>. The association parameter for the frailty term in the terminal risk model, <span class="math inline">\(\alpha_{F}\)</span>, is identified in the output as <code>frailty</code>. The <code>sigma_frailty</code> refers to the frailty standard deviation, <span class="math inline">\(\sigma_F\)</span>.</p>
 </div>
 </div>
+</div>
+<div class="footnotes">
+<hr>
+<ol>
+<li id="fn1"><p>This is the time reference because we are using the gap timescale. Alternatively, if we were using the calendar timescale, it would be <u>the entry time in the study</u>.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
 </div>
   </div>
 
