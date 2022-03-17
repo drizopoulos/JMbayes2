@@ -484,5 +484,5 @@ jm_fit <- jm(cox_fit, lme_fit, time_var = "time", recurrent = "gap",
 summary(jm_fit)
 ```
 
-
+test
 
