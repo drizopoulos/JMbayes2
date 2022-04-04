@@ -98,12 +98,43 @@ for (i in seq_along(t0)) {
 
 
     # test <- causal_effects(jointFit, newdataL_i, newdataE_withoutIE_i,
-    #                       newdataE_withIE_i, t0 = t0[i], Dt = Delta_t)
+    #                      newdataE_withIE_i, t0 = t0[i], Dt = Delta_t)
 
     # 95% CI
+    # the samples object contains the MCMC samples for the conditional
+    # causal effect
     samples <- predSurv_withIE$mcmc[2, ] - predSurv_withoutIE$mcmc[2, ]
+
+    M <- 20L
+    conditional_causal_effect. <- numeric(M)
+    for (m in seq_len(M)) {
+        set.seed(2022L + m)
+        # we want to calculate the extra variance due to the fact that we
+        # condition on Y_i(t). We first simulate new Y_i(t) data and we put
+        # them in the corresponding datasets.
+        mu <- predict(jointFit, newdata = newdata_withoutIE_i)$preds[[1]]
+        sigma <- jointFit$statistics$Mean$sigmas
+        preds <- exp(rnorm(length(mu), mu, sigma))
+        newdata_withoutIE_i. <- newdata_withoutIE_i
+        newdata_withoutIE_i.$newdataL$serBilir <- preds
+        newdata_withIE_i. <- newdata_withIE_i
+        newdata_withIE_i.$newdataL$serBilir <- preds
+        # we calculate the conditional causal effect using the new simulated data
+        predSurv_withoutIE. <- predict(jointFit, newdata = newdata_withoutIE_i.,
+                                       process = "event", times = t0[i] + Delta_t)
+        predSurv_withIE. <- predict(jointFit, newdata = newdata_withoutIE_i.,
+                                    newdata2 = newdata_withIE_i.,
+                                    process = "event", times = t0[i] + Delta_t)
+
+        # The conditional causal effect
+        conditional_causal_effect.[m] <-
+            predSurv_withIE.$pred[2] - predSurv_withoutIE.$pred[2]
+    }
+    total_variance <- var(conditional_causal_effect.) + var(samples)
+
     conditional_causal_effect[i, 2:3] <-
-        quantile(samples, probs = c(0.025, 0.975))
+        c(conditional_causal_effect[i, 1] - 1.96 * sqrt(total_variance),
+          conditional_causal_effect[i, 1] + 1.96 * sqrt(total_variance))
 }
 
 conditional_causal_effect
