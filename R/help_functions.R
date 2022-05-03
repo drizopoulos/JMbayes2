@@ -226,11 +226,12 @@ extract_D <- function (object) {
 }
 
 knots <- function (xl, xr, ndx, deg) {
-    # From Paul Eilers
     dx <- (xr - xl) / ndx
-    start <- if (deg < 1) 0 else xl - deg * dx
-    end <- if (deg < 1) xr + 0.001 else xr + deg * dx
-    seq(start, end, by = dx)
+    if (deg < 1) {
+        seq(0, xr + 0.001, length.out = ndx + 1)
+    } else {
+        seq(xl - deg * dx, xr + deg * dx, by = dx)
+    }
 }
 
 extract_b <- function (object, id, n) {

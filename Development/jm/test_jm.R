@@ -31,7 +31,7 @@ fm2 <- lme(prothrombin ~ ns(year, 2, B = c(0, 15)) * sex, data = pbc2,
 
 fm3 <- mixed_model(ascites ~ year * sex, data = pbc2,
                    random = ~ 1 | id, family = binomial())
-Mixed <- list(fm1, fm2, fm3)
+Mixed <- list(fm1)
 Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
 #system.time(obj <- jm(Cox, Mixed, time_var = "year"))
@@ -52,7 +52,7 @@ fForms <- ~ value(log(serBilir)) + slope(log(serBilir))
 Surv_object = Cox
 Mixed_objects = Mixed
 time_var = 'year'
-functional_forms = fForms
+functional_forms = NULL
 recurrent = FALSE
 data_Surv = NULL
 id_var = NULL
