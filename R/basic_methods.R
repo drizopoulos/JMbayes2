@@ -140,7 +140,6 @@ summary.jm <- function (object, ...) {
                           P = object$statistics$P[[name]],
                           row.names = names(object$statistics$P[[name]]),
                           check.names = FALSE)
-        if(rownames(out)[1] == "alphaF") rownames(out) <- "frailty"
         Rhat <- object$statistics$Rhat[[name]][, 1L]
         if (!is.null(Rhat))
             out$Rhat <- Rhat
