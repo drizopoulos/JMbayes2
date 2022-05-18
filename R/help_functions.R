@@ -976,7 +976,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                     t2 <- time - eps_i
                 }
             }
-            e <- c(mapply("-", t1, t2))
+            e <- if (direction_i == "both") c(mapply("-", t1, t2)) else 1
             terms_i <- terms[[i]]
             D1 <- LongData_HazardModel(t1, data, data[[timeVar]],
                                        data[[idVar]], timeVar,
