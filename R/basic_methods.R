@@ -163,10 +163,10 @@ summary.jm <- function (object, ...) {
         }
     }
     if(out$recurrent) {
-      out$Survival <- do.call(rbind, list(tab_f("gammas"), tab_f("alphas"), 
+      out$Survival <- do.call(rbind, list(tab_f("gammas"), tab_f("alphas"),
                                           tab_f("alphaF")))
     } else {
-      out$Survival <- do.call(rbind, list(tab_f("gammas"), tab_f("alphas"))) 
+      out$Survival <- do.call(rbind, list(tab_f("gammas"), tab_f("alphas")))
     }
     out$sigmaF <- tab_f("sigmaF")[c(1, 3, 4)]
     out$fit_stats <- object$fit_stats
@@ -617,8 +617,8 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
              "correct format.\n")
     }
     if (!is.data.frame(newdata)) {
-        if (!is.list(newdata) || length(newdata) != 2
-            || !names(newdata) %in% c("newdataL", "newdataE")) {
+        if (!is.list(newdata) || length(newdata) != 2 ||
+            !all(names(newdata) %in% c("newdataL", "newdataE"))) {
             stop("'newdata' must be a list with two data.frame elements ",
                  "named 'newdataL' and 'newdataE'.\n")
         }
@@ -660,9 +660,9 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
         }
     }
     if (!is.null(newdata2) && !is.data.frame(newdata2)) {
-        if (!is.list(newdata2) || length(newdata2) != 2
-            || !names(newdata2) %in% c("newdataL", "newdataE")) {
-            stop("'newdata' must be a list with two data.frame elements ",
+        if (!is.list(newdata2) || length(newdata2) != 2 ||
+            !all(names(newdata2) %in% c("newdataL", "newdataE"))) {
+            stop("'newdata2' must be a list with two data.frame elements ",
                  "named 'newdataL' and 'newdataE'.\n")
         }
         for (i in seq_along(respVars)) {
