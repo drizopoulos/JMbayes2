@@ -423,14 +423,17 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     attr <- lapply(functional_forms, extract_attributes, data = dataS_H)
     eps <- lapply(attr, "[[", 1L)
     direction <- lapply(attr, "[[", 2L)
+    zero_ind <- lapply(attr, "[[", 3L)
+    zero_ind_X <- lapply(zero_ind, function (x) if (length(x)) x[[1]][["X"]] else x)
+    zero_ind_Z <- lapply(zero_ind, function (x) if (length(x)) x[[1]][["Z"]] else x)
     X_H <- design_matrices_functional_forms(st, terms_FE_noResp,
                                             dataL, time_var, idVar, idT,
                                             collapsed_functional_forms, Xbar,
-                                            eps, direction)
+                                            eps, direction, zero_ind_X)
     Z_H <- design_matrices_functional_forms(st, terms_RE,
                                             dataL, time_var, idVar, idT,
                                             collapsed_functional_forms, NULL,
-                                            eps, direction)
+                                            eps, direction, zero_ind_Z)
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
     if (length(which_event)) {
         W0_h <- if (recurrent == "gap") {
@@ -450,11 +453,11 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         X_h <- design_matrices_functional_forms(Time_right, terms_FE_noResp,
                                                 dataL, time_var, idVar, idT,
                                                 collapsed_functional_forms, Xbar,
-                                                eps, direction)
+                                                eps, direction, zero_ind_X)
         Z_h <- design_matrices_functional_forms(Time_right, terms_RE,
                                                 dataL, time_var, idVar, idT,
                                                 collapsed_functional_forms, NULL,
-                                                eps, direction)
+                                                eps, direction, zero_ind_Z)
         U_h <- lapply(functional_forms, construct_Umat, dataS = dataS_h)
     } else {
         W0_h <- W_h <- matrix(0.0)
@@ -470,14 +473,14 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         if (!any_gammas) {
             W_H2 <- matrix(0.0, nrow = nrow(W_H2), ncol = 1L)
         }
-        X_H2 <- design_matrices_functional_forms(st, terms_FE_noResp,
+        X_H2 <- design_matrices_functional_forms(st2, terms_FE_noResp,
                                                  dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, Xbar,
-                                                 eps, direction)
-        Z_H2 <- design_matrices_functional_forms(st, terms_RE,
+                                                 eps, direction, zero_ind_X)
+        Z_H2 <- design_matrices_functional_forms(st2, terms_RE,
                                                  dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, NULL,
-                                                 eps, direction)
+                                                 eps, direction, zero_ind_Z)
         U_H2 <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
     } else {
         W0_H2 <- W_H2 <- matrix(0.0)
@@ -535,7 +538,8 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         FunForms_cpp = lapply(FunForms_per_outcome, unlist),
         FunForms_ind = FunForms_ind(FunForms_per_outcome),
         Funs_FunForms = lapply(Funs_FunForms, function (x) if (!is.list(x)) list(x) else x),
-        eps = eps, direction = direction, recurrent = !isFALSE(recurrent)
+        eps = eps, direction = direction, zero_ind_X = zero_ind_X,
+        zero_ind_Z = zero_ind_Z, recurrent = !isFALSE(recurrent)
     )
     ############################################################################
     ############################################################################

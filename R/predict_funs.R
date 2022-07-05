@@ -914,9 +914,9 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
         newdataE2[[object$model_info$var_names$time_var]] <-
             unlist(times, use.names = FALSE)
     }
-    res <- list(pred = rowMeans(CIF),
-                low = rowQuantiles(CIF, probs = (1 - level) / 2),
-                upp = rowQuantiles(CIF, probs = (1 + level) / 2),
+    res <- list(pred = rowMeans(CIF, na.rm = TRUE),
+                low = rowQuantiles(CIF, probs = (1 - level) / 2, na.rm = TRUE),
+                upp = rowQuantiles(CIF, probs = (1 + level) / 2, na.rm = TRUE),
                 times = unlist(times, use.names = FALSE),
                 id = rep(levels(idT), n_times),
                 "_strata" = if (CR_MS)

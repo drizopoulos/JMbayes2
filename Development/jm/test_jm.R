@@ -31,7 +31,7 @@ fm2 <- lme(prothrombin ~ ns(year, 2, B = c(0, 15)) * sex, data = pbc2,
 
 fm3 <- mixed_model(ascites ~ year * sex, data = pbc2,
                    random = ~ 1 | id, family = binomial())
-Mixed <- list(fm1)
+Mixed <- list(fm1, fm2)
 Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
 #system.time(obj <- jm(Cox, Mixed, time_var = "year"))
@@ -44,7 +44,7 @@ fForms <- ~ value(log(serBilir)):I(1 * (sex == 'male')) + value(prothrombin) + v
 fForms <- ~ value(log(serBilir)) + vsquare(value(log(serBilir))) +
     vcubic(value(log(serBilir))) + slope(log(serBilir)) +
     value(log(serBilir)):slope(log(serBilir))
-fForms <- ~ value(log(serBilir)) + slope(log(serBilir))
+fForms <- ~ value(log(serBilir)) + value(prothrombin, zero_ind = list(X = 2:6, Z = 2:3))
 
 # system.time(obj <- jm(Cox, Mixed, time_var = "year", functional_forms = fForms))
 
@@ -52,7 +52,7 @@ fForms <- ~ value(log(serBilir)) + slope(log(serBilir))
 Surv_object = Cox
 Mixed_objects = Mixed
 time_var = 'year'
-functional_forms = NULL
+functional_forms = fForms
 recurrent = FALSE
 data_Surv = NULL
 id_var = NULL
@@ -63,6 +63,35 @@ model_data <- Data
 control <- con
 control$n_chains = 1
 
+##########################################################################################
+##########################################################################################
+
+# Cox model for the composite event death or transplantation
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
+CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
+
+# a linear mixed model for log serum cholesterol with random ordering
+set.seed(123)
+pbc2_ro <- pbc2[sample(seq_len(nrow(pbc2)), nrow(pbc2)), ]
+fm1 <- lme(log(serChol) ~ year * sex, data = pbc2_ro, random = ~ year | id,
+           na.action = na.omit)
+
+jointFit <- jm(CoxFit, list(fm1), time_var = "year",
+               n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)
+
+summary(jointFit)
+
+
+Surv_object = CoxFit
+Mixed_objects = fm1
+time_var = 'year'
+functional_forms = NULL
+recurrent = FALSE
+data_Surv = NULL
+id_var = NULL
+priors = NULL
+control = NULL
+#
 
 
 ##########################################################################################

@@ -1,20 +1,28 @@
 if (FALSE) {
-    object = jointFit
-    Data_Long = pbc2
-    Data_Event = pbc2_CR
+    object = jointFit1
+    Data_Long = pt_all
+    Data_Event = pt_all_CR
     t0 = 3
     Dt = 2
-    IE_var = "IE"
-    B = 50L
+    IE_var = "salvage_indicator"
+    B = 5L
+    calculate_CI = TRUE
     cores = max(parallel::detectCores(logical = FALSE) - 1, 1)
     extra_objects = "dummy"
     seed = 1L
 
-    Data <- get_data(pbc2, pbc2_CR, t0 = 3, Dt = 2, object = jointFit,
-                     IE_var = "IE")
+    Data <- get_data(pt_all, pt_all_CR, t0 = 3, Dt = 2, object = jointFit1,
+                     IE_var = "salvage_indicator")
     Data_Long = Data$newdataL
     Data_Event = Data$newdataE
     Data_Event2 = Data$newdataE2
+
+    Data_Event[Data_Event$pid == 1, c("pid", "start", "stop", "event",
+                                      "salvage_indicator", "CR")]
+
+    Data_Event2[Data_Event2$pid == 1, c("pid", "start", "stop", "event",
+                                      "salvage_indicator", "CR")]
+
 }
 
 
@@ -66,7 +74,9 @@ get_data <- function (Data_Long, Data_Event, t0, Dt, object = NULL,
     }
     # we find the subjects at risk at t0
     keep <- function (x) rep(max(x) > t0, length(x))
-    at_risk <- ave(Data_Event[[Time_var]], Data_Event[[id_var]], FUN = keep)
+    fact <- Data_Event[[id_var]]
+    fact <- factor(fact, levels = unique(fact))
+    at_risk <- ave(Data_Event[[Time_var]], fact, FUN = keep)
     R_event <- Data_Event[as.logical(at_risk), ]
     R_event[[id_var]] <- factor(R_event[[id_var]], unique(R_event[[id_var]]))
     # then we want to keep only the subjects who did not have an IE
@@ -97,6 +107,10 @@ get_data <- function (Data_Long, Data_Event, t0, Dt, object = NULL,
     check2 <- Data_Long[[id_var]] %in% unique(R_event[[id_var]])
     R_long <- Data_Long[check1 & check2, ]
     R_long[[id_var]] <- factor(R_long[[id_var]])
+    R_event <- R_event[R_event[[id_var]] %in% R_long[[id_var]], ]
+    R_event[[id_var]] <- factor(R_event[[id_var]])
+    R_event2 <- R_event2[R_event2[[id_var]] %in% R_long[[id_var]], ]
+    R_event2[[id_var]] <- factor(R_event2[[id_var]])
     ###########################################################
     list(newdataL = R_long, newdataE = R_event, newdataE2 = R_event2)
 }
@@ -190,10 +204,18 @@ causal_effects <- function (object, Data_Long, Data_Event, Data_Event2, t0, Dt,
         # the marginal effect is the mean over the conditional effects
         ind <- CIF_withIE$times > t0
         strata <- CIF_withIE[["_strata"]][ind]
-        ee <- CIF_withIE$pred[ind] - CIF_withoutIE$pred[ind]
-        effect <- tapply(ee, strata, mean)
-        ee_mcmc <- CIF_withIE$mcmc[ind, ] - CIF_withoutIE$mcmc[ind, ]
-        vv <- rowsum(ee_mcmc, strata, reorder = FALSE) / sum(strata == 1)
+        cif1 <- CIF_withIE$pred[ind]
+        cif2 <- CIF_withoutIE$pred[ind]
+        # drop failed iters
+        cif1[cif1 > 1 | cif1 < 0] <- as.numeric(NA)
+        cif2[cif2 > 1 | cif2 < 0] <- as.numeric(NA)
+        effect <- tapply(cif1 - cif2, strata, mean, na.rm = TRUE)
+        mcmc1 <- CIF_withIE$mcmc[ind, ]
+        mcmc2 <- CIF_withoutIE$mcmc[ind, ]
+        mcmc1[mcmc1 > 1 | mcmc1 < 0] <- as.numeric(NA)
+        mcmc2[mcmc2 > 1 | mcmc2 < 0] <- as.numeric(NA)
+        vv <- rowsum(mcmc1 - mcmc2, strata, reorder = FALSE, na.rm = TRUE) /
+            sum(strata == 1)
         attr(effect, "var") <- matrixStats::rowVars(vv)
         effect
     }
@@ -251,16 +273,23 @@ causal_effects <- function (object, Data_Long, Data_Event, Data_Event2, t0, Dt,
             }
             out
         }
-        cl <- parallel::makeCluster(cores)
-        parallel::clusterExport(cl, c("make_bootSample", "get_effect", extra_objects),
-                                envir = environment())
-        parallel::clusterEvalQ(cl = cl, library("JMbayes2"))
-        parallel::clusterSetRNGStream(cl = cl, iseed = seed)
-        out <- parallel::parLapply(cl, samples, boot_parallel,
-                                   object = object, Data_Long = Data_Long,
-                                   Data_Event = Data_Event, Data_Event2 = Data_Event2,
-                                   t0 = t0, Dt = Dt, vars = vars)
-        parallel::stopCluster(cl)
+        if (cores > 1L) {
+            cl <- parallel::makeCluster(cores)
+            parallel::clusterExport(cl, c("make_bootSample", "get_effect", extra_objects),
+                                    envir = environment())
+            parallel::clusterEvalQ(cl = cl, library("JMbayes2"))
+            parallel::clusterSetRNGStream(cl = cl, iseed = seed)
+            out <- parallel::parLapply(cl, samples, boot_parallel,
+                                       object = object, Data_Long = Data_Long,
+                                       Data_Event = Data_Event, Data_Event2 = Data_Event2,
+                                       t0 = t0, Dt = Dt, vars = vars)
+            parallel::stopCluster(cl)
+        } else {
+            out <- lapply(samples, boot_parallel,
+                          object = object, Data_Long = Data_Long,
+                          Data_Event = Data_Event, Data_Event2 = Data_Event2,
+                          t0 = t0, Dt = Dt, vars = vars)
+        }
         out <- do.call('rbind', out)
         var_effects <- matrixStats::colVars(out) + attr(effects, "var")
         names(var_effects) <- names(effects)

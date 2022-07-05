@@ -25,7 +25,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-8</span>
       </span>
     </div>
 
@@ -37,7 +37,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -96,8 +96,8 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">crisk_setup</span><span class="op">(</span><span class="va">data</span>, <span class="va">statusVar</span>, <span class="va">censLevel</span>,
-    nameStrata <span class="op">=</span> <span class="st">"strata"</span>, nameStatus <span class="op">=</span> <span class="st">"status2"</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">crisk_setup</span><span class="op">(</span><span class="va">data</span>, <span class="va">statusVar</span>, <span class="va">censLevel</span>,</span>
+<span>    nameStrata <span class="op">=</span> <span class="st">"strata"</span>, nameStatus <span class="op">=</span> <span class="st">"status2"</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -105,24 +105,31 @@
     <dl><dt>data</dt>
 <dd><p>the data frame containing the competing risk data with a single
       row per subject.</p></dd>
-<dt>statusVar</dt>
+
+  <dt>statusVar</dt>
 <dd><p>a character string denoting the name of the variable in
           <code>data</code> that identifies the status variable which equals 1 if the
           subject had any of the competing events and 0 otherwise.</p></dd>
-<dt>censLevel</dt>
+
+  <dt>censLevel</dt>
 <dd><p>a character string or a scalar denoting the censoring level
       in the <code>statusVar</code> variable of <code>data</code>.</p></dd>
-<dt>nameStrata</dt>
+
+  <dt>nameStrata</dt>
 <dd><p>a character string denoting the variable that will be added
     in the long version of <code>data</code> denoting the various causes of event.</p></dd>
-<dt>nameStatus</dt>
+
+  <dt>nameStatus</dt>
 <dd><p>a character string denoting the variable that will be added
     in the long version of <code>data</code> denoting if the subject experience any
     of the competing events.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A data frame in the long format with multiple rows per subject.</p>
+    
+
+<p>A data frame in the long format with multiple rows per subject.</p>
     </div>
     <div id="references">
     <h2>References</h2>
@@ -139,7 +146,7 @@ Competing risks and multi-state models. <em>Statistics in Medicine</em> <b>26</b
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">crisk_setup</span><span class="op">(</span><span class="va">pbc2.id</span>, <span class="st">"status"</span>, <span class="st">"alive"</span><span class="op">)</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">crisk_setup</span><span class="op">(</span><span class="va">pbc2.id</span>, <span class="st">"status"</span>, <span class="st">"alive"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     id     years status      drug      age    sex year ascites hepatomegaly</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1    1  1.095170   dead D-penicil 58.76684 female    0     Yes          Yes</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1.1  1  1.095170   dead D-penicil 58.76684 female    0     Yes          Yes</span>
@@ -175,7 +182,7 @@ Competing risks and multi-state models. <em>Statistics in Medicine</em> <b>26</b
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>

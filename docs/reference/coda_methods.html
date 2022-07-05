@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-8</span>
       </span>
     </div>
 
@@ -35,7 +35,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -92,83 +92,95 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">traceplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">traceplot</span><span class="op">(</span><span class="va">object</span>,
-  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,
-           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">ggtraceplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">ggtraceplot</span><span class="op">(</span><span class="va">object</span>,
-  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,
-           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>,
-  size <span class="op">=</span> <span class="fl">1</span>, alpha <span class="op">=</span> <span class="fl">0.8</span>,
-  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'standard'</span>, <span class="st">'catalog'</span>, <span class="st">'metro'</span>,
-                <span class="st">'pastel'</span>, <span class="st">'beach'</span>, <span class="st">'moonlight'</span>, <span class="st">'goo'</span>, <span class="st">'sunset'</span>, <span class="st">'custom'</span><span class="op">)</span>,
-  grid <span class="op">=</span> <span class="cn">FALSE</span>, gridrows <span class="op">=</span> <span class="fl">3</span>, gridcols <span class="op">=</span> <span class="fl">1</span>, custom_theme <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">gelman_diag</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">gelman_diag</span><span class="op">(</span><span class="va">object</span>,
-  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,
-           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">densplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">densplot</span><span class="op">(</span><span class="va">object</span>,
-  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,
-           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">ggdensityplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">ggdensityplot</span><span class="op">(</span><span class="va">object</span>,
-  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,
-           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>,
-  size <span class="op">=</span> <span class="fl">1</span>, alpha <span class="op">=</span> <span class="fl">0.6</span>,
-  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'standard'</span>, <span class="st">'catalog'</span>, <span class="st">'metro'</span>, <span class="st">'pastel'</span>,
-                <span class="st">'beach'</span>, <span class="st">'moonlight'</span>, <span class="st">'goo'</span>, <span class="st">'sunset'</span>, <span class="st">'custom'</span><span class="op">)</span>,
-  grid <span class="op">=</span> <span class="cn">FALSE</span>, gridrows <span class="op">=</span> <span class="fl">3</span>, gridcols <span class="op">=</span> <span class="fl">1</span>, custom_theme <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">cumuplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">cumuplot</span><span class="op">(</span><span class="va">object</span>,
-  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,
-           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">traceplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">traceplot</span><span class="op">(</span><span class="va">object</span>,</span>
+<span>  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,</span>
+<span>           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ggtraceplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">ggtraceplot</span><span class="op">(</span><span class="va">object</span>,</span>
+<span>  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,</span>
+<span>           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>,</span>
+<span>  size <span class="op">=</span> <span class="fl">1</span>, alpha <span class="op">=</span> <span class="fl">0.8</span>,</span>
+<span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'standard'</span>, <span class="st">'catalog'</span>, <span class="st">'metro'</span>,</span>
+<span>                <span class="st">'pastel'</span>, <span class="st">'beach'</span>, <span class="st">'moonlight'</span>, <span class="st">'goo'</span>, <span class="st">'sunset'</span>, <span class="st">'custom'</span><span class="op">)</span>,</span>
+<span>  grid <span class="op">=</span> <span class="cn">FALSE</span>, gridrows <span class="op">=</span> <span class="fl">3</span>, gridcols <span class="op">=</span> <span class="fl">1</span>, custom_theme <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">gelman_diag</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">gelman_diag</span><span class="op">(</span><span class="va">object</span>,</span>
+<span>  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,</span>
+<span>           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">densplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">densplot</span><span class="op">(</span><span class="va">object</span>,</span>
+<span>  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,</span>
+<span>           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ggdensityplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">ggdensityplot</span><span class="op">(</span><span class="va">object</span>,</span>
+<span>  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,</span>
+<span>           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>,</span>
+<span>  size <span class="op">=</span> <span class="fl">1</span>, alpha <span class="op">=</span> <span class="fl">0.6</span>,</span>
+<span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'standard'</span>, <span class="st">'catalog'</span>, <span class="st">'metro'</span>, <span class="st">'pastel'</span>,</span>
+<span>                <span class="st">'beach'</span>, <span class="st">'moonlight'</span>, <span class="st">'goo'</span>, <span class="st">'sunset'</span>, <span class="st">'custom'</span><span class="op">)</span>,</span>
+<span>  grid <span class="op">=</span> <span class="cn">FALSE</span>, gridrows <span class="op">=</span> <span class="fl">3</span>, gridcols <span class="op">=</span> <span class="fl">1</span>, custom_theme <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">cumuplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">cumuplot</span><span class="op">(</span><span class="va">object</span>,</span>
+<span>  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,</span>
+<span>           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>object</dt>
 <dd><p>an object inheriting from class <code>"jm"</code>.</p></dd>
+
 <dt>parm</dt>
 <dd><p>a character string specifying which parameters of the joint model to plot. Possible options are <code>'all'</code>, <code>'betas'</code>, <code>'alphas'</code>, <code>'sigmas'</code>, <code>'D'</code>, <code>'bs_gammas'</code>, <code>'tau_bs_gammas'</code>, or <code>'gammas'</code>.<br></p></dd>
+
 <dt>size</dt>
 <dd><p>the width of the traceplot line in mm. Defaults to 1.</p></dd>
+
 <dt>alpha</dt>
 <dd><p>the opacity level of the traceplot line. Defaults to 0.8.</p></dd>
+
 <dt>theme</dt>
 <dd><p>a character string specifying the color theme to be used. Possible options are <code>'standard'</code>, <code>'catalog'</code>, <code>'metro'</code>, <code>'pastel'</code>, <code>'beach'</code>, <code>'moonlight'</code>, <code>'goo'</code>, or <code>'sunset'</code>. Note that this option supports fitted objects with three chains. If the object was fitted using a different number of chains then the colors are either automatically chosen, or can be specified by the user via the argument <code>custom_theme</code>. <br></p></dd>
+
 <dt>grid</dt>
 <dd><p>logical; defaults to <code>FALSE</code>. If <code>TRUE</code>, the plots are returned in grids split over multiple pages. For more details see the documentation for <code><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">gridExtra::marrangeGrob()</a></code>. <br></p></dd>
+
 <dt>gridrows</dt>
 <dd><p>number of rows per page for the grid. Only relevant when using <code>grid = TRUE</code>. Defaults to 3.</p></dd>
+
 <dt>gridcols</dt>
 <dd><p>number of columns per page for the grid. Only relevant when using <code>grid = TRUE</code>. Defaults to 1.</p></dd>
+
 <dt>custom_theme</dt>
 <dd><p>A named character vector with elements equal to the number of chains (<code>n_chains</code>). The name of each element should be the number corresponding to the respective chain. Defaults to <code>NULL</code>.</p></dd>
+
 <dt>...</dt>
 <dd><p>further arguments passed to the corresponding function from the <b>coda</b> package.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <dl><dt><code>traceplot()</code></dt>
+    
+
+<dl><dt><code>traceplot()</code></dt>
 <dd><p>Plots the evolution of the estimated parameter vs. iterations in a fitted joint model.</p></dd>
 
 
@@ -204,81 +216,81 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># \donttest{</span></span>
-<span class="r-in"><span class="co"># linear mixed model fits</span></span>
-<span class="r-in"><span class="va">fit_lme1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span><span class="op">:</span><span class="va">sex</span> <span class="op">+</span> <span class="va">age</span>,</span>
-<span class="r-in">                random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">fit_lme2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">sex</span>,</span>
-<span class="r-in">                random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># cox model fit</span></span>
-<span class="r-in"><span class="va">fit_cox</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># joint model fit</span></span>
-<span class="r-in"><span class="va">fit_jm</span> <span class="op">&lt;-</span> <span class="fu"><a href="jm.html">jm</a></span><span class="op">(</span><span class="va">fit_cox</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fit_lme1</span>, <span class="va">fit_lme2</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>, n_chains <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># trace plot for the fixed effects in the linear mixed submodels</span></span>
-<span class="r-in"><span class="fu">traceplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># linear mixed model fits</span></span></span>
+<span class="r-in"><span><span class="va">fit_lme1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span><span class="op">:</span><span class="va">sex</span> <span class="op">+</span> <span class="va">age</span>,</span></span>
+<span class="r-in"><span>                random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">fit_lme2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>                random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># cox model fit</span></span></span>
+<span class="r-in"><span><span class="va">fit_cox</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># joint model fit</span></span></span>
+<span class="r-in"><span><span class="va">fit_jm</span> <span class="op">&lt;-</span> <span class="fu"><a href="jm.html">jm</a></span><span class="op">(</span><span class="va">fit_cox</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fit_lme1</span>, <span class="va">fit_lme2</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>, n_chains <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># trace plot for the fixed effects in the linear mixed submodels</span></span></span>
+<span class="r-in"><span><span class="fu">traceplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="coda_methods-1.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-2.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-3.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-4.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-5.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-6.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># density plot for the fixed effects in the linear mixed submodels</span></span>
-<span class="r-in"><span class="fu">densplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># density plot for the fixed effects in the linear mixed submodels</span></span></span>
+<span class="r-in"><span><span class="fu">densplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="coda_methods-7.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-8.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-9.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-10.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-11.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-12.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># cumulative quantile plot for the fixed effects in the linear mixed submodels</span></span>
-<span class="r-in"><span class="fu">cumuplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># cumulative quantile plot for the fixed effects in the linear mixed submodels</span></span></span>
+<span class="r-in"><span><span class="fu">cumuplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="coda_methods-13.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-14.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># trace plot for the fixed effects in the linear mixed submodels</span></span>
-<span class="r-in"><span class="fu">ggtraceplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># trace plot for the fixed effects in the linear mixed submodels</span></span></span>
+<span class="r-in"><span><span class="fu">ggtraceplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="coda_methods-15.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-16.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-17.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-18.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-19.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-20.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="fu">ggtraceplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span>, grid <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu">ggtraceplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span>, grid <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="coda_methods-21.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-22.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="fu">ggtraceplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span>, custom_theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'1'</span> <span class="op">=</span> <span class="st">'black'</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu">ggtraceplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span>, custom_theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'1'</span> <span class="op">=</span> <span class="st">'black'</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="coda_methods-23.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-24.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-25.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-26.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-27.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-28.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># trace plot for the fixed effects in the linear mixed submodels</span></span>
-<span class="r-in"><span class="fu">ggdensityplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># trace plot for the fixed effects in the linear mixed submodels</span></span></span>
+<span class="r-in"><span><span class="fu">ggdensityplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="coda_methods-29.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-30.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-31.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-32.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-33.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-34.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="fu">ggdensityplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span>, grid <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu">ggdensityplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span>, grid <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="coda_methods-35.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-36.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="fu">ggdensityplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span>, custom_theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'1'</span> <span class="op">=</span> <span class="st">'black'</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu">ggdensityplot</span><span class="op">(</span><span class="va">fit_jm</span>, parm <span class="op">=</span> <span class="st">"betas"</span>, custom_theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'1'</span> <span class="op">=</span> <span class="st">'black'</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="coda_methods-37.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-38.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-39.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-40.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-41.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="coda_methods-42.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="co"># }</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -293,7 +305,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>

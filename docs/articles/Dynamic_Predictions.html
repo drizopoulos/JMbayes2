@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-8</span>
       </span>
     </div>
 
@@ -66,7 +66,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -123,9 +123,10 @@
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Dynamic Predictions</h1>
-                        <h4 data-toc-skip class="author">Dimitris Rizopoulos</h4>
+                        <h4 data-toc-skip class="author">Dimitris
+Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2022-02-25</h4>
+            <h4 data-toc-skip class="date">2022-07-05</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Dynamic_Predictions.Rmd" class="external-link"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="hidden name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -140,198 +141,350 @@
 <div class="section level3">
 <h3 id="theory">Theory<a class="anchor" aria-label="anchor" href="#theory"></a>
 </h3>
-<p>Based on the general framework of joint models presented earlier, we are interested in deriving cumulative risk probabilities for a new subject <span class="math inline">\(j\)</span> that has survived up to time point <span class="math inline">\(t\)</span> and has provided longitudinal measurements <span class="math inline">\(\mathcal Y_{kj}(t) = \{ y_{kj}(t_{jl}); 0 \leq t_{jl} \leq t, l = 1, \ldots, n_j, k = 1, \ldots, K\}\)</span>, with <span class="math inline">\(K\)</span> denoting the number of longitudinal outcomes. The probabilities of interest are <span class="math display">\[\begin{array}{l}
-\pi_j(u \mid t) = \mbox{Pr}\{T_j^* \leq u \mid T_j^* &gt; t, \mathcal Y_j(t), \mathcal D_n\}\\\\
-= \displaystyle 1 - \int\int \frac{S(u \mid b_j, \theta)}{S(t \mid b_j, \theta)} \; p\{b_j \mid T_j^* &gt; t, \mathcal Y_j(t), \theta\} \; p(\theta \mid \mathcal D_n) \; db_j d\theta,
-\end{array}\]</span> where <span class="math inline">\(S(\cdot)\)</span> denotes the survival function conditional on the random effects, and <span class="math inline">\(\mathcal Y_j(t) = \{\mathcal Y_{1j}(t), \ldots, \mathcal Y_{Kj}(t)\}\)</span>. Combining the three terms in the integrand we can device a Monte Carlo scheme to obtain estimates of these probabilities, namely,</p>
+<p>Based on the general framework of joint models presented earlier, we
+are interested in deriving cumulative risk probabilities for a new
+subject <span class="math inline">\(j\)</span> that has survived up to
+time point <span class="math inline">\(t\)</span> and has provided
+longitudinal measurements <span class="math inline">\(\mathcal Y_{kj}(t)
+= \{ y_{kj}(t_{jl}); 0 \leq t_{jl} \leq t, l = 1, \ldots, n_j, k = 1,
+\ldots, K\}\)</span>, with <span class="math inline">\(K\)</span>
+denoting the number of longitudinal outcomes. The probabilities of
+interest are <span class="math display">\[\begin{array}{l}
+\pi_j(u \mid t) = \mbox{Pr}\{T_j^* \leq u \mid T_j^* &gt; t, \mathcal
+Y_j(t), \mathcal D_n\}\\\\
+= \displaystyle 1 - \int\int \frac{S(u \mid b_j, \theta)}{S(t \mid b_j,
+\theta)} \; p\{b_j \mid T_j^* &gt; t, \mathcal Y_j(t), \theta\} \;
+p(\theta \mid \mathcal D_n) \; db_j d\theta,
+\end{array}\]</span> where <span class="math inline">\(S(\cdot)\)</span>
+denotes the survival function conditional on the random effects, and
+<span class="math inline">\(\mathcal Y_j(t) = \{\mathcal Y_{1j}(t),
+\ldots, \mathcal Y_{Kj}(t)\}\)</span>. Combining the three terms in the
+integrand we can device a Monte Carlo scheme to obtain estimates of
+these probabilities, namely,</p>
 <ol style="list-style-type: decimal">
-<li><p>Sample a value <span class="math inline">\(\tilde \theta\)</span> from the posterior of the parameters <span class="math inline">\([\theta \mid \mathcal D_n]\)</span>.</p></li>
-<li><p>Sample a value <span class="math inline">\(\tilde b_j\)</span> from the posterior of the random effects <span class="math inline">\([b_j \mid T_j^* &gt; t, \mathcal Y_j(t), \tilde \theta]\)</span>.</p></li>
-<li><p>Compute the ratio of survival probabilities <span class="math inline">\(S(u \mid \tilde b_j, \tilde \theta) \Big / S(t \mid \tilde b_j, \tilde \theta)\)</span>.</p></li>
+<li><p>Sample a value <span class="math inline">\(\tilde \theta\)</span>
+from the posterior of the parameters <span class="math inline">\([\theta
+\mid \mathcal D_n]\)</span>.</p></li>
+<li><p>Sample a value <span class="math inline">\(\tilde b_j\)</span>
+from the posterior of the random effects <span class="math inline">\([b_j \mid T_j^* &gt; t, \mathcal Y_j(t), \tilde
+\theta]\)</span>.</p></li>
+<li><p>Compute the ratio of survival probabilities <span class="math inline">\(S(u \mid \tilde b_j, \tilde \theta) \Big / S(t
+\mid \tilde b_j, \tilde \theta)\)</span>.</p></li>
 </ol>
-<p>Replicating these steps <span class="math inline">\(L\)</span> times, we can estimate the conditional cumulative risk probabilities by <span class="math display">\[1 - \frac{1}{L} \sum_{l=1}^L \frac{S(u \mid \tilde b_j^{(l)}, 
-\tilde \theta^{(l)})}{S(t \mid \tilde b_j^{(l)}, 
-\tilde \theta^{(l)})},\]</span> and their standard error by calculating the standard deviation across the Monte Carlo samples.</p>
+<p>Replicating these steps <span class="math inline">\(L\)</span> times,
+we can estimate the conditional cumulative risk probabilities by <span class="math display">\[1 - \frac{1}{L} \sum_{l=1}^L \frac{S(u \mid
+\tilde b_j^{(l)},
+\tilde \theta^{(l)})}{S(t \mid \tilde b_j^{(l)},
+\tilde \theta^{(l)})},\]</span> and their standard error by calculating
+the standard deviation across the Monte Carlo samples.</p>
 </div>
 <div class="section level3">
 <h3 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h3>
-<p>We will illustrate the calculation of dynamic predictions using package <strong>JMbayes2</strong> from a trivariate joint model fitted to the PBC dataset for the longitudinal outcomes <code>serBilir</code> (continuous), <code>prothrombin</code> time (continuous) and <code>ascites</code> (dichotomous). We start by fitting the univariate mixed models. For the two continuous outcomes, we allow for nonlinear subject-specific time effects using natural cubic splines. For <code>ascites</code>, we postulate linear subject-specific profiles for the log odds. The code is:</p>
+<p>We will illustrate the calculation of dynamic predictions using
+package <strong>JMbayes2</strong> from a trivariate joint model fitted
+to the PBC dataset for the longitudinal outcomes <code>serBilir</code>
+(continuous), <code>prothrombin</code> time (continuous) and
+<code>ascites</code> (dichotomous). We start by fitting the univariate
+mixed models. For the two continuous outcomes, we allow for nonlinear
+subject-specific time effects using natural cubic splines. For
+<code>ascites</code>, we postulate linear subject-specific profiles for
+the log odds. The code is:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,
-           random <span class="op">=</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">|</span> <span class="va">id</span>, control <span class="op">=</span> <span class="fu">lmeControl</span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span>
-
-<span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,
-           random <span class="op">=</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">|</span> <span class="va">id</span>, control <span class="op">=</span> <span class="fu">lmeControl</span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span>
-
-<span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,
-                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>Following, we fit the Cox model for the time to either transplantation or death. The first line defines the composite event indicator, and the second one fits the Cox model in which we have also included the baseline covariates <code>drug</code> and <code>age</code>. The code is:</p>
+<code class="sourceCode R"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
+<span>           random <span class="op">=</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">|</span> <span class="va">id</span>, control <span class="op">=</span> <span class="fu">lmeControl</span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
+<span>           random <span class="op">=</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">|</span> <span class="va">id</span>, control <span class="op">=</span> <span class="fu">lmeControl</span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
+<span>                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Following, we fit the Cox model for the time to either
+transplantation or death. The first line defines the composite event
+indicator, and the second one fits the Cox model in which we have also
+included the baseline covariates <code>drug</code> and <code>age</code>.
+The code is:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">pbc2.id</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span>
-<span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></code></pre></div>
-<p>The joint model is fitted with the following call to <code><a href="../reference/jm.html">jm()</a></code>:</p>
+<code class="sourceCode R"><span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span></span>
+<span><span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span></code></pre></div>
+<p>The joint model is fitted with the following call to
+<code><a href="../reference/jm.html">jm()</a></code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">jointFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span><span class="op">)</span></code></pre></div>
-<p>We want to calculate predictions for the longitudinal and survival outcomes for Patients 25 and 93. As a first step, we extract the data of these patients and store them in the data.frame <code>ND</code> with the code:</p>
+<code class="sourceCode R"><span><span class="va">jointFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span><span class="op">)</span></span></code></pre></div>
+<p>We want to calculate predictions for the longitudinal and survival
+outcomes for Patients 25 and 93. As a first step, we extract the data of
+these patients and store them in the data.frame <code>ND</code> with the
+code:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">t0</span> <span class="op">&lt;-</span> <span class="fl">5</span>
-<span class="va">ND</span> <span class="op">&lt;-</span> <span class="va">pbc2</span><span class="op">[</span><span class="va">pbc2</span><span class="op">$</span><span class="va">id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">93</span><span class="op">)</span>, <span class="op">]</span>
-<span class="va">ND</span> <span class="op">&lt;-</span> <span class="va">ND</span><span class="op">[</span><span class="va">ND</span><span class="op">$</span><span class="va">year</span> <span class="op">&lt;</span> <span class="va">t0</span>, <span class="op">]</span>
-<span class="va">ND</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fl">0</span>
-<span class="va">ND</span><span class="op">$</span><span class="va">years</span> <span class="op">&lt;-</span> <span class="va">t0</span></code></pre></div>
-<p>We will only use the first five years of follow-up (line three), and further we specify that the patients were event-free up to this time point (lines four and five).</p>
-<p>We start with predictions for the longitudinal outcomes. These are produced by the <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> method for class <code>jm</code> objects, and follow the same lines as the procedure described above for cumulative risk probabilities. The only difference is in Step 3, where instead of calculating the cumulative risk we calculate the predicted values for the longitudinal outcomes. There are two options controlled by the <code>type_pred</code> argument, namely predictions at the scale of the response/outcome (default) or at the linear predictor level. The <code>type</code> argument controls if the predictions will be for the mean subject (i.e., including only the fixed effects) or subject-specific including both the fixed and random effects. In the <code>newdata</code> argument we provide the available measurements of the two patients. This will be used to sample their random effects at Step 2 presented above. This is done with a Metropolis-Hastings algorithm that runs for <code>n_mcmc</code> iterations; all iterations but the last one are discarded as burn-in. Finally, argument <code>n_samples</code> corresponds to the value of <span class="math inline">\(L\)</span> defined above and specifies the number of Monte Carlo samples:</p>
+<code class="sourceCode R"><span><span class="va">t0</span> <span class="op">&lt;-</span> <span class="fl">5</span></span>
+<span><span class="va">ND</span> <span class="op">&lt;-</span> <span class="va">pbc2</span><span class="op">[</span><span class="va">pbc2</span><span class="op">$</span><span class="va">id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">93</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">ND</span> <span class="op">&lt;-</span> <span class="va">ND</span><span class="op">[</span><span class="va">ND</span><span class="op">$</span><span class="va">year</span> <span class="op">&lt;</span> <span class="va">t0</span>, <span class="op">]</span></span>
+<span><span class="va">ND</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span><span class="va">ND</span><span class="op">$</span><span class="va">years</span> <span class="op">&lt;-</span> <span class="va">t0</span></span></code></pre></div>
+<p>We will only use the first five years of follow-up (line three), and
+further we specify that the patients were event-free up to this time
+point (lines four and five).</p>
+<p>We start with predictions for the longitudinal outcomes. These are
+produced by the <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> method for class <code>jm</code>
+objects, and follow the same lines as the procedure described above for
+cumulative risk probabilities. The only difference is in Step 3, where
+instead of calculating the cumulative risk we calculate the predicted
+values for the longitudinal outcomes. There are two options controlled
+by the <code>type_pred</code> argument, namely predictions at the scale
+of the response/outcome (default) or at the linear predictor level. The
+<code>type</code> argument controls if the predictions will be for the
+mean subject (i.e., including only the fixed effects) or
+subject-specific including both the fixed and random effects. In the
+<code>newdata</code> argument we provide the available measurements of
+the two patients. This will be used to sample their random effects at
+Step 2 presented above. This is done with a Metropolis-Hastings
+algorithm that runs for <code>n_mcmc</code> iterations; all iterations
+but the last one are discarded as burn-in. Finally, argument
+<code>n_samples</code> corresponds to the value of <span class="math inline">\(L\)</span> defined above and specifies the number
+of Monte Carlo samples:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">predLong1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p>Argument <code>return_newdata</code> specifies that the predictions are returned as extra columns of the <code>newdata</code> data.frame. By default the 95% credible intervals are also included. Using the <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method for objects returned by <code>predict.jm(..., return_newdata = TRUE)</code>, we can display the predictions. With the following code we do that for the first longitudinal outcome:</p>
+<code class="sourceCode R"><span><span class="va">predLong1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>Argument <code>return_newdata</code> specifies that the predictions
+are returned as extra columns of the <code>newdata</code> data.frame. By
+default the 95% credible intervals are also included. Using the
+<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method for objects returned by
+<code>predict.jm(..., return_newdata = TRUE)</code>, we can display the
+predictions. With the following code we do that for the first
+longitudinal outcome:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong1</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-6-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>When we want to calculate predictions for other, future time points, we can accordingly specify the <code>times</code> argument. In the following example, we calculate predictions from time <code>t0</code> to time 12:</p>
+<p>When we want to calculate predictions for other, future time points,
+we can accordingly specify the <code>times</code> argument. In the
+following example, we calculate predictions from time <code>t0</code> to
+time 12:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">predLong2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>,
-                     times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="va">t0</span>, <span class="fl">12</span>, length.out <span class="op">=</span> <span class="fl">51</span><span class="op">)</span>,
-                     return_newdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p>We show these predictions for the second outcome and the second patient (i.e., Patient 93). This is achieved by suitably specifying the <code>outcomes</code> and <code>subject</code> arguments of the <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method:</p>
+<code class="sourceCode R"><span><span class="va">predLong2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>,</span>
+<span>                     times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="va">t0</span>, <span class="fl">12</span>, length.out <span class="op">=</span> <span class="fl">51</span><span class="op">)</span>,</span>
+<span>                     return_newdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>We show these predictions for the second outcome and the second
+patient (i.e., Patient 93). This is achieved by suitably specifying the
+<code>outcomes</code> and <code>subject</code> arguments of the
+<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, outcomes <span class="op">=</span> <span class="fl">2</span>, subject <span class="op">=</span> <span class="fl">93</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, outcomes <span class="op">=</span> <span class="fl">2</span>, subject <span class="op">=</span> <span class="fl">93</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-8-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>We continue with the predictions for the event outcome. To let <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> know that we want the cumulative risk probabilities, we specify <code>process = "event"</code>:</p>
+<p>We continue with the predictions for the event outcome. To let
+<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> know that we want the cumulative risk
+probabilities, we specify <code>process = "event"</code>:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">predSurv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>, process <span class="op">=</span> <span class="st">"event"</span>,
-                    times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="va">t0</span>, <span class="fl">12</span>, length.out <span class="op">=</span> <span class="fl">51</span><span class="op">)</span>,
-                    return_newdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p>The predictions are included again as extra columns in the corresponding data.frame. To depict the predictions of both the longitudinal and survival outcomes combined, we provide both objects to the <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method:</p>
+<code class="sourceCode R"><span><span class="va">predSurv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>, process <span class="op">=</span> <span class="st">"event"</span>,</span>
+<span>                    times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="va">t0</span>, <span class="fl">12</span>, length.out <span class="op">=</span> <span class="fl">51</span><span class="op">)</span>,</span>
+<span>                    return_newdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>The predictions are included again as extra columns in the
+corresponding data.frame. To depict the predictions of both the
+longitudinal and survival outcomes combined, we provide both objects to
+the <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, <span class="va">predSurv</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, <span class="va">predSurv</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-10-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>Again by default, the plot is for the predictions of the first subject (i.e., Patient 25) and for the first longitudinal outcome (i.e., <code>log(serBilir)</code>). However, the <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method has a series of arguments that allows users to customize the plot. We illustrate some of these capabilities with the following figure. First, we specify that we want to depict all three outcomes using <code>outcomes = 1:3</code> (note: a max of three outcomes can be simultaneously displayed). Next, we specify via the <code>subject</code> argument that we want to show the predictions of Patient 93. Note, that for serum bilirubin we used the log transformation in the specification of the linear mixed model. Hence, we receive predictions on the transformed scale. To show predictions on the original scale, we use the <code>fun_long</code> argument. Because we have three outcomes, this needs to be a list of three functions. The first one, corresponding to serum bilirubin is the <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp()</a></code> and for the other two the <code><a href="https://rdrr.io/r/base/identity.html" class="external-link">identity()</a></code> because we do not wish to transform the predictions. Analogously, we also have the <code>fun_event</code> argument to transform the predictions for the event outcome, and in the example below we set that we want to obtain survival probabilities. Using the arguments <code>bg</code>, <code>col_points</code>, <code>col_line_long</code>, <code>col_line_event</code>, <code>fill_CI_long</code>, and <code>fill_CI_event</code> we have changed the appearance of the plot to a dark theme. Finally, the <code>pos_ylab_long</code> specifies the relative positive of the y-axis labels for the three longitudinal outcomes.</p>
+<p>Again by default, the plot is for the predictions of the first
+subject (i.e., Patient 25) and for the first longitudinal outcome (i.e.,
+<code>log(serBilir)</code>). However, the <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method has
+a series of arguments that allows users to customize the plot. We
+illustrate some of these capabilities with the following figure. First,
+we specify that we want to depict all three outcomes using
+<code>outcomes = 1:3</code> (note: a max of three outcomes can be
+simultaneously displayed). Next, we specify via the <code>subject</code>
+argument that we want to show the predictions of Patient 93. Note, that
+for serum bilirubin we used the log transformation in the specification
+of the linear mixed model. Hence, we receive predictions on the
+transformed scale. To show predictions on the original scale, we use the
+<code>fun_long</code> argument. Because we have three outcomes, this
+needs to be a list of three functions. The first one, corresponding to
+serum bilirubin is the <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp()</a></code> and for the other two the
+<code><a href="https://rdrr.io/r/base/identity.html" class="external-link">identity()</a></code> because we do not wish to transform the
+predictions. Analogously, we also have the <code>fun_event</code>
+argument to transform the predictions for the event outcome, and in the
+example below we set that we want to obtain survival probabilities.
+Using the arguments <code>bg</code>, <code>col_points</code>,
+<code>col_line_long</code>, <code>col_line_event</code>,
+<code>fill_CI_long</code>, and <code>fill_CI_event</code> we have
+changed the appearance of the plot to a dark theme. Finally, the
+<code>pos_ylab_long</code> specifies the relative positive of the y-axis
+labels for the three longitudinal outcomes.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'#F25C78'</span>, <span class="st">'#D973B5'</span>, <span class="st">'#F28322'</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, <span class="va">predSurv</span>, outcomes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, subject <span class="op">=</span> <span class="fl">93</span>,
-     fun_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">exp</span>, <span class="va">identity</span>, <span class="va">identity</span><span class="op">)</span>,
-     fun_event <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">x</span>,
-     ylab_event <span class="op">=</span> <span class="st">"Survival Probabilities"</span>,
-     ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Serum Bilirubin"</span>, <span class="st">"Prothrombin"</span>, <span class="st">"Ascites"</span><span class="op">)</span>,
-     bg <span class="op">=</span> <span class="st">'#132743'</span>, col_points <span class="op">=</span> <span class="va">cols</span>, col_line_long <span class="op">=</span> <span class="va">cols</span>,
-     col_line_event <span class="op">=</span> <span class="st">'#F7F7FF'</span>, col_axis <span class="op">=</span> <span class="st">"white"</span>, 
-     fill_CI_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#F25C7880"</span>, <span class="st">"#D973B580"</span>, <span class="st">"#F2832280"</span><span class="op">)</span>,
-     fill_CI_event <span class="op">=</span> <span class="st">"#F7F7FF80"</span>,
-     pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.9</span>, <span class="fl">1.9</span>, <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'#F25C78'</span>, <span class="st">'#D973B5'</span>, <span class="st">'#F28322'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, <span class="va">predSurv</span>, outcomes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, subject <span class="op">=</span> <span class="fl">93</span>,</span>
+<span>     fun_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">exp</span>, <span class="va">identity</span>, <span class="va">identity</span><span class="op">)</span>,</span>
+<span>     fun_event <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">x</span>,</span>
+<span>     ylab_event <span class="op">=</span> <span class="st">"Survival Probabilities"</span>,</span>
+<span>     ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Serum Bilirubin"</span>, <span class="st">"Prothrombin"</span>, <span class="st">"Ascites"</span><span class="op">)</span>,</span>
+<span>     bg <span class="op">=</span> <span class="st">'#132743'</span>, col_points <span class="op">=</span> <span class="va">cols</span>, col_line_long <span class="op">=</span> <span class="va">cols</span>,</span>
+<span>     col_line_event <span class="op">=</span> <span class="st">'#F7F7FF'</span>, col_axis <span class="op">=</span> <span class="st">"white"</span>, </span>
+<span>     fill_CI_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#F25C7880"</span>, <span class="st">"#D973B580"</span>, <span class="st">"#F2832280"</span><span class="op">)</span>,</span>
+<span>     fill_CI_event <span class="op">=</span> <span class="st">"#F7F7FF80"</span>,</span>
+<span>     pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.9</span>, <span class="fl">1.9</span>, <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-12-1.png" width="816" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="predictive-accuracy">Predictive accuracy<a class="anchor" aria-label="anchor" href="#predictive-accuracy"></a>
 </h3>
-<p>We evaluate the discriminative capability of the model using ROC methodology. We calculate the components of the ROC curve using information up to year five, and we are interested in events occurring within a three-year window. That is discriminating between patients who will get the event in the interval <code>(t0, t0 + Dt]</code>, (i.e., in our case <span class="math inline">\(T_j \in (5, 8]\)</span>) from patients who will survive at least 8 years (i.e., <span class="math inline">\(T_j &gt; 8\)</span>). The calculations are performed with the following call to <code><a href="../reference/accuracy.html">tvROC()</a></code>:</p>
+<p>We evaluate the discriminative capability of the model using ROC
+methodology. We calculate the components of the ROC curve using
+information up to year five, and we are interested in events occurring
+within a three-year window. That is discriminating between patients who
+will get the event in the interval <code>(t0, t0 + Dt]</code>, (i.e., in
+our case <span class="math inline">\(T_j \in (5, 8]\)</span>) from
+patients who will survive at least 8 years (i.e., <span class="math inline">\(T_j &gt; 8\)</span>). The calculations are
+performed with the following call to <code><a href="../reference/accuracy.html">tvROC()</a></code>:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">pbc2</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">pbc2</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span>
-<span class="va">roc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">tvROC</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
-<span class="va">roc</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  Time-dependent Sensitivity and Specificity for the Joint Model jointFit</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; At time: 8</span>
-<span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;    cut-off         SN          SP        qSN         qSP  </span>
-<span class="co">#&gt; 1     0.06 0.02078117 1.000000000 0.01590944 1.000000000  </span>
-<span class="co">#&gt; 2     0.08 0.03349069 0.997475870 0.02382560 0.745062856  </span>
-<span class="co">#&gt; 3     0.11 0.03349069 0.990977279 0.01892020 0.392470137  </span>
-<span class="co">#&gt; 4     0.12 0.07505303 0.990977279 0.05157722 0.635482082  </span>
-<span class="co">#&gt; 5     0.13 0.09284276 0.990041808 0.06507264 0.664740858  </span>
-<span class="co">#&gt; 6     0.14 0.09284276 0.983543217 0.06027814 0.525104264  </span>
-<span class="co">#&gt; 7     0.16 0.11362393 0.977044626 0.07229033 0.484779394  </span>
-<span class="co">#&gt; 8     0.18 0.13440510 0.977044626 0.08932204 0.536301455  </span>
-<span class="co">#&gt; 9     0.19 0.17596745 0.977044626 0.12392329 0.613584546  </span>
-<span class="co">#&gt; 10    0.21 0.19674862 0.977044626 0.14149853 0.643308811  </span>
-<span class="co">#&gt; 11    0.22 0.21752979 0.977044626 0.15926074 0.668786753  </span>
-<span class="co">#&gt; 12    0.24 0.23831097 0.977044626 0.17721292 0.690867636  </span>
-<span class="co">#&gt; 13    0.26 0.25909214 0.977044626 0.19535813 0.710188409  </span>
-<span class="co">#&gt; 14    0.30 0.27987331 0.977044626 0.21369951 0.727236150  </span>
-<span class="co">#&gt; 15    0.32 0.30065448 0.970546036 0.22804484 0.686857855  </span>
-<span class="co">#&gt; 16    0.33 0.33383151 0.967923817 0.25654124 0.691457671  </span>
-<span class="co">#&gt; 17    0.34 0.35461268 0.961425227 0.27168582 0.661212860  </span>
-<span class="co">#&gt; 18    0.36 0.37539385 0.961425227 0.29117729 0.675328991  </span>
-<span class="co">#&gt; 19    0.37 0.39617502 0.961425227 0.31088901 0.688315831  </span>
-<span class="co">#&gt; 20    0.41 0.41695620 0.961425227 0.33082472 0.700303684  </span>
-<span class="co">#&gt; 21    0.42 0.42133847 0.956297041 0.33205926 0.673037119  </span>
-<span class="co">#&gt; 22    0.45 0.45299606 0.946701080 0.35758839 0.641120604  </span>
-<span class="co">#&gt; 23    0.49 0.45299606 0.933703899 0.35003061 0.581505860  </span>
-<span class="co">#&gt; 24    0.52 0.45832648 0.928872212 0.35255591 0.564611722  </span>
-<span class="co">#&gt; 25    0.55 0.45832648 0.922373621 0.34870207 0.538807986  </span>
-<span class="co">#&gt; 26    0.56 0.47910765 0.922373621 0.36993859 0.551984901  </span>
-<span class="co">#&gt; 27    0.57 0.47910765 0.915875031 0.36614304 0.527965451  </span>
-<span class="co">#&gt; 28    0.58 0.50830685 0.912008888 0.39437796 0.532257775  </span>
-<span class="co">#&gt; 29    0.59 0.51481328 0.901046367 0.39501409 0.500284152  </span>
-<span class="co">#&gt; 30    0.60 0.53949478 0.895767469 0.41861217 0.498691159  </span>
-<span class="co">#&gt; 31    0.62 0.58105713 0.895767469 0.46438949 0.521477925  </span>
-<span class="co">#&gt; 32    0.64 0.58105713 0.882770288 0.45752269 0.485208654  </span>
-<span class="co">#&gt; 33    0.65 0.60183830 0.882770288 0.48110540 0.496161662  </span>
-<span class="co">#&gt; 34    0.66 0.60183830 0.876271697 0.47773595 0.479310058  </span>
-<span class="co">#&gt; 35    0.68 0.62261947 0.863274516 0.49515983 0.458459847  </span>
-<span class="co">#&gt; 36    0.70 0.64340065 0.856775925 0.51655658 0.454127111  </span>
-<span class="co">#&gt; 37    0.71 0.64340065 0.843778744 0.50997912 0.426241932  </span>
-<span class="co">#&gt; 38    0.72 0.66418182 0.824282972 0.52562747 0.398392549  </span>
-<span class="co">#&gt; 39    0.73 0.68832103 0.812335901 0.55029177 0.388578257 *</span>
-<span class="co">#&gt; 40    0.74 0.69240384 0.807114069 0.55298976 0.381540347  </span>
-<span class="co">#&gt; 41    0.76 0.69756538 0.802229569 0.55730584 0.375787076  </span>
-<span class="co">#&gt; 42    0.77 0.71011565 0.773661277 0.55972451 0.337385186  </span>
-<span class="co">#&gt; 43    0.78 0.71011565 0.760664095 0.55300275 0.319072497  </span>
-<span class="co">#&gt; 44    0.79 0.71447043 0.742530130 0.54939864 0.297176843  </span>
-<span class="co">#&gt; 45    0.80 0.71920892 0.737513338 0.55338741 0.293035923  </span>
-<span class="co">#&gt; 46    0.81 0.76338342 0.718834427 0.60822500 0.290056928  </span>
-<span class="co">#&gt; 47    0.82 0.76960102 0.694784406 0.60558820 0.266029166  </span>
-<span class="co">#&gt; 48    0.83 0.79114076 0.682024440 0.63313421 0.261711919  </span>
-<span class="co">#&gt; 49    0.84 0.82209010 0.639714047 0.66413272 0.233918289  </span>
-<span class="co">#&gt; 50    0.85 0.85156712 0.609940418 0.70313424 0.219880835  </span>
-<span class="co">#&gt; 51    0.86 0.85156712 0.583946055 0.69089235 0.199591459  </span>
-<span class="co">#&gt; 52    0.87 0.85615472 0.565884896 0.69088567 0.188043973  </span>
-<span class="co">#&gt; 53    0.88 0.85852204 0.547129423 0.68595003 0.175857148  </span>
-<span class="co">#&gt; 54    0.89 0.85927969 0.495377624 0.65752405 0.143414118  </span>
-<span class="co">#&gt; 55    0.90 0.88006086 0.456386081 0.68121439 0.128491970  </span>
-<span class="co">#&gt; 56    0.91 0.88352483 0.424976363 0.66861993 0.113322331  </span>
-<span class="co">#&gt; 57    0.92 0.90903674 0.380965605 0.70834003 0.100396059  </span>
-<span class="co">#&gt; 58    0.93 0.93078132 0.335776742 0.74577866 0.087257836  </span>
-<span class="co">#&gt; 59    0.94 0.93238287 0.258294483 0.68235672 0.057707457  </span>
-<span class="co">#&gt; 60    0.95 0.93432300 0.174419514 0.55777484 0.030422917  </span>
-<span class="co">#&gt; 61    0.96 0.97815379 0.090647216 0.70580441 0.017704479  </span>
-<span class="co">#&gt; 62    0.97 1.00000000 0.025994362 1.00000000 0.006317481  </span>
-<span class="co">#&gt; 63    0.98 1.00000000 0.006498591 1.00000000 0.001555798</span></code></pre></div>
-<p>In the first line we define the event indicator as we did in the <code>pbc2.id</code> data.frame. The cut-point with the asterisk on the right maximizes the <a href="https://en.wikipedia.org/wiki/Youden%27s_J_statistic" class="external-link">Youden’s index</a>. To depict the ROC curve, we use the corresponding <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method: <img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-14-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>The area under the ROC curve is calculated with the <code><a href="../reference/accuracy.html">tvAUC()</a></code> function:</p>
+<code class="sourceCode R"><span><span class="va">pbc2</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">pbc2</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span></span>
+<span><span class="va">roc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">tvROC</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">roc</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Time-dependent Sensitivity and Specificity for the Joint Model jointFit</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; At time: 8</span></span>
+<span><span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;    cut-off         SN          SP        qSN         qSP  </span></span>
+<span><span class="co">#&gt; 1     0.06 0.02078117 1.000000000 0.01590944 1.000000000  </span></span>
+<span><span class="co">#&gt; 2     0.08 0.03349069 0.997475870 0.02382560 0.745062856  </span></span>
+<span><span class="co">#&gt; 3     0.11 0.03349069 0.990977279 0.01892020 0.392470137  </span></span>
+<span><span class="co">#&gt; 4     0.12 0.07505303 0.990977279 0.05157722 0.635482082  </span></span>
+<span><span class="co">#&gt; 5     0.13 0.09284276 0.990041808 0.06507264 0.664740858  </span></span>
+<span><span class="co">#&gt; 6     0.14 0.09284276 0.983543217 0.06027814 0.525104264  </span></span>
+<span><span class="co">#&gt; 7     0.16 0.11362393 0.977044626 0.07229033 0.484779394  </span></span>
+<span><span class="co">#&gt; 8     0.18 0.13440510 0.977044626 0.08932204 0.536301455  </span></span>
+<span><span class="co">#&gt; 9     0.19 0.17596745 0.977044626 0.12392329 0.613584546  </span></span>
+<span><span class="co">#&gt; 10    0.21 0.19674862 0.977044626 0.14149853 0.643308811  </span></span>
+<span><span class="co">#&gt; 11    0.22 0.21752979 0.977044626 0.15926074 0.668786753  </span></span>
+<span><span class="co">#&gt; 12    0.24 0.23831097 0.977044626 0.17721292 0.690867636  </span></span>
+<span><span class="co">#&gt; 13    0.26 0.25909214 0.977044626 0.19535813 0.710188409  </span></span>
+<span><span class="co">#&gt; 14    0.30 0.27987331 0.977044626 0.21369951 0.727236150  </span></span>
+<span><span class="co">#&gt; 15    0.32 0.30065448 0.970546036 0.22804484 0.686857855  </span></span>
+<span><span class="co">#&gt; 16    0.33 0.33383151 0.967923817 0.25654124 0.691457671  </span></span>
+<span><span class="co">#&gt; 17    0.34 0.35461268 0.961425227 0.27168582 0.661212860  </span></span>
+<span><span class="co">#&gt; 18    0.36 0.37539385 0.961425227 0.29117729 0.675328991  </span></span>
+<span><span class="co">#&gt; 19    0.37 0.39617502 0.961425227 0.31088901 0.688315831  </span></span>
+<span><span class="co">#&gt; 20    0.41 0.41695620 0.961425227 0.33082472 0.700303684  </span></span>
+<span><span class="co">#&gt; 21    0.42 0.42133847 0.956297041 0.33205926 0.673037119  </span></span>
+<span><span class="co">#&gt; 22    0.45 0.45299606 0.946701080 0.35758839 0.641120604  </span></span>
+<span><span class="co">#&gt; 23    0.49 0.45299606 0.933703899 0.35003061 0.581505860  </span></span>
+<span><span class="co">#&gt; 24    0.52 0.45832648 0.928872212 0.35255591 0.564611722  </span></span>
+<span><span class="co">#&gt; 25    0.55 0.45832648 0.922373621 0.34870207 0.538807986  </span></span>
+<span><span class="co">#&gt; 26    0.56 0.47910765 0.922373621 0.36993859 0.551984901  </span></span>
+<span><span class="co">#&gt; 27    0.57 0.47910765 0.915875031 0.36614304 0.527965451  </span></span>
+<span><span class="co">#&gt; 28    0.58 0.50830685 0.912008888 0.39437796 0.532257775  </span></span>
+<span><span class="co">#&gt; 29    0.59 0.51481328 0.901046367 0.39501409 0.500284152  </span></span>
+<span><span class="co">#&gt; 30    0.60 0.53949478 0.895767469 0.41861217 0.498691159  </span></span>
+<span><span class="co">#&gt; 31    0.62 0.58105713 0.895767469 0.46438949 0.521477925  </span></span>
+<span><span class="co">#&gt; 32    0.64 0.58105713 0.882770288 0.45752269 0.485208654  </span></span>
+<span><span class="co">#&gt; 33    0.65 0.60183830 0.882770288 0.48110540 0.496161662  </span></span>
+<span><span class="co">#&gt; 34    0.66 0.60183830 0.876271697 0.47773595 0.479310058  </span></span>
+<span><span class="co">#&gt; 35    0.68 0.62261947 0.863274516 0.49515983 0.458459847  </span></span>
+<span><span class="co">#&gt; 36    0.70 0.64340065 0.856775925 0.51655658 0.454127111  </span></span>
+<span><span class="co">#&gt; 37    0.71 0.64340065 0.843778744 0.50997912 0.426241932  </span></span>
+<span><span class="co">#&gt; 38    0.72 0.66418182 0.824282972 0.52562747 0.398392549  </span></span>
+<span><span class="co">#&gt; 39    0.73 0.68832103 0.812335901 0.55029177 0.388578257 *</span></span>
+<span><span class="co">#&gt; 40    0.74 0.69240384 0.807114069 0.55298976 0.381540347  </span></span>
+<span><span class="co">#&gt; 41    0.76 0.69756538 0.802229569 0.55730584 0.375787076  </span></span>
+<span><span class="co">#&gt; 42    0.77 0.71011565 0.773661277 0.55972451 0.337385186  </span></span>
+<span><span class="co">#&gt; 43    0.78 0.71011565 0.760664095 0.55300275 0.319072497  </span></span>
+<span><span class="co">#&gt; 44    0.79 0.71447043 0.742530130 0.54939864 0.297176843  </span></span>
+<span><span class="co">#&gt; 45    0.80 0.71920892 0.737513338 0.55338741 0.293035923  </span></span>
+<span><span class="co">#&gt; 46    0.81 0.76338342 0.718834427 0.60822500 0.290056928  </span></span>
+<span><span class="co">#&gt; 47    0.82 0.76960102 0.694784406 0.60558820 0.266029166  </span></span>
+<span><span class="co">#&gt; 48    0.83 0.79114076 0.682024440 0.63313421 0.261711919  </span></span>
+<span><span class="co">#&gt; 49    0.84 0.82209010 0.639714047 0.66413272 0.233918289  </span></span>
+<span><span class="co">#&gt; 50    0.85 0.85156712 0.609940418 0.70313424 0.219880835  </span></span>
+<span><span class="co">#&gt; 51    0.86 0.85156712 0.583946055 0.69089235 0.199591459  </span></span>
+<span><span class="co">#&gt; 52    0.87 0.85615472 0.565884896 0.69088567 0.188043973  </span></span>
+<span><span class="co">#&gt; 53    0.88 0.85852204 0.547129423 0.68595003 0.175857148  </span></span>
+<span><span class="co">#&gt; 54    0.89 0.85927969 0.495377624 0.65752405 0.143414118  </span></span>
+<span><span class="co">#&gt; 55    0.90 0.88006086 0.456386081 0.68121439 0.128491970  </span></span>
+<span><span class="co">#&gt; 56    0.91 0.88352483 0.424976363 0.66861993 0.113322331  </span></span>
+<span><span class="co">#&gt; 57    0.92 0.90903674 0.380965605 0.70834003 0.100396059  </span></span>
+<span><span class="co">#&gt; 58    0.93 0.93078132 0.335776742 0.74577866 0.087257836  </span></span>
+<span><span class="co">#&gt; 59    0.94 0.93238287 0.258294483 0.68235672 0.057707457  </span></span>
+<span><span class="co">#&gt; 60    0.95 0.93432300 0.174419514 0.55777484 0.030422917  </span></span>
+<span><span class="co">#&gt; 61    0.96 0.97815379 0.090647216 0.70580441 0.017704479  </span></span>
+<span><span class="co">#&gt; 62    0.97 1.00000000 0.025994362 1.00000000 0.006317481  </span></span>
+<span><span class="co">#&gt; 63    0.98 1.00000000 0.006498591 1.00000000 0.001555798</span></span></code></pre></div>
+<p>In the first line we define the event indicator as we did in the
+<code>pbc2.id</code> data.frame. The cut-point with the asterisk on the
+right maximizes the <a href="https://en.wikipedia.org/wiki/Youden%27s_J_statistic" class="external-link">Youden’s
+index</a>. To depict the ROC curve, we use the corresponding
+<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method:
+<img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-14-1.png" width="816" style="display: block; margin: auto;"></p>
+<p>The area under the ROC curve is calculated with the
+<code><a href="../reference/accuracy.html">tvAUC()</a></code> function:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/accuracy.html">tvAUC</a></span><span class="op">(</span><span class="va">roc</span><span class="op">)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;  Time-dependent AUC for the Joint Model jointFit</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Estimated AUC: 0.8055</span>
-<span class="co">#&gt; At time: 8</span>
-<span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></code></pre></div>
-<p>This function either accepts an object of class <code>tvROC</code> or of class <code>jm</code>. In the latter case, the user must also provide the <code>newdata</code>, <code>Tstart</code> and <code>Dt</code> or <code>Thoriz</code> arguments. Here we have used the same dataset as the one to fit the model, but, in principle, discrimination could be (better) assessed in another dataset.</p>
-<p>To assess the accuracy of the predictions we produce a calibration plot:</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/accuracy.html">tvAUC</a></span><span class="op">(</span><span class="va">roc</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Time-dependent AUC for the Joint Model jointFit</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Estimated AUC: 0.8055</span></span>
+<span><span class="co">#&gt; At time: 8</span></span>
+<span><span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></span></code></pre></div>
+<p>This function either accepts an object of class <code>tvROC</code> or
+of class <code>jm</code>. In the latter case, the user must also provide
+the <code>newdata</code>, <code>Tstart</code> and <code>Dt</code> or
+<code>Thoriz</code> arguments. Here we have used the same dataset as the
+one to fit the model, but, in principle, discrimination could be
+(better) assessed in another dataset.</p>
+<p>To assess the accuracy of the predictions we produce a calibration
+plot:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/accuracy.html">calibration_plot</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/accuracy.html">calibration_plot</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-16-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>The syntax of the <code><a href="../reference/accuracy.html">calibration_plot()</a></code> function is almost identical to that of <code><a href="../reference/accuracy.html">tvROC()</a></code>. The kernel density estimation is of the estimated probabilities <span class="math inline">\(\pi_j(t + \Delta t \mid t) = \pi_j(8 \mid 5)\)</span> for all individuals at risk at year <code>t0</code> in the data frame provided in the <code>newdata</code> argument. Using the <code><a href="../reference/accuracy.html">calibration_metrics()</a></code> function we can also calculate metrics for the accuracy of predictions:</p>
+<p>The syntax of the <code><a href="../reference/accuracy.html">calibration_plot()</a></code> function is almost
+identical to that of <code><a href="../reference/accuracy.html">tvROC()</a></code>. The kernel density estimation
+is of the estimated probabilities <span class="math inline">\(\pi_j(t +
+\Delta t \mid t) = \pi_j(8 \mid 5)\)</span> for all individuals at risk
+at year <code>t0</code> in the data frame provided in the
+<code>newdata</code> argument. Using the
+<code><a href="../reference/accuracy.html">calibration_metrics()</a></code> function we can also calculate
+metrics for the accuracy of predictions:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/accuracy.html">calibration_metrics</a></span><span class="op">(</span><span class="va">jointFit</span>, <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
-<span class="co">#&gt;        ICI        E50        E90 </span>
-<span class="co">#&gt; 0.04380478 0.02027983 0.11170119</span></code></pre></div>
-<p>The ICI is the mean absolute difference between the observed and predicted probabilities, E50 is the median absolute difference, and E90 is the 90% percentile of the absolute differences. Finally, we calculate the Brier score as an overall measure of predictive performance. This is computed with the <code><a href="../reference/accuracy.html">tvBrier()</a></code> function:</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/accuracy.html">calibration_metrics</a></span><span class="op">(</span><span class="va">jointFit</span>, <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;        ICI        E50        E90 </span></span>
+<span><span class="co">#&gt; 0.04380478 0.02027983 0.11170119</span></span></code></pre></div>
+<p>The ICI is the mean absolute difference between the observed and
+predicted probabilities, E50 is the median absolute difference, and E90
+is the 90% percentile of the absolute differences. Finally, we calculate
+the Brier score as an overall measure of predictive performance. This is
+computed with the <code><a href="../reference/accuracy.html">tvBrier()</a></code> function:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/accuracy.html">tvBrier</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Prediction Error for the Joint Model jointFit</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Estimated Brier score: 0.1328</span>
-<span class="co">#&gt; At time: 8</span>
-<span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/accuracy.html">tvBrier</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Prediction Error for the Joint Model jointFit</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Estimated Brier score: 0.1328</span></span>
+<span><span class="co">#&gt; At time: 8</span></span>
+<span><span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></span></code></pre></div>
 <p><strong>Notes:</strong></p>
 <ul>
-<li>To obtain valid estimates of the predictive accuracy measures (i.e., time-varying sensitivity, specificity, and Brier score) we need to account for censoring. A popular method to achieve this is via inverse probability of censoring weighting. For this approach to be valid, we need the model for the weights to be correctly specified. In standard survival analysis, this is achieved either using the Kaplan-Meier estimator or a Cox model for the censoring distribution. However, in the settings where joint models are used, it is often the case that the censoring mechanism may depend on the history of the longitudinal outcomes in a complex manner. This is especially the case when we consider multiple longitudinal outcomes in the analysis. Also, these outcomes may be recorded at different time points per patient and have missing data. Because of these reasons, in these settings, Kaplan-Meier-based or Cox-based censoring weights may be difficult to derive or be biased. The functions in <strong>JMbayes2</strong> that calculate the predictive accuracy measures use joint-model-based weights to account for censoring. These weights allow censoring to depend in any possible manner on the history of the longitudinal outcomes. However, they require that the model is appropriately calibrated.</li>
-<li>The calibration curve, produced by <code><a href="../reference/accuracy.html">calibration_plot()</a></code>, and the calibration metrics, produced by <code>calibration_metrics())</code>, are calculated using the procedure described in <a href="https://doi.org/10.1002/sim.8570" class="external-link">Austin et al., 2020</a>.</li>
+<li>To obtain valid estimates of the predictive accuracy measures (i.e.,
+time-varying sensitivity, specificity, and Brier score) we need to
+account for censoring. A popular method to achieve this is via inverse
+probability of censoring weighting. For this approach to be valid, we
+need the model for the weights to be correctly specified. In standard
+survival analysis, this is achieved either using the Kaplan-Meier
+estimator or a Cox model for the censoring distribution. However, in the
+settings where joint models are used, it is often the case that the
+censoring mechanism may depend on the history of the longitudinal
+outcomes in a complex manner. This is especially the case when we
+consider multiple longitudinal outcomes in the analysis. Also, these
+outcomes may be recorded at different time points per patient and have
+missing data. Because of these reasons, in these settings,
+Kaplan-Meier-based or Cox-based censoring weights may be difficult to
+derive or be biased. The functions in <strong>JMbayes2</strong> that
+calculate the predictive accuracy measures use joint-model-based weights
+to account for censoring. These weights allow censoring to depend in any
+possible manner on the history of the longitudinal outcomes. However,
+they require that the model is appropriately calibrated.</li>
+<li>The calibration curve, produced by <code><a href="../reference/accuracy.html">calibration_plot()</a></code>,
+and the calibration metrics, produced by
+<code>calibration_metrics())</code>, are calculated using the procedure
+described in <a href="https://doi.org/10.1002/sim.8570" class="external-link">Austin et al.,
+2020</a>.</li>
 </ul>
 </div>
 </div>
@@ -354,7 +507,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer>

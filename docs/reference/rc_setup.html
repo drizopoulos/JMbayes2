@@ -25,7 +25,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-8</span>
       </span>
     </div>
 
@@ -37,7 +37,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -96,12 +96,12 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">rc_setup</span><span class="op">(</span><span class="va">rc_data</span>, <span class="va">trm_data</span>,
-    rc_idVar <span class="op">=</span> <span class="st">"id"</span>, rc_statusVar <span class="op">=</span> <span class="st">"status"</span>,
-    rc_startVar <span class="op">=</span> <span class="st">"start"</span>, rc_stopVar <span class="op">=</span> <span class="st">"stop"</span>,
-    trm_idVar <span class="op">=</span> <span class="st">"id"</span>, trm_statusVar <span class="op">=</span> <span class="st">"status"</span>,
-    trm_stopVar <span class="op">=</span> <span class="st">"stop"</span>,
-    nameStrata <span class="op">=</span> <span class="st">"strata"</span>, nameStatus <span class="op">=</span> <span class="st">"status"</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rc_setup</span><span class="op">(</span><span class="va">rc_data</span>, <span class="va">trm_data</span>,</span>
+<span>    rc_idVar <span class="op">=</span> <span class="st">"id"</span>, rc_statusVar <span class="op">=</span> <span class="st">"status"</span>,</span>
+<span>    rc_startVar <span class="op">=</span> <span class="st">"start"</span>, rc_stopVar <span class="op">=</span> <span class="st">"stop"</span>,</span>
+<span>    trm_idVar <span class="op">=</span> <span class="st">"id"</span>, trm_statusVar <span class="op">=</span> <span class="st">"status"</span>,</span>
+<span>    trm_stopVar <span class="op">=</span> <span class="st">"stop"</span>,</span>
+<span>    nameStrata <span class="op">=</span> <span class="st">"strata"</span>, nameStatus <span class="op">=</span> <span class="st">"status"</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -109,42 +109,55 @@
     <dl><dt>rc_data</dt>
 <dd><p>the data frame containing the recurring event data with 
       multiple rows per subject.</p></dd>
-<dt>trm_data</dt>
+
+  <dt>trm_data</dt>
 <dd><p>the data frame containing the terminal event data with 
       a single row per subject.</p></dd>
-<dt>rc_idVar</dt>
+
+  <dt>rc_idVar</dt>
 <dd><p>a character string denoting the name of the variable in
       <code>rc_data</code> that identifies the subject.</p></dd>
-<dt>rc_statusVar</dt>
+
+  <dt>rc_statusVar</dt>
 <dd><p>a character string denoting the name of the variable in
       <code>rc_data</code> that identifies the status variable which equals 1 if the
       subject had an event and 0 otherwise.</p></dd>
-<dt>rc_startVar</dt>
+
+   <dt>rc_startVar</dt>
 <dd><p>a character string denoting the name of the variable in
       <code>rc_data</code> that identifies the starting time for the interval.</p></dd>
-<dt>rc_stopVar</dt>
+
+    <dt>rc_stopVar</dt>
 <dd><p>a character string denoting the name of the variable in
       <code>rc_data</code> that identifies the stopping time for the interval.</p></dd>
-<dt>trm_idVar</dt>
+
+    <dt>trm_idVar</dt>
 <dd><p>a character string denoting the name of the variable in
       <code>trm_data</code> that identifies the subject.</p></dd>
-<dt>trm_statusVar</dt>
+
+    <dt>trm_statusVar</dt>
 <dd><p>a character string denoting the name of the variable in
       <code>trm_data</code> that identifies the status variable which equals 1 if the
       subject had the event and 0 otherwise.</p></dd>
-<dt>trm_stopVar</dt>
+
+    <dt>trm_stopVar</dt>
 <dd><p>a character string denoting the name of the variable in
       <code>trm_data</code> that identifies the follow up time.</p></dd>
-<dt>nameStrata</dt>
+
+    <dt>nameStrata</dt>
 <dd><p>a character string denoting the variable that will be added
       in the long version of <code>data</code> denoting the various causes of event.</p></dd>
-<dt>nameStatus</dt>
+
+    <dt>nameStatus</dt>
 <dd><p>a character string denoting the variable that will be added
       in the long version of <code>data</code> denoting if the subject had an event.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A data frame in the long format with multiple rows per subject.</p>
+    
+
+<p>A data frame in the long format with multiple rows per subject.</p>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -163,7 +176,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>

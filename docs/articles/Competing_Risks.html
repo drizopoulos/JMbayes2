@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-8</span>
       </span>
     </div>
 
@@ -66,7 +66,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -123,9 +123,10 @@
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Competing Risks</h1>
-                        <h4 data-toc-skip class="author">Dimitris Rizopoulos</h4>
+                        <h4 data-toc-skip class="author">Dimitris
+Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2022-02-25</h4>
+            <h4 data-toc-skip class="date">2022-07-05</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Competing_Risks.Rmd" class="external-link"><code>vignettes/Competing_Risks.Rmd</code></a></small>
       <div class="hidden name"><code>Competing_Risks.Rmd</code></div>
@@ -140,146 +141,201 @@
 <div class="section level3">
 <h3 id="prepare-data">Prepare data<a class="anchor" aria-label="anchor" href="#prepare-data"></a>
 </h3>
-<p>The first step to fit a joint model for competing events in <strong>JMbayes2</strong> is to prepare the data for the event process. If there are <span class="math inline">\(K\)</span> competing events, then each subject needs to have <span class="math inline">\(K\)</span> rows, one for each possible cause. The observed event time <span class="math inline">\(T_i\)</span> of each subject is repeated <span class="math inline">\(K\)</span> times, and there are two indicator variables, namely one identifying the cause, and one indicating whether the corresponding event type is the one that occurred. Standard survival datasets that included a single row per patient, can be easily transformed to the competing risks long format using function <code><a href="../reference/cr_setup.html">crisk_setup()</a></code>. This function accepts as main arguments the survival data in the standard format that has a single row per patient, the name of the status variable, and the level in this status variable that corresponds to censoring. We illustrate the use of this function in the PBC data, in which we treat as competing risks transplantation and death:</p>
+<p>The first step to fit a joint model for competing events in
+<strong>JMbayes2</strong> is to prepare the data for the event process.
+If there are <span class="math inline">\(K\)</span> competing events,
+then each subject needs to have <span class="math inline">\(K\)</span>
+rows, one for each possible cause. The observed event time <span class="math inline">\(T_i\)</span> of each subject is repeated <span class="math inline">\(K\)</span> times, and there are two indicator
+variables, namely one identifying the cause, and one indicating whether
+the corresponding event type is the one that occurred. Standard survival
+datasets that included a single row per patient, can be easily
+transformed to the competing risks long format using function
+<code><a href="../reference/cr_setup.html">crisk_setup()</a></code>. This function accepts as main arguments the
+survival data in the standard format that has a single row per patient,
+the name of the status variable, and the level in this status variable
+that corresponds to censoring. We illustrate the use of this function in
+the PBC data, in which we treat as competing risks transplantation and
+death:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">pbc2.id</span><span class="op">[</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"years"</span>, <span class="st">"status"</span><span class="op">)</span><span class="op">]</span>
-<span class="co">#&gt;   id     years       status</span>
-<span class="co">#&gt; 1  1  1.095170         dead</span>
-<span class="co">#&gt; 2  2 14.152338        alive</span>
-<span class="co">#&gt; 5  5  4.120578 transplanted</span>
-
-<span class="va">pbc2.idCR</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cr_setup.html">crisk_setup</a></span><span class="op">(</span><span class="va">pbc2.id</span>, statusVar <span class="op">=</span> <span class="st">"status"</span>, censLevel <span class="op">=</span> <span class="st">"alive"</span>, 
-                         nameStrata <span class="op">=</span> <span class="st">"CR"</span><span class="op">)</span>
-
-<span class="va">pbc2.idCR</span><span class="op">[</span><span class="va">pbc2.idCR</span><span class="op">$</span><span class="va">id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span>, 
-          <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"years"</span>, <span class="st">"status"</span>, <span class="st">"status2"</span>, <span class="st">"CR"</span><span class="op">)</span><span class="op">]</span>
-<span class="co">#&gt;     id     years       status status2           CR</span>
-<span class="co">#&gt; 1    1  1.095170         dead       1         dead</span>
-<span class="co">#&gt; 1.1  1  1.095170         dead       0 transplanted</span>
-<span class="co">#&gt; 2    2 14.152338        alive       0         dead</span>
-<span class="co">#&gt; 2.1  2 14.152338        alive       0 transplanted</span>
-<span class="co">#&gt; 5    5  4.120578 transplanted       0         dead</span>
-<span class="co">#&gt; 5.1  5  4.120578 transplanted       1 transplanted</span></code></pre></div>
-<p>Note that each patient is now represented by two rows (we have two possible causes of discontinuation from the study, death and transplantation), the event time variable <code>years</code> is identical in both rows of each patient, variable <code>CR</code> denotes the cause for the specific line of the long dataset, and variable <code>status2</code> equals 1 if the corresponding event occurred.</p>
+<code class="sourceCode R"><span><span class="va">pbc2.id</span><span class="op">[</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"years"</span>, <span class="st">"status"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;   id     years       status</span></span>
+<span><span class="co">#&gt; 1  1  1.095170         dead</span></span>
+<span><span class="co">#&gt; 2  2 14.152338        alive</span></span>
+<span><span class="co">#&gt; 5  5  4.120578 transplanted</span></span>
+<span></span>
+<span><span class="va">pbc2.idCR</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cr_setup.html">crisk_setup</a></span><span class="op">(</span><span class="va">pbc2.id</span>, statusVar <span class="op">=</span> <span class="st">"status"</span>, censLevel <span class="op">=</span> <span class="st">"alive"</span>, </span>
+<span>                         nameStrata <span class="op">=</span> <span class="st">"CR"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">pbc2.idCR</span><span class="op">[</span><span class="va">pbc2.idCR</span><span class="op">$</span><span class="va">id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span>, </span>
+<span>          <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"years"</span>, <span class="st">"status"</span>, <span class="st">"status2"</span>, <span class="st">"CR"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;     id     years       status status2           CR</span></span>
+<span><span class="co">#&gt; 1    1  1.095170         dead       1         dead</span></span>
+<span><span class="co">#&gt; 1.1  1  1.095170         dead       0 transplanted</span></span>
+<span><span class="co">#&gt; 2    2 14.152338        alive       0         dead</span></span>
+<span><span class="co">#&gt; 2.1  2 14.152338        alive       0 transplanted</span></span>
+<span><span class="co">#&gt; 5    5  4.120578 transplanted       0         dead</span></span>
+<span><span class="co">#&gt; 5.1  5  4.120578 transplanted       1 transplanted</span></span></code></pre></div>
+<p>Note that each patient is now represented by two rows (we have two
+possible causes of discontinuation from the study, death and
+transplantation), the event time variable <code>years</code> is
+identical in both rows of each patient, variable <code>CR</code> denotes
+the cause for the specific line of the long dataset, and variable
+<code>status2</code> equals 1 if the corresponding event occurred.</p>
 </div>
 <div class="section level3">
 <h3 id="fit-models">Fit models<a class="anchor" aria-label="anchor" href="#fit-models"></a>
 </h3>
-<p>For the event process, we specify cause-specific relative risks models. Using dataset <code>pbc2.idCR</code>, we fit the corresponding cause-specific Cox regressions by including the interaction terms of age and treatment with variable <code>CR</code>, which is treated as a stratification variable using the <code>strata()</code> function:</p>
+<p>For the event process, we specify cause-specific relative risks
+models. Using dataset <code>pbc2.idCR</code>, we fit the corresponding
+cause-specific Cox regressions by including the interaction terms of age
+and treatment with variable <code>CR</code>, which is treated as a
+stratification variable using the <code>strata()</code> function:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">CoxFit_CR</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="op">(</span><span class="va">age</span> <span class="op">+</span> <span class="va">drug</span><span class="op">)</span> <span class="op">*</span> <span class="fu">strata</span><span class="op">(</span><span class="va">CR</span><span class="op">)</span>,
-                     data <span class="op">=</span> <span class="va">pbc2.idCR</span><span class="op">)</span></code></pre></div>
-<p>For the longitudinal process, we include two longitudinal outcomes, namely serum bilirubin and the prothrombin time. For the former we use quadratic orthogonal polynomials in the fixed- and random-effects parts, and for the latter linear evolutions:</p>
+<code class="sourceCode R"><span><span class="va">CoxFit_CR</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="op">(</span><span class="va">age</span> <span class="op">+</span> <span class="va">drug</span><span class="op">)</span> <span class="op">*</span> <span class="fu">strata</span><span class="op">(</span><span class="va">CR</span><span class="op">)</span>,</span>
+<span>                     data <span class="op">=</span> <span class="va">pbc2.idCR</span><span class="op">)</span></span></code></pre></div>
+<p>For the longitudinal process, we include two longitudinal outcomes,
+namely serum bilirubin and the prothrombin time. For the former we use
+quadratic orthogonal polynomials in the fixed- and random-effects parts,
+and for the latter linear evolutions:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">pbc2</span>, 
-           random <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span>
-<span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></code></pre></div>
-<p>To specify that each longitudinal outcome has a separate association coefficient per competing risk, we define the corresponding functional forms:</p>
+<code class="sourceCode R"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">pbc2</span>, </span>
+<span>           random <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span>
+<span><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span></code></pre></div>
+<p>To specify that each longitudinal outcome has a separate association
+coefficient per competing risk, we define the corresponding functional
+forms:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">CR_forms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
-    <span class="st">"log(serBilir)"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span><span class="op">)</span><span class="op">:</span><span class="va">CR</span>,
-    <span class="st">"prothrombin"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">prothrombin</span><span class="op">)</span><span class="op">:</span><span class="va">CR</span>
-<span class="op">)</span></code></pre></div>
-<p>Finally, the competing risks joint model is fitted with the following call to <code><a href="../reference/jm.html">jm()</a></code> (due to the complexity of the model, we have increased the number of MCMC iterations and the burn-in period per chain):</p>
+<code class="sourceCode R"><span><span class="va">CR_forms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    <span class="st">"log(serBilir)"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span><span class="op">)</span><span class="op">:</span><span class="va">CR</span>,</span>
+<span>    <span class="st">"prothrombin"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">prothrombin</span><span class="op">)</span><span class="op">:</span><span class="va">CR</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Finally, the competing risks joint model is fitted with the following
+call to <code><a href="../reference/jm.html">jm()</a></code> (due to the complexity of the model, we have
+increased the number of MCMC iterations and the burn-in period per
+chain):</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">jFit_CR</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit_CR</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>, 
-              functional_forms <span class="op">=</span> <span class="va">CR_forms</span>, 
-              n_iter <span class="op">=</span> <span class="fl">25000L</span>, n_burnin <span class="op">=</span> <span class="fl">5000L</span>, n_thin <span class="op">=</span> <span class="fl">5L</span><span class="op">)</span>
-
-<span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jFit_CR</span><span class="op">)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Call:</span>
-<span class="co">#&gt; jm(Surv_object = CoxFit_CR, Mixed_objects = list(fm1, fm2), time_var = "year", </span>
-<span class="co">#&gt;     functional_forms = CR_forms, n_iter = 25000L, n_burnin = 5000L, </span>
-<span class="co">#&gt;     n_thin = 5L)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Data Descriptives:</span>
-<span class="co">#&gt; Number of Groups: 312        Number of events: 169 (27.1%)</span>
-<span class="co">#&gt; Number of Observations:</span>
-<span class="co">#&gt;   log(serBilir): 1945</span>
-<span class="co">#&gt;   prothrombin: 1945</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;                  DIC     WAIC       LPML</span>
-<span class="co">#&gt; marginal    10959.74 11784.47  -6538.705</span>
-<span class="co">#&gt; conditional 17465.09 18839.90 -12444.566</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Random-effects covariance matrix:</span>
-<span class="co">#&gt;                                               </span>
-<span class="co">#&gt;        StdDev    Corr                         </span>
-<span class="co">#&gt; (Intr) 1.3285  (Intr)  p(,2)1  p(,2)2  (Intr) </span>
-<span class="co">#&gt; p(,2)1 23.9125 0.6510                         </span>
-<span class="co">#&gt; p(,2)2 13.4289 -0.2486 -0.0031                </span>
-<span class="co">#&gt; (Intr) 0.8296  0.5965  0.3536  -0.3002        </span>
-<span class="co">#&gt; year   0.3262  0.4172  0.2922  -0.0757 -0.0120</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Survival Outcome:</span>
-<span class="co">#&gt;                                        Mean  StDev    2.5%   97.5%      P</span>
-<span class="co">#&gt; age                                 -0.0446 0.0228 -0.0895 -0.0003 0.0488</span>
-<span class="co">#&gt; drugD-penicil                       -0.4572 0.5262 -1.5225  0.5770 0.3748</span>
-<span class="co">#&gt; age:strata(CR)dead                   0.1022 0.0215  0.0602  0.1432 0.0000</span>
-<span class="co">#&gt; drugD-penicil:strata(CR)dead         0.4536 0.5571 -0.6469  1.6123 0.4065</span>
-<span class="co">#&gt; value(log(serBilir)):CRtransplanted  1.1134 0.2287  0.6733  1.5737 0.0000</span>
-<span class="co">#&gt; value(log(serBilir)):CRdead          1.3919 0.1321  1.1423  1.6660 0.0000</span>
-<span class="co">#&gt; value(prothrombin):CRtransplanted   -0.0603 0.1456 -0.3661  0.1951 0.7355</span>
-<span class="co">#&gt; value(prothrombin):CRdead            0.1470 0.0524  0.0390  0.2431 0.0095</span>
-<span class="co">#&gt;                                       Rhat</span>
-<span class="co">#&gt; age                                 1.0061</span>
-<span class="co">#&gt; drugD-penicil                       1.0308</span>
-<span class="co">#&gt; age:strata(CR)dead                  1.0068</span>
-<span class="co">#&gt; drugD-penicil:strata(CR)dead        1.0335</span>
-<span class="co">#&gt; value(log(serBilir)):CRtransplanted 1.0025</span>
-<span class="co">#&gt; value(log(serBilir)):CRdead         1.0103</span>
-<span class="co">#&gt; value(prothrombin):CRtransplanted   1.2451</span>
-<span class="co">#&gt; value(prothrombin):CRdead           1.0159</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)</span>
-<span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)     1.1528 0.1214  0.9134  1.3938 0.0000 1.0005</span>
-<span class="co">#&gt; poly(year, 2)1 25.8670 2.8550 20.2399 31.3946 0.0000 1.0051</span>
-<span class="co">#&gt; poly(year, 2)2  0.8610 2.1699 -3.4219  5.1293 0.6863 1.0018</span>
-<span class="co">#&gt; drugD-penicil  -0.1588 0.1623 -0.4785  0.1566 0.3298 1.0004</span>
-<span class="co">#&gt; p(,2)1         -1.8612 2.8932 -7.6179  3.7252 0.5235 1.0023</span>
-<span class="co">#&gt; p(,2)2         -0.9272 2.4912 -5.7397  3.9439 0.7163 1.0000</span>
-<span class="co">#&gt; sigma           0.3410 0.0153  0.3156  0.3747 0.0000 1.0041</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Longitudinal Outcome: prothrombin (family = gaussian, link = identity)</span>
-<span class="co">#&gt;                       Mean  StDev    2.5%   97.5%      P   Rhat</span>
-<span class="co">#&gt; (Intercept)        10.6320 0.2094 10.2283 11.0407 0.0000 1.0000</span>
-<span class="co">#&gt; year                0.2839 0.0769  0.1345  0.4360 0.0000 1.0002</span>
-<span class="co">#&gt; drugD-penicil      -0.0914 0.2943 -0.6689  0.4837 0.7545 0.9999</span>
-<span class="co">#&gt; year:drugD-penicil -0.0164 0.1024 -0.2184  0.1845 0.8700 1.0002</span>
-<span class="co">#&gt; sigma               1.0820 0.0254  1.0367  1.1358 0.0000 1.0012</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; MCMC summary:</span>
-<span class="co">#&gt; chains: 3 </span>
-<span class="co">#&gt; iterations per chain: 25000 </span>
-<span class="co">#&gt; burn-in per chain: 5000 </span>
-<span class="co">#&gt; thinning: 5 </span>
-<span class="co">#&gt; time: 7.6 min</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">jFit_CR</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit_CR</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>, </span>
+<span>              functional_forms <span class="op">=</span> <span class="va">CR_forms</span>, </span>
+<span>              n_iter <span class="op">=</span> <span class="fl">25000L</span>, n_burnin <span class="op">=</span> <span class="fl">5000L</span>, n_thin <span class="op">=</span> <span class="fl">5L</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jFit_CR</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Call:</span></span>
+<span><span class="co">#&gt; jm(Surv_object = CoxFit_CR, Mixed_objects = list(fm1, fm2), time_var = "year", </span></span>
+<span><span class="co">#&gt;     functional_forms = CR_forms, n_iter = 25000L, n_burnin = 5000L, </span></span>
+<span><span class="co">#&gt;     n_thin = 5L)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Data Descriptives:</span></span>
+<span><span class="co">#&gt; Number of Groups: 312        Number of events: 169 (27.1%)</span></span>
+<span><span class="co">#&gt; Number of Observations:</span></span>
+<span><span class="co">#&gt;   log(serBilir): 1945</span></span>
+<span><span class="co">#&gt;   prothrombin: 1945</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;                  DIC     WAIC       LPML</span></span>
+<span><span class="co">#&gt; marginal    10959.74 11784.47  -6538.705</span></span>
+<span><span class="co">#&gt; conditional 17465.09 18839.90 -12444.566</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
+<span><span class="co">#&gt;                                               </span></span>
+<span><span class="co">#&gt;        StdDev    Corr                         </span></span>
+<span><span class="co">#&gt; (Intr) 1.3285  (Intr)  p(,2)1  p(,2)2  (Intr) </span></span>
+<span><span class="co">#&gt; p(,2)1 23.9125 0.6510                         </span></span>
+<span><span class="co">#&gt; p(,2)2 13.4289 -0.2486 -0.0031                </span></span>
+<span><span class="co">#&gt; (Intr) 0.8296  0.5965  0.3536  -0.3002        </span></span>
+<span><span class="co">#&gt; year   0.3262  0.4172  0.2922  -0.0757 -0.0120</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Survival Outcome:</span></span>
+<span><span class="co">#&gt;                                        Mean  StDev    2.5%   97.5%      P</span></span>
+<span><span class="co">#&gt; age                                 -0.0446 0.0228 -0.0895 -0.0003 0.0488</span></span>
+<span><span class="co">#&gt; drugD-penicil                       -0.4572 0.5262 -1.5225  0.5770 0.3748</span></span>
+<span><span class="co">#&gt; age:strata(CR)dead                   0.1022 0.0215  0.0602  0.1432 0.0000</span></span>
+<span><span class="co">#&gt; drugD-penicil:strata(CR)dead         0.4536 0.5571 -0.6469  1.6123 0.4065</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):CRtransplanted  1.1134 0.2287  0.6733  1.5737 0.0000</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):CRdead          1.3919 0.1321  1.1423  1.6660 0.0000</span></span>
+<span><span class="co">#&gt; value(prothrombin):CRtransplanted   -0.0603 0.1456 -0.3661  0.1951 0.7355</span></span>
+<span><span class="co">#&gt; value(prothrombin):CRdead            0.1470 0.0524  0.0390  0.2431 0.0095</span></span>
+<span><span class="co">#&gt;                                       Rhat</span></span>
+<span><span class="co">#&gt; age                                 1.0061</span></span>
+<span><span class="co">#&gt; drugD-penicil                       1.0308</span></span>
+<span><span class="co">#&gt; age:strata(CR)dead                  1.0068</span></span>
+<span><span class="co">#&gt; drugD-penicil:strata(CR)dead        1.0335</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):CRtransplanted 1.0025</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):CRdead         1.0103</span></span>
+<span><span class="co">#&gt; value(prothrombin):CRtransplanted   1.2451</span></span>
+<span><span class="co">#&gt; value(prothrombin):CRdead           1.0159</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)</span></span>
+<span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
+<span><span class="co">#&gt; (Intercept)     1.1528 0.1214  0.9134  1.3938 0.0000 1.0005</span></span>
+<span><span class="co">#&gt; poly(year, 2)1 25.8670 2.8550 20.2399 31.3946 0.0000 1.0051</span></span>
+<span><span class="co">#&gt; poly(year, 2)2  0.8610 2.1699 -3.4219  5.1293 0.6863 1.0018</span></span>
+<span><span class="co">#&gt; drugD-penicil  -0.1588 0.1623 -0.4785  0.1566 0.3298 1.0004</span></span>
+<span><span class="co">#&gt; p(,2)1         -1.8612 2.8932 -7.6179  3.7252 0.5235 1.0023</span></span>
+<span><span class="co">#&gt; p(,2)2         -0.9272 2.4912 -5.7397  3.9439 0.7163 1.0000</span></span>
+<span><span class="co">#&gt; sigma           0.3410 0.0153  0.3156  0.3747 0.0000 1.0041</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Longitudinal Outcome: prothrombin (family = gaussian, link = identity)</span></span>
+<span><span class="co">#&gt;                       Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
+<span><span class="co">#&gt; (Intercept)        10.6320 0.2094 10.2283 11.0407 0.0000 1.0000</span></span>
+<span><span class="co">#&gt; year                0.2839 0.0769  0.1345  0.4360 0.0000 1.0002</span></span>
+<span><span class="co">#&gt; drugD-penicil      -0.0914 0.2943 -0.6689  0.4837 0.7545 0.9999</span></span>
+<span><span class="co">#&gt; year:drugD-penicil -0.0164 0.1024 -0.2184  0.1845 0.8700 1.0002</span></span>
+<span><span class="co">#&gt; sigma               1.0820 0.0254  1.0367  1.1358 0.0000 1.0012</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; MCMC summary:</span></span>
+<span><span class="co">#&gt; chains: 3 </span></span>
+<span><span class="co">#&gt; iterations per chain: 25000 </span></span>
+<span><span class="co">#&gt; burn-in per chain: 5000 </span></span>
+<span><span class="co">#&gt; thinning: 5 </span></span>
+<span><span class="co">#&gt; time: 6.8 min</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="dynamic-predictions">Dynamic predictions<a class="anchor" aria-label="anchor" href="#dynamic-predictions"></a>
 </h3>
-<p>Based on the fitted competing risks joint model, we will illustrate how (dynamic) predictions for the cause-specific cumulative risk probabilities can be calculated. As an example, we will show these calculations for Patient 81 from the PBC dataset. First, we extract the data of this subject.</p>
+<p>Based on the fitted competing risks joint model, we will illustrate
+how (dynamic) predictions for the cause-specific cumulative risk
+probabilities can be calculated. As an example, we will show these
+calculations for Patient 81 from the PBC dataset. First, we extract the
+data of this subject.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">ND_long</span> <span class="op">&lt;-</span> <span class="va">pbc2</span><span class="op">[</span><span class="va">pbc2</span><span class="op">$</span><span class="va">id</span> <span class="op">==</span> <span class="fl">81</span>, <span class="op">]</span>
-<span class="va">ND_event</span> <span class="op">&lt;-</span> <span class="va">pbc2.idCR</span><span class="op">[</span><span class="va">pbc2.idCR</span><span class="op">$</span><span class="va">id</span> <span class="op">==</span> <span class="fl">81</span>, <span class="op">]</span>
-<span class="va">ND_event</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fl">0</span>
-<span class="va">ND</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>newdataL <span class="op">=</span> <span class="va">ND_long</span>, newdataE <span class="op">=</span> <span class="va">ND_event</span><span class="op">)</span></code></pre></div>
-<p>The first line extracts the longitudinal measurements, and the second line extracts the event times per cause (i.e., death and transplantation). This particular patient died at 6.95 years, but to make the calculation of cause-specific cumulative risk more relevant, we presume that she did not have the event, and we set the event status variable <code>status2</code> to zero. The last line combines the two datasets in a list. <em>Note:</em> this last step is a prerequisite from the <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> method for competing risks joint model. That is, the datasets provided in the arguments <code>newdata</code> and <code>newdata2</code> need to be named lists with two components. The first component needs to be named <code>newdataL</code> and contain the dataset with the longitudinal measurements, and the second component needs to be named <code>newdataE</code> and contain the dataset with the event information.</p>
-<p>The predictions are calculated using the <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> method. The first call to this function calculates the prediction for the longitudinal outcomes at the times provided in the <code>times</code> argument, and the second call calculates the cause-specific cumulative risk probabilities. By setting the argument <code>return_newdata</code> to <code>TRUE</code> in both calls, we can use the corresponding <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method to depict the predictions:</p>
+<code class="sourceCode R"><span><span class="va">ND_long</span> <span class="op">&lt;-</span> <span class="va">pbc2</span><span class="op">[</span><span class="va">pbc2</span><span class="op">$</span><span class="va">id</span> <span class="op">==</span> <span class="fl">81</span>, <span class="op">]</span></span>
+<span><span class="va">ND_event</span> <span class="op">&lt;-</span> <span class="va">pbc2.idCR</span><span class="op">[</span><span class="va">pbc2.idCR</span><span class="op">$</span><span class="va">id</span> <span class="op">==</span> <span class="fl">81</span>, <span class="op">]</span></span>
+<span><span class="va">ND_event</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span><span class="va">ND</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>newdataL <span class="op">=</span> <span class="va">ND_long</span>, newdataE <span class="op">=</span> <span class="va">ND_event</span><span class="op">)</span></span></code></pre></div>
+<p>The first line extracts the longitudinal measurements, and the second
+line extracts the event times per cause (i.e., death and
+transplantation). This particular patient died at 6.95 years, but to
+make the calculation of cause-specific cumulative risk more relevant, we
+presume that she did not have the event, and we set the event status
+variable <code>status2</code> to zero. The last line combines the two
+datasets in a list. <em>Note:</em> this last step is a prerequisite from
+the <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> method for competing risks joint model. That
+is, the datasets provided in the arguments <code>newdata</code> and
+<code>newdata2</code> need to be named lists with two components. The
+first component needs to be named <code>newdataL</code> and contain the
+dataset with the longitudinal measurements, and the second component
+needs to be named <code>newdataE</code> and contain the dataset with the
+event information.</p>
+<p>The predictions are calculated using the <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>
+method. The first call to this function calculates the prediction for
+the longitudinal outcomes at the times provided in the
+<code>times</code> argument, and the second call calculates the
+cause-specific cumulative risk probabilities. By setting the argument
+<code>return_newdata</code> to <code>TRUE</code> in both calls, we can
+use the corresponding <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method to depict the
+predictions:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">predLong</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jFit_CR</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span>,
-                    times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">6.5</span>, <span class="fl">15</span>, length <span class="op">=</span> <span class="fl">25</span><span class="op">)</span><span class="op">)</span>
-
-<span class="va">predEvent</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jFit_CR</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span>,
-                     process <span class="op">=</span> <span class="st">"event"</span><span class="op">)</span>
-
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong</span>, <span class="va">predEvent</span>, outcomes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, ylim_long_outcome_range <span class="op">=</span> <span class="cn">FALSE</span>,
-     col_line_event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#03BF3D"</span>, <span class="st">"#FF0000"</span><span class="op">)</span>, 
-     fill_CI_event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#03BF3D4D"</span>, <span class="st">"#FF00004D"</span><span class="op">)</span>, pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">11.5</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">8.1</span>, y <span class="op">=</span> <span class="fl">0.45</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">pbc2.idCR</span><span class="op">$</span><span class="va">CR</span><span class="op">)</span>, 
-       lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#03BF3D"</span>, <span class="st">"#FF0000"</span><span class="op">)</span>, bty <span class="op">=</span> <span class="st">"n"</span>, cex <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">predLong</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jFit_CR</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                    times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">6.5</span>, <span class="fl">15</span>, length <span class="op">=</span> <span class="fl">25</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">predEvent</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jFit_CR</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                     process <span class="op">=</span> <span class="st">"event"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong</span>, <span class="va">predEvent</span>, outcomes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, ylim_long_outcome_range <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>     col_line_event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#03BF3D"</span>, <span class="st">"#FF0000"</span><span class="op">)</span>, </span>
+<span>     fill_CI_event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#03BF3D4D"</span>, <span class="st">"#FF00004D"</span><span class="op">)</span>, pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">11.5</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">8.1</span>, y <span class="op">=</span> <span class="fl">0.45</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">pbc2.idCR</span><span class="op">$</span><span class="va">CR</span><span class="op">)</span>, </span>
+<span>       lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#03BF3D"</span>, <span class="st">"#FF0000"</span><span class="op">)</span>, bty <span class="op">=</span> <span class="st">"n"</span>, cex <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Competing_Risks_files/figure-html/CIFs-1.png" width="700"></p>
 </div>
 </div>
@@ -302,7 +358,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer>

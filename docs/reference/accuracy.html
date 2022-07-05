@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-8</span>
       </span>
     </div>
 
@@ -35,7 +35,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -92,89 +92,125 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">tvROC</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">tvROC</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,
-    Dt <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">tvAUC</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">tvAUC</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,
-    Dt <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for tvROC</span>
-<span class="fu">tvAUC</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">calibration_plot</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,
-    Dt <span class="op">=</span> <span class="cn">NULL</span>, df_ns <span class="op">=</span> <span class="fl">3</span>, plot <span class="op">=</span> <span class="cn">TRUE</span>, add_density <span class="op">=</span> <span class="cn">TRUE</span>,
-    col <span class="op">=</span> <span class="st">"red"</span>, lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">1</span>,
-    col_dens <span class="op">=</span> <span class="st">"grey"</span>, xlab <span class="op">=</span> <span class="st">"Predicted Probabilities"</span>,
-    ylab <span class="op">=</span> <span class="st">"Observed Probabilities"</span>, main <span class="op">=</span> <span class="st">""</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">calibration_metrics</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,
-    Dt <span class="op">=</span> <span class="cn">NULL</span>, df_ns <span class="op">=</span> <span class="fl">3</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">tvBrier</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>, Dt <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">tvROC</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">tvROC</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    Dt <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">tvAUC</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">tvAUC</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    Dt <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for tvROC</span></span>
+<span><span class="fu">tvAUC</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">calibration_plot</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    Dt <span class="op">=</span> <span class="cn">NULL</span>, df_ns <span class="op">=</span> <span class="fl">3</span>, plot <span class="op">=</span> <span class="cn">TRUE</span>, add_density <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    col <span class="op">=</span> <span class="st">"red"</span>, lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    col_dens <span class="op">=</span> <span class="st">"grey"</span>, xlab <span class="op">=</span> <span class="st">"Predicted Probabilities"</span>,</span>
+<span>    ylab <span class="op">=</span> <span class="st">"Observed Probabilities"</span>, main <span class="op">=</span> <span class="st">""</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">calibration_metrics</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    Dt <span class="op">=</span> <span class="cn">NULL</span>, df_ns <span class="op">=</span> <span class="fl">3</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">tvBrier</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>, Dt <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>object</dt>
 <dd><p>an object inheriting from class <code>jm</code>, except for <code>tvAUC.tvROC()</code> where this is an object of class <code>tvROC</code>.</p></dd>
+
+
 <dt>newdata</dt>
 <dd><p>a data.frame that contains the longitudinal and covariate information for the subjects for which prediction of survival probabilities is required. The names of the variables in this data.frame must be the same as in the data.frames that were used to fit the linear mixed effects and the event process model that were supplied as the two first argument of <code><a href="jm.html">jm</a></code>.</p></dd>
+
+
 <dt>Tstart</dt>
 <dd><p>numeric scalar denoting the time point up to which longitudinal information is to be used to derive predictions.</p></dd>
+
+
 <dt>Thoriz</dt>
 <dd><p>numeric scalar denoting the time point for which a prediction of the survival status is of interest; <code>Thoriz</code> must be later than <code>Tstart</code> and either <code>Dt</code> or <code>Thoriz</code> must be specified. If <code>Thoriz</code> is <code>NULL</code> is set equal to <code>Tstart + Dt</code>.</p></dd>
+
+
 <dt>Dt</dt>
 <dd><p>numeric scalar denoting the length of the time interval of prediction; either <code>Dt</code> or <code>Thoriz</code> must be specified.</p></dd>
+
+
 <dt>df_ns</dt>
 <dd><p>the degrees of freedom for the natural cubic spline of the cloglog transformation of the
 predicted probabilities used in the Cox model that assess calibration.</p></dd>
+
+
 <dt>plot</dt>
 <dd><p>logical; should a plot be produced. If <code>FALSE</code>, a list is returned with the observed and predicted probabilities.</p></dd>
+
+
 <dt>add_density</dt>
 <dd><p>logical; should the kernal density estimation of the predicted probabilities be superimposed in the calibration plot.</p></dd>
+
+
 <dt>col, lwd, lty, col_dens, xlab, ylab, main</dt>
 <dd><p>graphical parameters.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>additional arguments passed to <code><a href="predict.html">predict.jm()</a></code>.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A list of class <code>tvAUC</code> with components:</p>
+    
+
+<p>A list of class <code>tvAUC</code> with components:</p>
 <dl><dt>auc</dt>
 <dd><p>a numeric scalar denoting the estimated prediction error.</p></dd>
-<dt>Tstart</dt>
+
+  <dt>Tstart</dt>
 <dd><p>a copy of the <code>Tstart</code> argument.</p></dd>
-<dt>Thoriz</dt>
+
+  <dt>Thoriz</dt>
 <dd><p>a copy of the <code>Thoriz</code> argument.</p></dd>
-<dt>nr</dt>
+
+  <dt>nr</dt>
 <dd><p>a numeric scalar denoting the number of subjects at risk at time <code>Tstart</code>.</p></dd>
-<dt>classObject</dt>
+
+  <dt>classObject</dt>
 <dd><p>the class of <code>object</code>.</p></dd>
-<dt>nameObject</dt>
+
+  <dt>nameObject</dt>
 <dd><p>the name of <code>object</code>.</p></dd>
+
+
 </dl><p>A list of class <code>tvROC</code> with components:</p>
 <dl><dt>TP, FP, nTP, nFN, nTN, qSN, qSP, qOverall</dt>
 <dd><p>accuracy indexes.</p></dd>
-<dt>F1score, Youden</dt>
+
+  <dt>F1score, Youden</dt>
 <dd><p>numeric scalars with the optimal cut-point using the F1 score and the Youden index.</p></dd>
-<dt>thr</dt>
+
+  <dt>thr</dt>
 <dd><p>numeric vector of thresholds.</p></dd>
-<dt>Tstart</dt>
+
+  <dt>Tstart</dt>
 <dd><p>a copy of the <code>Tstart</code> argument.</p></dd>
-<dt>Thoriz</dt>
+
+  <dt>Thoriz</dt>
 <dd><p>a copy of the <code>Thoriz</code> argument.</p></dd>
-<dt>nr</dt>
+
+  <dt>nr</dt>
 <dd><p>a numeric scalar denoting the number of subjects at risk at time <code>Tstart</code>.</p></dd>
-<dt>classObject</dt>
+
+  <dt>classObject</dt>
 <dd><p>the class of <code>object</code>.</p></dd>
-<dt>nameObject</dt>
+
+  <dt>nameObject</dt>
 <dd><p>the name of <code>object</code>.</p></dd>
+
 </dl></div>
     <div id="references">
     <h2>References</h2>
@@ -205,21 +241,21 @@ longitudinal and time-to-event data. <em>Biometrics</em> <b>67</b>, 819--829.</p
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># \donttest{</span></span>
-<span class="r-in"><span class="co"># We fit a multivariate joint model</span></span>
-<span class="r-in"><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">'alive'</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
-<span class="r-in">           random <span class="op">=</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">|</span> <span class="va">id</span>, control <span class="op">=</span> <span class="fu">lmeControl</span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
-<span class="r-in">           random <span class="op">=</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">|</span> <span class="va">id</span>, control <span class="op">=</span> <span class="fu">lmeControl</span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
-<span class="r-in">                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">jointFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>, n_chains <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">roc</span> <span class="op">&lt;-</span> <span class="fu">tvROC</span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">4</span>, Dt <span class="op">=</span> <span class="fl">3</span>, cores <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">roc</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># We fit a multivariate joint model</span></span></span>
+<span class="r-in"><span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">'alive'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span></span>
+<span class="r-in"><span>           random <span class="op">=</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">|</span> <span class="va">id</span>, control <span class="op">=</span> <span class="fu">lmeControl</span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span></span>
+<span class="r-in"><span>           random <span class="op">=</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">|</span> <span class="va">id</span>, control <span class="op">=</span> <span class="fu">lmeControl</span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span></span>
+<span class="r-in"><span>                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">jointFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>, n_chains <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">roc</span> <span class="op">&lt;-</span> <span class="fu">tvROC</span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">4</span>, Dt <span class="op">=</span> <span class="fl">3</span>, cores <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">roc</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 	Time-dependent Sensitivity and Specificity for the Joint Model jointFit</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -295,7 +331,7 @@ longitudinal and time-to-event data. <em>Biometrics</em> <b>67</b>, 819--829.</p
 <span class="r-out co"><span class="r-pr">#&gt;</span> 66    0.97 0.99957593 0.12294935 0.99566295 0.02789953  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 67    0.98 0.99962690 0.05024585 0.99067243 0.01067276  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu">tvAUC</span><span class="op">(</span><span class="va">roc</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu">tvAUC</span><span class="op">(</span><span class="va">roc</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 	Time-dependent AUC for the Joint Model jointFit</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -303,9 +339,9 @@ longitudinal and time-to-event data. <em>Biometrics</em> <b>67</b>, 819--829.</p
 <span class="r-out co"><span class="r-pr">#&gt;</span> At time: 7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Using information up to time: 4 (225 subjects still at risk)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">roc</span>, legend <span class="op">=</span> <span class="cn">TRUE</span>, optimal_cutoff <span class="op">=</span> <span class="st">"Youden"</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">roc</span>, legend <span class="op">=</span> <span class="cn">TRUE</span>, optimal_cutoff <span class="op">=</span> <span class="st">"Youden"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="accuracy-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="co"># }</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -320,7 +356,7 @@ longitudinal and time-to-event data. <em>Biometrics</em> <b>67</b>, 819--829.</p
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>

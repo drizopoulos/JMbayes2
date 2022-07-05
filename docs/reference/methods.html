@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-8</span>
       </span>
     </div>
 
@@ -35,7 +35,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -92,70 +92,77 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">coef</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">coef</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">fixef</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">fixef</span><span class="op">(</span><span class="va">object</span>, outcome <span class="op">=</span> <span class="cn">Inf</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">ranef</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">ranef</span><span class="op">(</span><span class="va">object</span>, outcome <span class="op">=</span> <span class="cn">Inf</span>, post_vars <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">terms</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">terms</span><span class="op">(</span><span class="va">x</span>, process <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"longitudinal"</span>, <span class="st">"event"</span><span class="op">)</span>,
-                      type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"random"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">model.frame</span><span class="op">(</span><span class="va">formula</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">model.frame</span><span class="op">(</span><span class="va">formula</span>, process <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"longitudinal"</span>, <span class="st">"event"</span><span class="op">)</span>,
-                            type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"random"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">model.matrix</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">model.matrix</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">family</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for jm</span>
-<span class="fu">family</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">compare_jm</span><span class="op">(</span><span class="va">...</span>, type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"marginal"</span>, <span class="st">"conditional"</span><span class="op">)</span>,
-  order <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WAIC"</span>, <span class="st">"DIC"</span>, <span class="st">"LPML"</span>, <span class="st">"none"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">coef</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">coef</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">fixef</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">fixef</span><span class="op">(</span><span class="va">object</span>, outcome <span class="op">=</span> <span class="cn">Inf</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ranef</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">ranef</span><span class="op">(</span><span class="va">object</span>, outcome <span class="op">=</span> <span class="cn">Inf</span>, post_vars <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">terms</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">terms</span><span class="op">(</span><span class="va">x</span>, process <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"longitudinal"</span>, <span class="st">"event"</span><span class="op">)</span>,</span>
+<span>                      type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"random"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">model.frame</span><span class="op">(</span><span class="va">formula</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">model.frame</span><span class="op">(</span><span class="va">formula</span>, process <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"longitudinal"</span>, <span class="st">"event"</span><span class="op">)</span>,</span>
+<span>                            type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fixed"</span>, <span class="st">"random"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">model.matrix</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">model.matrix</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">family</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for jm</span></span>
+<span><span class="fu">family</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">compare_jm</span><span class="op">(</span><span class="va">...</span>, type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"marginal"</span>, <span class="st">"conditional"</span><span class="op">)</span>,</span>
+<span>  order <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WAIC"</span>, <span class="st">"DIC"</span>, <span class="st">"LPML"</span>, <span class="st">"none"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>object, x, formula</dt>
 <dd><p>object inheriting from class <code>"jm"</code>.</p></dd>
+
 <dt>outcome</dt>
 <dd><p>the index of the linear mixed submodel to extract the estimated fixed effects. If greater
 than the total number of submodels, extracts from all of them.</p></dd>
+
 <dt>post_vars</dt>
 <dd><p>logical; if <code>TRUE</code>, returns the variance of the posterior distribution.</p></dd>
+
 <dt>process</dt>
 <dd><p>which submodel(s) to extract the terms: <br></p><ul><li><p>if <code>"longitudinal"</code>, the linear mixed model(s), or</p></li>
 <li><p>if <code>"event"</code>, the survival model.</p></li>
 </ul></dd>
+
 <dt>type</dt>
 <dd><p>in <code>terms()</code> and <code>model.frame()</code>, which effects to select in the longitudinal process: <br></p><ul><li><p>if <code>"fixed"</code>, the fixed-effects, or</p></li>
 <li><p>if <code>"random"</code>, the random-efects.</p></li>
 </ul><p>in <code>compare_jm()</code>, which log-likelihood function use to calculate the criteria: <br></p><ul><li><p>if <code>"marginal"</code>, the marginal log-likelihood, or</p></li>
 <li><p>if <code>"conditional"</code>, the conditional log-likelihood.</p></li>
 </ul></dd>
+
 <dt>...</dt>
 <dd><p>further arguments; currently, none is used. <br> in <code>compare_jm()</code>, a series of <code>jm</code> objects.</p></dd>
+
 <dt>order</dt>
 <dd><p>which criteria use to sort the models in the output.</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -188,7 +195,9 @@ than the total number of submodels, extracts from all of them.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <dl><dt><code>coef()</code></dt>
+    
+
+<dl><dt><code>coef()</code></dt>
 <dd><p>a list with the elements: <br></p><ul><li><p><code>gammas</code>: estimated baseline fixed effects, and</p></li>
 <li><p><code>association</code>: estimated association parameters.</p></li>
 </ul></dd>
@@ -230,23 +239,23 @@ than the total number of submodels, extracts from all of them.</p></dd>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># \donttest{</span></span>
-<span class="r-in"><span class="co"># linear mixed model fits</span></span>
-<span class="r-in"><span class="va">fit_lme1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span><span class="op">:</span><span class="va">sex</span> <span class="op">+</span> <span class="va">age</span>,</span>
-<span class="r-in">                random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">fit_lme2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">sex</span>,</span>
-<span class="r-in">                random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># cox model fit</span></span>
-<span class="r-in"><span class="va">fit_cox</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># joint model fit</span></span>
-<span class="r-in"><span class="va">fit_jm</span> <span class="op">&lt;-</span> <span class="fu"><a href="jm.html">jm</a></span><span class="op">(</span><span class="va">fit_cox</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fit_lme1</span>, <span class="va">fit_lme2</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,</span>
-<span class="r-in">    n_chains <span class="op">=</span> <span class="fl">1L</span>, n_iter <span class="op">=</span> <span class="fl">11000L</span>, n_burnin <span class="op">=</span> <span class="fl">1000L</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># coef(): fixed effects for the event process</span></span>
-<span class="r-in"><span class="fu">coef</span><span class="op">(</span><span class="va">fit_jm</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># linear mixed model fits</span></span></span>
+<span class="r-in"><span><span class="va">fit_lme1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span><span class="op">:</span><span class="va">sex</span> <span class="op">+</span> <span class="va">age</span>,</span></span>
+<span class="r-in"><span>                random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">fit_lme2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>                random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># cox model fit</span></span></span>
+<span class="r-in"><span><span class="va">fit_cox</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># joint model fit</span></span></span>
+<span class="r-in"><span><span class="va">fit_jm</span> <span class="op">&lt;-</span> <span class="fu"><a href="jm.html">jm</a></span><span class="op">(</span><span class="va">fit_cox</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fit_lme1</span>, <span class="va">fit_lme2</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,</span></span>
+<span class="r-in"><span>    n_chains <span class="op">=</span> <span class="fl">1L</span>, n_iter <span class="op">=</span> <span class="fl">11000L</span>, n_burnin <span class="op">=</span> <span class="fl">1000L</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># coef(): fixed effects for the event process</span></span></span>
+<span class="r-in"><span><span class="fu">coef</span><span class="op">(</span><span class="va">fit_jm</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $gammas</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       Mean </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 0.05849508 </span>
@@ -255,14 +264,14 @@ than the total number of submodels, extracts from all of them.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> value(log(serBilir))   value(prothrombin) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            1.3040116            0.1083342 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># fixef(): fixed effects for the first linear mixed submodel</span></span>
-<span class="r-in"><span class="fu">fixef</span><span class="op">(</span><span class="va">fit_jm</span>, outcome <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># fixef(): fixed effects for the first linear mixed submodel</span></span></span>
+<span class="r-in"><span><span class="fu">fixef</span><span class="op">(</span><span class="va">fit_jm</span>, outcome <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (Intercept)            age   year:sexmale year:sexfemale </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    0.654625831   -0.004162924    0.233110553    0.161947335 </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># ranef(): random effects from all linear mixed submodels</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">ranef</span><span class="op">(</span><span class="va">fit_jm</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># ranef(): random effects from all linear mixed submodels</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">ranef</span><span class="op">(</span><span class="va">fit_jm</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]         [,2]        [,3]        [,4]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1,]  2.20374733  0.194553352  1.02903087 0.128070541</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [2,] -0.36244167  0.001891246 -0.01011099 0.082089649</span>
@@ -270,9 +279,9 @@ than the total number of submodels, extracts from all of them.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [4,]  0.04190923  0.104815243  0.90127405 0.560329764</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [5,]  0.33745915  0.219323364 -0.01833539 0.429276335</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [6,] -0.64488457 -0.153027345 -0.13239621 0.001202136</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># terms(): random effects terms for the first linear mixed submodel</span></span>
-<span class="r-in"><span class="fu">terms</span><span class="op">(</span><span class="va">fit_jm</span>, process <span class="op">=</span> <span class="st">"longitudinal"</span>, type <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># terms(): random effects terms for the first linear mixed submodel</span></span></span>
+<span class="r-in"><span><span class="fu">terms</span><span class="op">(</span><span class="va">fit_jm</span>, process <span class="op">=</span> <span class="st">"longitudinal"</span>, type <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ~year</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"variables")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> list(year)</span>
@@ -288,16 +297,16 @@ than the total number of submodels, extracts from all of them.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"response")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,".Environment")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x0000000054654358&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: R_GlobalEnv&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"predvars")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> list(year)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"dataClasses")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      year </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> "numeric" </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># mode.frame(): model frame for the fixed effects in the second</span></span>
-<span class="r-in"><span class="co"># linear mixed submodel</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">model.frame</span><span class="op">(</span><span class="va">fit_jm</span>, process <span class="op">=</span> <span class="st">"longitudinal"</span>, type <span class="op">=</span> <span class="st">"fixed"</span><span class="op">)</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># mode.frame(): model frame for the fixed effects in the second</span></span></span>
+<span class="r-in"><span><span class="co"># linear mixed submodel</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">model.frame</span><span class="op">(</span><span class="va">fit_jm</span>, process <span class="op">=</span> <span class="st">"longitudinal"</span>, type <span class="op">=</span> <span class="st">"fixed"</span><span class="op">)</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   prothrombin    sex</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1        12.2 female</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2        11.2 female</span>
@@ -305,10 +314,10 @@ than the total number of submodels, extracts from all of them.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4        11.0 female</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5        11.6 female</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6        10.6 female</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># model.matrix(): fixed effects design matrix for the first linear</span></span>
-<span class="r-in"><span class="co"># mixed submodel</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">model.matrix</span><span class="op">(</span><span class="va">fit_jm</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># model.matrix(): fixed effects design matrix for the first linear</span></span></span>
+<span class="r-in"><span><span class="co"># mixed submodel</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">model.matrix</span><span class="op">(</span><span class="va">fit_jm</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   (Intercept)      age year:sexmale year:sexfemale</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1           1 58.76684            0      0.0000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2           1 58.76684            0      0.5256817</span>
@@ -316,9 +325,9 @@ than the total number of submodels, extracts from all of them.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4           1 56.44782            0      0.4983025</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5           1 56.44782            0      0.9993429</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6           1 56.44782            0      2.1027270</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># family(): family objects from both linear mixed submodels</span></span>
-<span class="r-in"><span class="fu">family</span><span class="op">(</span><span class="va">fit_jm</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># family(): family objects from both linear mixed submodels</span></span></span>
+<span class="r-in"><span><span class="fu">family</span><span class="op">(</span><span class="va">fit_jm</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Family: gaussian </span>
@@ -331,22 +340,22 @@ than the total number of submodels, extracts from all of them.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Link function: identity </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># compare_jm(): compare two fitted joint models</span></span>
-<span class="r-in"><span class="va">fit_lme1b</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,</span>
-<span class="r-in">                  random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">fit_jm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="jm.html">jm</a></span><span class="op">(</span><span class="va">fit_cox</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fit_lme1b</span>, <span class="va">fit_lme2</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,</span>
-<span class="r-in">    n_chains <span class="op">=</span> <span class="fl">1L</span>, n_iter <span class="op">=</span> <span class="fl">11000L</span>, n_burnin <span class="op">=</span> <span class="fl">1000L</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="fu">compare_jm</span><span class="op">(</span><span class="va">fit_jm</span>, <span class="va">fit_jm2</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># compare_jm(): compare two fitted joint models</span></span></span>
+<span class="r-in"><span><span class="va">fit_lme1b</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>                  random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">fit_jm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="jm.html">jm</a></span><span class="op">(</span><span class="va">fit_cox</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fit_lme1b</span>, <span class="va">fit_lme2</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,</span></span>
+<span class="r-in"><span>    n_chains <span class="op">=</span> <span class="fl">1L</span>, n_iter <span class="op">=</span> <span class="fl">11000L</span>, n_burnin <span class="op">=</span> <span class="fl">1000L</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">compare_jm</span><span class="op">(</span><span class="va">fit_jm</span>, <span class="va">fit_jm2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               DIC     WAIC      LPML</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  fit_jm2 10580.41 10611.21 -5367.643</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   fit_jm 11080.76 14786.18 -7886.629</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> The criteria are calculated based on the marginal log-likelihood.</span>
-<span class="r-in"><span class="co"># }</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -361,7 +370,7 @@ than the total number of submodels, extracts from all of them.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>

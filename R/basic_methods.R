@@ -609,6 +609,7 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
     time_var <- object$model_info$var_names$time_var
     Time_var <- object$model_info$var_names$Time_var
     event_var <- object$model_info$var_names$event_var
+    type_censoring <- object$model_info$type_censoring
     respVars <- unlist(object$model_info$var_names$respVars)
     if (object$model_info$CR_MS && is.data.frame(newdata)) {
         stop("for competing risks and multi-state models, argument 'newdata' ",
@@ -644,10 +645,22 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
     }
     if (is.data.frame(newdata)) {
         if (is.null(newdata[[event_var]])) newdata[[event_var]] <- 0
-        if (is.null(newdata[[Time_var]])) {
-            last_time <- function (x) max(x, na.rm = TRUE)
-            f <- factor(newdata[[id_var]], unique(newdata[[id_var]]))
-            newdata[[Time_var]] <- ave(newdata[[time_var]], f, FUN = last_time)
+        if (length(Time_var) > 1L) {
+            if (is.null(newdata[[Time_var[1L]]])) {
+                newdata[[Time_var[1L]]] <- 0
+            }
+            if (is.null(newdata[[Time_var[2L]]])) {
+                last_time <- function (x) max(x, na.rm = TRUE) + 1e-06
+                f <- factor(newdata[[id_var]], unique(newdata[[id_var]]))
+                newdata[[Time_var[2L]]] <- ave(newdata[[time_var]], f,
+                                               FUN = last_time)
+            }
+        } else {
+            if (is.null(newdata[[Time_var]])) {
+                last_time <- function (x) max(x, na.rm = TRUE) + 1e-06
+                f <- factor(newdata[[id_var]], unique(newdata[[id_var]]))
+                newdata[[Time_var]] <- ave(newdata[[time_var]], f, FUN = last_time)
+            }
         }
         termsL <- object$model_info$terms$terms_FE_noResp
         all_vars <- unlist(lapply(termsL, all.vars), use.names = FALSE)
@@ -687,10 +700,22 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
     }
     if (!is.null(newdata2) && is.data.frame(newdata2)) {
         if (is.null(newdata2[[event_var]])) newdata2[[event_var]] <- 0
-        if (is.null(newdata2[[Time_var]])) {
-            last_time <- function (x) max(x, na.rm = TRUE)
-            f <- factor(newdata2[[id_var]], unique(newdata2[[id_var]]))
-            newdata[[Time_var]] <- ave(newdata2[[time_var]], f, FUN = last_time)
+        if (length(Time_var) > 1L) {
+            if (is.null(newdata2[[Time_var[1L]]])) {
+                newdata2[[Time_var[1L]]] <- 0
+            }
+            if (is.null(newdata2[[Time_var[2L]]])) {
+                last_time <- function (x) max(x, na.rm = TRUE) + 1e-06
+                f <- factor(newdata2[[id_var]], unique(newdata2[[id_var]]))
+                newdata2[[Time_var[2L]]] <- ave(newdata2[[time_var]], f,
+                                               FUN = last_time)
+            }
+        } else {
+            if (is.null(newdata2[[Time_var]])) {
+                last_time <- function (x) max(x, na.rm = TRUE) + 1e-06
+                f <- factor(newdata2[[id_var]], unique(newdata2[[id_var]]))
+                newdata2[[Time_var]] <- ave(newdata2[[time_var]], f, FUN = last_time)
+            }
         }
         termsL <- object$model_info$terms$terms_FE_noResp
         all_vars <- unlist(lapply(termsL, all.vars), use.names = FALSE)

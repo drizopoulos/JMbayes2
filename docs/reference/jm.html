@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-8</span>
       </span>
     </div>
 
@@ -35,7 +35,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -92,30 +92,30 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">jm</span><span class="op">(</span><span class="va">Surv_object</span>, <span class="va">Mixed_objects</span>, <span class="va">time_var</span>, recurrent <span class="op">=</span> <span class="cn">FALSE</span>,
-  functional_forms <span class="op">=</span> <span class="cn">NULL</span>, data_Surv <span class="op">=</span> <span class="cn">NULL</span>, id_var <span class="op">=</span> <span class="cn">NULL</span>, priors <span class="op">=</span> <span class="cn">NULL</span>,
-  control <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">value</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-<span class="fu">slope</span><span class="op">(</span><span class="va">x</span>, eps <span class="op">=</span> <span class="fl">0.001</span>, direction <span class="op">=</span> <span class="st">"both"</span><span class="op">)</span>
-<span class="fu">area</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-
-<span class="fu">vexpit</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-<span class="fu">Dexpit</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-
-<span class="fu">vexp</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-<span class="fu">Dexp</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-
-<span class="fu">vlog</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-<span class="fu">vlog2</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-<span class="fu">vlog10</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-
-<span class="fu">vsqrt</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-<span class="fu">poly2</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-<span class="fu">poly3</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-<span class="fu">poly4</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-
-<span class="fu">tv</span><span class="op">(</span><span class="va">x</span>, knots <span class="op">=</span> <span class="cn">NULL</span>, ord <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">jm</span><span class="op">(</span><span class="va">Surv_object</span>, <span class="va">Mixed_objects</span>, <span class="va">time_var</span>, recurrent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  functional_forms <span class="op">=</span> <span class="cn">NULL</span>, data_Surv <span class="op">=</span> <span class="cn">NULL</span>, id_var <span class="op">=</span> <span class="cn">NULL</span>, priors <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  control <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">value</span><span class="op">(</span><span class="va">x</span>, zero_ind <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span><span class="fu">slope</span><span class="op">(</span><span class="va">x</span>, eps <span class="op">=</span> <span class="fl">0.001</span>, direction <span class="op">=</span> <span class="st">"both"</span><span class="op">)</span></span>
+<span><span class="fu">area</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">vexpit</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="fu">Dexpit</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">vexp</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="fu">Dexp</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">vlog</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="fu">vlog2</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="fu">vlog10</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">vsqrt</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="fu">poly2</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="fu">poly3</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="fu">poly4</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">tv</span><span class="op">(</span><span class="va">x</span>, knots <span class="op">=</span> <span class="cn">NULL</span>, ord <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -124,20 +124,27 @@
 <dd><p>an object: <br></p><ul><li><p>of class 'coxph' fitted by function <code>coxph()</code> from package <b>survival</b>, or</p></li>
 <li><p>of class 'survreg' fitted by function <code>survreg()</code> from package <b>survival</b>.</p></li>
 </ul></dd>
+
 <dt>Mixed_objects</dt>
 <dd><p>a <code>list</code> of objects or a single object. Objects may be: <br></p><ul><li><p>of class 'lme' fitted by function <code>lme()</code> from package <b>nlme</b>, or</p></li>
 <li><p>of class 'MixMod' fitted by function <code>mixed_model()</code> from package <b>GLMMadaptive</b>.</p></li>
 </ul></dd>
+
 <dt>time_var</dt>
 <dd><p>a <code>character</code> string indicating the time variable in the mixed-effects model(s).</p></dd>
+
 <dt>recurrent</dt>
 <dd><p>a <code>character</code> string indicating "calendar" or "gap" timescale to fit a recurrent event model.</p></dd>
+
 <dt>functional_forms</dt>
 <dd><p>a <code>list</code> of formulas. Each formula corresponds to one longitudinal outcome and specifies the association structure between that outcome and the survival submodel as well as any interaction terms between the components of the longitudinal outcome and the survival submodel. See <b>Examples</b>.</p></dd>
+
 <dt>data_Surv</dt>
 <dd><p>the <code>data.frame</code> used to fit the Cox/AFT survival submodel.</p></dd>
+
 <dt>id_var</dt>
 <dd><p>a <code>character</code> string indicating the id variable in the survival submodel.</p></dd>
+
 <dt>priors</dt>
 <dd><p>a named <code>list</code> of user-specified prior parameters:</p><dl><dt><code>mean_betas_HC</code></dt>
 <dd><p>the prior mean vector of the normal prior for the regression coefficients of the covariates of the longitudinal model(s), which were hierarchically centered.</p></dd>
@@ -276,6 +283,7 @@
 
     
 </dl></dd>
+
 <dt>control</dt>
 <dd><p>a list of control values with components:</p><dl><dt><code>GK_k</code></dt>
 <dd><p>the number of quadrature points for the Gauss Kronrod rule; options 15 and 7.</p></dd>
@@ -315,19 +323,29 @@
 
     
 </dl><p></p></dd>
+
 <dt>x</dt>
 <dd><p>a numeric input variable.</p></dd>
+
 <dt>knots</dt>
 <dd><p>a numeric vector of knots.</p></dd>
+
 <dt>ord</dt>
 <dd><p>an integer denoting the order of the spline.</p></dd>
+
+<dt>zero_ind</dt>
+<dd><p>a list with integer vectors indicating which coefficients are set to zero in the calculation of the value  term. This can be used to include for example only the random intercept; default is <code>NULL</code>.</p></dd>
+
 <dt>eps</dt>
 <dd><p>numeric scalar denoting the step-size for the finite difference approximation.</p></dd>
+
 <dt>direction</dt>
 <dd><p>character string for the direction of the numerical derivative, options are <code>"both"</code>,
 and <code>"backward"</code>.</p></dd>
+
 <dt>...</dt>
 <dd><p>arguments passed to <code>control</code>.</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -335,33 +353,48 @@ and <code>"backward"</code>.</p></dd>
     </div>
     <div id="value">
     <h2>Value</h2>
-    <p>A list of class <code>jm</code> with components:</p>
+    
+
+<p>A list of class <code>jm</code> with components:</p>
 <dl><dt>mcmc</dt>
 <dd><p>a <code>list</code> of the MCMC samples for each parameter.</p></dd>
+
 <dt>acc_rates</dt>
 <dd><p>a <code>list</code> of the acceptance rates for each parameter.</p></dd>
+
 <dt>logLik</dt>
 <dd><p>a <code>matrix</code> of dimensions [<code>((n_iter - n_burnin)/n_thin)*n_thin</code>, number of individuals], with element [i, j] being the conditional log-Likelihood value of the \(i^{th}\) iteration for the \(j^{th}\) individual.</p></dd>
+
 <dt>mlogLik</dt>
 <dd><p>a <code>matrix</code> of dimensions [<code>((n_iter - n_burnin)/n_thin)*n_thin</code>, number of individuals], with element [i, j] being the marginal log-Likelihood value of the \(i^{th}\) iteration for the \(j^{th}\) individual.</p></dd>
+
 <dt>running_time</dt>
 <dd><p>an object of class <code>proc_time</code> with the time used to run <code>jm</code>.</p></dd>
+
 <dt>statistics</dt>
 <dd><p>a <code>list</code> with posterior estimates of the parameters (means, medians, standard deviations, standard errors, effective sample sizes, tail probabilities, upper and lower bounds of credible intervals, etc.).</p></dd>
+
 <dt>fit_stats</dt>
 <dd><p>a <code>list</code> of lists with fit statistics (DIC, pD, LPML, CPO, WAIC) for both conditional and marginal formulations.</p></dd>
+
 <dt>model_data</dt>
 <dd><p>a <code>list</code> of data used to fit the model.</p></dd>
+
 <dt>model_info</dt>
 <dd><p>a <code>list</code> of components of the fit useful to other functions.</p></dd>
+
 <dt>initial_values</dt>
 <dd><p>a <code>list</code> with the initial values of the parameters.</p></dd>
+
 <dt>control</dt>
 <dd><p>a copy of the <code>control</code> values used to fit the model.</p></dd>
+
 <dt>priors</dt>
 <dd><p>a copy of the <code>priors</code> used to fit the model.</p></dd>
+
 <dt>call</dt>
 <dd><p>the matched call.</p></dd>
+
 </dl></div>
     <div id="author">
     <h2>Author</h2>
@@ -375,26 +408,26 @@ and <code>"backward"</code>.</p></dd>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># \donttest{</span></span>
-<span class="r-in"><span class="co">################################################################################</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co">##############################################</span></span>
-<span class="r-in"><span class="co"># Univariate joint model for serum bilirubin #</span></span>
-<span class="r-in"><span class="co"># 1 continuous outcome                       #</span></span>
-<span class="r-in"><span class="co">##############################################</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># [1] Fit the mixed model using lme().</span></span>
-<span class="r-in"><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span>fixed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">year</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in">           <span class="va">age</span> <span class="op">+</span> <span class="va">prothrombin</span>, random <span class="op">=</span>  <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># [2] Fit a Cox model, specifying the baseline covariates to be included in the</span></span>
-<span class="r-in"><span class="co"># joint model.</span></span>
-<span class="r-in"><span class="va">fCox1</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># [3] The basic joint model is fitted using a call to jm() i.e.,</span></span>
-<span class="r-in"><span class="va">joint_model_fit_1</span> <span class="op">&lt;-</span> <span class="fu">jm</span><span class="op">(</span><span class="va">fCox1</span>, <span class="va">fm1</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,</span>
-<span class="r-in">        n_chains <span class="op">=</span> <span class="fl">1L</span>, n_iter <span class="op">=</span> <span class="fl">11000L</span>, n_burnin <span class="op">=</span> <span class="fl">1000L</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">joint_model_fit_1</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co">################################################################################</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">##############################################</span></span></span>
+<span class="r-in"><span><span class="co"># Univariate joint model for serum bilirubin #</span></span></span>
+<span class="r-in"><span><span class="co"># 1 continuous outcome                       #</span></span></span>
+<span class="r-in"><span><span class="co">##############################################</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># [1] Fit the mixed model using lme().</span></span></span>
+<span class="r-in"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span>fixed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">year</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>           <span class="va">age</span> <span class="op">+</span> <span class="va">prothrombin</span>, random <span class="op">=</span>  <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># [2] Fit a Cox model, specifying the baseline covariates to be included in the</span></span></span>
+<span class="r-in"><span><span class="co"># joint model.</span></span></span>
+<span class="r-in"><span><span class="va">fCox1</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># [3] The basic joint model is fitted using a call to jm() i.e.,</span></span></span>
+<span class="r-in"><span><span class="va">joint_model_fit_1</span> <span class="op">&lt;-</span> <span class="fu">jm</span><span class="op">(</span><span class="va">fCox1</span>, <span class="va">fm1</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,</span></span>
+<span class="r-in"><span>        n_chains <span class="op">=</span> <span class="fl">1L</span>, n_iter <span class="op">=</span> <span class="fl">11000L</span>, n_burnin <span class="op">=</span> <span class="fl">1000L</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">joint_model_fit_1</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> jm(Surv_object = fCox1, Mixed_objects = fm1, time_var = "year", </span>
@@ -437,8 +470,8 @@ and <code>"backward"</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> iterations per chain: 11000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> burn-in per chain: 1000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> thinning: 1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> time: 34 sec</span>
-<span class="r-in"><span class="fu"><a href="coda_methods.html">traceplot</a></span><span class="op">(</span><span class="va">joint_model_fit_1</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> time: 37 sec</span>
+<span class="r-in"><span><span class="fu"><a href="coda_methods.html">traceplot</a></span><span class="op">(</span><span class="va">joint_model_fit_1</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="jm-1.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="jm-2.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="jm-3.png" alt="" width="700" height="433"></span>
@@ -466,36 +499,36 @@ and <code>"backward"</code>.</p></dd>
 <span class="r-plt img"><img src="jm-25.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="jm-26.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="jm-27.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co">################################################################################</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co">##########################################################################</span></span>
-<span class="r-in"><span class="co"># Multivariate joint model for serum bilirubin, hepatomegaly and ascites #</span></span>
-<span class="r-in"><span class="co"># 1 continuous outcome, 2 categorical outcomes                           #</span></span>
-<span class="r-in"><span class="co">##########################################################################</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># [1] Fit the mixed-effects models using lme() for continuous</span></span>
-<span class="r-in"><span class="co"># outcomes and mixed_model() for categorical outcomes.</span></span>
-<span class="r-in"><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span>fixed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>,</span>
-<span class="r-in">           random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">hepatomegaly</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">year</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
-<span class="r-in">                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
-<span class="r-in">                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># [2] Save all the fitted mixed-effects models in a list.</span></span>
-<span class="r-in"><span class="va">Mixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># [3] Fit a Cox model, specifying the baseline covariates to be included in the</span></span>
-<span class="r-in"><span class="co"># joint model.</span></span>
-<span class="r-in"><span class="va">fCox1</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># [4] The joint model is fitted using a call to jm() i.e.,</span></span>
-<span class="r-in"><span class="va">joint_model_fit_2</span> <span class="op">&lt;-</span> <span class="fu">jm</span><span class="op">(</span><span class="va">fCox1</span>, <span class="va">Mixed</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,</span>
-<span class="r-in">      n_chains <span class="op">=</span> <span class="fl">1L</span>, n_iter <span class="op">=</span> <span class="fl">11000L</span>, n_burnin <span class="op">=</span> <span class="fl">1000L</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">joint_model_fit_2</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">################################################################################</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">##########################################################################</span></span></span>
+<span class="r-in"><span><span class="co"># Multivariate joint model for serum bilirubin, hepatomegaly and ascites #</span></span></span>
+<span class="r-in"><span><span class="co"># 1 continuous outcome, 2 categorical outcomes                           #</span></span></span>
+<span class="r-in"><span><span class="co">##########################################################################</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># [1] Fit the mixed-effects models using lme() for continuous</span></span></span>
+<span class="r-in"><span><span class="co"># outcomes and mixed_model() for categorical outcomes.</span></span></span>
+<span class="r-in"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span>fixed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>           random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">hepatomegaly</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">year</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span></span>
+<span class="r-in"><span>                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span></span>
+<span class="r-in"><span>                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># [2] Save all the fitted mixed-effects models in a list.</span></span></span>
+<span class="r-in"><span><span class="va">Mixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># [3] Fit a Cox model, specifying the baseline covariates to be included in the</span></span></span>
+<span class="r-in"><span><span class="co"># joint model.</span></span></span>
+<span class="r-in"><span><span class="va">fCox1</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># [4] The joint model is fitted using a call to jm() i.e.,</span></span></span>
+<span class="r-in"><span><span class="va">joint_model_fit_2</span> <span class="op">&lt;-</span> <span class="fu">jm</span><span class="op">(</span><span class="va">fCox1</span>, <span class="va">Mixed</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,</span></span>
+<span class="r-in"><span>      n_chains <span class="op">=</span> <span class="fl">1L</span>, n_iter <span class="op">=</span> <span class="fl">11000L</span>, n_burnin <span class="op">=</span> <span class="fl">1000L</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">joint_model_fit_2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> jm(Surv_object = fCox1, Mixed_objects = Mixed, time_var = "year", </span>
@@ -556,8 +589,8 @@ and <code>"backward"</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> iterations per chain: 11000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> burn-in per chain: 1000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> thinning: 1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> time: 1.2 min</span>
-<span class="r-in"><span class="fu"><a href="coda_methods.html">traceplot</a></span><span class="op">(</span><span class="va">joint_model_fit_2</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> time: 1.4 min</span>
+<span class="r-in"><span><span class="fu"><a href="coda_methods.html">traceplot</a></span><span class="op">(</span><span class="va">joint_model_fit_2</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="jm-28.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="jm-29.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="jm-30.png" alt="" width="700" height="433"></span>
@@ -609,53 +642,53 @@ and <code>"backward"</code>.</p></dd>
 <span class="r-plt img"><img src="jm-76.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="jm-77.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="jm-78.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co">################################################################################</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co">######################</span></span>
-<span class="r-in"><span class="co"># Slope &amp; Area Terms #</span></span>
-<span class="r-in"><span class="co">######################</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># We extend model 'joint_model_fit_2' by including the value and slope term for</span></span>
-<span class="r-in"><span class="co"># bilirubin, the area term for hepatomegaly (in the log-odds scale), and the</span></span>
-<span class="r-in"><span class="co"># value and area term for spiders (in the log-odds scale).</span></span>
-<span class="r-in"><span class="co"># To include these terms into the model, we specify the 'functional_forms'</span></span>
-<span class="r-in"><span class="co"># argument. This should be a list of right side formulas. Each component of the</span></span>
-<span class="r-in"><span class="co"># list should have as name the name of the corresponding outcome variable. In</span></span>
-<span class="r-in"><span class="co"># the right side formula we specify the functional form of the association using</span></span>
-<span class="r-in"><span class="co"># functions 'value()', 'slope()' and 'area()'.</span></span>
-<span class="r-in"><span class="co"># Notes: (1) For terms not specified in the 'functional_forms' list, the default</span></span>
-<span class="r-in"><span class="co"># value functional form is used.</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># [1] Fit the mixed-effects models using lme() for continuous outcomes</span></span>
-<span class="r-in"><span class="co"># and mixed_model() for categorical outcomes.</span></span>
-<span class="r-in"><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span>fixed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">hepatomegaly</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">year</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
-<span class="r-in">                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
-<span class="r-in">                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># [2] Save all the fitted mixed-effects models in a list.</span></span>
-<span class="r-in"><span class="va">Mixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># [3] Fit a Cox model, specifying the baseline covariates to be included in the</span></span>
-<span class="r-in"><span class="co"># joint model.</span></span>
-<span class="r-in"><span class="va">fCox1</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># [4] Specify the list of formulas to be passed to the functional_forms argument</span></span>
-<span class="r-in"><span class="co"># of jm().</span></span>
-<span class="r-in"><span class="va">fForms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"log(serBilir)"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu">value</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu">slope</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span><span class="op">)</span>,</span>
-<span class="r-in">               <span class="st">"hepatomegaly"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu">area</span><span class="op">(</span><span class="va">hepatomegaly</span><span class="op">)</span>,</span>
-<span class="r-in">               <span class="st">"ascites"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu">value</span><span class="op">(</span><span class="va">ascites</span><span class="op">)</span> <span class="op">+</span> <span class="fu">area</span><span class="op">(</span><span class="va">ascites</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># [5] The joint model is fitted using a call to jm() and passing the list</span></span>
-<span class="r-in"><span class="co"># to the functional_forms argument.</span></span>
-<span class="r-in"><span class="va">joint_model_fit_2</span> <span class="op">&lt;-</span> <span class="fu">jm</span><span class="op">(</span><span class="va">fCox1</span>, <span class="va">Mixed</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,</span>
-<span class="r-in">                        functional_forms <span class="op">=</span> <span class="va">fForms</span>, n_chains <span class="op">=</span> <span class="fl">1L</span>,</span>
-<span class="r-in">                        n_iter <span class="op">=</span> <span class="fl">11000L</span>, n_burnin <span class="op">=</span> <span class="fl">1000L</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">joint_model_fit_2</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">################################################################################</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">######################</span></span></span>
+<span class="r-in"><span><span class="co"># Slope &amp; Area Terms #</span></span></span>
+<span class="r-in"><span><span class="co">######################</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># We extend model 'joint_model_fit_2' by including the value and slope term for</span></span></span>
+<span class="r-in"><span><span class="co"># bilirubin, the area term for hepatomegaly (in the log-odds scale), and the</span></span></span>
+<span class="r-in"><span><span class="co"># value and area term for spiders (in the log-odds scale).</span></span></span>
+<span class="r-in"><span><span class="co"># To include these terms into the model, we specify the 'functional_forms'</span></span></span>
+<span class="r-in"><span><span class="co"># argument. This should be a list of right side formulas. Each component of the</span></span></span>
+<span class="r-in"><span><span class="co"># list should have as name the name of the corresponding outcome variable. In</span></span></span>
+<span class="r-in"><span><span class="co"># the right side formula we specify the functional form of the association using</span></span></span>
+<span class="r-in"><span><span class="co"># functions 'value()', 'slope()' and 'area()'.</span></span></span>
+<span class="r-in"><span><span class="co"># Notes: (1) For terms not specified in the 'functional_forms' list, the default</span></span></span>
+<span class="r-in"><span><span class="co"># value functional form is used.</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># [1] Fit the mixed-effects models using lme() for continuous outcomes</span></span></span>
+<span class="r-in"><span><span class="co"># and mixed_model() for categorical outcomes.</span></span></span>
+<span class="r-in"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span>fixed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">pbc2</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">hepatomegaly</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">year</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span></span>
+<span class="r-in"><span>                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span></span>
+<span class="r-in"><span>                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># [2] Save all the fitted mixed-effects models in a list.</span></span></span>
+<span class="r-in"><span><span class="va">Mixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># [3] Fit a Cox model, specifying the baseline covariates to be included in the</span></span></span>
+<span class="r-in"><span><span class="co"># joint model.</span></span></span>
+<span class="r-in"><span><span class="va">fCox1</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># [4] Specify the list of formulas to be passed to the functional_forms argument</span></span></span>
+<span class="r-in"><span><span class="co"># of jm().</span></span></span>
+<span class="r-in"><span><span class="va">fForms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"log(serBilir)"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu">value</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu">slope</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>               <span class="st">"hepatomegaly"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu">area</span><span class="op">(</span><span class="va">hepatomegaly</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>               <span class="st">"ascites"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu">value</span><span class="op">(</span><span class="va">ascites</span><span class="op">)</span> <span class="op">+</span> <span class="fu">area</span><span class="op">(</span><span class="va">ascites</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># [5] The joint model is fitted using a call to jm() and passing the list</span></span></span>
+<span class="r-in"><span><span class="co"># to the functional_forms argument.</span></span></span>
+<span class="r-in"><span><span class="va">joint_model_fit_2</span> <span class="op">&lt;-</span> <span class="fu">jm</span><span class="op">(</span><span class="va">fCox1</span>, <span class="va">Mixed</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,</span></span>
+<span class="r-in"><span>                        functional_forms <span class="op">=</span> <span class="va">fForms</span>, n_chains <span class="op">=</span> <span class="fl">1L</span>,</span></span>
+<span class="r-in"><span>                        n_iter <span class="op">=</span> <span class="fl">11000L</span>, n_burnin <span class="op">=</span> <span class="fl">1000L</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">joint_model_fit_2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> jm(Surv_object = fCox1, Mixed_objects = Mixed, time_var = "year", </span>
@@ -720,8 +753,8 @@ and <code>"backward"</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> burn-in per chain: 1000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> thinning: 1 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> time: 1.6 min</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># }</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -736,7 +769,7 @@ and <code>"backward"</code>.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>

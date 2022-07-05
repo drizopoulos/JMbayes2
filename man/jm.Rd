@@ -29,7 +29,7 @@ jm(Surv_object, Mixed_objects, time_var, recurrent = FALSE,
   functional_forms = NULL, data_Surv = NULL, id_var = NULL, priors = NULL,
   control = NULL, \dots)
 
-value(x)
+value(x, zero_ind = NULL)
 slope(x, eps = 0.001, direction = "both")
 area(x)
 
@@ -147,6 +147,7 @@ tv(x, knots = NULL, ord = 2L)
 \item{x}{a numeric input variable.}
 \item{knots}{a numeric vector of knots.}
 \item{ord}{an integer denoting the order of the spline.}
+\item{zero_ind}{a list with integer vectors indicating which coefficients are set to zero in the calculation of the value  term. This can be used to include for example only the random intercept; default is \code{NULL}.}
 \item{eps}{numeric scalar denoting the step-size for the finite difference approximation.}
 \item{direction}{character string for the direction of the numerical derivative, options are \code{"both"},
 and \code{"backward"}.}
