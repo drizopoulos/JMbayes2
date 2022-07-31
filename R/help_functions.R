@@ -236,6 +236,13 @@ knots <- function (xl, xr, ndx, deg) {
     }
 }
 
+knots <- function (xl, xr, ndx, deg) {
+    xl <- 0#xl - 0.001
+    xr <- xr + 0.001
+    kn <- seq(xl, xr, length.out = ndx)
+    c(rep(xl, deg), kn, rep(xr, deg))
+}
+
 extract_b <- function (object, id, n) {
     b <- data.matrix(ranef(object))
     mat <- matrix(0.0, n, ncol(b))

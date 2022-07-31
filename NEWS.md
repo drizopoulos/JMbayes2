@@ -1,3 +1,8 @@
+# JMbayes2 0.2.9
+
+## Major
+* The default placing of the knots for the B-spline approximation of the log baseline hazard has been changed. This will cause some difference compared to previous versions.
+
 # JMbayes2 0.2.0
 
 ## Major
