@@ -1,3 +1,14 @@
+model_data <- Data
+model_info <- model_info
+initial_values <- initial_values
+priors <- priors
+control <- con
+
+
+
+
+
+
 jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     # extract family names
     model_info$family_names <- sapply(model_info$families, "[[", "family")
@@ -29,19 +40,19 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     id_H_ <- match(id_H_, unique(id_H_))
     id_h <- unclass(idT)
     model_data <-
-        c(model_data, create_Wlong_mats(model_data, model_info,
+        c(model_data, JMbayes2:::create_Wlong_mats(model_data, model_info,
                                         initial_values, priors,
                                         control),
           list(id_H = id_H, id_H_ = id_H_, id_h = id_h))
     # cbind the elements of X_H and Z_H, etc.
-    model_data$X_H[] <- lapply(model_data$X_H, docall_cbind)
-    model_data$X_h[] <- lapply(model_data$X_h, docall_cbind)
-    model_data$X_H2[] <- lapply(model_data$X_H2, docall_cbind)
-    model_data$Z_H[] <- lapply(model_data$Z_H, docall_cbind)
-    model_data$Z_h[] <- lapply(model_data$Z_h, docall_cbind)
-    model_data$Z_H2[] <- lapply(model_data$Z_H2, docall_cbind)
+    model_data$X_H[] <- lapply(model_data$X_H, JMbayes2:::docall_cbind)
+    model_data$X_h[] <- lapply(model_data$X_h, JMbayes2:::docall_cbind)
+    model_data$X_H2[] <- lapply(model_data$X_H2, JMbayes2:::docall_cbind)
+    model_data$Z_H[] <- lapply(model_data$Z_H, JMbayes2:::docall_cbind)
+    model_data$Z_h[] <- lapply(model_data$Z_h, JMbayes2:::docall_cbind)
+    model_data$Z_H2[] <- lapply(model_data$Z_H2, JMbayes2:::docall_cbind)
     # center design matrix fixed effects
-    model_data$X[] <- mapply2(center_fun, model_data$X, model_data$Xbar)
+    model_data$X[] <- JMbayes2:::mapply2(JMbayes2:::center_fun, model_data$X, model_data$Xbar)
     model_data$Xbar <- lapply(model_data$Xbar, rbind)
     # center the design matrices for the baseline covariates and
     # the longitudinal process
@@ -49,29 +60,29 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     model_data$W_bar <- rbind(colMeans(model_data$W_H))
     model_data$W_sds <- rbind(colSds(model_data$W_H))
     model_data$W_std <- model_data$W_bar / model_data$W_sds
-    model_data$W_H <- center_fun(model_data$W_H, model_data$W_bar,
+    model_data$W_H <- JMbayes2:::center_fun(model_data$W_H, model_data$W_bar,
                                  model_data$W_sds)
-    model_data$W_h <- center_fun(model_data$W_h, model_data$W_bar,
+    model_data$W_h <- JMbayes2:::center_fun(model_data$W_h, model_data$W_bar,
                                  model_data$W_sds)
-    model_data$W_H2 <- center_fun(model_data$W_H2, model_data$W_bar,
+    model_data$W_H2 <- JMbayes2:::center_fun(model_data$W_H2, model_data$W_bar,
                                   model_data$W_sds)
-
+    
     model_data$Wlong_bar <- lapply(model_data$Wlong_H, colMeans)
     model_data$Wlong_sds <- lapply(model_data$Wlong_H, colSds)
-    model_data$Wlong_H <- mapply2(center_fun, model_data$Wlong_H,
-                                 model_data$Wlong_bar, model_data$Wlong_sds)
-    model_data$Wlong_h <- mapply2(center_fun, model_data$Wlong_h,
-                                 model_data$Wlong_bar, model_data$Wlong_sds)
-    model_data$Wlong_H2 <- mapply2(center_fun, model_data$Wlong_H2,
+    model_data$Wlong_H <- JMbayes2:::mapply2(JMbayes2:::center_fun, model_data$Wlong_H,
                                   model_data$Wlong_bar, model_data$Wlong_sds)
-    model_data$Wlong_std <- mapply2("/", model_data$Wlong_bar, model_data$Wlong_sds)
+    model_data$Wlong_h <- JMbayes2:::mapply2(JMbayes2:::center_fun, model_data$Wlong_h,
+                                  model_data$Wlong_bar, model_data$Wlong_sds)
+    model_data$Wlong_H2 <- JMbayes2:::mapply2(JMbayes2:::center_fun, model_data$Wlong_H2,
+                                   model_data$Wlong_bar, model_data$Wlong_sds)
+    model_data$Wlong_std <- JMbayes2:::mapply2("/", model_data$Wlong_bar, model_data$Wlong_sds)
     model_data$Wlong_bar <- lapply(model_data$Wlong_bar, rbind)
     model_data$Wlong_sds <- lapply(model_data$Wlong_sds, rbind)
     model_data$Wlong_std <- lapply(model_data$Wlong_std, rbind)
     # unlist priors and initial values for alphas
     initial_values$alphas <- unlist(initial_values$alphas, use.names = FALSE)
     priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
-    priors$Tau_alphas <- .bdiag(priors$Tau_alphas)
+    priors$Tau_alphas <- JMbayes2:::.bdiag(priors$Tau_alphas)
     # random seed
     if (!exists(".Random.seed", envir = .GlobalEnv))
         runif(1)
@@ -83,9 +94,9 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     chains <- seq_len(n_chains)
     mcmc_parallel <- function (chain, model_data, model_info, initial_values,
                                priors, control) {
-      not_D <- !names(initial_values) %in% c("D")
-      initial_values[not_D] <- lapply(initial_values[not_D], jitter2)
-      mcmc_cpp(model_data, model_info, initial_values, priors, control)
+        not_D <- !names(initial_values) %in% c("D")
+        initial_values[not_D] <- lapply(initial_values[not_D], JMbayes2:::jitter2)
+        JMbayes2:::mcmc_cpp(model_data, model_info, initial_values, priors, control)
     }
     if (cores > 1L) {
         cores <- min(cores, length(chains))
@@ -99,8 +110,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     } else {
         set.seed(control$seed)
         out <- lapply(chains, mcmc_parallel, model_data = model_data,
-                    model_info = model_info, initial_values = initial_values,
-                    priors = priors, control = control)
+                      model_info = model_info, initial_values = initial_values,
+                      priors = priors, control = control)
     }
     tok <- proc.time()
     # split betas per outcome
@@ -115,7 +126,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     }
     # reconstruct D matrix
     get_D <- function (x) {
-        mapply2(reconstr_D, split(x$L, row(x$L)), split(x$sds, row(x$sds)))
+        JMbayes2:::mapply2(JMbayes2:::reconstr_D, split(x$L, row(x$L)), split(x$sds, row(x$sds)))
     }
     for (i in seq_along(out)) {
         out[[i]][["mcmc"]][["D"]] <-
@@ -155,13 +166,13 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     }
     keep_its <- seq(1L, control$n_iter - control$n_burnin, by = control$n_thin)
     convert2_mcmclist <- function (name) {
-        as.mcmc.list(lapply(out, function (x) {
+        coda:::as.mcmc.list(lapply(out, function (x) {
             kk <- x$mcmc[[name]]
             if (length(d <- dim(kk)) > 2) {
                 m <- matrix(0.0, d[3L], d[1L] * d[2L])
                 for (j in seq_len(d[3L])) m[j, ] <- c(kk[, , j])
-                as.mcmc(m[keep_its, , drop = FALSE])
-            } else as.mcmc(kk[keep_its, , drop = FALSE])
+                coda:::as.mcmc(m[keep_its, , drop = FALSE])
+            } else coda:::as.mcmc(kk[keep_its, , drop = FALSE])
         }))
     }
     get_acc_rates <- function (name_parm) {
@@ -177,10 +188,10 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
         parms <- parms[parms != "gammas"]
     if (all(!has_sigmas))
         parms <- parms[parms != "sigmas"]
-    mcmc_out <- lapply_nams(parms, convert2_mcmclist)
+    mcmc_out <- JMbayes2:::lapply_nams(parms, convert2_mcmclist)
     mcmc_out <- list(
         "mcmc" = mcmc_out,
-        "acc_rates" = lapply_nams(parms2, get_acc_rates),
+        "acc_rates" = JMbayes2:::lapply_nams(parms2, get_acc_rates),
         "logLik" = do.call("rbind", lapply(out, "[[", "logLik")),
         "running_time" = tok - tik
     )
@@ -202,18 +213,19 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     # Calculate Statistics
     S <- lapply(mcmc_out$mcmc, summary)
     statistics <- list(
-        Mean = lapply(S, get_statistic, "Mean"),
-        Median = lapply(S, get_statistic, "Median"),
-        SD = lapply(S, get_statistic, "SD"),
-        SE = lapply(S, get_statistic, "Time-series SE"),
-        CI_low = lapply(S, get_statistic, "2.5CI"),
-        CI_upp = lapply(S, get_statistic, "97.5CI"),
-        P = lapply(mcmc_out$mcmc, function (x) apply(do.call("rbind", x), 2L, Ptail)),
+        Mean = lapply(S, JMbayes2:::get_statistic, "Mean"),
+        Median = lapply(S, JMbayes2:::get_statistic, "Median"),
+        SD = lapply(S, JMbayes2:::get_statistic, "SD"),
+        SE = lapply(S, JMbayes2:::get_statistic, "Time-series SE"),
+        CI_low = lapply(S, JMbayes2:::get_statistic, "2.5CI"),
+        CI_upp = lapply(S, JMbayes2:::get_statistic, "97.5CI"),
+        P = lapply(mcmc_out$mcmc, function (x) apply(do.call("rbind", x), 2L, JMbayes2:::Ptail)),
         Effective_Size = lapply(mcmc_out$mcmc, function (x)
-            apply(do.call("rbind", x), 2L, effective_size))
+            apply(do.call("rbind", x), 2L, JMbayes2:::effective_size))
     )
     if (!is.null(mcmc_out$mcmc[["b"]])) {
         znams <- unlist(lapply(model_data$Z, colnames), use.names = FALSE)
+        #l <- sapply(model_data$unq_idL, length)
         dnames_b <- list(unlist(seq_len(model_data$n)), znams)
         fix_b <- function (stats) {
             x <- stats$b
@@ -228,12 +240,12 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
         jstart <- 1
         jstop <- length(keep_its)
         for (i in seq_len(control$n_chains)) {
-          mcmc_out$mcmc[["b"]][[i]] <- array(0.0, dim = c(length(dnames_b[[1]]), nRE, length(keep_its)))
-          for (j in jstart:jstop) {
-            mcmc_out$mcmc[["b"]][[i]][, , j - ((i - 1) * length(keep_its))] <- b[j, ]
-          }
-          jstart <- jstart + length(keep_its)
-          jstop <- jstop + length(keep_its)
+            mcmc_out$mcmc[["b"]][[i]] <- array(0.0, dim = c(length(dnames_b[[1]]), nRE, length(keep_its)))
+            for (j in jstart:jstop) {
+                mcmc_out$mcmc[["b"]][[i]][, , j - ((i - 1) * length(keep_its))] <- b[j, ]
+            }
+            jstart <- jstart + length(keep_its)
+            jstop <- jstop + length(keep_its)
         }
         nn <- nrow(statistics$Mean[["b"]])
         post_vars <- array(0.0, c(nRE, nRE, nn))
@@ -292,7 +304,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     res_thetas$alphaF  <- do.call("rbind", mcmc_out$mcmc$alphaF)
     res_thetas$sigmaF  <- do.call("rbind", mcmc_out$mcmc$sigmaF)
     mcmc_out$mlogLik <- mlogLik_jm(res_thetas, statistics$Mean[["b"]],
-                          statistics$post_vars, model_data, model_info, control)
+                                   statistics$post_vars, model_data, model_info, control)
     ind <- names(thetas) %in% c("sigmas", "bs_gammas", "gammas", "alphas",
                                 "tau_bs_gammas", "alphaF", "frailty", "sigmaF")
     thetas[ind] <- lapply(thetas[ind], rbind)
