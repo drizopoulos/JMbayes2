@@ -321,9 +321,9 @@ vec propose_rnorm_vec (const vec &thetas, const vec &scale) {
   return proposed_thetas;
 }
 
-vec propose_mvnorm_vec (const mat &U, const double &scale) {
-  uword ncols = U.n_cols;
-  vec res = scale * trans(rnorm_mat(1, ncols) * U);
+vec propose_mvnorm_vec (const mat &Sigma) {
+  mat U = chol(Sigma, "lower");
+  vec res = U * randn(U.n_cols);
   return res;
 }
 
@@ -402,7 +402,7 @@ vec log_dnbinom (const vec &x, const vec &mu, const double &size) {
   return out;
 }
 
-vec log_dnorm (const vec &x, const vec &mu, const double &sigma) {
+ vec log_dnorm (const vec &x, const vec &mu, const double &sigma) {
   vec sigmas(x.n_rows);
   sigmas.fill(sigma);
   vec out = log_normpdf(x, mu, sigmas);

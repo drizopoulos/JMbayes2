@@ -539,7 +539,9 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         FunForms_ind = FunForms_ind(FunForms_per_outcome),
         Funs_FunForms = lapply(Funs_FunForms, function (x) if (!is.list(x)) list(x) else x),
         eps = eps, direction = direction, zero_ind_X = zero_ind_X,
-        zero_ind_Z = zero_ind_Z, recurrent = !isFALSE(recurrent)
+        zero_ind_Z = zero_ind_Z, recurrent = !isFALSE(recurrent),
+        ind_RE_patt = ind_RE_patt, ind_FE_patt = ind_FE_patt,
+        id_patt = id_patt
     )
     ############################################################################
     ############################################################################

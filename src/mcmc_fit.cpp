@@ -437,17 +437,17 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                      any_interval,
                      n_burnin, it,
                      sigmaF, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
-      
+
       update_sigmaF(sigmaF, logLik_surv,
                     res_sigmaF, scale_sigmaF, acceptance_sigmaF,
-                    gamma_prior_sigmaF, sigmaF_df, sigmaF_sigmas, sigmaF_shape, 
+                    gamma_prior_sigmaF, sigmaF_df, sigmaF_sigmas, sigmaF_shape,
                     sigmaF_mean, it, W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-                    WH_gammas, Wh_gammas, WH2_gammas, WlongH_alphas, Wlongh_alphas, 
+                    WH_gammas, Wh_gammas, WH2_gammas, WlongH_alphas, Wlongh_alphas,
                     WlongH2_alphas, log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
-                    which_event, which_right_event, which_left, any_interval, 
-                    which_interval, recurrent, frailty_H, frailty_h, alphaF_H, 
+                    which_event, which_right_event, which_left, any_interval,
+                    which_interval, recurrent, frailty_H, frailty_h, alphaF_H,
                     alphaF_h, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
-      
+
       denominator_surv =
         sum(logLik_surv) +
         logPrior_surv(bs_gammas, gammas, alphas, mean_bs_gammas,
@@ -458,8 +458,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                       tau_alphas, shrink_alphas,
                       recurrent, alphaF, mean_alphaF, Tau_alphaF, lambda_alphaF,
                       tau_alphaF, shrink_alphaF);
-      
-      if(any_terminal) {
+
+      if (any_terminal) {
         update_alphaF(bs_gammas, gammas, alphas,
                       W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                       WH_gammas, Wh_gammas, WH2_gammas,
@@ -482,11 +482,11 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                       mean_alphaF, Tau_alphaF,
                       lambda_alphaF, tau_alphaF,
                       shrink_alphaF,
-                      sigmaF, 
+                      sigmaF,
                       frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
       }
     }
-    
+
     if (it > 99) {
 
     update_D(L, sds, b_mat, upper_part,
