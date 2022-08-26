@@ -85,9 +85,9 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     vec u_i = b_i.rows(ind_RE_i) + X_dot_i * betas_vec.rows(ind_FE_i);
     mat D_inv_i = D_inv.at(patt_i);
     mat XD_i = X_dot_i.t() * D_inv_i;
-    vec XDu = XD_i * u_i;
+    vec XDu_i = XD_i * u_i;
     mat XDX_i = XD_i * X_dot_i;
-    sum_JXDu += add_zero_rows(XDu, p_HC, ind_FE_i);
+    sum_JXDu += add_zero_rows(XDu_i, p_HC, ind_FE_i);
     sum_JXDXJ += add_zero_colrows(XDX_i, p_HC, p_HC, ind_FE_i, ind_FE_i);
   }
   mat Sigma_1 = inv(prior_Tau_betas_HC + sum_JXDXJ); // improve via Cholesky decomposition
