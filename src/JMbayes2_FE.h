@@ -91,7 +91,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     sum_JXDXJ += add_zero_colrows(XDX_i, p_HC, p_HC, ind_FE_i, ind_FE_i);
   }
   mat Sigma_1 = inv(prior_Tau_betas_HC + sum_JXDXJ); // improve via Cholesky decomposition
-  vec mean_1 = Sigma_1 * (prior_Tau_betas_HC * Tau_mean_betas_HC + sum_JXDu);
+  vec mean_1 = Sigma_1 * (Tau_mean_betas_HC + sum_JXDu);
   betas_vec.rows(ind_FE_HC) = propose_mvnorm_vec(Sigma_1) + mean_1;
   betas = vec2field(betas_vec, ind_FE);
   // update eta
