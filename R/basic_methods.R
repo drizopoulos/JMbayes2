@@ -862,6 +862,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         upp <- upp[!na_preds]
         times <- times[!na_preds]
         ry <- range(preds, low, upp, na.rm = TRUE)
+        ry <- range(ry[1L] * 0.8, ry[2L] * 1.2) # <---
         rx <- range(times, na.rm = TRUE)
         y_lim <- if (ylim_long_outcome_range) {
             range(f(ranges[[outcome]]), ry, na.rm = TRUE)
