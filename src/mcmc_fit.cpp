@@ -506,8 +506,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2,
              id_H_fast, id_h_fast, which_event, which_right_event, which_left,
              which_interval, any_event, any_interval, ni_event,
-             L, sds, it, acceptance_b, res_b, res_b_last, save_random_effects,
-             n_burnin, n_iter, GK_k, cumsum_b, outprod_b,
+             L, sds, it, acceptance_b, n_burnin, GK_k,
              recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
 
     ////////////////////////////////////////////////////////////////////
@@ -516,7 +515,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  logLik_long, logLik_surv, Wlong_H, Wlong_h, Wlong_H2,
                  WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
                  Tau_mean_betas_HC, Tau_betas_HC, b_mat, L, sds, X_dot,
-                 ind_FE, ind_FE_HC, id_patt, ind_RE_patt, ind_FE_patt,
+                 ind_FE, ind_RE, ind_FE_HC, id_patt, ind_RE_patt, ind_FE_patt,
                  it, has_tilde_betas, X, Z, b, idL, y, sigmas,
                  extra_parms, families, links, idL_lp_fast, mean_betas_nHC,
                  Tau_betas_nHC, x_notin_z,
@@ -526,8 +525,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                  WH_gammas, Wh_gammas, WH2_gammas,
                  log_Pwk, log_Pwk2, id_H_fast, id_h_fast, which_event,
-                 which_right_event, which_left, which_interval, unq_idL, n_burnin,
-                 recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
+                 which_right_event, which_left, which_interval, unq_idL, 
+                 n_burnin, recurrent, frailtyH_sigmaF_alphaF, 
+                 frailtyh_sigmaF_alphaF, save_random_effects, res_b, res_b_last, 
+                 cumsum_b, outprod_b, n_iter);
 
         // update intercepts
         for (uword j = 0; j < y.n_elem; ++j) {
