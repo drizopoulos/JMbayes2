@@ -1,3 +1,11 @@
+# JMbayes2 0.3.0
+
+## Major
+* An issue resulting in wider than expected credible intervals for the fixed-effects coefficients of the longitudinal submodels has been resolved.
+
+## Minor
+* Several improvements in various internal functions.
+
 # JMbayes2 0.2.9
 
 ## Major
