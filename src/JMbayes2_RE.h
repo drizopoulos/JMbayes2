@@ -36,10 +36,10 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const uvec &which_interval, const bool &any_event,
                const bool &any_interval, const umat &ni_event,
                const mat &L, const vec &sds,
-               const uword &it, mat &acceptance_b, cube &res_b, cube &res_b_last,
-               const bool &save_random_effects,
-               const uword &n_burnin, const uword &n_iter,
-               const uword &GK_k, mat &cumsum_b, cube &outprod_b,
+               const uword &it, mat &acceptance_b, //cube &res_b, cube &res_b_last, //!! new
+               //const bool &save_random_effects, //!! new
+               const uword &n_burnin, //const uword &n_iter, //!! new
+               const uword &GK_k, //mat &cumsum_b, cube &outprod_b, //!! new
                const bool &recurrent,
                const vec &frailtyH_sigmaF_alphaF, const vec &frailtyh_sigmaF_alphaF) {
   uword n = b_mat.n_rows;
@@ -130,19 +130,19 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
       }
     }
   }
-  if (save_random_effects) {
-    res_b.slice(it) = b_mat;
-  } else {
-    if (it > n_burnin - 1) {
-      cumsum_b += b_mat;
-      for (uword j = 0; j < n; j++) {
-        outprod_b.slice(j) += b_mat.row(j).t() * b_mat.row(j);
-      }
-    }
-  }
-  if (it == n_iter - 1) {
-    res_b_last.slice(0) = b_mat;
-  }
+  // if (save_random_effects) { //!! new
+  //   res_b.slice(it) = b_mat;
+  // } else {
+  //   if (it > n_burnin - 1) {
+  //     cumsum_b += b_mat;
+  //     for (uword j = 0; j < n; j++) {
+  //       outprod_b.slice(j) += b_mat.row(j).t() * b_mat.row(j);
+  //     }
+  //   }
+  // }
+  // if (it == n_iter - 1) {
+  //   res_b_last.slice(0) = b_mat;
+  // }
   b = mat2field(b_mat, ind_RE);
   eta = linpred_mixed(X, betas, Z, b, idL);
 }

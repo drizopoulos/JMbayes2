@@ -15,8 +15,10 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    vec &logLik_surv, mat &Wlong_H, mat &Wlong_h, mat &Wlong_H2,
                    vec &WlongH_alphas, vec &Wlongh_alphas, vec &WlongH2_alphas,
                    const vec &Tau_mean_betas_HC, const mat &prior_Tau_betas_HC,
-                   const mat &b_mat, const mat &L, const vec &sds, const mat &X_dot,
+                   mat &b_mat, //!! new
+                   const mat &L, const vec &sds, const mat &X_dot,
                    const field<uvec> &ind_FE, // indices for the FE in res_betas[it,] belonging to the field betas. E.g., {{1,2,3}, {4, 5}, {6}}
+                   const field<uvec> &ind_RE, //!! new
                    const uvec &ind_FE_HC, // indices for the FE present in the HC (cols in res_betas)
                    const uvec &id_patt, // vector with the ids' outcome missing pattern
                    const field<uvec> &ind_RE_patt, // indices for the RE present in each outcome missing pattern (cols in D)
@@ -25,7 +27,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    const uvec &has_tilde_betas,
                    const field<mat> &X,
                    const field<mat> &Z,
-                   const field<mat> &b,
+                   field<mat> &b, //!! new
                    const field<uvec> &idL,
                    const field<mat> &y,
                    const vec &sigmas,
@@ -53,10 +55,14 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    const uvec &which_interval, const field<uvec> &unq_idL,
                    const uword &n_burnin,
                    const bool &recurrent,
-                   const vec &frailtyH_sigmaF_alphaF, const vec &frailtyh_sigmaF_alphaF) {
+                   const vec &frailtyH_sigmaF_alphaF, const vec &frailtyh_sigmaF_alphaF,
+                   const bool &save_random_effects, cube &res_b, cube &res_b_last, //!! new
+                   mat &cumsum_b, cube &outprod_b, const uword &n_iter) { //!! new
   uword n_b = b_mat.n_rows;
+  mat u_mat = b_mat; //!! new
   // FE in HC - Gibbs sampling
   vec betas_vec = docall_rbindF(betas);
+  vec mean_u = X_dot * betas_vec.rows(ind_FE_HC); //!! new
   uword patt_count = ind_RE_patt.n_elem; // number of unique outcome-missing patterns
   uword p_HC = ind_FE_HC.n_elem; // number of HC-FE
   uword q = b_mat.n_cols; // number of RE
@@ -81,8 +87,9 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     uvec ind_RE_i = ind_RE_patt.at(patt_i);
     mat X_dot_i = X_dot.rows(i * q, (i + 1) * q - 1);
     X_dot_i = X_dot_i.submat(ind_RE_i, ind_FE_i);
-    vec b_i = b_mat.row(i).t();
-    vec u_i = b_i.rows(ind_RE_i) + X_dot_i * betas_vec.rows(ind_FE_i);
+    u_mat.row(i) = b_mat.row(i) + mean_u.rows(i * q, (i + 1) * q - 1).t(); //!! new
+    vec u_i = u_mat.row(i).t(); //!! new
+    u_i = u_i.rows(ind_RE_i); //!! new
     mat D_inv_i = D_inv.at(patt_i);
     mat XD_i = X_dot_i.t() * D_inv_i;
     vec XDu_i = XD_i * u_i;
@@ -94,6 +101,25 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
   vec mean_1 = Sigma_1 * (Tau_mean_betas_HC + sum_JXDu);
   betas_vec.rows(ind_FE_HC) = propose_mvnorm_vec(Sigma_1) + mean_1;
   betas = vec2field(betas_vec, ind_FE);
+  // update b //!! new
+  mean_u = X_dot * betas_vec.rows(ind_FE_HC); //!! new
+  for (uword i = 0; i < n_b; ++i) { //!! new
+    b_mat.row(i) = u_mat.row(i) - mean_u.rows(i * q, (i + 1) * q - 1).t();
+  }
+  if (save_random_effects) { //!! new
+    res_b.slice(it) = b_mat;
+  } else {
+    if (it > n_burnin - 1) {
+      cumsum_b += b_mat;
+      for (uword j = 0; j < n_b; j++) {
+        outprod_b.slice(j) += b_mat.row(j).t() * b_mat.row(j);
+      }
+    }
+  }
+  if (it == n_iter - 1) {  //!! new
+    res_b_last.slice(0) = b_mat;
+  }
+  b = mat2field(b_mat, ind_RE); //!! new
   // update eta
   eta = linpred_mixed(X, betas, Z, b, idL);
   // update logLik_surv
