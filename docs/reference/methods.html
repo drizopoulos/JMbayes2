@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3-0</span>
       </span>
     </div>
 
@@ -258,27 +258,27 @@ than the total number of submodels, extracts from all of them.</p></dd>
 <span class="r-in"><span><span class="fu">coef</span><span class="op">(</span><span class="va">fit_jm</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $gammas</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       Mean </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.05849508 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.05963837 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $association</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> value(log(serBilir))   value(prothrombin) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            1.3040116            0.1083342 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1.3358163            0.1055507 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># fixef(): fixed effects for the first linear mixed submodel</span></span></span>
 <span class="r-in"><span><span class="fu">fixef</span><span class="op">(</span><span class="va">fit_jm</span>, outcome <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (Intercept)            age   year:sexmale year:sexfemale </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    0.654625831   -0.004162924    0.233110553    0.161947335 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    0.664603197   -0.004435772    0.235307550    0.162691716 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ranef(): random effects from all linear mixed submodels</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">ranef</span><span class="op">(</span><span class="va">fit_jm</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]         [,2]        [,3]        [,4]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]  2.20374733  0.194553352  1.02903087 0.128070541</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2,] -0.36244167  0.001891246 -0.01011099 0.082089649</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [3,] -0.18499333  0.078078060  0.48999799 0.228027640</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [4,]  0.04190923  0.104815243  0.90127405 0.560329764</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [5,]  0.33745915  0.219323364 -0.01833539 0.429276335</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [6,] -0.64488457 -0.153027345 -0.13239621 0.001202136</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]         [,2]        [,3]         [,4]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]  2.23786759  0.209896696  1.06252490  0.136829412</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2,] -0.36596460  0.004009052 -0.01943310  0.087760882</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [3,] -0.19452035  0.068338780  0.50884563  0.212370354</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [4,]  0.03139259  0.103384437  0.85975968  0.576824982</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [5,]  0.32699799  0.225985978 -0.03791812  0.442423625</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [6,] -0.62864033 -0.162161859 -0.10783692 -0.006246064</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># terms(): random effects terms for the first linear mixed submodel</span></span></span>
 <span class="r-in"><span><span class="fu">terms</span><span class="op">(</span><span class="va">fit_jm</span>, process <span class="op">=</span> <span class="st">"longitudinal"</span>, type <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>
@@ -351,8 +351,8 @@ than the total number of submodels, extracts from all of them.</p></dd>
 <span class="r-in"><span><span class="fu">compare_jm</span><span class="op">(</span><span class="va">fit_jm</span>, <span class="va">fit_jm2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               DIC     WAIC      LPML</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  fit_jm2 10580.41 10611.21 -5367.643</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   fit_jm 11080.76 14786.18 -7886.629</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  fit_jm2 10506.80 10533.87 -5298.184</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   fit_jm 10660.03 11125.27 -6227.960</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> The criteria are calculated based on the marginal log-likelihood.</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
@@ -370,7 +370,7 @@ than the total number of submodels, extracts from all of them.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

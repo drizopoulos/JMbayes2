@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3-0</span>
       </span>
     </div>
 
@@ -126,7 +126,7 @@
                         <h4 data-toc-skip class="author">Pedro Miranda
 Afonso</h4>
             
-            <h4 data-toc-skip class="date">2022-07-05</h4>
+            <h4 data-toc-skip class="date">2022-09-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Recurring_Events.Rmd" class="external-link"><code>vignettes/Recurring_Events.Rmd</code></a></small>
       <div class="hidden name"><code>Recurring_Events.Rmd</code></div>
@@ -466,45 +466,45 @@ argument specifies the desired timescale,</p>
 <span><span class="co">#&gt; Number of Observations:</span></span>
 <span><span class="co">#&gt;   y: 3075</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                  DIC     WAIC       LPML</span></span>
-<span><span class="co">#&gt; marginal    13152.00 13294.89  -7324.842</span></span>
-<span><span class="co">#&gt; conditional 19514.46 18964.49 -10269.300</span></span>
+<span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
+<span><span class="co">#&gt; marginal    12841.88 12788.28 -6626.058</span></span>
+<span><span class="co">#&gt; conditional 18695.33 18119.94 -9715.805</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                                                            </span></span>
 <span><span class="co">#&gt;                        StdDev   Corr                       </span></span>
-<span><span class="co">#&gt; (Intr)                 0.7889 (Intr) n(,k=c(1,3),B=c(0,7))1</span></span>
-<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))1 1.6145 0.3107                       </span></span>
-<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))2 2.3670 0.0554 0.6360                </span></span>
-<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))3 2.6158 0.5415 0.7548                </span></span>
+<span><span class="co">#&gt; (Intr)                 0.7713 (Intr) n(,k=c(1,3),B=c(0,7))1</span></span>
+<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))1 1.5895 0.3576                       </span></span>
+<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))2 2.2330 0.0737 0.6675                </span></span>
+<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))3 2.3813 0.5948 0.8463                </span></span>
 <span><span class="co">#&gt;                                              </span></span>
 <span><span class="co">#&gt;                                              </span></span>
 <span><span class="co">#&gt; (Intr)                 n(,k=c(1,3),B=c(0,7))2</span></span>
 <span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))1                       </span></span>
 <span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))2                       </span></span>
-<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))3 0.6141                </span></span>
+<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))3 0.5582                </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Frailty standard deviation:</span></span>
 <span><span class="co">#&gt;                Mean   2.5%  97.5%</span></span>
-<span><span class="co">#&gt; sigma_frailty 0.228 0.0868 0.3309</span></span>
+<span><span class="co">#&gt; sigma_frailty 0.219 0.0406 0.3282</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival Outcome:</span></span>
 <span><span class="co">#&gt;                            Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; group:strata(strata)Rec  0.4831 0.0920  0.3042 0.6626 0.0000 1.0016</span></span>
-<span><span class="co">#&gt; group:strata(strata)Ter  0.4359 0.1085  0.2252 0.6512 0.0004 1.0157</span></span>
-<span><span class="co">#&gt; age:strata(strata)Rec    0.0508 0.0031  0.0450 0.0567 0.0000 1.0646</span></span>
-<span><span class="co">#&gt; age:strata(strata)Ter    0.0472 0.0041  0.0383 0.0552 0.0000 1.0764</span></span>
-<span><span class="co">#&gt; value(y):strataRec       0.5160 0.0254  0.4665 0.5664 0.0000 1.0339</span></span>
-<span><span class="co">#&gt; value(y):strataTer       0.4771 0.0321  0.4112 0.5305 0.0000 1.0701</span></span>
-<span><span class="co">#&gt; frailty                 -0.3408 0.4905 -1.4095 0.5991 0.4444 1.0242</span></span>
+<span><span class="co">#&gt; group:strata(strata)Rec  0.4761 0.0816  0.3205 0.6382 0.0000 1.0045</span></span>
+<span><span class="co">#&gt; group:strata(strata)Ter  0.4463 0.1041  0.2468 0.6450 0.0000 1.0201</span></span>
+<span><span class="co">#&gt; age:strata(strata)Rec    0.0503 0.0027  0.0454 0.0560 0.0000 1.2019</span></span>
+<span><span class="co">#&gt; age:strata(strata)Ter    0.0470 0.0042  0.0390 0.0548 0.0000 1.2816</span></span>
+<span><span class="co">#&gt; value(y):strataRec       0.5207 0.0266  0.4709 0.5727 0.0000 1.2722</span></span>
+<span><span class="co">#&gt; value(y):strataTer       0.5066 0.0399  0.4367 0.5872 0.0000 2.2970</span></span>
+<span><span class="co">#&gt; frailty                 -0.3687 0.5783 -1.5005 0.8372 0.4609 1.1094</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: y (family = gaussian, link = identity)</span></span>
-<span><span class="co">#&gt;                          Mean  StDev   2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)            6.9837 0.1116 6.7636 7.2112 0.0000 1.0008</span></span>
-<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))1 1.2204 0.2067 0.8288 1.6377 0.0000 1.0981</span></span>
-<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))2 1.6149 0.4896 0.6849 2.5836 0.0000 1.0255</span></span>
-<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))3 1.5904 0.6612 0.3921 2.9376 0.0031 1.0435</span></span>
-<span><span class="co">#&gt; sigma                  0.6146 0.0112 0.5930 0.6375 0.0000 1.0204</span></span>
+<span><span class="co">#&gt;                          Mean  StDev   2.5%  97.5% P   Rhat</span></span>
+<span><span class="co">#&gt; (Intercept)            6.9881 0.0439 6.9021 7.0737 0 1.0315</span></span>
+<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))1 1.2485 0.1244 1.0091 1.4983 0 1.0208</span></span>
+<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))2 1.4789 0.1977 1.0877 1.8599 0 1.0826</span></span>
+<span><span class="co">#&gt; n(,k=c(1,3),B=c(0,7))3 1.3608 0.2783 0.8014 1.8742 0 1.1035</span></span>
+<span><span class="co">#&gt; sigma                  0.6076 0.0100 0.5885 0.6271 0 1.0243</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
@@ -553,7 +553,7 @@ would be <u>the entry time in the study</u>.<a href="#fnref1" class="footnote-ba
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>

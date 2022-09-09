@@ -132,16 +132,23 @@ tv(x, knots = NULL, ord = 2L)
     \describe{
         \item{\code{GK_k}}{the number of quadrature points for the Gauss Kronrod rule; options 15 and 7.}
         \item{\code{Bsplines_degree}}{the degree of the splines in each basis; default quadratic splines.}
-        \item{\code{base_hazard_segments}}{the number of segments to split the follow-up period. Defaults to 10.}
-        \item{\code{diff}}{the order of the difference used in the penalty matrix for the B-splines for h_0. Defaults to 2.}
+        \item{\code{base_hazard_segments}}{the number of segments to split the follow-up period.
+        Defaults to 10.}
+        \item{\code{diff}}{the order of the difference used in the penalty matrix for the B-splines for
+        h_0. Defaults to 2.}
         \item{\code{n_chains}}{an integer specifying the number of chains for the MCMC. Defaults to 3.}
         \item{\code{n_burnin}}{an integer specifying the number of burn-in iterations. Defaults to 500.}
         \item{\code{n_iter}}{an integer specifying the number of total iterations per chain. Defaults to 3500.}
         \item{\code{n_thin}}{an integer specifying the thinning of the chains. Defaults to 1.}
         \item{\code{seed}}{the seed used in the sampling procedures. Defaults to 123.}
-        \item{\code{MALA}}{a \code{logical}; if TRUE, the MALA algorithm is used when updating the elements of the Cholesky factor of the D matrix. Defaults to \code{FALSE}.}
-        \item{\code{save_random_effects}}{a \code{logical}; if TRUE, the full MCMC results of the random effects will be saved and returned with the \code{jm} object. Defaults to \code{FALSE}.}
-        \item{\code{cores}}{an integer specifying the number of cores to use. Defaults to the available cores minus one.}
+        \item{\code{MALA}}{a \code{logical}; if TRUE, the MALA algorithm is used when updating the elements
+        of the Cholesky factor of the D matrix. Defaults to \code{FALSE}.}
+        \item{\code{save_random_effects}}{a \code{logical}; if TRUE, the full MCMC results of the random
+        effects will be saved and returned with the \code{jm} object. Defaults to \code{FALSE}.}
+        \item{\code{cores}}{an integer specifying the number of cores to use for running the chains in
+        parallel; no point of setting this greater than \code{n_chains}.}
+        \item{\code{knots}}{a numeric vector with the position of the knots for the B-spline approximation
+        of the log baseline hazard function.}
     }
   }
 \item{x}{a numeric input variable.}

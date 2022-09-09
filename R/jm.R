@@ -12,11 +12,14 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     # - n_burnin: the number of burn-in iterations
     # - n_iter: the number of total iterations per chain
     # - seed: the seed used in the sampling procedures
-    # - cores: the number of cores to use for running the chains in parallel
+    # - cores: the number of cores to use for running the chains in parallel;
+    #          no point of setting this greater than n_chains
     # - knots: the knots for the log baseline hazard B-spline approximation
-    # - MALA: if TRUE, the MALA algorithm is used when update the elements of
+    # - MALA: if TRUE, the MALA algorithm is used to update the elements of
     #         of the Cholesky factor of the D matrix
-    con <- list(GK_k = 15L, Bsplines_degree = 2L, base_hazard_segments = 10,
+    # - save_random_effects: if TRUE, the random effects are stored in the fitted object
+    # - knots: numeric vector with the knots for the baseline hazard function
+    con <- list(GK_k = 15L, Bsplines_degree = 2L, base_hazard_segments = 10L,
                 diff = 2L, n_chains = 3L, n_burnin = 500L, n_iter = 3500L,
                 n_thin = 1L, seed = 123L, MALA = FALSE,
                 save_random_effects = FALSE, knots = NULL,

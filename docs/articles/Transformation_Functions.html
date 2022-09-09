@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2-8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3-0</span>
       </span>
     </div>
 
@@ -127,7 +127,7 @@ Forms</h1>
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2022-07-05</h4>
+            <h4 data-toc-skip class="date">2022-09-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Transformation_Functions.Rmd" class="external-link"><code>vignettes/Transformation_Functions.Rmd</code></a></small>
       <div class="hidden name"><code>Transformation_Functions.Rmd</code></div>
@@ -180,24 +180,24 @@ covariate in the survival relative risk model:</p>
 <span><span class="co">#&gt;   hepatomegaly: 1884</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    3120.778 3102.739 -1566.649</span></span>
-<span><span class="co">#&gt; conditional 5207.119 5121.171 -2938.331</span></span>
+<span><span class="co">#&gt; marginal    3076.205 3065.354 -1532.943</span></span>
+<span><span class="co">#&gt; conditional 4991.480 4852.734 -2659.933</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                      </span></span>
 <span><span class="co">#&gt;        StdDev   Corr </span></span>
-<span><span class="co">#&gt; (Intr) 3.6028 (Intr) </span></span>
-<span><span class="co">#&gt; year   0.6085 -0.2018</span></span>
+<span><span class="co">#&gt; (Intr) 3.2958 (Intr) </span></span>
+<span><span class="co">#&gt; year   0.5347 -0.1476</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival Outcome:</span></span>
 <span><span class="co">#&gt;                        Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale           -0.4489 0.3100 -1.0290 0.1882 0.1542 1.0066</span></span>
-<span><span class="co">#&gt; value(hepatomegaly)  0.3033 0.0511  0.2183 0.4083 0.0000 1.0441</span></span>
+<span><span class="co">#&gt; sexfemale           -0.4765 0.3128 -1.0750 0.1416 0.1353 1.0039</span></span>
+<span><span class="co">#&gt; value(hepatomegaly)  0.3497 0.0477  0.2597 0.4526 0.0000 1.0117</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)</span></span>
 <span><span class="co">#&gt;               Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept) 0.0756 0.4216 -0.7401 0.9128 0.8618 1.0023</span></span>
-<span><span class="co">#&gt; year        0.2960 0.1328  0.0376 0.5550 0.0251 1.0035</span></span>
+<span><span class="co">#&gt; (Intercept) 0.0537 0.2257 -0.3793 0.5127 0.8229 1.0014</span></span>
+<span><span class="co">#&gt; year        0.2868 0.0604  0.1705 0.4061 0.0000 1.0033</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
@@ -241,31 +241,31 @@ done using the <code><a href="../reference/jm.html">vexpit()</a></code> function
 <span><span class="co">#&gt;   hepatomegaly: 1884</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    3106.499 3091.590 -1563.564</span></span>
-<span><span class="co">#&gt; conditional 5181.813 5126.109 -2896.784</span></span>
+<span><span class="co">#&gt; marginal    3068.808 3060.348 -1530.929</span></span>
+<span><span class="co">#&gt; conditional 5012.867 4912.148 -2702.286</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                      </span></span>
 <span><span class="co">#&gt;        StdDev   Corr </span></span>
-<span><span class="co">#&gt; (Intr) 3.6117 (Intr) </span></span>
-<span><span class="co">#&gt; year   0.5838 -0.3671</span></span>
+<span><span class="co">#&gt; (Intr) 3.3879 (Intr) </span></span>
+<span><span class="co">#&gt; year   0.5357 -0.3303</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival Outcome:</span></span>
-<span><span class="co">#&gt;                                Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale                   -0.3494 0.2782 -0.8719 0.2112 0.2233 1.0011</span></span>
-<span><span class="co">#&gt; vexpit(value(hepatomegaly))  2.9775 0.4486  2.1586 3.8851 0.0000 1.0338</span></span>
+<span><span class="co">#&gt;                                Mean  StDev    2.5%  97.5%     P   Rhat</span></span>
+<span><span class="co">#&gt; sexfemale                   -0.3580 0.2796 -0.8821 0.1917 0.214 1.0015</span></span>
+<span><span class="co">#&gt; vexpit(value(hepatomegaly))  3.2301 0.4682  2.3663 4.2126 0.000 1.0321</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)</span></span>
 <span><span class="co">#&gt;               Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept) 0.0662 0.4269 -0.7598 0.8911 0.8791 1.0041</span></span>
-<span><span class="co">#&gt; year        0.2424 0.1280 -0.0050 0.4961 0.0556 1.0140</span></span>
+<span><span class="co">#&gt; (Intercept) 0.0647 0.2365 -0.3946 0.5437 0.7904 1.0055</span></span>
+<span><span class="co">#&gt; year        0.2386 0.0661  0.1140 0.3753 0.0004 1.0362</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 17 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 18 sec</span></span></code></pre></div>
 <p>Other available functions to use in the definition of the
 <code>functional_forms</code> argument are <code><a href="../reference/jm.html">vexp()</a></code> for
 calculating the exponent, <code><a href="../reference/jm.html">vlog()</a></code> for calculating the
@@ -290,36 +290,36 @@ linear predictor, we also have the <code><a href="../reference/jm.html">Dexpit()
 <span><span class="co">#&gt;   hepatomegaly: 1884</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    3106.032 3088.805 -1559.952</span></span>
-<span><span class="co">#&gt; conditional 5157.634 5091.288 -2889.611</span></span>
+<span><span class="co">#&gt; marginal    3068.544 3059.792 -1531.497</span></span>
+<span><span class="co">#&gt; conditional 4993.071 4891.747 -2710.920</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                      </span></span>
 <span><span class="co">#&gt;        StdDev   Corr </span></span>
-<span><span class="co">#&gt; (Intr) 3.6769 (Intr) </span></span>
-<span><span class="co">#&gt; year   0.6088 -0.5112</span></span>
+<span><span class="co">#&gt; (Intr) 3.4635 (Intr) </span></span>
+<span><span class="co">#&gt; year   0.5539 -0.4767</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival Outcome:</span></span>
 <span><span class="co">#&gt;                                                    Mean  StDev    2.5%   97.5%</span></span>
-<span><span class="co">#&gt; sexfemale                                       -0.3383 0.3003 -0.8947  0.2564</span></span>
-<span><span class="co">#&gt; vexpit(value(hepatomegaly))                      3.0334 0.4753  2.1218  4.0257</span></span>
-<span><span class="co">#&gt; Dexpit(value(hepatomegaly)):slope(hepatomegaly) -0.8560 0.3695 -1.6331 -0.2087</span></span>
+<span><span class="co">#&gt; sexfemale                                       -0.3394 0.2819 -0.8594  0.2176</span></span>
+<span><span class="co">#&gt; vexpit(value(hepatomegaly))                      3.2826 0.4488  2.4248  4.1828</span></span>
+<span><span class="co">#&gt; Dexpit(value(hepatomegaly)):slope(hepatomegaly) -0.9609 0.5039 -2.3017 -0.2278</span></span>
 <span><span class="co">#&gt;                                                      P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale                                       0.2596 1.0037</span></span>
-<span><span class="co">#&gt; vexpit(value(hepatomegaly))                     0.0000 1.0041</span></span>
-<span><span class="co">#&gt; Dexpit(value(hepatomegaly)):slope(hepatomegaly) 0.0120 1.0756</span></span>
+<span><span class="co">#&gt; sexfemale                                       0.2447 1.0035</span></span>
+<span><span class="co">#&gt; vexpit(value(hepatomegaly))                     0.0000 1.0183</span></span>
+<span><span class="co">#&gt; Dexpit(value(hepatomegaly)):slope(hepatomegaly) 0.0096 1.3228</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)</span></span>
 <span><span class="co">#&gt;               Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept) 0.1501 0.4608 -0.7516 1.0587 0.7416 1.0018</span></span>
-<span><span class="co">#&gt; year        0.1567 0.1341 -0.1018 0.4217 0.2400 1.0097</span></span>
+<span><span class="co">#&gt; (Intercept) 0.1437 0.2423 -0.3223 0.6279 0.5493 1.0021</span></span>
+<span><span class="co">#&gt; year        0.1638 0.0702  0.0259 0.3020 0.0216 1.0954</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 22 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 20 sec</span></span></code></pre></div>
 <p>The call to <code>Dexpit(slope(hepatomegaly))</code> is internally
 transformed to
 <code>Dexpit(value(hepatomegaly)):slope(hepatomegaly)</code>, which
@@ -365,28 +365,28 @@ This calculates the term <span class="math inline">\(\{\eta(t) - \eta(t
 <p>We compare the two fits</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jFit1</span><span class="op">)</span><span class="op">$</span><span class="va">Survival</span></span>
-<span><span class="co">#&gt;                           Mean     StDev       2.5%     97.5%         P</span></span>
-<span><span class="co">#&gt; sexfemale            -0.175060 0.3035789 -0.7679787 0.4278808 0.5633333</span></span>
-<span><span class="co">#&gt; value(log(serBilir))  1.200291 0.1337280  0.9413599 1.4690155 0.0000000</span></span>
-<span><span class="co">#&gt; slope(log(serBilir))  2.650226 0.7417528  1.1946394 4.2852976 0.0000000</span></span>
+<span><span class="co">#&gt;                            Mean     StDev      2.5%     97.5%         P</span></span>
+<span><span class="co">#&gt; sexfemale            -0.1825798 0.2747308 -0.701782 0.3749103 0.5068889</span></span>
+<span><span class="co">#&gt; value(log(serBilir))  1.2196325 0.1037270  1.019953 1.4204795 0.0000000</span></span>
+<span><span class="co">#&gt; slope(log(serBilir))  2.8849520 0.6364478  1.690983 4.1335804 0.0000000</span></span>
 <span><span class="co">#&gt;                          Rhat</span></span>
-<span><span class="co">#&gt; sexfemale            1.014335</span></span>
-<span><span class="co">#&gt; value(log(serBilir)) 1.008638</span></span>
-<span><span class="co">#&gt; slope(log(serBilir)) 1.017037</span></span>
+<span><span class="co">#&gt; sexfemale            1.002555</span></span>
+<span><span class="co">#&gt; value(log(serBilir)) 1.090875</span></span>
+<span><span class="co">#&gt; slope(log(serBilir)) 1.032619</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jFit2</span><span class="op">)</span><span class="op">$</span><span class="va">Survival</span></span>
 <span><span class="co">#&gt;                                                         Mean     StDev</span></span>
-<span><span class="co">#&gt; sexfemale                                         -0.1598636 0.3003916</span></span>
-<span><span class="co">#&gt; value(log(serBilir))                               1.1889780 0.1360777</span></span>
-<span><span class="co">#&gt; slope(log(serBilir), eps = 1, direction = "back")  2.5348042 0.7263611</span></span>
-<span><span class="co">#&gt;                                                         2.5%     97.5%</span></span>
-<span><span class="co">#&gt; sexfemale                                         -0.7288346 0.4359363</span></span>
-<span><span class="co">#&gt; value(log(serBilir))                               0.9208692 1.4540478</span></span>
-<span><span class="co">#&gt; slope(log(serBilir), eps = 1, direction = "back")  1.1490629 4.1628415</span></span>
-<span><span class="co">#&gt;                                                           P     Rhat</span></span>
-<span><span class="co">#&gt; sexfemale                                         0.5797778 1.003257</span></span>
-<span><span class="co">#&gt; value(log(serBilir))                              0.0000000 1.028793</span></span>
-<span><span class="co">#&gt; slope(log(serBilir), eps = 1, direction = "back") 0.0000000 1.024939</span></span></code></pre></div>
+<span><span class="co">#&gt; sexfemale                                         -0.1721437 0.2772843</span></span>
+<span><span class="co">#&gt; value(log(serBilir))                               1.1915668 0.1019399</span></span>
+<span><span class="co">#&gt; slope(log(serBilir), eps = 1, direction = "back")  2.7746586 0.6433714</span></span>
+<span><span class="co">#&gt;                                                         2.5%     97.5%     P</span></span>
+<span><span class="co">#&gt; sexfemale                                         -0.6969171 0.3884404 0.536</span></span>
+<span><span class="co">#&gt; value(log(serBilir))                               0.9983677 1.3973167 0.000</span></span>
+<span><span class="co">#&gt; slope(log(serBilir), eps = 1, direction = "back")  1.5855079 4.0632999 0.000</span></span>
+<span><span class="co">#&gt;                                                       Rhat</span></span>
+<span><span class="co">#&gt; sexfemale                                         1.000181</span></span>
+<span><span class="co">#&gt; value(log(serBilir))                              1.014478</span></span>
+<span><span class="co">#&gt; slope(log(serBilir), eps = 1, direction = "back") 1.014757</span></span></code></pre></div>
 </div>
 </div>
   </div>
@@ -408,7 +408,7 @@ This calculates the term <span class="math inline">\(\{\eta(t) - \eta(t
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>
