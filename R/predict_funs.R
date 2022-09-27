@@ -800,8 +800,10 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
     newdataL <- if (!is.data.frame(newdata)) newdata[["newdataL"]] else newdata
     newdataE <- if (!is.data.frame(newdata)) newdata[["newdataE"]] else newdata
     if (!is.null(newdata2)) {
+        newdataL2 <- if (!is.data.frame(newdata2)) newdata2[["newdataL"]] else newdata2
         newdataE2 <- if (!is.data.frame(newdata2)) newdata2[["newdataE"]] else newdata2
     } else {
+        newdataL2 <- newdataL
         newdataE2 <- newdataE
     }
     CR_MS <- object$model_info$CR_MS

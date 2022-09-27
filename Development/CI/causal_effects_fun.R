@@ -2,33 +2,39 @@ if (FALSE) {
     object = jointFit1
     Data_Long = pt_all
     Data_Event = pt_all_CR
-    t0 = 3
+    t0 = 7
     Dt = 2
     IE_var = "salvage_indicator"
+    IE_time = "salvage_time"
     B = 5L
     calculate_CI = TRUE
     cores = max(parallel::detectCores(logical = FALSE) - 1, 1)
     extra_objects = "dummy"
     seed = 1L
 
-    Data <- get_data(pt_all, pt_all_CR, t0 = 3, Dt = 2, object = jointFit1,
-                     IE_var = "salvage_indicator")
+    Data <- get_data(pt_all, pt_all_CR, t0 = 8, Dt = 2, object = jointFit1,
+                     IE_var = "salvage_indicator", IE_time = "salvage_time")
     Data_Long = Data$newdataL
+    Data_Long2 = Data$newdataL2
     Data_Event = Data$newdataE
     Data_Event2 = Data$newdataE2
 
+
+    Data_Long[Data_Long$pid == 1, ]
+    Data_Long2[Data_Long2$pid == 1, ]
+
     Data_Event[Data_Event$pid == 1, c("pid", "start", "stop", "event",
-                                      "salvage_indicator", "CR")]
+                                      "salvage_indicator", "salvage_time", "CR")]
 
     Data_Event2[Data_Event2$pid == 1, c("pid", "start", "stop", "event",
-                                      "salvage_indicator", "CR")]
+                                      "salvage_indicator", "salvage_time", "CR")]
 
 }
 
 
 # a function to do the data management
 get_data <- function (Data_Long, Data_Event, t0, Dt, object = NULL,
-                      vars = NULL, IE_var = NULL) {
+                      vars = NULL, IE_var = NULL, IE_time = NULL) {
     if (is.null(object) && is.null(vars)) {
         stop("one of the arguments 'object' or 'vars' must not be NULL.")
     }
@@ -43,6 +49,9 @@ get_data <- function (Data_Long, Data_Event, t0, Dt, object = NULL,
         if (is.null(IE_var)) {
             stop("you also need to provide the 'IE_var'.")
         }
+        if (is.null(IE_time)) {
+            stop("you also need to provide the 'IE_time'.")
+        }
         id_var <- object$model_info$var_names$idVar
         time_var <- object$model_info$var_names$time_var
         Time_var <- object$model_info$var_names$Time_var
@@ -54,7 +63,7 @@ get_data <- function (Data_Long, Data_Event, t0, Dt, object = NULL,
             stop("'vars' must be a character vector.")
         }
         if (!(nams <- c('id_var', 'time_var', 'start_var', 'Time_var', 'event_var',
-               'IE_var')) %in% names(vars)) {
+               'IE_var', 'IE_time')) %in% names(vars)) {
             stop("'vars' should be a named character vector with elements ",
                  " named: ", paste(nams, collapse = ", "))
         }
@@ -65,6 +74,7 @@ get_data <- function (Data_Long, Data_Event, t0, Dt, object = NULL,
         event_var <- vars['event_var']
         # 'IE_var': character string with the name of the intermediate event variable.
         IE_var <- vars['IE_var']
+        IE_time <- vars['IE_time']
     }
     ids_Long <- unique(Data_Long[[id_var]])
     ids_Event <- unique(Data_Event[[id_var]])
@@ -72,58 +82,51 @@ get_data <- function (Data_Long, Data_Event, t0, Dt, object = NULL,
         stop("the data.frames 'Data_Long' and 'Data_Event' ",
              "must contain the same subjects.")
     }
-    # we find the subjects at risk at t0
-    keep <- function (x) rep(max(x) > t0, length(x))
-    fact <- Data_Event[[id_var]]
-    fact <- factor(fact, levels = unique(fact))
-    at_risk <- ave(Data_Event[[Time_var]], fact, FUN = keep)
-    R_event <- Data_Event[as.logical(at_risk), ]
+    # we find the subjects at risk at t0; for subjects who had an IE before
+    # t0, we keep the measurement before the IE
+    R_event <- Data_Event[Data_Event[[IE_var]] == 0, ]
+    R_event <- R_event[R_event[[Time_var]] > t0, ]
     R_event[[id_var]] <- factor(R_event[[id_var]], unique(R_event[[id_var]]))
-    # then we want to keep only the subjects who did not have an IE
-    # up to time t0
-    spl <- split(R_event, R_event[[id_var]])
-    keep <- function (d) {
-        start_times <- d[[start_var]]
-        IEs <- d[[IE_var]]
-        v <- if (all(IEs == 0)) TRUE else max(start_times[IEs == 1]) > t0
-        rep(v, nrow(d))
-    }
-    R_event <- R_event[unlist(lapply(spl, keep)), ]
-    R_event[[id_var]] <- factor(R_event[[id_var]], unique(R_event[[id_var]]))
-    # there are some subjects who had an IE after t0; we need
-    # to remove these lines from R_event
-    R_event <- R_event[R_event[[IE_var]] == 0, ]
     # we set the stop time to t0
-    R_event[[Time_var]] <- t0
+    R_event[[Time_var]] <- t0 + 1e-03
     # we set the event to zero
     R_event[[event_var]] <- 0
     # we create aof R_event with IE set to one
     R_event2 <- R_event
     R_event2[[IE_var]] <- 1
+    R_event2[[IE_time]] <- t0
 
-    # we keep the longitudinal measurements before t0 for patients who
-    # were at risk at t0
-    check1 <- Data_Long[[time_var]] <= t0
+    # we keep the longitudinal measurements before t0 and before salvage for
+    # patients who were at risk at t0
+    check1 <- Data_Long[[time_var]] <= pmin(t0, Data_Long[[IE_time]])
     check2 <- Data_Long[[id_var]] %in% unique(R_event[[id_var]])
     R_long <- Data_Long[check1 & check2, ]
     R_long[[id_var]] <- factor(R_long[[id_var]])
+
     R_event <- R_event[R_event[[id_var]] %in% R_long[[id_var]], ]
     R_event[[id_var]] <- factor(R_event[[id_var]])
+
     R_event2 <- R_event2[R_event2[[id_var]] %in% R_long[[id_var]], ]
     R_event2[[id_var]] <- factor(R_event2[[id_var]])
+
+    R_long2 <- R_long
+    R_long2[[IE_var]] <- 1
     ###########################################################
-    list(newdataL = R_long, newdataE = R_event, newdataE2 = R_event2)
+    list(newdataL = R_long, newdataL2 = R_long2,
+         newdataE = R_event, newdataE2 = R_event2)
 }
 
-causal_effects <- function (object, Data_Long, Data_Event, Data_Event2, t0, Dt,
-                            calculate_CI = FALSE, B = 50L,
+causal_effects <- function (object, Data_Long, Data_Long2, Data_Event,
+                            Data_Event2, t0, Dt, calculate_CI = FALSE, B = 50L,
                             cores = max(parallel::detectCores() - 1, 1),
                             extra_objects = NULL, seed = 1L) {
     # 'object': a joint model with survival submodel fitted with the
     # counting process notation and having a time-varying covariate indicating
     # an intermediate event.
     # 'Data_Long': a data.frame with the longitudinal measurements, containing
-    # the intermediate event
+    # the intermediate event at zero
+    # 'Data_Long2': a data.frame with the longitudinal measurements, containing
+    # the intermediate event at one
     # 'Data_Event': a data.frame with the event times, containing the
     # intermediate event set at zero
     # 'Data_Event2': a data.frame with the event times, containing the
@@ -175,18 +178,20 @@ causal_effects <- function (object, Data_Long, Data_Event, Data_Event2, t0, Dt,
              paste(unique(c(id_var, all_vars_event)), collapse = ", "))
     }
     ids_Long <- unique(Data_Long[[id_var]])
+    ids_Long2 <- unique(Data_Long2[[id_var]])
     ids_Event <- unique(Data_Event[[id_var]])
     ids_Event2 <- unique(Data_Event2[[id_var]])
     if (!all(ids_Long %in% ids_Event) || !all(ids_Long %in% ids_Event2)
         || !all(ids_Event %in% ids_Long) || !all(ids_Event2 %in% ids_Long)
-        || !all(ids_Event %in% ids_Event2) || !all(ids_Event2 %in% ids_Event)) {
-        stop("the data.frames 'Data_Long', 'Data_Event' and 'Data_Event2' ",
+        || !all(ids_Event %in% ids_Event2) || !all(ids_Event2 %in% ids_Event)
+        || !all(ids_Long2 %in% ids_Event) || !all(ids_Event2 %in% ids_Long2)) {
+        stop("the data.frames 'Data_Long', 'Data_Long2', 'Data_Event' and 'Data_Event2' ",
              "must contain the same subjects.")
     }
     # a function to calculate the causal effects (per stratum) in the presence
     # and absence of the IE
-    get_effect <- function (object, Data_Long, Data_Event, Data_Event2,
-                            t0, Dt, vars) {
+    get_effect <- function (object, Data_Long, Data_Long2, Data_Event,
+                            Data_Event2, t0, Dt, vars) {
         # we calculate the CIFs without IE
         newdata_withoutIE <- list(newdataL = Data_Long, newdataE = Data_Event)
 
@@ -195,7 +200,7 @@ causal_effects <- function (object, Data_Long, Data_Event, Data_Event2, t0, Dt,
                                  return_mcmc = TRUE)
 
         # we calculate the CIFs with IE
-        newdata_withIE <- list(newdataL = Data_Long, newdataE = Data_Event2)
+        newdata_withIE <- list(newdataL = Data_Long2, newdataE = Data_Event2)
         CIF_withIE <- predict(object, newdata = newdata_withoutIE,
                               newdata2 = newdata_withIE,
                               process = "event", times = t0 + Dt,
@@ -220,18 +225,24 @@ causal_effects <- function (object, Data_Long, Data_Event, Data_Event2, t0, Dt,
         effect
     }
     # a function to create a non-parametric Bootstrap sample
-    make_bootSample <- function (Data_Long, Data_Event, Data_Event2, id_var) {
+    make_bootSample <- function (Data_Long, Data_Long2, Data_Event, Data_Event2,
+                                 id_var) {
         ids <- Data_Long[[id_var]]
         unq_ids <- unique(ids)
         ids <- factor(ids, levels = unq_ids)
         new_ids <- sample(unq_ids, replace = TRUE)
-        new_Data_Long <- new_Data_Event <- new_Data_Event2 <-
+        new_Data_Long <- new_Data_Long2 <- new_Data_Event <- new_Data_Event2 <-
             vector("list", length(unq_ids))
         for (i in seq_along(unq_ids)) {
             keep <- Data_Long[[id_var]] == new_ids[i]
             dataL_i <- Data_Long[keep, ]
             dataL_i[[id_var]] <- i
             new_Data_Long[[i]] <- dataL_i
+            ##
+            keep <- Data_Long2[[id_var]] == new_ids[i]
+            dataL2_i <- Data_Long2[keep, ]
+            dataL2_i[[id_var]] <- i
+            new_Data_Long2[[i]] <- dataL2_i
             ##
             keep <- Data_Event[[id_var]] == new_ids[i]
             dataE_i <- Data_Event[keep, ]
@@ -245,13 +256,14 @@ causal_effects <- function (object, Data_Long, Data_Event, Data_Event2, t0, Dt,
 
         }
         list(Data_Long = do.call("rbind", new_Data_Long),
+             Data_Long2 = do.call("rbind", new_Data_Long2),
              Data_Event = do.call("rbind", new_Data_Event),
              Data_Event2 = do.call("rbind", new_Data_Event2))
     }
     #######################################################
     # causal effects in the original data
-    effects <- get_effect(object, Data_Long, Data_Event, Data_Event2,
-                          t0, Dt, vars)
+    effects <- get_effect(object, Data_Long, Data_Long2, Data_Event,
+                          Data_Event2, t0, Dt, vars)
     if (calculate_CI) {
         # run Bootstrap in parallel
         if (!exists(".Random.seed", envir = .GlobalEnv))
@@ -260,14 +272,15 @@ causal_effects <- function (object, Data_Long, Data_Event, Data_Event2, t0, Dt,
         on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
         samples <- split(seq_len(B), rep(seq_len(cores), each = ceiling(B / cores),
                                          length.out = B))
-        boot_parallel <- function (samples, object, Data_Long, Data_Event,
-                                   Data_Event2, t0, Dt, vars) {
+        boot_parallel <- function (samples, object, Data_Long, Data_Long2,
+                                   Data_Event, Data_Event2, t0, Dt, vars) {
             str <- object$model_data$strata
             out <- matrix(0.0, length(samples), length(unique(str)))
             for (b in seq_along(samples)) {
-                boot <- make_bootSample(Data_Long, Data_Event, Data_Event2,
-                                        vars['id_var'])
-                meffects <- get_effect(object, boot$Data_Long, boot$Data_Event,
+                boot <- make_bootSample(Data_Long, Data_Long2,
+                                        Data_Event, Data_Event2, vars['id_var'])
+                meffects <- get_effect(object, boot$Data_Long, boot$Data_Long2,
+                                       boot$Data_Event,
                                        boot$Data_Event2, t0, Dt, vars)
                 out[b, ] <- meffects
             }
@@ -281,12 +294,15 @@ causal_effects <- function (object, Data_Long, Data_Event, Data_Event2, t0, Dt,
             parallel::clusterSetRNGStream(cl = cl, iseed = seed)
             out <- parallel::parLapply(cl, samples, boot_parallel,
                                        object = object, Data_Long = Data_Long,
-                                       Data_Event = Data_Event, Data_Event2 = Data_Event2,
+                                       Data_Long2 = Data_Long2,
+                                       Data_Event = Data_Event,
+                                       Data_Event2 = Data_Event2,
                                        t0 = t0, Dt = Dt, vars = vars)
             parallel::stopCluster(cl)
         } else {
             out <- lapply(samples, boot_parallel,
                           object = object, Data_Long = Data_Long,
+                          Data_Long2 = Data_Long2,
                           Data_Event = Data_Event, Data_Event2 = Data_Event2,
                           t0 = t0, Dt = Dt, vars = vars)
         }

@@ -136,11 +136,11 @@ extract_functional_forms <- function (Form, data) {
     mF <- model.frame(tr, data = data)
     M <- model.matrix(tr, mF)
     cnams <- colnames(M)
-    possible_forms <- c("value(", "slope(", "area(")
+    possible_forms <- c("value(", "slope(", "area(", "velocity(", "acceleration(")
     ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
     M <- M[, cnams %in% cnams[unique(ind)], drop = FALSE]
-    sapply(c("value", "slope", "area"), grep, x = colnames(M), fixed = TRUE,
-           simplify = FALSE)
+    sapply(c("value", "slope", "area", "velocity", "acceleration"),
+           grep, x = colnames(M), fixed = TRUE, simplify = FALSE)
 }
 
 expand_Dexps <- function (Form, respVar) {
@@ -278,6 +278,8 @@ slope <- function (x, eps = 0.001, direction = "both") {
     attributes(out) <- c(attributes(out), temp)
     out
 }
+velocity <- slope
+acceleration <- function (x) rep(1, NROW(x))
 
 create_HC_X <- function(x, z, id, terms, data) {
     check_tv <- function (x, id) {
@@ -434,11 +436,11 @@ extractFuns_FunForms <- function (Form, data) {
     mF <- model.frame(tr, data = data)
     M <- model.matrix(tr, mF)
     cnams <- colnames(M)
-    possible_forms <- c("value(", "slope(", "area(")
+    possible_forms <- c("value(", "slope(", "area(", "velocity(", "acceleration(")
     ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
     M <- M[1, cnams %in% cnams[unique(ind)], drop = FALSE]
-    FForms <- sapply(c("value", "slope", "area"), grep, x = colnames(M),
-                     fixed = TRUE, simplify = FALSE)
+    FForms <- sapply(c("value", "slope", "area", "velocity", "acceleration"),
+                     grep, x = colnames(M), fixed = TRUE, simplify = FALSE)
     FForms <- FForms[sapply(FForms, length) > 0]
     get_fun <- function (FForm, nam) {
         cnams <- colnames(M)[FForm]
@@ -733,7 +735,10 @@ construct_Umat <- function (fForms, dataS) {
     ind_value <- grep("value(", cnams, fixed = TRUE)
     ind_slope <- grep("slope(", cnams, fixed = TRUE)
     ind_area <- grep("area(", cnams, fixed = TRUE)
-    ind <- unique(c(ind_value, ind_slope, ind_area))
+    ind_velocity <- grep("velocity(", cnams, fixed = TRUE)
+    ind_acceleration <- grep("acceleration(", cnams, fixed = TRUE)
+    ind <- unique(c(ind_value, ind_slope, ind_area, ind_velocity,
+                    ind_acceleration))
     m[, cnams %in% cnams[ind], drop = FALSE]
 }
 
@@ -1020,6 +1025,44 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         }
         out
     }
+    degn_matr_acc <- function (time, terms, Xbar) {
+        K <- length(terms)
+        out <- vector("list", K)
+        for (i in seq_len(K)) {
+            if (is.list(time)) {
+                t1 <- lapply(time, function (t) t + 0.001)
+                t2 <- lapply(time, function (t) t - 0.001)
+            } else {
+                t1 <- time + 0.001
+                t2 <- time - 0.001
+            }
+            e <- c(mapply("-", t1, t2))
+            terms_i <- terms[[i]]
+            D <- LongData_HazardModel(time, data, data[[timeVar]],
+                                      data[[idVar]], timeVar,
+                                      match(idT, unique(idT)))
+            mf <- model.frame.default(terms_i, data = D)
+            X <- model.matrix.default(terms_i, mf)
+            D1 <- LongData_HazardModel(t1, data, data[[timeVar]],
+                                       data[[idVar]], timeVar,
+                                       match(idT, unique(idT)))
+            mf1 <- model.frame.default(terms_i, data = D1)
+            X1 <- model.matrix.default(terms_i, mf1)
+            D2 <- LongData_HazardModel(t2, data, data[[timeVar]],
+                                       data[[idVar]], timeVar,
+                                       match(idT, unique(idT)))
+            mf2 <- model.frame.default(terms_i, data = D2)
+            X2 <- model.matrix.default(terms_i, mf2)
+            if (!is.null(Xbar)) {
+                X <- X - rep(Xbar[[i]], each = nrow(X1))
+                X1 <- X1 - rep(Xbar[[i]], each = nrow(X1))
+                X2 <- X2 - rep(Xbar[[i]], each = nrow(X2))
+            }
+            out[[i]] <- (X1 - 2 * X + X2) / (e * e)
+
+        }
+        out
+    }
     degn_matr_area <- function (time, terms, Xbar) {
         if (!is.list(time)) {
             time <- if (is.matrix(time)) split(time, row(time))
@@ -1050,6 +1093,8 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
     ################
     out <- list("value" = desgn_matr(time, terms, Xbar, zero_ind),
                 "slope" = degn_matr_slp(time, terms, Xbar, eps, direction),
+                "velocity" = degn_matr_slp(time, terms, Xbar, eps, direction),
+                "acceleration" = degn_matr_acc(time, terms, Xbar),
                 "area" = degn_matr_area(time, terms, Xbar))
     out <- lapply(seq_along(Fun_Forms), function (i)
         lapply(out[Fun_Forms[[i]]], "[[", i))
