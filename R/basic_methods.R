@@ -955,7 +955,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
             # n_outcomes == 2
             op <- par(mfrow = c(2, 1), oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
                       mgp = c(2, 0.4, 0), tcl = -0.3, bg = bg)
-            pp <- par("usr")[1] + pos_ylab_long * diff(par("usr")[1:2])
+            pp <- par("usr")[3L] + pos_ylab_long * diff(par("usr")[3:4])
             plot_long_i(outcomes[1L], box = FALSE, cex_axis = cex_axis)
             mtext(ylab_long[outcomes[1L]], 2, 1.5, at = pp[1],
                   cex = cex_ylab_long * 0.66, col = col_axis)
@@ -977,7 +977,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
             # n_outcomes == 3
             op <- par(mfrow = c(3, 1), oma = c(4,4,3,4), mar = c(0, 0, 0, 0),
                       mgp = c(2, 0.4, 0), tcl = -0.3, bg = bg)
-            pp <- par("usr")[1] + pos_ylab_long * diff(par("usr")[1:2])
+            pp <- par("usr")[3L] + pos_ylab_long * diff(par("usr")[3:4])
             plot_long_i(outcomes[1L], box = FALSE, cex_axis = cex_axis)
             mtext(ylab_long[outcomes[1L]], 2, 1.5, at = pp[1],
                   cex = cex_ylab_long * 0.66, col = col_axis)

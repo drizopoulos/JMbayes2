@@ -215,13 +215,18 @@ causal_effects <- function (object, Data_Long, Data_Long2, Data_Event,
         cif1[cif1 > 1 | cif1 < 0] <- as.numeric(NA)
         cif2[cif2 > 1 | cif2 < 0] <- as.numeric(NA)
         effect <- tapply(cif1 - cif2, strata, mean, na.rm = TRUE)
+        Reffect <- tapply(log(cif1) - log(cif2), strata, mean, na.rm = TRUE)
         mcmc1 <- CIF_withIE$mcmc[ind, ]
         mcmc2 <- CIF_withoutIE$mcmc[ind, ]
         mcmc1[mcmc1 > 1 | mcmc1 < 0] <- as.numeric(NA)
         mcmc2[mcmc2 > 1 | mcmc2 < 0] <- as.numeric(NA)
         vv <- rowsum(mcmc1 - mcmc2, strata, reorder = FALSE, na.rm = TRUE) /
             sum(strata == 1)
+        Rvv <- rowsum(log(mcmc1) - log(mcmc2), strata, reorder = FALSE, na.rm = TRUE) /
+            sum(strata == 1)
         attr(effect, "var") <- matrixStats::rowVars(vv)
+        attr(effect, "Rvar") <- matrixStats::rowVars(Rvv)
+        attr(effect, "Reffect") <- Reffect
         effect
     }
     # a function to create a non-parametric Bootstrap sample
@@ -275,7 +280,7 @@ causal_effects <- function (object, Data_Long, Data_Long2, Data_Event,
         boot_parallel <- function (samples, object, Data_Long, Data_Long2,
                                    Data_Event, Data_Event2, t0, Dt, vars) {
             str <- object$model_data$strata
-            out <- matrix(0.0, length(samples), length(unique(str)))
+            Rout <- out <- matrix(0.0, length(samples), length(unique(str)))
             for (b in seq_along(samples)) {
                 boot <- make_bootSample(Data_Long, Data_Long2,
                                         Data_Event, Data_Event2, vars['id_var'])
@@ -283,7 +288,9 @@ causal_effects <- function (object, Data_Long, Data_Long2, Data_Event,
                                        boot$Data_Event,
                                        boot$Data_Event2, t0, Dt, vars)
                 out[b, ] <- meffects
+                Rout[b, ] <- attr(meffects, "Reffect")
             }
+            attr(out, "Reffect") <- Rout
             out
         }
         if (cores > 1L) {
@@ -308,11 +315,18 @@ causal_effects <- function (object, Data_Long, Data_Long2, Data_Event,
         }
         out <- do.call('rbind', out)
         var_effects <- matrixStats::colVars(out) + attr(effects, "var")
+        #Rvar_effects <- matrixStats::colVars(attr(out, "Reffect")) +
+        #    attr(effects, "Rvar")
         names(var_effects) <- names(effects)
     }
     attr(effects, "var") <- NULL
     list("effects" = effects,
+         #"Reffects" = exp(attr(effects, "Reffect")),
          "CIs" = if (calculate_CI)
              cbind(low = effects - 1.96 * sqrt(var_effects),
                    upp = effects + 1.96 * sqrt(var_effects)))
+    #,
+    #     "RCIs" = if (calculate_CI)
+    #         cbind(low = exp(attr(effects, "Reffect") - 1.96 * sqrt(Rvar_effects)),
+    #               upp = exp(attr(effects, "Reffect") + 1.96 * sqrt(Rvar_effects))))
 }
