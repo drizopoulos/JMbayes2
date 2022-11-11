@@ -55,7 +55,8 @@ fix_NAs_fixed <- function (x, NAs_fixed, NAs_random) {
         extra_nas <- NAs_random[!NAs_random %in% NAs_fixed]
         if (length(extra_nas)) {
             if (is.data.frame(x)) x[-extra_nas, , drop = FALSE] else x[-extra_nas]
-        } else x
+        } else
+            x
     }
 }
 
