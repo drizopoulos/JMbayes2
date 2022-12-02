@@ -137,10 +137,11 @@ extract_functional_forms <- function (Form, data) {
     mF <- model.frame(tr, data = data)
     M <- model.matrix(tr, mF)
     cnams <- colnames(M)
-    possible_forms <- c("value(", "slope(", "area(", "velocity(", "acceleration(")
+    possible_forms <- c("value(", "slope(", "area(", "velocity(",
+                        "acceleration(", "coefs(")
     ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
     M <- M[, cnams %in% cnams[unique(ind)], drop = FALSE]
-    sapply(c("value", "slope", "area", "velocity", "acceleration"),
+    sapply(c("value", "slope", "area", "velocity", "acceleration", "coefs"),
            grep, x = colnames(M), fixed = TRUE, simplify = FALSE)
 }
 
@@ -263,11 +264,11 @@ extract_log_sigmas <- function (object) {
     out
 }
 
-area <- function (x) rep(1, NROW(x))
+value <- area <- function (x) rep(1, NROW(x))
 vexpit <- Dexpit <- vexp <- Dexp <- function (x) rep(1, NROW(x))
 vsqrt <- vlog <- vlog2 <- vlog10 <- function (x) rep(1, NROW(x))
 poly2 <- poly3 <- poly4 <- function (x) rep(1, NROW(x))
-value <- function (x, zero_ind = NULL) {
+coefs <- function (x, zero_ind = NULL) {
     out <- rep(1, NROW(x))
     temp <- list(zero_ind = zero_ind)
     attributes(out) <- c(attributes(out), temp)
@@ -437,10 +438,12 @@ extractFuns_FunForms <- function (Form, data) {
     mF <- model.frame(tr, data = data)
     M <- model.matrix(tr, mF)
     cnams <- colnames(M)
-    possible_forms <- c("value(", "slope(", "area(", "velocity(", "acceleration(")
+    possible_forms <- c("value(", "slope(", "area(", "velocity(",
+                        "acceleration(", "coefs(")
     ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
     M <- M[1, cnams %in% cnams[unique(ind)], drop = FALSE]
-    FForms <- sapply(c("value", "slope", "area", "velocity", "acceleration"),
+    FForms <- sapply(c("value", "slope", "area", "velocity", "acceleration",
+                       "coefs"),
                      grep, x = colnames(M), fixed = TRUE, simplify = FALSE)
     FForms <- FForms[sapply(FForms, length) > 0]
     get_fun <- function (FForm, nam) {
@@ -738,8 +741,9 @@ construct_Umat <- function (fForms, dataS) {
     ind_area <- grep("area(", cnams, fixed = TRUE)
     ind_velocity <- grep("velocity(", cnams, fixed = TRUE)
     ind_acceleration <- grep("acceleration(", cnams, fixed = TRUE)
+    ind_coefs <- grep("coefs(", cnams, fixed = TRUE)
     ind <- unique(c(ind_value, ind_slope, ind_area, ind_velocity,
-                    ind_acceleration))
+                    ind_acceleration, ind_coefs))
     m[, cnams %in% cnams[ind], drop = FALSE]
 }
 
@@ -977,6 +981,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
             f <- function (m, ind) {
                 if (length(ind) > 0) {
                     m[, ind] <- 0 * m[, ind]
+                    m[, -ind] <- 1
                 }
                 m
             }
@@ -1092,7 +1097,8 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         lapply(M, sum_qp)
     }
     ################
-    out <- list("value" = desgn_matr(time, terms, Xbar, zero_ind),
+    out <- list("value" = desgn_matr(time, terms, Xbar),
+                "coefs" = desgn_matr(time, terms, Xbar, zero_ind),
                 "slope" = degn_matr_slp(time, terms, Xbar, eps, direction),
                 "velocity" = degn_matr_slp(time, terms, Xbar, eps, direction),
                 "acceleration" = degn_matr_acc(time, terms, Xbar),
