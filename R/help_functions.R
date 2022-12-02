@@ -1097,7 +1097,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         lapply(M, sum_qp)
     }
     ################
-    out <- list("value" = desgn_matr(time, terms, Xbar),
+    out <- list("value" = desgn_matr(time, terms, Xbar, NULL),
                 "coefs" = desgn_matr(time, terms, Xbar, zero_ind),
                 "slope" = degn_matr_slp(time, terms, Xbar, eps, direction),
                 "velocity" = degn_matr_slp(time, terms, Xbar, eps, direction),
