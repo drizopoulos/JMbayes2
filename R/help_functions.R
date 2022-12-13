@@ -851,7 +851,7 @@ get_betas_nHC <- function (v, ind) {
 
 weak_informative_Tau <- function (model, Xbar) {
     V <- vcov_center(vcov2(model), Xbar)
-    diags <- pmin(100.0 * diag(V), 10)
+    diags <- pmin(2500.0 * diag(V), 1000)
     #diags <- rep(100, length(diags))
     diag(1 / diags, nrow(V), ncol(V))
 }
@@ -891,12 +891,6 @@ jitter2 <- function (x, factor = 2) {
         jitter(x, factor = factor)
     }
 }
-
-# times_to_fill = t2
-# data = data
-# times_data = data[[timeVar]]
-# ids = data[[idVar]]
-# index = match(idT, unique(idT))
 
 SurvData_HazardModel <- function (times_to_fill, data, times_data, ids,
                                    time_var, index = NULL) {
