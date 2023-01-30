@@ -37,7 +37,6 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
 
-
       - uses: r-lib/actions/setup-pandoc@v1
 
       - name: Query dependencies
