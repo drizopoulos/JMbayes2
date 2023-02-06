@@ -39,7 +39,7 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     newdata <- newdata[as.logical(tt), ]
     newdata <- newdata[newdata[[time_var]] <= Tstart, ]
     if (!nrow(newdata))
-        stop("there are no data on subjects who had an observed event time after Tstart",
+        stop("there are no data on subjects who had an observed event time after Tstart ",
              "and longitudinal measurements before Tstart.")
     test1 <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
     if (!any(test1))
@@ -351,7 +351,7 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     newdata <- newdata[newdata[[Time_var]] > Tstart, ]
     newdata <- newdata[newdata[[time_var]] <= Tstart, ]
     if (!nrow(newdata))
-        stop("there are no data on subjects who had an observed event time after Tstart",
+        stop("there are no data on subjects who had an observed event time after Tstart ",
              "and longitudinal measurements before Tstart.")
     newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
     test1 <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
@@ -427,7 +427,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
         Thoriz <- Tstart + Dt
     type_censoring <- object$model_info$type_censoring
     if (object$model_info$CR_MS)
-        stop("'tvROC()' currently only works for right censored data.")
+        stop("'tvBrier()' currently only works for right censored data.")
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
     id_var <- object$model_info$var_names$idVar
@@ -446,7 +446,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     newdata <- newdata[newdata[[Time_var]] > Tstart, ]
     newdata <- newdata[newdata[[time_var]] <= Tstart, ]
     if (!nrow(newdata))
-        stop("there are no data on subjects who had an observed event time after Tstart",
+        stop("there are no data on subjects who had an observed event time after Tstart ",
              "and longitudinal measurements before Tstart.")
     newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
     test1 <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
