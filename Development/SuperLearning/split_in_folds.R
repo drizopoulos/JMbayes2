@@ -4,6 +4,7 @@ create_folds <- function (data, V = 5, id_var = "id", seed = 123L) {
         runif(1L)
     RNGstate <- get(".Random.seed", envir = .GlobalEnv)
     on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
+    set.seed(seed)
     data <- as.data.frame(data)
     ids <- data[[id_var]]
     unq_ids <- unique(ids)
@@ -27,132 +28,200 @@ fit_models <- function (data) {
     jmFit1 <- jm(CoxFit, lmeFit, time_var = "year")
     jmFit2 <- jm(CoxFit, lmeFit, time_var = "year",
                  functional_forms = ~ slope(log(serBilir)))
-    list(M1 = jmFit1, M2 = jmFit2)
+    jmFit3 <- jm(CoxFit, lmeFit, time_var = "year",
+                 functional_forms = ~ area(log(serBilir)) + slope(log(serBilir)))
+    jmFit4 <- jm(CoxFit, lmeFit, time_var = "year",
+                 functional_forms = ~ area(log(serBilir)) + value(log(serBilir)))
+    list(M1 = jmFit1, M2 = jmFit2, M3 = jmFit3, M4 = jmFit4)
 }
 object <- lapply(newdata$training, fit_models)
 
 
 Tstart = 5
 Thoriz = 7
-##
-# if newdata is a list with components 'training' and 'testing',
-# Super Learning will be used
-if (!is.data.frame(newdata) &&
-    all(names(newdata) %in% c("training", "testing"))) {
-    CV_data <- newdata
-    newdata <- do.call("rbind", CV_data$testing)
-    newdata[["fold_"]] <- rep(seq_along(CV_data$testing),
-                              sapply(CV_data$testing, nrow))
-}
-# if Super Learning, object needs to be a list with length the
-# number of folds. In each element of the list, we have a list of fitted
-# models
-obj <- if (inherits(object, "jm")) object else object[[1L]][[1L]]
-id_var <- obj$model_info$var_names$idVar
-time_var <- obj$model_info$var_names$time_var
-Time_var <- obj$model_info$var_names$Time_var
-event_var <- obj$model_info$var_names$event_var
-if (is.null(newdata[[id_var]])) {
-    stop("cannot find the '", id_var, "' variable in newdata.", sep = "")
-}
-if (is.null(newdata[[time_var]])) {
-    stop("cannot find the '", time_var, "' variable in newdata.", sep = "")
-}
-if (any(sapply(Time_var, function (nmn) is.null(newdata[[nmn]])))) {
-    stop("cannot find the '", paste(Time_var, collapse = ", "),
-         "' variable(s) in newdata.", sep = "")
-}
-if (is.null(newdata[[event_var]])) {
-    stop("cannot find the '", event_var, "' variable in newdata.", sep = "")
-}
-newdata <- newdata[newdata[[Time_var]] > Tstart, ]
-newdata <- newdata[newdata[[time_var]] <= Tstart, ]
-if (!nrow(newdata)) {
-    stop("there are no data on subjects who had an observed event time after Tstart ",
-         "and longitudinal measurements before Tstart.")
-}
-newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
-test1 <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
-if (!any(test1)) {
-    stop("it seems that there are no events in the interval [Tstart, Thoriz).")
-}
-newdata2 <- newdata
-newdata2[[Time_var]] <- Tstart
-newdata2[[event_var]] <- 0
 
-id <- newdata[[id_var]]
-Time <- newdata[[Time_var]]
-event <- newdata[[event_var]]
-f <- factor(id, levels = unique(id))
-Time <- tapply(Time, f, tail, 1L)
-event <- tapply(event, f, tail, 1L)
-names(Time) <- names(event) <- as.character(unique(id))
+tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
+    is_jm <- function (object) inherits(object, "jm")
+    if (!is_jm(object)) {
+        if (!all(sapply(unlist(object, recursive = FALSE), is_jm)))
+            stop("Use only with 'jm' objects.\n")
+    }
+    if (is.null(Thoriz) && is.null(Dt)) {
+        stop("either 'Thoriz' or 'Dt' must be non null.\n")
+    }
+    if (!is.null(Thoriz) && Thoriz <= Tstart) {
+        stop("'Thoriz' must be larger than 'Tstart'.")
+    }
+    if (is.null(Thoriz)) {
+        Thoriz <- Tstart + Dt
+    }
+    Tstart <- Tstart + 1e-06
+    Thoriz <- Thoriz + 1e-06
+    brier_fun <- function (pi_u_t, weights, ind1, ind2, ind3) {
+        loss <- function (x) x * x
+        events <- sum(loss(1 - pi_u_t[ind1]), na.rm = TRUE)
+        no_events <- sum(loss(pi_u_t[ind2]), na.rm = TRUE)
+        censored <- if (any(ind3)) {
+            sum(weights * loss(1 - pi_u_t[ind3]) +
+                    (1 - weights) * loss(pi_u_t[ind3]), na.rm = TRUE)
+        } else 0.0
+        (events + no_events + censored) / length(ind1)
+    }
+    test1 <-
+    if (!is.data.frame(newdata) || nrow(newdata) == 0) {
+        stop("'newdata' must be a data.frame with more than one rows.\n")
+    }
+    # if newdata is a list with components 'training' and 'testing',
+    # Super Learning will be used
+    if (!is.data.frame(newdata) &&
+        all(names(newdata) %in% c("training", "testing"))) {
+        CV_data <- newdata
+        newdata <- do.call("rbind", CV_data$testing)
+        newdata[["fold_"]] <- rep(seq_along(CV_data$testing),
+                                  sapply(CV_data$testing, nrow))
+    }
+    # if Super Learning, object needs to be a list with length the
+    # number of folds. In each element of the list, we have a list of fitted
+    # models
+    obj <- if (inherits(object, "jm")) object else object[[1L]][[1L]]
+    id_var <- obj$model_info$var_names$idVar
+    time_var <- obj$model_info$var_names$time_var
+    Time_var <- obj$model_info$var_names$Time_var
+    event_var <- obj$model_info$var_names$event_var
+    type_censoring <- object$model_info$type_censoring
+    if (obj$model_info$CR_MS) {
+        stop("'tvBrier()' currently only works for right censored data.")
+    }
+    if (is.null(newdata[[id_var]])) {
+        stop("cannot find the '", id_var, "' variable in newdata.", sep = "")
+    }
+    if (is.null(newdata[[time_var]])) {
+        stop("cannot find the '", time_var, "' variable in newdata.", sep = "")
+    }
+    if (any(sapply(Time_var, function (nmn) is.null(newdata[[nmn]])))) {
+        stop("cannot find the '", paste(Time_var, collapse = ", "),
+             "' variable(s) in newdata.", sep = "")
+    }
+    if (is.null(newdata[[event_var]])) {
+        stop("cannot find the '", event_var, "' variable in newdata.", sep = "")
+    }
+    newdata <- newdata[newdata[[Time_var]] > Tstart, ]
+    newdata <- newdata[newdata[[time_var]] <= Tstart, ]
+    if (!nrow(newdata)) {
+        stop("there are no data on subjects who had an observed event time after Tstart ",
+             "and longitudinal measurements before Tstart.")
+    }
+    newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
+    test <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
+    if (!any(test)) {
+        stop("it seems that there are no events in the interval [Tstart, Thoriz).")
+    }
+    newdata2 <- newdata
+    newdata2[[Time_var]] <- Tstart
+    newdata2[[event_var]] <- 0
 
-# subjects who had the event before Thoriz
-ind1 <- Time < Thoriz & event == 1
-# subjects who had the event after Thoriz
-ind2 <- Time > Thoriz
-# subjects who were censored in the interval (Tstart, Thoriz)
-ind3 <- Time < Thoriz & event == 0
+    id <- newdata[[id_var]]
+    Time <- newdata[[Time_var]]
+    event <- newdata[[event_var]]
+    f <- factor(id, levels = unique(id))
+    Time <- tapply(Time, f, tail, 1L)
+    event <- tapply(event, f, tail, 1L)
+    names(Time) <- names(event) <- as.character(unique(id))
 
-if (!inherits(object, "jm")) {
-    # Super Learning
-    V <- length(object) # number of folds
-    L <- length(object[[1]]) # number of models
-    ns <- sapply(CV_data$testing, nrow) # size of testing datasets
-    ids <- tapply(newdata2[[id_var]], newdata2[["fold_"]], unique)
-    ns <- sapply(ids, length) # number of test subjects per fold
-    predictions <- weights <- vector("list", V)
-    for (v in seq_len(V)) {
-        temp_p <- temp_w <- vector("list", L)
-        for (l in seq_len(L)) {
-            preds <- predict(object[[v]][[l]], process = "event", times = Thoriz,
-                             newdata = newdata2[newdata2$fold_ == v, ])
-            temp_p[[l]] <- preds$pred[preds$times > Tstart]
-            if (any(ind3)) {
-                nams <- names(ind3[ind3])
-                preds2 <- predict(object[[v]][[l]],
-                                  newdata = newdata[id %in% nams, ],
-                                  process = "event", times = Thoriz)
-                weights <- preds2$pred
-                f <- factor(preds2$id, levels = unique(preds2$id))
-                names(weights) <- f
-                temp_w[[l]] <- tapply(weights, f, tail, 1)
+    # subjects who had the event before Thoriz
+    ind1 <- Time < Thoriz & event == 1
+    # subjects who had the event after Thoriz
+    ind2 <- Time > Thoriz
+    # subjects who were censored in the interval (Tstart, Thoriz)
+    ind3 <- Time < Thoriz & event == 0
+    Brier <- if (!is_jm(object)) {
+        # Super Learning
+        V <- length(object) # number of folds
+        L <- length(object[[1]]) # number of models
+        ns <- sapply(CV_data$testing, nrow) # size of testing datasets
+        ids <- tapply(newdata2[[id_var]], newdata2[["fold_"]], unique)
+        ns <- sapply(ids, length) # number of test subjects per fold
+        predictions <- W <- vector("list", V)
+        for (v in seq_len(V)) {
+            temp_p <- temp_w <- vector("list", L)
+            for (l in seq_len(L)) {
+                preds <- predict(object[[v]][[l]], process = "event",
+                                 times = Thoriz,
+                                 newdata = newdata2[newdata2$fold_ == v, ], ...)
+                temp_p[[l]] <- preds$pred[preds$times > Tstart]
+                # which subjects in fold v had Time < Thoriz & event == 0
+                id_cens <- names(ind3[ind3])[names(ind3[ind3]) %in% ids[[v]]]
+                if (length(id_cens)) {
+                    preds2 <- predict(object[[v]][[l]],
+                                      newdata = newdata[id %in% id_cens, ],
+                                      process = "event", times = Thoriz, ...)
+                    weights <- preds2$pred
+                    f <- factor(preds2$id, levels = unique(preds2$id))
+                    names(weights) <- f
+                    temp_w[[l]] <- tapply(weights, f, tail, 1)
+                }
             }
+            predictions[[v]] <- do.call("cbind", temp_p)
+            W[[v]] <- if (length(id_cens)) do.call("cbind", temp_w)
         }
-        predictions[[v]] <- do.call("cbind", temp_p)
+        predictions <- do.call("rbind", predictions)
+        W <- do.call("rbind", W)
+        weights_fun <- function (coefs) {
+            coefs <- c(0.0, coefs)
+            varpi <- exp(coefs) / sum(exp(coefs))
+            pi_u_t <- rowSums(predictions * rep(varpi, each = nrow(predictions)))
+            names(pi_u_t) <- names(Time)
+            weights <- rowSums(W * rep(varpi, each = nrow(W)))
+            brier_fun(pi_u_t, weights, ind1, ind2, ind3)
+        }
+        opt <- optim(rep(0, L - 1), weights_fun, method = "BFGS")
+        coefs <- c(0, opt$par)
+        varpi <- exp(coefs) / sum(exp(coefs))
+        Brier <- numeric(L)
+        for (l in seq_len(L)) {
+            Brier[l] <- brier_fun(predictions[, l], W[, l], ind1, ind2, ind3)
+        }
+        list(Brier = Brier, opt_Brier = opt$value, weights = varpi)
+    } else {
+        preds <- predict(object, newdata = newdata2, process = "event",
+                         times = Thoriz, ...)
+        pi_u_t <- preds$pred
+        names(pi_u_t) <- preds$id
+        # cumulative risk at Thoriz
+        pi_u_t <- pi_u_t[preds$times > Tstart]
+        if (any(ind3)) {
+            nams <- names(ind3[ind3])
+            preds2 <- predict(object, newdata = newdata[id %in% nams, ],
+                              process = "event", times = Thoriz, ...)
+            weights <- preds2$pred
+            f <- factor(preds2$id, levels = unique(preds2$id))
+            names(weights) <- f
+            weights <- tapply(weights, f, tail, 1)
+        }
+        brier_fun(pi_u_t, weights, ind1, ind2, ind3)
     }
-    predictions <- do.call("rbind", predictions)
-} else {
-    preds <- predict(object, newdata = newdata2, process = "event",
-                     times = Thoriz)
-    pi_u_t <- preds$pred
-    names(pi_u_t) <- preds$id
-    # cumulative risk at Thoriz
-    pi_u_t <- pi_u_t[preds$times > Tstart]
-    if (any(ind3)) {
-        nams <- names(ind3[ind3])
-        preds2 <- predict(object, newdata = newdata[id %in% nams, ],
-                          process = "event", times = Thoriz, ...)
-        weights <- preds2$pred
-        f <- factor(preds2$id, levels = unique(preds2$id))
-        names(weights) <- f
-        weights <- tapply(weights, f, tail, 1)
-    }
-}
-coefs <- rep(0.0, L)
-varpi <- exp(coefs) / sum(exp(coefs))
-pi_u_t <- rowSums(predictions * rep(varpi, each = nrow(predictions)))
+    out <- list(Brier = Brier, nr = nr, Tstart = Tstart, Thoriz = Thoriz,
+                nameObject = deparse(substitute(object)))
+    class(out) <- "tvBrier"
+    out
 
-loss <- function (x) x * x
-events <- sum(loss(1 - pi_u_t[ind1]), na.rm = TRUE)
-no_events <- sum(loss(pi_u_t[ind2]), na.rm = TRUE)
-censored <- if (any(ind3)) {
-    sum(weights * loss(1 - pi_u_t[ind3]) +
-            (1 - weights) * loss(pi_u_t[ind3]), na.rm = TRUE)
-} else 0.0
-nr <- length(Time)
-Brier <- (events + no_events + censored) / nr
+}
+
+print.tvBrier <- function (x, digits = 4, ...) {
+    if (!inherits(x, "tvBrier"))
+        stop("Use only with 'tvBrier' objects.\n")
+    cat("\nPrediction Error for the Joint Model", x$nameObject)
+    cat("\n\nEstimated Brier score:", round(x$Brier, digits))
+    cat("\nAt time:", round(x$Thoriz, digits))
+    cat("\nUsing information up to time: ", round(x$Tstart, digits),
+        " (", x$nr, " subjects still at risk)", sep = "")
+    cat("\n\n")
+    invisible(x)
+}
+
+
+
+
 
 
 
