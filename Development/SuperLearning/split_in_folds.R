@@ -21,6 +21,7 @@ create_folds <- function (data, V = 5, id_var = "id", seed = 123L) {
 
 newdata <- create_folds(pbc2)
 fit_models <- function (data) {
+    library("JMbayes2")
     lmeFit <- lme(log(serBilir) ~ year * sex, data = data,
                   random = ~ year | id)
     data_id <- data[!duplicated(data$id), ]
@@ -30,17 +31,20 @@ fit_models <- function (data) {
                  functional_forms = ~ slope(log(serBilir)))
     jmFit3 <- jm(CoxFit, lmeFit, time_var = "year",
                  functional_forms = ~ area(log(serBilir)) + slope(log(serBilir)))
-    jmFit4 <- jm(CoxFit, lmeFit, time_var = "year",
-                 functional_forms = ~ area(log(serBilir)) + value(log(serBilir)))
-    list(M1 = jmFit1, M2 = jmFit2, M3 = jmFit3, M4 = jmFit4)
+    list(M1 = jmFit1, M2 = jmFit2, M3 = jmFit3)
 }
-object <- lapply(newdata$training, fit_models)
 
+cl <- parallel::makeCluster(5L)
+Models <- parallel::parLapply(cl, newdata$training, fit_models)
+parallel::stopCluster(cl)
 
-Tstart = 5
-Thoriz = 7
+# object <- lapply(newdata$training, fit_models)
+# Tstart = 5
+# Thoriz = 7
+# cores = max(parallel::detectCores() - 1, 1)
 
-tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
+tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
+                     cores = max(parallel::detectCores() - 1, 1), ...) {
     is_jm <- function (object) inherits(object, "jm")
     if (!is_jm(object)) {
         if (!all(sapply(unlist(object, recursive = FALSE), is_jm)))
@@ -55,8 +59,8 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     if (is.null(Thoriz)) {
         Thoriz <- Tstart + Dt
     }
-    Tstart <- Tstart + 1e-06
-    Thoriz <- Thoriz + 1e-06
+    Tstart <- Tstart
+    Thoriz <- Thoriz
     brier_fun <- function (pi_u_t, weights, ind1, ind2, ind3) {
         loss <- function (x) x * x
         events <- sum(loss(1 - pi_u_t[ind1]), na.rm = TRUE)
@@ -67,8 +71,8 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
         } else 0.0
         (events + no_events + censored) / length(ind1)
     }
-    test1 <-
-    if (!is.data.frame(newdata) || nrow(newdata) == 0) {
+    if (!is.data.frame(newdata) &&
+        (!is.list(newdata) && !all(names(newdata) %in% c("training", "testing")))) {
         stop("'newdata' must be a data.frame with more than one rows.\n")
     }
     # if newdata is a list with components 'training' and 'testing',
@@ -83,7 +87,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     # if Super Learning, object needs to be a list with length the
     # number of folds. In each element of the list, we have a list of fitted
     # models
-    obj <- if (inherits(object, "jm")) object else object[[1L]][[1L]]
+    obj <- if (is_jm(object)) object else object[[1L]][[1L]]
     id_var <- obj$model_info$var_names$idVar
     time_var <- obj$model_info$var_names$time_var
     Time_var <- obj$model_info$var_names$Time_var
@@ -134,38 +138,45 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     ind2 <- Time > Thoriz
     # subjects who were censored in the interval (Tstart, Thoriz)
     ind3 <- Time < Thoriz & event == 0
-    Brier <- if (!is_jm(object)) {
+    out <- if (!is_jm(object)) {
         # Super Learning
         V <- length(object) # number of folds
         L <- length(object[[1]]) # number of models
-        ns <- sapply(CV_data$testing, nrow) # size of testing datasets
         ids <- tapply(newdata2[[id_var]], newdata2[["fold_"]], unique)
-        ns <- sapply(ids, length) # number of test subjects per fold
-        predictions <- W <- vector("list", V)
-        for (v in seq_len(V)) {
+        run_over_folds <- function (v, object, newdata, newdata2, Tstart, Thoriz,
+                                    ind1, ind2, ind3, ids, id, L) {
             temp_p <- temp_w <- vector("list", L)
             for (l in seq_len(L)) {
                 preds <- predict(object[[v]][[l]], process = "event",
                                  times = Thoriz,
-                                 newdata = newdata2[newdata2$fold_ == v, ], ...)
+                                 newdata = newdata2[newdata2$fold_ == v, ])
                 temp_p[[l]] <- preds$pred[preds$times > Tstart]
                 # which subjects in fold v had Time < Thoriz & event == 0
                 id_cens <- names(ind3[ind3])[names(ind3[ind3]) %in% ids[[v]]]
                 if (length(id_cens)) {
                     preds2 <- predict(object[[v]][[l]],
                                       newdata = newdata[id %in% id_cens, ],
-                                      process = "event", times = Thoriz, ...)
+                                      process = "event", times = Thoriz)
                     weights <- preds2$pred
                     f <- factor(preds2$id, levels = unique(preds2$id))
                     names(weights) <- f
                     temp_w[[l]] <- tapply(weights, f, tail, 1)
                 }
             }
-            predictions[[v]] <- do.call("cbind", temp_p)
-            W[[v]] <- if (length(id_cens)) do.call("cbind", temp_w)
+            list(predictions = do.call("cbind", temp_p),
+                 W = if (length(id_cens)) do.call("cbind", temp_w))
         }
-        predictions <- do.call("rbind", predictions)
-        W <- do.call("rbind", W)
+        cores <- min(cores, V)
+        cl <- parallel::makeCluster(cores)
+        invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
+        res <-
+            parallel::parLapply(cl, seq_len(V), run_over_folds, object = object,
+                                newdata = newdata, newdata2 = newdata2, Tstart = Tstart,
+                                Thoriz = Thoriz, ind1 = ind1, ind2 = ind2, ind3 = ind3,
+                                ids = ids, id = id, L = L)
+        parallel::stopCluster(cl)
+        predictions <- do.call("rbind", lapply(res, "[[", "predictions"))
+        W <- do.call("rbind", lapply(res, "[[", "W"))
         weights_fun <- function (coefs) {
             coefs <- c(0.0, coefs)
             varpi <- exp(coefs) / sum(exp(coefs))
@@ -200,7 +211,11 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
         }
         brier_fun(pi_u_t, weights, ind1, ind2, ind3)
     }
-    out <- list(Brier = Brier, nr = nr, Tstart = Tstart, Thoriz = Thoriz,
+    out <- list(Brier = if (is_jm(object)) out else out$opt_Brier,
+                Brier_per_model = if (!is_jm(object)) out$Brier,
+                weights = if (!is_jm(object)) out$weights,
+                nr = length(Time),
+                Tstart = Tstart, Thoriz = Thoriz,
                 nameObject = deparse(substitute(object)))
     class(out) <- "tvBrier"
     out
@@ -210,7 +225,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
 print.tvBrier <- function (x, digits = 4, ...) {
     if (!inherits(x, "tvBrier"))
         stop("Use only with 'tvBrier' objects.\n")
-    cat("\nPrediction Error for the Joint Model", x$nameObject)
+    cat("\nPrediction Error for the Joint Model(s)", x$nameObject)
     cat("\n\nEstimated Brier score:", round(x$Brier, digits))
     cat("\nAt time:", round(x$Thoriz, digits))
     cat("\nUsing information up to time: ", round(x$Tstart, digits),
@@ -221,7 +236,33 @@ print.tvBrier <- function (x, digits = 4, ...) {
 
 
 
-
+system.time({
+    predictions <- W <- vector("list", V)
+    for (v in seq_len(V)) {
+        temp_p <- temp_w <- vector("list", L)
+        for (l in seq_len(L)) {
+            preds <- predict(object[[v]][[l]], process = "event",
+                             times = Thoriz,
+                             newdata = newdata2[newdata2$fold_ == v, ])
+            temp_p[[l]] <- preds$pred[preds$times > Tstart]
+            # which subjects in fold v had Time < Thoriz & event == 0
+            id_cens <- names(ind3[ind3])[names(ind3[ind3]) %in% ids[[v]]]
+            if (length(id_cens)) {
+                preds2 <- predict(object[[v]][[l]],
+                                  newdata = newdata[id %in% id_cens, ],
+                                  process = "event", times = Thoriz)
+                weights <- preds2$pred
+                f <- factor(preds2$id, levels = unique(preds2$id))
+                names(weights) <- f
+                temp_w[[l]] <- tapply(weights, f, tail, 1)
+            }
+        }
+        predictions[[v]] <- do.call("cbind", temp_p)
+        W[[v]] <- if (length(id_cens)) do.call("cbind", temp_w)
+    }
+    predictions <- do.call("rbind", predictions)
+    W <- do.call("rbind", W)
+})
 
 
 
