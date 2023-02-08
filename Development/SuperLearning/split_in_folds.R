@@ -222,6 +222,9 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
 
 }
 
+x <- tvBrier(Models, newdata, Tstart = 5, Dt = 2)
+
+
 print.tvBrier <- function (x, digits = 4, ...) {
     if (!inherits(x, "tvBrier"))
         stop("Use only with 'tvBrier' objects.\n")
@@ -230,6 +233,10 @@ print.tvBrier <- function (x, digits = 4, ...) {
     cat("\nAt time:", round(x$Thoriz, digits))
     cat("\nUsing information up to time: ", round(x$Tstart, digits),
         " (", x$nr, " subjects still at risk)", sep = "")
+    if (!is.null(x$Brier_per_model)) {
+        cat("\n\nBrier score per model:", round(x$Brier_per_model, digits))
+        cat("\nweights per model:", round(x$weights, digits))
+    }
     cat("\n\n")
     invisible(x)
 }
