@@ -25,14 +25,16 @@ if (FALSE) {
     Tstart = 0
     Thoriz = 2
     cores = max(parallel::detectCores() - 1, 1)
-    type_weights = "IPCW"
+    integrated = FALSE
+    type_weights = "model-based"
     newdata = prothro
 
     object = Models
     Tstart = 0
     Thoriz = 2
     cores = max(parallel::detectCores() - 1, 1)
-    type_weights = "IPCW"
+    integrated = TRUE
+    type_weights = "model-based"
     newdata = CVdats$testing
 }
 
@@ -55,7 +57,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     }
     Tstart <- Tstart + 1e-06
     type_weights <- match.arg(type_weights)
-    brier_fun <- function (pi_u_t, integrated, type_weights, weights,
+    brier_fun <- function (pi_u_t, type_weights, weights,
                            ind1, ind2, ind3) {
         loss <- function (x) x * x
         res <- if (type_weights == "model-based") {
@@ -68,9 +70,6 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             (events + no_events + censored) / length(ind1)
         } else {
             mean(loss(as.numeric(ind1) - pi_u_t) * weights)
-        }
-        if (integrated) {
-           res <- 0.5 * res
         }
         res
     }
@@ -117,127 +116,176 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
              "and longitudinal measurements before Tstart.")
     }
     newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
-    test <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
-    if (!any(test)) {
-        stop("it seems that there are no events in the interval [Tstart, Thoriz).")
-    }
-    newdata2 <- newdata
-    newdata2[[Time_var]] <- Tstart
-    newdata2[[event_var]] <- 0
 
-    id <- newdata[[id_var]]
-    Time <- newdata[[Time_var]]
-    event <- newdata[[event_var]]
-    f <- factor(id, levels = unique(id))
-    Time <- tapply(Time, f, tail, 1L)
-    event <- tapply(event, f, tail, 1L)
-    names(Time) <- names(event) <- as.character(unique(id))
-
-    # subjects who had the event before Thoriz
-    ind1 <- Time < Thoriz & event == 1
-    # subjects who had the event after Thoriz
-    ind2 <- Time > Thoriz
-    # subjects who were censored in the interval (Tstart, Thoriz)
-    ind3 <- Time < Thoriz & event == 0
-    if (sum(ind1) < 5) {
-        warning("there are fewer than 5 subjects with an event in the interval ",
-                "[Tstart, Thoriz).\n")
-    }
-
-    if (type_weights == "IPCW") {
-        cens_data <- data.frame(Time = Time, cens_ind = 1 - event)
-        censoring_dist <- survfit(Surv(Time, cens_ind) ~ 1, data = cens_data)
-        weights <- numeric(length(Time))
-        weights[ind1] <- 1 / summary(censoring_dist, times = Time[ind1])$surv
-        weights[ind2] <- 1 / summary(censoring_dist, times = Thoriz)$surv
-    }
-
-    out <- if (!is_jm(object)) {
-        # Super Learning
-        V <- length(object) # number of folds
-        L <- length(object[[1]]) # number of models
-        ids <- tapply(newdata2[[id_var]], newdata2[["fold_"]], unique)
-        run_over_folds <- function (v, object, newdata, newdata2, type_weights,
-                                    Tstart, Thoriz, ind1, ind2, ind3, ids, id,
-                                    L) {
-            temp_p <- temp_w <- vector("list", L)
-            for (l in seq_len(L)) {
-                preds <- predict(object[[v]][[l]], process = "event",
-                                 times = Thoriz,
-                                 newdata = newdata2[newdata2$fold_ == v, ])
-                temp_p[[l]] <- preds$pred[preds$times > Tstart]
-                # which subjects in fold v had Time < Thoriz & event == 0
-                id_cens <- names(ind3[ind3])[names(ind3[ind3]) %in% ids[[v]]]
-                if (type_weights == "model-based" && length(id_cens)) {
-                    preds2 <- predict(object[[v]][[l]],
-                                      newdata = newdata[id %in% id_cens, ],
-                                      process = "event", times = Thoriz)
-                    weights <- preds2$pred
-                    f <- factor(preds2$id, levels = unique(preds2$id))
-                    names(weights) <- f
-                    temp_w[[l]] <- tapply(weights, f, tail, 1)
-                }
-            }
-            list(predictions = do.call("cbind", temp_p),
-                 W = if (type_weights == "model-based" && length(id_cens))
-                     do.call("cbind", temp_w))
+    br <- function (Thoriz) {
+        test <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
+        if (!any(test)) {
+            stop("it seems that there are no events in the interval [Tstart, Thoriz).")
         }
-        cores <- min(cores, V)
-        cl <- parallel::makeCluster(cores)
-        invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
-        res <-
-            parallel::parLapply(cl, seq_len(V), run_over_folds, object = object,
-                                newdata = newdata, newdata2 = newdata2,
-                                type_weights = type_weights, Tstart = Tstart,
-                                Thoriz = Thoriz, ind1 = ind1, ind2 = ind2,
-                                ind3 = ind3, ids = ids, id = id, L = L)
-        parallel::stopCluster(cl)
-        predictions <- do.call("rbind", lapply(res, "[[", "predictions"))
-        W <- do.call("rbind", lapply(res, "[[", "W"))
-        if (is.null(W)) {
-            # two options: (i) IPCW, then W matrix of the weights
-            # (ii) no censored observations, then matrix of zeros
-            W <- matrix(if (type_weights == "IPCW") weights else 0.0,
-                        length(weights), L)
+        newdata2 <- newdata
+        newdata2[[Time_var]] <- Tstart
+        newdata2[[event_var]] <- 0
+
+        id <- newdata[[id_var]]
+        Time <- newdata[[Time_var]]
+        event <- newdata[[event_var]]
+        f <- factor(id, levels = unique(id))
+        Time <- tapply(Time, f, tail, 1L)
+        event <- tapply(event, f, tail, 1L)
+        names(Time) <- names(event) <- as.character(unique(id))
+
+        # subjects who had the event before Thoriz
+        ind1 <- Time < Thoriz & event == 1
+        # subjects who had the event after Thoriz
+        ind2 <- Time > Thoriz
+        # subjects who were censored in the interval (Tstart, Thoriz)
+        ind3 <- Time < Thoriz & event == 0
+        if (sum(ind1) < 5) {
+            warning("there are fewer than 5 subjects with an event in the interval ",
+                    "[Tstart, Thoriz).\n")
+        }
+
+        if (type_weights == "IPCW") {
+            cens_data <- data.frame(Time = Time, cens_ind = 1 - event)
+            censoring_dist <- survfit(Surv(Time, cens_ind) ~ 1, data = cens_data)
+            weights <- numeric(length(Time))
+            weights[ind1] <- 1 / summary(censoring_dist, times = Time[ind1])$surv
+            weights[ind2] <- 1 / summary(censoring_dist, times = Thoriz)$surv
+        }
+        if (!is_jm(object)) {
+            # Super Learning
+            V <- length(object) # number of folds
+            L <- length(object[[1]]) # number of models
+            ids <- tapply(newdata2[[id_var]], newdata2[["fold_"]], unique)
+            run_over_folds <- function (v, object, newdata, newdata2, type_weights,
+                                        Tstart, Thoriz, ind1, ind2, ind3, ids, id,
+                                        L) {
+                temp_p <- temp_w <- vector("list", L)
+                for (l in seq_len(L)) {
+                    preds <- predict(object[[v]][[l]], process = "event",
+                                     times = Thoriz,
+                                     newdata = newdata2[newdata2$fold_ == v, ])
+                    temp_p[[l]] <- preds$pred[preds$times > Tstart]
+                    # which subjects in fold v had Time < Thoriz & event == 0
+                    id_cens <- names(ind3[ind3])[names(ind3[ind3]) %in% ids[[v]]]
+                    if (type_weights == "model-based" && length(id_cens)) {
+                        preds2 <- predict(object[[v]][[l]],
+                                          newdata = newdata[id %in% id_cens, ],
+                                          process = "event", times = Thoriz)
+                        weights <- preds2$pred
+                        f <- factor(preds2$id, levels = unique(preds2$id))
+                        names(weights) <- f
+                        temp_w[[l]] <- tapply(weights, f, tail, 1)
+                    }
+                }
+                list(predictions = do.call("cbind", temp_p),
+                     W = if (type_weights == "model-based" && length(id_cens))
+                         do.call("cbind", temp_w))
+            }
+            cores <- min(cores, V)
+            cl <- parallel::makeCluster(cores)
+            invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
+            res <-
+                parallel::parLapply(cl, seq_len(V), run_over_folds, object = object,
+                                    newdata = newdata, newdata2 = newdata2,
+                                    type_weights = type_weights, Tstart = Tstart,
+                                    Thoriz = Thoriz, ind1 = ind1, ind2 = ind2,
+                                    ind3 = ind3, ids = ids, id = id, L = L)
+            parallel::stopCluster(cl)
+            predictions <- do.call("rbind", lapply(res, "[[", "predictions"))
+            W <- do.call("rbind", lapply(res, "[[", "W"))
+            if (is.null(W)) {
+                # two options: (i) IPCW, then W matrix of the weights
+                # (ii) no censored observations, then matrix of zeros
+                W <- matrix(if (type_weights == "IPCW") weights else 0.0,
+                            length(weights), L)
+            }
+            list(predictions = predictions, W = W, ind1 = ind1, ind2 = ind2,
+                 ind3 = ind3)
+        } else {
+            preds <- predict(object, newdata = newdata2, process = "event",
+                             times = Thoriz)
+            pi_u_t <- preds$pred
+            names(pi_u_t) <- preds$id
+            # cumulative risk at Thoriz
+            pi_u_t <- pi_u_t[preds$times > Tstart]
+            if (type_weights == "model-based" && any(ind3)) {
+                nams <- names(ind3[ind3])
+                preds2 <- predict(object, newdata = newdata[id %in% nams, ],
+                                  process = "event", times = Thoriz)
+                weights <- preds2$pred
+                f <- factor(preds2$id, levels = unique(preds2$id))
+                names(weights) <- f
+                weights <- tapply(weights, f, tail, 1)
+            }
+            brier_fun(pi_u_t, type_weights, weights, ind1, ind2, ind3)
+        }
+
+    }
+
+    out <- if (is_jm(object)) {
+        if (integrated) {
+            2 * br(0.5 * (Tstart + Thoriz)) / 3 + br(Thoriz) / 6
+        } else {
+            br(Thoriz)
+        }
+    } else {
+        temp <- if (integrated) {
+            list(mid = br(0.5 * (Tstart + Thoriz)), last = br(Thoriz))
+        } else {
+            br(Thoriz)
         }
         weights_fun <- function (coefs, integrated, type_weights) {
             coefs <- c(0.0, coefs)
             varpi <- exp(coefs) / sum(exp(coefs))
-            pi_u_t <- rowSums(predictions * rep(varpi, each = nrow(predictions)))
-            names(pi_u_t) <- names(Time)
-            if (type_weights == "model-based") {
-                weights <- rowSums(W * rep(varpi, each = nrow(W)))
+            if (integrated) {
+                ntemp <- length(temp)
+                res <- numeric(ntemp)
+                for (j in seq_len(ntemp)) {
+                    tt <- temp[[j]]
+                    pi_u_t <- rowSums(tt$predictions *
+                                          rep(varpi, each = nrow(tt$predictions)))
+                    weights <- if (type_weights == "model-based") {
+                        rowSums(tt$W * rep(varpi, each = nrow(tt$W)))
+                    } else tt$W
+                    res[j] <- brier_fun(pi_u_t, type_weights, weights,
+                                        tt$ind1, tt$ind2, tt$ind3)
+                }
+                2 * res[1L] / 3 + res[2L] / 6
+            } else {
+                pi_u_t <- rowSums(temp$predictions *
+                                      rep(varpi, each = nrow(temp$predictions)))
+                weights <- if (type_weights == "model-based") {
+                    rowSums(temp$W * rep(varpi, each = nrow(temp$W)))
+                } else temp$W
+                brier_fun(pi_u_t, type_weights, weights, temp$ind1,
+                          temp$ind2, temp$ind3)
             }
-            brier_fun(pi_u_t, integrated, type_weights, weights,
-                      ind1, ind2, ind3)
         }
+        L <- length(object[[1]])
         opt <- optim(rep(0, L - 1), weights_fun, method = "BFGS",
                      integrated = integrated, type_weights = type_weights)
         coefs <- c(0, opt$par)
         varpi <- exp(coefs) / sum(exp(coefs))
         Brier <- numeric(L)
         for (l in seq_len(L)) {
-            Brier[l] <- brier_fun(predictions[, l], integrated, type_weights,
-                                  W[, l], ind1, ind2, ind3)
+            Brier[l] <- if (integrated) {
+                tt_mid <- temp$mid
+                br_mid <- brier_fun(tt_mid$predictions[, l], type_weights,
+                                    tt_mid$W[, l], tt_mid$ind1, tt_mid$ind2,
+                                    tt_mid$ind3)
+                tt_last <- temp$last
+                br_last <- brier_fun(tt_last$predictions[, l], type_weights,
+                                     tt_last$W[, l], tt_last$ind1, tt_last$ind2,
+                                     tt_last$ind3)
+                2 * br_mid / 3 + br_last / 6
+            } else {
+                brier_fun(temp$predictions[, l], type_weights,
+                                  temp$W[, l], temp$ind1, temp$ind2, temp$ind3)
+            }
         }
         list(Brier = Brier, opt_Brier = opt$value, weights = varpi)
-    } else {
-        preds <- predict(object, newdata = newdata2, process = "event",
-                         times = Thoriz)
-        pi_u_t <- preds$pred
-        names(pi_u_t) <- preds$id
-        # cumulative risk at Thoriz
-        pi_u_t <- pi_u_t[preds$times > Tstart]
-        if (type_weights == "model-based" && any(ind3)) {
-            nams <- names(ind3[ind3])
-            preds2 <- predict(object, newdata = newdata[id %in% nams, ],
-                              process = "event", times = Thoriz)
-            weights <- preds2$pred
-            f <- factor(preds2$id, levels = unique(preds2$id))
-            names(weights) <- f
-            weights <- tapply(weights, f, tail, 1)
-        }
-        brier_fun(pi_u_t, integrated, type_weights, weights, ind1, ind2, ind3)
+
     }
     out <- list(Brier = if (is_jm(object)) out else out$opt_Brier,
                 Brier_per_model = if (!is_jm(object)) out$Brier,
