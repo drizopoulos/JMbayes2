@@ -22,12 +22,12 @@ create_folds <- function (data, V = 5, id_var = "id", seed = 123L) {
 
 if (FALSE) {
     object = Models[[1]][[4]]
-    Tstart = 0
-    Thoriz = 2
+    Tstart = 6
+    Thoriz = 8
     cores = max(parallel::detectCores() - 1, 1)
     integrated = FALSE
     type_weights = "model-based"
-    newdata = prothro
+    newdata = pbc2
 
     object = Models
     Tstart = 0
@@ -120,7 +120,8 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     br <- function (Thoriz) {
         test <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
         if (!any(test)) {
-            stop("it seems that there are no events in the interval [Tstart, Thoriz).")
+            stop("it seems that there are no events in the interval [", Tstart,
+                 ", ", Thoriz, ").\n")
         }
         newdata2 <- newdata
         newdata2[[Time_var]] <- Tstart
@@ -141,10 +142,9 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         # subjects who were censored in the interval (Tstart, Thoriz)
         ind3 <- Time < Thoriz & event == 0
         if (sum(ind1) < 5) {
-            warning("there are fewer than 5 subjects with an event in the interval ",
-                    "[Tstart, Thoriz).\n")
+            warning("there are fewer than 5 subjects with an event in the interval [",
+                    Tstart, ", ", Thoriz, ").\n")
         }
-
         if (type_weights == "IPCW") {
             cens_data <- data.frame(Time = Time, cens_ind = 1 - event)
             censoring_dist <- survfit(Surv(Time, cens_ind) ~ 1, data = cens_data)
@@ -201,7 +201,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                             length(weights), L)
             }
             list(predictions = predictions, W = W, ind1 = ind1, ind2 = ind2,
-                 ind3 = ind3)
+                 ind3 = ind3, Time = Time)
         } else {
             preds <- predict(object, newdata = newdata2, process = "event",
                              times = Thoriz)
@@ -218,14 +218,17 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                 names(weights) <- f
                 weights <- tapply(weights, f, tail, 1)
             }
-            brier_fun(pi_u_t, type_weights, weights, ind1, ind2, ind3)
+            list(Brier = brier_fun(pi_u_t, type_weights, weights,
+                                   ind1, ind2, ind3),
+                 ind1 = ind1, ind2 = ind2, ind3 = ind3, Time = Time)
         }
-
     }
-
     out <- if (is_jm(object)) {
         if (integrated) {
-            2 * br(0.5 * (Tstart + Thoriz)) / 3 + br(Thoriz) / 6
+            br1 <- br(0.5 * (Tstart + Thoriz))
+            res <- br2 <- br(Thoriz)
+            res$Brier <- 2 * br1$Brier / 3 + br2$Brier / 6
+            res
         } else {
             br(Thoriz)
         }
@@ -284,26 +287,30 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                                   temp$W[, l], temp$ind1, temp$ind2, temp$ind3)
             }
         }
-        list(Brier = Brier, opt_Brier = opt$value, weights = varpi)
+        list(Brier = Brier, opt_Brier = opt$value, weights = varpi,
+             Time = if (integrated) temp[[2]]$Time else temp$Time,
+             ind1 = if (integrated) temp[[2]]$ind1 else temp$ind1,
+             ind2 = if (integrated) temp[[2]]$ind2 else temp$ind2,
+             ind3 = if (integrated) temp[[2]]$ind3 else temp$ind3)
 
     }
-    out <- list(Brier = if (is_jm(object)) out else out$opt_Brier,
+    out <- list(Brier = if (is_jm(object)) out$Brier else out$opt_Brier,
                 Brier_per_model = if (!is_jm(object)) out$Brier,
                 weights = if (!is_jm(object)) out$weights,
-                nr = length(Time), nint = sum(ind1), ncens = sum(ind3),
-                Tstart = Tstart, Thoriz = Thoriz,
+                nr = length(out$Time), nint = sum(out$ind1),
+                ncens = sum(out$ind3), Tstart = Tstart, Thoriz = Thoriz,
+                nfolds = if (!is_jm(object)) length(object),
                 integrated = integrated, type_weights = type_weights,
                 nameObject = deparse(substitute(object)))
     class(out) <- "tvBrier"
     out
-
 }
 
 print.tvBrier <- function (x, digits = 4, ...) {
     if (!inherits(x, "tvBrier"))
         stop("Use only with 'tvBrier' objects.\n")
     if (!is.null(x$Brier_per_model)) {
-        cat("\nPrediction Error using the Library of Joint Models '", x$nameObject, "'",
+        cat("\nCross-Validated Prediction Error using the Library of Joint Models '", x$nameObject, "'",
             sep = "")
         if (x$integrated) {
             cat("\n\nSuper Learning Estimated Integrated Brier score:", round(x$Brier, digits))
@@ -336,27 +343,26 @@ print.tvBrier <- function (x, digits = 4, ...) {
             else "model-based weights", sep = "")
     if (!is.null(x$Brier_per_model)) {
         cat("\n\nBrier score per model:", round(x$Brier_per_model, digits))
-        cat("\nweights per model:", round(x$weights, digits))
+        cat("\nWeights per model:", round(x$weights, digits))
+        cat("\nNumber of folds:", x$nfolds)
     }
     cat("\n\n")
     invisible(x)
 }
 
 
-CVdats <- create_folds(prothro, id_var = "id")
+CVdats <- create_folds(pbc2, id_var = "id")
 fit_models <- function (data) {
     library("JMbayes2")
-    lmeFit <- lme(pro ~ I(1 * (time == 0)) + poly(time, 2) * treat, data = data,
-                  random = ~ poly(time, 2) | id)
+    lmeFit <- lme(log(serBilir) ~ poly(year, 2) * sex, data = data,
+                  random = ~ poly(year, 2) | id)
     data_id <- data[!duplicated(data$id), ]
-    CoxFit <- coxph(Surv(Time, death) ~ treat, data = data_id)
-    jmFit1 <- jm(CoxFit, lmeFit, time_var = "time")
-    jmFit2 <- jm(CoxFit, lmeFit, time_var = "time",
-                 functional_forms = ~ slope(pro))
-    jmFit3 <- jm(CoxFit, lmeFit, time_var = "time",
-                 functional_forms = ~ value(pro) + slope(pro))
-    jmFit4 <- jm(CoxFit, lmeFit, time_var = "time",
-                 functional_forms = ~ area(pro))
+    CoxFit <- coxph(Surv(years, status2) ~ sex, data = data_id)
+    jmFit1 <- jm(CoxFit, lmeFit, time_var = "year")
+    jmFit2 <- update(jmFit1, functional_forms = ~ slope(log(serBilir)))
+    jmFit3 <- update(jmFit1, functional_forms = ~ value(log(serBilir)) +
+                         slope(log(serBilir)))
+    jmFit4 <- update(jmFit1, functional_forms = ~ area(log(serBilir)))
     list(M1 = jmFit1, M2 = jmFit2, M3 = jmFit3, M4 = jmFit4)
 }
 
@@ -365,11 +371,11 @@ Models <- parallel::parLapply(cl, CVdats$training, fit_models)
 parallel::stopCluster(cl)
 
 
-tstr <- 1.5
-thor <- 2.5
-ttt1 <- tvBrier(Models[[1]][[4]], prothro, integrated = TRUE,
+tstr <- 6
+thor <- 8
+ttt1 <- tvBrier(Models[[1]][[4]], pbc2, integrated = TRUE,
                 Tstart = tstr, Thoriz = thor)
-ttt2 <- tvBrier(Models[[1]][[4]], prothro, integrated = FALSE,
+ttt2 <- tvBrier(Models[[1]][[4]], pbc2, integrated = FALSE,
                 type_weights = "IPCW", Tstart = tstr, Thoriz = thor)
 
 xxx1 <- tvBrier(Models, CVdats$testing, integrated = FALSE,
