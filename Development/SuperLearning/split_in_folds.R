@@ -351,18 +351,19 @@ print.tvBrier <- function (x, digits = 4, ...) {
 }
 
 
-CVdats <- create_folds(pbc2, id_var = "id")
+CVdats <- create_folds(aids, id_var = "patient")
 fit_models <- function (data) {
     library("JMbayes2")
-    lmeFit <- lme(log(serBilir) ~ poly(year, 2) * sex, data = data,
-                  random = ~ poly(year, 2) | id)
-    data_id <- data[!duplicated(data$id), ]
-    CoxFit <- coxph(Surv(years, status2) ~ sex, data = data_id)
-    jmFit1 <- jm(CoxFit, lmeFit, time_var = "year")
-    jmFit2 <- update(jmFit1, functional_forms = ~ slope(log(serBilir)))
-    jmFit3 <- update(jmFit1, functional_forms = ~ value(log(serBilir)) +
-                         slope(log(serBilir)))
-    jmFit4 <- update(jmFit1, functional_forms = ~ area(log(serBilir)))
+    lmeFit <- lme(CD4 ~ obstime * drug, data = data,
+                  random = ~ obstime | patient,
+                  control = lmeControl(opt = "optim"))
+    data_id <- data[!duplicated(data$patient), ]
+    CoxFit <- coxph(Surv(Time, death) ~ drug, data = data_id)
+    jmFit1 <- jm(CoxFit, lmeFit, time_var = "obstime")
+    jmFit2 <- update(jmFit1, functional_forms = ~ slope(CD4))
+    jmFit3 <- update(jmFit1, functional_forms = ~ value(CD4) +
+                         slope(CD4))
+    jmFit4 <- update(jmFit1, functional_forms = ~ area(CD4))
     list(M1 = jmFit1, M2 = jmFit2, M3 = jmFit3, M4 = jmFit4)
 }
 
@@ -371,14 +372,14 @@ Models <- parallel::parLapply(cl, CVdats$training, fit_models)
 parallel::stopCluster(cl)
 
 
-tstr <- 6
-thor <- 8
-ttt1 <- tvBrier(Models[[1]][[4]], pbc2, integrated = TRUE,
+tstr <- 8
+thor <- 10
+ttt1 <- tvBrier(Models[[1]][[4]], aids, integrated = TRUE,
                 Tstart = tstr, Thoriz = thor)
-ttt2 <- tvBrier(Models[[1]][[4]], pbc2, integrated = FALSE,
+ttt2 <- tvBrier(Models[[1]][[4]], aids, integrated = TRUE,
                 type_weights = "IPCW", Tstart = tstr, Thoriz = thor)
 
-xxx1 <- tvBrier(Models, CVdats$testing, integrated = FALSE,
+xxx1 <- tvBrier(Models, CVdats$testing, integrated = TRUE,
                 Tstart = tstr, Thoriz = thor)
 xxx2 <- tvBrier(Models, CVdats$testing, integrated = TRUE,
                 type_weights = "IPCW", Tstart = tstr, Thoriz = thor)
