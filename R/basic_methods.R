@@ -595,7 +595,7 @@ crisk_setup <- function (data, statusVar, censLevel, nameStrata = "strata",
 }
 
 predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
-                        times = NULL,
+                        times = NULL, times_per_id = FALSE,
                         process = c("longitudinal", "event"),
                         type_pred = c("response", "link"),
                         type = c("subject_specific", "mean_subject"),
@@ -739,7 +739,7 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
                      type_pred, level, return_newdata, return_mcmc)
     } else {
         predict_Event(object, components_newdata, newdata, newdata2, times,
-                      level, return_newdata, return_mcmc)
+                      times_per_id, level, return_newdata, return_mcmc)
     }
 }
 

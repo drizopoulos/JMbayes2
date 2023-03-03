@@ -795,7 +795,8 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
 }
 
 predict_Event <- function (object, components_newdata, newdata, newdata2,
-                           times, level, return_newdata, return_mcmc) {
+                           times, times_per_id, level, return_newdata,
+                           return_mcmc) {
     # prepare the data for calculations
     newdataL <- if (!is.data.frame(newdata)) newdata[["newdataL"]] else newdata
     newdataE <- if (!is.data.frame(newdata)) newdata[["newdataE"]] else newdata
@@ -831,8 +832,15 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
                  "subjects the last available time is \nlarger than the ",
                  "maximum time to predict; redefine 'times' accordingly.")
         }
-        f <- function (lt, tt, tm) c(lt, sort(tt[tt > lt & tt <= tm]))
-        times <- lapply(last_times, f, tt = times, tm = t_max)
+        if (times_per_id) {
+            f <- function (lt, tt, tm) c(lt, min(tt, tm))
+            times <- mapply2(f, lt = last_times, tt = times,
+                             MoreArgs = list(tm = t_max))
+
+        } else {
+            f <- function (lt, tt, tm) c(lt, sort(tt[tt > lt & tt <= tm]))
+            times <- lapply(last_times, f, tt = times, tm = t_max)
+        }
     }
     n_times <- sapply(times, length)
 
