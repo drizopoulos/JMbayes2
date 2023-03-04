@@ -8,6 +8,9 @@
 \alias{calibration_plot}
 \alias{calibration_metrics}
 \alias{tvBrier}
+\alias{tvEPCE}
+\alias{create_folds}
+
 
 \title{Time-Dependent ROCs and AUCs for Joint Models}
 
@@ -37,11 +40,18 @@ calibration_plot(object, newdata, Tstart, Thoriz = NULL,
 calibration_metrics(object, newdata, Tstart, Thoriz = NULL,
     Dt = NULL, df_ns = 3, \dots)
 
-tvBrier(object, newdata, Tstart, Thoriz = NULL, Dt = NULL, \dots)
+tvBrier(object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
+    integrated = FALSE, type_weights = c("model-based", "IPCW"),
+    cores = max(parallel::detectCores() - 1, 1), \dots)
+
+tvEPCE(object, newdata, Tstart, Thoriz = NULL, Dt = NULL, eps = 0.001,
+    cores = max(parallel::detectCores() - 1, 1), \dots)
+
+create_folds(data, V = 5, id_var = "id", seed = 123L)
 }
 
 \arguments{
-\item{object}{an object inheriting from class \code{jm}, except for \code{tvAUC.tvROC()} where this is an object of class \code{tvROC}.}
+\item{object}{an object inheriting from class \code{jm}, except for \code{tvAUC.tvROC()} where this is an object of class \code{tvROC}. For \code{tvBrier()} and \code{tvEPCE()} it can also be a library of joint models.}
 
 \item{newdata}{a data.frame that contains the longitudinal and covariate information for the subjects for which prediction of survival probabilities is required. The names of the variables in this data.frame must be the same as in the data.frames that were used to fit the linear mixed effects and the event process model that were supplied as the two first argument of \code{\link{jm}}.}
 
@@ -51,6 +61,15 @@ tvBrier(object, newdata, Tstart, Thoriz = NULL, Dt = NULL, \dots)
 
 \item{Dt}{numeric scalar denoting the length of the time interval of prediction; either \code{Dt} or \code{Thoriz} must be specified.}
 
+\item{integrated}{logical; if \code{TRUE} the integrated Brier score is calculated.}
+
+\item{type_weights}{character string denoting the type of weights to use to account for censorting. Options are model-based (default) and inverse probability of censoring weighting (using the Kaplan-Meier estimate of the censoring distribution).}
+
+\item{eps}{numeric scalar used in the approximation of the hazard function.}
+
+\item{cores}{integer denoting the number of cores to be used when a library of joint models has been provided in
+    \code{object}.}
+
 \item{df_ns}{the degrees of freedom for the natural cubic spline of the cloglog transformation of the
 predicted probabilities used in the Cox model that assess calibration.}
 
@@ -59,6 +78,14 @@ predicted probabilities used in the Cox model that assess calibration.}
 \item{add_density}{logical; should the kernal density estimation of the predicted probabilities be superimposed in the calibration plot.}
 
 \item{col, lwd, lty, col_dens, xlab, ylab, main}{graphical parameters.}
+
+\item{data}{the data.frame to split in folds.}
+
+\item{V}{numeric scalar denoting the number of folds.}
+
+\item{id_var}{character string denoting the name of the subject id variable in \code{data}.}
+
+\item{seed}{integer denoting the seed.}
 
 \item{\dots}{additional arguments passed to \code{predict.jm()}.}
 }

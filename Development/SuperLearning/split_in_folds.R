@@ -209,7 +209,7 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             EPCE[l] <- epce_fun(predictions[, l], predictions2[, l],
                                 tilde_event, eps)
         }
-        list(EPCE = EPCE, opt_EPCE = opt$value, weights = varpi)
+        list(EPCE_per_model = EPCE, EPCE = opt$value, weights = varpi)
     } else {
         # calculate Pr(T_i^* > \tilde T_i | T_i^* > t)
         preds <- predict(object, newdata = newdata2, process = "event",
@@ -244,6 +244,35 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     out$nameObject <- deparse(substitute(object))
     class(out) <- "tvEPCE"
     out
+}
+
+print.tvEPCE <- function (x, digits = 4, ...) {
+    if (!inherits(x, "tvEPCE"))
+        stop("Use only with 'tvEPCE' objects.\n")
+    if (!is.null(x$EPCE_per_model)) {
+        cat("\nCross-Validated Expected Predictive Cross-Entropy using the Library of Joint Models '", x$nameObject, "'",
+            sep = "")
+            cat("\n\nSuper Learning Estimated EPCE:", round(x$EPCE, digits))
+    } else {
+        cat("\nExpected Predictive Cross-Entropy for the Joint Model '", x$nameObject, "'",
+            sep = "")
+        cat("\n\nEstimated EPCE:", round(x$EPCE, digits))
+    }
+    cat("\nIn the time interval: [", round(x$Tstart, digits),
+            ", ", round(x$Thoriz, digits), ")", sep = "")
+    cat("\nFor the ",  x$nr, " subjects at risk at time ",
+        round(x$Tstart, digits), sep = "")
+    cat("\nNumber of subjects with an event in [", round(x$Tstart, digits),
+        ", ", round(x$Thoriz, digits), "): ", x$nint, sep = "")
+    cat("\nNumber of subjects with a censored time in [", round(x$Tstart, digits),
+        ", ", round(x$Thoriz, digits), "): ", x$ncens, sep = "")
+    if (!is.null(x$EPCE_per_model)) {
+        cat("\n\nBrier score per model:", round(x$EPCE_per_model, digits))
+        cat("\nWeights per model:", round(x$weights, digits))
+        cat("\nNumber of folds:", x$nfolds)
+    }
+    cat("\n\n")
+    invisible(x)
 }
 
 
@@ -595,4 +624,9 @@ xxx2 <- tvBrier(Models, CVdats$testing, integrated = TRUE,
 
 
 
+tstr <- 8
+thor <- 10
+ttt1 <- tvEPCE(Models[[1]][[4]], aids, Tstart = tstr, Thoriz = thor)
+
+xxx1 <- tvEPCE(Models, CVdats$testing, Tstart = tstr, Thoriz = thor)
 
