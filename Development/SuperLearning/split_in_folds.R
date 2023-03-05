@@ -606,27 +606,54 @@ fit_models <- function (data) {
 }
 
 cl <- parallel::makeCluster(5L)
-Models <- parallel::parLapply(cl, CVdats$training, fit_models)
+Models_folds <- parallel::parLapply(cl, CVdats$training, fit_models)
 parallel::stopCluster(cl)
 
 
 tstr <- 8
 thor <- 10
-ttt1 <- tvBrier(Models[[1]][[4]], aids, integrated = TRUE,
+ttt1 <- tvBrier(Models_folds[[1]][[4]], aids, integrated = TRUE,
                 Tstart = tstr, Thoriz = thor)
-ttt2 <- tvBrier(Models[[1]][[4]], aids, integrated = TRUE,
+ttt2 <- tvBrier(Models_folds[[1]][[4]], aids, integrated = TRUE,
                 type_weights = "IPCW", Tstart = tstr, Thoriz = thor)
 
-xxx1 <- tvBrier(Models, CVdats$testing, integrated = TRUE,
+xxx1 <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
                 Tstart = tstr, Thoriz = thor)
-xxx2 <- tvBrier(Models, CVdats$testing, integrated = TRUE,
+xxx2 <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
                 type_weights = "IPCW", Tstart = tstr, Thoriz = thor)
 
 
 
 tstr <- 8
 thor <- 10
-ttt1 <- tvEPCE(Models[[1]][[4]], aids, Tstart = tstr, Thoriz = thor)
+ttt1 <- tvEPCE(Models_folds[[1]][[4]], aids, Tstart = tstr, Thoriz = thor)
 
-xxx1 <- tvEPCE(Models, CVdats$testing, Tstart = tstr, Thoriz = thor)
+xxx1 <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
+
+
+
+
+Models <- fit_models(aids)
+
+ND <- aids[aids$Time > 8 & aids$obstime <= 8, ]
+ND$patient <- ND$patient[, drop = TRUE]
+ND$Time <- 8
+ND$death <- 0
+model_weights <- xxx1$weights
+cl <- parallel::makeCluster(length(model_weights))
+invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
+preds <- parallel::parLapply(cl, Models, predict, newdata = ND,
+                             process = "event", return_mcmc = TRUE)
+parallel::stopCluster(cl)
+
+MCMC <- lapply(preds, "[[", "mcmc")
+weighted_MCMC <- Reduce("+", mapply("*", MCMC, model_weights, SIMPLIFY = FALSE))
+pred_ <- rowMeans(weighted_MCMC)
+low_ <- apply(weighted_MCMC, 1, quantile, probs = 0.025)
+upp_ <- apply(weighted_MCMC, 1, quantile, probs = 0.975)
+
+out <- preds[[1]]
+out$pred <- pred_
+out$low <- low_
+out$upp <- upp_
 
