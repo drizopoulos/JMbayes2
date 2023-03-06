@@ -656,6 +656,7 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         }
         cores <- min(cores, V)
         cl <- parallel::makeCluster(cores)
+        invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
         res <-
             parallel::parLapply(cl, seq_len(V), run_over_folds, object = object,
                                 newdata = newdata, newdata2 = newdata2,
@@ -898,6 +899,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             }
             cores <- min(cores, V)
             cl <- parallel::makeCluster(cores)
+            invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
             res <-
                 parallel::parLapply(cl, seq_len(V), run_over_folds, object = object,
                                     newdata = newdata, newdata2 = newdata2,
