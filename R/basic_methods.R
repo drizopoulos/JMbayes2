@@ -735,8 +735,9 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
     components_newdata <- get_components_newdata(object, newdata, n_samples,
                                                  n_mcmc, cores, seed)
     if (process == "longitudinal") {
-        predict_Long(object, components_newdata, newdata, newdata2, times, type,
-                     type_pred, level, return_newdata, return_mcmc)
+        predict_Long(object, components_newdata, newdata, newdata2, times,
+                     times_per_id, type, type_pred, level, return_newdata,
+                     return_mcmc)
     } else {
         predict_Event(object, components_newdata, newdata, newdata2, times,
                       times_per_id, level, return_newdata, return_mcmc)

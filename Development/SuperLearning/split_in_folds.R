@@ -624,7 +624,7 @@ xxx2 <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
 
 
 
-tstr <- 8
+tstr <- 9
 thor <- 10
 ttt1 <- tvEPCE(Models_folds[[1]][[4]], aids, Tstart = tstr, Thoriz = thor)
 
@@ -635,9 +635,9 @@ xxx1 <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
 
 Models <- fit_models(aids)
 
-ND <- aids[aids$Time > 8 & aids$obstime <= 8, ]
+ND <- aids[aids$Time > 9 & aids$obstime <= 9, ]
 ND$patient <- ND$patient[, drop = TRUE]
-ND$Time <- 8
+ND$Time <- 9
 ND$death <- 0
 model_weights <- xxx1$weights
 cl <- parallel::makeCluster(length(model_weights))
