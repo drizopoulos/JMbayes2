@@ -635,6 +635,7 @@ xxx1 <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
 
 Models <- fit_models(aids)
 
+mapply2 <- JMbayes2:::mapply2
 ND <- aids[aids$Time > 9 & aids$obstime <= 9, ]
 ND$patient <- ND$patient[, drop = TRUE]
 ND$Time <- 9
@@ -643,17 +644,47 @@ model_weights <- xxx1$weights
 cl <- parallel::makeCluster(length(model_weights))
 invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
 preds <- parallel::parLapply(cl, Models, predict, newdata = ND,
-                             process = "event", return_mcmc = TRUE)
+                             return_mcmc = TRUE)
 parallel::stopCluster(cl)
 
-MCMC <- lapply(preds, "[[", "mcmc")
-weighted_MCMC <- Reduce("+", mapply("*", MCMC, model_weights, SIMPLIFY = FALSE))
-pred_ <- rowMeans(weighted_MCMC)
-low_ <- apply(weighted_MCMC, 1, quantile, probs = 0.025)
-upp_ <- apply(weighted_MCMC, 1, quantile, probs = 0.975)
+extract_mcmc <- function (x) {
+    if (is.data.frame(x)) attr(x, "mcmc") else x[["mcmc"]]
+}
+MCMC <- lapply(preds, extract_mcmc)
+if (is.list(MCMC[[1L]])) {
+    n_outcomes <- length(MCMC[[1L]])
+    pred_ <- qs <- vector("list", n_outcomes)
+    for (j in seq_len(n_outcomes)) {
+        weighted_MCMC <- Reduce("+", mapply2("*", MCMC[[j]], model_weights))
+        pred_[[j]] <- rowMeans(weighted_MCMC)
+        qs[[j]] <- matrixStats::rowQuantiles(weighted_MCMC, probs = c(0.025, 0.975))
+    }
+    names(pred_) <- names(qs) <- names(MCMC[[1L]])
+} else {
+    weighted_MCMC <- Reduce("+", mapply2("*", MCMC, model_weights))
+    pred_ <- rowMeans(weighted_MCMC)
+    qs <- matrixStats::rowQuantiles(weighted_MCMC, probs = c(0.025, 0.975))
+}
 
 out <- preds[[1]]
-out$pred <- pred_
-out$low <- low_
-out$upp <- upp_
-
+if (process == "event") {
+    if (!is.data.frame(out)) {
+        out$pred <- pred_
+        out$low <- qs[, 1L]
+        out$upp <- qs[, 2L]
+    } else {
+        out$pred_CIF <- pred_
+        out$low_CIF <- qs[, 1L]
+        out$upp_CIF <- qs[, 2L]
+    }
+} else {
+    if (!is.data.frame(out)) {
+        out$pred <- pred_
+        out$low <- qs[, 1L]
+        out$upp <- qs[, 2L]
+    } else {
+        out$pred_CIF <- pred_
+        out$low_CIF <- qs[, 1L]
+        out$upp_CIF <- qs[, 2L]
+    }
+}

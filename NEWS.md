@@ -1,3 +1,19 @@
+# JMbayes2 0.4.0
+
+## Major
+* Function `tvBrier()` has gained the argument `integrated` for calculating the integrated Brier score.
+
+* Function `tvBrier()` has gained the argument `type_weights` and now also allows to correct for censoring in the interval `Tstart` to `Thoriz` using inverse probability of censoring weighting. The default remains model-based weights.
+
+* The new function `tvEPCE()` calculates the time-varying expected predictive cross-entropy.
+
+* This version supports Super Learning for optimizing predictions using cross-validation and a library of joint models. In that regard, the new function `create_folds()` can be used to split a dataset in V-folds of training and test datasets. More information can be found in the corresponding vignette.
+
+## Minor
+* Weak informative priors are now used for the fixed-effects of the mixed-effects models.
+
+* Several improvements in various internal functions.
+
 # JMbayes2 0.3.0
 
 ## Major

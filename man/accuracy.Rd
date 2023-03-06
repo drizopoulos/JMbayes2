@@ -12,10 +12,10 @@
 \alias{create_folds}
 
 
-\title{Time-Dependent ROCs and AUCs for Joint Models}
+\title{Time-Dependent Predictive Accuracy Measures for Joint Models}
 
 \description{
-  Using the available longitudinal information up to a starting time point, this function computes an estimate of the ROC and the AUC at a horizon time point based on joint models.
+  Using the available longitudinal information up to a starting time point, these functions compute estimates of the ROC curve and the AUC, the Brier score and expected predictive cross-entropy at a horizon time point based on joint models.
 }
 
 \usage{
@@ -113,6 +113,10 @@ predicted probabilities used in the Cox model that assess calibration.}
 \references{
 Antolini, L., Boracchi, P., and Biganzoli, E. (2005). A time-dependent discrimination index
 for survival data. \emph{Statistics in Medicine} \bold{24}, 3927--3944.
+
+Commenges, D., Liquet, B., and Proust-Lima, C. (2012). Choice of prognostic estimators
+in joint models by estimating differences of expected conditional Kullback-Leibler risks.
+\emph{Biometrics} \bold{68}, 380--387.
 
 Harrell, F., Kerry, L. and Mark, D. (1996). Multivariable prognostic models: issues in
 developing models, evaluating assumptions and adequacy, and measuring and reducing errors.
