@@ -17,7 +17,7 @@ importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
            "clusterSetRNGStream")
 importFrom("nlme", "fixef", "ranef", "pdMatrix")
 importFrom("GLMMadaptive", "effectPlotData")
-importFrom("survival", "coxph", "untangle.specials", "strata", "survfit")
+importFrom("survival", "coxph", "untangle.specials", "strata", "survfit", "Surv")
 importFrom("splines", "splineDesign")
 importFrom("coda", "as.mcmc.list", "as.mcmc", "traceplot", "densplot",
            "gelman.diag", "cumuplot")
@@ -61,6 +61,8 @@ S3method(plot, tvROC)
 S3method(print, tvBrier)
 S3method(print, tvEPCE)
 S3method(predict, jm)
+S3method(predict, jmList)
+
 
 
 

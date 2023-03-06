@@ -599,10 +599,12 @@ fit_models <- function (data) {
     CoxFit <- coxph(Surv(Time, death) ~ drug, data = data_id)
     jmFit1 <- jm(CoxFit, lmeFit, time_var = "obstime")
     jmFit2 <- update(jmFit1, functional_forms = ~ slope(CD4))
-    jmFit3 <- update(jmFit1, functional_forms = ~ value(CD4) +
-                         slope(CD4))
-    jmFit4 <- update(jmFit1, functional_forms = ~ area(CD4))
-    list(M1 = jmFit1, M2 = jmFit2, M3 = jmFit3, M4 = jmFit4)
+    #jmFit3 <- update(jmFit1, functional_forms = ~ value(CD4) +
+    #                     slope(CD4))
+    #jmFit4 <- update(jmFit1, functional_forms = ~ area(CD4))
+    out <- list(M1 = jmFit1, M2 = jmFit2)#, M3 = jmFit3, M4 = jmFit4)
+    class(out) <- "jmList"
+    out
 }
 
 cl <- parallel::makeCluster(5L)
@@ -633,6 +635,19 @@ xxx1 <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
 
 
 Models <- fit_models(aids)
+ND <- aids[aids$Time > 9 & aids$obstime <= 9, ]
+ND$patient <- ND$patient[, drop = TRUE]
+ND$Time <- 9
+ND$death <- 0
+model_weights <- xxx1$weights
+
+test <- predict(Models, model_weights, newdata = ND,
+                process = "event", return_newdata = TRUE)
+
+
+
+
+
 
 mapply2 <- JMbayes2:::mapply2
 ND <- aids[aids$Time > 9 & aids$obstime <= 9, ]
@@ -640,9 +655,11 @@ ND$patient <- ND$patient[, drop = TRUE]
 ND$Time <- 9
 ND$death <- 0
 model_weights <- xxx1$weights
+
 cl <- parallel::makeCluster(length(model_weights))
 invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
 preds <- parallel::parLapply(cl, Models, predict, newdata = ND,
+                             return_newdata = TRUE,
                              return_mcmc = TRUE)
 parallel::stopCluster(cl)
 
@@ -659,6 +676,8 @@ if (is.list(MCMC[[1L]])) {
         qs[[j]] <- matrixStats::rowQuantiles(weighted_MCMC, probs = c(0.025, 0.975))
     }
     names(pred_) <- names(qs) <- names(MCMC[[1L]])
+    low <- lapply(qs, function (x) x[, 1L])
+    upp <- lapply(qs, function (x) x[, 2L])
 } else {
     weighted_MCMC <- Reduce("+", mapply2("*", MCMC, model_weights))
     pred_ <- rowMeans(weighted_MCMC)
@@ -678,12 +697,15 @@ if (process == "event") {
     }
 } else {
     if (!is.data.frame(out)) {
-        out$pred <- pred_
-        out$low <- qs[, 1L]
-        out$upp <- qs[, 2L]
+        out$preds <- pred_
+        out$low <- low
+        out$upp <- upp
     } else {
-        out$pred_CIF <- pred_
-        out$low_CIF <- qs[, 1L]
-        out$upp_CIF <- qs[, 2L]
+        ind <- grep("pred_", names(out), fixed = TRUE)
+        out[ind] <- pred_
+        ind <- grep("low_", names(out), fixed = TRUE)
+        out[ind] <- low
+        ind <- grep("upp_", names(out), fixed = TRUE)
+        out[ind] <- upp
     }
 }
