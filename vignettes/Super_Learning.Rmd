@@ -1,0 +1,116 @@
+---
+title: "Combined Dynamic Predictions via Super Learning"
+author: "Dimitris Rizopoulos"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Combined Dynamic Predictions via Super Learning}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("JMbayes2")
+```
+
+# Super Learning
+## Motivation and Theory
+Joint models for longitudinal and time-to-event data have been established as a versatile tool for calculating dynamic predictions for longitudinal and survival outcomes. The advantageous feature of these predictions is that they are updated over time as extra information becomes available. As a result, they have found numerous applications in precision medicine, including cancer and cardiovascular diseases. Previous applications of joint models have considered a single model for obtaining dynamic predictions. However, finding a well-specified model can be challenging, especially when multiple longitudinal outcomes are considered. Moreover, due to the dynamic nature of these predictions, different models may provide different levels of accuracy at different follow-up times. Here we consider multiple joint models instead, and we combine the dynamic predictions from these models to optimize the predictive accuracy. We use the concept of super learning (SL) to achieve this. SL is an ensemble method that allows researchers to combine several different prediction algorithms into one. It uses $V$-fold cross-validation to build the optimally weighted combination of predictions from a library of candidate algorithms. Optimality is defined by a user-specified objective function, such as minimizing mean squared error or maximizing the area under the receiver operating characteristic curve.
+
+The basic idea behind super learning is to derive model weights that optimize the cross-validated predictions. More specifically, we let $\mathcal{L} = \{M_1, \ldots, M_L\}$ denote a library with $L$ models. There are no restrictions to the models included in this library, and actually, it is recommended to consider a wide range of possible models. Among others, these joint models differ in the specification of the time trend in the longitudinal submodels and the functions form and event submodel. We split the original dataset $\mathcal{D}_n$ in $V$ folds. The choice of $V$ will depend on the size and number of events in $\mathcal{D}_n$. In particular, for each fold, we need to have a sufficient number of events to robustly quantify the predictive performance. Using the cross-validation method, we fit the $L$ models in the combined $v-1$ folds, and we will calculate predictions for the $v$-th fold we left outside. Due to the dynamic nature of the predictions, we want to derive optimal weights at different follow-up times. More specifically, we consider the sequence of time points $t_1, \ldots, t_Q$. The number and placing of these time points should again consider the available event information in $\mathcal{D}_n$. For $t_q \in \{t_1, \ldots, t_Q\}$, we define $\mathcal{R}(t_q, v)$ to denote the subjects at risk at time $t_q$ that belong to the $v$-th fold. For all subjects in $\mathcal{R}(t_q, v)$, we calculate the cross-validated predictions,
+$$\hat{\pi}_i^{(v)}(t_q + \Delta t \mid t_q, M_l) = \Pr \{T_i^* < t_q + \Delta t \mid T_i^* > t_q, \mathcal H_i(t), M_l, \mathcal{D}_n^{(-v)}\}.$$
+These predictions are calculated based on model $M_l$ in library $\mathcal{L}$ that was fitted in the dataset $\mathcal{D}_n^{(-v)}$ the excludes the patients in the $v$-th fold. The calculation is based on a Monte Carlo approach. We define $\hat{\tilde{\pi}}_i^{v}(t_q + \Delta t \mid t_q)$ to denote the convex combination of the $L$ predictions, i.e.,
+$$\hat{\tilde{\pi}}_i^{v}(t_q + \Delta t \mid t_q) = \sum\limits_{l = 1}^L \varpi_l(t_q) \hat{\pi}_i^{(v)}(t_q + \Delta t \mid t_q, M_l), \quad \mbox{for all } v \in {1, \ldots, V},$$
+with $\varpi_l(t_q) > 0$, for $l = 1, \ldots, L$, and $\sum_l \varpi_l(t_q) = 1$. Note that the weights $\varpi_l(\cdot)$ are time-varying, i.e., at different follow-up times, different combinations of the $L$ models may yield more accurate predictions.
+
+For any time $t$, we will select the weights $\{\varpi_l(t); l = 1, \ldots, L\}$ that optimize the predictive performance of the combined cross-validated predictions using proper scoring rules. A scoring rule $\mathcal{S}\{\pi_i(u \mid t), \mathbb{I}(t < T_i^* < u)\}$ is called proper if the true distribution achieves the optimal expected score, i.e., in our case if
+$$E \Bigl [\mathcal{S}\{\pi_i^{true}(u \mid t), \; \mathbb{I}(t < T_i^* < u) \} \Bigr] \leq E \Bigl [\mathcal{S}\{\hat{\pi}_i(u \mid t), \; \mathbb{I}(t < T_i^* < u) \} \Bigr], \quad u > t,$$
+
+where $\pi_i^{true}(u \mid t)$ denotes the conditional risk probabilities under the true model, and $\hat{\pi}_i(u \mid t)$ is an estimate of $\pi_i^{true}(u \mid t)$. The expectation is taken with respect to the conditional density of the survival outcome under the true model $\{T_i^* \mid T_i^* > t, \mathcal Y_i(t)\}$, with $\mathcal Y_i(t) = \{ y_i(t_{il}); 0 \leq t_{il} \leq t, l = 1, \ldots, n_i\}$, and the scoring rule $\mathcal S(\cdot, \cdot)$ is defined such that a lower score indicates better accuracy.
+
+The Brier score is a proper scoring rule that combines discrimination and calibration to measure overall predictive performance. In particular, at follow-up time $t$ and for a medically-relevant time window $\Delta t$, we define the Brier score as
+$$\mbox{BS}(t + \Delta t, t) = E \biggl [\Bigl \{ \mathbb{I}(T_i^* \leq t + \Delta t) - \tilde{\pi}_i^{v}(t + \Delta t \mid t) \Bigr\}^2 \; \Big | \; T_i^* > t \biggr].$$
+
+As an alternative proper scoring rule in the interval $(t, t + \Delta t]$ we consider an adaptation of the expected predictive cross-entropy:
+$$\mbox{EPCE}(t + \Delta t, t) = E \biggl \{-\log \Bigl [ p \bigl \{ T_i^* \mid t < T_i^* < t + \Delta t, \mathcal Y_i(t), \mathcal D_{n} \bigr \} \Bigr ] \biggr \},$$
+
+where the expectation is taken with respect to $\{T_i^* \mid t < T_i^* < t + \Delta t, \mathcal Y_i(t)\}$ under the true model. In our context, both $\mbox{BS}(t + \Delta t, t)$ and $\mbox{EPCE}(t + \Delta t, t)$ are calculated using the convex combination of the cross-validated predictions $\hat{\tilde{\pi}}_i^{v}(t + \Delta t \mid t)$. In particular, using the super-learning procedure, we obtain the weights $\widehat{\varpi}_l(t)$ that minimize a proper scoring rule (in our case, either the $\mbox{BS}(t + \Delta t, t)$ or $\mbox{EPCE}(t + \Delta t, t)$) of the cross-validated predictions,
+$$\widehat{\varpi}_l(t) = \mbox{argmin}_{\varpi} \biggl [ \mathcal{S} \Bigl \{ \sum_{l = 1}^L \varpi_l \hat{\pi}_i^{(v)}(t + \Delta t \mid t, M_l), T_i, \delta_i \Bigr \} \biggr], \quad v = 1, \ldots, V,$$
+
+under the constraints $\varpi_l(t) > 0$, for $l = 1, \ldots, L$, and $\sum_l \varpi_l(t) = 1$.
+
+## Example
+We will illustrate the calculation of dynamic predictions using package **JMbayes2** from a
+trivariate joint model fitted to the PBC dataset for the longitudinal outcomes `serBilir` (continuous),
+`prothrombin` time (continuous) and `ascites` (dichotomous). We start by fitting the univariate mixed models. For the two continuous outcomes, we allow for nonlinear subject-specific time effects using natural cubic splines. For `ascites`, we postulate linear subject-specific profiles for the log odds. The code is:
+
+```{r, "test and training datasets"}
+CVdats <- create_folds(aids, id_var = "patient")
+```
+
+```{r, "fit models function"}
+fit_models <- function (data) {
+    library("JMbayes2")
+    lmeFit <- lme(CD4 ~ obstime * drug, data = data,
+                  random = ~ obstime | patient,
+                  control = lmeControl(opt = "optim"))
+    data_id <- data[!duplicated(data$patient), ]
+    CoxFit <- coxph(Surv(Time, death) ~ drug, data = data_id)
+    jmFit1 <- jm(CoxFit, lmeFit, time_var = "obstime")
+    jmFit2 <- update(jmFit1, functional_forms = ~ slope(CD4))
+    jmFit3 <- update(jmFit1, functional_forms = ~ value(CD4) +
+                         slope(CD4))
+    jmFit4 <- update(jmFit1, functional_forms = ~ area(CD4))
+    out <- list(M1 = jmFit1, M2 = jmFit2, M3 = jmFit3, M4 = jmFit4)
+    class(out) <- "jmList"
+    out
+}
+```
+
+```{r, "fit the models using parallel computing"}
+cl <- parallel::makeCluster(5L)
+Models_folds <- parallel::parLapply(cl, CVdats$training, fit_models)
+parallel::stopCluster(cl)
+```
+
+```{r, "calculate Brier weights"}
+tstr <- 8
+thor <- 10
+
+Brier_weights <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
+                         Tstart = tstr, Thoriz = thor)
+Brier_weights
+```
+
+```{r, "calculate EPCE weights"}
+EPCE_weights <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
+EPCE_weights
+```
+
+
+```{r, "fit the model in the original dataset"}
+Models <- fit_models(aids)
+```
+
+```{r, "data for prediction and model weights"}
+ND <- aids[aids$Time > tstr & aids$obstime <= tstr, ]
+ND$patient <- ND$patient[, drop = TRUE]
+ND$Time <- tstr
+ND$death <- 0
+
+model_weights <- EPCE_weights$weights
+```
+
+```{r, "calculate predictions", fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+predsEvent <- predict(Models, model_weights, newdata = ND[ND$patient == 4, ],
+                      process = "event", return_newdata = TRUE)
+predsLong <- predict(Models, model_weights, newdata = ND[ND$patient == 4, ],
+                     return_newdata = TRUE)
+plot(predsLong, predsEvent)
+```

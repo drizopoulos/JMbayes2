@@ -635,15 +635,17 @@ xxx1 <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
 
 
 Models <- fit_models(aids)
-ND <- aids[aids$Time > 9 & aids$obstime <= 9, ]
+ND <- aids[aids$Time > tstr & aids$obstime <= tstr, ]
 ND$patient <- ND$patient[, drop = TRUE]
-ND$Time <- 9
+ND$Time <- tstr
 ND$death <- 0
 model_weights <- xxx1$weights
 
-test <- predict(Models, model_weights, newdata = ND,
+test <- predict(Models, model_weights, newdata = ND[ND$patient == 4, ],
                 process = "event", return_newdata = TRUE)
-
+test2 <- predict(Models, model_weights, newdata = ND[ND$patient == 4, ],
+                 return_newdata = TRUE)
+plot(test2, test)
 
 
 

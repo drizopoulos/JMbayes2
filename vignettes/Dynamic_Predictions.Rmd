@@ -184,6 +184,17 @@ The ICI is the mean absolute difference between the observed and predicted proba
 tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 ```
 
+The Brier score evaluates the predictive accuracy at time `Tstart + Dt`. To summarize the predictive accuracy in the interval `(t0, t0 + Dt]` we can use the integrated Brier score. The corresponding integral is approximated using the Simpson's rule:
+```{r}
+tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE)
+```
+
+The `tvBrier()` also implements inverse probability of censoring weights to account for censoring in the interval `(t0, t0 + Dt]` using the Kaplan-Meier estimate of the censoring distribution (however, see the note below):
+```{r}
+tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE,
+        type_weights = "IPCW")
+```
+
 **Notes:**
 
 - To obtain valid estimates of the predictive accuracy measures (i.e., time-varying sensitivity, specificity, and Brier score) we need to account for censoring. A popular method to achieve this is via inverse probability of censoring weighting. For this approach to be valid, we need the model for the weights to be correctly specified. In standard survival analysis, this is achieved either using the Kaplan-Meier estimator or a Cox model for the censoring distribution. However, in the settings where joint models are used, it is often the case that the censoring mechanism may depend on the history of the longitudinal outcomes in a complex manner. This is especially the case when we consider multiple longitudinal outcomes in the analysis. Also, these outcomes may be recorded at different time points per patient and have missing data. Because of these reasons, in these settings, Kaplan-Meier-based or Cox-based censoring weights may be difficult to derive or be biased. The functions in **JMbayes2** that calculate the predictive accuracy measures use joint-model-based weights to account for censoring. These weights allow censoring to depend in any possible manner on the history of the longitudinal outcomes. However, they require that the model is appropriately calibrated.
