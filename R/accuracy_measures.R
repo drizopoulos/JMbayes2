@@ -553,7 +553,7 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         }
         cores <- min(cores, V)
         cl <- parallel::makeCluster(cores)
-        invisible(parallel::clusterEvalQ(cl, library("survival")))
+        invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
         res <-
             parallel::parLapply(cl, seq_len(V), run_over_folds, object = object,
                                 newdata = newdata, newdata2 = newdata2,
@@ -796,7 +796,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             }
             cores <- min(cores, V)
             cl <- parallel::makeCluster(cores)
-            invisible(parallel::clusterEvalQ(cl, library("survival")))
+            invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
             res <-
                 parallel::parLapply(cl, seq_len(V), run_over_folds, object = object,
                                     newdata = newdata, newdata2 = newdata2,
@@ -954,7 +954,11 @@ print.tvBrier <- function (x, digits = 4, ...) {
         if (x$type_weights == "IPCW") "inverse probability of censoring Kaplan-Meier weights"
         else "model-based weights", sep = "")
     if (!is.null(x$Brier_per_model)) {
-        cat("\n\nBrier score per model:", round(x$Brier_per_model, digits))
+        if (x$integrated) {
+            cat("\n\nIntegrated Brier score per model:", round(x$Brier_per_model, digits))
+        } else {
+            cat("\n\nBrier score per model:", round(x$Brier_per_model, digits))
+        }
         cat("\nWeights per model:", round(x$weights, digits))
         cat("\nNumber of folds:", x$nfolds)
     }

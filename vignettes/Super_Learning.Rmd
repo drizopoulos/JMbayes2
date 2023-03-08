@@ -37,7 +37,7 @@ where $\pi_i^{true}(u \mid t)$ denotes the conditional risk probabilities under 
 The Brier score is a proper scoring rule that combines discrimination and calibration to measure overall predictive performance. In particular, at follow-up time $t$ and for a medically-relevant time window $\Delta t$, we define the Brier score as
 $$\mbox{BS}(t + \Delta t, t) = E \biggl [\Bigl \{ \mathbb{I}(T_i^* \leq t + \Delta t) - \tilde{\pi}_i^{v}(t + \Delta t \mid t) \Bigr\}^2 \; \Big | \; T_i^* > t \biggr].$$
 
-As an alternative proper scoring rule in the interval $(t, t + \Delta t]$ we consider an adaptation of the expected predictive cross-entropy:
+As an alternative proper scoring rule in the interval $(t, t + \Delta t]$ we consider an adaptation of the expected predictive cross-entropy (EPCE):
 $$\mbox{EPCE}(t + \Delta t, t) = E \biggl \{-\log \Bigl [ p \bigl \{ T_i^* \mid t < T_i^* < t + \Delta t, \mathcal Y_i(t), \mathcal D_{n} \bigr \} \Bigr ] \biggr \},$$
 
 where the expectation is taken with respect to $\{T_i^* \mid t < T_i^* < t + \Delta t, \mathcal Y_i(t)\}$ under the true model. In our context, both $\mbox{BS}(t + \Delta t, t)$ and $\mbox{EPCE}(t + \Delta t, t)$ are calculated using the convex combination of the cross-validated predictions $\hat{\tilde{\pi}}_i^{v}(t + \Delta t \mid t)$. In particular, using the super-learning procedure, we obtain the weights $\widehat{\varpi}_l(t)$ that minimize a proper scoring rule (in our case, either the $\mbox{BS}(t + \Delta t, t)$ or $\mbox{EPCE}(t + \Delta t, t)$) of the cross-validated predictions,
@@ -46,71 +46,89 @@ $$\widehat{\varpi}_l(t) = \mbox{argmin}_{\varpi} \biggl [ \mathcal{S} \Bigl \{ \
 under the constraints $\varpi_l(t) > 0$, for $l = 1, \ldots, L$, and $\sum_l \varpi_l(t) = 1$.
 
 ## Example
-We will illustrate the calculation of dynamic predictions using package **JMbayes2** from a
-trivariate joint model fitted to the PBC dataset for the longitudinal outcomes `serBilir` (continuous),
-`prothrombin` time (continuous) and `ascites` (dichotomous). We start by fitting the univariate mixed models. For the two continuous outcomes, we allow for nonlinear subject-specific time effects using natural cubic splines. For `ascites`, we postulate linear subject-specific profiles for the log odds. The code is:
-
+We will illustrate the application of super learning for combining dynamic predictions from joint models using the PBC dataset. We start by splitting the `pbc2` database into five folds using function `create_folds()`:
 ```{r, "test and training datasets"}
-CVdats <- create_folds(aids, id_var = "patient")
+CVdats <- create_folds(pbc2, V = 5, id_var = "id")
 ```
 
+The first argument for this function is the `data.frame` we wish to split in `V` folds. The argument `id_var` specifies the name of the subjects id variable in this dataset. The output of `create_folds()` is a list with two components named `"training"` and `"testing"`. Each component is another list with `V` data.frames.
+
+Next, we define the function that will fit the joint models we wish to consider for calculating predictions. This function should have as a single argument a `data.frame` that will be used to fit the joint models. To optimize computational performance we will use parallel computing to fit these models to the different training datasets. Hence, within the function we should have the call `library("JMbayes2")` to load package **JMbayes2** in each worker. The output of this function should be a list of the fitted joint models with class `"jmList"`. Assigning this class to the resulting list will facilitate combining the predictions later. For our example we use the following specification:
 ```{r, "fit models function"}
 fit_models <- function (data) {
     library("JMbayes2")
-    lmeFit <- lme(CD4 ~ obstime * drug, data = data,
-                  random = ~ obstime | patient,
+    data$status2 <- as.numeric(data$status != "alive")
+    data_id <- data[!duplicated(data$id), ]
+    lmeFit <- lme(log(serBilir) ~ year, data = data,
+                  random = ~ year | id,
                   control = lmeControl(opt = "optim"))
-    data_id <- data[!duplicated(data$patient), ]
-    CoxFit <- coxph(Surv(Time, death) ~ drug, data = data_id)
-    jmFit1 <- jm(CoxFit, lmeFit, time_var = "obstime")
-    jmFit2 <- update(jmFit1, functional_forms = ~ slope(CD4))
-    jmFit3 <- update(jmFit1, functional_forms = ~ value(CD4) +
-                         slope(CD4))
-    jmFit4 <- update(jmFit1, functional_forms = ~ area(CD4))
-    out <- list(M1 = jmFit1, M2 = jmFit2, M3 = jmFit3, M4 = jmFit4)
+    CoxFit <- coxph(Surv(years, status2) ~ 1, data = data_id)
+    jmFit1 <- jm(CoxFit, lmeFit, time_var = "year")
+    jmFit2 <- update(jmFit1, 
+                     functional_forms = ~ slope(log(serBilir)))
+    jmFit3 <- update(jmFit1, 
+                     functional_forms = ~ value(log(serBilir)) + area(log(serBilir)))
+    ###
+    lmeFit2 <- lme(log(serBilir) ~ ns(year, 3, B = c(0, 14.4)) + sex + age, 
+                   data = data, random = ~ ns(year, 3, B = c(0, 14.4)) | id,
+                   control = lmeControl(opt = "optim"))
+    CoxFit2 <- coxph(Surv(years, status2) ~ sex + age, data = data_id)
+    jmFit4 <- jm(CoxFit2, lmeFit2, time_var = "year")
+    jmFit5 <- update(jmFit4, 
+                     functional_forms = ~ slope(log(serBilir)))
+    out <- list(M1 = jmFit1, M2 = jmFit2, M3 = jmFit3, M4 = jmFit4, M5 = jmFit5)
     class(out) <- "jmList"
     out
 }
 ```
 
+In particular, we consider a library of univariate joint models for the longitudinal outcome `serBilir` and the composite event transplantation or death. The first three models consider a simple linear mixed effects model for serum bilirubin with random intercepts and random slopes per subject, and no other covariates. Also, in the Cox model for the composite event we do not specify any baseline covariates; hence, the risk of the composite event depends only on serum bilirubin. The three models differ in the corresponding functional forms, i.e., the current value of log serum bilirubin, the current slope/velocity of log serum bilirubin, and the current value plus the area under the log serum bilurubin trajectory. The last models consider a more elaborate specification of the linear mixed model that includes natural cubic splines in both the fixed and random effects to allow for non-linearities in the log serum bilirubin trajectories, and the main effects of sex and age in both the mixed and Cox models. The functional forms are again the current value and the current slope.
+
+We fit these models in the training datasets using parallel computing as facilitated using the **parallel** package (*note*: this and the subsequent computations require some time to perform depending on your machine):
 ```{r, "fit the models using parallel computing"}
 cl <- parallel::makeCluster(5L)
 Models_folds <- parallel::parLapply(cl, CVdats$training, fit_models)
 parallel::stopCluster(cl)
 ```
 
+We calculate the weights to combine the predictions from these five models to optimize the integrated Brier score the expected predictive cross-entropy at follow-up time $t = 6$ years and for a relevant window of $\Delta t = 2$ years. Function `tvBrier()` automatically performs this task by providing as a first argument the list of joint models fitted in the training datasets:
 ```{r, "calculate Brier weights"}
-tstr <- 8
-thor <- 10
+tstr <- 6
+thor <- 8
 
 Brier_weights <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
                          Tstart = tstr, Thoriz = thor)
 Brier_weights
 ```
 
+We observe that the first three models dominate the weights. To calculate the model weights using the expected predictive cross-entropy use function `tvEPCE()` with an almost identical call as for the Brier score:
 ```{r, "calculate EPCE weights"}
 EPCE_weights <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
 EPCE_weights
 ```
 
+We note that the EPCE gives different weights than the integrated Brier score, indicating that a combination of the predictions from all five models optimizes the cross-validate EPCE. 
 
-```{r, "fit the model in the original dataset"}
-Models <- fit_models(aids)
+To combine the predictions from the five joint models we considered in this example, we need first to fit them in the original dataset:
+```{r, "fit the model in the original dataset", warning = FALSE}
+Models <- fit_models(pbc2)
 ```
 
-```{r, "data for prediction and model weights"}
-ND <- aids[aids$Time > tstr & aids$obstime <= tstr, ]
-ND$patient <- ND$patient[, drop = TRUE]
-ND$Time <- tstr
-ND$death <- 0
-
-model_weights <- EPCE_weights$weights
+The we construct the dataset with the subjects at risk at year 6 and consider the longitudinal measurements collected before this follow-up time. Also, we set in this dataset the observed event time to 6, and the event variable to zero, i.e., indicating that patients were event free up to this time:
+```{r, "data for prediction"}
+ND <- pbc2[pbc2$years > tstr & pbc2$year <= tstr, ]
+ND$id <- ND$id[, drop = TRUE]
+ND$years <- tstr
+ND$status2 <- 0
 ```
 
+We will combine the cumulative risk predictions for Patient 8 using the EPCE weights. We achieve that using the `predict()` method for objects of class `"jmList"`; we also to provide the `weights` argument:
 ```{r, "calculate predictions", fig.align = "center", fig.width = 8.5, fig.height = 7.5}
-predsEvent <- predict(Models, model_weights, newdata = ND[ND$patient == 4, ],
+model_weights <- EPCE_weights$weights
+
+predsEvent <- predict(Models, model_weights, newdata = ND[ND$id == 8, ],
                       process = "event", return_newdata = TRUE)
-predsLong <- predict(Models, model_weights, newdata = ND[ND$patient == 4, ],
+predsLong <- predict(Models, model_weights, newdata = ND[ND$id == 8, ],
                      return_newdata = TRUE)
 plot(predsLong, predsEvent)
 ```
