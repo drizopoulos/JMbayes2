@@ -611,7 +611,7 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     }
     out$nr <- length(Time)
     out$nint <- sum(ind1)
-    out$ncens <- sum(out$ind3)
+    out$ncens <- sum(ind3)
     out$Tstart <- Tstart
     out$Thoriz <- Thoriz
     out$nfolds <- if (!is_jm(object)) length(object)
@@ -641,7 +641,7 @@ print.tvEPCE <- function (x, digits = 4, ...) {
     cat("\nNumber of subjects with a censored time in [", round(x$Tstart, digits),
         ", ", round(x$Thoriz, digits), "): ", x$ncens, sep = "")
     if (!is.null(x$EPCE_per_model)) {
-        cat("\n\nBrier score per model:", round(x$EPCE_per_model, digits))
+        cat("\n\nEPCE per model:", round(x$EPCE_per_model, digits))
         cat("\nWeights per model:", round(x$weights, digits))
         cat("\nNumber of folds:", x$nfolds)
     }
