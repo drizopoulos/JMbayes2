@@ -84,30 +84,33 @@ fit_models <- function (data) {
 
 In particular, we consider a library of univariate joint models for the longitudinal outcome `serBilir` and the composite event transplantation or death. The first three models consider a simple linear mixed effects model for serum bilirubin with random intercepts and random slopes per subject, and no other covariates. Also, in the Cox model for the composite event we do not specify any baseline covariates; hence, the risk of the composite event depends only on serum bilirubin. The three models differ in the corresponding functional forms, i.e., the current value of log serum bilirubin, the current slope/velocity of log serum bilirubin, and the current value plus the area under the log serum bilurubin trajectory. The last models consider a more elaborate specification of the linear mixed model that includes natural cubic splines in both the fixed and random effects to allow for non-linearities in the log serum bilirubin trajectories, and the main effects of sex and age in both the mixed and Cox models. The functional forms are again the current value and the current slope.
 
-We fit these models in the training datasets using parallel computing as facilitated using the **parallel** package (*note*: this and the subsequent computations require some time to perform depending on your machine; in my machine with an Intel(R) Core(TM) i9-10885H CPU @ 2.40GHz and 32.0 GB RAM takes about 30 min to run the whole vignette):
+We fit these models in the training datasets using parallel computing as facilitated using the **parallel** package (*note*: this and the subsequent computations require some time to perform depending on your machine; in my machine with an Intel(R) Core(TM) i9-10885H CPU @ 2.40GHz and 32.0 GB RAM takes about 20 min to run the whole vignette):
 ```{r, "fit the models using parallel computing"}
 cl <- parallel::makeCluster(5L)
 Models_folds <- parallel::parLapply(cl, CVdats$training, fit_models)
 parallel::stopCluster(cl)
 ```
 
-We calculate the weights to combine the predictions from these five models to optimize the integrated Brier score the expected predictive cross-entropy at follow-up time $t = 6$ years and for a relevant window of $\Delta t = 2$ years. Function `tvBrier()` automatically performs this task by providing as a first argument the list of joint models fitted in the training datasets:
+We calculate the weights to combine the predictions from these five models to optimize the integrated Brier score the expected predictive cross-entropy at follow-up time $t = 6$ years and for a relevant window of $\Delta t = 2$ years. Function `tvBrier()` automatically performs this task by providing as a first argument the list of joint models fitted in the training datasets. The integrated Brier score is calculated using the testing datasets that are provided in the `newdata` argument: 
 ```{r, "calculate Brier weights"}
 tstr <- 6
 thor <- 8
 
-Brier_weights <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
-                         Tstart = tstr, Thoriz = thor)
+Brier_weights <- tvBrier(Models_folds, newdata = CVdats$testing, 
+                         integrated = TRUE, Tstart = tstr, Thoriz = thor)
 Brier_weights
 ```
 
 We observe that the first three models dominate the weights. We also note that the integrated Brier score based on the combined predictions is smaller than the integrated Brier score of each individual model. To calculate the model weights using the expected predictive cross-entropy use function `tvEPCE()` with an almost identical call as for the Brier score:
 ```{r, "calculate EPCE weights"}
-EPCE_weights <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
+EPCE_weights <- tvEPCE(Models_folds, newdata = CVdats$testing, 
+                       Tstart = tstr, Thoriz = thor)
 EPCE_weights
 ```
 
-The EPCE gives similar weights as the integrated Brier score with model `M1` receiving even a smaller weight. Again we see that the EPCE based on the combined cross-validate predictions is smaller than the EPCE base on the cross-validated predictions of each individual model. To combine the predictions from the five joint models we considered in this example, we need first to fit them in the original dataset:
+The EPCE results are inline with the ones from the integrated Brier score; however, now only models `M2` and `M3` share the weights. Again we see that the EPCE based on the combined cross-validated predictions is smaller than the EPCE based on the cross-validated predictions of each individual model. 
+
+To put these weights in practice we need first to refit the five joint models we considered in the original dataset.
 ```{r, "fit the model in the original dataset", warning = FALSE}
 Models <- fit_models(pbc2)
 ```
@@ -120,8 +123,8 @@ ND$years <- tstr
 ND$status2 <- 0
 ```
 
-We will combine the cumulative risk predictions for Patient 8 using the EPCE weights. We achieve that using the `predict()` method for objects of class `"jmList"`; we also nned to provide the `weights` argument. The rest of the arguments are the same as in the `predict()` method for `"jm"` objects (see also the Dynamic Predictions vignette):
-```{r, "calculate predictions", fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+As an illustration, we will combine the cumulative risk predictions for Patient 8 using the EPCE weights. We achieve that using the `predict()` method for objects of class `"jmList"`; we also need to provide the `weights` argument. The rest of the arguments are the same as in the `predict()` method for `"jm"` objects (see also the Dynamic Predictions vignette):
+```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
 model_weights <- EPCE_weights$weights
 
 predsEvent <- predict(Models, weights = model_weights, newdata = ND[ND$id == 8, ],

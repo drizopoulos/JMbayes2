@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3-0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-0</span>
       </span>
     </div>
 
@@ -56,6 +56,9 @@
       <a href="../articles/Recurring_Events.html">Recurrent Events</a>
     </li>
     <li>
+      <a href="../articles/Super_Learning.html">Combined Dynamic Predictions via Super Learning</a>
+    </li>
+    <li>
       <a href="../articles/Transformation_Functions.html">Transformation Functions for Functional Forms</a>
     </li>
   </ul></li>
@@ -86,6 +89,21 @@
       <small>Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.4.0" id="jmbayes2-040">JMbayes2 0.4.0<a class="anchor" aria-label="anchor" href="#jmbayes2-040"></a></h2>
+<div class="section level3">
+<h3 id="major-0-4-0">Major<a class="anchor" aria-label="anchor" href="#major-0-4-0"></a></h3>
+<ul><li><p>Function <code><a href="../reference/accuracy.html">tvBrier()</a></code> has gained the argument <code>integrated</code> for calculating the integrated Brier score.</p></li>
+<li><p>Function <code><a href="../reference/accuracy.html">tvBrier()</a></code> has gained the argument <code>type_weights</code> and now also allows to correct for censoring in the interval <code>Tstart</code> to <code>Thoriz</code> using inverse probability of censoring weighting. The default remains model-based weights.</p></li>
+<li><p>The new function <code><a href="../reference/accuracy.html">tvEPCE()</a></code> calculates the time-varying expected predictive cross-entropy.</p></li>
+<li><p>This version supports Super Learning for optimizing predictions using cross-validation and a library of joint models. In that regard, the new function <code><a href="../reference/accuracy.html">create_folds()</a></code> can be used to split a dataset in V-folds of training and test datasets. More information can be found in the corresponding vignette.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="minor-0-4-0">Minor<a class="anchor" aria-label="anchor" href="#minor-0-4-0"></a></h3>
+<ul><li><p>Weak informative priors are now used for the fixed-effects of the mixed-effects models.</p></li>
+<li><p>Several improvements in various internal functions.</p></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.3.0" id="jmbayes2-030">JMbayes2 0.3.0<a class="anchor" aria-label="anchor" href="#jmbayes2-030"></a></h2>
 <div class="section level3">
@@ -180,7 +198,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

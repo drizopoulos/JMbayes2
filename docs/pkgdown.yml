@@ -1,5 +1,5 @@
-pandoc: '2.18'
-pkgdown: 2.0.6
+pandoc: 2.19.2
+pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   Competing_Risks: Competing_Risks.html
@@ -8,8 +8,9 @@ articles:
   Multi_State_Processes: Multi_State_Processes.html
   Non_Gaussian_Mixed_Models: Non_Gaussian_Mixed_Models.html
   Recurring_Events: Recurring_Events.html
+  Super_Learning: Super_Learning.html
   Transformation_Functions: Transformation_Functions.html
-last_built: 2022-09-09T05:21Z
+last_built: 2023-03-10T15:27Z
 urls:
   reference: https://drizopoulos.github.io/JMbayes2/reference
   article: https://drizopoulos.github.io/JMbayes2/articles

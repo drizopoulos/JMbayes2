@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3-0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-0</span>
       </span>
     </div>
 
@@ -86,6 +86,9 @@
     </li>
     <li>
       <a href="../articles/Recurring_Events.html">Recurrent Events</a>
+    </li>
+    <li>
+      <a href="../articles/Super_Learning.html">Combined Dynamic Predictions via Super Learning</a>
     </li>
     <li>
       <a href="../articles/Transformation_Functions.html">Transformation Functions for Functional Forms</a>
@@ -126,7 +129,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2022-09-09</h4>
+            <h4 data-toc-skip class="date">2023-03-10</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Dynamic_Predictions.Rmd" class="external-link"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="hidden name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -344,70 +347,72 @@ performed with the following call to <code><a href="../reference/accuracy.html">
 <span><span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;    cut-off         SN         SP        qSN         qSP  </span></span>
-<span><span class="co">#&gt; 1     0.05 0.02127789 1.00000000 0.01640862 1.000000000  </span></span>
-<span><span class="co">#&gt; 2     0.07 0.06383366 1.00000000 0.04972059 1.000000000  </span></span>
-<span><span class="co">#&gt; 3     0.08 0.08511154 1.00000000 0.06662895 1.000000000  </span></span>
-<span><span class="co">#&gt; 4     0.09 0.10638943 1.00000000 0.08370895 1.000000000  </span></span>
-<span><span class="co">#&gt; 5     0.10 0.12766731 1.00000000 0.10096325 1.000000000  </span></span>
-<span><span class="co">#&gt; 6     0.11 0.14894520 1.00000000 0.11839451 1.000000000  </span></span>
-<span><span class="co">#&gt; 7     0.12 0.14894520 0.99354851 0.11385015 0.837099767  </span></span>
-<span><span class="co">#&gt; 8     0.16 0.17881374 0.98970172 0.13604362 0.791974645  </span></span>
-<span><span class="co">#&gt; 9     0.19 0.20009162 0.98970172 0.15402360 0.810886041  </span></span>
-<span><span class="co">#&gt; 10    0.20 0.22136951 0.98970172 0.17219285 0.826645537  </span></span>
-<span><span class="co">#&gt; 11    0.21 0.23729845 0.98807991 0.18483750 0.814780085  </span></span>
-<span><span class="co">#&gt; 12    0.23 0.25857634 0.98807991 0.20336394 0.828010078  </span></span>
-<span><span class="co">#&gt; 13    0.26 0.27985422 0.98807991 0.22208852 0.839476073  </span></span>
-<span><span class="co">#&gt; 14    0.28 0.32240999 0.98162841 0.25612402 0.793829958  </span></span>
-<span><span class="co">#&gt; 15    0.31 0.32815646 0.97691926 0.25840222 0.754615269  </span></span>
-<span><span class="co">#&gt; 16    0.34 0.34943435 0.96401627 0.26992077 0.669603927  </span></span>
-<span><span class="co">#&gt; 17    0.36 0.37071223 0.96401627 0.28985403 0.683968974  </span></span>
-<span><span class="co">#&gt; 18    0.43 0.37594851 0.95270093 0.28780565 0.617823516  </span></span>
-<span><span class="co">#&gt; 19    0.45 0.39722640 0.95270093 0.30818030 0.632522612  </span></span>
-<span><span class="co">#&gt; 20    0.47 0.41850428 0.95270093 0.32878780 0.646132885  </span></span>
-<span><span class="co">#&gt; 21    0.48 0.42885604 0.94938811 0.33694781 0.634871342  </span></span>
-<span><span class="co">#&gt; 22    0.49 0.45013392 0.94938811 0.35795984 0.647461985  </span></span>
-<span><span class="co">#&gt; 23    0.50 0.47141181 0.94938811 0.37921619 0.659213252  </span></span>
-<span><span class="co">#&gt; 24    0.51 0.47197345 0.93665541 0.37258022 0.600137276  </span></span>
-<span><span class="co">#&gt; 25    0.52 0.49325134 0.93665541 0.39430042 0.612254328  </span></span>
-<span><span class="co">#&gt; 26    0.53 0.50248356 0.93300314 0.40179571 0.601959841  </span></span>
-<span><span class="co">#&gt; 27    0.55 0.50248356 0.92655165 0.39821364 0.576098078  </span></span>
-<span><span class="co">#&gt; 28    0.56 0.52376144 0.92655165 0.42048079 0.587873131  </span></span>
-<span><span class="co">#&gt; 29    0.58 0.54503933 0.92655165 0.44301784 0.599011695  </span></span>
-<span><span class="co">#&gt; 30    0.59 0.54503933 0.92010015 0.43962161 0.575269233  </span></span>
-<span><span class="co">#&gt; 31    0.60 0.55429802 0.91645591 0.44765767 0.567284460  </span></span>
-<span><span class="co">#&gt; 32    0.63 0.59685379 0.91645591 0.49418922 0.588392535  </span></span>
-<span><span class="co">#&gt; 33    0.64 0.61813167 0.91000442 0.51485911 0.577230048 *</span></span>
-<span><span class="co">#&gt; 34    0.65 0.61813167 0.90355292 0.51178859 0.557220232  </span></span>
-<span><span class="co">#&gt; 35    0.66 0.62426896 0.89896226 0.51657535 0.546452830  </span></span>
-<span><span class="co">#&gt; 36    0.68 0.63153062 0.87535804 0.51352409 0.486169861  </span></span>
-<span><span class="co">#&gt; 37    0.70 0.63464851 0.86985189 0.51446710 0.474201639  </span></span>
-<span><span class="co">#&gt; 38    0.71 0.63489623 0.86347551 0.51158304 0.459255927  </span></span>
-<span><span class="co">#&gt; 39    0.72 0.63489623 0.85057252 0.50502710 0.430483935  </span></span>
-<span><span class="co">#&gt; 40    0.73 0.63489623 0.83766953 0.49829278 0.403804452  </span></span>
-<span><span class="co">#&gt; 41    0.74 0.65617412 0.83766953 0.52429569 0.414450801  </span></span>
-<span><span class="co">#&gt; 42    0.75 0.65617412 0.83121803 0.52101497 0.401860403  </span></span>
-<span><span class="co">#&gt; 43    0.76 0.66044502 0.80670700 0.51354535 0.359914996  </span></span>
-<span><span class="co">#&gt; 44    0.77 0.66044502 0.79380402 0.50654600 0.338863667  </span></span>
-<span><span class="co">#&gt; 45    0.78 0.68172291 0.78735252 0.53071553 0.339157064  </span></span>
-<span><span class="co">#&gt; 46    0.79 0.70372245 0.78111983 0.55668100 0.340092637  </span></span>
-<span><span class="co">#&gt; 47    0.80 0.71443811 0.75211137 0.55628075 0.304534678  </span></span>
-<span><span class="co">#&gt; 48    0.82 0.72186315 0.72855668 0.55409806 0.278532225  </span></span>
-<span><span class="co">#&gt; 49    0.83 0.72596205 0.72334798 0.55715468 0.274237557  </span></span>
-<span><span class="co">#&gt; 50    0.84 0.75096099 0.70512173 0.58424893 0.264624555  </span></span>
-<span><span class="co">#&gt; 51    0.85 0.75157102 0.67950071 0.57108843 0.238342867  </span></span>
-<span><span class="co">#&gt; 52    0.86 0.75645701 0.64872468 0.56075282 0.211582062  </span></span>
-<span><span class="co">#&gt; 53    0.87 0.80384342 0.62438336 0.62619217 0.209639991  </span></span>
-<span><span class="co">#&gt; 54    0.88 0.80709908 0.60601600 0.62168946 0.196113459  </span></span>
-<span><span class="co">#&gt; 55    0.89 0.81160613 0.55577059 0.59941514 0.161361304  </span></span>
-<span><span class="co">#&gt; 56    0.90 0.83451041 0.54336073 0.63664243 0.161444251  </span></span>
-<span><span class="co">#&gt; 57    0.91 0.86095379 0.50621795 0.66956076 0.147487401  </span></span>
-<span><span class="co">#&gt; 58    0.92 0.88223167 0.46105749 0.69104932 0.129068903  </span></span>
-<span><span class="co">#&gt; 59    0.93 0.88400014 0.42933622 0.67455595 0.113276282  </span></span>
-<span><span class="co">#&gt; 60    0.94 0.88689532 0.37860209 0.64301335 0.090417552  </span></span>
-<span><span class="co">#&gt; 61    0.95 0.93071264 0.30156666 0.72007905 0.071818851  </span></span>
-<span><span class="co">#&gt; 62    0.96 0.93255510 0.21180438 0.62155915 0.040870386  </span></span>
-<span><span class="co">#&gt; 63    0.97 0.97711462 0.10273651 0.72806779 0.020285274  </span></span>
-<span><span class="co">#&gt; 64    0.98 1.00000000 0.01935448 1.00000000 0.004570882</span></span></code></pre></div>
+<span><span class="co">#&gt; 1     0.06 0.04195420 1.00000000 0.03237374 1.000000000  </span></span>
+<span><span class="co">#&gt; 2     0.08 0.06293130 1.00000000 0.04880463 1.000000000  </span></span>
+<span><span class="co">#&gt; 3     0.09 0.07418742 0.99699727 0.05548414 0.848361901  </span></span>
+<span><span class="co">#&gt; 4     0.10 0.11614162 0.99699727 0.08908473 0.898907934  </span></span>
+<span><span class="co">#&gt; 5     0.11 0.13711872 0.99699727 0.10614349 0.913349658  </span></span>
+<span><span class="co">#&gt; 6     0.14 0.13711872 0.99051760 0.10153599 0.760569410  </span></span>
+<span><span class="co">#&gt; 7     0.15 0.15809582 0.99051760 0.11883604 0.787172809  </span></span>
+<span><span class="co">#&gt; 8     0.16 0.17907292 0.98403794 0.13179439 0.706878450  </span></span>
+<span><span class="co">#&gt; 9     0.18 0.22102711 0.98403794 0.16744697 0.751974073  </span></span>
+<span><span class="co">#&gt; 10    0.19 0.23738168 0.98261007 0.18059095 0.749088146  </span></span>
+<span><span class="co">#&gt; 11    0.22 0.23738168 0.97613040 0.17620909 0.678556115  </span></span>
+<span><span class="co">#&gt; 12    0.24 0.25835878 0.97613040 0.19456168 0.698646357  </span></span>
+<span><span class="co">#&gt; 13    0.27 0.30031298 0.97613040 0.23186533 0.732130095  </span></span>
+<span><span class="co">#&gt; 14    0.28 0.30031298 0.96965074 0.22766787 0.677339442  </span></span>
+<span><span class="co">#&gt; 15    0.29 0.32129007 0.96965074 0.24670657 0.693472469  </span></span>
+<span><span class="co">#&gt; 16    0.31 0.34226717 0.96965074 0.26595563 0.708069019  </span></span>
+<span><span class="co">#&gt; 17    0.33 0.36324427 0.96317107 0.28142650 0.676545959  </span></span>
+<span><span class="co">#&gt; 18    0.36 0.38422137 0.96317107 0.30119504 0.690023211  </span></span>
+<span><span class="co">#&gt; 19    0.37 0.40275043 0.95593523 0.31452038 0.657650616  </span></span>
+<span><span class="co">#&gt; 20    0.40 0.40275043 0.94945556 0.31060335 0.621852730  </span></span>
+<span><span class="co">#&gt; 21    0.42 0.41367496 0.94635040 0.31932381 0.612956478  </span></span>
+<span><span class="co">#&gt; 22    0.43 0.41451785 0.94013110 0.31637344 0.582982136  </span></span>
+<span><span class="co">#&gt; 23    0.44 0.42018880 0.93540315 0.31905894 0.565047851  </span></span>
+<span><span class="co">#&gt; 24    0.45 0.43004991 0.93196950 0.32672563 0.556704513  </span></span>
+<span><span class="co">#&gt; 25    0.46 0.45102701 0.93196950 0.34769092 0.570557497  </span></span>
+<span><span class="co">#&gt; 26    0.47 0.47200411 0.93196950 0.36890432 0.583570906  </span></span>
+<span><span class="co">#&gt; 27    0.48 0.51395831 0.93196950 0.41209329 0.607366855  </span></span>
+<span><span class="co">#&gt; 28    0.54 0.53493541 0.93196950 0.43407803 0.618273331  </span></span>
+<span><span class="co">#&gt; 29    0.56 0.55591251 0.92548984 0.45301419 0.603919673  </span></span>
+<span><span class="co">#&gt; 30    0.60 0.57688961 0.92548984 0.47565461 0.614075579  </span></span>
+<span><span class="co">#&gt; 31    0.61 0.58367640 0.92110656 0.48088046 0.601588149  </span></span>
+<span><span class="co">#&gt; 32    0.62 0.60465350 0.92110656 0.50397520 0.611305511 *</span></span>
+<span><span class="co">#&gt; 33    0.63 0.60465350 0.90814723 0.49773590 0.568505612  </span></span>
+<span><span class="co">#&gt; 34    0.64 0.60465350 0.90166757 0.49455701 0.548564750  </span></span>
+<span><span class="co">#&gt; 35    0.66 0.60838661 0.89634103 0.49614074 0.534686417  </span></span>
+<span><span class="co">#&gt; 36    0.67 0.62936371 0.89634103 0.52007353 0.544801930  </span></span>
+<span><span class="co">#&gt; 37    0.68 0.62936371 0.88986137 0.51697723 0.526638222  </span></span>
+<span><span class="co">#&gt; 38    0.69 0.62936371 0.88338170 0.51384072 0.509231336  </span></span>
+<span><span class="co">#&gt; 39    0.70 0.63297262 0.86505747 0.50900973 0.465521752  </span></span>
+<span><span class="co">#&gt; 40    0.72 0.63728450 0.84695038 0.50494236 0.427481065  </span></span>
+<span><span class="co">#&gt; 41    0.73 0.63728450 0.84047072 0.50157462 0.414092458  </span></span>
+<span><span class="co">#&gt; 42    0.74 0.65826160 0.83399105 0.52392306 0.411687594  </span></span>
+<span><span class="co">#&gt; 43    0.75 0.65826160 0.82751139 0.52061697 0.399263802  </span></span>
+<span><span class="co">#&gt; 44    0.76 0.65826160 0.81455206 0.51386509 0.375658598  </span></span>
+<span><span class="co">#&gt; 45    0.77 0.67923870 0.80807239 0.53718726 0.374687476  </span></span>
+<span><span class="co">#&gt; 46    0.78 0.68335404 0.80286393 0.53983825 0.367912911  </span></span>
+<span><span class="co">#&gt; 47    0.79 0.69188112 0.77957921 0.53896286 0.335447782  </span></span>
+<span><span class="co">#&gt; 48    0.80 0.71488489 0.77372558 0.56696804 0.337573424  </span></span>
+<span><span class="co">#&gt; 49    0.81 0.72513943 0.74449480 0.56623566 0.302539852  </span></span>
+<span><span class="co">#&gt; 50    0.82 0.72513943 0.73801513 0.56282019 0.294387423  </span></span>
+<span><span class="co">#&gt; 51    0.83 0.72963483 0.72644440 0.56308989 0.282360631  </span></span>
+<span><span class="co">#&gt; 52    0.84 0.75364393 0.71442163 0.59209896 0.278914612  </span></span>
+<span><span class="co">#&gt; 53    0.85 0.79723147 0.69548716 0.64992099 0.276334192  </span></span>
+<span><span class="co">#&gt; 54    0.86 0.80338074 0.65202897 0.63893554 0.235976648  </span></span>
+<span><span class="co">#&gt; 55    0.87 0.80766247 0.62743290 0.63346999 0.216056731  </span></span>
+<span><span class="co">#&gt; 56    0.88 0.85577735 0.60341723 0.70867024 0.214610589  </span></span>
+<span><span class="co">#&gt; 57    0.89 0.85704309 0.59732854 0.70831014 0.210294808  </span></span>
+<span><span class="co">#&gt; 58    0.90 0.86105345 0.55320966 0.69492170 0.179530458  </span></span>
+<span><span class="co">#&gt; 59    0.91 0.86105345 0.52729100 0.68105450 0.162392816  </span></span>
+<span><span class="co">#&gt; 60    0.92 0.86342477 0.47618616 0.65514755 0.132701673  </span></span>
+<span><span class="co">#&gt; 61    0.93 0.88627370 0.45732536 0.69772746 0.129997795  </span></span>
+<span><span class="co">#&gt; 62    0.94 0.88859968 0.39972685 0.66413635 0.101813510  </span></span>
+<span><span class="co">#&gt; 63    0.95 0.91134042 0.34195464 0.68580290 0.083274741  </span></span>
+<span><span class="co">#&gt; 64    0.96 0.93288701 0.26437457 0.69189035 0.059516857  </span></span>
+<span><span class="co">#&gt; 65    0.97 0.93565341 0.12915613 0.43486906 0.017259986  </span></span>
+<span><span class="co">#&gt; 66    0.98 1.00000000 0.02591866 1.00000000 0.006240249</span></span></code></pre></div>
 <p>In the first line we define the event indicator as we did in the
 <code>pbc2.id</code> data.frame. The cut-point with the asterisk on the
 right maximizes the <a href="https://en.wikipedia.org/wiki/Youden%27s_J_statistic" class="external-link">Youden’s
@@ -421,7 +426,7 @@ index</a>. To depict the ROC curve, we use the corresponding
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Time-dependent AUC for the Joint Model jointFit</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated AUC: 0.8042</span></span>
+<span><span class="co">#&gt; Estimated AUC: 0.8076</span></span>
 <span><span class="co">#&gt; At time: 8</span></span>
 <span><span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></span></code></pre></div>
 <p>This function either accepts an object of class <code>tvROC</code> or
@@ -446,7 +451,7 @@ metrics for the accuracy of predictions:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/accuracy.html">calibration_metrics</a></span><span class="op">(</span><span class="va">jointFit</span>, <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        ICI        E50        E90 </span></span>
-<span><span class="co">#&gt; 0.04122340 0.03436950 0.06498383</span></span></code></pre></div>
+<span><span class="co">#&gt; 0.05114849 0.04260065 0.09948908</span></span></code></pre></div>
 <p>The ICI is the mean absolute difference between the observed and
 predicted probabilities, E50 is the median absolute difference, and E90
 is the 90% percentile of the absolute differences. Finally, we calculate
@@ -455,11 +460,46 @@ computed with the <code><a href="../reference/accuracy.html">tvBrier()</a></code
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/accuracy.html">tvBrier</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Prediction Error for the Joint Model jointFit</span></span>
+<span><span class="co">#&gt; Prediction Error for the Joint Model 'jointFit'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated Brier score: 0.1267</span></span>
+<span><span class="co">#&gt; Estimated Brier score: 0.1282</span></span>
 <span><span class="co">#&gt; At time: 8</span></span>
-<span><span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></span></code></pre></div>
+<span><span class="co">#&gt; For the 202 subjects at risk at time 5</span></span>
+<span><span class="co">#&gt; Number of subjects with an event in [5, 8): 40</span></span>
+<span><span class="co">#&gt; Number of subjects with a censored time in [5, 8): 58</span></span>
+<span><span class="co">#&gt; Accounting for censoring using model-based weights</span></span></code></pre></div>
+<p>The Brier score evaluates the predictive accuracy at time
+<code>Tstart + Dt</code>. To summarize the predictive accuracy in the
+interval <code>(t0, t0 + Dt]</code> we can use the integrated Brier
+score. The corresponding integral is approximated using the Simpson’s
+rule:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/accuracy.html">tvBrier</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span>, integrated <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Prediction Error for the Joint Model 'jointFit'</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Estimated Integrated Brier score: 0.0824</span></span>
+<span><span class="co">#&gt; In the time interval: [5, 8)</span></span>
+<span><span class="co">#&gt; For the 202 subjects at risk at time 5</span></span>
+<span><span class="co">#&gt; Number of subjects with an event in [5, 8): 40</span></span>
+<span><span class="co">#&gt; Number of subjects with a censored time in [5, 8): 58</span></span>
+<span><span class="co">#&gt; Accounting for censoring using model-based weights</span></span></code></pre></div>
+<p>The <code><a href="../reference/accuracy.html">tvBrier()</a></code> also implements inverse probability of
+censoring weights to account for censoring in the interval
+<code>(t0, t0 + Dt]</code> using the Kaplan-Meier estimate of the
+censoring distribution (however, see the note below):</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/accuracy.html">tvBrier</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span>, integrated <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>        type_weights <span class="op">=</span> <span class="st">"IPCW"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Prediction Error for the Joint Model 'jointFit'</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Estimated Integrated Brier score: 0.0827</span></span>
+<span><span class="co">#&gt; In the time interval: [5, 8)</span></span>
+<span><span class="co">#&gt; For the 202 subjects at risk at time 5</span></span>
+<span><span class="co">#&gt; Number of subjects with an event in [5, 8): 40</span></span>
+<span><span class="co">#&gt; Number of subjects with a censored time in [5, 8): 58</span></span>
+<span><span class="co">#&gt; Accounting for censoring using inverse probability of censoring Kaplan-Meier weights</span></span></code></pre></div>
 <p><strong>Notes:</strong></p>
 <ul>
 <li>To obtain valid estimates of the predictive accuracy measures (i.e.,
@@ -508,7 +548,7 @@ described in <a href="https://doi.org/10.1002/sim.8570" class="external-link">Au
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

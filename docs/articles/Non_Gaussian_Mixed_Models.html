@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3-0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-0</span>
       </span>
     </div>
 
@@ -86,6 +86,9 @@
     </li>
     <li>
       <a href="../articles/Recurring_Events.html">Recurrent Events</a>
+    </li>
+    <li>
+      <a href="../articles/Super_Learning.html">Combined Dynamic Predictions via Super Learning</a>
     </li>
     <li>
       <a href="../articles/Transformation_Functions.html">Transformation Functions for Functional Forms</a>
@@ -126,7 +129,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2022-09-09</h4>
+            <h4 data-toc-skip class="date">2023-03-10</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Non_Gaussian_Mixed_Models.Rmd" class="external-link"><code>vignettes/Non_Gaussian_Mixed_Models.Rmd</code></a></small>
       <div class="hidden name"><code>Non_Gaussian_Mixed_Models.Rmd</code></div>
@@ -272,34 +275,34 @@ using the <code>beta.fam()</code> family object into the call of
 <span><span class="co">#&gt;   y: 1182</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                   DIC      WAIC     LPML</span></span>
-<span><span class="co">#&gt; marginal    -4019.446 -4062.396 1762.158</span></span>
-<span><span class="co">#&gt; conditional -3836.014 -3938.658 1812.803</span></span>
+<span><span class="co">#&gt; marginal    -4018.171 -4061.024 1910.317</span></span>
+<span><span class="co">#&gt; conditional -3837.701 -3938.538 1799.508</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                     </span></span>
 <span><span class="co">#&gt;        StdDev   Corr</span></span>
-<span><span class="co">#&gt; (Intr) 0.8508 (Intr)</span></span>
-<span><span class="co">#&gt; time   0.4668 0.0807</span></span>
+<span><span class="co">#&gt; (Intr) 0.8436 (Intr)</span></span>
+<span><span class="co">#&gt; time   0.4664 0.0812</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival Outcome:</span></span>
 <span><span class="co">#&gt;             Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale 0.2172 0.2927 -0.3623 0.7681 0.4631 1.0098</span></span>
-<span><span class="co">#&gt; value(y)  1.0409 0.0960  0.8763 1.2603 0.0000 1.0665</span></span>
+<span><span class="co">#&gt; sexfemale 0.2153 0.2944 -0.3672 0.7865 0.4669 1.0030</span></span>
+<span><span class="co">#&gt; value(y)  1.0656 0.1018  0.8866 1.2781 0.0000 1.0832</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: y (family = beta, link = logit)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)    -2.3457 0.1111 -2.5659 -2.1304 0.0000 1.0123</span></span>
-<span><span class="co">#&gt; sexfemale      -0.0629 0.1503 -0.3543  0.2285 0.6753 1.0067</span></span>
-<span><span class="co">#&gt; time            0.3275 0.0516  0.2276  0.4303 0.0000 1.0036</span></span>
-<span><span class="co">#&gt; sexfemale:time -0.0644 0.0723 -0.2051  0.0785 0.3678 1.0044</span></span>
-<span><span class="co">#&gt; sigma           6.3251 0.3848  5.6079  7.1273 0.0000 1.0470</span></span>
+<span><span class="co">#&gt; (Intercept)    -2.3410 0.1115 -2.5592 -2.1270 0.0000 1.0046</span></span>
+<span><span class="co">#&gt; sexfemale      -0.0689 0.1486 -0.3584  0.2241 0.6462 1.0144</span></span>
+<span><span class="co">#&gt; time            0.3271 0.0523  0.2258  0.4312 0.0000 1.0022</span></span>
+<span><span class="co">#&gt; sexfemale:time -0.0615 0.0729 -0.2035  0.0801 0.3898 1.0059</span></span>
+<span><span class="co">#&gt; sigma           6.2757 0.3932  5.5169  7.0813 0.0000 1.0064</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 22 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 19 sec</span></span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -418,34 +421,34 @@ syntax:</p>
 <span><span class="co">#&gt;   cbind(y, ind): 1346</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    3714.326 4630.438 -3419.221</span></span>
-<span><span class="co">#&gt; conditional 3333.870 3224.001 -1765.534</span></span>
+<span><span class="co">#&gt; marginal    3718.725 4647.513 -3335.920</span></span>
+<span><span class="co">#&gt; conditional 3331.812 3219.133 -1758.015</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                     </span></span>
 <span><span class="co">#&gt;        StdDev   Corr</span></span>
-<span><span class="co">#&gt; (Intr) 0.9488 (Intr)</span></span>
-<span><span class="co">#&gt; time   0.6664 0.1445</span></span>
+<span><span class="co">#&gt; (Intr) 0.9485 (Intr)</span></span>
+<span><span class="co">#&gt; time   0.6648 0.1439</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival Outcome:</span></span>
 <span><span class="co">#&gt;                        Mean  StDev   2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale            0.5922 0.2431 0.1225 1.0651 0.0158 1.0040</span></span>
-<span><span class="co">#&gt; value(cbind(y, ind)) 0.8540 0.0628 0.7360 0.9866 0.0000 1.0279</span></span>
+<span><span class="co">#&gt; sexfemale            0.6119 0.2493 0.1334 1.0954 0.0127 1.0044</span></span>
+<span><span class="co">#&gt; value(cbind(y, ind)) 0.8658 0.0639 0.7507 1.0006 0.0000 1.0848</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: cbind(y, ind) (family = censored normal, link = identity)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)    -2.2601 0.1017 -2.4616 -2.0576 0.0000 1.0023</span></span>
-<span><span class="co">#&gt; sexfemale      -0.0279 0.1423 -0.3097  0.2494 0.8427 1.0023</span></span>
-<span><span class="co">#&gt; time            0.3332 0.0694  0.1986  0.4716 0.0000 1.0002</span></span>
-<span><span class="co">#&gt; sexfemale:time -0.1173 0.0980 -0.3093  0.0749 0.2264 0.9998</span></span>
-<span><span class="co">#&gt; sigma           0.4945 0.0141  0.4676  0.5237 0.0000 1.0037</span></span>
+<span><span class="co">#&gt; (Intercept)    -2.2623 0.1023 -2.4652 -2.0611 0.0000 1.0021</span></span>
+<span><span class="co">#&gt; sexfemale      -0.0248 0.1432 -0.3076  0.2503 0.8658 1.0012</span></span>
+<span><span class="co">#&gt; time            0.3357 0.0699  0.1994  0.4754 0.0000 1.0004</span></span>
+<span><span class="co">#&gt; sexfemale:time -0.1199 0.0982 -0.3117  0.0709 0.2158 1.0008</span></span>
+<span><span class="co">#&gt; sigma           0.4950 0.0139  0.4685  0.5232 0.0000 1.0105</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 16 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 13 sec</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="studentss-t-mixed-models">Students’s-t mixed models<a class="anchor" aria-label="anchor" href="#studentss-t-mixed-models"></a>
@@ -558,33 +561,33 @@ Student’s-t mixed effects model:</p>
 <span><span class="co">#&gt;   y: 1347</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    5188.101 6789.630 -3773.608</span></span>
-<span><span class="co">#&gt; conditional 4446.703 4349.913 -2354.946</span></span>
+<span><span class="co">#&gt; marginal    5197.868 6842.793 -3988.557</span></span>
+<span><span class="co">#&gt; conditional 4447.164 4349.718 -2333.522</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                     </span></span>
 <span><span class="co">#&gt;        StdDev   Corr</span></span>
-<span><span class="co">#&gt; (Intr) 0.9767 (Intr)</span></span>
-<span><span class="co">#&gt; time   0.6746 0.1189</span></span>
+<span><span class="co">#&gt; (Intr) 0.9791 (Intr)</span></span>
+<span><span class="co">#&gt; time   0.6749 0.1175</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival Outcome:</span></span>
-<span><span class="co">#&gt;             Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale 0.0155 0.2473 -0.4476 0.4884 0.9407 1.0004</span></span>
-<span><span class="co">#&gt; value(y)  0.7929 0.0639  0.6709 0.9233 0.0000 1.0303</span></span>
+<span><span class="co">#&gt;             Mean  StDev    2.5%  97.5%     P   Rhat</span></span>
+<span><span class="co">#&gt; sexfemale 0.0207 0.2538 -0.4730 0.5131 0.932 1.0012</span></span>
+<span><span class="co">#&gt; value(y)  0.8350 0.0647  0.7152 0.9658 0.000 1.0569</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: y (family = Student's-t, link = identity)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)    -2.2433 0.1067 -2.4526 -2.0282 0.0000 1.0039</span></span>
-<span><span class="co">#&gt; sexfemale      -0.1242 0.1487 -0.4206  0.1641 0.4013 1.0008</span></span>
-<span><span class="co">#&gt; time            0.2801 0.0705  0.1424  0.4200 0.0000 1.0008</span></span>
-<span><span class="co">#&gt; sexfemale:time -0.0325 0.0986 -0.2252  0.1599 0.7431 1.0009</span></span>
+<span><span class="co">#&gt; (Intercept)    -2.2485 0.1083 -2.4626 -2.0334 0.0000 1.0038</span></span>
+<span><span class="co">#&gt; sexfemale      -0.1212 0.1513 -0.4205  0.1691 0.4267 1.0005</span></span>
+<span><span class="co">#&gt; time            0.2828 0.0710  0.1455  0.4235 0.0000 1.0007</span></span>
+<span><span class="co">#&gt; sexfemale:time -0.0335 0.0993 -0.2263  0.1598 0.7318 1.0007</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 16 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 13 sec</span></span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -698,34 +701,34 @@ syntax:</p>
 <span><span class="co">#&gt;   y: 3842</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    21347.87 21301.19 -10650.71</span></span>
-<span><span class="co">#&gt; conditional 22641.05 22355.86 -11567.90</span></span>
+<span><span class="co">#&gt; marginal    21347.40 21300.55 -10650.44</span></span>
+<span><span class="co">#&gt; conditional 22639.19 22350.27 -11565.82</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                      </span></span>
 <span><span class="co">#&gt;        StdDev   Corr </span></span>
-<span><span class="co">#&gt; (Intr) 1.0472 (Intr) </span></span>
-<span><span class="co">#&gt; time   0.5362 -0.0512</span></span>
+<span><span class="co">#&gt; (Intr) 1.0401 (Intr) </span></span>
+<span><span class="co">#&gt; time   0.5382 -0.0551</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival Outcome:</span></span>
-<span><span class="co">#&gt;             Mean  StDev   2.5%  97.5%     P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale 0.6011 0.1626 0.2920 0.9221 2e-04 1.0391</span></span>
-<span><span class="co">#&gt; value(y)  0.8061 0.0545 0.7023 0.9194 0e+00 1.0626</span></span>
+<span><span class="co">#&gt;             Mean  StDev   2.5%  97.5% P   Rhat</span></span>
+<span><span class="co">#&gt; sexfemale 0.6141 0.1608 0.2967 0.9385 0 1.0126</span></span>
+<span><span class="co">#&gt; value(y)  0.8114 0.0536 0.7136 0.9274 0 1.0458</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: y (family = negative binomial, link = log)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5% P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)     0.8408 0.0786  0.6880  0.9930 0 1.0188</span></span>
-<span><span class="co">#&gt; sexfemale      -0.5848 0.1144 -0.8084 -0.3619 0 1.0023</span></span>
-<span><span class="co">#&gt; time            0.8611 0.0415  0.7805  0.9442 0 1.0155</span></span>
-<span><span class="co">#&gt; sexfemale:time -0.5139 0.0585 -0.6283 -0.4015 0 1.0025</span></span>
-<span><span class="co">#&gt; sigma           1.9910 0.0837  1.8299  2.1585 0 1.0021</span></span>
+<span><span class="co">#&gt; (Intercept)     0.8422 0.0791  0.6852  0.9952 0 1.0116</span></span>
+<span><span class="co">#&gt; sexfemale      -0.5812 0.1143 -0.8014 -0.3573 0 1.0035</span></span>
+<span><span class="co">#&gt; time            0.8617 0.0415  0.7813  0.9427 0 1.0053</span></span>
+<span><span class="co">#&gt; sexfemale:time -0.5161 0.0591 -0.6298 -0.3989 0 1.0010</span></span>
+<span><span class="co">#&gt; sigma           1.9921 0.0848  1.8281  2.1608 0 1.0027</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 31 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 25 sec</span></span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -840,34 +843,34 @@ distribution:</p>
 <span><span class="co">#&gt;   cbind(y, 20 - y): 2837</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    11921.79 11872.37 -5953.717</span></span>
-<span><span class="co">#&gt; conditional 13489.96 13290.88 -7441.949</span></span>
+<span><span class="co">#&gt; marginal    11921.66 11871.70 -5942.471</span></span>
+<span><span class="co">#&gt; conditional 13491.02 13297.62 -7547.969</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                      </span></span>
 <span><span class="co">#&gt;        StdDev   Corr </span></span>
-<span><span class="co">#&gt; (Intr) 1.0079 (Intr) </span></span>
-<span><span class="co">#&gt; time   0.7114 -0.0012</span></span>
+<span><span class="co">#&gt; (Intr) 1.0077 (Intr) </span></span>
+<span><span class="co">#&gt; time   0.7146 -0.0045</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival Outcome:</span></span>
 <span><span class="co">#&gt;                           Mean  StDev   2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale               0.5743 0.1981 0.1841 0.9532 0.0051 1.0056</span></span>
-<span><span class="co">#&gt; value(cbind(y, 20 - y)) 0.9284 0.0679 0.8063 1.0751 0.0000 1.0862</span></span>
+<span><span class="co">#&gt; sexfemale               0.5800 0.1952 0.2149 0.9642 0.0036 1.0050</span></span>
+<span><span class="co">#&gt; value(cbind(y, 20 - y)) 0.9346 0.0598 0.8248 1.0519 0.0000 1.0299</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: cbind(y, 20 - y) (family = beta binomial, link = logit)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)    -2.1558 0.0945 -2.3417 -1.9730 0.0000 1.0072</span></span>
-<span><span class="co">#&gt; sexfemale      -0.2692 0.1327 -0.5300 -0.0087 0.0413 1.0139</span></span>
-<span><span class="co">#&gt; time            0.3292 0.0520  0.2280  0.4314 0.0000 1.0007</span></span>
-<span><span class="co">#&gt; sexfemale:time -0.1801 0.0749 -0.3281 -0.0367 0.0167 1.0030</span></span>
-<span><span class="co">#&gt; sigma           4.8225 0.2847  4.2791  5.3984 0.0000 1.0158</span></span>
+<span><span class="co">#&gt; (Intercept)    -2.1593 0.0940 -2.3486 -1.9754 0.0000 1.0194</span></span>
+<span><span class="co">#&gt; sexfemale      -0.2722 0.1310 -0.5360 -0.0178 0.0336 1.0087</span></span>
+<span><span class="co">#&gt; time            0.3316 0.0522  0.2299  0.4334 0.0000 1.0039</span></span>
+<span><span class="co">#&gt; sexfemale:time -0.1798 0.0749 -0.3276 -0.0368 0.0142 1.0007</span></span>
+<span><span class="co">#&gt; sigma           4.8145 0.2810  4.2778  5.3776 0.0000 1.0262</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 50 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 47 sec</span></span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -892,7 +895,7 @@ distribution:</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

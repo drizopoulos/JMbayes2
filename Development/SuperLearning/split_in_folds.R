@@ -589,20 +589,19 @@ print.tvBrier <- function (x, digits = 4, ...) {
 }
 
 
-CVdats <- create_folds(aids, id_var = "patient")
+CVdats <- create_folds(prothro, id_var = "id")
 fit_models <- function (data) {
     library("JMbayes2")
-    lmeFit <- lme(CD4 ~ obstime * drug, data = data,
-                  random = ~ obstime | patient,
+    lmeFit <- lme(pro ~ time * treat, data = data, random = ~ time | id,
                   control = lmeControl(opt = "optim"))
-    data_id <- data[!duplicated(data$patient), ]
-    CoxFit <- coxph(Surv(Time, death) ~ drug, data = data_id)
-    jmFit1 <- jm(CoxFit, lmeFit, time_var = "obstime")
-    jmFit2 <- update(jmFit1, functional_forms = ~ slope(CD4))
-    #jmFit3 <- update(jmFit1, functional_forms = ~ value(CD4) +
-    #                     slope(CD4))
-    #jmFit4 <- update(jmFit1, functional_forms = ~ area(CD4))
-    out <- list(M1 = jmFit1, M2 = jmFit2)#, M3 = jmFit3, M4 = jmFit4)
+    data_id <- data[!duplicated(data$id), ]
+    CoxFit <- coxph(Surv(Time, death) ~ treat, data = data_id)
+    jmFit1 <- jm(CoxFit, lmeFit, time_var = "time")
+    jmFit2 <- update(jmFit1, functional_forms = ~ slope(pro))
+    jmFit3 <- update(jmFit1, functional_forms = ~ value(pro) + slope(pro))
+    jmFit4 <- update(jmFit1, functional_forms = ~ area(pro))
+    jmFit5 <- update(jmFit1, functional_forms = ~ value(pro) + area(pro))
+    out <- list(M1 = jmFit1, M2 = jmFit2, M3 = jmFit3, M4 = jmFit4, M5 = jmFit5)
     class(out) <- "jmList"
     out
 }
@@ -612,8 +611,8 @@ Models_folds <- parallel::parLapply(cl, CVdats$training, fit_models)
 parallel::stopCluster(cl)
 
 
-tstr <- 8
-thor <- 10
+tstr <- 1
+thor <- 3
 ttt1 <- tvBrier(Models_folds[[1]][[4]], aids, integrated = TRUE,
                 Tstart = tstr, Thoriz = thor)
 ttt2 <- tvBrier(Models_folds[[1]][[4]], aids, integrated = TRUE,
@@ -630,13 +629,13 @@ tstr <- 9
 thor <- 10
 ttt1 <- tvEPCE(Models_folds[[1]][[4]], aids, Tstart = tstr, Thoriz = thor)
 
-xxx1 <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
+yyy1 <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
 
 
 
-Models <- fit_models(aids)
-ND <- aids[aids$Time > tstr & aids$obstime <= tstr, ]
-ND$patient <- ND$patient[, drop = TRUE]
+Models <- fit_models(prothro)
+ND <- prothro[prothro$Time > tstr & prothro$time <= tstr, ]
+ND$id <- ND$id[, drop = TRUE]
 ND$Time <- tstr
 ND$death <- 0
 model_weights <- xxx1$weights
@@ -647,67 +646,75 @@ test2 <- predict(Models, model_weights, newdata = ND[ND$patient == 4, ],
                  return_newdata = TRUE)
 plot(test2, test)
 
+#############################################################################
+#############################################################################
+#############################################################################
 
+source("./Development/jm/PBC_data.R")
+pbc2_lis <- split(pbc2, pbc2$id)
+ind <- sample(length(pbc2_lis), 5)
+pbc2_lis[ind] <- lapply(pbc2_lis[ind], function (d) {d$age <- NA; d})
+ind <- sample(length(pbc2_lis), 5)
+pbc2_lis[ind] <- lapply(pbc2_lis[ind], function (d) {d$sex <- NA; d})
+pbc2 <- do.call("rbind", pbc2_lis)
+pbc2.id <- pbc2[!duplicated(pbc2$id), ]
+rm(ff, pbc2_lis, ind)
 
+CVdats <- create_folds(pbc2, V = 5, id_var = "id")
+fit_models <- function (data) {
+    library("JMbayes2")
+    data$status2 <- as.numeric(data$status != "alive")
+    data_id <- data[!duplicated(data$id), ]
+    lmeFit <- lme(log(serBilir) ~ year, data = data,
+                  random = ~ year | id,
+                  control = lmeControl(opt = "optim"))
+    CoxFit <- coxph(Surv(years, status2) ~ 1, data = data_id)
+    jmFit1 <- jm(CoxFit, lmeFit, time_var = "year")
+    jmFit2 <- update(jmFit1,
+                     functional_forms = ~ slope(log(serBilir)))
+    jmFit3 <- update(jmFit1,
+                     functional_forms = ~ value(log(serBilir)) + area(log(serBilir)))
+    ###
+    lmeFit2 <- lme(log(serBilir) ~ ns(year, 3, B = c(0, 14.4)) + sex + age,
+                   data = data, random = ~ ns(year, 3, B = c(0, 14.4)) | id,
+                   control = lmeControl(opt = "optim"))
+    CoxFit2 <- coxph(Surv(years, status2) ~ sex + age, data = data_id)
+    jmFit4 <- jm(CoxFit2, lmeFit2, time_var = "year")
+    jmFit5 <- update(jmFit4,
+                     functional_forms = ~ slope(log(serBilir)))
+    out <- list(M1 = jmFit1, M2 = jmFit2, M3 = jmFit3, M4 = jmFit4, M5 = jmFit5)
+    class(out) <- "jmList"
+    out
+}
 
-
-mapply2 <- JMbayes2:::mapply2
-ND <- aids[aids$Time > 9 & aids$obstime <= 9, ]
-ND$patient <- ND$patient[, drop = TRUE]
-ND$Time <- 9
-ND$death <- 0
-model_weights <- xxx1$weights
-
-cl <- parallel::makeCluster(length(model_weights))
-invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
-preds <- parallel::parLapply(cl, Models, predict, newdata = ND,
-                             return_newdata = TRUE,
-                             return_mcmc = TRUE)
+cl <- parallel::makeCluster(5L)
+Models_folds <- parallel::parLapply(cl, CVdats$training, fit_models)
 parallel::stopCluster(cl)
 
-extract_mcmc <- function (x) {
-    if (is.data.frame(x)) attr(x, "mcmc") else x[["mcmc"]]
-}
-MCMC <- lapply(preds, extract_mcmc)
-if (is.list(MCMC[[1L]])) {
-    n_outcomes <- length(MCMC[[1L]])
-    pred_ <- qs <- vector("list", n_outcomes)
-    for (j in seq_len(n_outcomes)) {
-        weighted_MCMC <- Reduce("+", mapply2("*", MCMC[[j]], model_weights))
-        pred_[[j]] <- rowMeans(weighted_MCMC)
-        qs[[j]] <- matrixStats::rowQuantiles(weighted_MCMC, probs = c(0.025, 0.975))
-    }
-    names(pred_) <- names(qs) <- names(MCMC[[1L]])
-    low <- lapply(qs, function (x) x[, 1L])
-    upp <- lapply(qs, function (x) x[, 2L])
-} else {
-    weighted_MCMC <- Reduce("+", mapply2("*", MCMC, model_weights))
-    pred_ <- rowMeans(weighted_MCMC)
-    qs <- matrixStats::rowQuantiles(weighted_MCMC, probs = c(0.025, 0.975))
-}
 
-out <- preds[[1]]
-if (process == "event") {
-    if (!is.data.frame(out)) {
-        out$pred <- pred_
-        out$low <- qs[, 1L]
-        out$upp <- qs[, 2L]
-    } else {
-        out$pred_CIF <- pred_
-        out$low_CIF <- qs[, 1L]
-        out$upp_CIF <- qs[, 2L]
-    }
-} else {
-    if (!is.data.frame(out)) {
-        out$preds <- pred_
-        out$low <- low
-        out$upp <- upp
-    } else {
-        ind <- grep("pred_", names(out), fixed = TRUE)
-        out[ind] <- pred_
-        ind <- grep("low_", names(out), fixed = TRUE)
-        out[ind] <- low
-        ind <- grep("upp_", names(out), fixed = TRUE)
-        out[ind] <- upp
-    }
-}
+tstr <- 6
+thor <- 8
+
+Brier_weights <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
+                         Tstart = tstr, Thoriz = thor)
+Brier_weights
+
+EPCE_weights <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
+EPCE_weights
+
+Models <- fit_models(pbc2)
+
+ND <- pbc2[pbc2$years > tstr & pbc2$year <= tstr, ]
+ND$id <- ND$id[, drop = TRUE]
+ND$years <- tstr
+ND$status2 <- 0
+
+
+odel_weights <- EPCE_weights$weights
+
+predsEvent <- predict(Models, weights = model_weights, newdata = ND[ND$id == 8, ],
+                      process = "event", return_newdata = TRUE)
+predsLong <- predict(Models, weights = model_weights, newdata = ND[ND$id == 8, ],
+                     return_newdata = TRUE)
+
+
