@@ -7,7 +7,6 @@
 [![](https://cranlogs.r-pkg.org/badges/grand-total/JMbayes2)](https://cran.r-project.org/package=JMbayes2)
 [![Download
 counter](https://cranlogs.r-pkg.org/badges/JMbayes2)](https://cran.r-project.org/package=JMbayes2)
-[![Rdoc](https://www.rdocumentation.org/badges/version/JMbayes2)](https://www.rdocumentation.org/packages/JMbayes2)
 [![R build
 status](https://github.com/drizopoulos/JMbayes2/workflows/R-CMD-check/badge.svg)](https://github.com/drizopoulos/JMbayes/actions)
 <!-- badges: end -->
