@@ -597,9 +597,9 @@ fit_models <- function (data) {
     data_id <- data[!duplicated(data$id), ]
     CoxFit <- coxph(Surv(Time, death) ~ treat, data = data_id)
     jmFit1 <- jm(CoxFit, lmeFit, time_var = "time")
-    jmFit2 <- update(jmFit1, functional_forms = ~ slope(pro))
-    jmFit3 <- update(jmFit1, functional_forms = ~ value(pro) + slope(pro))
-    jmFit4 <- update(jmFit1, functional_forms = ~ area(pro))
+    jmFit2 <- update(jmFit1, functional_forms = ~ value(pro):treat)
+    jmFit3 <- update(jmFit1, functional_forms = ~ area(pro))
+    jmFit4 <- update(jmFit1, functional_forms = ~ area(pro):treat)
     jmFit5 <- update(jmFit1, functional_forms = ~ value(pro) + area(pro))
     out <- list(M1 = jmFit1, M2 = jmFit2, M3 = jmFit3, M4 = jmFit4, M5 = jmFit5)
     class(out) <- "jmList"
@@ -611,8 +611,15 @@ Models_folds <- parallel::parLapply(cl, CVdats$training, fit_models)
 parallel::stopCluster(cl)
 
 
-tstr <- 1
-thor <- 3
+tstr <- 3
+thor <- 5
+xxx1 <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
+                Tstart = tstr, Thoriz = thor)
+xxx2 <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
+                type_weights = "IPCW", Tstart = tstr, Thoriz = thor)
+yyy1 <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
+
+
 ttt1 <- tvBrier(Models_folds[[1]][[4]], aids, integrated = TRUE,
                 Tstart = tstr, Thoriz = thor)
 ttt2 <- tvBrier(Models_folds[[1]][[4]], aids, integrated = TRUE,
