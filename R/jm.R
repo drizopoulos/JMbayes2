@@ -12,6 +12,8 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     # - n_burnin: the number of burn-in iterations
     # - n_iter: the number of total iterations per chain
     # - seed: the seed used in the sampling procedures
+    # - parallel: what type of parallel computing to use, "snow" (default) or
+    #             "multicore"
     # - cores: the number of cores to use for running the chains in parallel;
     #          no point of setting this greater than n_chains
     # - knots: the knots for the log baseline hazard B-spline approximation
@@ -23,6 +25,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 diff = 2L, n_chains = 3L, n_burnin = 500L, n_iter = 3500L,
                 n_thin = 1L, seed = 123L, MALA = FALSE,
                 save_random_effects = FALSE, knots = NULL,
+                parallel = "snow",
                 cores = max(parallel::detectCores() - 1, 1))
     control <- c(control, list(...))
     namC <- names(con)

@@ -72,16 +72,27 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     initial_values$alphas <- unlist(initial_values$alphas, use.names = FALSE)
     priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
     priors$Tau_alphas <- .bdiag(priors$Tau_alphas)
-    # random seed
-    if (!exists(".Random.seed", envir = .GlobalEnv))
-        runif(1)
-    RNGstate <- get(".Random.seed", envir = .GlobalEnv)
-    on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
     n_chains <- control$n_chains
     tik <- proc.time()
     cores <- control$cores
+    parallel <- control$parallel
     chains <- seq_len(n_chains)
     cores <- min(cores, length(chains))
+    if (cores > 1L) {
+        have_mc <- have_snow <- FALSE
+        if (parallel == "multicore") {
+            have_mc <- .Platform$OS.type != "windows"
+        } else if (parallel == "snow") {
+            have_snow <- TRUE
+        }
+        if (!have_mc && !have_snow) cores <- 1L
+        loadNamespace("parallel")
+    }
+    # random seed
+    if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
+        runif(1L)
+    RNGstate <- get(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+    on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
     mcmc_parallel <- function (chain, model_data, model_info, initial_values,
                                priors, control) {
       not_D <- !names(initial_values) %in% c("D")
@@ -89,13 +100,21 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
       mcmc_cpp(model_data, model_info, initial_values, priors, control)
     }
     if (cores > 1L) {
-        cl <- parallel::makeCluster(cores)
-        parallel::clusterSetRNGStream(cl = cl, iseed = control$seed)
-        out <- parallel::parLapply(cl, chains, mcmc_parallel,
-                                   model_data = model_data, model_info = model_info,
-                                   initial_values = initial_values,
-                                   priors = priors, control = control)
-        parallel::stopCluster(cl)
+        if (have_mc) {
+            out <- parallel::mclapply(chains, mcmc_parallel,
+                                      model_data = model_data, model_info = model_info,
+                                      initial_values = initial_values,
+                                      priors = priors, control = control,
+                                      mc.cores = cores)
+        } else if (have_snow) {
+            cl <- parallel::makePSOCKcluster(rep("localhost", cores)) # parallel::makeCluster(cores)
+            parallel::clusterSetRNGStream(cl = cl, iseed = control$seed)
+            out <- parallel::parLapply(cl, chains, mcmc_parallel,
+                                       model_data = model_data, model_info = model_info,
+                                       initial_values = initial_values,
+                                       priors = priors, control = control)
+            parallel::stopCluster(cl)
+        }
     } else {
         set.seed(control$seed)
         out <- lapply(chains, mcmc_parallel, model_data = model_data,

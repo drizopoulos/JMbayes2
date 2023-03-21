@@ -98,7 +98,7 @@ control = NULL
 ##########################################################################################
 ##########################################################################################
 
-fm1 <- lme(log(serBilir) ~ year * sex + I(year^2) + age + prothrombin,
+fm1 <- lme(log(serBilir) ~ year * sex,
            data = pbc2, random = ~ year | id)
 fm2 <- lme(serChol ~ ns(year, 3) + sex + age, data = pbc2, random = ~ year | id,
            na.action = na.exclude)
@@ -121,8 +121,7 @@ fForms <- list("log(serBilir)" = ~ value(log(serBilir)) + slope(log(serBilir)) +
 test <- jm(CoxFit, list(fm1, fm2, fm3, fm4), time_var = "year",
            functional_forms = fForms)
 
-tt <- jm(CoxFit, fm1, time_var = "year",
-         functional_forms = ~ value(log(serBilir)) + slope(log(serBilir)))
+tt <- jm(CoxFit, fm1, time_var = "year", parallel = "multicore")
 
 ####
 

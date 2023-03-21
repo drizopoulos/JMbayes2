@@ -1,3 +1,9 @@
+# JMbayes2 0.4.1
+
+## Major
+* Portable implementation of parallel computing.
+
+
 # JMbayes2 0.4.0
 
 ## Major

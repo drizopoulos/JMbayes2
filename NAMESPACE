@@ -14,7 +14,7 @@ importFrom("stats", "coef", "terms", "model.frame", "model.frame.default",
            "gaussian", ".getXlevels", "makepredictcall", "plogis",
            "reformulate", "predict", "pnorm", "ave", "median", "density")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
-           "clusterSetRNGStream")
+           "clusterSetRNGStream", "makePSOCKcluster", "mclapply")
 importFrom("nlme", "fixef", "ranef", "pdMatrix")
 importFrom("GLMMadaptive", "effectPlotData")
 importFrom("survival", "coxph", "untangle.specials", "strata", "survfit", "Surv")
