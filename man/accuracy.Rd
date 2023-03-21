@@ -42,9 +42,11 @@ calibration_metrics(object, newdata, Tstart, Thoriz = NULL,
 
 tvBrier(object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     integrated = FALSE, type_weights = c("model-based", "IPCW"),
+    parallel = c("snow", "multicore"),
     cores = max(parallel::detectCores() - 1, 1), \dots)
 
 tvEPCE(object, newdata, Tstart, Thoriz = NULL, Dt = NULL, eps = 0.001,
+    parallel = c("snow", "multicore"),
     cores = max(parallel::detectCores() - 1, 1), \dots)
 
 create_folds(data, V = 5, id_var = "id", seed = 123L)
@@ -67,8 +69,10 @@ create_folds(data, V = 5, id_var = "id", seed = 123L)
 
 \item{eps}{numeric scalar used in the approximation of the hazard function.}
 
+\item{parallel}{character string; what type of parallel computing to use.}
+
 \item{cores}{integer denoting the number of cores to be used when a library of joint models has been provided in
-    \code{object}.}
+    \code{object}. If \code{cores = 1}, no parallel computing is used.}
 
 \item{df_ns}{the degrees of freedom for the natural cubic spline of the cloglog transformation of the
 predicted probabilities used in the Cox model that assess calibration.}

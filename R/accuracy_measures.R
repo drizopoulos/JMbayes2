@@ -415,8 +415,9 @@ calibration_metrics <- function (object, newdata, Tstart, Thoriz = NULL,
 }
 
 tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
-                    eps = 0.001, cores = max(parallel::detectCores() - 1, 1),
-                    ...) {
+                    eps = 0.001, parallel = c("snow", "multicore"),
+                    cores = max(parallel::detectCores() - 1, 1), ...) {
+    parallel <- match.arg(parallel)
     is_jm <- function (object) inherits(object, "jm")
     if (!is_jm(object)) {
         if (!all(sapply(unlist(object, recursive = FALSE), is_jm)))
@@ -511,7 +512,6 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     id. <- match(id, unique(id))
     ni <- tapply(id., id., length)
     newdata3[[Time_var]] <- rep(tilde_Time, ni)
-
     out <- if (!is_jm(object)) {
         # Super Learning
         V <- length(object) # number of folds
@@ -552,15 +552,42 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                  predictions2 = do.call("cbind", temp_q2))
         }
         cores <- min(cores, V)
-        cl <- parallel::makeCluster(cores)
-        invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
-        res <-
-            parallel::parLapply(cl, seq_len(V), run_over_folds, object = object,
-                                newdata = newdata, newdata2 = newdata2,
-                                newdata3 = newdata3,
-                                tilde_Time = tilde_Time_per_fold, eps = eps,
-                                L = L)
-        parallel::stopCluster(cl)
+        if (cores > 1L) {
+            have_mc <- have_snow <- FALSE
+            if (parallel == "multicore") {
+                have_mc <- .Platform$OS.type != "windows"
+            } else if (parallel == "snow") {
+                have_snow <- TRUE
+            }
+            if (!have_mc && !have_snow) cores <- 1L
+            loadNamespace("parallel")
+        }
+        if (cores > 1L) {
+            if (have_mc) {
+                res <-
+                    parallel::mclapply(seq_len(V), run_over_folds, object = object,
+                                       newdata = newdata, newdata2 = newdata2,
+                                       newdata3 = newdata3,
+                                       tilde_Time = tilde_Time_per_fold, eps = eps,
+                                       L = L, mc.cores = cores)
+            } else {
+                cl <- parallel::makePSOCKcluster(rep("localhost", cores))
+                invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
+                res <-
+                    parallel::parLapply(cl, seq_len(V), run_over_folds, object = object,
+                                        newdata = newdata, newdata2 = newdata2,
+                                        newdata3 = newdata3,
+                                        tilde_Time = tilde_Time_per_fold, eps = eps,
+                                        L = L)
+                parallel::stopCluster(cl)
+            }
+        } else {
+            res <- lapply(seq_len(V), run_over_folds, object = object,
+                          newdata = newdata, newdata2 = newdata2,
+                          newdata3 = newdata3,
+                          tilde_Time = tilde_Time_per_fold, eps = eps,
+                          L = L)
+        }
         predictions <- do.call("rbind", lapply(res, "[[", "predictions"))
         predictions2 <- do.call("rbind", lapply(res, "[[", "predictions2"))
         weights_fun <- function (coefs, predictions, predictions2,
@@ -652,7 +679,9 @@ print.tvEPCE <- function (x, digits = 4, ...) {
 
 tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                      integrated = FALSE, type_weights = c("model-based", "IPCW"),
+                     parallel = c("snow", "multicore"),
                      cores = max(parallel::detectCores() - 1, 1), ...) {
+    parallel <- match.arg(parallel)
     is_jm <- function (object) inherits(object, "jm")
     if (!is_jm(object)) {
         if (!all(sapply(unlist(object, recursive = FALSE), is_jm)))
@@ -795,15 +824,44 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                          do.call("cbind", temp_w))
             }
             cores <- min(cores, V)
-            cl <- parallel::makeCluster(cores)
-            invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
-            res <-
-                parallel::parLapply(cl, seq_len(V), run_over_folds, object = object,
-                                    newdata = newdata, newdata2 = newdata2,
-                                    type_weights = type_weights, Tstart = Tstart,
-                                    Thoriz = Thoriz, ind1 = ind1, ind2 = ind2,
-                                    ind3 = ind3, ids = ids, id = id, L = L)
-            parallel::stopCluster(cl)
+            if (cores > 1L) {
+                have_mc <- have_snow <- FALSE
+                if (parallel == "multicore") {
+                    have_mc <- .Platform$OS.type != "windows"
+                } else if (parallel == "snow") {
+                    have_snow <- TRUE
+                }
+                if (!have_mc && !have_snow) cores <- 1L
+                loadNamespace("parallel")
+            }
+            if (cores > 1L) {
+                if (have_mc) {
+                    res <-
+                        parallel::mclapply(seq_len(V), run_over_folds, object = object,
+                                           newdata = newdata, newdata2 = newdata2,
+                                           type_weights = type_weights, Tstart = Tstart,
+                                           Thoriz = Thoriz, ind1 = ind1, ind2 = ind2,
+                                           ind3 = ind3, ids = ids, id = id, L = L,
+                                           mc.cores = cores)
+                } else {
+                    cl <- parallel::makePSOCKcluster(rep("localhost", cores))
+                    invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
+                    res <-
+                        parallel::parLapply(cl, seq_len(V), run_over_folds, object = object,
+                                            newdata = newdata, newdata2 = newdata2,
+                                            type_weights = type_weights, Tstart = Tstart,
+                                            Thoriz = Thoriz, ind1 = ind1, ind2 = ind2,
+                                            ind3 = ind3, ids = ids, id = id, L = L)
+                    parallel::stopCluster(cl)
+                }
+            } else {
+                res <-
+                    lapply(seq_len(V), run_over_folds, object = object,
+                           newdata = newdata, newdata2 = newdata2,
+                           type_weights = type_weights, Tstart = Tstart,
+                           Thoriz = Thoriz, ind1 = ind1, ind2 = ind2,
+                           ind3 = ind3, ids = ids, id = id, L = L)
+            }
             predictions <- do.call("rbind", lapply(res, "[[", "predictions"))
             W <- do.call("rbind", lapply(res, "[[", "W"))
             if (is.null(W)) {

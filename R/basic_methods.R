@@ -601,10 +601,12 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
                         type = c("subject_specific", "mean_subject"),
                         level = 0.95, return_newdata = FALSE,
                         return_mcmc = FALSE, n_samples = 200L, n_mcmc = 55L,
+                        parallel = c("snow", "multicore"),
                         cores = NULL, seed = 123L, ...) {
     process <- match.arg(process)
     type_pred <- match.arg(type_pred)
     type <- match.arg(type)
+    parallel <- match.arg(parallel)
     id_var <- object$model_info$var_names$idVar
     time_var <- object$model_info$var_names$time_var
     Time_var <- object$model_info$var_names$Time_var
@@ -733,7 +735,7 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
         cores <- if (n > 20) 4L else 1L
     }
     components_newdata <- get_components_newdata(object, newdata, n_samples,
-                                                 n_mcmc, cores, seed)
+                                                 n_mcmc, parallel, cores, seed)
     if (process == "longitudinal") {
         predict_Long(object, components_newdata, newdata, newdata2, times,
                      times_per_id, type, type_pred, level, return_newdata,
@@ -1054,10 +1056,12 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
                         type = c("subject_specific", "mean_subject"),
                         level = 0.95, return_newdata = FALSE,
                         return_mcmc = FALSE, n_samples = 200L, n_mcmc = 55L,
+                        parallel = c("snow", "multicore"),
                         cores = max(parallel::detectCores() - 1, 1), ...) {
     process <- match.arg(process)
     type_pred <- match.arg(type_pred)
     type <- match.arg(type)
+    parallel <- match.arg(parallel)
     obj <- object[[1L]]
     id_var <- obj$model_info$var_names$idVar
     time_var <- obj$model_info$var_names$time_var
@@ -1181,17 +1185,47 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
                  "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
         }
     }
-    ncores <- min(cores, length(object))
-    cl <- parallel::makeCluster(ncores)
-    invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
-    preds <-
-        parallel::parLapply(cl, object, predict, newdata = newdata,
-                            newdata2 = newdata2, times = times,
-                            process = process, type_pred = type_pred,
-                            type = type, level = level, n_samples = n_samples,
-                            n_mcmc = n_mcmc, return_newdata = return_newdata,
-                            return_mcmc = TRUE)
-    parallel::stopCluster(cl)
+    cores <- min(cores, length(object))
+    if (cores > 1L) {
+        have_mc <- have_snow <- FALSE
+        if (parallel == "multicore") {
+            have_mc <- .Platform$OS.type != "windows"
+        } else if (parallel == "snow") {
+            have_snow <- TRUE
+        }
+        if (!have_mc && !have_snow) cores <- 1L
+        loadNamespace("parallel")
+    }
+    if (cores > 1L) {
+        if (have_mc) {
+            preds <-
+                parallel::mclapply(object, predict, newdata = newdata,
+                                    newdata2 = newdata2, times = times,
+                                    process = process, type_pred = type_pred,
+                                    type = type, level = level, n_samples = n_samples,
+                                    n_mcmc = n_mcmc, return_newdata = return_newdata,
+                                    return_mcmc = TRUE, mc.cores = cores)
+        } else {
+            cl <- parallel::makePSOCKcluster(rep("localhost", cores))
+            invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
+            preds <-
+                parallel::parLapply(cl, object, predict, newdata = newdata,
+                                    newdata2 = newdata2, times = times,
+                                    process = process, type_pred = type_pred,
+                                    type = type, level = level, n_samples = n_samples,
+                                    n_mcmc = n_mcmc, return_newdata = return_newdata,
+                                    return_mcmc = TRUE)
+            parallel::stopCluster(cl)
+        }
+    } else {
+        preds <-
+            lapply(object, predict, newdata = newdata,
+                   newdata2 = newdata2, times = times,
+                   process = process, type_pred = type_pred,
+                   type = type, level = level, n_samples = n_samples,
+                   n_mcmc = n_mcmc, return_newdata = return_newdata,
+                   return_mcmc = TRUE)
+    }
     extract_mcmc <- function (x) {
         if (is.data.frame(x)) attr(x, "mcmc") else x[["mcmc"]]
     }

@@ -527,13 +527,7 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
 }
 
 get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
-                                    cores, seed) {
-    if (!exists(".Random.seed", envir = .GlobalEnv)) {
-        runif(1L)
-    }
-    RNGstate <- get(".Random.seed", envir = .GlobalEnv)
-    on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
-
+                                    parallel, cores, seed) {
     # prepare the data for calculations
     newdataL <- if (!is.data.frame(newdata)) newdata[["newdataL"]] else newdata
     newdataE <- if (!is.data.frame(newdata)) newdata[["newdataE"]] else newdata
@@ -602,11 +596,33 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
         mcmc
     }
     if (cores > 1L) {
-        cl <- parallel::makeCluster(cores)
-        parallel::clusterSetRNGStream(cl = cl, iseed = seed)
-        out <- parallel::parLapply(cl, id_samples, sample_parallel,
-                                   Data = Data, mcmc = mcmc, control = control)
-        parallel::stopCluster(cl)
+        have_mc <- have_snow <- FALSE
+        if (parallel == "multicore") {
+            have_mc <- .Platform$OS.type != "windows"
+        } else if (parallel == "snow") {
+            have_snow <- TRUE
+        }
+        if (!have_mc && !have_snow) cores <- 1L
+        loadNamespace("parallel")
+    }
+    if (!exists(".Random.seed", envir = .GlobalEnv)) {
+        runif(1L)
+    }
+    RNGstate <- get(".Random.seed", envir = .GlobalEnv)
+    on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
+    if (cores > 1L) {
+        if (have_mc) {
+            out <-
+                parallel::mclapply(id_samples, sample_parallel,
+                                   Data = Data, mcmc = mcmc, control = control,
+                                   mc.cores = cores)
+        } else {
+            cl <- parallel::makePSOCKcluster(rep("localhost", cores))
+            parallel::clusterSetRNGStream(cl = cl, iseed = seed)
+            out <- parallel::parLapply(cl, id_samples, sample_parallel,
+                                       Data = Data, mcmc = mcmc, control = control)
+            parallel::stopCluster(cl)
+        }
     } else {
         set.seed(seed)
         out <- list(sample_parallel(id_samples[[1L]], Data = Data, mcmc = mcmc,

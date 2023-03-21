@@ -19,7 +19,8 @@ Predict method for object of class \code{"jm"}.
   type_pred = c("response", "link"),
   type = c("subject_specific", "mean_subject"),
   level = 0.95, return_newdata = FALSE, return_mcmc = FALSE,
-  n_samples = 200L, n_mcmc = 55L, cores = NULL, seed = 123L,
+  n_samples = 200L, n_mcmc = 55L, parallel = c("snow", "multicore"),
+  cores = NULL, seed = 123L,
   \dots)
 
 \method{plot}{predict_jm}(x, x2 = NULL, subject = 1, outcomes = 1,
@@ -40,6 +41,7 @@ Predict method for object of class \code{"jm"}.
  type = c("subject_specific", "mean_subject"),
  level = 0.95, return_newdata = FALSE,
  return_mcmc = FALSE, n_samples = 200L, n_mcmc = 55L,
+ parallel = c("snow", "multicore"),
  cores = max(parallel::detectCores() - 1, 1), \dots)
 }
 
@@ -71,7 +73,9 @@ subjects in \code{newdata}.}
 
 \item{n_mcmc}{the number of Metropolis-Hastings iterations for sampling the random effects per iteration of \code{n_samples}; only the last iteration is retained.}
 
-\item{cores}{how many number of cores to use. If there more than 20 subjects in \code{newdata}, parallel computing is invoked with four cores by default.}
+\item{parallel}{character string; what type of parallel computing to use.}
+
+\item{cores}{how many number of cores to use. If there more than 20 subjects in \code{newdata}, parallel computing is invoked with four cores by default. If \code{cores = 1}, no parallel computing is used.}
 
 \item{seed}{an integer denoting the seed.}
 
