@@ -101,6 +101,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     }
     if (cores > 1L) {
         if (have_mc) {
+            RNGkind("L'Ecuyer-CMRG")
+            set.seed(control$seed)
             out <- parallel::mclapply(chains, mcmc_parallel,
                                       model_data = model_data, model_info = model_info,
                                       initial_values = initial_values,

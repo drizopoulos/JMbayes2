@@ -612,6 +612,8 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
     on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
     if (cores > 1L) {
         if (have_mc) {
+            RNGkind("L'Ecuyer-CMRG")
+            set.seed(seed)
             out <-
                 parallel::mclapply(id_samples, sample_parallel,
                                    Data = Data, mcmc = mcmc, control = control,
