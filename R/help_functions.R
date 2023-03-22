@@ -1107,7 +1107,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                 "slope" = degn_matr_slp(time, terms, Xbar, eps, direction),
                 "velocity" = degn_matr_slp(time, terms, Xbar, eps, direction),
                 "acceleration" = degn_matr_acc(time, terms, Xbar),
-                "area" = degn_matr_area(time, terms, Xbar))
+                "area" = degn_matr_area(time, terms, Xbar, start_time))
     out <- lapply(seq_along(Fun_Forms), function (i)
         lapply(out[Fun_Forms[[i]]], "[[", i))
     names(out) <- names(Fun_Forms)
