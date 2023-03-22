@@ -37,7 +37,7 @@ coefs(x, zero_ind = NULL)
 slope(x, eps = 0.001, direction = "both")
 velocity(x, eps = 0.001, direction = "both")
 acceleration(x)
-area(x)
+area(x, start_time = 0.0)
 
 vexpit(x)
 Dexpit(x)
@@ -164,6 +164,7 @@ tv(x, knots = NULL, ord = 2L)
 \item{eps}{numeric scalar denoting the step-size for the finite difference approximation.}
 \item{direction}{character string for the direction of the numerical derivative, options are \code{"both"},
 and \code{"backward"}.}
+\item{start_time}{numeric scalar denoting the lower limit for calculating the integral.}
 \item{\dots}{arguments passed to \code{control}.}
 }
 
