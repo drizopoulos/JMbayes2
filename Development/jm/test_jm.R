@@ -77,10 +77,14 @@ pbc2_ro <- pbc2[sample(seq_len(nrow(pbc2)), nrow(pbc2)), ]
 fm1 <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
 fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
 
-jointFit <- jm(CoxFit, list(fm1), time_var = "year",
-               n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)
+jointFit1 <- jm(CoxFit, list(fm1), time_var = "year",
+                functional_forms = ~ area(log(serBilir)))
+jointFit2 <- jm(CoxFit, list(fm1), time_var = "year",
+                functional_forms = ~ area(log(serBilir), time_window = 5))
 
-summary(jointFit)
+summary(jointFit1)
+summary(jointFit2)
+
 
 
 Surv_object = CoxFit

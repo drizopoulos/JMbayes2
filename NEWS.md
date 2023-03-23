@@ -3,6 +3,8 @@
 ## Major
 * Portable implementation of parallel computing.
 
+* function `area()` has gained the argument `time_window` that specifies the window of integrating the linear predictor of the corresponding longitudinal outcome. 
+
 
 # JMbayes2 0.4.0
 
