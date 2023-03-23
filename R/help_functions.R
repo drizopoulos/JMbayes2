@@ -1089,7 +1089,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
             # of the interval
             list(P = c(t(outer(P / (x - start_time), wk))), sk = sk)
         }
-        qp <- lapply(time, quadrature_points, start_time = start_time)
+        qp <- lapply(time, quadrature_points, start_time = 0.0)
         ss <- lapply(qp, function (x) c(t(x[['sk']])))
         Pwk <- unlist(lapply(qp, '[[', 'P'), use.names = FALSE)
         M <- desgn_matr(ss, terms, Xbar, zero_ind = NULL)

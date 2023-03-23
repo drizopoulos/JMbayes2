@@ -74,8 +74,7 @@ CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
 # a linear mixed model for log serum cholesterol with random ordering
 set.seed(123)
 pbc2_ro <- pbc2[sample(seq_len(nrow(pbc2)), nrow(pbc2)), ]
-fm1 <- lme(log(serChol) ~ year * sex, data = pbc2_ro, random = ~ year | id,
-           na.action = na.omit)
+fm1 <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
 
 jointFit <- jm(CoxFit, list(fm1), time_var = "year",
                n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)
@@ -86,13 +85,62 @@ summary(jointFit)
 Surv_object = CoxFit
 Mixed_objects = fm1
 time_var = 'year'
-functional_forms = NULL
+functional_forms = ~ area(log(serBilir))
 recurrent = FALSE
 data_Surv = NULL
 id_var = NULL
 priors = NULL
 control = NULL
 #
+
+time = st
+terms = terms_FE_noResp
+data = dataL
+timeVar = time_var
+xxx1 <- degn_matr_area(time, terms, Xbar, start_time)
+xxx2 <- degn_matr_area2(time, terms, Xbar, start_time)
+
+degn_matr_area2 <- function (time, terms, Xbar, start_time) {
+    if (!is.list(time)) {
+        time <- if (is.matrix(time)) split(time, row(time))
+        else split(time, seq_along(time))
+    }
+    GK <- gaussKronrod(15L)
+    wk <- GK$wk
+    sk <- GK$sk
+    quadrature_points <- function (x, start_time) {
+        P <- unname(c(x - start_time) / 2)
+        sk <- outer(P, sk) + (c(x + start_time) / 2)
+        # we divide with (x - start_time) to obtain the area from start_time
+        # up to time t, divided by t - start_time to account for the length
+        # of the interval
+        list(P = c(t(outer(P / (x - start_time), wk))), sk = sk)
+    }
+
+    K <- length(terms)
+    out <- vector("list", K)
+    for (i in seq_len(K)) {
+        terms_i <- terms[[i]]
+        D <- LongData_HazardModel(time, data, data[[timeVar]],
+                                  data[[idVar]], timeVar,
+                                  match(idT, unique(idT)))
+        mf <- model.frame.default(terms_i, data = D)
+        X <- model.matrix.default(terms_i, mf)
+    }
+
+
+    qp <- lapply(time, quadrature_points, start_time = 0.0)
+    ss <- lapply(qp, function (x) c(t(x[['sk']])))
+    Pwk <- unlist(lapply(qp, '[[', 'P'), use.names = FALSE)
+    M <- desgn_matr(ss, terms, Xbar, zero_ind = NULL)
+    M <- lapply(M, "*", Pwk)
+    sum_qp <- function (m) {
+        n <- nrow(m)
+        grp <- rep(seq_len(round(n / 15)), each = 15L)
+        rowsum(m, grp, reorder = FALSE)
+    }
+    lapply(M, sum_qp)
+}
 
 
 ##########################################################################################
