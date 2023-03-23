@@ -37,7 +37,7 @@ coefs(x, zero_ind = NULL)
 slope(x, eps = 0.001, direction = "both")
 velocity(x, eps = 0.001, direction = "both")
 acceleration(x)
-area(x, time_window = 0.0)
+area(x, time_window = NULL)
 
 vexpit(x)
 Dexpit(x)
