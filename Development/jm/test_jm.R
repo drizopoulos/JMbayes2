@@ -75,6 +75,7 @@ CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
 set.seed(123)
 pbc2_ro <- pbc2[sample(seq_len(nrow(pbc2)), nrow(pbc2)), ]
 fm1 <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
+fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
 
 jointFit <- jm(CoxFit, list(fm1), time_var = "year",
                n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)
@@ -83,9 +84,9 @@ summary(jointFit)
 
 
 Surv_object = CoxFit
-Mixed_objects = fm1
+Mixed_objects = list(fm1, fm2)
 time_var = 'year'
-functional_forms = ~ area(log(serBilir))
+functional_forms = ~ area(log(serBilir)) + area(prothrombin)
 recurrent = FALSE
 data_Surv = NULL
 id_var = NULL
@@ -97,10 +98,12 @@ time = st
 terms = terms_FE_noResp
 data = dataL
 timeVar = time_var
-xxx1 <- degn_matr_area(time, terms, Xbar, start_time)
-xxx2 <- degn_matr_area2(time, terms, Xbar, start_time)
+xxx1 <- degn_matr_area(time, terms, Xbar, time_window)
+xxx2 <- degn_matr_area2(time, terms, Xbar, time_window)
 
-degn_matr_area2 <- function (time, terms, Xbar, start_time) {
+all.equal(xxx1, xxx2)
+
+degn_matr_area2 <- function (time, terms, Xbar, time_window) {
     if (!is.list(time)) {
         time <- if (is.matrix(time)) split(time, row(time))
         else split(time, seq_along(time))
@@ -108,38 +111,45 @@ degn_matr_area2 <- function (time, terms, Xbar, start_time) {
     GK <- gaussKronrod(15L)
     wk <- GK$wk
     sk <- GK$sk
-    quadrature_points <- function (x, start_time) {
-        P <- unname(c(x - start_time) / 2)
-        sk <- outer(P, sk) + (c(x + start_time) / 2)
-        # we divide with (x - start_time) to obtain the area from start_time
-        # up to time t, divided by t - start_time to account for the length
-        # of the interval
-        list(P = c(t(outer(P / (x - start_time), wk))), sk = sk)
+    quadrature_points <- function (x, time_window) {
+        if (is.null(time_window)) {
+            P <- unname(x / 2)
+            sk <- outer(P, sk + 1)
+            # we divide with x to obtain the area up to time t, divided by t
+            # to account for the length of the interval
+            list(P = c(t(outer(P / x, wk))), sk = sk)
+        } else {
+            P <- unname(c(x - x + time_window) / 2)
+            sk <- outer(P, sk) + (c(x + x - time_window) / 2)
+            # we divide with (x - time_window) to obtain the area from time_window
+            # up to time t, divided by t - time_window to account for the length
+            # of the interval
+            list(P = c(t(outer(P / time_window, wk))), sk = sk)
+        }
     }
-
-    K <- length(terms)
-    out <- vector("list", K)
-    for (i in seq_len(K)) {
-        terms_i <- terms[[i]]
-        D <- LongData_HazardModel(time, data, data[[timeVar]],
-                                  data[[idVar]], timeVar,
-                                  match(idT, unique(idT)))
-        mf <- model.frame.default(terms_i, data = D)
-        X <- model.matrix.default(terms_i, mf)
-    }
-
-
-    qp <- lapply(time, quadrature_points, start_time = 0.0)
-    ss <- lapply(qp, function (x) c(t(x[['sk']])))
-    Pwk <- unlist(lapply(qp, '[[', 'P'), use.names = FALSE)
-    M <- desgn_matr(ss, terms, Xbar, zero_ind = NULL)
-    M <- lapply(M, "*", Pwk)
     sum_qp <- function (m) {
         n <- nrow(m)
         grp <- rep(seq_len(round(n / 15)), each = 15L)
         rowsum(m, grp, reorder = FALSE)
     }
-    lapply(M, sum_qp)
+    K <- length(terms)
+    out <- vector("list", K)
+    for (i in seq_len(K)) {
+        time_window_i <- if (length(time_window[[i]])) time_window[[i]][[1L]] else NULL
+        terms_i <- terms[[i]]
+        qp <- lapply(time, quadrature_points, time_window = time_window_i)
+        ss <- lapply(qp, function (x) c(t(x[['sk']])))
+        Pwk <- unlist(lapply(qp, '[[', 'P'), use.names = FALSE)
+
+
+        D <- LongData_HazardModel(ss, data, data[[timeVar]],
+                                  data[[idVar]], timeVar,
+                                  match(idT, unique(idT)))
+        mf <- model.frame.default(terms_i, data = D)
+        X <- Pwk * model.matrix.default(terms_i, mf)
+        out[[i]] <- sum_qp(X)
+    }
+    out
 }
 
 

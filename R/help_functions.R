@@ -215,11 +215,11 @@ extract_attributes <- function (form, data) {
     eps <- lapply(mf, function (v, name) attr(v, name), name = "eps")
     direction <- lapply(mf, function (v, name) attr(v, name), name = "direction")
     zero_ind <- lapply(mf, function (v, name) attr(v, name), name = "zero_ind")
-    start_time <- lapply(mf, function (v, name) attr(v, name), name = "start_time")
+    time_window <- lapply(mf, function (v, name) attr(v, name), name = "time_window")
     list(eps = eps[!sapply(eps, is.null)],
          direction = direction[!sapply(direction, is.null)],
          zero_ind = zero_ind[!sapply(zero_ind, is.null)],
-         start_time = start_time[!sapply(start_time, is.null)])
+         time_window = time_window[!sapply(time_window, is.null)])
 }
 
 extract_D <- function (object) {
@@ -284,9 +284,9 @@ slope <- function (x, eps = 0.001, direction = "both") {
 }
 velocity <- slope
 acceleration <- function (x) rep(1, NROW(x))
-area <- function (x, start_time = 0.0) {
+area <- function (x, time_window = NULL) {
     out <- rep(1, NROW(x))
-    temp <- list(start_time = start_time)
+    temp <- list(time_window = time_window)
     attributes(out) <- c(attributes(out), temp)
     out
 }
@@ -970,7 +970,7 @@ LongData_HazardModel <- function (times_to_fill, data, times_data, ids,
 
 design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                                               idT, Fun_Forms, Xbar = NULL, eps,
-                                              direction, zero_ind = NULL, start_time) {
+                                              direction, zero_ind = NULL, time_window) {
     data[] <- lapply(data, function (x) locf(locf(x), fromLast = TRUE))
     desgn_matr <- function (time, terms, Xbar, zero_ind) {
         D <- LongData_HazardModel(time, data, data[[timeVar]],
@@ -1073,7 +1073,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         }
         out
     }
-    degn_matr_area <- function (time, terms, Xbar, start_time) {
+    degn_matr_area <- function (time, terms, Xbar, time_window) {
         if (!is.list(time)) {
             time <- if (is.matrix(time)) split(time, row(time))
             else split(time, seq_along(time))
@@ -1081,25 +1081,45 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         GK <- gaussKronrod(15L)
         wk <- GK$wk
         sk <- GK$sk
-        quadrature_points <- function (x, start_time) {
-            P <- unname(c(x - start_time) / 2)
-            sk <- outer(P, sk) + (c(x + start_time) / 2)
-            # we divide with (x - start_time) to obtain the area from start_time
-            # up to time t, divided by t - start_time to account for the length
-            # of the interval
-            list(P = c(t(outer(P / (x - start_time), wk))), sk = sk)
+        quadrature_points <- function (x, time_window) {
+            if (is.null(time_window)) {
+                P <- unname(x / 2)
+                sk <- outer(P, sk + 1)
+                # we divide with x to obtain the area up to time t, divided by t
+                # to account for the length of the interval
+                list(P = c(t(outer(P / x, wk))), sk = sk)
+            } else {
+                P <- unname(c(x - x + time_window) / 2)
+                sk <- outer(P, sk) + (c(x + x - time_window) / 2)
+                # we divide with (x - time_window) to obtain the area from time_window
+                # up to time t, divided by t - time_window to account for the length
+                # of the interval
+                list(P = c(t(outer(P / time_window, wk))), sk = sk)
+            }
         }
-        qp <- lapply(time, quadrature_points, start_time = 0.0)
-        ss <- lapply(qp, function (x) c(t(x[['sk']])))
-        Pwk <- unlist(lapply(qp, '[[', 'P'), use.names = FALSE)
-        M <- desgn_matr(ss, terms, Xbar, zero_ind = NULL)
-        M <- lapply(M, "*", Pwk)
         sum_qp <- function (m) {
             n <- nrow(m)
             grp <- rep(seq_len(round(n / 15)), each = 15L)
             rowsum(m, grp, reorder = FALSE)
         }
-        lapply(M, sum_qp)
+        K <- length(terms)
+        out <- vector("list", K)
+        for (i in seq_len(K)) {
+            time_window_i <- if (length(time_window[[i]])) time_window[[i]][[1L]] else NULL
+            terms_i <- terms[[i]]
+            qp <- lapply(time, quadrature_points, time_window = time_window_i)
+            ss <- lapply(qp, function (x) c(t(x[['sk']])))
+            Pwk <- unlist(lapply(qp, '[[', 'P'), use.names = FALSE)
+
+
+            D <- LongData_HazardModel(ss, data, data[[timeVar]],
+                                      data[[idVar]], timeVar,
+                                      match(idT, unique(idT)))
+            mf <- model.frame.default(terms_i, data = D)
+            X <- Pwk * model.matrix.default(terms_i, mf)
+            out[[i]] <- sum_qp(X)
+        }
+        out
     }
     ################
     out <- list("value" = desgn_matr(time, terms, Xbar, NULL),
@@ -1107,7 +1127,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                 "slope" = degn_matr_slp(time, terms, Xbar, eps, direction),
                 "velocity" = degn_matr_slp(time, terms, Xbar, eps, direction),
                 "acceleration" = degn_matr_acc(time, terms, Xbar),
-                "area" = degn_matr_area(time, terms, Xbar, start_time))
+                "area" = degn_matr_area(time, terms, Xbar, time_window))
     out <- lapply(seq_along(Fun_Forms), function (i)
         lapply(out[Fun_Forms[[i]]], "[[", i))
     names(out) <- names(Fun_Forms)
