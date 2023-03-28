@@ -36,13 +36,13 @@ Predict method for object of class \code{"jm"}.
   \dots)
 
 \method{predict}{jmList}(object, weights, newdata = NULL, newdata2 = NULL,
- times = NULL, process = c("longitudinal", "event"),
+ times = NULL, times_per_id = FALSE, process = c("longitudinal", "event"),
  type_pred = c("response", "link"),
  type = c("subject_specific", "mean_subject"),
  level = 0.95, return_newdata = FALSE,
  return_mcmc = FALSE, n_samples = 200L, n_mcmc = 55L,
  parallel = c("snow", "multicore"),
- cores = max(parallel::detectCores() - 1, 1), \dots)
+ cores = parallelly::availableCores(omit = 1L), \dots)
 }
 
 \arguments{

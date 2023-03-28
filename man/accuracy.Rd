@@ -43,11 +43,11 @@ calibration_metrics(object, newdata, Tstart, Thoriz = NULL,
 tvBrier(object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     integrated = FALSE, type_weights = c("model-based", "IPCW"),
     model_weights = NULL, parallel = c("snow", "multicore"),
-    cores = max(parallel::detectCores() - 1, 1), \dots)
+    cores = parallelly::availableCores(omit = 1L), \dots)
 
 tvEPCE(object, newdata, Tstart, Thoriz = NULL, Dt = NULL, eps = 0.001,
     model_weights = NULL, parallel = c("snow", "multicore"),
-    cores = max(parallel::detectCores() - 1, 1), \dots)
+    cores = parallelly::availableCores(omit = 1L), \dots)
 
 create_folds(data, V = 5, id_var = "id", seed = 123L)
 }

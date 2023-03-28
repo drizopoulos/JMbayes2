@@ -30,16 +30,16 @@ if (FALSE) {
     type_weights = "model-based"
     newdata = aids
 
-    object = Models_folds
+    object = Models
     Tstart = 3
     Thoriz = 5
     eps = 0.001
     cores = max(parallel::detectCores() - 1, 1)
     integrated = TRUE
-    model_weights = NULL
+    model_weights = c(0, 0, 0, 0, 1)
     type_weights = "model-based"
     parallel = "snow"
-    newdata = CVdats$testing
+    newdata = prothro
 }
 
 tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
@@ -620,6 +620,8 @@ xxx1 <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
 xxx2 <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
                 type_weights = "IPCW", Tstart = tstr, Thoriz = thor)
 xxx3 <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
+
+Models <- fit_models(prothro)
 xxx4 <- tvEPCE(Models, prothro, Tstart = tstr, Thoriz = thor,
                model_weights = xxx3$weights)
 xxx5 <- lapply(Models, tvEPCE, newdata = prothro, Tstart = tstr, Thoriz = thor)

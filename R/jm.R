@@ -26,7 +26,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 n_thin = 1L, seed = 123L, MALA = FALSE,
                 save_random_effects = FALSE, knots = NULL,
                 parallel = "snow",
-                cores = max(parallel::detectCores() - 1, 1))
+                cores = parallelly::availableCores(omit = 1L))
     control <- c(control, list(...))
     namC <- names(con)
     con[(namc <- names(control))] <- control

@@ -1051,13 +1051,14 @@ rc_setup <- function(rc_data, trm_data,
 
 
 predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
-                        times = NULL, process = c("longitudinal", "event"),
+                        times = NULL, times_per_id = FALSE,
+                        process = c("longitudinal", "event"),
                         type_pred = c("response", "link"),
                         type = c("subject_specific", "mean_subject"),
                         level = 0.95, return_newdata = FALSE,
                         return_mcmc = FALSE, n_samples = 200L, n_mcmc = 55L,
                         parallel = c("snow", "multicore"),
-                        cores = max(parallel::detectCores() - 1, 1), ...) {
+                        cores = parallelly::availableCores(omit = 1L), ...) {
     process <- match.arg(process)
     type_pred <- match.arg(type_pred)
     type <- match.arg(type)
@@ -1200,17 +1201,19 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
         if (have_mc) {
             preds <-
                 parallel::mclapply(object, predict, newdata = newdata,
-                                    newdata2 = newdata2, times = times,
-                                    process = process, type_pred = type_pred,
-                                    type = type, level = level, n_samples = n_samples,
-                                    n_mcmc = n_mcmc, return_newdata = return_newdata,
-                                    return_mcmc = TRUE, mc.cores = cores)
+                                   newdata2 = newdata2, times = times,
+                                   times_per_id = times_per_id,
+                                   process = process, type_pred = type_pred,
+                                   type = type, level = level, n_samples = n_samples,
+                                   n_mcmc = n_mcmc, return_newdata = return_newdata,
+                                   return_mcmc = TRUE, mc.cores = cores)
         } else {
             cl <- parallel::makePSOCKcluster(rep("localhost", cores))
             invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
             preds <-
                 parallel::parLapply(cl, object, predict, newdata = newdata,
                                     newdata2 = newdata2, times = times,
+                                    times_per_id = times_per_id,
                                     process = process, type_pred = type_pred,
                                     type = type, level = level, n_samples = n_samples,
                                     n_mcmc = n_mcmc, return_newdata = return_newdata,
@@ -1221,6 +1224,7 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
         preds <-
             lapply(object, predict, newdata = newdata,
                    newdata2 = newdata2, times = times,
+                   times_per_id = times_per_id,
                    process = process, type_pred = type_pred,
                    type = type, level = level, n_samples = n_samples,
                    n_mcmc = n_mcmc, return_newdata = return_newdata,

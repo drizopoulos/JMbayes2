@@ -15,6 +15,7 @@ importFrom("stats", "coef", "terms", "model.frame", "model.frame.default",
            "reformulate", "predict", "pnorm", "ave", "median", "density")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
            "clusterSetRNGStream", "makePSOCKcluster", "mclapply")
+importFrom("parallely", "availableCores")
 importFrom("nlme", "fixef", "ranef", "pdMatrix")
 importFrom("GLMMadaptive", "effectPlotData")
 importFrom("survival", "coxph", "untangle.specials", "strata", "survfit", "Surv")

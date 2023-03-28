@@ -417,7 +417,7 @@ calibration_metrics <- function (object, newdata, Tstart, Thoriz = NULL,
 tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                     eps = 0.001, model_weights = NULL,
                     parallel = c("snow", "multicore"),
-                    cores = max(parallel::detectCores() - 1, 1), ...) {
+                    cores = parallelly::availableCores(omit = 1L), ...) {
     parallel <- match.arg(parallel)
     is_jm <- function (object) inherits(object, "jm")
     is_jmList <- function (object) inherits(object, "jmList")
@@ -574,7 +574,7 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             loadNamespace("parallel")
         }
         if (cores > 1L) {
-            cores2 <- 1 #max(floor(parallel::detectCores() / cores), 1)
+            cores2 <- 1 # parallelly::availableCores(omit = 1)
             if (have_mc) {
                 res <-
                     parallel::mclapply(seq_len(V), run_over_folds, object = object,
@@ -707,7 +707,7 @@ print.tvEPCE <- function (x, digits = 4, ...) {
 tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                      integrated = FALSE, type_weights = c("model-based", "IPCW"),
                      model_weights = NULL, parallel = c("snow", "multicore"),
-                     cores = max(parallel::detectCores() - 1, 1), ...) {
+                     cores = parallelly::availableCores(omit = 1L), ...) {
     parallel <- match.arg(parallel)
     is_jm <- function (object) inherits(object, "jm")
     is_jmList <- function (object) inherits(object, "jmList")
@@ -873,7 +873,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                 loadNamespace("parallel")
             }
             if (cores > 1L) {
-                cores2 <- 1#max(floor(parallel::detectCores() / cores), 1)
+                cores2 <- 1 #parallelly::availableCores()
                 if (have_mc) {
                     res <-
                         parallel::mclapply(seq_len(V), run_over_folds, object = object,
