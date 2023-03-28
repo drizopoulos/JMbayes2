@@ -30,13 +30,15 @@ if (FALSE) {
     type_weights = "model-based"
     newdata = aids
 
-    object = Models
-    Tstart = 8
-    Thoriz = 10
+    object = Models_folds
+    Tstart = 3
+    Thoriz = 5
     eps = 0.001
     cores = max(parallel::detectCores() - 1, 1)
     integrated = TRUE
+    model_weights = NULL
     type_weights = "model-based"
+    parallel = "snow"
     newdata = CVdats$testing
 }
 
@@ -617,13 +619,19 @@ xxx1 <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
                 Tstart = tstr, Thoriz = thor)
 xxx2 <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
                 type_weights = "IPCW", Tstart = tstr, Thoriz = thor)
-yyy1 <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
+xxx3 <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
+xxx4 <- tvEPCE(Models, prothro, Tstart = tstr, Thoriz = thor,
+               model_weights = xxx3$weights)
+xxx5 <- lapply(Models, tvEPCE, newdata = prothro, Tstart = tstr, Thoriz = thor)
 
 
-ttt1 <- tvBrier(Models_folds[[1]][[4]], aids, integrated = TRUE,
+
+ttt1 <- tvBrier(Models_folds[[1]][[4]], prothro, integrated = TRUE,
                 Tstart = tstr, Thoriz = thor)
-ttt2 <- tvBrier(Models_folds[[1]][[4]], aids, integrated = TRUE,
+ttt2 <- tvBrier(Models_folds[[1]][[4]], prothro, integrated = TRUE,
                 type_weights = "IPCW", Tstart = tstr, Thoriz = thor)
+ttt3 <- tvEPCE(Models_folds[[1]][[4]], prothro, Tstart = tstr, Thoriz = thor)
+
 
 xxx1 <- tvBrier(Models_folds, CVdats$testing, integrated = TRUE,
                 Tstart = tstr, Thoriz = thor)
@@ -652,6 +660,15 @@ test <- predict(Models, model_weights, newdata = ND[ND$patient == 4, ],
 test2 <- predict(Models, model_weights, newdata = ND[ND$patient == 4, ],
                  return_newdata = TRUE)
 plot(test2, test)
+
+test1 <- predict(Models[[5]], newdata = ND[ND$id == 3, ],
+                 process = "event")
+
+test2 <- predict(Models, weights = c(0, 0, 0, 0, 1), newdata = ND[ND$id == 3, ],
+                 process = "event")
+
+cbind(test1$pred, test2$pred)
+
 
 #############################################################################
 #############################################################################
@@ -709,7 +726,7 @@ Brier_weights
 EPCE_weights <- tvEPCE(Models_folds, CVdats$testing, Tstart = tstr, Thoriz = thor)
 EPCE_weights
 
-Models <- fit_models(pbc2)
+Models <- fit_models(prothro)
 
 ND <- pbc2[pbc2$years > tstr & pbc2$year <= tstr, ]
 ND$id <- ND$id[, drop = TRUE]
@@ -717,7 +734,7 @@ ND$years <- tstr
 ND$status2 <- 0
 
 
-odel_weights <- EPCE_weights$weights
+model_weights <- EPCE_weights$weights
 
 predsEvent <- predict(Models, weights = model_weights, newdata = ND[ND$id == 8, ],
                       process = "event", return_newdata = TRUE)

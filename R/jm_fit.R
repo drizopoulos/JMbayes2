@@ -109,7 +109,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
                                       priors = priors, control = control,
                                       mc.cores = cores)
         } else if (have_snow) {
-            cl <- parallel::makePSOCKcluster(rep("localhost", cores)) # parallel::makeCluster(cores)
+            cl <- parallel::makePSOCKcluster(rep("localhost", cores))
             parallel::clusterSetRNGStream(cl = cl, iseed = control$seed)
             out <- parallel::parLapply(cl, chains, mcmc_parallel,
                                        model_data = model_data, model_info = model_info,

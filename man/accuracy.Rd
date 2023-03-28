@@ -42,11 +42,11 @@ calibration_metrics(object, newdata, Tstart, Thoriz = NULL,
 
 tvBrier(object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     integrated = FALSE, type_weights = c("model-based", "IPCW"),
-    parallel = c("snow", "multicore"),
+    model_weights = NULL, parallel = c("snow", "multicore"),
     cores = max(parallel::detectCores() - 1, 1), \dots)
 
 tvEPCE(object, newdata, Tstart, Thoriz = NULL, Dt = NULL, eps = 0.001,
-    parallel = c("snow", "multicore"),
+    model_weights = NULL, parallel = c("snow", "multicore"),
     cores = max(parallel::detectCores() - 1, 1), \dots)
 
 create_folds(data, V = 5, id_var = "id", seed = 123L)
@@ -68,6 +68,8 @@ create_folds(data, V = 5, id_var = "id", seed = 123L)
 \item{type_weights}{character string denoting the type of weights to use to account for censorting. Options are model-based (default) and inverse probability of censoring weighting (using the Kaplan-Meier estimate of the censoring distribution).}
 
 \item{eps}{numeric scalar used in the approximation of the hazard function.}
+
+\item{model_weights}{a numeric vector of weights to combine predictions when \code{object} is a list of joint models of class \code{"jmList"}.}
 
 \item{parallel}{character string; what type of parallel computing to use.}
 

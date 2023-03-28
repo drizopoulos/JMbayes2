@@ -415,13 +415,23 @@ calibration_metrics <- function (object, newdata, Tstart, Thoriz = NULL,
 }
 
 tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
-                    eps = 0.001, parallel = c("snow", "multicore"),
+                    eps = 0.001, model_weights = NULL,
+                    parallel = c("snow", "multicore"),
                     cores = max(parallel::detectCores() - 1, 1), ...) {
     parallel <- match.arg(parallel)
     is_jm <- function (object) inherits(object, "jm")
+    is_jmList <- function (object) inherits(object, "jmList")
     if (!is_jm(object)) {
-        if (!all(sapply(unlist(object, recursive = FALSE), is_jm)))
+        if (!all(sapply(unlist(object, recursive = FALSE), is_jm)) &&
+            !all(sapply(object, is_jm)))
             stop("Use only with 'jm' objects.\n")
+        if (!is.null(model_weights) && !is_jmList(object)) {
+            stop("When 'model_weights' is not NULL, 'object' must have the class ",
+                 "'jmList'.\n")
+        }
+        if (is_jmList(object) && is.null(model_weights)) {
+            stop("For 'jmList' objects 'model_weights' cannot be NULL.\n")
+        }
     }
     if (is.null(Thoriz) && is.null(Dt)) {
         stop("either 'Thoriz' or 'Dt' must be non null.\n")
@@ -443,14 +453,15 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     # if newdata is a list and not a data.frame,
     # Super Learning will be used
     if (!is.data.frame(newdata) && is.list(newdata)) {
+        SL <- TRUE
         folds <- rep(seq_along(newdata), sapply(newdata, nrow))
         newdata <- do.call("rbind", newdata)
         newdata[["fold_"]] <- folds
-    }
+    } else SL <- FALSE
     # if Super Learning, object needs to be a list with length the
     # number of folds. In each element of the list, we have a list of fitted
     # models
-    obj <- if (is_jm(object)) object else object[[1L]][[1L]]
+    obj <- if (is_jm(object)) object else if (is_jmList(object)) object[[1L]] else object[[1L]][[1L]]
     id_var <- obj$model_info$var_names$idVar
     time_var <- obj$model_info$var_names$time_var
     Time_var <- obj$model_info$var_names$Time_var
@@ -512,22 +523,22 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     id. <- match(id, unique(id))
     ni <- tapply(id., id., length)
     newdata3[[Time_var]] <- rep(tilde_Time, ni)
-    out <- if (!is_jm(object)) {
+    out <- if (!is_jm(object) && SL) {
         # Super Learning
         V <- length(object) # number of folds
         L <- length(object[[1]]) # number of models
         tilde_Time_per_fold <-
             split(tilde_Time, tapply(newdata[["fold_"]], f, tail, 1L))
         run_over_folds <- function (v, object, newdata, newdata2, newdata3,
-                                    tilde_Time, eps, L) {
+                                    tilde_Time, eps, L, parallel, cores = 1L) {
             temp_q <- temp_q2 <- vector("list", L)
             for (l in seq_len(L)) {
                 fold <- newdata2$fold_ == v
                 # calculate Pr(T_i^* > \tilde T_i | T_i^* > t)
                 preds <- predict(object[[v]][[l]], process = "event",
                                  times = tilde_Time[[v]],
-                                 times_per_id = TRUE,
-                                 newdata = newdata2[fold, ])
+                                 times_per_id = TRUE, parallel = parallel,
+                                 cores = cores, newdata = newdata2[fold, ])
                 pi_u_t <- preds$pred
                 names(pi_u_t) <- preds$id
                 # cumulative risk at tilde_Time
@@ -538,8 +549,8 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                 # calculate Pr(T_i^* > \tilde T_i + eps | T_i^* > \tilde T_i)
                 preds2 <- predict(object[[v]][[l]], process = "event",
                                   times = tilde_Time[[v]] + eps,
-                                  times_per_id = TRUE,
-                                  newdata = newdata3[fold, ])
+                                  times_per_id = TRUE, parallel = parallel,
+                                  cores = cores, newdata = newdata3[fold, ])
                 pi_u_t2 <- preds2$pred
                 names(pi_u_t2) <- preds2$id
                 # cumulative risk at tilde_Time + eps
@@ -563,13 +574,15 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             loadNamespace("parallel")
         }
         if (cores > 1L) {
+            cores2 <- 1 #max(floor(parallel::detectCores() / cores), 1)
             if (have_mc) {
                 res <-
                     parallel::mclapply(seq_len(V), run_over_folds, object = object,
                                        newdata = newdata, newdata2 = newdata2,
                                        newdata3 = newdata3,
                                        tilde_Time = tilde_Time_per_fold, eps = eps,
-                                       L = L, mc.cores = cores)
+                                       L = L, parallel = parallel, cores = cores2,
+                                       mc.cores = cores)
             } else {
                 cl <- parallel::makePSOCKcluster(rep("localhost", cores))
                 invisible(parallel::clusterEvalQ(cl, library("JMbayes2")))
@@ -578,7 +591,7 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                                         newdata = newdata, newdata2 = newdata2,
                                         newdata3 = newdata3,
                                         tilde_Time = tilde_Time_per_fold, eps = eps,
-                                        L = L)
+                                        L = L, parallel = parallel, cores = cores2)
                 parallel::stopCluster(cl)
             }
         } else {
@@ -586,7 +599,7 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                           newdata = newdata, newdata2 = newdata2,
                           newdata3 = newdata3,
                           tilde_Time = tilde_Time_per_fold, eps = eps,
-                          L = L)
+                          L = L, parallel = parallel)
         }
         predictions <- do.call("rbind", lapply(res, "[[", "predictions"))
         predictions2 <- do.call("rbind", lapply(res, "[[", "predictions2"))
@@ -613,8 +626,15 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         list(EPCE_per_model = EPCE, EPCE = opt$value, weights = varpi)
     } else {
         # calculate Pr(T_i^* > \tilde T_i | T_i^* > t)
-        preds <- predict(object, newdata = newdata2, process = "event",
-                         times = tilde_Time, times_per_id = TRUE)
+        preds <- if (is_jm(object)) {
+            predict(object, newdata = newdata2, process = "event",
+                    times = tilde_Time, times_per_id = TRUE,
+                    parallel = parallel)
+        } else if (is_jmList(object)) {
+            predict(object, newdata = newdata2, process = "event",
+                    times = tilde_Time, times_per_id = TRUE,
+                    parallel = parallel, weights = model_weights)
+        }
         pi_u_t <- preds$pred
         names(pi_u_t) <- preds$id
         # cumulative risk at tilde_Time
@@ -624,8 +644,15 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         qi_u_t <- 1 - pi_u_t
 
         # calculate Pr(T_i^* > \tilde T_i + eps | T_i^* > \tilde T_i)
-        preds2 <- predict(object, newdata = newdata3, process = "event",
-                          times = tilde_Time + eps, times_per_id = TRUE)
+        preds2 <- if (is_jm(object)) {
+            predict(object, newdata = newdata3, process = "event",
+                    times = tilde_Time + eps, times_per_id = TRUE,
+                    parallel = parallel)
+        } else if (is_jmList(object)) {
+            predict(object, newdata = newdata3, process = "event",
+                    times = tilde_Time + eps, times_per_id = TRUE,
+                    parallel = parallel, weights = model_weights)
+        }
         pi_u_t2 <- preds2$pred
         names(pi_u_t2) <- preds2$id
         # cumulative risk at tilde_Time
@@ -641,7 +668,7 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     out$ncens <- sum(ind3)
     out$Tstart <- Tstart
     out$Thoriz <- Thoriz
-    out$nfolds <- if (!is_jm(object)) length(object)
+    out$nfolds <- if (!is_jm(object) && !is_jmList(object)) length(object)
     out$nameObject <- deparse(substitute(object))
     class(out) <- "tvEPCE"
     out
@@ -679,13 +706,22 @@ print.tvEPCE <- function (x, digits = 4, ...) {
 
 tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                      integrated = FALSE, type_weights = c("model-based", "IPCW"),
-                     parallel = c("snow", "multicore"),
+                     model_weights = NULL, parallel = c("snow", "multicore"),
                      cores = max(parallel::detectCores() - 1, 1), ...) {
     parallel <- match.arg(parallel)
     is_jm <- function (object) inherits(object, "jm")
+    is_jmList <- function (object) inherits(object, "jmList")
     if (!is_jm(object)) {
-        if (!all(sapply(unlist(object, recursive = FALSE), is_jm)))
+        if (!all(sapply(unlist(object, recursive = FALSE), is_jm)) &&
+            !all(sapply(object, is_jm)))
             stop("Use only with 'jm' objects.\n")
+        if (!is.null(model_weights) && !is_jmList(object)) {
+            stop("When 'model_weights' is not NULL, 'object' must have the class ",
+                 "'jmList'.\n")
+        }
+        if (is_jmList(object) && is.null(model_weights)) {
+            stop("For 'jmList' objects 'model_weights' cannot be NULL.\n")
+        }
     }
     if (is.null(Thoriz) && is.null(Dt)) {
         stop("either 'Thoriz' or 'Dt' must be non null.\n")
@@ -728,7 +764,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     # if Super Learning, object needs to be a list with length the
     # number of folds. In each element of the list, we have a list of fitted
     # models
-    obj <- if (is_jm(object)) object else object[[1L]][[1L]]
+    obj <- if (is_jm(object)) object else if (is_jmList(object)) object[[1L]] else object[[1L]][[1L]]
     id_var <- obj$model_info$var_names$idVar
     time_var <- obj$model_info$var_names$time_var
     Time_var <- obj$model_info$var_names$Time_var
@@ -800,11 +836,12 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             ids <- tapply(newdata2[[id_var]], newdata2[["fold_"]], unique)
             run_over_folds <- function (v, object, newdata, newdata2, type_weights,
                                         Tstart, Thoriz, ind1, ind2, ind3, ids, id,
-                                        L) {
+                                        L, parallel, cores = 1L) {
                 temp_p <- temp_w <- vector("list", L)
                 for (l in seq_len(L)) {
                     preds <- predict(object[[v]][[l]], process = "event",
-                                     times = Thoriz,
+                                     times = Thoriz, parallel = parallel,
+                                     cores = cores,
                                      newdata = newdata2[newdata2$fold_ == v, ])
                     temp_p[[l]] <- preds$pred[preds$times > Tstart]
                     # which subjects in fold v had Time < Thoriz & event == 0
@@ -812,7 +849,8 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                     if (type_weights == "model-based" && length(id_cens)) {
                         preds2 <- predict(object[[v]][[l]],
                                           newdata = newdata[id %in% id_cens, ],
-                                          process = "event", times = Thoriz)
+                                          process = "event", times = Thoriz,
+                                          parallel = parallel, cores = cores)
                         weights <- preds2$pred
                         f <- factor(preds2$id, levels = unique(preds2$id))
                         names(weights) <- f
@@ -835,6 +873,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                 loadNamespace("parallel")
             }
             if (cores > 1L) {
+                cores2 <- 1#max(floor(parallel::detectCores() / cores), 1)
                 if (have_mc) {
                     res <-
                         parallel::mclapply(seq_len(V), run_over_folds, object = object,
@@ -842,6 +881,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                                            type_weights = type_weights, Tstart = Tstart,
                                            Thoriz = Thoriz, ind1 = ind1, ind2 = ind2,
                                            ind3 = ind3, ids = ids, id = id, L = L,
+                                           parallel = parallel, cores = cores2,
                                            mc.cores = cores)
                 } else {
                     cl <- parallel::makePSOCKcluster(rep("localhost", cores))
@@ -851,7 +891,8 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                                             newdata = newdata, newdata2 = newdata2,
                                             type_weights = type_weights, Tstart = Tstart,
                                             Thoriz = Thoriz, ind1 = ind1, ind2 = ind2,
-                                            ind3 = ind3, ids = ids, id = id, L = L)
+                                            ind3 = ind3, ids = ids, id = id, L = L,
+                                            parallel = parallel, cores = cores2)
                     parallel::stopCluster(cl)
                 }
             } else {
@@ -860,7 +901,8 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                            newdata = newdata, newdata2 = newdata2,
                            type_weights = type_weights, Tstart = Tstart,
                            Thoriz = Thoriz, ind1 = ind1, ind2 = ind2,
-                           ind3 = ind3, ids = ids, id = id, L = L)
+                           ind3 = ind3, ids = ids, id = id, L = L,
+                           parallel = parallel)
             }
             predictions <- do.call("rbind", lapply(res, "[[", "predictions"))
             W <- do.call("rbind", lapply(res, "[[", "W"))
@@ -873,16 +915,29 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             list(predictions = predictions, W = W, ind1 = ind1, ind2 = ind2,
                  ind3 = ind3, Time = Time)
         } else {
-            preds <- predict(object, newdata = newdata2, process = "event",
-                             times = Thoriz)
+            preds <- if (is_jm(object)) {
+                predict(object, newdata = newdata2, process = "event",
+                        times = Thoriz, parallel = parallel)
+            } else if (is_jmList(object)) {
+                predict(object, newdata = newdata2, process = "event",
+                        times = Thoriz, parallel = parallel,
+                        weights = model_weights)
+            }
             pi_u_t <- preds$pred
             names(pi_u_t) <- preds$id
             # cumulative risk at Thoriz
             pi_u_t <- pi_u_t[preds$times > Tstart]
             if (type_weights == "model-based" && any(ind3)) {
                 nams <- names(ind3[ind3])
-                preds2 <- predict(object, newdata = newdata[id %in% nams, ],
-                                  process = "event", times = Thoriz)
+                preds2 <- if (is_jm(object)) {
+                    predict(object, newdata = newdata[id %in% nams, ],
+                            process = "event", times = Thoriz,
+                            parallel = parallel)
+                } else if (is_jmList(object)) {
+                    predict(object, newdata = newdata[id %in% nams, ],
+                            process = "event", times = Thoriz,
+                            parallel = parallel, weights = model_weights)
+                }
                 weights <- preds2$pred
                 f <- factor(preds2$id, levels = unique(preds2$id))
                 names(weights) <- f
@@ -893,7 +948,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                  ind1 = ind1, ind2 = ind2, ind3 = ind3, Time = Time)
         }
     }
-    out <- if (is_jm(object)) {
+    out <- if (is_jm(object) || is_jmList(object)) {
         if (integrated) {
             br1 <- br(0.5 * (Tstart + Thoriz))
             res <- br2 <- br(Thoriz)
@@ -964,12 +1019,12 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
              ind3 = if (integrated) temp[[2]]$ind3 else temp$ind3)
 
     }
-    out <- list(Brier = if (is_jm(object)) out$Brier else out$opt_Brier,
+    out <- list(Brier = if (is_jm(object) || is_jmList(object)) out$Brier else out$opt_Brier,
                 Brier_per_model = if (!is_jm(object)) out$Brier,
-                weights = if (!is_jm(object)) out$weights,
+                weights = if (!is_jm(object) && !is_jmList(object)) out$weights,
                 nr = length(out$Time), nint = sum(out$ind1),
                 ncens = sum(out$ind3), Tstart = Tstart, Thoriz = Thoriz,
-                nfolds = if (!is_jm(object)) length(object),
+                nfolds = if (!is_jm(object) && !is_jmList(object)) length(object),
                 integrated = integrated, type_weights = type_weights,
                 nameObject = deparse(substitute(object)))
     class(out) <- "tvBrier"
