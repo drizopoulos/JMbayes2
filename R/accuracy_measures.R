@@ -757,10 +757,11 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     # if newdata is a list and not a data.frame,
     # Super Learning will be used
     if (!is.data.frame(newdata) && is.list(newdata)) {
+        SL <- TRUE
         folds <- rep(seq_along(newdata), sapply(newdata, nrow))
         newdata <- do.call("rbind", newdata)
         newdata[["fold_"]] <- folds
-    }
+    } else SL <- FALSE
     # if Super Learning, object needs to be a list with length the
     # number of folds. In each element of the list, we have a list of fitted
     # models
@@ -829,7 +830,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             weights[ind1] <- 1 / summary(censoring_dist, times = Time[ind1])$surv
             weights[ind2] <- 1 / summary(censoring_dist, times = Thoriz)$surv
         }
-        if (!is_jm(object)) {
+        if (!is_jm(object) && SL) {
             # Super Learning
             V <- length(object) # number of folds
             L <- length(object[[1]]) # number of models

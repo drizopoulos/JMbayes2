@@ -30,16 +30,16 @@ if (FALSE) {
     type_weights = "model-based"
     newdata = aids
 
-    object = Models
-    Tstart = 3
-    Thoriz = 5
+    object = Models_folds
+    Tstart = tstr
+    Thoriz = thor
     eps = 0.001
     cores = max(parallel::detectCores() - 1, 1)
     integrated = TRUE
-    model_weights = c(0, 0, 0, 0, 1)
+    model_weights = NULL
     type_weights = "model-based"
     parallel = "snow"
-    newdata = prothro
+    newdata = CVdats$testing
 }
 
 tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,

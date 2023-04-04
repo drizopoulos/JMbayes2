@@ -53,7 +53,7 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
         stop("the variable specified in agument 'time_var' cannot be found ",
              "in the database of the longitudinal models.")
     }
-    dataL <- dataL[order(idL, dataL[[time_var]]), ]
+    #dataL <- dataL[order(idL, dataL[[time_var]]), ]
 
     # extract terms
     respVars <- object$model_info$var_names$respVars
@@ -352,7 +352,7 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
         stop("the variable specified in agument 'time_var' cannot be found ",
              "in the database of the longitudinal models.")
     }
-    dataL <- dataL[order(idL, dataL[[time_var]]), ]
+    #dataL <- dataL[order(idL, dataL[[time_var]]), ]
     terms_FE_noResp <- object$model_info$terms$terms_FE_noResp
     terms_RE <- object$model_info$terms$terms_RE
     Xbar <- object$model_data$Xbar
@@ -539,9 +539,9 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
     newdataE <- if (!is.data.frame(newdata)) newdata[["newdataE"]] else newdata
     idVar <- object$model_info$var_names$idVar
     time_var <- object$model_info$var_names$time_var
-    newdataL <- newdataL[order(newdataL[[idVar]], newdataL[[time_var]]), ]
+    #newdataL <- newdataL[order(newdataL[[idVar]], newdataL[[time_var]]), ]
     if (!object$model_info$CR_MS) {
-        newdataE <- newdataE[order(newdataE[[idVar]], newdataE[[time_var]]), ]
+        #newdataE <- newdataE[order(newdataE[[idVar]], newdataE[[time_var]]), ]
         idT <- newdataE[[idVar]]
         idT <- factor(idT, unique(idT))
         keep_last_row <- tapply(row.names(newdataE), idT, tail, 1L)
