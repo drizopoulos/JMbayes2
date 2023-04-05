@@ -628,11 +628,11 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         # calculate Pr(T_i^* > \tilde T_i | T_i^* > t)
         preds <- if (is_jm(object)) {
             predict(object, newdata = newdata2, process = "event",
-                    times = tilde_Time, times_per_id = TRUE,
+                    times = tilde_Time, times_per_id = TRUE, cores = 1L,
                     parallel = parallel)
         } else if (is_jmList(object)) {
             predict(object, newdata = newdata2, process = "event",
-                    times = tilde_Time, times_per_id = TRUE,
+                    times = tilde_Time, times_per_id = TRUE, cores = 1L,
                     parallel = parallel, weights = model_weights)
         }
         pi_u_t <- preds$pred
@@ -646,10 +646,10 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         # calculate Pr(T_i^* > \tilde T_i + eps | T_i^* > \tilde T_i)
         preds2 <- if (is_jm(object)) {
             predict(object, newdata = newdata3, process = "event",
-                    times = tilde_Time + eps, times_per_id = TRUE,
+                    times = tilde_Time + eps, times_per_id = TRUE, cores = 1L,
                     parallel = parallel)
         } else if (is_jmList(object)) {
-            predict(object, newdata = newdata3, process = "event",
+            predict(object, newdata = newdata3, process = "event", cores = 1L,
                     times = tilde_Time + eps, times_per_id = TRUE,
                     parallel = parallel, weights = model_weights)
         }
@@ -1021,7 +1021,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
 
     }
     out <- list(Brier = if (is_jm(object) || is_jmList(object)) out$Brier else out$opt_Brier,
-                Brier_per_model = if (!is_jm(object)) out$Brier,
+                Brier_per_model = if (!is_jm(object) && SL) out$Brier,
                 weights = if (!is_jm(object) && !is_jmList(object)) out$weights,
                 nr = length(out$Time), nint = sum(out$ind1),
                 ncens = sum(out$ind3), Tstart = Tstart, Thoriz = Thoriz,
