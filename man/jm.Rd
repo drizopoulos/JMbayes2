@@ -9,6 +9,7 @@
 \alias{vexpit}
 \alias{Dexpit}
 \alias{vexp}
+\alias{vabs}
 \alias{Dexp}
 \alias{vlog}
 \alias{vlog2}
@@ -44,6 +45,8 @@ Dexpit(x)
 
 vexp(x)
 Dexp(x)
+
+vabs(x)
 
 vlog(x)
 vlog2(x)

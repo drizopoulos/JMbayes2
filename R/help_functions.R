@@ -268,7 +268,7 @@ extract_log_sigmas <- function (object) {
 
 value <- function (x) rep(1, NROW(x))
 vexpit <- Dexpit <- vexp <- Dexp <- function (x) rep(1, NROW(x))
-vsqrt <- vlog <- vlog2 <- vlog10 <- function (x) rep(1, NROW(x))
+vabs <- vsqrt <- vlog <- vlog2 <- vlog10 <- function (x) rep(1, NROW(x))
 poly2 <- poly3 <- poly4 <- function (x) rep(1, NROW(x))
 coefs <- function (x, zero_ind = NULL) {
     out <- rep(1, NROW(x))
@@ -464,6 +464,7 @@ extractFuns_FunForms <- function (Form, data) {
         out[f("expit")] <- "expit"
         out[f("dexpit")] <- "dexpit"
         out[f("exp")] <- "exp"
+        out[f("abs")] <- "abs"
         out[f("dexp")] <- "dexp"
         out[f("log")] <- "log"
         out[f("log2")] <- "log2"
@@ -491,6 +492,8 @@ transf_eta <- function (eta, fun_nams) {
             out[, j] <- plogis(eta) * plogis(eta, lower.tail = FALSE)
         } else if (fun_nams[j] == "exp") {
             out[, j] <- exp(eta)
+        } else if (fun_nams[j] == "abs") {
+            out[, j] <- abs(eta)
         } else if (fun_nams[j] == "log") {
             out[, j] <- log(eta)
         } else if (fun_nams[j] == "sqrt") {

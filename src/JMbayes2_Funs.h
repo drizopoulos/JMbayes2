@@ -629,6 +629,8 @@ mat transf_eta (const mat &eta, const CharacterVector &fun_nams) {
   for (uword i = 0; i < k; i++) {
     if (fun_nams[i] == "identity") {
       out.col(i) = eta;
+    } else if (fun_nams[i] == "abs") {
+      out.col(i) = abs(eta);
     } else if (fun_nams[i] == "expit") {
       out.col(i) = 1.0 / (1.0 + trunc_exp(- eta));
     } else if (fun_nams[i] == "exp" || fun_nams[i] == "dexp") {
