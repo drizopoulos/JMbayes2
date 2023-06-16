@@ -131,7 +131,8 @@ summary.jm <- function (object, ...) {
                 families = families, respVars = respVars,
                 events = object$model_data$delta,
                 control = object$control, time = object$running_time,
-                call = object$call, recurrent = object$model_info$recurrent)
+                call = object$call, recurrent = object$model_info$recurrent,
+                any_terminal = length(object$model_data$which_term_h) > 0)
     tab_f <- function(name) {
         out <- data.frame(Mean = object$statistics$Mean[[name]],
                           StDev = object$statistics$SD[[name]],
@@ -162,7 +163,7 @@ summary.jm <- function (object, ...) {
             row.names(out[[nam_outcome]])[k + 1] <- "sigma"
         }
     }
-    if(out$recurrent) {
+    if(out$recurrent & out$any_terminal) {
       out$Survival <- do.call(rbind, list(tab_f("gammas"), tab_f("alphas"),
                                           tab_f("alphaF")))
     } else {

@@ -522,8 +522,8 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                  W0_H2 = W0_H2, W_H2 = W_H2, X_H2 = X_H2, Z_H2 = Z_H2, U_H2 = U_H2,
                  log_Pwk = log_Pwk, log_Pwk2 = log_Pwk2,
                  ind_RE = ind_RE, extra_parms = extra_parms,
-                 which_term_h = which(strata == max(strata)),
-                 which_term_H = which(strata_H == max(strata)))
+                 which_term_h = lapply(seq_len(n_strata)[-1], function(x) which(x == strata)),
+                 which_term_H = lapply(seq_len(n_strata)[-1], function(x) which(x == strata_H)))
     ############################################################################
     ############################################################################
     # objects to export
@@ -573,7 +573,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     if (is.null(gammas)) gammas <- 0.0
     alphas <- rep(0.0, sum(sapply(U_H, ncol)))
     frailty <- rep(0.0, nT)
-    alphaF <- 0.0
+    alphaF <- rep(0.0, max(n_strata - 1, 1))
     sigmaF <- 0.1
     initial_values <- list(betas = betas, log_sigmas = log_sigmas,
                            sigmas = sigmas, D = D, b = b, bs_gammas = bs_gammas,
@@ -631,7 +631,8 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 sigmas_df = 3.0,
                 sigmas_sigmas = rep(5.0, length(log_sigmas)),
                 sigmas_shape = 5.0, sigmas_mean = exp(log_sigmas),
-                mean_alphaF = 0.0, Tau_alphaF = diag(1),
+                mean_alphaF = lapply(alphaF, "*", 0.0),
+                Tau_alphaF = rep(list(diag(0.25, 1)), length(alphaF)),
                 gamma_prior_sigmaF = TRUE,
                 sigmaF_df = 3.0,
                 sigmaF_sigmas = 5.0,

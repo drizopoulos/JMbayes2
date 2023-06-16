@@ -72,6 +72,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     initial_values$alphas <- unlist(initial_values$alphas, use.names = FALSE)
     priors$mean_alphas <- unlist(priors$mean_alphas, use.names = FALSE)
     priors$Tau_alphas <- .bdiag(priors$Tau_alphas)
+    priors$mean_alphaF <- unlist(priors$mean_alphaF, use.names = FALSE)
+    priors$Tau_alphaF <- .bdiag(priors$Tau_alphaF)
     n_chains <- control$n_chains
     tik <- proc.time()
     cores <- control$cores
@@ -166,7 +168,12 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
             paste0("sigmas_",
                    seq_along(out[[i]][["mcmc"]][["sigmas"]][1, ]))
         colnames(out[[i]][["mcmc"]][["sigmaF"]]) <- "sigma_frailty"
-        colnames(out[[i]][["mcmc"]][["alphaF"]]) <- "frailty"
+        colnames(out[[i]][["mcmc"]][["alphaF"]]) <-
+          paste0("frailty:", 
+                 names(model_info$frames$mf_Surv)[attr(model_info$terms$terms_Surv, 
+                                                       "specials")$strata], 
+                 levels(model_data$strata)[-1]
+        )
     }
     # drop sigmas that are not needed
     has_sigmas <- initial_values$log_sigmas > -20.0

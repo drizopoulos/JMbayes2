@@ -214,7 +214,7 @@ vec logLik_jm_stripped (
     const uvec &which_event, const uvec &which_right_event,
     const uvec &which_left, const uvec &which_interval,
     const bool &recurrent, const vec &alphaF, const vec &frailty,
-    const uvec &which_term_H, const uvec &which_term_h, const bool &any_terminal,
+    const field<uvec> &which_term_H, const field<uvec> &which_term_h, const bool &any_terminal,
     const vec &sigmaF) {
   uword n = b.at(0).n_rows;
   /////////////
@@ -273,8 +273,10 @@ vec logLik_jm_stripped (
   vec alphaF_H(WH_gammas.n_rows, fill::ones);
   vec alphaF_h(Wh_gammas.n_rows, fill::ones);
   if(any_terminal) {
-    alphaF_H.rows(which_term_H).fill(alphaF.at(0));
-    alphaF_h.rows(which_term_h).fill(alphaF.at(0));
+    for (uword j = 0; j < alphaF.n_rows; ++j) {
+      alphaF_H.rows(which_term_H.at(j)).fill(alphaF.at(j));
+      alphaF_h.rows(which_term_h.at(j)).fill(alphaF.at(j)); 
+    }
   }
   vec frailty_H(WH_gammas.n_rows, fill::zeros);
   vec frailty_h(Wh_gammas.n_rows, fill::zeros);
