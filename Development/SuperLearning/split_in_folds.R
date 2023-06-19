@@ -744,3 +744,45 @@ predsLong <- predict(Models, weights = model_weights, newdata = ND[ND$id == 8, ]
                      return_newdata = TRUE)
 
 
+#############################################################################
+#############################################################################
+#############################################################################
+
+library("JMbayes2")
+load("C:/Users/Dimitris/Documents/Papers/Paper29/Results/Data_analysis/Models_folds.RData")
+load("C:/Users/Dimitris/Documents/Papers/Paper29/Results/Data_analysis/Data.RData")
+
+CVdats <- create_folds(pt_all, V = 5, id_var = "pid")
+
+object = Models_folds
+Tstart = 6
+Thoriz = 8
+eps = 0.001
+cores = max(parallel::detectCores() - 1, 1)
+integrated = FALSE
+type_weights = "model-based"
+model_weights = NULL
+newdata = CVdats$testing
+eventData_fun = function (longData) {
+    longData$pid <- factor(longData$pid, levels = unique(longData$pid))
+    data_lis <- split(longData, longData$pid)
+    f <- function (d) {
+        d <- d[1, ]
+        if (d$salvage_time < d$time_to_event) {
+            d <- rbind(d, d)
+            d$start <- c(0, d$salvage_time[1])
+            d$stop <- c(d$salvage_time[1], d$time_to_event[1])
+            d$event <- c(0, as.numeric(d$status[1] != "censored"))
+        } else {
+            d$start <- 0
+            d$stop <- d$time_to_event
+            d$event <- as.numeric(d$status != "censored")
+        }
+        d
+    }
+    data_surv <- do.call('rbind', lapply(data_lis, f))
+    row.names(data_surv) <- 1:nrow(data_surv)
+    data_surv
+}
+parallel = "snow"
+

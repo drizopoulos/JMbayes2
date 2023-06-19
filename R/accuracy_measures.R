@@ -415,7 +415,7 @@ calibration_metrics <- function (object, newdata, Tstart, Thoriz = NULL,
 }
 
 tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
-                    eps = 0.001, model_weights = NULL,
+                    eps = 0.001, model_weights = NULL, eventData_fun = NULL,
                     parallel = c("snow", "multicore"),
                     cores = parallelly::availableCores(omit = 1L), ...) {
     parallel <- match.arg(parallel)
@@ -465,7 +465,9 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     id_var <- obj$model_info$var_names$idVar
     time_var <- obj$model_info$var_names$time_var
     Time_var <- obj$model_info$var_names$Time_var
+    TTime_var <- if (length(Time_var) > 1) Time_var[2L] else Time_var
     event_var <- obj$model_info$var_names$event_var
+    tvars <- c(Time_var, event_var)
     type_censoring <- object$model_info$type_censoring
     if (obj$model_info$CR_MS) {
         stop("'tvEPCE()' currently only works for right censored data.")
@@ -476,32 +478,52 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     if (is.null(newdata[[time_var]])) {
         stop("cannot find the '", time_var, "' variable in newdata.", sep = "")
     }
-    if (any(sapply(Time_var, function (nmn) is.null(newdata[[nmn]])))) {
-        stop("cannot find the '", paste(Time_var, collapse = ", "),
+    if (!is.null(eventData_fun)) {
+        if (!is.function(eventData_fun)) {
+            stop("'eventData_fun' must be a function that takes as input the ",
+                 "'newdata' and produces the dataset for the event time model.\n")
+        }
+        different_eventData <- TRUE
+        newdataE <- eventData_fun(newdata)
+        # the following needs to change for Competing risks and recurrent events
+        # it should now only work for time-varying covariates in the Cox model
+        for (i in seq_along(tvars)) {
+            ff <- match(newdataE[[id_var]], unique(newdataE[[id_var]]))
+            vals <- tapply(newdataE[[tvars[i]]], ff, tail, n = 1L)
+            ff <- match(newdata[[id_var]], unique(newdata[[id_var]]))
+            ni <- tapply(ff, ff, length)
+            newdata[[tvars[i]]] <- rep(vals, ni)
+        }
+    } else {
+        different_eventData <- FALSE
+    }
+    if (any(sapply(tvars, function (nmn) is.null(newdata[[nmn]])))) {
+        stop("cannot find the '", paste(tvars, collapse = ", "),
              "' variable(s) in newdata.", sep = "")
     }
-    if (is.null(newdata[[event_var]])) {
-        stop("cannot find the '", event_var, "' variable in newdata.", sep = "")
-    }
-    newdata <- newdata[newdata[[Time_var]] > Tstart, ]
+    newdata <- newdata[newdata[[TTime_var]] > Tstart, ]
     newdata <- newdata[newdata[[time_var]] <= Tstart, ]
     if (!nrow(newdata)) {
         stop("there are no data on subjects who had an observed event time after Tstart ",
              "and longitudinal measurements before Tstart.")
     }
     newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
-    test <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
+    test <- newdata[[TTime_var]] < Thoriz & newdata[[event_var]] == 1
     if (!any(test)) {
         stop("it seems that there are no events in the interval [", Tstart,
              ", ", Thoriz, ").\n")
     }
     id <- newdata[[id_var]]
-    Time <- newdata[[Time_var]]
+    Time <- newdata[[TTime_var]]
     event <- newdata[[event_var]]
     f <- factor(id, levels = unique(id))
     Time <- tapply(Time, f, tail, 1L)
     event <- tapply(event, f, tail, 1L)
     names(Time) <- names(event) <- as.character(unique(id))
+    if (!is.null(eventData_fun)) {
+        newdataE <- newdataE[newdataE[[id_var]] %in% id, ]
+        newdataE[[id_var]] <- newdataE[[id_var]][, drop = TRUE]
+    } else newdataE <- NULL
     # subjects who had the event before Thoriz
     ind1 <- Time < Thoriz & event == 1
     # subjects who had the event after Thoriz
@@ -516,13 +538,40 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     tilde_event <- event * as.numeric(Time < Thoriz)
     # newdata2 we set the event time at Tstart, and event to zero
     newdata2 <- newdata
-    newdata2[[Time_var]] <- Tstart
+    newdata2[[TTime_var]] <- Tstart
     newdata2[[event_var]] <- 0
-    # newdata2 we set the event time at tilde_Time
+    if (!is.null(eventData_fun)) {
+        newdataE2 <- newdataE
+        newdataE2[[event_var]] <- 0
+        g <- function (x) {
+            out <- x
+            ind <- out > Tstart
+            out[ind] <- c(Tstart, rep(NA, length.out = sum(ind) - 1))
+            out
+        }
+        newdataE2[[TTime_var]] <-
+            ave(newdataE2[[TTime_var]], newdataE2[[id_var]], FUN = g)
+        newdataE2 <- newdataE2[!is.na(newdataE2[[TTime_var]]), ]
+    } else newdataE2 <- NULL
+    # newdata3 we set the event time at tilde_Time
     newdata3 <- newdata2
     id. <- match(id, unique(id))
     ni <- tapply(id., id., length)
-    newdata3[[Time_var]] <- rep(tilde_Time, ni)
+    newdata3[[TTime_var]] <- rep(tilde_Time, ni)
+    if (!is.null(eventData_fun)) {
+        newdataE3 <- newdataE
+        newdataE3[[event_var]] <- 0
+        g <- function (x) {
+            tt <- pmin(max(x), Thoriz)
+            out <- x
+            ind <- out >= tt
+            out[ind] <- c(tt, rep(NA, length.out = sum(ind) - 1))
+            out
+        }
+        newdataE3[[TTime_var]] <-
+            ave(newdataE3[[TTime_var]], newdataE3[[id_var]], FUN = g)
+        newdataE3 <- newdataE3[!is.na(newdataE3[[TTime_var]]), ]
+    } else newdataE3 <- NULL
     out <- if (!is_jm(object) && SL) {
         # Super Learning
         V <- length(object) # number of folds
@@ -530,15 +579,21 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         tilde_Time_per_fold <-
             split(tilde_Time, tapply(newdata[["fold_"]], f, tail, 1L))
         run_over_folds <- function (v, object, newdata, newdata2, newdata3,
+                                    newdataE, newdataE2, newdataE3,
                                     tilde_Time, eps, L, parallel, cores = 1L) {
             temp_q <- temp_q2 <- vector("list", L)
             for (l in seq_len(L)) {
                 fold <- newdata2$fold_ == v
+                ND2 <- if (!is.null(newdataE2)) {
+                    foldE <- newdataE2$fold_ == v
+                    list(newdataL = newdata2[fold, ],
+                         newdataE = newdataE2[foldE, ])
+                } else newdata2[fold, ]
                 # calculate Pr(T_i^* > \tilde T_i | T_i^* > t)
                 preds <- predict(object[[v]][[l]], process = "event",
                                  times = tilde_Time[[v]],
                                  times_per_id = TRUE, parallel = parallel,
-                                 cores = cores, newdata = newdata2[fold, ])
+                                 cores = cores, newdata = ND2)
                 pi_u_t <- preds$pred
                 names(pi_u_t) <- preds$id
                 # cumulative risk at tilde_Time
@@ -546,11 +601,16 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                 pi_u_t <- tapply(pi_u_t, f, tail, n = 1L)
                 # conditional survival probabilities
                 temp_q[[l]] <- 1 - pi_u_t
+                ND3 <- if (!is.null(newdataE3)) {
+                    foldE <- newdataE3$fold_ == v
+                    list(newdataL = newdata3[fold, ],
+                         newdataE = newdataE3[foldE, ])
+                } else newdata3[fold, ]
                 # calculate Pr(T_i^* > \tilde T_i + eps | T_i^* > \tilde T_i)
                 preds2 <- predict(object[[v]][[l]], process = "event",
                                   times = tilde_Time[[v]] + eps,
                                   times_per_id = TRUE, parallel = parallel,
-                                  cores = cores, newdata = newdata3[fold, ])
+                                  cores = cores, newdata = ND3)
                 pi_u_t2 <- preds2$pred
                 names(pi_u_t2) <- preds2$id
                 # cumulative risk at tilde_Time + eps
@@ -580,6 +640,8 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                     parallel::mclapply(seq_len(V), run_over_folds, object = object,
                                        newdata = newdata, newdata2 = newdata2,
                                        newdata3 = newdata3,
+                                       newdataE = newdataE, newdataE2 = newdataE2,
+                                       newdataE3 = newdataE3,
                                        tilde_Time = tilde_Time_per_fold, eps = eps,
                                        L = L, parallel = parallel, cores = cores2,
                                        mc.cores = cores)
@@ -590,6 +652,8 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                     parallel::parLapply(cl, seq_len(V), run_over_folds, object = object,
                                         newdata = newdata, newdata2 = newdata2,
                                         newdata3 = newdata3,
+                                        newdataE = newdataE, newdataE2 = newdataE2,
+                                        newdataE3 = newdataE3,
                                         tilde_Time = tilde_Time_per_fold, eps = eps,
                                         L = L, parallel = parallel, cores = cores2)
                 parallel::stopCluster(cl)
@@ -598,6 +662,8 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             res <- lapply(seq_len(V), run_over_folds, object = object,
                           newdata = newdata, newdata2 = newdata2,
                           newdata3 = newdata3,
+                          newdataE = newdataE, newdataE2 = newdataE2,
+                          newdataE3 = newdataE3,
                           tilde_Time = tilde_Time_per_fold, eps = eps,
                           L = L, parallel = parallel)
         }
@@ -625,6 +691,10 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         }
         list(EPCE_per_model = EPCE, EPCE = opt$value, weights = varpi)
     } else {
+        if (different_eventData) {
+            newdata2 <- list(newdataL = newdata2,
+                             newdataE = newdataE2)
+        }
         # calculate Pr(T_i^* > \tilde T_i | T_i^* > t)
         preds <- if (is_jm(object)) {
             predict(object, newdata = newdata2, process = "event",
@@ -643,6 +713,10 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         # conditional survival probabilities
         qi_u_t <- 1 - pi_u_t
 
+        if (different_eventData) {
+            newdata3 <- list(newdataL = newdata3,
+                              newdataE = newdataE3)
+        }
         # calculate Pr(T_i^* > \tilde T_i + eps | T_i^* > \tilde T_i)
         preds2 <- if (is_jm(object)) {
             predict(object, newdata = newdata3, process = "event",
@@ -706,7 +780,8 @@ print.tvEPCE <- function (x, digits = 4, ...) {
 
 tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                      integrated = FALSE, type_weights = c("model-based", "IPCW"),
-                     model_weights = NULL, parallel = c("snow", "multicore"),
+                     model_weights = NULL, eventData_fun = NULL,
+                     parallel = c("snow", "multicore"),
                      cores = parallelly::availableCores(omit = 1L), ...) {
     parallel <- match.arg(parallel)
     is_jm <- function (object) inherits(object, "jm")
