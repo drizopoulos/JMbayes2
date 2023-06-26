@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-5</span>
       </span>
     </div>
 
@@ -261,27 +261,27 @@ than the total number of submodels, extracts from all of them.</p></dd>
 <span class="r-in"><span><span class="fu">coef</span><span class="op">(</span><span class="va">fit_jm</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $gammas</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       Mean </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.06032297 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.06066879 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $association</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> value(log(serBilir))   value(prothrombin) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            1.3448829            0.1060129 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1.3461955            0.1026174 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># fixef(): fixed effects for the first linear mixed submodel</span></span></span>
 <span class="r-in"><span><span class="fu">fixef</span><span class="op">(</span><span class="va">fit_jm</span>, outcome <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (Intercept)            age   year:sexmale year:sexfemale </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    0.667707816   -0.004490395    0.235774572    0.163441351 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    0.666553178   -0.004456948    0.234818749    0.161968478 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ranef(): random effects from all linear mixed submodels</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">ranef</span><span class="op">(</span><span class="va">fit_jm</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             [,1]         [,2]        [,3]         [,4]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]  2.23430228  0.210086492  1.06811163  0.129697354</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2,] -0.36398294  0.002933069 -0.02865190  0.087704172</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [3,] -0.19514517  0.068020600  0.51670068  0.208087812</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [4,]  0.03622325  0.100568402  0.85245617  0.578461568</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [5,]  0.32094123  0.227768099 -0.01156326  0.427411347</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [6,] -0.62860133 -0.161888025 -0.10757548 -0.008038983</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]  2.23515330  0.209652172  1.07407086  0.126441060</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2,] -0.35750242  0.003073403 -0.02655812  0.087374067</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [3,] -0.19678734  0.068355307  0.51844269  0.205165376</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [4,]  0.03972449  0.101265742  0.84768210  0.579666957</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [5,]  0.32358581  0.228699455 -0.02331233  0.438028743</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [6,] -0.62298939 -0.162384981 -0.11135259 -0.005002981</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># terms(): random effects terms for the first linear mixed submodel</span></span></span>
 <span class="r-in"><span><span class="fu">terms</span><span class="op">(</span><span class="va">fit_jm</span>, process <span class="op">=</span> <span class="st">"longitudinal"</span>, type <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>
@@ -354,8 +354,8 @@ than the total number of submodels, extracts from all of them.</p></dd>
 <span class="r-in"><span><span class="fu">compare_jm</span><span class="op">(</span><span class="va">fit_jm</span>, <span class="va">fit_jm2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               DIC     WAIC      LPML</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  fit_jm2 10497.46 10525.09 -5257.659</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   fit_jm 10675.56 11186.91 -6166.135</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  fit_jm2 10501.09 10529.73 -5267.620</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   fit_jm 10670.06 11148.22 -6116.878</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> The criteria are calculated based on the marginal log-likelihood.</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>

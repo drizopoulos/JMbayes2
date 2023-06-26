@@ -844,7 +844,9 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     id_var <- obj$model_info$var_names$idVar
     time_var <- obj$model_info$var_names$time_var
     Time_var <- obj$model_info$var_names$Time_var
+    TTime_var <- if (length(Time_var) > 1) Time_var[2L] else Time_var
     event_var <- obj$model_info$var_names$event_var
+    tvars <- c(Time_var, event_var)
     type_censoring <- object$model_info$type_censoring
     if (obj$model_info$CR_MS) {
         stop("'tvBrier()' currently only works for right censored data.")
@@ -855,14 +857,30 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     if (is.null(newdata[[time_var]])) {
         stop("cannot find the '", time_var, "' variable in newdata.", sep = "")
     }
-    if (any(sapply(Time_var, function (nmn) is.null(newdata[[nmn]])))) {
-        stop("cannot find the '", paste(Time_var, collapse = ", "),
+    if (!is.null(eventData_fun)) {
+        if (!is.function(eventData_fun)) {
+            stop("'eventData_fun' must be a function that takes as input the ",
+                 "'newdata' and produces the dataset for the event time model.\n")
+        }
+        different_eventData <- TRUE
+        newdataE <- eventData_fun(newdata)
+        # the following needs to change for Competing risks and recurrent events
+        # it should now only work for time-varying covariates in the Cox model
+        for (i in seq_along(tvars)) {
+            ff <- match(newdataE[[id_var]], unique(newdataE[[id_var]]))
+            vals <- tapply(newdataE[[tvars[i]]], ff, tail, n = 1L)
+            ff <- match(newdata[[id_var]], unique(newdata[[id_var]]))
+            ni <- tapply(ff, ff, length)
+            newdata[[tvars[i]]] <- rep(vals, ni)
+        }
+    } else {
+        different_eventData <- FALSE
+    }
+    if (any(sapply(tvars, function (nmn) is.null(newdata[[nmn]])))) {
+        stop("cannot find the '", paste(tvars, collapse = ", "),
              "' variable(s) in newdata.", sep = "")
     }
-    if (is.null(newdata[[event_var]])) {
-        stop("cannot find the '", event_var, "' variable in newdata.", sep = "")
-    }
-    newdata <- newdata[newdata[[Time_var]] > Tstart, ]
+    newdata <- newdata[newdata[[TTime_var]] > Tstart, ]
     newdata <- newdata[newdata[[time_var]] <= Tstart, ]
     if (!nrow(newdata)) {
         stop("there are no data on subjects who had an observed event time after Tstart ",
@@ -871,22 +889,39 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
 
     br <- function (Thoriz) {
-        test <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
+        test <- newdata[[TTime_var]] < Thoriz & newdata[[event_var]] == 1
         if (!any(test)) {
             stop("it seems that there are no events in the interval [", Tstart,
                  ", ", Thoriz, ").\n")
         }
-        newdata2 <- newdata
-        newdata2[[Time_var]] <- Tstart
-        newdata2[[event_var]] <- 0
-
         id <- newdata[[id_var]]
-        Time <- newdata[[Time_var]]
+        Time <- newdata[[TTime_var]]
         event <- newdata[[event_var]]
         f <- factor(id, levels = unique(id))
         Time <- tapply(Time, f, tail, 1L)
         event <- tapply(event, f, tail, 1L)
         names(Time) <- names(event) <- as.character(unique(id))
+        if (!is.null(eventData_fun)) {
+            newdataE <- newdataE[newdataE[[id_var]] %in% id, ]
+            newdataE[[id_var]] <- newdataE[[id_var]][, drop = TRUE]
+        } else newdataE <- NULL
+
+        newdata2 <- newdata
+        newdata2[[TTime_var]] <- Tstart
+        newdata2[[event_var]] <- 0
+        if (!is.null(eventData_fun)) {
+            newdataE2 <- newdataE
+            newdataE2[[event_var]] <- 0
+            g <- function (x) {
+                out <- x
+                ind <- out > Tstart
+                out[ind] <- c(Tstart, rep(NA, length.out = sum(ind) - 1))
+                out
+            }
+            newdataE2[[TTime_var]] <-
+                ave(newdataE2[[TTime_var]], newdataE2[[id_var]], FUN = g)
+            newdataE2 <- newdataE2[!is.na(newdataE2[[TTime_var]]), ]
+        } else newdataE2 <- NULL
 
         # subjects who had the event before Thoriz
         ind1 <- Time < Thoriz & event == 1
@@ -910,21 +945,29 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             V <- length(object) # number of folds
             L <- length(object[[1]]) # number of models
             ids <- tapply(newdata2[[id_var]], newdata2[["fold_"]], unique)
-            run_over_folds <- function (v, object, newdata, newdata2, type_weights,
-                                        Tstart, Thoriz, ind1, ind2, ind3, ids, id,
-                                        L, parallel, cores = 1L) {
+            run_over_folds <- function (v, object, newdata, newdata2,
+                                        newdataE, newdataE2, type_weights,
+                                        Tstart, Thoriz, ind1, ind2, ind3, ids,
+                                        id, id_var, L, parallel, cores = 1L) {
                 temp_p <- temp_w <- vector("list", L)
                 for (l in seq_len(L)) {
+                    ND2 <- if (!is.null(newdataE2)) {
+                        list(newdataL = newdata2[newdata2$fold_ == v, ],
+                             newdataE = newdataE2[newdataE2$fold_ == v, ])
+                    } else newdata2[newdata2$fold_ == v, ]
                     preds <- predict(object[[v]][[l]], process = "event",
                                      times = Thoriz, parallel = parallel,
-                                     cores = cores,
-                                     newdata = newdata2[newdata2$fold_ == v, ])
+                                     cores = cores, newdata = ND2)
                     temp_p[[l]] <- preds$pred[preds$times > Tstart]
                     # which subjects in fold v had Time < Thoriz & event == 0
                     id_cens <- names(ind3[ind3])[names(ind3[ind3]) %in% ids[[v]]]
                     if (type_weights == "model-based" && length(id_cens)) {
+                        ND3 <- if (!is.null(newdataE2)) {
+                            list(newdataL = newdata[id %in% id_cens, ],
+                                 newdataE = newdataE[newdataE[[id_var]] %in% id_cens, ])
+                        } else newdata[id %in% id_cens, ]
                         preds2 <- predict(object[[v]][[l]],
-                                          newdata = newdata[id %in% id_cens, ],
+                                          newdata = ND3,
                                           process = "event", times = Thoriz,
                                           parallel = parallel, cores = cores)
                         weights <- preds2$pred
@@ -954,9 +997,11 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                     res <-
                         parallel::mclapply(seq_len(V), run_over_folds, object = object,
                                            newdata = newdata, newdata2 = newdata2,
+                                           newdataE = newdataE, newdataE2 = newdataE2,
                                            type_weights = type_weights, Tstart = Tstart,
                                            Thoriz = Thoriz, ind1 = ind1, ind2 = ind2,
-                                           ind3 = ind3, ids = ids, id = id, L = L,
+                                           ind3 = ind3, ids = ids, id = id,
+                                           id_var = id_var, L = L,
                                            parallel = parallel, cores = cores2,
                                            mc.cores = cores)
                 } else {
@@ -965,9 +1010,11 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                     res <-
                         parallel::parLapply(cl, seq_len(V), run_over_folds, object = object,
                                             newdata = newdata, newdata2 = newdata2,
+                                            newdataE = newdataE, newdataE2 = newdataE2,
                                             type_weights = type_weights, Tstart = Tstart,
                                             Thoriz = Thoriz, ind1 = ind1, ind2 = ind2,
-                                            ind3 = ind3, ids = ids, id = id, L = L,
+                                            ind3 = ind3, ids = ids, id = id,
+                                            id_var = id_var, L = L,
                                             parallel = parallel, cores = cores2)
                     parallel::stopCluster(cl)
                 }
@@ -975,10 +1022,11 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                 res <-
                     lapply(seq_len(V), run_over_folds, object = object,
                            newdata = newdata, newdata2 = newdata2,
+                           newdataE = newdataE, newdataE2 = newdataE2,
                            type_weights = type_weights, Tstart = Tstart,
                            Thoriz = Thoriz, ind1 = ind1, ind2 = ind2,
-                           ind3 = ind3, ids = ids, id = id, L = L,
-                           parallel = parallel)
+                           ind3 = ind3, ids = ids, id = id, id_var = id_var,
+                           L = L, parallel = parallel)
             }
             predictions <- do.call("rbind", lapply(res, "[[", "predictions"))
             W <- do.call("rbind", lapply(res, "[[", "W"))
@@ -991,11 +1039,14 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             list(predictions = predictions, W = W, ind1 = ind1, ind2 = ind2,
                  ind3 = ind3, Time = Time)
         } else {
+            ND2 <- if (different_eventData) {
+                list(newdataL = newdata2, newdataE = newdataE2)
+            } else newdata2
             preds <- if (is_jm(object)) {
-                predict(object, newdata = newdata2, process = "event",
+                predict(object, newdata = ND2, process = "event",
                         times = Thoriz, parallel = parallel)
             } else if (is_jmList(object)) {
-                predict(object, newdata = newdata2, process = "event",
+                predict(object, newdata = ND2, process = "event",
                         times = Thoriz, parallel = parallel,
                         weights = model_weights)
             }
@@ -1005,12 +1056,18 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             pi_u_t <- pi_u_t[preds$times > Tstart]
             if (type_weights == "model-based" && any(ind3)) {
                 nams <- names(ind3[ind3])
+                ND3 <- if (different_eventData) {
+                    list(newdataL = newdata[id %in% nams, ],
+                         newdataE = newdataE[newdataE[[id_var]] %in% nams, ])
+                } else {
+                    newdata[id %in% nams, ]
+                }
                 preds2 <- if (is_jm(object)) {
-                    predict(object, newdata = newdata[id %in% nams, ],
+                    predict(object, newdata = ND3,
                             process = "event", times = Thoriz,
                             parallel = parallel)
                 } else if (is_jmList(object)) {
-                    predict(object, newdata = newdata[id %in% nams, ],
+                    predict(object, newdata = ND3,
                             process = "event", times = Thoriz,
                             parallel = parallel, weights = model_weights)
                 }
