@@ -129,12 +129,13 @@ impsmeth[c('Time', 'event')] <- c('rf', 'logreg')
 imps <- mice(data = rbind(aTest_wide[-1], copy_aTest_wide[-1]), seed = 2023L,
              printFlag = FALSE, methods = impsmeth)
 
-DD <- complete(imps)
-DD$id <- c(aTest_wide$id, paste0(aTest_wide$id, "_clone"))
-DD$syn <- rep(0:1, each = nrow(aTest_wide))
 
+D_i <- complete(imps)
+D_i$syn <- rep(0:1, each = nrow(aTest_wide))
+D_i$id <- c(aTest_wide$id, paste0(aTest_wide$id, "_clone"))
 
-
+vnams <- names(D_i)[grep("y_", names(D_i), fixed = TRUE)]
+longD_i <- reshape(D_i, direction = "long", varying = vnams, sep = "_")
 
 
 
