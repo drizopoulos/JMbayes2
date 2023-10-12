@@ -1,0 +1,73 @@
+---
+title: "Time Varying Effects"
+author: "Dimitris Rizopoulos"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Time Varying Effects}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("JMbayes2")
+```
+
+# Non Proportional Hazards
+The basic definition of the joint model assumes the the coefficients that quantify the association between the versions of the longitudinal outcomes and the hazard of the event are time-constant (i.e., the proportional hazards assumption). We can relax this assumption by specifying time-varying coefficients via the `functional_forms` argument of function `jm()`.
+
+We will illustrate this capability using the PBC dataset. We start by fitting a Cox model for the composite event transplantation or death, including sex as a baseline covariate:
+```{r}
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
+CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
+```
+
+Our aim is to assess the strength of the association between the risk of the composite event and the level of serum bilirubin. We will describe the patient-specific profiles over time for this biomarker using a linear mixed-effects model, where both in the fixed- and random-effects we include an intercept, the linear and quadratic time effect. In the fixed-effects we also include the interaction of the time effect and sex. The syntax to fit this model with `lme()` is:
+```{r}
+fm <- lme(log(serBilir) ~ poly(year, 2) * sex, data = pbc2, 
+          random = ~ poly(year, 2) | id, control = lmeControl(opt = 'optim'))
+```
+
+The default call to `jm()` adds the subject-specific linear predictor of the mixed model as a time-varying covariate in the survival relative risk model:
+```{r}
+jointFit1 <- jm(CoxFit, fm, time_var = "year")
+summary(jointFit1)
+```
+
+To specify that the association of serum bilirubin may change over time we include an interaction of this time-varying covariate with a natural cubic spline of time using function `ns()` from the **splines** package. **Important Note:** for this to work correctly we need to explicitly specify the knots and boundary knots for the B-splines basis, i.e., in the following example we set the internal knots at 3, 6 and 9 years, and the boundary knots at 0 and 14.5 years:
+```{r}
+form_splines <- ~ value(log(serBilir)) * ns(year, k = c(3, 6, 9), B = c(0, 14.5))
+jointFit2 <- update(jointFit1, functional_forms = form_splines, 
+                    n_iter = 6500L, n_burnin = 2500L)
+summary(jointFit2)
+```
+
+The spline coefficients do not have a straightforward interpretation. We therefore visualize the time-varying association of serum bilirubin using the following piece of code: 
+```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+x_times <- seq(0.001, 12, length = 501)
+X <- cbind(1, ns(x_times, knots = c(3, 6, 9), B = c(0, 14.5)))
+mcmc_alphas <- do.call('rbind', jointFit2$mcmc$alphas)
+log_hr <- X %*% t(mcmc_alphas)
+log_hr_mean <- rowMeans(log_hr)
+log_hr_low <- apply(log_hr, 1, quantile, probs = 0.025)
+log_hr_upp <- apply(log_hr, 1, quantile, probs = 0.975)
+
+matplot(x_times, cbind(exp(log_hr_mean), exp(log_hr_low), exp(log_hr_upp)), 
+        type = "l", col = c("red", "black", "black"), lty = c(1, 2, 2), lwd = 2,
+        xlab = "Follow-up Time (years)", ylab = "Hazard Ratio serum Bilirubin",
+        ylim = c(0.5, 6.4))
+abline(h = 1, lty = 2)
+```
+
+We observe that the 95% credible interval for the time-varying coefficient includes the horizontal line that corresponds to proportional hazards. This is also confirmed by comparing the two models:
+```{r}
+compare_jm(jointFit1, jointFit2)
+```
+
+Both the WAIC and LPML indicate that `jointFit1` is a better model than `jointFit2`. The DIC is marginally smaller for `jointFit2`.

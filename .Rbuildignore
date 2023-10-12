@@ -30,6 +30,6 @@
 ^vignettes/Dynamic_Predictions.Rmd$
 ^vignettes/Recurring_Events.Rmd$
 ^vignettes/Super_Learning.Rmd$
-
+^vignettes/Time_Varying_Effects.Rmd$
 
 

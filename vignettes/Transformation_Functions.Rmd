@@ -35,7 +35,7 @@ fm <- mixed_model(hepatomegaly ~ year, data = pbc2, random = ~ year | id,
                   family = binomial())
 ```
 
-The default call to `jm()`adds the subject-specific linear predictor of the mixed-effects logistic regression as a time-varying covariate in the survival relative risk model:
+The default call to `jm()` adds the subject-specific linear predictor of the mixed-effects logistic regression as a time-varying covariate in the survival relative risk model:
 ```{r}
 jointFit1 <- jm(CoxFit, fm, time_var = "year")
 summary(jointFit1)
