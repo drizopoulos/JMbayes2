@@ -62,7 +62,10 @@ matplot(x_times, cbind(exp(log_hr_mean), exp(log_hr_low), exp(log_hr_upp)),
         type = "l", col = c("red", "black", "black"), lty = c(1, 2, 2), lwd = 2,
         xlab = "Follow-up Time (years)", ylab = "Hazard Ratio serum Bilirubin",
         ylim = c(0.5, 6.4))
+abline(h = exp(coef(jointFit1)$association), lty = 2, col = "red")
 abline(h = 1, lty = 2)
+legend("topright", c("time-varying coefficient", "proportional hazards"),
+       lty = c(1, 2), lwd = c(2, 1), col = "red", bty = "n")
 ```
 
 We observe that the 95% credible interval for the time-varying coefficient includes the horizontal line that corresponds to proportional hazards. This is also confirmed by comparing the two models:
