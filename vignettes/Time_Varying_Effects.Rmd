@@ -40,7 +40,7 @@ jointFit1 <- jm(CoxFit, fm, time_var = "year")
 summary(jointFit1)
 ```
 
-To specify that the association of serum bilirubin may change over time we include an interaction of this time-varying covariate with a natural cubic spline of time using function `ns()` from the **splines** package. **Important Note:** for this to work correctly we need to explicitly specify the knots and boundary knots for the B-splines basis, i.e., in the following example we set the internal knots at 3, 6 and 9 years, and the boundary knots at 0 and 14.5 years:
+To specify that the association of serum bilirubin may change over time we include an interaction of this time-varying covariate with a natural cubic spline of time using function `ns()` from the **splines** package. **Important Note:** for this to work correctly we need to explicitly specify the internal and boundary knots for the B-splines basis, i.e., in the following example we set the internal knots at 3, 6 and 9 years, and the boundary knots at 0 and 14.5 years:
 ```{r}
 form_splines <- ~ value(log(serBilir)) * ns(year, k = c(3, 6, 9), B = c(0, 14.5))
 jointFit2 <- update(jointFit1, functional_forms = form_splines, 
@@ -48,7 +48,7 @@ jointFit2 <- update(jointFit1, functional_forms = form_splines,
 summary(jointFit2)
 ```
 
-The spline coefficients do not have a straightforward interpretation. We therefore visualize the time-varying association of serum bilirubin using the following piece of code: 
+The spline coefficients do not have a straightforward interpretation. We therefore visualize the time-varying association of log serum bilirubin with the hazard of the composite event using the following piece of code: 
 ```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
 x_times <- seq(0.001, 12, length = 501)
 X <- cbind(1, ns(x_times, knots = c(3, 6, 9), B = c(0, 14.5)))
@@ -60,7 +60,7 @@ log_hr_upp <- apply(log_hr, 1, quantile, probs = 0.975)
 
 matplot(x_times, cbind(exp(log_hr_mean), exp(log_hr_low), exp(log_hr_upp)), 
         type = "l", col = c("red", "black", "black"), lty = c(1, 2, 2), lwd = 2,
-        xlab = "Follow-up Time (years)", ylab = "Hazard Ratio serum Bilirubin",
+        xlab = "Follow-up Time (years)", ylab = "Hazard Ratio log serum Bilirubin",
         ylim = c(0.5, 6.4))
 abline(h = exp(coef(jointFit1)$association), lty = 2, col = "red")
 abline(h = 1, lty = 2)
@@ -73,4 +73,4 @@ We observe that the 95% credible interval for the time-varying coefficient inclu
 compare_jm(jointFit1, jointFit2)
 ```
 
-Both the WAIC and LPML indicate that `jointFit1` is a better model than `jointFit2`. The DIC is marginally smaller for `jointFit2`.
+Both the WAIC and LPML indicate that `jointFit1` is a better model than `jointFit2`. The DIC has the same magnitude for both models.
