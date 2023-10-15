@@ -20,7 +20,7 @@ library("JMbayes2")
 ```
 
 # Non Proportional Hazards
-The basic definition of the joint model assumes the the coefficients that quantify the association between the versions of the longitudinal outcomes and the hazard of the event are time-constant (i.e., the proportional hazards assumption). We can relax this assumption by specifying time-varying coefficients via the `functional_forms` argument of function `jm()`.
+The basic definition of the joint model assumes the coefficients that quantify the association between the versions of the longitudinal outcomes and the hazard of the event are time-constant (i.e., the proportional hazards assumption). We can relax this assumption by specifying time-varying coefficients via the `functional_forms` argument of function `jm()`.
 
 We will illustrate this capability using the PBC dataset. We start by fitting a Cox model for the composite event transplantation or death, including sex as a baseline covariate:
 ```{r}
