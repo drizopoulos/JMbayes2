@@ -334,12 +334,20 @@ length(jm3$mcmc$bs_gammas)
 
 data("pbc2", "pbc2.id", package = "JMbayes2")
 pbc2$id_char <- as.character(pbc2$id)
-pbc2$id_num <- as.numeric(pbc2$id_char)
-# pbc2[1:100, c("id", "id_char", "id_num")]
-# lapply(pbc2[, c("id", "id_char", "id_num")], summary)
-
 pbc2.id$id_char <- as.character(pbc2.id$id)
-pbc2.id$id_num <- as.numeric(pbc2.id$id_char)
 
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
+CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
+fm <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id_char)
+
+Surv_object = CoxFit
+Mixed_objects = fm
+time_var = 'year'
+functional_forms = NULL
+data_Surv = NULL
+id_var = NULL
+priors = NULL
+control = NULL
+#
 
 
