@@ -65,6 +65,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     }
     idVar <- id_names[1L]
     idL <- dataL[[idVar]]
+    idL <- factor(idL, levels = unique(idL))
     nY <- length(unique(idL))
     # order data by idL and time_var
     if (is.null(dataL[[time_var]])) {

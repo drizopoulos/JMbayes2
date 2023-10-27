@@ -330,5 +330,16 @@ length(jm2$mcmc$bs_gammas)
 length(jm3$mcmc$bs_gammas)
 
 
+##############################################################################
+
+data("pbc2", "pbc2.id", package = "JMbayes2")
+pbc2$id_char <- as.character(pbc2$id)
+pbc2$id_num <- as.numeric(pbc2$id_char)
+# pbc2[1:100, c("id", "id_char", "id_num")]
+# lapply(pbc2[, c("id", "id_char", "id_num")], summary)
+
+pbc2.id$id_char <- as.character(pbc2.id$id)
+pbc2.id$id_num <- as.numeric(pbc2.id$id_char)
+
 
 
