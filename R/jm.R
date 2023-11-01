@@ -71,6 +71,19 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         stop("the variable specified in agument 'time_var' cannot be found ",
              "in the database of the longitudinal models.")
     }
+    # check if id variable is of class character
+    # if it is give a warning that an id variable of class factor
+    # should be used preferably. Try to solve it internally
+    if (is.character(idL)) {
+      warning("It seems that the id variable used is of character class. This variable will 
+      be internally converted to a factor variable, but it would be best that this is done
+      beforehand on your own.")
+      idL <- factor(idL, levels = unique(idL))
+      dataL[[idVar]] <- factor(dataL[[idVar]], levels = unique(dataL[[idVar]]))
+      idchar = TRUE
+    } else {
+      idchar = FALSE
+    }
     dataL <- dataL[order(idL, dataL[[time_var]]), ]
     idL <- dataL[[idVar]]
 
@@ -566,7 +579,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 length.out = lapply(idL_lp, lng_unq)[ss_sigmas])
     D_lis <- lapply(Mixed_objects, extract_D)
     D <- bdiag(D_lis)
-    b <- mapply2(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY))
+    b <- mapply2(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY, idchar = idchar))
     bs_gammas <- rep(-0.1, ncol(W0_H))
     gammas <- if (inherits(Surv_object, "coxph")) coef(Surv_object) else
         -coef(Surv_object)[-1L] / Surv_object$scale

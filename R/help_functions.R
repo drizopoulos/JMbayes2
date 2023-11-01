@@ -247,8 +247,11 @@ knots <- function (xl, xr, ndx, deg) {
     c(rep(xl, deg), kn, rep(xr, deg))
 }
 
-extract_b <- function (object, id, n) {
+extract_b <- function (object, id, n, idchar) {
     b <- data.matrix(ranef(object))
+    if(idchar) {
+      b <- b[order(factor(rownames(b), levels = id)), ]
+    }
     mat <- matrix(0.0, n, ncol(b))
     colnames(mat) <- colnames(b)
     mat[id, ] <- b
