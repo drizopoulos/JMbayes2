@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-6</span>
       </span>
     </div>
 
@@ -89,6 +89,9 @@
     </li>
     <li>
       <a href="../articles/Super_Learning.html">Combined Dynamic Predictions via Super Learning</a>
+    </li>
+    <li>
+      <a href="../articles/Time_Varying_Effects.html">Time Varying Effects</a>
     </li>
     <li>
       <a href="../articles/Transformation_Functions.html">Transformation Functions for Functional Forms</a>
@@ -130,7 +133,7 @@ Forms</h1>
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2023-06-26</h4>
+            <h4 data-toc-skip class="date">2023-10-12</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Transformation_Functions.Rmd" class="external-link"><code>vignettes/Transformation_Functions.Rmd</code></a></small>
       <div class="hidden name"><code>Transformation_Functions.Rmd</code></div>
@@ -167,9 +170,9 @@ is:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model</a></span><span class="op">(</span><span class="va">hepatomegaly</span> <span class="op">~</span> <span class="va">year</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, </span>
 <span>                  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>The default call to <code><a href="../reference/jm.html">jm()</a></code>adds the subject-specific linear
-predictor of the mixed-effects logistic regression as a time-varying
-covariate in the survival relative risk model:</p>
+<p>The default call to <code><a href="../reference/jm.html">jm()</a></code> adds the subject-specific
+linear predictor of the mixed-effects logistic regression as a
+time-varying covariate in the survival relative risk model:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">jointFit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="va">fm</span>, time_var <span class="op">=</span> <span class="st">"year"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jointFit1</span><span class="op">)</span></span>
@@ -207,7 +210,7 @@ covariate in the survival relative risk model:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 15 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 18 sec</span></span></code></pre></div>
 <p>In the output this is named as <code>value(hepatomegaly)</code> to
 denote that the current value functional form is used. That is, we
 assume that the risk at a specific time <span class="math inline">\(t\)</span> is associated with the value of the
@@ -268,7 +271,7 @@ done using the <code><a href="../reference/jm.html">vexpit()</a></code> function
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 16 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 18 sec</span></span></code></pre></div>
 <p>Other available functions to use in the definition of the
 <code>functional_forms</code> argument are <code><a href="../reference/jm.html">vexp()</a></code> for
 calculating the exponent, <code><a href="../reference/jm.html">vlog()</a></code> for calculating the
@@ -322,7 +325,7 @@ linear predictor, we also have the <code><a href="../reference/jm.html">Dexpit()
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 18 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 20 sec</span></span></code></pre></div>
 <p>The call to <code>Dexpit(slope(hepatomegaly))</code> is internally
 transformed to
 <code>Dexpit(value(hepatomegaly)):slope(hepatomegaly)</code>, which

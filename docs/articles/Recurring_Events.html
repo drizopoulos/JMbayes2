@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-6</span>
       </span>
     </div>
 
@@ -89,6 +89,9 @@
     </li>
     <li>
       <a href="../articles/Super_Learning.html">Combined Dynamic Predictions via Super Learning</a>
+    </li>
+    <li>
+      <a href="../articles/Time_Varying_Effects.html">Time Varying Effects</a>
     </li>
     <li>
       <a href="../articles/Transformation_Functions.html">Transformation Functions for Functional Forms</a>
@@ -129,7 +132,7 @@
                         <h4 data-toc-skip class="author">Pedro Miranda
 Afonso</h4>
             
-            <h4 data-toc-skip class="date">2023-06-26</h4>
+            <h4 data-toc-skip class="date">2023-10-12</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Recurring_Events.Rmd" class="external-link"><code>vignettes/Recurring_Events.Rmd</code></a></small>
       <div class="hidden name"><code>Recurring_Events.Rmd</code></div>
@@ -158,22 +161,29 @@ the <em>gap</em> uses the end of the previous event (Figure 1).
 <em>Gap</em> assumes a renewal after each event and resets the time to
 zero.</p>
 <div class="figure" style="text-align: center">
-<img src="Recurring_Events_files/figure-html/timescale-1.png" alt="&lt;b&gt;Figure 1&lt;/b&gt; Visual representation of an hazard function under the gap or calendar timescale. During the folow-up the subject experienced three events." width="528"><p class="caption">
-<b>Figure 1</b> Visual representation of an hazard function under the
+<img src="Recurring_Events_files/figure-html/timescale-1.png" alt="&lt;b&gt;Figure
+1&lt;/b&gt; Visual representation of an hazard function under the gap or
+calendar timescale. During the folow-up the subject experienced three
+events.” width=“528” /&gt;
+&lt;p class=" caption><b>Figure 1</b> Visual representation of an hazard function under the
 gap or calendar timescale. During the folow-up the subject experienced
 three events.
-</p>
+
 </div>
 <p>The model also accommodates discontinuous risk intervals, i.e.,
 periods in which the subject is not at risk of experiencing the
 recurring event (Figure 2). For example, while a patient is in the
 hospital, they are not at risk of being hospitalized again.</p>
 <div class="figure" style="text-align: center">
-<img src="Recurring_Events_files/figure-html/disc_risk-1.png" alt="&lt;b&gt;Figure 2&lt;/b&gt; Visual representation of an hazard function under the gap or calendar timescale, while accounting for non-risk periods (gray areas). During the folow-up the subject experienced three events." width="528"><p class="caption">
-<b>Figure 2</b> Visual representation of an hazard function under the
+<img src="Recurring_Events_files/figure-html/disc_risk-1.png" alt="&lt;b&gt;Figure
+2&lt;/b&gt; Visual representation of an hazard function under the gap or
+calendar timescale, while accounting for non-risk periods (gray areas).
+During the folow-up the subject experienced three events.” width=“528”
+/&gt;
+&lt;p class=" caption><b>Figure 2</b> Visual representation of an hazard function under the
 gap or calendar timescale, while accounting for non-risk periods (gray
 areas). During the folow-up the subject experienced three events.
-</p>
+
 </div>
 <p>A joint model with <span class="math inline">\(p\)</span> normally
 distributed longitudinal markers, a terminal event process, and a
@@ -425,12 +435,16 @@ eighth recurrent event was censored by the terminal event.</p>
 <span><span class="co">#&gt; 8  1 3.6251219 4.0375415      0    Rec</span></span>
 <span><span class="co">#&gt; 9  1 0.0000000 4.0375415      1    Ter</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Recurring_Events_files/figure-html/trf_data3-1.png" alt="&lt;b&gt;Figure 3&lt;/b&gt; Visual representation of the failure-time data during the follow-up for subject 1. The horizontal black line denotes risk periods, while the blue line non-risk periods. 'R' and 'T' represent a recurrent and terminal event, respectively." width="528"><p class="caption">
-<b>Figure 3</b> Visual representation of the failure-time data during
+<img src="Recurring_Events_files/figure-html/trf_data3-1.png" alt="&lt;b&gt;Figure
+3&lt;/b&gt; Visual representation of the failure-time data during the
+follow-up for subject 1. The horizontal black line denotes risk periods,
+while the blue line non-risk periods. ‘R’ and ‘T’ represent a recurrent
+and terminal event, respectively.” width=“528” /&gt;
+&lt;p class=" caption><b>Figure 3</b> Visual representation of the failure-time data during
 the follow-up for subject 1. The horizontal black line denotes risk
 periods, while the blue line non-risk periods. ‘R’ and ‘T’ represent a
 recurrent and terminal event, respectively.
-</p>
+
 </div>
 </div>
 <div class="section level4">

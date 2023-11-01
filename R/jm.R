@@ -65,6 +65,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     }
     idVar <- id_names[1L]
     idL <- dataL[[idVar]]
+    idL <- factor(idL, levels = unique(idL))
     nY <- length(unique(idL))
     # order data by idL and time_var
     if (is.null(dataL[[time_var]])) {
@@ -252,7 +253,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     }
     # we need to check that the ordering of the subjects in the same in dataL and dataS.
     # If not, then a warning and do it internally
-    if (!all(order(unique(idT)) == order(unique(dataL[[idVar]])))) {
+    if (!all(order(unique(idT)) == order(factor(unq_id, levels = unq_id)))) {
         warning("It seems that the ordering of the subjects in the dataset used to fit the ",
                 "mixed models and the dataset used for the survival model is not the same. ",
                 "We set internally the datasets in the same order, but it would be best ",

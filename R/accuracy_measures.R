@@ -593,7 +593,7 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                 preds <- predict(object[[v]][[l]], process = "event",
                                  times = tilde_Time[[v]],
                                  times_per_id = TRUE, parallel = parallel,
-                                 cores = cores, newdata = ND2)
+                                 cores = cores, newdata = ND2, n_samples = 400L)
                 pi_u_t <- preds$pred
                 names(pi_u_t) <- preds$id
                 # cumulative risk at tilde_Time
@@ -610,7 +610,7 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                 preds2 <- predict(object[[v]][[l]], process = "event",
                                   times = tilde_Time[[v]] + eps,
                                   times_per_id = TRUE, parallel = parallel,
-                                  cores = cores, newdata = ND3)
+                                  cores = cores, newdata = ND3, n_samples = 400L)
                 pi_u_t2 <- preds2$pred
                 names(pi_u_t2) <- preds2$id
                 # cumulative risk at tilde_Time + eps
@@ -699,11 +699,12 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         preds <- if (is_jm(object)) {
             predict(object, newdata = newdata2, process = "event",
                     times = tilde_Time, times_per_id = TRUE, cores = 1L,
-                    parallel = parallel)
+                    parallel = parallel, n_samples = 400L)
         } else if (is_jmList(object)) {
             predict(object, newdata = newdata2, process = "event",
                     times = tilde_Time, times_per_id = TRUE, cores = 1L,
-                    parallel = parallel, weights = model_weights)
+                    parallel = parallel, weights = model_weights,
+                    n_samples = 400L)
         }
         pi_u_t <- preds$pred
         names(pi_u_t) <- preds$id
@@ -721,11 +722,12 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         preds2 <- if (is_jm(object)) {
             predict(object, newdata = newdata3, process = "event",
                     times = tilde_Time + eps, times_per_id = TRUE, cores = 1L,
-                    parallel = parallel)
+                    parallel = parallel, n_samples = 400L)
         } else if (is_jmList(object)) {
             predict(object, newdata = newdata3, process = "event", cores = 1L,
                     times = tilde_Time + eps, times_per_id = TRUE,
-                    parallel = parallel, weights = model_weights)
+                    parallel = parallel, weights = model_weights,
+                    n_samples = 400L)
         }
         pi_u_t2 <- preds2$pred
         names(pi_u_t2) <- preds2$id
@@ -957,7 +959,7 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                     } else newdata2[newdata2$fold_ == v, ]
                     preds <- predict(object[[v]][[l]], process = "event",
                                      times = Thoriz, parallel = parallel,
-                                     cores = cores, newdata = ND2)
+                                     cores = cores, newdata = ND2, n_samples = 400L)
                     temp_p[[l]] <- preds$pred[preds$times > Tstart]
                     # which subjects in fold v had Time < Thoriz & event == 0
                     id_cens <- names(ind3[ind3])[names(ind3[ind3]) %in% ids[[v]]]
@@ -969,7 +971,8 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                         preds2 <- predict(object[[v]][[l]],
                                           newdata = ND3,
                                           process = "event", times = Thoriz,
-                                          parallel = parallel, cores = cores)
+                                          parallel = parallel, cores = cores,
+                                          n_samples = 400L)
                         weights <- preds2$pred
                         f <- factor(preds2$id, levels = unique(preds2$id))
                         names(weights) <- f
@@ -1044,11 +1047,11 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             } else newdata2
             preds <- if (is_jm(object)) {
                 predict(object, newdata = ND2, process = "event",
-                        times = Thoriz, parallel = parallel)
+                        times = Thoriz, parallel = parallel, n_samples = 400L)
             } else if (is_jmList(object)) {
                 predict(object, newdata = ND2, process = "event",
                         times = Thoriz, parallel = parallel,
-                        weights = model_weights)
+                        weights = model_weights, n_samples = 400L)
             }
             pi_u_t <- preds$pred
             names(pi_u_t) <- preds$id
@@ -1065,11 +1068,12 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                 preds2 <- if (is_jm(object)) {
                     predict(object, newdata = ND3,
                             process = "event", times = Thoriz,
-                            parallel = parallel)
+                            parallel = parallel, n_samples = 400L)
                 } else if (is_jmList(object)) {
                     predict(object, newdata = ND3,
                             process = "event", times = Thoriz,
-                            parallel = parallel, weights = model_weights)
+                            parallel = parallel, weights = model_weights,
+                            n_samples = 400L)
                 }
                 weights <- preds2$pred
                 f <- factor(preds2$id, levels = unique(preds2$id))
