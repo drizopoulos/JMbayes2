@@ -386,18 +386,31 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     functional_forms <- functional_forms[order(match(names(functional_forms),
                                                      respVars_form))]
     functional_forms <- mapply2(expand_Dexps, functional_forms, respVars_form)
+
     ###################################################################
     # List of lists
     # One list component per association structure per outcome
     # List components vectors of integers corresponding to the term
     # each association structure corresponds to
-    FunForms_per_outcome <- lapply(functional_forms, extract_functional_forms,
-                                   data = dataS)
+    FunForms_per_outcome <-
+        mapply2(extract_functional_forms, Form = functional_forms,
+                nam = respVars_form, MoreArgs = list(data = dataS))
     FunForms_per_outcome <- lapply(FunForms_per_outcome,
                                    function (x) x[sapply(x, length) > 0])
+
     collapsed_functional_forms <- lapply(FunForms_per_outcome, names)
-    Funs_FunForms <- lapply(functional_forms, extractFuns_FunForms,
-                             data = dataS)
+
+    collapsed_functional_forms <-
+        lapply(collapsed_functional_forms, function (nam) {
+            nn <- c("value", "slope", "area", "velocity", "acceleration",
+                    "coefs")
+            names(unlist(sapply(nn, grep, x = nam, fixed = TRUE,
+                                simplify = FALSE)))
+        })
+
+    Funs_FunForms <-
+        mapply2(extractFuns_FunForms, Form = functional_forms, nam = respVars_form,
+                MoreArgs = list(data = dataS))
     #####################################################
 
     # design matrices for the survival submodel:
@@ -567,8 +580,9 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 length.out = lapply(idL_lp, lng_unq)[ss_sigmas])
     D_lis <- lapply(Mixed_objects, extract_D)
     D <- bdiag(D_lis)
-    b <- mapply2(extract_b, Mixed_objects, unq_idL, MoreArgs = list(n = nY))
-    bs_gammas <- rep(-0.1, ncol(W0_H))
+    b <- mapply2(extract_b, Mixed_objects, unq_idL,
+                 MoreArgs = list(n = nY, unq_id = unq_id))
+     bs_gammas <- rep(-0.1, ncol(W0_H))
     gammas <- if (inherits(Surv_object, "coxph")) coef(Surv_object) else
         -coef(Surv_object)[-1L] / Surv_object$scale
     if (is.null(gammas)) gammas <- 0.0

@@ -45,7 +45,7 @@ fForms <- ~ value(log(serBilir)):I(1 * (sex == 'male')) + value(prothrombin) + v
 fForms <- ~ value(log(serBilir)) + vsquare(value(log(serBilir))) +
     vcubic(value(log(serBilir))) + slope(log(serBilir)) +
     value(log(serBilir)):slope(log(serBilir))
-fForms <- ~ value(log(serBilir)) + value(prothrombin, zero_ind = list(X = 2:6, Z = 2:3))
+fForms <- ~ value(log(serBilir)) * slope(prothrombin)
 
 # system.time(obj <- jm(Cox, Mixed, time_var = "year", functional_forms = fForms))
 
@@ -348,6 +348,7 @@ data_Surv = NULL
 id_var = NULL
 priors = NULL
 control = NULL
+recurrent = FALSE
 #
 
 

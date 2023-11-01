@@ -132,29 +132,32 @@ right_rows <- function (data, times, ids, Q_points) {
     data[c(ind), ]
 }
 
-extract_functional_forms <- function (Form, data) {
+extract_functional_forms <- function (Form, nam, data) {
     tr <- terms(Form)
     mF <- model.frame(tr, data = data)
     M <- model.matrix(tr, mF)
     cnams <- colnames(M)
     possible_forms <- c("value(", "slope(", "area(", "velocity(",
                         "acceleration(", "coefs(")
+    possible_forms <- paste0(possible_forms, nam)
     ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
     M <- M[, cnams %in% cnams[unique(ind)], drop = FALSE]
-    sapply(c("value", "slope", "area", "velocity", "acceleration", "coefs"),
+    sapply(possible_forms,
            grep, x = colnames(M), fixed = TRUE, simplify = FALSE)
 }
 
 expand_Dexps <- function (Form, respVar) {
     tlabs <- attr(terms(Form), "term.labels")
     dexps_ind <- grep("Dexp", tlabs)
-    dexps <- tlabs[dexps_ind]
-    dexps <- gsub("slope", "value", dexps)
-    p1 <- paste0(respVar, "))")
-    p2 <- paste0(respVar, ")):slope(", respVar, ")")
-    dexps <- gsub(p1, p2, dexps, fixed = TRUE)
-    tlabs[dexps_ind] <- dexps
-    reformulate(tlabs)
+    if (length(dexps_ind)) {
+        dexps <- tlabs[dexps_ind]
+        dexps <- gsub("slope", "value", dexps)
+        p1 <- paste0(respVar, "))")
+        p2 <- paste0(respVar, ")):slope(", respVar, ")")
+        dexps <- gsub(p1, p2, dexps, fixed = TRUE)
+        tlabs[dexps_ind] <- dexps
+        reformulate(tlabs)
+    } else Form
 }
 
 last_rows <- function (data, ids) {
@@ -247,11 +250,11 @@ knots <- function (xl, xr, ndx, deg) {
     c(rep(xl, deg), kn, rep(xr, deg))
 }
 
-extract_b <- function (object, id, n) {
+extract_b <- function (object, id, n, unq_id) {
     b <- data.matrix(ranef(object))
     mat <- matrix(0.0, n, ncol(b))
     colnames(mat) <- colnames(b)
-    mat[id, ] <- b
+    mat[id, ] <- b[unq_id[id], ]
     mat
 }
 
@@ -442,18 +445,18 @@ FunForms_ind <- function (FunForms) {
     lapply(FunForms, f)
 }
 
-extractFuns_FunForms <- function (Form, data) {
+extractFuns_FunForms <- function (Form, nam, data) {
     tr <- terms(Form)
     mF <- model.frame(tr, data = data)
     M <- model.matrix(tr, mF)
     cnams <- colnames(M)
     possible_forms <- c("value(", "slope(", "area(", "velocity(",
                         "acceleration(", "coefs(")
+    possible_forms <- paste0(possible_forms, nam)
     ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
     M <- M[1, cnams %in% cnams[unique(ind)], drop = FALSE]
-    FForms <- sapply(c("value", "slope", "area", "velocity", "acceleration",
-                       "coefs"),
-                     grep, x = colnames(M), fixed = TRUE, simplify = FALSE)
+    FForms <- sapply(possible_forms, grep, x = colnames(M), fixed = TRUE,
+                     simplify = FALSE)
     FForms <- FForms[sapply(FForms, length) > 0]
     get_fun <- function (FForm, nam) {
         cnams <- colnames(M)[FForm]
