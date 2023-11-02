@@ -581,8 +581,8 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     D_lis <- lapply(Mixed_objects, extract_D)
     D <- bdiag(D_lis)
     b <- mapply2(extract_b, Mixed_objects, unq_idL,
-                 MoreArgs = list(n = nY, unq_id = unq_id))
-     bs_gammas <- rep(-0.1, ncol(W0_H))
+                 MoreArgs = list(n = nY, unq_id = as.character(unq_id)))
+    bs_gammas <- rep(-0.1, ncol(W0_H))
     gammas <- if (inherits(Surv_object, "coxph")) coef(Surv_object) else
         -coef(Surv_object)[-1L] / Surv_object$scale
     if (is.null(gammas)) gammas <- 0.0
