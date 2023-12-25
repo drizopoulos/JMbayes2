@@ -32,7 +32,6 @@ col_f <- function(color, percent = 50) {
                  alpha = (100 - percent) * 255 / 100)
   return(new.col)
 }
-
 set.seed(2021)
 phi <- 0.3 # weibull scale
 sigma_t <- 0.8  # weibull shape
@@ -297,14 +296,14 @@ gen_data <- function(){
   rmv_ids <- sample(which(ter_na), sum(ter_na) - n_target)
   ter_na[rmv_ids] <- FALSE # remove the excess of subjects
   ter <- data.frame(id    = seq_len(n)[ter_na],
-                     time  = ter_times[ter_na],
-                     group = group[ter_na],
-                     age   = age[ter_na])
+                    tstop = ter_times[ter_na],
+                    group = group[ter_na],
+                    age   = age[ter_na])
   frailty <- frailty[ter_na]
   b <- b[ter_na, , drop = FALSE]
   cens_times <- tmax
-  ter$status <- as.numeric(ter$time <= cens_times) # event indicator
-  ter$time <- pmin(ter$time, cens_times) # add censoring time
+  ter$status <- as.numeric(ter$tstop <= cens_times) # event indicator
+  ter$tstop <- pmin(ter$tstop, cens_times) # add censoring time
   remove(gammas_t, sigma_t, group, W_t, eta_t, alpha_t, invS_t, u_t, i, root, 
          n_target, rmv_ids, ter_times, cens_times, n, alphaF, age, ter_na,
          sigmaF)
@@ -344,7 +343,7 @@ gen_data <- function(){
   j <- 1
   for(i in seq_along(ter$id)) {
     tstart <- 0
-    while(!is.na(tstart) & tstart < ter$time[i]) {
+    while(!is.na(tstart) & tstart < ter$tstop[i]) {
       u_r <- runif(1)
       root <- try(uniroot(invS_r, interval = c(1e-05, 250), # arbitrary upper limit
                           u = u_r, i = i, tstart = tstart)$root, TRUE)  
@@ -363,7 +362,7 @@ gen_data <- function(){
   rec$id  <- match(rec$id, unique(rec$id)) # rename IDs
   rec$group <- ter$group[rec$id]
   rec$age <- ter$age[rec$id]
-  rec$Stime <- ter$time[rec$id]
+  rec$Stime <- ter$tstop[rec$id]
   rec$status <- as.numeric(!is.na(rec$tstop) & rec$tstop < rec$Stime)  # event indicator
   rec$tstop <- pmin(rec$tstop, rec$Stime, na.rm = TRUE) # add cens time
   rec$Stime <- NULL
@@ -380,7 +379,7 @@ gen_data <- function(){
                     data = long)
   eta_y <- as.vector(X %*% betas + rowSums(Z * b[long$id, ]))
   long$y <- rnorm(length(eta_y), eta_y, sigma_y)
-  long_cens <- long$time <= rep(ter$time, times = rle(long$id)$lengths) 
+  long_cens <- long$time <= rep(ter$tstop, times = rle(long$id)$lengths) 
   long <- long[long_cens, , drop = FALSE] # drop censored encounters
   remove(kn, Bkn, X, betas, Z, b, eta_y, sigma_y, n_i, tmax, long_cens, scale)
   ##############################################################################
@@ -396,10 +395,9 @@ lme_data <- fake_data$long # longitudial marker data
 We now have three data frames, each one corresponding to a different outcome. To fit the joint model, the user needs to organize the failure-time data in the counting process formulation by combining the data for the terminal and recurrent events. Using then a strata variable to distinguish between the two processes. To facilitate this, we provide in the package the `rc_setup()` function: 
 ```{r trf_data1}
 cox_data <- rc_setup(rc_data = recu_data, trm_data = term_data,
-                     rc_idVar = "id", rc_statusVar = "status",
-                     rc_startVar = "tstart", rc_stopVar = "tstop",
-                     trm_idVar = "id", trm_statusVar = "status",
-                     trm_stopVar = "time",
+                     idVar = "id", statusVar = "status",
+                     startVar = "tstart", stopVar = "tstop",
+                     trm_censLevel = 0,
                      nameStrata = "strata", nameStatus = "status")
 ```
 
@@ -410,7 +408,6 @@ cox_data[cox_data$id == 1, c("id", "tstart", "tstop", "status", "strata")]
 ```
 
 ```{r trf_data3, echo = FALSE, fig.align = "center", fig.width = 5.5, echo = FALSE, fig.cap = "<b>Figure 3</b> Visual representation of the failure-time data during the follow-up for subject 1. The horizontal black line denotes risk periods, while the blue line non-risk periods. 'R' and 'T' represent a recurrent and terminal event, respectively."}
-
 data <- cox_data[cox_data$id == 1,]
 
 col_seg1 <- 1
@@ -442,7 +439,7 @@ for(i in ids) {
 }
 # recurrent events
 for(i in unique(data$id)) {
-  data_temp <- data[data$strata == "Rec" & data$id == i, ]
+  data_temp <- data[data$strata == "R" & data$id == i, ]
   segments(x0 = head(data_temp$tstop, -1), x1 = tail(data_temp$tstart, -1),
            y0 = data_temp$id, y1 = data_temp$id, 
            col = col_seg2, lwd = lwd_seg2, lend = 'butt')
@@ -451,7 +448,7 @@ for(i in unique(data$id)) {
 }
 # terminal events
 for(i in unique(data$id)) {
-  data_temp <- data[data$strata == "Ter" & data$id == i, ]
+  data_temp <- data[data$strata == "T1" & data$id == i, ]
   segments(x0 = data_temp$tstop, x1 = data_temp$tstop + 0.02,
            y0 = data_temp$id, y1 = data_temp$id, 
            col = col_seg2, lwd = lwd_seg2, lend = 'butt')

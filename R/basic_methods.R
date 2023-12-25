@@ -1009,47 +1009,54 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
 }
 
 rc_setup <- function(rc_data, trm_data,
-                     rc_idVar = "id", rc_statusVar = "status",
-                     rc_startVar = "start", rc_stopVar = "stop",
-                     trm_idVar = "id", trm_statusVar = "status",
-                     trm_stopVar = "stop",
+                     idVar = "id", statusVar = "status",
+                     startVar = "start", stopVar = "stop",
+                     trm_censLevel,
                      nameStrata = "strata", nameStatus = "status") {
   # warnings
-  if(!setequal(rc_data[[rc_idVar]],  trm_data[[trm_idVar]])) {
-    stop("The groups/subjects in both datasets do not seem to match.")
-  }
-  if(any(rc_data[[rc_startVar]]>rc_data[[rc_stopVar]])) {
-    stop(paste0("'", rc_stopVar, "' cannot be smaller than '", rc_startVar,".'"))
-  }
-  rc_bol <- c(rc_idVar, rc_statusVar, rc_startVar, rc_stopVar) %in% names(rc_data)
+  rc_bol <- c(idVar, statusVar, startVar, stopVar) %in% names(rc_data)
   if(any(!rc_bol)) {
-    stop(paste0("\nThe variable '", c(rc_idVar, rc_statusVar, rc_startVar, rc_stopVar)[!rc_bol],
+    stop(paste0("\nThe variable '", c(idVar, statusVar, startVar, stopVar)[!rc_bol],
                 "' is not present in 'rc_data' dataset."))
   }
-  trm_bol <- c(trm_idVar, trm_statusVar, trm_stopVar) %in% names(trm_data)
+  trm_bol <- c(idVar, statusVar, stopVar) %in% names(trm_data)
   if(any(!trm_bol)) {
-    stop(paste0("\nThe variable '", c(trm_idVar, trm_statusVar, trm_stopVar)[!trm_bol],
+    stop(paste0("\nThe variable '", c(idVar, statusVar, stopVar)[!trm_bol],
                 "' is not present in 'trm_data' dataset."))
   }
-  # sort datasets by id (& start time)
-  rc_data <- rc_data[order(rc_data[[rc_idVar]], rc_data[[rc_startVar]]), ]
-  trm_data <- trm_data[order(trm_data[[trm_idVar]]), ]
+  if(!setequal(rc_data[[idVar]],  trm_data[[idVar]])) {
+    stop("The groups/subjects in both datasets do not seem to match.")
+  }
+  if(any(rc_data[[startVar]] > rc_data[[stopVar]])) {
+    stop(paste0("'", stopVar, "' cannot be smaller than '", startVar," in the recurring event data.'"))
+  }
+  rc_data <- rc_data[order(rc_data[[idVar]], rc_data[[startVar]]), ]
+  trm_data <- trm_data[order(trm_data[[idVar]]), ]
+  if(any(rc_data[[stopVar]] > trm_data[[stopVar]][rc_data[[idVar]]])) {
+    stop(paste0("'", stopVar, "' in the recurring event data cannot be larger than '", stopVar," in the terminal event data.'"))
+  } 
   # create new dataset
-  tail_rows <- cumsum(rle(rc_data[[rc_idVar]])$length)
-  new_rows <- sort(c(seq_along(rc_data[[rc_idVar]]), tail_rows))
-  dataOut <- rc_data[new_rows, , drop = FALSE]
-  dataOut[[nameStrata]] <- "Rec"
-  tail_rows <- tail_rows + seq_along(tail_rows)
-  dataOut[[nameStrata]][tail_rows] <- "Ter"
-  dataOut[[nameStrata]] <- as.factor(dataOut[[nameStrata]])
-  dataOut[[rc_startVar]][tail_rows] <- 0
-  dataOut[[rc_stopVar]][tail_rows]  <- trm_data[[trm_stopVar]]
-  dataOut[[nameStatus]] <- dataOut[[rc_statusVar]]
-  dataOut[[nameStatus]][tail_rows] <- trm_data[[trm_statusVar]]
+  ## CR dataset
+  n <- nrow(trm_data)
+  unqLevs <- unique(trm_data[[statusVar]])
+  unqLevs <- unqLevs[unqLevs != trm_censLevel]
+  status <- trm_data[[statusVar]] != trm_censLevel
+  dataOut1 <- trm_data[rep(seq_len(n), each = length(unqLevs)), , drop = FALSE]
+  dataOut1[[nameStrata]] <- rep(unqLevs, times = n)
+  dataOut1[[nameStatus]] <- as.numeric(dataOut1[[statusVar]] == dataOut1[[nameStrata]])
+  dataOut1[[startVar]] <- 0
+  dataOut1[[nameStrata]] <- paste0("T", dataOut1[[nameStrata]])
+  ## Rec dataset
+  dataOut2 <- rc_data
+  dataOut2[[nameStrata]] <- "R"
+  dataOut2[[nameStatus]] <- dataOut2[[statusVar]]
+  ## combine the 2 datasets
+  dataOut <- rbind(dataOut1, dataOut2)
+  dataOut[[nameStrata]] <- as.factor(dataOut[[nameStrata]]) # automatically assigns "R" as reference level based on the alphabetical order of the levels
+  dataOut <- dataOut[order(dataOut[[idVar]], dataOut[[nameStrata]], dataOut[[startVar]]), ]
   rownames(dataOut) <- seq_len(nrow(dataOut))
   dataOut
 }
-
 
 predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
                         times = NULL, times_per_id = FALSE,

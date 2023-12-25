@@ -4,41 +4,37 @@
 \title{ Combine Recurring and Terminal Event Data in Long Format }
 
 \description{
-  This function combines two data frames, the recurring event and terminal event 
+  This function combines two data frames, the recurring-event and terminal-event/competing-risks 
   datasets, into one. Each subject has as many rows in the new data frame as the 
-  number of recurrent risk periods plus one for the terminal event.
+  number of recurrent risk periods plus one for each terminal event/competing risk.
 }
 
 \usage{
 rc_setup(rc_data, trm_data,
-    rc_idVar = "id", rc_statusVar = "status",
-    rc_startVar = "start", rc_stopVar = "stop",
-    trm_idVar = "id", trm_statusVar = "status",
-    trm_stopVar = "stop",
+    idVar = "id", statusVar = "status",
+    startVar = "start", stopVar = "stop",
+    trm_censLevel,
     nameStrata = "strata", nameStatus = "status")
 }
 
 \arguments{
-  \item{rc_data}{the data frame containing the recurring event data with 
+  \item{rc_data}{the data frame containing the recurring-event data with 
       multiple rows per subject.}
-  \item{trm_data}{the data frame containing the terminal event data with 
-      a single row per subject.}
-  \item{rc_idVar}{a character string denoting the name of the variable in
-      \code{rc_data} that identifies the subject.}
-  \item{rc_statusVar}{a character string denoting the name of the variable in
-      \code{rc_data} that identifies the status variable which equals 1 if the
-      subject had an event and 0 otherwise.}
-   \item{rc_startVar}{a character string denoting the name of the variable in
-      \code{rc_data} that identifies the starting time for the interval.}
-    \item{rc_stopVar}{a character string denoting the name of the variable in
-      \code{rc_data} that identifies the stopping time for the interval.}
-    \item{trm_idVar}{a character string denoting the name of the variable in
-      \code{trm_data} that identifies the subject.}
-    \item{trm_statusVar}{a character string denoting the name of the variable in
-      \code{trm_data} that identifies the status variable which equals 1 if the
-      subject had the event and 0 otherwise.}
-    \item{trm_stopVar}{a character string denoting the name of the variable in
-      \code{trm_data} that identifies the follow up time.}
+  \item{trm_data}{the data frame containing the terminal-event/competing-risks 
+      data with a single row per subject.}
+  \item{idVar}{a character string denoting the name of the variable in
+      \code{rc_data} and \code{trm_data} that identifies the subject/group.}
+  \item{statusVar}{a character string denoting the name of the variable in
+      \code{rc_data} and \code{trm_data} that identifies the status variable. 
+      In \code{rc_data} equals 1 if the subject had an event and 0 otherwise.
+      In \code{trm_data} equals to the event or censoring level.}
+   \item{startVar}{a character string denoting the name of the variable in
+      \code{rc_data} that identifies the starting time for the risk interval.}
+    \item{stopVar}{a character string denoting the name of the variable in
+      \code{rc_data} and \code{trm_data} that identifies the event or censoring 
+      time.}
+    \item{trm_censLevel}{a character string or a scalar denoting the censoring 
+    level in the statusVar variable of \code{trm_data}.}
     \item{nameStrata}{a character string denoting the variable that will be added
       in the long version of \code{data} denoting the various causes of event.}
     \item{nameStatus}{a character string denoting the variable that will be added
