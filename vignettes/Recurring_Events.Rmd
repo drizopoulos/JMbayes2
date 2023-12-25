@@ -237,7 +237,7 @@ where $i = 1, \ldots, n$. For the longitudinal outcomes we specify linear mixed-
 ## Example
 
 ### Data
-We simulate data from a joint model with three outcomes: one longitudinal outcome, one terminal failure-time, and one recurrent failure-time. We assume that the underlying value of the longitudinal outcome is associated with both risk models and use the *gap* timescale. The reader can easily extend this example to accommodate multiple longitudinal markers with other forms of association, exclude the terminal event, or use a different timescale.
+We simulate data from a joint model with three outcomes: one longitudinal outcome, one terminal failure-time, and one recurrent failure-time. We assume that the underlying value of the longitudinal outcome is associated with both risk models and use the *gap* timescale. The reader can easily extend this example to accommodate multiple longitudinal markers with other forms of association, include competing risks, consider only the recurrent events process, or use a different timescale.
 ```{r gen_data}
 gen_data <- function(){
   n <- 500 # desired number of subjects 
