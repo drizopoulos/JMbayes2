@@ -15,8 +15,8 @@ Fit joint models for longitudinal and time-to-event data under the Bayesian appr
 \tabular{ll}{
 Package: \tab JMbayes2\cr
 Type: \tab Package\cr
-Version: \tab 0.4-7\cr
-Date: \tab 2023-10-27\cr
+Version: \tab 0.4-8\cr
+Date: \tab 2024-01-02\cr
 License: \tab GPL (>=3)\cr
 }
 
