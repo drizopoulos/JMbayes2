@@ -51,7 +51,7 @@ tvEPCE(object, newdata, Tstart, Thoriz = NULL, Dt = NULL, eps = 0.001,
     parallel = c("snow", "multicore"),
     cores = parallelly::availableCores(omit = 1L), \dots)
 
-create_folds(data, V = 5, id_var = "id", seed = 123L)
+create_folds(data, V = 5, id_var = "id", strata = NULL, seed = 123L)
 }
 
 \arguments{
@@ -95,6 +95,8 @@ predicted probabilities used in the Cox model that assess calibration.}
 \item{V}{numeric scalar denoting the number of folds.}
 
 \item{id_var}{character string denoting the name of the subject id variable in \code{data}.}
+
+\item{strata}{character vector with the names of stratifying variables.}
 
 \item{seed}{integer denoting the seed.}
 

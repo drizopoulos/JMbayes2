@@ -1235,3 +1235,44 @@ create_folds <- function (data, V = 5, id_var = "id", seed = 123L) {
     }
     list("training" = training, "testing" = testing)
 }
+
+create_folds <- function(data, V = 5, id_var = "id", strata = NULL,
+                         seed = 123L) {
+    if (!exists(".Random.seed", envir = .GlobalEnv))
+        runif(1L)
+    RNGstate <- get(".Random.seed", envir = .GlobalEnv)
+    on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
+    set.seed(seed)
+    data <- as.data.frame(data)
+    if (!(any(names(data) == id_var))) {
+        stop("The variable specified in the 'id_var' argument cannot be found in ",
+             "'data'.\n") }
+    training <- validation <- vector("list", V)
+    temp_data <- data[!duplicated(data[[id_var]]) ,]
+    if (is.null(strata)) {
+        temp_data$fold <- runif(n = nrow(temp_data))
+    } else {
+        if(!(all(strata %in% names(data))))
+            stop("One or multiple variable(s) specified in the 'strata' argument ",
+                 "cannot be found in 'data'.\n")
+        for(i in strata) {
+            temp_data[[i]] <- factor(temp_data[[i]])
+        }
+        temp_data$interaction <- interaction(temp_data[strata])
+        split_data <- split(x = temp_data, f = temp_data$interaction)
+        split_data[] <- lapply(split_data,
+                              function (x) cbind(x, fold = runif(n = nrow(x))))
+        temp_data <- do.call("rbind", split_data)
+    }
+    init_step <- 0
+    step_size <- 1 / V
+    for(j in seq_len(V)){
+        ind <- temp_data[[id_var]][temp_data$fold >= init_step &
+                                       temp_data$fold < init_step + step_size]
+        training[[j]] <- data[!data[[id_var]] %in% ind, ]
+        validation[[j]] <- data[data[[id_var]] %in% ind, ]
+        init_step <- init_step + step_size
+    }
+    list("training" = training, "testing" = validation)
+}
+
