@@ -69,8 +69,8 @@ fit_models <- function (data) {
     jmFit3 <- update(jmFit1, 
                      functional_forms = ~ value(log(serBilir)) + area(log(serBilir)))
     ###
-    lmeFit2 <- lme(log(serBilir) ~ ns(year, 3, B = c(0, 14.4)) + sex + age, 
-                   data = data, random = ~ ns(year, 3, B = c(0, 14.4)) | id,
+    lmeFit2 <- lme(log(serBilir) ~ ns(year, 2, B = c(0, 14.4)) + sex + age, 
+                   data = data, random = ~ ns(year, 2, B = c(0, 14.4)) | id,
                    control = lmeControl(opt = "optim"))
     CoxFit2 <- coxph(Surv(years, status2) ~ sex + age, data = data_id)
     jmFit4 <- jm(CoxFit2, lmeFit2, time_var = "year")
@@ -101,14 +101,14 @@ Brier_weights <- tvBrier(Models_folds, newdata = CVdats$testing,
 Brier_weights
 ```
 
-We observe that the first three models dominate the weights. We also note that the integrated Brier score based on the combined predictions is smaller than the integrated Brier score of each individual model. To calculate the model weights using the expected predictive cross-entropy use function `tvEPCE()` with an almost identical call as for the Brier score:
+We observe that the first two models dominate the weights. We also note that the integrated Brier score based on the combined predictions is smaller than the integrated Brier score of each individual model. To calculate the model weights using the expected predictive cross-entropy use function `tvEPCE()` with an almost identical call as for the Brier score:
 ```{r, "calculate EPCE weights"}
 EPCE_weights <- tvEPCE(Models_folds, newdata = CVdats$testing, 
                        Tstart = tstr, Thoriz = thor)
 EPCE_weights
 ```
 
-The EPCE results are inline with the ones from the integrated Brier score; however, now only models `M2` and `M3` share the weights. Again we see that the EPCE based on the combined cross-validated predictions is smaller than the EPCE based on the cross-validated predictions of each individual model. 
+The EPCE results are similar with the ones from the integrated Brier score; however, now only models `M2` and `M3` share the weights. Again we see that the EPCE based on the combined cross-validated predictions is smaller than the EPCE based on the cross-validated predictions of each individual model. 
 
 To put these weights in practice we need first to refit the five joint models we considered in the original dataset.
 ```{r, "fit the model in the original dataset", warning = FALSE}

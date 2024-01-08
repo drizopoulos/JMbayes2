@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-8</span>
       </span>
     </div>
 
@@ -41,6 +41,9 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
+      <a href="../articles/Causal_Effects.html">Causal Effects</a>
+    </li>
+    <li>
       <a href="../articles/Competing_Risks.html">Competing Risks</a>
     </li>
     <li>
@@ -133,7 +136,7 @@
 <span>    parallel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"snow"</span>, <span class="st">"multicore"</span><span class="op">)</span>,</span>
 <span>    cores <span class="op">=</span> <span class="fu">parallelly</span><span class="fu">::</span><span class="fu"><a href="https://parallelly.futureverse.org/reference/availableCores.html" class="external-link">availableCores</a></span><span class="op">(</span>omit <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">create_folds</span><span class="op">(</span><span class="va">data</span>, V <span class="op">=</span> <span class="fl">5</span>, id_var <span class="op">=</span> <span class="st">"id"</span>, seed <span class="op">=</span> <span class="fl">123L</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">create_folds</span><span class="op">(</span><span class="va">data</span>, V <span class="op">=</span> <span class="fl">5</span>, id_var <span class="op">=</span> <span class="st">"id"</span>, strata <span class="op">=</span> <span class="cn">NULL</span>, seed <span class="op">=</span> <span class="fl">123L</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -215,6 +218,10 @@ predicted probabilities used in the Cox model that assess calibration.</p></dd>
 
 <dt>id_var</dt>
 <dd><p>character string denoting the name of the subject id variable in <code>data</code>.</p></dd>
+
+
+<dt>strata</dt>
+<dd><p>character vector with the names of stratifying variables.</p></dd>
 
 
 <dt>seed</dt>

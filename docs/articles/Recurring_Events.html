@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-8</span>
       </span>
     </div>
 
@@ -73,6 +73,9 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/Causal_Effects.html">Causal Effects</a>
+    </li>
+    <li>
       <a href="../articles/Competing_Risks.html">Competing Risks</a>
     </li>
     <li>
@@ -132,7 +135,7 @@
                         <h4 data-toc-skip class="author">Pedro Miranda
 Afonso</h4>
             
-            <h4 data-toc-skip class="date">2023-10-12</h4>
+            <h4 data-toc-skip class="date">2024-01-08</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Recurring_Events.Rmd" class="external-link"><code>vignettes/Recurring_Events.Rmd</code></a></small>
       <div class="hidden name"><code>Recurring_Events.Rmd</code></div>
@@ -161,29 +164,22 @@ the <em>gap</em> uses the end of the previous event (Figure 1).
 <em>Gap</em> assumes a renewal after each event and resets the time to
 zero.</p>
 <div class="figure" style="text-align: center">
-<img src="Recurring_Events_files/figure-html/timescale-1.png" alt="&lt;b&gt;Figure
-1&lt;/b&gt; Visual representation of an hazard function under the gap or
-calendar timescale. During the folow-up the subject experienced three
-events.” width=“528” /&gt;
-&lt;p class=" caption><b>Figure 1</b> Visual representation of an hazard function under the
+<img src="Recurring_Events_files/figure-html/timescale-1.png" alt="&lt;b&gt;Figure 1&lt;/b&gt; Visual representation of an hazard function under the gap or calendar timescale. During the folow-up the subject experienced three events." width="528"><p class="caption">
+<b>Figure 1</b> Visual representation of an hazard function under the
 gap or calendar timescale. During the folow-up the subject experienced
 three events.
-
+</p>
 </div>
 <p>The model also accommodates discontinuous risk intervals, i.e.,
 periods in which the subject is not at risk of experiencing the
 recurring event (Figure 2). For example, while a patient is in the
 hospital, they are not at risk of being hospitalized again.</p>
 <div class="figure" style="text-align: center">
-<img src="Recurring_Events_files/figure-html/disc_risk-1.png" alt="&lt;b&gt;Figure
-2&lt;/b&gt; Visual representation of an hazard function under the gap or
-calendar timescale, while accounting for non-risk periods (gray areas).
-During the folow-up the subject experienced three events.” width=“528”
-/&gt;
-&lt;p class=" caption><b>Figure 2</b> Visual representation of an hazard function under the
+<img src="Recurring_Events_files/figure-html/disc_risk-1.png" alt="&lt;b&gt;Figure 2&lt;/b&gt; Visual representation of an hazard function under the gap or calendar timescale, while accounting for non-risk periods (gray areas). During the folow-up the subject experienced three events." width="528"><p class="caption">
+<b>Figure 2</b> Visual representation of an hazard function under the
 gap or calendar timescale, while accounting for non-risk periods (gray
 areas). During the folow-up the subject experienced three events.
-
+</p>
 </div>
 <p>A joint model with <span class="math inline">\(p\)</span> normally
 distributed longitudinal markers, a terminal event process, and a
@@ -245,8 +241,9 @@ longitudinal outcome, one terminal failure-time, and one recurrent
 failure-time. We assume that the underlying value of the longitudinal
 outcome is associated with both risk models and use the <em>gap</em>
 timescale. The reader can easily extend this example to accommodate
-multiple longitudinal markers with other forms of association, exclude
-the terminal event, or use a different timescale.</p>
+multiple longitudinal markers with other forms of association, include
+competing risks, consider only the recurrent events process, or use a
+different timescale.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen_data</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">500</span> <span class="co"># desired number of subjects </span></span>
@@ -305,14 +302,14 @@ the terminal event, or use a different timescale.</p>
 <span>  <span class="va">rmv_ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">ter_na</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">ter_na</span><span class="op">)</span> <span class="op">-</span> <span class="va">n_target</span><span class="op">)</span></span>
 <span>  <span class="va">ter_na</span><span class="op">[</span><span class="va">rmv_ids</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span> <span class="co"># remove the excess of subjects</span></span>
 <span>  <span class="va">ter</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>id    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">[</span><span class="va">ter_na</span><span class="op">]</span>,</span>
-<span>                     time  <span class="op">=</span> <span class="va">ter_times</span><span class="op">[</span><span class="va">ter_na</span><span class="op">]</span>,</span>
-<span>                     group <span class="op">=</span> <span class="va">group</span><span class="op">[</span><span class="va">ter_na</span><span class="op">]</span>,</span>
-<span>                     age   <span class="op">=</span> <span class="va">age</span><span class="op">[</span><span class="va">ter_na</span><span class="op">]</span><span class="op">)</span></span>
+<span>                    tstop <span class="op">=</span> <span class="va">ter_times</span><span class="op">[</span><span class="va">ter_na</span><span class="op">]</span>,</span>
+<span>                    group <span class="op">=</span> <span class="va">group</span><span class="op">[</span><span class="va">ter_na</span><span class="op">]</span>,</span>
+<span>                    age   <span class="op">=</span> <span class="va">age</span><span class="op">[</span><span class="va">ter_na</span><span class="op">]</span><span class="op">)</span></span>
 <span>  <span class="va">frailty</span> <span class="op">&lt;-</span> <span class="va">frailty</span><span class="op">[</span><span class="va">ter_na</span><span class="op">]</span></span>
 <span>  <span class="va">b</span> <span class="op">&lt;-</span> <span class="va">b</span><span class="op">[</span><span class="va">ter_na</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
 <span>  <span class="va">cens_times</span> <span class="op">&lt;-</span> <span class="va">tmax</span></span>
-<span>  <span class="va">ter</span><span class="op">$</span><span class="va">status</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">ter</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="va">cens_times</span><span class="op">)</span> <span class="co"># event indicator</span></span>
-<span>  <span class="va">ter</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="va">ter</span><span class="op">$</span><span class="va">time</span>, <span class="va">cens_times</span><span class="op">)</span> <span class="co"># add censoring time</span></span>
+<span>  <span class="va">ter</span><span class="op">$</span><span class="va">status</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">ter</span><span class="op">$</span><span class="va">tstop</span> <span class="op">&lt;=</span> <span class="va">cens_times</span><span class="op">)</span> <span class="co"># event indicator</span></span>
+<span>  <span class="va">ter</span><span class="op">$</span><span class="va">tstop</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="va">ter</span><span class="op">$</span><span class="va">tstop</span>, <span class="va">cens_times</span><span class="op">)</span> <span class="co"># add censoring time</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">remove</a></span><span class="op">(</span><span class="va">gammas_t</span>, <span class="va">sigma_t</span>, <span class="va">group</span>, <span class="va">W_t</span>, <span class="va">eta_t</span>, <span class="va">alpha_t</span>, <span class="va">invS_t</span>, <span class="va">u_t</span>, <span class="va">i</span>, <span class="va">root</span>, </span>
 <span>         <span class="va">n_target</span>, <span class="va">rmv_ids</span>, <span class="va">ter_times</span>, <span class="va">cens_times</span>, <span class="va">n</span>, <span class="va">alphaF</span>, <span class="va">age</span>, <span class="va">ter_na</span>,</span>
 <span>         <span class="va">sigmaF</span><span class="op">)</span></span>
@@ -352,7 +349,7 @@ the terminal event, or use a different timescale.</p>
 <span>  <span class="va">j</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
 <span>  <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">ter</span><span class="op">$</span><span class="va">id</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">tstart</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
-<span>    <span class="kw">while</span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">tstart</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">tstart</span> <span class="op">&lt;</span> <span class="va">ter</span><span class="op">$</span><span class="va">time</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">while</span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">tstart</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">tstart</span> <span class="op">&lt;</span> <span class="va">ter</span><span class="op">$</span><span class="va">tstop</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="va">u_r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span>      <span class="va">root</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/uniroot.html" class="external-link">uniroot</a></span><span class="op">(</span><span class="va">invS_r</span>, interval <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1e-05</span>, <span class="fl">250</span><span class="op">)</span>, <span class="co"># arbitrary upper limit</span></span>
 <span>                          u <span class="op">=</span> <span class="va">u_r</span>, i <span class="op">=</span> <span class="va">i</span>, tstart <span class="op">=</span> <span class="va">tstart</span><span class="op">)</span><span class="op">$</span><span class="va">root</span>, <span class="cn">TRUE</span><span class="op">)</span>  </span>
@@ -371,7 +368,7 @@ the terminal event, or use a different timescale.</p>
 <span>  <span class="va">rec</span><span class="op">$</span><span class="va">id</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">rec</span><span class="op">$</span><span class="va">id</span>, <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">rec</span><span class="op">$</span><span class="va">id</span><span class="op">)</span><span class="op">)</span> <span class="co"># rename IDs</span></span>
 <span>  <span class="va">rec</span><span class="op">$</span><span class="va">group</span> <span class="op">&lt;-</span> <span class="va">ter</span><span class="op">$</span><span class="va">group</span><span class="op">[</span><span class="va">rec</span><span class="op">$</span><span class="va">id</span><span class="op">]</span></span>
 <span>  <span class="va">rec</span><span class="op">$</span><span class="va">age</span> <span class="op">&lt;-</span> <span class="va">ter</span><span class="op">$</span><span class="va">age</span><span class="op">[</span><span class="va">rec</span><span class="op">$</span><span class="va">id</span><span class="op">]</span></span>
-<span>  <span class="va">rec</span><span class="op">$</span><span class="va">Stime</span> <span class="op">&lt;-</span> <span class="va">ter</span><span class="op">$</span><span class="va">time</span><span class="op">[</span><span class="va">rec</span><span class="op">$</span><span class="va">id</span><span class="op">]</span></span>
+<span>  <span class="va">rec</span><span class="op">$</span><span class="va">Stime</span> <span class="op">&lt;-</span> <span class="va">ter</span><span class="op">$</span><span class="va">tstop</span><span class="op">[</span><span class="va">rec</span><span class="op">$</span><span class="va">id</span><span class="op">]</span></span>
 <span>  <span class="va">rec</span><span class="op">$</span><span class="va">status</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">rec</span><span class="op">$</span><span class="va">tstop</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">rec</span><span class="op">$</span><span class="va">tstop</span> <span class="op">&lt;</span> <span class="va">rec</span><span class="op">$</span><span class="va">Stime</span><span class="op">)</span>  <span class="co"># event indicator</span></span>
 <span>  <span class="va">rec</span><span class="op">$</span><span class="va">tstop</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="va">rec</span><span class="op">$</span><span class="va">tstop</span>, <span class="va">rec</span><span class="op">$</span><span class="va">Stime</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># add cens time</span></span>
 <span>  <span class="va">rec</span><span class="op">$</span><span class="va">Stime</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
@@ -388,7 +385,7 @@ the terminal event, or use a different timescale.</p>
 <span>                    data <span class="op">=</span> <span class="va">long</span><span class="op">)</span></span>
 <span>  <span class="va">eta_y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">betas</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">Z</span> <span class="op">*</span> <span class="va">b</span><span class="op">[</span><span class="va">long</span><span class="op">$</span><span class="va">id</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">long</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">eta_y</span><span class="op">)</span>, <span class="va">eta_y</span>, <span class="va">sigma_y</span><span class="op">)</span></span>
-<span>  <span class="va">long_cens</span> <span class="op">&lt;-</span> <span class="va">long</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">ter</span><span class="op">$</span><span class="va">time</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rle.html" class="external-link">rle</a></span><span class="op">(</span><span class="va">long</span><span class="op">$</span><span class="va">id</span><span class="op">)</span><span class="op">$</span><span class="va">lengths</span><span class="op">)</span> </span>
+<span>  <span class="va">long_cens</span> <span class="op">&lt;-</span> <span class="va">long</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">ter</span><span class="op">$</span><span class="va">tstop</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rle.html" class="external-link">rle</a></span><span class="op">(</span><span class="va">long</span><span class="op">$</span><span class="va">id</span><span class="op">)</span><span class="op">$</span><span class="va">lengths</span><span class="op">)</span> </span>
 <span>  <span class="va">long</span> <span class="op">&lt;-</span> <span class="va">long</span><span class="op">[</span><span class="va">long_cens</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span> <span class="co"># drop censored encounters</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">remove</a></span><span class="op">(</span><span class="va">kn</span>, <span class="va">Bkn</span>, <span class="va">X</span>, <span class="va">betas</span>, <span class="va">Z</span>, <span class="va">b</span>, <span class="va">eta_y</span>, <span class="va">sigma_y</span>, <span class="va">n_i</span>, <span class="va">tmax</span>, <span class="va">long_cens</span>, <span class="va">scale</span><span class="op">)</span></span>
 <span>  <span class="co">##############################################################################</span></span>
@@ -407,10 +404,9 @@ to distinguish between the two processes. To facilitate this, we provide
 in the package the <code><a href="../reference/rc_setup.html">rc_setup()</a></code> function:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cox_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rc_setup.html">rc_setup</a></span><span class="op">(</span>rc_data <span class="op">=</span> <span class="va">recu_data</span>, trm_data <span class="op">=</span> <span class="va">term_data</span>,</span>
-<span>                     rc_idVar <span class="op">=</span> <span class="st">"id"</span>, rc_statusVar <span class="op">=</span> <span class="st">"status"</span>,</span>
-<span>                     rc_startVar <span class="op">=</span> <span class="st">"tstart"</span>, rc_stopVar <span class="op">=</span> <span class="st">"tstop"</span>,</span>
-<span>                     trm_idVar <span class="op">=</span> <span class="st">"id"</span>, trm_statusVar <span class="op">=</span> <span class="st">"status"</span>,</span>
-<span>                     trm_stopVar <span class="op">=</span> <span class="st">"time"</span>,</span>
+<span>                     idVar <span class="op">=</span> <span class="st">"id"</span>, statusVar <span class="op">=</span> <span class="st">"status"</span>,</span>
+<span>                     startVar <span class="op">=</span> <span class="st">"tstart"</span>, stopVar <span class="op">=</span> <span class="st">"tstop"</span>,</span>
+<span>                     trm_censLevel <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>                     nameStrata <span class="op">=</span> <span class="st">"strata"</span>, nameStatus <span class="op">=</span> <span class="st">"status"</span><span class="op">)</span></span></code></pre></div>
 <p>Each subject has as many rows in the new data frame as the number of
 their recurrent risk periods plus one for the terminal event. The data
@@ -425,26 +421,22 @@ eighth recurrent event was censored by the terminal event.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cox_data</span><span class="op">[</span><span class="va">cox_data</span><span class="op">$</span><span class="va">id</span> <span class="op">==</span> <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"tstart"</span>, <span class="st">"tstop"</span>, <span class="st">"status"</span>, <span class="st">"strata"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt;   id    tstart     tstop status strata</span></span>
-<span><span class="co">#&gt; 1  1 0.0000000 0.3756627      1    Rec</span></span>
-<span><span class="co">#&gt; 2  1 0.4275324 0.7832841      1    Rec</span></span>
-<span><span class="co">#&gt; 3  1 0.8724938 1.0863887      1    Rec</span></span>
-<span><span class="co">#&gt; 4  1 1.1212953 1.8741434      1    Rec</span></span>
-<span><span class="co">#&gt; 5  1 1.9372355 2.7843451      1    Rec</span></span>
-<span><span class="co">#&gt; 6  1 2.7906559 3.4618622      1    Rec</span></span>
-<span><span class="co">#&gt; 7  1 3.5166929 3.5830169      1    Rec</span></span>
-<span><span class="co">#&gt; 8  1 3.6251219 4.0375415      0    Rec</span></span>
-<span><span class="co">#&gt; 9  1 0.0000000 4.0375415      1    Ter</span></span></code></pre></div>
+<span><span class="co">#&gt; 1  1 0.0000000 0.3756627      1      R</span></span>
+<span><span class="co">#&gt; 2  1 0.4275324 0.7832841      1      R</span></span>
+<span><span class="co">#&gt; 3  1 0.8724938 1.0863887      1      R</span></span>
+<span><span class="co">#&gt; 4  1 1.1212953 1.8741434      1      R</span></span>
+<span><span class="co">#&gt; 5  1 1.9372355 2.7843451      1      R</span></span>
+<span><span class="co">#&gt; 6  1 2.7906559 3.4618622      1      R</span></span>
+<span><span class="co">#&gt; 7  1 3.5166929 3.5830169      1      R</span></span>
+<span><span class="co">#&gt; 8  1 3.6251219 4.0375415      0      R</span></span>
+<span><span class="co">#&gt; 9  1 0.0000000 4.0375415      1     T1</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Recurring_Events_files/figure-html/trf_data3-1.png" alt="&lt;b&gt;Figure
-3&lt;/b&gt; Visual representation of the failure-time data during the
-follow-up for subject 1. The horizontal black line denotes risk periods,
-while the blue line non-risk periods. ‘R’ and ‘T’ represent a recurrent
-and terminal event, respectively.” width=“528” /&gt;
-&lt;p class=" caption><b>Figure 3</b> Visual representation of the failure-time data during
+<img src="Recurring_Events_files/figure-html/trf_data3-1.png" alt="&lt;b&gt;Figure 3&lt;/b&gt; Visual representation of the failure-time data during the follow-up for subject 1. The horizontal black line denotes risk periods, while the blue line non-risk periods. 'R' and 'T' represent a recurrent and terminal event, respectively." width="528"><p class="caption">
+<b>Figure 3</b> Visual representation of the failure-time data during
 the follow-up for subject 1. The horizontal black line denotes risk
 periods, while the blue line non-risk periods. ‘R’ and ‘T’ represent a
 recurrent and terminal event, respectively.
-
+</p>
 </div>
 </div>
 <div class="section level4">
@@ -506,14 +498,14 @@ argument specifies the desired timescale,</p>
 <span><span class="co">#&gt; sigma_frailty 0.2156 0.0654 0.329</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival Outcome:</span></span>
-<span><span class="co">#&gt;                              Mean  StDev    2.5%  97.5%    P   Rhat</span></span>
-<span><span class="co">#&gt; group:strata(strata)Rec    0.4761 0.0818  0.3237 0.6429 0.00 1.0129</span></span>
-<span><span class="co">#&gt; group:strata(strata)Ter    0.4527 0.1086  0.2427 0.6731 0.00 1.0089</span></span>
-<span><span class="co">#&gt; age:strata(strata)Rec      0.0509 0.0026  0.0460 0.0562 0.00 1.0373</span></span>
-<span><span class="co">#&gt; age:strata(strata)Ter      0.0479 0.0041  0.0399 0.0559 0.00 1.1677</span></span>
-<span><span class="co">#&gt; value(y):strataRec         0.5252 0.0248  0.4729 0.5694 0.00 1.5853</span></span>
-<span><span class="co">#&gt; value(y):strataTer         0.5121 0.0305  0.4434 0.5693 0.00 1.3340</span></span>
-<span><span class="co">#&gt; frailty:strata(strata)Ter -0.4055 0.9536 -1.9833 2.0320 0.42 1.0931</span></span>
+<span><span class="co">#&gt;                             Mean  StDev    2.5%  97.5%    P   Rhat</span></span>
+<span><span class="co">#&gt; group:strata(strata)R     0.4761 0.0818  0.3237 0.6429 0.00 1.0129</span></span>
+<span><span class="co">#&gt; group:strata(strata)T1    0.4527 0.1086  0.2427 0.6731 0.00 1.0089</span></span>
+<span><span class="co">#&gt; age:strata(strata)R       0.0509 0.0026  0.0460 0.0562 0.00 1.0373</span></span>
+<span><span class="co">#&gt; age:strata(strata)T1      0.0479 0.0041  0.0399 0.0559 0.00 1.1677</span></span>
+<span><span class="co">#&gt; value(y):strataR          0.5252 0.0248  0.4729 0.5694 0.00 1.5853</span></span>
+<span><span class="co">#&gt; value(y):strataT1         0.5121 0.0305  0.4434 0.5693 0.00 1.3340</span></span>
+<span><span class="co">#&gt; frailty:strata(strata)T1 -0.4055 0.9536 -1.9833 2.0320 0.42 1.0931</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: y (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                          Mean  StDev   2.5%  97.5% P   Rhat</span></span>

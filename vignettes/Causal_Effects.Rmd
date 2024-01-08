@@ -1,0 +1,80 @@
+---
+title: "Causal Effects"
+author: "Dimitris Rizopoulos"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Causal Effects}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("JMbayes2")
+library("lattice")
+```
+
+# Causal Effects from Joint Models
+We will illustrate the calculation of causal effects from joint models using the PBC dataset for the longitudinal outcome `serBilir` and the composite event transplantation or death. We start by fitting a joint model to the data. In the longitudinal submodel, we specify nonlinear subject-specific trajectories using natural cubic splines. In the fixed-effects part, we also include the treatment effect and its interaction with time. In the survival submodel, we only include the treatment effect.
+```{r, "joint model PBC data"}
+pbc2.id$status2 <- as.numeric(pbc2.id$status != "alive")
+lmeFit <- lme(log(serBilir) ~ ns(year, 3, B = c(0, 14.4)) * drug, 
+                   data = pbc2, random = ~ ns(year, 3, B = c(0, 14.4)) | id,
+                   control = lmeControl(opt = "optim"))
+CoxFit <- coxph(Surv(years, status2) ~ drug, data = pbc2.id)
+jmFit <- jm(CoxFit, lmeFit, time_var = "year")
+summary(jmFit)
+```
+
+The coefficient for `drugD-penicil` for the survival outcome in the output produced by the `summary()` method denotes the residual/direct effect of treatment on the risk of the composite event. It does not include the effect of treatment that follows via the serum bilirubin pathway.
+
+We will illustrate the calculation of causal risk differences for the group of patients that have the same distribution of serum bilirubin values as Patient 2:
+```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+xyplot(log(serBilir) ~ year, data = pbc2, subset = id == 2, type = "b",
+       xlab = "Follow-up time (years)", ylab = "log{serum bilirubin (mg/dL)}",
+       main = "Patient 2")
+```
+
+We calculate the risk difference for the composite event between the active treatment D-penicillamine and placebo at the horizon time `t_horiz = 6` using the longitudinal data up to year `t0 = 4`. To achieve this, we create a dataset with this patient's data. This patient received the active treatment D-penicillamine; hence, we also create a version of her data with the `drug` variable set to `placebo`:
+```{r, "Patient 2 data"}
+t0 <- 4
+t_horiz <- 6
+dataP2_Dpenici <- pbc2[pbc2$id == 2 & pbc2$year <= t0, ]
+dataP2_Dpenici$years <- t0
+dataP2_Dpenici$status2 <- 0
+
+dataP2_placebo <- dataP2_Dpenici
+dataP2_placebo$drug <- factor("placebo", levels = levels(pbc2$drug))
+```
+
+Note that in the `dataP2_placebo` dataset, we need to specify that `drug` is a factor with two levels. We also specify that the last time point we know the patient was still event-free was `t0`.
+
+We estimate the cumulative risk for the composite event at `t_horiz` under the active treatment arm using the `predict()` method:
+```{r, "Risk active treatment"}
+Pr1 <- predict(jmFit, newdata = dataP2_Dpenici, process = "event", 
+               times = t_horiz, return_mcmc = TRUE)
+```
+ 
+We have set the argument `return_mcmc` to `TRUE` to enable the calculation of a credible interval that accounts for the MCMC uncertainty. We produce the same estimate under the placebo arm:
+```{r, "Risk placebo"}
+Pr0 <- predict(jmFit, newdata = dataP2_placebo, process = "event", 
+               times = t_horiz, return_mcmc = TRUE)
+```
+
+The estimated risk difference and its 95% credible interval are calculated by the corresponding elements of the `Pr1` and `Pr0` objects, i.e.,
+```{r, "risk difference"}
+# estimate 
+Pr1$pred[2L] - Pr0$pred[2L]
+
+# MCMC variability
+quantile(Pr1$mcmc[2L, ] - Pr0$mcmc[2L, ], probs = c(0.025, 0.975))
+```
+
+## Time-varying treatments 
+An extended example with time-varying treatments / intermediate events that showcases a calculation of the variance of the causal effects that includes the sampling variability is available [here](https://github.com/drizopoulos/JMbayes2/blob/master/Development/CI/causal_effects.R).
