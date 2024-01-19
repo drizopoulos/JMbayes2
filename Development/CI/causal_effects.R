@@ -3,14 +3,13 @@ library("lattice")
 source("./Development/CI/prepare_data.R")
 source("./Development/CI/causal_effects_fun.R")
 
-
 ####################################
 # Causal Effects from Joint Models #
 ####################################
 
 # We fit the joint model of interest.
 
-# In the longitudinal sub-model we postulate that the trajectory changes
+# In the longitudinal sub-model, we postulate that the trajectory changes
 # after the occurrence of the intermediate event IE. Note that the formulation
 # of the model allows for a 'sudden' drop/jump of the subject-specific profiles,
 # i.e., the intercept and slope change.
@@ -18,12 +17,12 @@ lmeFit <- lme(log(serBilir) ~ year + IE + IE:year, data = pbc2,
               random = ~ year + IE + IE:year | id,
               control = lmeControl(opt = "optim"))
 
-# In the event process sub-model we fit cause-specific hazards functions, also
+# In the event process sub-model, we fit cause-specific hazards functions, also
 # including IE as a time-varying covariate
 CoxFit <- coxph(Surv(start, stop, event) ~ strata(CR) * (age + sex + IE),
                 data = pbc2_CR)
 
-# In the functional forms we specify that the effect of the longitudinal
+# In the functional forms, we specify that the effect of the longitudinal
 # biomarker is different before and after the IE status for death, but the
 # biomarker has no effect on the risk of transplantation
 dummy <- function (f, lvl) as.numeric(f == lvl)
@@ -47,12 +46,12 @@ summary(jointFit)
 # We take as an example Patient 81 from the PBC dataset.
 # We calculate the cumulative incidence probabilities in the presence and
 # absence of the intermediate event IE.
-# The data.frame 'newdataL' contains the longitudinal measurements
+# The data.frame 'newdataL' contains the longitudinal measurements of this patient
 newdataL <- pbc2[pbc2$id %in% c(81), ]
 newdataL$status2 <- 0
 # The data.frame 'newdataE_withIE' contains the event information in the
 # presence of the IE.
-newdataE_withIE <- pbc2_CR[pbc2_CR$id %in% c(81), ]
+newdataE_withIE <- pbc2_CR[pbc2_CR$id == 81, ]
 newdataE_withIE$event <- 0
 # The data.frame 'newdataE_withoutIE' contains the event information in the
 # absence of the IE.
@@ -154,14 +153,15 @@ conditional_causal_effect
 # we also create two datasets for the event outcome, one in which the IE is set
 # at zero and on in which it is set at one. The second one is used in the
 # 'newdata2' argument of the predict() method.
-Data <- get_data(pbc2, pbc2_CR, t0 = 3, Dt = 2, object = jointFit, IE_var = "IE")
+Data <- get_data(pbc2, pbc2_CR, t0 = 3, Dt = 2, object = jointFit,
+                 IE_var = "IE", IE_time = "S")
 
 # we calculate the effects
 marginal_causal_effect <-
-    causal_effects(jointFit, Data$newdataL, Data$newdataE, Data$newdataE2,
+    causal_effects(jointFit, Data$newdataL, Data$newdataL2,
+                   Data$newdataE, Data$newdataE2,
                    t0 = 3, Dt = 2, extra_objects = "dummy", B = 5,
                    calculate_CI = TRUE)
-
 
 
 #--------------------------------------
@@ -179,7 +179,8 @@ marginal_causal_effect <-
 # we also create two datasets for the event outcome, one in which the IE is set
 # at zero and on in which it is set at one. The second one is used in the
 # 'newdata2' argument of the predict() method.
-Data <- get_data(pbc2, pbc2_CR, t0 = 3, Dt = 2, object = jointFit, IE_var = "IE")
+Data <- get_data(pbc2, pbc2_CR, t0 = 3, Dt = 2, object = jointFit,
+                 IE_var = "IE", IE_time = "S")
 
 # This is the same as above for the marginal effect, but we now want to put
 # the extra restriction that we want to keep the subjects who had their last
@@ -196,7 +197,8 @@ Data$newdataE2 <- Data$newdataE2[Data$newdataE2$id %in% ids, ]
 
 # we calculate the effects
 mc_causal_effect <-
-    causal_effects(jointFit, Data$newdataL, Data$newdataE, Data$newdataE2,
+    causal_effects(jointFit, Data$newdataL, Data$newdataL2,
+                   Data$newdataE, Data$newdataE2,
                    t0 = 3, Dt = 2, extra_objects = "dummy", B = 5,
                    calculate_CI = TRUE)
 

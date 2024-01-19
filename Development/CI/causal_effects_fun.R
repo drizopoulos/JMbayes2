@@ -1,37 +1,3 @@
-if (FALSE) {
-    object = jointFit1
-    Data_Long = pt_all
-    Data_Event = pt_all_CR
-    t0 = 7
-    Dt = 2
-    IE_var = "salvage_indicator"
-    IE_time = "salvage_time"
-    B = 5L
-    calculate_CI = TRUE
-    cores = max(parallel::detectCores(logical = FALSE) - 1, 1)
-    extra_objects = "dummy"
-    seed = 1L
-
-    Data <- get_data(pt_all, pt_all_CR, t0 = 8, Dt = 2, object = jointFit1,
-                     IE_var = "salvage_indicator", IE_time = "salvage_time")
-    Data_Long = Data$newdataL
-    Data_Long2 = Data$newdataL2
-    Data_Event = Data$newdataE
-    Data_Event2 = Data$newdataE2
-
-
-    Data_Long[Data_Long$pid == 1, ]
-    Data_Long2[Data_Long2$pid == 1, ]
-
-    Data_Event[Data_Event$pid == 1, c("pid", "start", "stop", "event",
-                                      "salvage_indicator", "salvage_time", "CR")]
-
-    Data_Event2[Data_Event2$pid == 1, c("pid", "start", "stop", "event",
-                                      "salvage_indicator", "salvage_time", "CR")]
-
-}
-
-
 # a function to do the data management
 get_data <- function (Data_Long, Data_Event, t0, Dt, object = NULL,
                       vars = NULL, IE_var = NULL, IE_time = NULL) {
