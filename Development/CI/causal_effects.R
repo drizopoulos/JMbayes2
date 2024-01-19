@@ -163,6 +163,7 @@ marginal_causal_effect <-
                    t0 = 3, Dt = 2, extra_objects = "dummy", B = 5,
                    calculate_CI = TRUE)
 
+marginal_causal_effect
 
 #--------------------------------------
 # Marginal-Conditional Causal Effects -
@@ -192,6 +193,7 @@ last <- with(Data$newdataL, tapply(serBilir, id, tail, n = 1L))
 ids <- names(last)[last > 2]
 # we keep only these subjects in the respective datasets in Data
 Data$newdataL <- Data$newdataL[Data$newdataL$id %in% ids, ]
+Data$newdataL2 <- Data$newdataL2[Data$newdataL2$id %in% ids, ]
 Data$newdataE <- Data$newdataE[Data$newdataE$id %in% ids, ]
 Data$newdataE2 <- Data$newdataE2[Data$newdataE2$id %in% ids, ]
 
@@ -202,4 +204,4 @@ mc_causal_effect <-
                    t0 = 3, Dt = 2, extra_objects = "dummy", B = 5,
                    calculate_CI = TRUE)
 
-
+mc_causal_effect
