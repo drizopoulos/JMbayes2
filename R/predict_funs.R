@@ -533,7 +533,7 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
 }
 
 get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
-                                    parallel, cores, seed) {
+                                    parallel, cores, seed, use_Y = TRUE) {
     # prepare the data for calculations
     newdataL <- if (!is.data.frame(newdata)) newdata[["newdataL"]] else newdata
     newdataE <- if (!is.data.frame(newdata)) newdata[["newdataE"]] else newdata
@@ -577,7 +577,8 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
                 "MCMC iterations in the fitted model.")
         n_samples <- M
     }
-    control <- list(GK_k = object$control$GK_k, n_samples = n_samples, n_iter = n_mcmc)
+    control <- list(GK_k = object$control$GK_k, n_samples = n_samples,
+                    n_iter = n_mcmc, use_Y = use_Y)
     id_samples <-
         split(seq_len(control$n_samples),
               rep(seq_len(cores), each = ceiling(control$n_samples / cores),

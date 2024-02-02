@@ -285,7 +285,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   if(any_terminal) {
     for (uword j = 0; j < n_strata - 1; ++j) {
       alphaF_H.rows(which_term_H.at(j)).fill(alphaF.at(j));
-      alphaF_h.rows(which_term_h.at(j)).fill(alphaF.at(j)); 
+      alphaF_h.rows(which_term_h.at(j)).fill(alphaF.at(j));
     }
   }
   vec frailty_H(WH_gammas.n_rows, fill::zeros);
@@ -528,9 +528,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                  WH_gammas, Wh_gammas, WH2_gammas,
                  log_Pwk, log_Pwk2, id_H_fast, id_h_fast, which_event,
-                 which_right_event, which_left, which_interval, unq_idL, 
-                 n_burnin, recurrent, frailtyH_sigmaF_alphaF, 
-                 frailtyh_sigmaF_alphaF, save_random_effects, res_b, res_b_last, 
+                 which_right_event, which_left, which_interval, unq_idL,
+                 n_burnin, recurrent, frailtyH_sigmaF_alphaF,
+                 frailtyh_sigmaF_alphaF, save_random_effects, res_b, res_b_last,
                  cumsum_b, outprod_b, n_iter);
 
         // update intercepts
@@ -908,6 +908,7 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
   //////////////////////////////
   // Sampling Random Effects //
   /////////////////////////////
+  bool use_Y = as<bool>(control["use_Y"]);
   uword n_samples = as<uword>(control["n_samples"]);
   uword n_iter = as<uword>(control["n_iter"]);
   uword n_b = b_mat.n_rows;
@@ -980,6 +981,9 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
     ///
     vec logLik_re = log_re(b_mat, L_it, sds_it);
     // calculate the denominator
+    if (!use_Y) {
+        logLik_long = 0.0 * logLik_long;
+    }
     vec denominator_b =
       logLik_long + logLik_surv + logLik_re;
     for (uword i = 0; i < n_iter; ++i) {
@@ -1029,6 +1033,9 @@ arma::cube simulate_REs (List Data, List MCMC, List control) {
         //
         vec logLik_re_proposed = log_re(proposed_b_mat, L_it, sds_it);
         //
+        if (!use_Y) {
+            logLik_long_proposed = 0.0 * logLik_long_proposed;
+        }
         vec numerator_b =
           logLik_long_proposed + logLik_surv_proposed + logLik_re_proposed;
         vec log_ratio = numerator_b - denominator_b;

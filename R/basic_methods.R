@@ -600,7 +600,7 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
                         process = c("longitudinal", "event"),
                         type_pred = c("response", "link"),
                         type = c("subject_specific", "mean_subject"),
-                        level = 0.95, return_newdata = FALSE,
+                        level = 0.95, return_newdata = FALSE, use_Y = TRUE,
                         return_mcmc = FALSE, n_samples = 200L, n_mcmc = 55L,
                         parallel = c("snow", "multicore"),
                         cores = NULL, seed = 123L, ...) {
@@ -735,8 +735,9 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
         else length(unique(newdata[[id_var]]))
         cores <- if (n > 20) 4L else 1L
     }
-    components_newdata <- get_components_newdata(object, newdata, n_samples,
-                                                 n_mcmc, parallel, cores, seed)
+    components_newdata <-
+        get_components_newdata(object, newdata, n_samples,
+                               n_mcmc, parallel, cores, seed, use_Y)
     if (process == "longitudinal") {
         predict_Long(object, components_newdata, newdata, newdata2, times,
                      times_per_id, type, type_pred, level, return_newdata,
@@ -1034,7 +1035,7 @@ rc_setup <- function(rc_data, trm_data,
   trm_data <- trm_data[order(trm_data[[idVar]]), ]
   if(any(rc_data[[stopVar]] > trm_data[[stopVar]][rc_data[[idVar]]])) {
     stop(paste0("'", stopVar, "' in the recurring event data cannot be larger than '", stopVar," in the terminal event data.'"))
-  } 
+  }
   # create new dataset
   ## CR dataset
   n <- nrow(trm_data)
