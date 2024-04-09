@@ -76,13 +76,13 @@ exclude_NAs <- function (NAs_FE, NAs_RE, id) {
     if (!is.null(all_NAs)) id[-all_NAs] else id
 }
 
-bdiag <- function (...) {
+bdiag <- function (..., off_diag_val = 1e-05) {
     # constructs a block-diagonal matrix
     mlist <- list(...)
     if (length(mlist) == 1)
         mlist <- unlist(mlist, recursive = FALSE)
     csdim <- rbind(c(0, 0), apply(sapply(mlist, dim), 1, cumsum))
-    ret <- array(0, dim = csdim[length(mlist) + 1, ])
+    ret <- array(off_diag_val, dim = csdim[length(mlist) + 1, ])
     add1 <- matrix(rep(1:0, 2), ncol = 2)
     for (i in seq_along(mlist)) {
         indx <- apply(csdim[i:(i + 1), ] + add1, 2, function(x) x[1]:x[2])
@@ -95,6 +95,38 @@ bdiag <- function (...) {
     }
     colnames(ret) <- unlist(lapply(mlist, colnames))
     ret
+}
+
+bdiag2 <- function (mlist, off_diag_val = 1e-05, which_independent = NULL) {
+    # constructs a block-diagonal matrix
+    d <- sapply(mlist, nrow)
+    out <- matrix(off_diag_val, sum(d), sum(d))
+    ind1 <- c(1, cumsum(d[-length(d)]) + 1)
+    ind2 <- cumsum(d)
+    for (i in seq_along(d)) {
+        ind <- seq(ind1[i], ind2[i])
+        out[ind, ind] <- mlist[[i]]
+    }
+    if (!is.null(which_independent)) {
+        if (!is.matrix(which_independent) || ncol(which_independent) != 2) {
+            stop("'which_independent' must a matrix with two columns.\n")
+        }
+        if (any(which_independent > length(mlist))) {
+            stop("'which_independent' must contain integer values smaller than ",
+                 length(mlist), ".\n")
+        }
+        if (any(which_independent[, 1L] == which_independent[, 2L])) {
+            stop("'which_independent' cannot contain the same number in both columns.\n")
+        }
+        for (j in seq_len(nrow(which_independent))) {
+            j1 <- which_independent[j, 1]
+            j2 <- which_independent[j, 2]
+            index1 <- seq(ind1[j1], ind2[j1])
+            index2 <- seq(ind1[j2], ind2[j2])
+            out[index1, index2] <- out[index2, index1] <- 0.0
+        }
+    }
+    out
 }
 
 .bdiag <- function (mlist) {
@@ -584,10 +616,28 @@ reconstr_D <- function (L, sds) {
     p <- length(sds)
     LL <- matrix(0.0, p, p)
     LL[upper.tri(LL)] <- L
-    LL[1, 1] <- 1
-    LL[cbind(2:p, 2:p)] <- sqrt(1 - colSums(LL^2)[-1L])
+    #LL[1, 1] <- 1
+    LL[cbind(1:p, 1:p)] <- sqrt(1 - colSums(LL^2))
     out <- cor2cov(crossprod(LL), sds = sds)
     out[lower.tri(out, TRUE)]
+}
+
+reconstr_D <- function (L, sds, ind_zero_D) {
+    p <- length(sds)
+    LL <- matrix(0.0, p, p)
+    up <- which(upper.tri(LL)) - 1
+    excl <- (ind_zero_D[, 1] - 1) + (ind_zero_D[, 2] - 1) * p
+    up <- setdiff(up, excl) + 1
+    LL[up] <- L
+    LL[cbind(1:p, 1:p)] <- sqrt(1 - colSums(LL^2))
+    for (j in seq_len(nrow(ind_zero_D))) {
+        j0 <- ind_zero_D[j, 1]
+        j1 <- ind_zero_D[j, 2]
+        LL[j0, j1] <- -sum(LL[, j0] * LL[, j1]) / LL[j0, j0]
+        LL[j1, j1] <- sqrt(1 - sum(LL[seq(1, j1-1), j1]^2))
+    }
+    res <- cor2cov(crossprod(LL), sds = sds)
+    res[lower.tri(res, TRUE)]
 }
 
 lowertri2mat <- function (x, nams = NULL) {
@@ -804,8 +854,7 @@ nearPD <- function (M, eig.tol = 1e-06, conv.tol = 1e-07, posd.tol = 1e-08,
         stop("Input matrix 'M' must be numeric.")
     if (length(M) == 1)
         return(abs(M))
-    if (is.matrix(M) && !identical(M, t(M)))
-        stop("Input matrix M must be square and symmetric.\n")
+    M <- 0.5 * (M + t(M))
     inorm <- function (x) max(rowSums(abs(x)))
     n <- ncol(M)
     U <- matrix(0.0, n, n)

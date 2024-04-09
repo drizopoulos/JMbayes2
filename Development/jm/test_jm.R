@@ -24,15 +24,15 @@ pbc2$prothrombin[pbc2$id == levels(pbc2$id)[1L]] <- NA
 pbc2$prothrombin[pbc2$id == levels(pbc2$id)[2L]] <- NA
 
 fm1 <- lme(log(serBilir) ~ ns(year, 2, B = c(0, 15)) * sex, data = pbc2,
-           random = ~ ns(year, 2, B = c(0, 15)) | id)
+           random = list(id = pdDiag(form = ~ ns(year, 2, B = c(0, 15)))))
 
 fm2 <- lme(prothrombin ~ ns(year, 2, B = c(0, 15)) * sex, data = pbc2,
            random = ~ ns(year, 2, B = c(0, 15)) | id,
            na.action = na.exclude, control = lmeControl(opt = "optim"))
 
 fm3 <- mixed_model(ascites ~ year * sex, data = pbc2,
-                   random = ~ 1 | id, family = binomial())
-Mixed <- list(fm1, fm2)
+                   random = ~ year || id, family = binomial())
+Mixed <- list(fm1, fm2, fm3)
 Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
 #system.time(obj <- jm(Cox, Mixed, time_var = "year"))
@@ -53,7 +53,8 @@ fForms <- ~ value(log(serBilir)) * slope(prothrombin)
 Surv_object = Cox
 Mixed_objects = Mixed
 time_var = 'year'
-functional_forms = fForms
+functional_forms = NULL#fForms
+which_independent = cbind(1, 2)
 recurrent = FALSE
 data_Surv = NULL
 id_var = NULL

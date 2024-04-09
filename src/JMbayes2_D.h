@@ -72,10 +72,11 @@ double deriv_L (const mat &L, const vec &sds, const mat &b,
 }
 
 mat propose_L (const mat &L, const vec &scale, const uvec &upper_part,
-               const double &deriv, const uword &i, const bool &mala = false) {
-  mat proposed_L = L;
+               const double &deriv, const uword &i, const umat &ind_zero_D,
+               const bool &mala = false) {
+  mat proposed_L(size(L), fill::zeros);
   vec l = L(upper_part);
-  vec proposed_l(l.n_rows);
+  vec proposed_l(l.n_rows, fill::zeros);
   if (mala) {
     if (std::isfinite(deriv)) {
       proposed_l = propose_norm_mala(l, scale, deriv, i);
@@ -87,11 +88,26 @@ mat propose_L (const mat &L, const vec &scale, const uvec &upper_part,
   }
   proposed_L(upper_part) = proposed_l;
   uword n = L.n_rows;
-  uword column = upper_part.at(i) / n;
-  vec ll = proposed_L.submat(0, column, column - 1, column);
-  double ss = dot(ll, ll);
-  if (ss > 1) return proposed_L.fill(datum::nan);
-  proposed_L.at(column, column) = sqrt(1 - ss);
+  for (uword j = 0; j < n; ++j) {
+      vec ll = proposed_L.col(j);
+      proposed_L(j, j) = sqrt(1 - dot(ll, ll));
+  }
+  //uword n = L.n_rows;
+  //uword column = upper_part.at(i) / n;
+  //vec ll = proposed_L.submat(0, column, column - 1, column);
+  //double ss = dot(ll, ll);
+  //if (ss > 1) return proposed_L.fill(datum::nan);
+  //proposed_L.at(column, column) = sqrt(1 - ss);
+  uword nn = ind_zero_D.n_rows;
+  for (uword j = 0; j < nn; ++j) {
+      uword j0 = ind_zero_D(j, 0);
+      uword j1 = ind_zero_D(j, 1);
+      proposed_L(j0, j1) = -sum(proposed_L.col(j0) % proposed_L.col(j1)) / proposed_L(j0, j0);
+      vec ll = proposed_L.submat(0, j1, j1 - 1, j1);
+      double ss = dot(ll, ll);
+      if (ss > 1) return proposed_L.fill(datum::nan);
+      proposed_L.at(j1, j1) = sqrt(1 - ss);
+  }
   return proposed_L;
 }
 
@@ -103,7 +119,7 @@ void update_D (mat &L, vec &sds, const mat &b,
                const vec &D_sds_mean,
                const bool &gamma_prior,
                const double &D_L_etaLKJ,
-               const int &it, const bool &MALA,
+               const int &it, const bool &MALA, const umat &ind_zero_D,
                vec &logLik_re,
                mat &res_sds, mat &res_L,
                vec &scale_sds, vec &scale_L,
@@ -145,9 +161,9 @@ void update_D (mat &L, vec &sds, const mat &b,
       deriv_current = deriv_L(L, sds, b, denominator_L, i, upper_part,
                               D_L_etaLKJ);
       mu_current = L.at(upper_part_i) + 0.5 * scale_L.at(i) * deriv_current;
-      proposed_L = propose_L(L, scale_L, upper_part, deriv_current, i, true);
+      proposed_L = propose_L(L, scale_L, upper_part, deriv_current, i, ind_zero_D, true);
     } else {
-      proposed_L = propose_L(L, scale_L, upper_part, deriv_current, i);
+      proposed_L = propose_L(L, scale_L, upper_part, deriv_current, i, ind_zero_D);
     }
     vec logLik_re_proposed = logLik_re;
     double numerator_L(0.0);

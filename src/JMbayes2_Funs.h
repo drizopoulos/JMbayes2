@@ -844,4 +844,13 @@ vec scalar2vec (const double &x) {
   return v;
 }
 
+arma::uvec std_setdiff(arma::uvec& x, arma::uvec& y) {
+    std::vector<int> a = arma::conv_to< std::vector<int> >::from(arma::sort(x));
+    std::vector<int> b = arma::conv_to< std::vector<int> >::from(arma::sort(y));
+    std::vector<int> out;
+    std::set_difference(a.begin(), a.end(), b.begin(), b.end(),
+                        std::inserter(out, out.end()));
+    return arma::conv_to<arma::uvec>::from(out);
+}
+
 #endif

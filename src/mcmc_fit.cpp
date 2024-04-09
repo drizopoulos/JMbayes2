@@ -126,7 +126,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec frailty = as<vec>(initial_values["frailty"]);
   uvec has_sigmas = as<uvec>(model_data["has_sigmas"]);
   // indexes or other useful things
+  umat ind_zero_D = as<umat>(model_data["ind_zero_D"]) - 1;
+  uvec excl_up = ind_zero_D.col(0) + ind_zero_D.col(1) * R.n_rows;
   uvec upper_part = trimatu_ind(size(R),  1);
+  upper_part = std_setdiff(upper_part, excl_up);
   uword GK_k = as<uword>(control["GK_k"]);
   umat ni_event = as<umat>(model_data["ni_event"]);
   // MCMC settings
@@ -200,7 +203,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uword n_alphas = alphas.n_rows;
   uword n_alphaF = alphaF.n_rows;
   uword n_sds = sds.n_rows;
-  uword n_L = vec(L(upper_part)).n_rows;
+  uword n_L = upper_part.n_rows;
   uword n_sigmas = sigmas.n_rows;
   // uword n_sigmas = n_field(sigmas);
   uword n_betas = betas_vec.n_rows;
@@ -493,8 +496,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     if (it > 99) {
         update_D(L, sds, b_mat, upper_part,
              D_sds_df, D_sds_sigma, D_sds_shape, D_sds_mean, gamma_prior_D_sds,
-             D_L_etaLKJ, it, MALA, logLik_re, res_sds, res_L, scale_sds, scale_L,
-             acceptance_sds, acceptance_L);
+             D_L_etaLKJ, it, MALA, ind_zero_D, logLik_re, res_sds, res_L,
+             scale_sds, scale_L, acceptance_sds, acceptance_L);
 
     ////////////////////////////////////////////////////////////////////////
 

@@ -1,6 +1,7 @@
 jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
-                functional_forms = NULL, data_Surv = NULL, id_var = NULL,
-                priors = NULL, control = NULL, ...) {
+                functional_forms = NULL, which_independent = NULL,
+                data_Surv = NULL, id_var = NULL, priors = NULL,
+                control = NULL, ...) {
     call <- match.call()
     # control argument:
     # - GK_k: number of quadrature points for the Gauss Kronrod rule; options 15 and 7
@@ -579,7 +580,15 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         mapply2(rep, x = sigmas[ss_sigmas],
                 length.out = lapply(idL_lp, lng_unq)[ss_sigmas])
     D_lis <- lapply(Mixed_objects, extract_D)
-    D <- bdiag(D_lis)
+    D <- bdiag2(D_lis, which_independent = which_independent)
+    if (abs(max(nearPD(D) - D)) > sqrt(.Machine$double.eps)) {
+        D <- bdiag2(D_lis, off_diag_val = 1e-04,
+                    which_independent = which_independent)
+        D <- nearPD(D)
+    }
+    ind_zero_D <- which(abs(D) < sqrt(.Machine$double.eps), arr.ind = TRUE)
+    ind_zero_D <- ind_zero_D[ind_zero_D[, 'col'] > ind_zero_D[, 'row'], , drop = FALSE]
+    Data$ind_zero_D <- ind_zero_D
     b <- mapply2(extract_b, Mixed_objects, unq_idL,
                  MoreArgs = list(n = nY, unq_id = as.character(unq_id)))
     bs_gammas <- rep(-0.1, ncol(W0_H))

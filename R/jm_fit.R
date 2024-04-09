@@ -138,7 +138,8 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     }
     # reconstruct D matrix
     get_D <- function (x) {
-        mapply2(reconstr_D, split(x$L, row(x$L)), split(x$sds, row(x$sds)))
+        mapply2(reconstr_D, split(x$L, row(x$L)), split(x$sds, row(x$sds)),
+                MoreArgs = list(ind_zero_D = model_data$ind_zero_D))
     }
     for (i in seq_along(out)) {
         out[[i]][["mcmc"]][["D"]] <-
@@ -169,9 +170,9 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
                    seq_along(out[[i]][["mcmc"]][["sigmas"]][1, ]))
         colnames(out[[i]][["mcmc"]][["sigmaF"]]) <- "sigma_frailty"
         colnames(out[[i]][["mcmc"]][["alphaF"]]) <-
-          paste0("frailty:", 
-                 names(model_info$frames$mf_Surv)[attr(model_info$terms$terms_Surv, 
-                                                       "specials")$strata], 
+          paste0("frailty:",
+                 names(model_info$frames$mf_Surv)[attr(model_info$terms$terms_Surv,
+                                                       "specials")$strata],
                  levels(model_data$strata)[-1]
         )
     }
