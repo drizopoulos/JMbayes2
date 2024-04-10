@@ -596,7 +596,7 @@ crisk_setup <- function (data, statusVar, censLevel, nameStrata = "strata",
 }
 
 predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
-                        times = NULL, times_per_id = FALSE,
+                        times = NULL, all_times = FALSE, times_per_id = FALSE,
                         process = c("longitudinal", "event"),
                         type_pred = c("response", "link"),
                         type = c("subject_specific", "mean_subject"),
@@ -740,8 +740,8 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
                                n_mcmc, parallel, cores, seed, use_Y)
     if (process == "longitudinal") {
         predict_Long(object, components_newdata, newdata, newdata2, times,
-                     times_per_id, type, type_pred, level, return_newdata,
-                     return_mcmc)
+                     all_times, times_per_id, type, type_pred, level,
+                     return_newdata, return_mcmc)
     } else {
         predict_Event(object, components_newdata, newdata, newdata2, times,
                       times_per_id, level, return_newdata, return_mcmc)
@@ -1060,7 +1060,7 @@ rc_setup <- function(rc_data, trm_data,
 }
 
 predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
-                        times = NULL, times_per_id = FALSE,
+                        times = NULL, all_times = FALSE, times_per_id = FALSE,
                         process = c("longitudinal", "event"),
                         type_pred = c("response", "link"),
                         type = c("subject_specific", "mean_subject"),
@@ -1211,6 +1211,7 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
             preds <-
                 parallel::mclapply(object, predict, newdata = newdata,
                                    newdata2 = newdata2, times = times,
+                                   all_times = all_times,
                                    times_per_id = times_per_id,
                                    process = process, type_pred = type_pred,
                                    type = type, level = level, n_samples = n_samples,
@@ -1222,6 +1223,7 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
             preds <-
                 parallel::parLapply(cl, object, predict, newdata = newdata,
                                     newdata2 = newdata2, times = times,
+                                    all_times = all_times,
                                     times_per_id = times_per_id,
                                     process = process, type_pred = type_pred,
                                     type = type, level = level, n_samples = n_samples,
@@ -1233,7 +1235,7 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
         preds <-
             lapply(object, predict, newdata = newdata,
                    newdata2 = newdata2, times = times,
-                   times_per_id = times_per_id,
+                   all_times = all_times, times_per_id = times_per_id,
                    process = process, type_pred = type_pred,
                    type = type, level = level, n_samples = n_samples,
                    n_mcmc = n_mcmc, return_newdata = return_newdata,

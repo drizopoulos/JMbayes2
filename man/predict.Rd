@@ -15,7 +15,8 @@ Predict method for object of class \code{"jm"}.
 \usage{
 
 \method{predict}{jm}(object, newdata = NULL, newdata2 = NULL, times = NULL,
-  times_per_id = FALSE, process = c("longitudinal", "event"),
+  all_times = FALSE, times_per_id = FALSE,
+  process = c("longitudinal", "event"),
   type_pred = c("response", "link"),
   type = c("subject_specific", "mean_subject"),
   level = 0.95, return_newdata = FALSE, use_Y = TRUE, return_mcmc = FALSE,
@@ -36,7 +37,8 @@ Predict method for object of class \code{"jm"}.
   \dots)
 
 \method{predict}{jmList}(object, weights, newdata = NULL, newdata2 = NULL,
- times = NULL, times_per_id = FALSE, process = c("longitudinal", "event"),
+ times = NULL, all_times = FALSE, times_per_id = FALSE,
+ process = c("longitudinal", "event"),
  type_pred = c("response", "link"),
  type = c("subject_specific", "mean_subject"),
  level = 0.95, return_newdata = FALSE,
@@ -53,6 +55,9 @@ Predict method for object of class \code{"jm"}.
 \item{newdata, newdata2}{data.frames.}
 
 \item{times}{a numeric vector of future times to calculate predictions.}
+
+\item{all_times}{logical; if \code{TRUE} predictions for the longitudinal outcomes are calculated for all the times
+given in the \code{times} argumet, not only the ones after the last longitudinal measurement.}.
 
 \item{times_per_id}{logical; if \code{TRUE} the \code{times} argument is a vector of times equal to the number of
 subjects in \code{newdata}.}

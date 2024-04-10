@@ -108,6 +108,9 @@ bdiag2 <- function (mlist, off_diag_val = 1e-05, which_independent = NULL) {
         out[ind, ind] <- mlist[[i]]
     }
     if (!is.null(which_independent)) {
+        if (length(which_independent) == 1 && which_independent == "all") {
+            which_independent <- t(combn(length(mlist), 2))
+        }
         if (!is.matrix(which_independent) || ncol(which_independent) != 2) {
             stop("'which_independent' must a matrix with two columns.\n")
         }

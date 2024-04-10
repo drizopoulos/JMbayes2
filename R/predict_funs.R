@@ -678,8 +678,8 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
 }
 
 predict_Long <- function (object, components_newdata, newdata, newdata2, times,
-                          times_per_id, type, type_pred, level, return_newdata,
-                          return_mcmc) {
+                          all_times, times_per_id, type, type_pred, level,
+                          return_newdata, return_mcmc) {
     # Predictions for newdata
     newdataL <- if (!is.data.frame(newdata)) newdata[["newdataL"]] else newdata
     betas <- components_newdata$mcmc[["betas"]]
@@ -736,7 +736,7 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
         }
         t_max <- max(object$model_data$Time_right)
         test <- sapply(last_times, function (lt, tt) all(tt <= lt), tt = times)
-        if (any(test)) {
+        if (any(test) && !all_times) {
             stop("according to the definition of argument 'times', for some ",
                  "subjects the last available time is\n\t larger than the ",
                  "maximum time to predict; redefine 'times' accordingly.")
@@ -747,8 +747,15 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
                              MoreArgs = list(tm = t_max))
 
         } else {
-            f <- function (lt, tt, tm) c(lt, sort(tt[tt > lt & tt <= tm]))
-            times <- lapply(last_times, f, tt = times, tm = t_max)
+            f <- function (lt, tt, tm, all_times) {
+                if (all_times) {
+                    sort(tt[tt <= tm])
+                } else {
+                    c(lt, sort(tt[tt > lt & tt <= tm]))
+                }
+            }
+            times <- lapply(last_times, f, tt = times, tm = t_max,
+                            all_times = all_times)
         }
         n_times <- sapply(times, length)
         newdata2 <- newdataL

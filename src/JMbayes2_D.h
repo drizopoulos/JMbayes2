@@ -90,19 +90,13 @@ mat propose_L (const mat &L, const vec &scale, const uvec &upper_part,
   uword n = L.n_rows;
   for (uword j = 0; j < n; ++j) {
       vec ll = proposed_L.col(j);
-      proposed_L(j, j) = sqrt(1 - dot(ll, ll));
+      proposed_L.at(j, j) = sqrt(1 - dot(ll, ll));
   }
-  //uword n = L.n_rows;
-  //uword column = upper_part.at(i) / n;
-  //vec ll = proposed_L.submat(0, column, column - 1, column);
-  //double ss = dot(ll, ll);
-  //if (ss > 1) return proposed_L.fill(datum::nan);
-  //proposed_L.at(column, column) = sqrt(1 - ss);
   uword nn = ind_zero_D.n_rows;
   for (uword j = 0; j < nn; ++j) {
-      uword j0 = ind_zero_D(j, 0);
-      uword j1 = ind_zero_D(j, 1);
-      proposed_L(j0, j1) = -sum(proposed_L.col(j0) % proposed_L.col(j1)) / proposed_L(j0, j0);
+      uword j0 = ind_zero_D.at(j, 0);
+      uword j1 = ind_zero_D.at(j, 1);
+      proposed_L.at(j0, j1) = - sum(proposed_L.col(j0) % proposed_L.col(j1)) / proposed_L.at(j0, j0);
       vec ll = proposed_L.submat(0, j1, j1 - 1, j1);
       double ss = dot(ll, ll);
       if (ss > 1) return proposed_L.fill(datum::nan);
