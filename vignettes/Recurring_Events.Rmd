@@ -469,14 +469,14 @@ lme_fit <- lme(y ~ ns(time, k =  c(1, 3), B = c(0, 7)),
 
 Then, we use the `survival::coxph()` function to fit a stratified Cox model using the transformed data,
 ```{r fit_cox}
-cox_fit <- coxph(Surv(tstart, tstop, status) ~ (group + age) : strata(strata),
+cox_fit <- coxph(Surv(tstart, tstop, status) ~ (group + age):strata(strata),
                  data = cox_data)
 ```
 
 These models are then provided as arguments in the `jm()` function. The user specifies the desired functional forms for the mixed model in each relative-risk model. And with the `recurrent` argument specifies the desired timescale,
 ```{r fit_jm}
 jm_fit <- jm(cox_fit, lme_fit, time_var = "time", recurrent = "gap",
-             functional_forms =  ~ value(y) : strata)
+             functional_forms =  ~ value(y):strata)
 
 summary(jm_fit)
 ```

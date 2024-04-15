@@ -1,0 +1,13 @@
+library("JMbayes2")
+library("pkgdown")
+init_site()
+build_news()
+build_articles_index()
+build_article()
+build_favicons()
+build_reference_index()
+build_reference()
+build_search()
+build_tutorials()
+
+build_article("Causal_Effects.Rmd")

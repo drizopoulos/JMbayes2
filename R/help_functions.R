@@ -615,17 +615,11 @@ cor2cov <- function (R, vars, sds = NULL) {
     sds * R * rep(sds, each = p)
 }
 
-reconstr_D <- function (L, sds) {
-    p <- length(sds)
-    LL <- matrix(0.0, p, p)
-    LL[upper.tri(LL)] <- L
-    #LL[1, 1] <- 1
-    LL[cbind(1:p, 1:p)] <- sqrt(1 - colSums(LL^2))
-    out <- cor2cov(crossprod(LL), sds = sds)
-    out[lower.tri(out, TRUE)]
-}
-
 reconstr_D <- function (L, sds, ind_zero_D) {
+    if (!length(L)) {
+        res <- diag(sds^2)
+        return(res[lower.tri(res, TRUE)])
+    }
     p <- length(sds)
     LL <- matrix(0.0, p, p)
     up <- which(upper.tri(LL)) - 1

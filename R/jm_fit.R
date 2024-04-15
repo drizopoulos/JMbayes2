@@ -138,7 +138,9 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     }
     # reconstruct D matrix
     get_D <- function (x) {
-        mapply2(reconstr_D, split(x$L, row(x$L)), split(x$sds, row(x$sds)),
+        ll <- split(x$L, row(x$L))
+        if (!length(ll)) ll <- vector("list", nrow(x$L))
+        mapply2(reconstr_D, ll, split(x$sds, row(x$sds)),
                 MoreArgs = list(ind_zero_D = model_data$ind_zero_D))
     }
     for (i in seq_along(out)) {

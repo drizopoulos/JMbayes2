@@ -1,5 +1,5 @@
 pandoc: 3.1.1
-pkgdown: 2.0.7
+pkgdown: 2.0.8
 pkgdown_sha: ~
 articles:
   Causal_Effects: Causal_Effects.html
@@ -12,7 +12,7 @@ articles:
   Super_Learning: Super_Learning.html
   Time_Varying_Effects: Time_Varying_Effects.html
   Transformation_Functions: Transformation_Functions.html
-last_built: 2024-01-08T13:52Z
+last_built: 2024-04-15T10:24Z
 urls:
   reference: https://drizopoulos.github.io/JMbayes2/reference
   article: https://drizopoulos.github.io/JMbayes2/articles

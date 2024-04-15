@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4-8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-0</span>
       </span>
     </div>
 
@@ -135,7 +135,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2024-01-08</h4>
+            <h4 data-toc-skip class="date">2024-04-14</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Competing_Risks.Rmd" class="external-link"><code>vignettes/Competing_Risks.Rmd</code></a></small>
       <div class="hidden name"><code>Competing_Risks.Rmd</code></div>
@@ -241,62 +241,62 @@ chain):</p>
 <span><span class="co">#&gt;   prothrombin: 1945</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    10830.90 11531.22 -6640.711</span></span>
-<span><span class="co">#&gt; conditional 15751.34 15437.79 -8250.575</span></span>
+<span><span class="co">#&gt; marginal    10813.89 11466.26 -6444.559</span></span>
+<span><span class="co">#&gt; conditional 15750.73 15437.04 -8238.648</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                                              </span></span>
 <span><span class="co">#&gt;        StdDev    Corr                        </span></span>
-<span><span class="co">#&gt; (Intr) 1.3446  (Intr)  p(,2)1  p(,2)2  (Intr)</span></span>
-<span><span class="co">#&gt; p(,2)1 23.2447 0.7031                        </span></span>
-<span><span class="co">#&gt; p(,2)2 12.4067 -0.2642 -0.1414               </span></span>
-<span><span class="co">#&gt; (Intr) 0.7875  0.6347  0.4392  -0.3304       </span></span>
-<span><span class="co">#&gt; year   0.3273  0.4322  0.3383  -0.0547 0.0294</span></span>
+<span><span class="co">#&gt; (Intr) 1.3444  (Intr)  p(,2)1  p(,2)2  (Intr)</span></span>
+<span><span class="co">#&gt; p(,2)1 23.2294 0.7027                        </span></span>
+<span><span class="co">#&gt; p(,2)2 12.3415 -0.2648 -0.1463               </span></span>
+<span><span class="co">#&gt; (Intr) 0.7859  0.6353  0.4396  -0.3296       </span></span>
+<span><span class="co">#&gt; year   0.3274  0.4330  0.3402  -0.0527 0.0339</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival Outcome:</span></span>
 <span><span class="co">#&gt;                                        Mean  StDev    2.5%   97.5%      P</span></span>
-<span><span class="co">#&gt; age                                 -0.0709 0.0250 -0.1237 -0.0237 0.0023</span></span>
-<span><span class="co">#&gt; drugD-penicil                       -0.2762 0.4104 -1.1056  0.5185 0.4935</span></span>
-<span><span class="co">#&gt; age:strata(CR)dead                   0.1329 0.0244  0.0861  0.1857 0.0000</span></span>
-<span><span class="co">#&gt; drugD-penicil:strata(CR)dead         0.2716 0.4435 -0.5849  1.1477 0.5357</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):CRtransplanted  1.0383 0.2243  0.6150  1.5046 0.0000</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):CRdead          1.4504 0.1167  1.2351  1.6891 0.0000</span></span>
-<span><span class="co">#&gt; value(prothrombin):CRtransplanted    0.1138 0.1444 -0.1833  0.3892 0.4297</span></span>
-<span><span class="co">#&gt; value(prothrombin):CRdead            0.1405 0.0498  0.0376  0.2346 0.0075</span></span>
+<span><span class="co">#&gt; age                                 -0.0750 0.0245 -0.1247 -0.0286 0.0007</span></span>
+<span><span class="co">#&gt; drugD-penicil                       -0.2699 0.4003 -1.0821  0.5001 0.4993</span></span>
+<span><span class="co">#&gt; age:strata(CR)dead                   0.1376 0.0240  0.0922  0.1868 0.0000</span></span>
+<span><span class="co">#&gt; drugD-penicil:strata(CR)dead         0.2650 0.4329 -0.5594  1.1367 0.5497</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):CRtransplanted  1.0270 0.2180  0.6150  1.4722 0.0000</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):CRdead          1.4521 0.1138  1.2378  1.6872 0.0000</span></span>
+<span><span class="co">#&gt; value(prothrombin):CRtransplanted    0.1003 0.1408 -0.1837  0.3599 0.5048</span></span>
+<span><span class="co">#&gt; value(prothrombin):CRdead            0.1444 0.0481  0.0448  0.2306 0.0092</span></span>
 <span><span class="co">#&gt;                                       Rhat</span></span>
-<span><span class="co">#&gt; age                                 1.0525</span></span>
-<span><span class="co">#&gt; drugD-penicil                       1.0264</span></span>
-<span><span class="co">#&gt; age:strata(CR)dead                  1.0642</span></span>
-<span><span class="co">#&gt; drugD-penicil:strata(CR)dead        1.0246</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):CRtransplanted 1.0508</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):CRdead         1.0006</span></span>
-<span><span class="co">#&gt; value(prothrombin):CRtransplanted   1.2420</span></span>
-<span><span class="co">#&gt; value(prothrombin):CRdead           1.0323</span></span>
+<span><span class="co">#&gt; age                                 1.0533</span></span>
+<span><span class="co">#&gt; drugD-penicil                       1.0394</span></span>
+<span><span class="co">#&gt; age:strata(CR)dead                  1.0885</span></span>
+<span><span class="co">#&gt; drugD-penicil:strata(CR)dead        1.0407</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):CRtransplanted 1.0082</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):CRdead         1.0180</span></span>
+<span><span class="co">#&gt; value(prothrombin):CRtransplanted   1.0679</span></span>
+<span><span class="co">#&gt; value(prothrombin):CRdead           1.0233</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev     2.5%   97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)     1.1975 0.1142   0.9738  1.4255 0.0000 1.0003</span></span>
-<span><span class="co">#&gt; poly(year, 2)1 27.9020 3.0486  22.1186 34.1021 0.0000 1.0026</span></span>
-<span><span class="co">#&gt; poly(year, 2)2  1.2566 1.7449  -2.1592  4.6013 0.4690 1.0003</span></span>
-<span><span class="co">#&gt; drugD-penicil  -0.1904 0.1587  -0.5033  0.1192 0.2305 1.0002</span></span>
-<span><span class="co">#&gt; p(,2)1         -3.1889 3.6345 -10.3643  3.7599 0.3857 1.0003</span></span>
-<span><span class="co">#&gt; p(,2)2         -1.0593 2.1715  -5.2577  3.2234 0.6148 1.0002</span></span>
-<span><span class="co">#&gt; sigma           0.3021 0.0062   0.2903  0.3145 0.0000 1.0005</span></span>
+<span><span class="co">#&gt; (Intercept)     1.1970 0.1139   0.9742  1.4210 0.0000 1.0008</span></span>
+<span><span class="co">#&gt; poly(year, 2)1 27.8727 2.9854  22.0478 33.9114 0.0000 1.0112</span></span>
+<span><span class="co">#&gt; poly(year, 2)2  1.2406 1.7122  -2.1576  4.5335 0.4642 1.0083</span></span>
+<span><span class="co">#&gt; drugD-penicil  -0.1908 0.1581  -0.4991  0.1205 0.2217 1.0003</span></span>
+<span><span class="co">#&gt; p(,2)1         -3.1948 3.5724 -10.1371  3.7562 0.3732 1.0021</span></span>
+<span><span class="co">#&gt; p(,2)2         -1.0633 2.1598  -5.2556  3.2097 0.6105 1.0025</span></span>
+<span><span class="co">#&gt; sigma           0.3023 0.0062   0.2903  0.3147 0.0000 1.0001</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: prothrombin (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                       Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)        10.6316 0.0823 10.4727 10.7934 0.0000 1.0026</span></span>
-<span><span class="co">#&gt; year                0.2954 0.0396  0.2194  0.3755 0.0000 1.0033</span></span>
-<span><span class="co">#&gt; drugD-penicil      -0.0936 0.1152 -0.3226  0.1284 0.4225 1.0017</span></span>
-<span><span class="co">#&gt; year:drugD-penicil -0.0246 0.0517 -0.1256  0.0780 0.6350 1.0007</span></span>
-<span><span class="co">#&gt; sigma               1.0551 0.0205  1.0161  1.0964 0.0000 1.0029</span></span>
+<span><span class="co">#&gt; (Intercept)        10.6336 0.0832 10.4737 10.7987 0.0000 1.0013</span></span>
+<span><span class="co">#&gt; year                0.2944 0.0396  0.2170  0.3737 0.0000 1.0014</span></span>
+<span><span class="co">#&gt; drugD-penicil      -0.0970 0.1170 -0.3266  0.1296 0.4068 1.0004</span></span>
+<span><span class="co">#&gt; year:drugD-penicil -0.0234 0.0520 -0.1257  0.0786 0.6572 1.0000</span></span>
+<span><span class="co">#&gt; sigma               1.0554 0.0203  1.0166  1.0967 0.0000 1.0012</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 25000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 5000 </span></span>
 <span><span class="co">#&gt; thinning: 5 </span></span>
-<span><span class="co">#&gt; time: 6.6 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 6.4 min</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="dynamic-predictions">Dynamic predictions<a class="anchor" aria-label="anchor" href="#dynamic-predictions"></a>
@@ -367,7 +367,7 @@ predictions:</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.8.</p>
 </div>
 
       </footer>

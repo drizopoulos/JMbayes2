@@ -3,12 +3,12 @@
 
 <!-- badges: start -->
 
-[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version-last-release/JMbayes2)](https://cran.r-project.org/package=JMbayes2)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version-last-release/JMbayes2)](https://cran.r-project.org/package=JMbayes2)
 [![](https://cranlogs.r-pkg.org/badges/grand-total/JMbayes2)](https://cran.r-project.org/package=JMbayes2)
 [![Download
 counter](https://cranlogs.r-pkg.org/badges/JMbayes2)](https://cran.r-project.org/package=JMbayes2)
 [![R build
-status](https://github.com/drizopoulos/JMbayes2/workflows/R-CMD-check/badge.svg)](https://github.com/drizopoulos/JMbayes/actions)
+status](https://github.com/drizopoulos/JMbayes2/workflows/R-CMD-check/badge.svg)](https://github.com/drizopoulos/JMbayes2/actions)
 <!-- badges: end -->
 
 The package **JMbayes2** fits joint models for longitudinal and
@@ -17,8 +17,8 @@ different type (e.g., continuous, dichotomous, ordinal, counts), and
 assuming different distributions, i.e., Gaussian, Student’s-t, Gamma,
 Beta, unit Lindley, censored Normal, Binomial, Poisson, Negative
 Binomial, and Beta-Binomial. For the event time process, right, left and
-interval censored data can be handled, while competing risks,
-multi-state and recurrent event processes are also covered.
+interval censored data can be handled, while competing risks and
+multi-sate processes are also covered.
 
 **JMbayes2** fits joint models using Markov chain Monte Carlo algorithms
 implemented in C++. Besides the main modeling function, the package also
@@ -32,7 +32,7 @@ provides a number of functions to summarize and visualize the results.
 install.packages("JMbayes2")
 ```
 
-The development version can be installed from GitHub:
+The developments version can be installed from GitHub:
 
 ``` r
 # install.packages("remotes")
@@ -67,7 +67,7 @@ fm1 <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
 # a linear mixed model for the prothrombin time
 fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
 
-# a mixed effects logistic regression model for ascites
+# a mixed effects logistic regression for ascites
 fm3 <- mixed_model(ascites ~ year + sex, data = pbc2,
                    random = ~ year | id, family = binomial())
 

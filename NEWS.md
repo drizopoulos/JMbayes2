@@ -1,3 +1,8 @@
+# JMbayes2 0.5.0
+
+## Major
+* `jm()` now allows for zero-correlations constraints in the covariance matrix of the random effects. When the mixed models provided in the `Mixed_objects` argument have been fitted assuming a diagonal matrix for the random effects, this will also be assumed in the joint model (in previous versions, this was ignored). In addition, the new argument `which_independent` can be used to specify which longitudinal outcomes are to be assumed independent.
+
 # JMbayes2 0.4.1
 
 ## Major

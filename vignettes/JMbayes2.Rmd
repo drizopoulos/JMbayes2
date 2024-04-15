@@ -54,13 +54,14 @@ ggdensityplot(jointFit1, "alphas")
 ```
 
 ## Multivariate
-To fit a joint model with multiple longitudinal outcomes, we simply provide a list of mixed models as the second argument of `jm()`. In the following example, we extend the joint model we fitted above by also including the prothrombin time and the log odds of the presence or not of ascites as time-varying covariates in the relative risk model for the composite event. Because this model is more complex, we increase the number of MCMC iterations, the number of burn-in iterations and the thinning per chain, using the corresponding control arguments: 
+To fit a joint model with multiple longitudinal outcomes, we simply provide a list of mixed models as the second argument of `jm()`. In the following example, we extend the joint model we fitted above by also including the prothrombin time and the log odds of the presence or not of ascites as time-varying covariates in the relative risk model for the composite event. Ascites is a dichotomous outcome and therefore we fit a mixed-effects logistic regression model for it using the `mixed_model()` function from the **GLMMadaptive** package. The use of `||` in the `random` argument of `mixed_model()` specifies that the random intercepts and random slopes are assumed uncorrelated. In addition, the argument `which_independent` can be used to specify which longitudinal outcomes are to be assumed independent; here, as an illustration, we specify that the first (i.e., serum bilirubin) and second (i.e., prothrombin time) longitudinal outcomes are independent. To assume that all longitudinal outcomes are independent, we can use `jm(..., which_independent = "all")`. Because this joint model is more complex, we increase the number of MCMC iterations, the number of burn-in iterations and the thinning per chain, using the corresponding control arguments: 
 ```{r}
 fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
 fm3 <- mixed_model(ascites ~ year + sex, data = pbc2,
-                   random = ~ year | id, family = binomial())
+                   random = ~ year || id, family = binomial())
 
 jointFit2 <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year",
+                which_independent = cbind(1, 2),
                 n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)
 summary(jointFit2)
 ```
