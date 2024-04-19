@@ -28,11 +28,20 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     id_H_ <- rep(idT, each = control$GK_k)
     id_H_ <- match(id_H_, unique(id_H_))
     id_h <- unclass(idT)
+    if (model_data$intgr) {
+        ii <- paste(id_h, model_data$strata, sep = "_")
+        id_h2 <- match(ii, unique(ii))
+        id_h_ <- unlist(mapply2(function (x, ind) if (sum(ind) > 0) x[!duplicated(ind)] else x,
+                                split(id_h, id_h), split(model_data$intgr_ind, id_h)))
+    } else {
+        id_h2 <- 0
+    }
     model_data <-
         c(model_data, create_Wlong_mats(model_data, model_info,
                                         initial_values, priors,
                                         control),
-          list(id_H = id_H, id_H_ = id_H_, id_h = id_h))
+          list(id_H = id_H, id_H_ = id_H_, id_h = id_h, id_h2 = id_h2,
+               id_h_ = id_h_))
     # cbind the elements of X_H and Z_H, etc.
     model_data$X_H[] <- lapply(model_data$X_H, docall_cbind)
     model_data$X_h[] <- lapply(model_data$X_h, docall_cbind)

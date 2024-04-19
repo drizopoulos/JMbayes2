@@ -303,6 +303,20 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     }
     n_strata <- length(unique(strata))
 
+    # extract weights if present, otherwise set wegiht equal to one for all subjects
+    indx <- match("weights", names(Surv_object$call), nomatch = 0)
+    weights <- if (indx) {
+        if (is.null(Surv_object$model)) {
+            stop("Please refit the model using coxph(..., model = TRUE).\n")
+        }
+        model.weights(Surv_object$model)
+    } else {
+        rep(1, nrow(mf_surv_dataS))
+    }
+    intgr_ind <- attr(weights, "integrate")
+    if (is.null(intgr_ind)) intgr_ind <- 0
+    intgr <- any(as.logical(intgr_ind))
+
     # check if we have competing risks or multi-state processes. In this case,
     # we will have multiple strata per subject. NOTE: this will also be the
     # case for recurrent events. We will need to change the definition of
@@ -529,6 +543,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                  ind_FE_patt = ind_FE_patt,
                  #####
                  idT = idT, any_gammas = any_gammas, strata = strata,
+                 weights = weights, intgr = intgr, intgr_ind = as.numeric(intgr_ind),
                  Time_right = Time_right, Time_left = Time_left, Time_start = Time_start,
                  delta = delta, which_event = which_event, which_right = which_right,
                  which_left = which_left, which_interval = which_interval,

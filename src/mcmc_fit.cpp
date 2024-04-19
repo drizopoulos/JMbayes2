@@ -61,11 +61,19 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uvec idT = as<uvec>(model_data["idT"]) - 1;
   vec log_Pwk = as<vec>(model_data["log_Pwk"]);
   vec log_Pwk2 = as<vec>(model_data["log_Pwk2"]);
+  vec log_weights = log(as<vec>(model_data["weights"]));
   uvec id_H = as<uvec>(model_data["id_H"]) - 1;
   uvec id_H_ = as<uvec>(model_data["id_H_"]) - 1;
   uvec id_h = as<uvec>(model_data["id_h"]) - 1;
+  uvec id_h2 = as<uvec>(model_data["id_h2"]) - 1;
+  uvec id_h_ = as<uvec>(model_data["id_h_"]) - 1;
+  uvec intgr_ind = as<uvec>(model_data["intgr_ind"]);
+  bool intgr = as<bool>(model_data["intgr"]);
   uvec id_H_fast = create_fast_ind(id_H + 1);
   uvec id_h_fast = create_fast_ind(id_h + 1);
+  if (intgr) {
+      id_h_fast = create_fast_ind(id_h_ + 1);
+  }
   bool any_gammas = as<bool>(model_data["any_gammas"]);
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
@@ -304,7 +312,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
              WH_gammas, Wh_gammas, WH2_gammas,
              WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-             log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
+             log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+             id_H_fast, id_h_fast,
              which_event, which_right_event, which_left,
              any_interval, which_interval,
              recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
@@ -331,7 +340,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                      W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                      WH_gammas, Wh_gammas, WH2_gammas,
                      WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                     log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
+                     log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+                     id_H_fast, id_h_fast,
                      which_event, which_right_event, which_left, which_interval,
                      any_event, any_interval,
                      mean_bs_gammas, Tau_bs_gammas, tau_bs_gammas,
@@ -366,7 +376,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                     WH_gammas, Wh_gammas, WH2_gammas,
                     WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                    log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
+                    log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+                    id_H_fast, id_h_fast,
                     which_event, which_right_event, which_left, which_interval,
                     any_event, any_interval,
                     mean_bs_gammas, Tau_bs_gammas, tau_bs_gammas,
@@ -398,7 +409,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                   W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                   WH_gammas, Wh_gammas, WH2_gammas,
                   WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                  log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
+                  log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+                  id_H_fast, id_h_fast,
                   which_event, which_right_event, which_left, which_interval,
                   any_event, any_interval,
                   mean_bs_gammas, Tau_bs_gammas, tau_bs_gammas,
@@ -436,7 +448,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                      W0H_bs_gammas, W0h_bs_gammas,
                      W0H2_bs_gammas, WH_gammas,
                      Wh_gammas, WH2_gammas,
-                     log_Pwk, log_Pwk2,
+                     log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
                      id_H_fast, id_h_fast,
                      which_event, which_right_event,
                      which_left, which_interval,
@@ -449,7 +461,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     gamma_prior_sigmaF, sigmaF_df, sigmaF_sigmas, sigmaF_shape,
                     sigmaF_mean, it, W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                     WH_gammas, Wh_gammas, WH2_gammas, WlongH_alphas, Wlongh_alphas,
-                    WlongH2_alphas, log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
+                    WlongH2_alphas, log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+                    id_H_fast, id_h_fast,
                     which_event, which_right_event, which_left, any_interval,
                     which_interval, recurrent, frailty_H, frailty_h, alphaF_H,
                     alphaF_h, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
@@ -470,7 +483,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                       W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                       WH_gammas, Wh_gammas, WH2_gammas,
                       WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                      log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
+                      log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+                      id_H_fast, id_h_fast,
                       which_event, which_right_event, which_left, which_interval,
                       any_event, any_interval,
                       mean_bs_gammas, Tau_bs_gammas, tau_bs_gammas,
@@ -509,7 +523,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              FunForms, Funs_FunForms, X, Z, idL, y, sigmas,
              extra_parms, families, links, idL_lp_fast, unq_idL,
              W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas,
-             Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2,
+             Wh_gammas, WH2_gammas, log_Pwk, log_Pwk2, log_weights,
+             id_h2, intgr_ind, intgr,
              id_H_fast, id_h_fast, which_event, which_right_event, which_left,
              which_interval, any_event, any_interval, ni_event,
              L, sds, it, acceptance_b, n_burnin, GK_k,
@@ -530,7 +545,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  Funs_FunForms, alphas, any_event, any_interval,
                  W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                  WH_gammas, Wh_gammas, WH2_gammas,
-                 log_Pwk, log_Pwk2, id_H_fast, id_h_fast, which_event,
+                 log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+                 id_H_fast, id_h_fast, which_event,
                  which_right_event, which_left, which_interval, unq_idL,
                  n_burnin, recurrent, frailtyH_sigmaF_alphaF,
                  frailtyh_sigmaF_alphaF, save_random_effects, res_b, res_b_last,
@@ -567,7 +583,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     ////////////////////////////////////////////////////////////////////
 
     res_logLik.row(it) = trans(logLik_long + logLik_surv + logLik_re);
-    if(recurrent) res_logLik.row(it) += trans(logLik_frailty);
+    if (recurrent) res_logLik.row(it) += trans(logLik_frailty);
   }
   if (save_random_effects) {
     res_b = res_b.slices(n_burnin, n_iter - 1);
@@ -675,6 +691,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   uvec which_right_event = join_cols(which_event, which_right);
   uvec which_left = as<uvec>(model_data["which_left"]) - 1;
   uvec which_interval = as<uvec>(model_data["which_interval"]) - 1;
+  bool intgr = as<bool>(model_data["intgr"]);
   bool any_gammas = as<bool>(model_data["any_gammas"]);
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
@@ -682,11 +699,18 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   List Funs_FunForms = as<List>(model_info["Funs_FunForms"]);
   uvec id_H_ = as<uvec>(model_data["id_H_"]) - 1;
   uvec id_h = as<uvec>(model_data["id_h"]) - 1;
+  uvec id_h_ = as<uvec>(model_data["id_h_"]) - 1;
+  uvec id_h2 = as<uvec>(model_data["id_h2"]) - 1;
+  uvec intgr_ind = as<uvec>(model_data["intgr_ind"]) ;
   vec log_Pwk = as<vec>(model_data["log_Pwk"]);
   vec log_Pwk2 = as<vec>(model_data["log_Pwk2"]);
+  vec log_weights = log(as<vec>(model_data["weights"]));
   uvec id_H = as<uvec>(model_data["id_H"]) - 1;
   uvec id_H_fast = create_fast_ind(id_H + 1);
   uvec id_h_fast = create_fast_ind(id_h + 1);
+  if (intgr) {
+      id_h_fast = create_fast_ind(id_h_ + 1);
+  }
   field<uvec> which_term_h = List2Field_uvec(as<List>(model_data["which_term_h"]), true);
   field<uvec> which_term_H = List2Field_uvec(as<List>(model_data["which_term_H"]), true);
   bool any_terminal = !which_term_h.is_empty();
@@ -703,7 +727,8 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
       ///
       W0_H, W0_h, W0_H2, W_H, W_h, W_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
       U_H, U_h, U_H2, Wlong_bar, Wlong_sds, W_sds, any_event, any_interval, any_gammas,
-      FunForms, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2,
+      FunForms, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2, log_weights,
+      id_h2, intgr_ind, intgr,
       id_H_fast, id_h_fast, which_event, which_right_event, which_left,
       which_interval,
       recurrent, alphaF, frailty, which_term_H, which_term_h, any_terminal,
@@ -780,6 +805,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   uvec which_right_event = join_cols(which_event, which_right);
   uvec which_left = as<uvec>(model_data["which_left"]) - 1;
   uvec which_interval = as<uvec>(model_data["which_interval"]) - 1;
+  bool intgr = as<bool>(model_data["intgr"]);
   bool any_gammas = as<bool>(model_data["any_gammas"]);
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
@@ -787,11 +813,18 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   List Funs_FunForms = as<List>(model_info["Funs_FunForms"]);
   uvec id_H_ = as<uvec>(model_data["id_H_"]) - 1;
   uvec id_h = as<uvec>(model_data["id_h"]) - 1;
+  uvec id_h_ = as<uvec>(model_data["id_h_"]) - 1;
+  uvec id_h2 = as<uvec>(model_data["id_h2"]) - 1;
+  uvec intgr_ind = as<uvec>(model_data["intgr_ind"]) ;
   vec log_Pwk = as<vec>(model_data["log_Pwk"]);
   vec log_Pwk2 = as<vec>(model_data["log_Pwk2"]);
+  vec log_weights = log(as<vec>(model_data["weights"]));
   uvec id_H = as<uvec>(model_data["id_H"]) - 1;
   uvec id_H_fast = create_fast_ind(id_H + 1);
   uvec id_h_fast = create_fast_ind(id_h + 1);
+  if (intgr) {
+      id_h_fast = create_fast_ind(id_h_ + 1);
+  }
   field<uvec> which_term_h = List2Field_uvec(as<List>(model_data["which_term_h"]), true);
   field<uvec> which_term_H = List2Field_uvec(as<List>(model_data["which_term_H"]), true);
   bool any_terminal = !which_term_h.is_empty();
@@ -812,7 +845,8 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
       ///
       W0_H, W0_h, W0_H2, W_H, W_h, W_H2, X_H, X_h, X_H2, Z_H, Z_h, Z_H2,
       U_H, U_h, U_H2, Wlong_bar, Wlong_sds, W_sds, any_event, any_interval, any_gammas,
-      FunForms, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2,
+      FunForms, Funs_FunForms, id_H_, id_h, log_Pwk, log_Pwk2, log_weights,
+      id_h2, intgr_ind, intgr,
       id_H_fast, id_h_fast, which_event, which_right_event, which_left,
       which_interval,
       recurrent, alphaF.col(i), frailty.col(i), which_term_H, which_term_h, any_terminal,

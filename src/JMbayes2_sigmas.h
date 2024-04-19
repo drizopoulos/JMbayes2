@@ -89,6 +89,8 @@ void update_sigmaF (vec &sigmaF,
                     const vec &WlongH2_alphas,
                     const vec &log_Pwk,
                     const vec &log_Pwk2,
+                    const vec &log_weights,
+                    const uvec &id_h2, const uvec &intgr_ind, const bool &intgr,
                     const uvec &id_H_fast,
                     const uvec &id_h_fast,
                     const uvec &which_event,
@@ -101,7 +103,7 @@ void update_sigmaF (vec &sigmaF,
                     const vec &frailty_h,
                     const vec &alphaF_H,
                     const vec &alphaF_h,
-                    vec &frailtyH_sigmaF_alphaF, 
+                    vec &frailtyH_sigmaF_alphaF,
                     vec &frailtyh_sigmaF_alphaF
 ) {
   // denominator
@@ -120,12 +122,13 @@ void update_sigmaF (vec &sigmaF,
     log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
              WH_gammas, Wh_gammas, WH2_gammas,
              WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-             log_Pwk, log_Pwk2, id_H_fast, id_h_fast,
+             log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+             id_H_fast, id_h_fast,
              which_event, which_right_event, which_left,
              any_interval, which_interval,
-             recurrent, 
+             recurrent,
              proposed_frailtyH_sigmaF_alphaF, proposed_frailtyh_sigmaF_alphaF);
-  double numerator = sum(logLik_surv_proposed) + 
+  double numerator = sum(logLik_surv_proposed) +
     sum(logPrior_sigmas(proposed_sigmaF, gamma_prior_sigmaF, sigmaF_sigmas, sigmaF_df,
                         sigmaF_mean, sigmaF_shape));
   // log_ratio
