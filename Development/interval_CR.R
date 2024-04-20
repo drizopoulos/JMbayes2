@@ -57,24 +57,26 @@ eventDF$stop[eventDF$start == eventDF$stop] <- 1e-05
 attr(eventDF$weight, "integrate") <- eventDF$intgr_
 
 
-CoxFit <- coxph(Surv(start, stop, event) ~ DxAge + strata(strt), data = eventDF,
+CoxFit <- coxph(Surv(start, stop, event) ~ density:strata(strt), data = eventDF,
                 weights = eventDF$weight, model = TRUE)
 
 lmeFit <- lme(PSAValue ~ ns(time, k = c(1.49, 3.535), B = c(0, 10.223)) + DxAge,
               data = train.dat,
               random = list(CISNET_ID = pdDiag(form = ~ ns(time, k = c(1.49, 3.535), B = c(0, 10.223)))))
 
-lmeFit <- lme(PSAValue ~ ns(time, k = c(1.49, 3.535), B = c(0, 10.223)) + DxAge,
-              data = train.dat,
-              random = ~ ns(time, k = c(1.49, 3.535), B = c(0, 10.223)) | CISNET_ID)
+lmeFit <- lme(PSAValue ~ ns(time, df = 3) + DxAge,
+              data = train.dat, control = lmeControl(opt = 'optim'),
+              random = ~ ns(time, df = 3) | CISNET_ID)
 
 jmFit <- jm(CoxFit, lmeFit, time_var = "time",
             functional_forms = ~ value(PSAValue):strt +
                 slope(PSAValue,eps = 1, direction = "back"):strt,
-            n_iter = 6500L, n_burnin = 2500L)
+            n_iter = 6500L, n_burnin = 500L)
 summary(jmFit)
 
 iccsjm.model$summary$coef
+
+
 
 Surv_object = CoxFit
 Mixed_objects = lmeFit

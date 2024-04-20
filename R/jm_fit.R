@@ -34,7 +34,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
         id_h_ <- unlist(mapply2(function (x, ind) if (sum(ind) > 0) x[!duplicated(ind)] else x,
                                 split(id_h, id_h), split(model_data$intgr_ind, id_h)))
     } else {
-        id_h2 <- 0
+        id_h2 <- id_h_ <- 0
     }
     model_data <-
         c(model_data, create_Wlong_mats(model_data, model_info,
