@@ -939,7 +939,8 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             cens_data <- data.frame(Time = Time, cens_ind = 1 - event)
             censoring_dist <- survfit(Surv(Time, cens_ind) ~ 1, data = cens_data)
             weights <- numeric(length(Time))
-            weights[ind1] <- 1 / summary(censoring_dist, times = Time[ind1])$surv
+            ss <- summary(censoring_dist, times = Time[ind1])
+            weights[ind1] <- 1 / ss$surv[match(ss$time, Time[ind1])]
             weights[ind2] <- 1 / summary(censoring_dist, times = Thoriz)$surv
         }
         if (!is_jm(object) && SL) {

@@ -41,10 +41,13 @@ f <- function (x) {
         out$start <- 0
         a <- x$time.cmp1
         b <- x$time.cmp2
+        # here we use Simpson's 3/8 rule to integrate between
+        # T^{PRG-} and T^{PRG+}: https://en.wikipedia.org/wiki/Simpson%27s_rule#Simpson's_3/8_rule
         out$stop <- c(x$time.cmp2, a, (2 * a + b) / 3, (a + 2 * b) / 3, b)
         n1 <- nrow(out) - 1
         out$event <- c(0, rep(1, n1))
-        out$weight <- c(1, rep((b - a) / 8, n1))
+        out$weight <- c(1, c((b - a) / 8, 3 * (b - a) / 8, 3 * (b - a) / 8,
+                             (b - a) / 8))
         out$strt <- c("trt", rep("prg", n1))
         out$intgr_ <- c(FALSE, rep(TRUE, n1))
     }
@@ -60,15 +63,11 @@ attr(eventDF$weight, "integrate") <- eventDF$intgr_
 CoxFit <- coxph(Surv(start, stop, event) ~ density:strata(strt), data = eventDF,
                 weights = eventDF$weight, model = TRUE)
 
-lmeFit <- lme(PSAValue ~ ns(time, k = c(1.49, 3.535), B = c(0, 10.223)) + DxAge,
-              data = train.dat,
-              random = list(CISNET_ID = pdDiag(form = ~ ns(time, k = c(1.49, 3.535), B = c(0, 10.223)))))
-
-lmeFit <- lme(PSAValue ~ ns(time, df = 3) + DxAge,
+lmeFit <- lme(PSAValue ~ ns(TimeSince_Dx, df = 3) + DxAge,
               data = train.dat, control = lmeControl(opt = 'optim'),
-              random = ~ ns(time, df = 3) | CISNET_ID)
+              random = ~ ns(TimeSince_Dx, df = 3) |CISNET_ID)
 
-jmFit <- jm(CoxFit, lmeFit, time_var = "time",
+jmFit <- jm(CoxFit, lmeFit, time_var = "TimeSince_Dx",
             functional_forms = ~ value(PSAValue):strt +
                 slope(PSAValue,eps = 1, direction = "back"):strt,
             n_iter = 6500L, n_burnin = 500L)

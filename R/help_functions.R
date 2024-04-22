@@ -339,7 +339,7 @@ create_HC_X <- function(x, z, id, terms, data) {
     cnams_z <- colnames(z)
     n_res <- ncol(z)
     X_HC <- vector("list", length = n_res)
-    mat_HC <- matrix(0, nrow= n_res, ncol = ncol(x),
+    mat_HC <- matrix(0, nrow = n_res, ncol = ncol(x),
                      dimnames = list(cnams_z, cnams_x))
     mat_HC[cbind(which(cnams_z %in% cnams_x), which(cnams_x %in% cnams_z))] <- 1 # x_in_z
     # baseline (assumes every model has a random intercept)
