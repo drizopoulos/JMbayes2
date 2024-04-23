@@ -27,10 +27,8 @@ $$\begin{array}{l}
 \pi_j(u \mid t) = \mbox{Pr}\{T_j^* \leq u \mid T_j^* > t, \mathcal Y_j(t), \mathcal D_n\}\\\\
 = \displaystyle 1 - \int\int \frac{S(u \mid b_j, \theta)}{S(t \mid b_j, \theta)} \; p\{b_j \mid T_j^* > t, \mathcal Y_j(t), \theta\} \; p(\theta \mid \mathcal D_n) \; db_j d\theta,
 \end{array}$$
-where $S(\cdot)$ denotes the survival function conditional on the random effects, and 
-$\mathcal Y_j(t) = \{\mathcal Y_{1j}(t), \ldots, \mathcal Y_{Kj}(t)\}$. Combining the 
-three terms in the integrand we can device a Monte Carlo scheme to obtain estimates of 
-these probabilities, namely,
+where $S(\cdot)$ denotes the survival function conditional on the random effects and $\mathcal Y_j(t) = \{\mathcal Y_{1j}(t), \ldots, \mathcal Y_{Kj}(t)\}$. Combining the 
+three terms in the integrand, we can devise a Monte Carlo scheme to obtain estimates of these probabilities, namely,
 
 1. Sample a value $\tilde \theta$ from the posterior of the parameters 
 $[\theta \mid \mathcal D_n]$.
@@ -50,9 +48,7 @@ and their standard error by calculating the standard deviation across the Monte 
 samples.
 
 ## Example
-We will illustrate the calculation of dynamic predictions using package **JMbayes2** from a
-trivariate joint model fitted to the PBC dataset for the longitudinal outcomes `serBilir` (continuous),
-`prothrombin` time (continuous) and `ascites` (dichotomous). We start by fitting the univariate mixed models. For the two continuous outcomes, we allow for nonlinear subject-specific time effects using natural cubic splines. For `ascites`, we postulate linear subject-specific profiles for the log odds. The code is:
+We will illustrate the calculation of dynamic predictions using package **JMbayes2** from a trivariate joint model fitted to the PBC dataset for the longitudinal outcomes `serBilir` (continuous), `prothrombin` time (continuous), and `ascites` (dichotomous). We start by fitting the univariate mixed models. For the two continuous outcomes, we allow for nonlinear subject-specific time effects using natural cubic splines. For `ascites`, we postulate linear subject-specific profiles for the log odds. The code is:
 ```{r}
 fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
            random = ~ ns(year, 3) | id, control = lmeControl(opt = 'optim'))
@@ -84,19 +80,19 @@ ND$status2 <- 0
 ND$years <- t0
 ```
 
-We will only use the first five years of follow-up (line three), and further we specify that the patients were event-free up to this time point (lines four and five).
+We will only use the first five years of follow-up (line three) and specify that the patients were event-free up to this point (lines four and five).
 
-We start with predictions for the longitudinal outcomes. These are produced by the `predict()` method for class `jm` objects, and follow the same lines as the procedure described above for cumulative risk probabilities. The only difference is in Step 3, where instead of calculating the cumulative risk we calculate the predicted values for the longitudinal outcomes. There are two options controlled by the `type_pred` argument, namely predictions at the scale of the response/outcome (default) or at the linear predictor level. The `type` argument controls if the predictions will be for the mean subject (i.e., including only the fixed effects) or subject-specific including both the fixed and random effects. In the `newdata` argument we provide the available measurements of the two patients. This will be used to sample their random effects at Step 2 presented above. This is done with a Metropolis-Hastings algorithm that runs for `n_mcmc` iterations; all iterations but the last one are discarded as burn-in. Finally, argument `n_samples` corresponds to the value of $L$ defined above and specifies the number of Monte Carlo samples: 
+We start with predictions for the longitudinal outcomes. These are produced by the `predict()` method for class `jm` objects and follow the same lines as the procedure described above for cumulative risk probabilities. The only difference is in Step 3, where instead of calculating the cumulative risk, we calculate the predicted values for the longitudinal outcomes. There are two options controlled by the `type_pred` argument, namely predictions at the scale of the response/outcome (default) or at the linear predictor level. The `type` argument controls whether the predictions will be for the mean subject (i.e., including only the fixed effects) or subject-specific, including both the fixed and random effects. In the `newdata` argument we provide the available measurements of the two patients. This will be used to sample their random effects in Step 2, presented above. This is done with a Metropolis-Hastings algorithm that runs for `n_mcmc` iterations; all iterations but the last one are discarded as burn-in. Finally, argument `n_samples` corresponds to the value of $L$ defined above and specifies the number of Monte Carlo samples: 
 ```{r}
 predLong1 <- predict(jointFit, newdata = ND, return_newdata = TRUE)
 ```
 
-Argument `return_newdata` specifies that the predictions are returned as extra columns of the `newdata` data.frame. By default the 95\% credible intervals are also included. Using the `plot()` method for objects returned by `predict.jm(..., return_newdata = TRUE)`, we can display the predictions. With the following code we do that for the first longitudinal outcome:
+Argument `return_newdata` specifies that the predictions are returned as extra columns of the `newdata` data.frame. By default, the 95\% credible intervals are also included. Using the `plot()` method for objects returned by `predict.jm(..., return_newdata = TRUE)`, we can display the predictions. With the following code, we do that for the first longitudinal outcome:
 ```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
 plot(predLong1)
 ```
 
-When we want to calculate predictions for other, future time points, we can accordingly specify the `times` argument. In the following example, we calculate predictions from time `t0` to time 12:
+When we want to calculate predictions for other future time points, we can accordingly specify the `times` argument. In the following example, we calculate predictions from time `t0` to time 12:
 ```{r}
 predLong2 <- predict(jointFit, newdata = ND,
                      times = seq(t0, 12, length.out = 51),
@@ -120,7 +116,7 @@ The predictions are included again as extra columns in the corresponding data.fr
 plot(predLong2, predSurv)
 ```
 
-Again by default, the plot is for the predictions of the first subject (i.e., Patient 25) and for the first longitudinal outcome (i.e., `log(serBilir)`). However, the `plot()` method has a series of arguments that allows users to customize the plot. We illustrate some of these capabilities with the following figure. First, we specify that we want to depict all three outcomes using `outcomes = 1:3` (note: a max of three outcomes can be simultaneously displayed). Next, we specify via the `subject` argument that we want to show the predictions of Patient 93. Note, that for serum bilirubin we used the log transformation in the specification of the linear mixed model. Hence, we receive predictions on the transformed scale. To show predictions on the original scale, we use the `fun_long` argument. Because we have three outcomes, this needs to be a list of three functions. The first one, corresponding to serum bilirubin is the `exp()` and for the other two the `identity()` because we do not wish to transform the predictions. Analogously, we also have the `fun_event` argument to transform the predictions for the event outcome, and in the example below we set that we want to obtain survival probabilities. Using the arguments `bg`, `col_points`, `col_line_long`, `col_line_event`, `fill_CI_long`, and `fill_CI_event` we have changed the appearance of the plot to a dark theme. Finally, the `pos_ylab_long` specifies the relative positive of the y-axis labels for the three longitudinal outcomes.
+Again, by default, the plot is for the predictions of the first subject (i.e., Patient 25) and the first longitudinal outcome (i.e., `log(serBilir)`). However, the `plot()` method has a series of arguments that allow users to customize the plot. We illustrate some of these capabilities with the following figure. First, we specify that we want to depict all three outcomes using `outcomes = 1:3` (note: a max of three outcomes can be simultaneously displayed). Next, we specify via the `subject` argument that we want to show the predictions of Patient 93. Note that for serum bilirubin, we used the log transformation in the specification of the linear mixed model. Hence, we receive predictions on the transformed scale. To show predictions on the original scale, we use the `fun_long` argument. Because we have three outcomes, this needs to be a list of three functions. The first one, corresponding to serum bilirubin, is the `exp()`, and for the other two the `identity()` because we do not wish to transform the predictions. Analogously, we also have the `fun_event` argument to transform the predictions for the event outcome, and in the example below, we set the goal of obtaining survival probabilities. Using the arguments `bg`, `col_points`, `col_line_long`, `col_line_event`, `fill_CI_long`, and `fill_CI_event`, we have changed the appearance of the plot to a dark theme. Finally, the `pos_ylab_long` specifies the relative positive of the y-axis labels for the three longitudinal outcomes.
 ```{r, eval = FALSE}
 cols <- c('#F25C78', '#D973B5', '#F28322')
 plot(predLong2, predSurv, outcomes = 1:3, subject = 93,
@@ -169,7 +165,7 @@ tvAUC(roc)
 
 This function either accepts an object of class `tvROC` or of class `jm`. In the latter case, the user must also provide the `newdata`, `Tstart` and `Dt` or `Thoriz` arguments. Here we have used the same dataset as the one to fit the model, but, in principle, discrimination could be (better) assessed in another dataset.
 
-To assess the accuracy of the predictions we produce a calibration plot:
+To assess the accuracy of the predictions, we produce a calibration plot:
 ```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
 calibration_plot(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 ```
@@ -197,8 +193,5 @@ tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE,
 
 **Notes:**
 
-- To obtain valid estimates of the predictive accuracy measures (i.e., time-varying sensitivity, specificity, and Brier score) we need to account for censoring. A popular method to achieve this is via inverse probability of censoring weighting. For this approach to be valid, we need the model for the weights to be correctly specified. In standard survival analysis, this is achieved either using the Kaplan-Meier estimator or a Cox model for the censoring distribution. However, in the settings where joint models are used, it is often the case that the censoring mechanism may depend on the history of the longitudinal outcomes in a complex manner. This is especially the case when we consider multiple longitudinal outcomes in the analysis. Also, these outcomes may be recorded at different time points per patient and have missing data. Because of these reasons, in these settings, Kaplan-Meier-based or Cox-based censoring weights may be difficult to derive or be biased. The functions in **JMbayes2** that calculate the predictive accuracy measures use joint-model-based weights to account for censoring. These weights allow censoring to depend in any possible manner on the history of the longitudinal outcomes. However, they require that the model is appropriately calibrated.
+- To obtain valid estimates of the predictive accuracy measures (i.e., time-varying sensitivity, specificity, and Brier score) we need to account for censoring. A popular method to achieve this is via the inverse probability of censoring weighting. For this approach to be valid, we need the model for the weights to be correctly specified. In standard survival analysis, this is achieved either using the Kaplan-Meier estimator or a Cox model for the censoring distribution. However, in the settings where joint models are used, it is often the case that the censoring mechanism may depend on the history of the longitudinal outcomes in a complex manner. This is especially the case when we consider multiple longitudinal outcomes in the analysis. Also, these outcomes may be recorded at different time points per patient and have missing data. Because of these reasons, in these settings, Kaplan-Meier-based or Cox-based censoring weights may be difficult to derive or be biased. The functions in **JMbayes2** that calculate the predictive accuracy measures use joint-model-based weights to account for censoring. These weights allow censoring to depend in any possible manner on the history of the longitudinal outcomes. However, they require that the model is appropriately calibrated.
 - The calibration curve, produced by `calibration_plot()`, and the calibration metrics, produced by `calibration_metrics())`, are calculated using the procedure described in [Austin et al., 2020](https://doi.org/10.1002/sim.8570).
-
-
-
