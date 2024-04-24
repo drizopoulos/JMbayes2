@@ -152,12 +152,17 @@ tv(x, knots = NULL, ord = 2L)
         \item{\code{n_iter}}{an integer specifying the number of total iterations per chain. Defaults to 3500.}
         \item{\code{n_thin}}{an integer specifying the thinning of the chains. Defaults to 1.}
         \item{\code{seed}}{the seed used in the sampling procedures. Defaults to 123.}
-        \item{\code{MALA}}{a \code{logical}; if TRUE, the MALA algorithm is used when updating the elements
+        \item{\code{MALA}}{\code{logical}; if \code{TRUE}, the MALA algorithm is used when updating the elements
         of the Cholesky factor of the D matrix. Defaults to \code{FALSE}.}
-        \item{\code{save_random_effects}}{a \code{logical}; if TRUE, the full MCMC results of the random
+        \item{\code{save_random_effects}}{\code{logical}; if \code{TRUE}, the full MCMC results of the random
         effects will be saved and returned with the \code{jm} object. Defaults to \code{FALSE}.}
+
+        \item{\code{save_logLik_contributions}}{\code{logical}; if \code{TRUE}, the log-likelihood contributions are
+        saved in the \code{mcmc} component of the \code{jm} object. Defaults to \code{FALSE}}
         \item{\code{cores}}{an integer specifying the number of cores to use for running the chains in
         parallel; no point of setting this greater than \code{n_chains}.}
+        \item{\code{parallel}}{a character string indicating how the parallel sampling of the chains will
+        be performed. Options are \code{"snow"} (default) and \code{multicore}.}
         \item{\code{knots}}{a numeric vector with the position of the knots for the B-spline approximation
         of the log baseline hazard function.}
     }

@@ -25,7 +25,8 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     con <- list(GK_k = 15L, Bsplines_degree = 2L, base_hazard_segments = 10L,
                 diff = 2L, n_chains = 3L, n_burnin = 500L, n_iter = 3500L,
                 n_thin = 1L, seed = 123L, MALA = FALSE,
-                save_random_effects = FALSE, knots = NULL,
+                save_random_effects = FALSE, save_logLik_contributions = FALSE,
+                knots = NULL,
                 parallel = "snow",
                 cores = parallelly::availableCores(omit = 1L))
     control <- c(control, list(...))

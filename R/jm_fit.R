@@ -342,7 +342,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
         c(mlogLik_jm(thetas, statistics$Mean[["b"]], statistics$post_vars,
                      model_data, model_info, control))
     marginal_fit_stats <- fit_stats(mcmc_out$mlogLik, mlogLik_mean_parms)
-    mcmc_out$logLik <- mcmc_out$mlogLik <- NULL
+    if (!control$save_logLik_contributions) mcmc_out$logLik <- mcmc_out$mlogLik <- NULL
     c(mcmc_out, list(statistics = statistics,
                      fit_stats = list(conditional = conditional_fit_stats,
                                       marginal = marginal_fit_stats)),
