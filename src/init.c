@@ -3,21 +3,21 @@
 #include <stdlib.h> // for NULL
 #include <R_ext/Rdynload.h>
 
-/* FIXME:
+/* FIXME: 
    Check these declarations against the C/Fortran source code.
 */
 
 /* .Call calls */
-extern SEXP _JMbayes2_logLik_Event(SEXP, SEXP);
 extern SEXP _JMbayes2_hSfun(SEXP, SEXP);
+extern SEXP _JMbayes2_logLik_Event(SEXP, SEXP);
 extern SEXP _JMbayes2_logLik_jm(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _JMbayes2_mcmc_cpp(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _JMbayes2_mlogLik_jm(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _JMbayes2_simulate_REs(SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_JMbayes2_logLik_Event",      (DL_FUNC) &_JMbayes2_logLik_Event,      2},
     {"_JMbayes2_hSfun",        (DL_FUNC) &_JMbayes2_hSfun,        2},
+    {"_JMbayes2_logLik_Event", (DL_FUNC) &_JMbayes2_logLik_Event, 2},
     {"_JMbayes2_logLik_jm",    (DL_FUNC) &_JMbayes2_logLik_jm,    4},
     {"_JMbayes2_mcmc_cpp",     (DL_FUNC) &_JMbayes2_mcmc_cpp,     5},
     {"_JMbayes2_mlogLik_jm",   (DL_FUNC) &_JMbayes2_mlogLik_jm,   6},
