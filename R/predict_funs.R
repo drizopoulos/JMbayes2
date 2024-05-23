@@ -769,8 +769,8 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
                  "maximum time to predict; redefine 'times' accordingly.")
         }
         if (times_per_id) {
-            f <- function (lt, tt, tm) c(lt, min(tt, tm))
-            times <- mapply2(f, lt = last_times, tt = times,
+            g <- function (lt, tt, tm) c(lt, min(tt, tm))
+            times <- mapply2(g, lt = last_times, tt = times,
                              MoreArgs = list(tm = t_max))
 
         } else {
@@ -907,8 +907,8 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
                  "maximum time to predict; redefine 'times' accordingly.")
         }
         if (times_per_id) {
-            f <- function (lt, tt, tm) c(lt, min(tt, tm))
-            times <- mapply2(f, lt = last_times, tt = times,
+            g <- function (lt, tt, tm) c(lt, min(tt, tm))
+            times <- mapply2(g, lt = last_times, tt = times,
                              MoreArgs = list(tm = t_max))
 
         } else {
