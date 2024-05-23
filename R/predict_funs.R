@@ -109,6 +109,7 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
     terms_Surv <- object$model_info$terms$terms_Surv
     terms_Surv_noResp <- object$model_info$terms$terms_Surv_noResp
     type_censoring <- object$model_info$type_censoring
+    callS <- object$model_data$callS
     # check for tibbles
     if (inherits(newdataE, "tbl_df") || inherits(newdataE, "tbl")) {
         newdataE <- as.data.frame(newdataE)
@@ -164,6 +165,16 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
     } else {
         unclass(mf_surv_dataS[[ind_strata]])
     }
+    # extract weights if present otherwise all subjects in one stratum
+    indx <- match("weights", names(callS), nomatch = 0)
+    weights <- if (indx) {
+        model.weights(mf_surv_dataS) # <------- Check here with weights
+    } else {
+        rep(1, nrow(mf_surv_dataS))
+    }
+    intgr_ind <- attr(weights, "integrate")
+    if (is.null(intgr_ind)) intgr_ind <- 0
+    intgr <- any(as.logical(intgr_ind))
     Time_integration <- Time_right
     Time_integration[which_left] <- Time_left[which_left]
     Time_integration[which_interval] <- Time_left[which_interval]
@@ -206,7 +217,21 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
     # id_H_ repeats each unique idT the number of quadrature points
     id_H_ <- rep(idT, each = control$GK_k)
     id_H_ <- match(id_H_, unique(id_H_))
-    id_h <- unclass(idT)
+    id_h <- id_h_Wlong <- unclass(idT)
+    if (intgr) {
+        ii <- paste(id_h, strata, sep = "_")
+        id_h2 <- match(ii, unique(ii))
+        id_h_ <- unlist(mapply2(function (x, ind) if (sum(ind) > 0) x[!duplicated(ind)] else x,
+                                split(id_h, id_h), split(intgr_ind, id_h)))
+    } else {
+        id_h2 <- id_h_ <- 0
+    }
+    # reassign id_h
+    if (!is.null(newdataE[[".id_h"]])) {
+        id_h <- newdataE[[".id_h"]]
+        id_h <- match(id_h, unique(id_h))
+    }
+
 
     # Functional forms
     functional_forms <- object$model_info$functional_forms
@@ -234,9 +259,6 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
     if (!any_gammas) {
         W_H <- matrix(0.0, nrow = nrow(W_H), ncol = 1L)
     }
-    #attr <- lapply(functional_forms, extract_attributes, data = dataS_H)
-    #eps <- lapply(attr, "[[", 1L)
-    #direction <- lapply(attr, "[[", 2L)
     X_H <- design_matrices_functional_forms(st, terms_FE_noResp,
                                             dataL, time_var, idVar, idT,
                                             collapsed_functional_forms, Xbar,
@@ -326,7 +348,9 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
         X = X, Z = Z, y = y, family_names = family_names,
         links = links, extra_parms = object$model_data$extra_parms,
         unq_idL = unq_idL, idL_lp = idL_lp, idL = idL, last_times = last_times,
-        Time_start = Time_start
+        Time_start = Time_start, weights = weights, intgr = intgr,
+        intgr_ind = as.numeric(intgr_ind), id_h2 = id_h2, id_h_ = id_h_,
+        id_h_Wlong = id_h_Wlong
     )
 }
 
@@ -543,7 +567,7 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
     if (!object$model_info$CR_MS) {
         #newdataE <- newdataE[order(newdataE[[idVar]], newdataE[[time_var]]), ]
         idT <- newdataE[[idVar]]
-        idT <- factor(idT, unique(idT))
+        idT <- factor2(idT)
         keep_last_row <- tapply(row.names(newdataE), idT, tail, 1L)
         newdataE <- newdataE[keep_last_row, ]
     }
@@ -597,7 +621,9 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
         # update control n_samples
         control$n_samples <- length(id_samples)
         # update random effects
-        mcmc[["b"]] <- simulate_REs(Data, mcmc, control)
+        calc <- simulate_REs(Data, mcmc, control)
+        mcmc[["b"]] <- calc[["b"]]
+        mcmc[["log_S0"]] <- calc[["log_S0"]]
         mcmc$Wlong_std_alphas <- mcmc$Wlong_std_alphas[id_samples, , drop = FALSE]
         mcmc$W_std_gammas <- mcmc$W_std_gammas[id_samples, , drop = FALSE]
         mcmc
@@ -665,6 +691,7 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
                 for (j in seq_along(res$betas)) {
                     res$betas[[j]] <- rbind(res$betas[[j]], x[[i]][["betas"]][[j]])
                 }
+                res$log_S0 <- rbind(res$log_S0, x[[i]][["log_S0"]])
             }
         }
         res
@@ -828,6 +855,9 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
     class(out) <- c("predict_jm", class(out))
     attr(out, "id_var") <- object$model_info$var_names$idVar
     attr(out, "time_var") <- object$model_info$var_names$time_var
+    Time_var <- object$model_info$var_names$Time_var
+    if (length(Time_var) > 1) Time_var <- Time_var[2L]
+    attr(out, "Time_var") <- Time_var
     attr(out, "resp_vars") <- object$model_info$var_names$respVars_form
     attr(out, "ranges") <- ranges <- lapply(object$model_data$y, range,
                                             na.rm = TRUE)
@@ -859,9 +889,7 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
     last_times <- components_newdata$last_times
     if (CR_MS) {
         last_times2 <- last_times
-        ff <- paste(components_newdata$idT, components_newdata$strata, sep = "_")
-        ff <- factor(ff, levels = unique(ff))
-        last_times <- tapply(last_times, ff, tail, n = 1L)
+        last_times <- tapply(last_times, factor2(components_newdata$idT), max)
     }
     t_max <- quantile(object$model_data$Time_right, probs = 0.9)
     if (is.null(times) || !is.numeric(times)) {
@@ -890,98 +918,155 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
     }
     n_times <- sapply(times, length)
 
+    normalize_CIF <- function (x) {
+        while (any(ind <- diff(x) < 0)) {
+            ii <- which(ind)[1L]
+            x[ii + 1] <- x[ii] + 1e-06
+        }
+        x
+    }
+    id_var <- object$model_info$var_names$idVar
+    Time_var <- object$model_info$var_names$Time_var
+    if (length(Time_var) > 1) Time_var <- Time_var[2L]
+    event_var <- object$model_info$var_names$event_var
+    time_var <- object$model_info$var_names$time_var
     if (!CR_MS) {
-        idT <- newdataE[[idVar <- object$model_info$var_names$idVar]]
-        idT <- factor(idT, unique(idT))
-        keep_last_row <- tapply(row.names(newdataE), idT, tail, 1L)
-        newdataE <- newdataE[keep_last_row, ]
-        upp_limit <- unlist(times, use.names = FALSE)
-        gg <- function (t0, t) c(t0, head(t, -1))
-        low_limit <- unlist(mapply2(gg, last_times, times), use.names = FALSE)
-        Data <- prepare_DataE_preds(object, newdataL, newdataE, low_limit,
-                                    upp_limit, last_times, n_times)
-        n_strata <- length(unique(Data$strata))
-        idt_str <- rep(unique(Data$idT), each = n_strata)
-        n_times_id <- tapply(n_times, idt_str, sum)
-        Data$id_H_ <- rep(unique(idt_str), n_times_id * object$control$GK_k)
-        H <- cum_haz(Data, components_newdata$mcmc)
-        index <- rep(seq_along(times), n_times)
-        for (i in seq_along(times)) {
-            H[index == i, ] <- colCumsums(H[index == i, ])
-        }
-        CIF <- 1.0 - pmax(exp(- H), .Machine$double.eps)
-        idT <- newdataE2[[idVar]]
-        idT <- factor(idT, unique(idT))
-        keep_last_row <- tapply(row.names(newdataE2), idT, tail, 1L)
+        idT <- newdataE2[[id_var]]
+        idT <- factor2(idT)
+        keep_last_row <- tapply(row.names(newdataE2), idT, tail, n = 1L)
         newdataE2 <- newdataE2[keep_last_row, ]
-        newdataE2 <- newdataE2[rep(seq_along(times), n_times), ]
-        newdataE2[[object$model_info$var_names$time_var]] <-
-            unlist(times, use.names = FALSE)
-    } else {
-        Data <- prepare_Data_preds(object, newdataL, newdataE)
-        idT <- Data$idT
-        H <- cum_haz(Data, components_newdata$mcmc)
-        S0 <- exp(- rowsum(H, idT, reorder = FALSE))
-        upp_limit <- unlist(times, use.names = FALSE)
-        gg <- function (t0, t) c(t0, head(t, -1))
-        low_limit <- unlist(mapply2(gg, last_times, times), use.names = FALSE)
-        GK_k <- object$control$GK_k
-        GK <- gaussKronrod(GK_k)
-        sk <- GK$sk
-        P <- c(upp_limit - low_limit) / 2
-        st <- outer(P, sk) + (c(upp_limit + low_limit) / 2)
-        log_Pwk <- unname(rep(log(P), each = length(sk)) +
-                              rep_len(log(GK$wk), length.out = length(st)))
-        n_strata <- length(unique(Data$strata))
-        ind_times <- c(sapply(n_times, seq_len))
-        Time_var <- object$model_info$var_names$Time_var
-        if (object$model_info$type_censoring == "counting") {
-            Time_var <- Time_var[2L]
-        }
-        strata <- Data$strata
-        n_ts <- max(n_times)
-        idT2 <- rep(unique(idT), each = n_strata)
-        event_var <- object$model_info$var_names$event_var
-        last_row_str <- tapply(row.names(newdataE2), ff, tail, n = 1L)
-        last_row_str <- match(last_row_str, row.names(newdataE2))
-        newdataE2[last_row_str, event_var] <- 1
-        newdataE2_i <- newdataE2
-        H <- log_h <- array(0.0, dim = c(dim(st), ncol(S0)))
-        for (q in seq_len(GK_k)) {
-            for (t in seq_len(n_ts)) {
-                ind <- which(ind_times == t)
-                newdataE2_i[last_row_str, Time_var] <- st[ind, q]
-                Data <- prepare_Data_preds(object, newdataL, newdataE2_i)
-                HH <- cum_haz(Data, components_newdata$mcmc)
-                H[ind, q, ] <- rowsum(HH, idT, reorder = FALSE)[idT2, ]
-                log_h[ind, q, ] <- hSfun(Data, components_newdata$mcmc)[last_row_str, ]
-            }
-        }
-        log_hH <- log_h - H
-        CIF <- matrix(0.0, dim(log_hH)[1L], dim(log_hH)[3L])
-        log_Pwk <- matrix(log_Pwk, nrow = nrow(st), byrow = TRUE)
-        for (m in seq_len(ncol(S0))) {
-            CIF[, m] <- rowSums(exp(log_Pwk + log_hH[, , m]))
-        }
-        index <- rep(seq_along(times), n_times)
+        rep_ind <- rep(seq_along(times), n_times)
+        newdataE2 <- newdataE2[rep_ind, ]
+        newdataE2[[Time_var]] <- unlist(times)
+        newdataE2[[event_var]] <- 0
+        newdataE2[[time_var]] <- unlist(times)
+        Data <- prepare_Data_preds(object, newdataL2, newdataE2)
+        Data$id_h <- paste(Data$id_h, Data$strata,
+                           unlist(lapply(times, seq_along)), sep = "_")
+        Data$id_h <- match(Data$id_h, unique(Data$id_h))
+        log_S <- logLik_Event(Data, components_newdata$mcmc)
+        log_S0 <- log_S[c(1, 1 + cumsum(head(n_times, -1))), , drop = FALSE]
+        CIF <- 1.0 - exp(log_S - log_S0[rep_ind, , drop = FALSE])
+        # normalize CIF
         for (i in seq_along(times)) {
-            CIF[index == i, ] <- colCumsums(CIF[index == i, ])
+            CIF[rep_ind == i, ] <- apply(CIF[rep_ind == i, ], 2L, normalize_CIF)
         }
-        idt_str <- rep(unique(idT), each = n_strata)
-        n_times_id <- tapply(n_times, idt_str, sum)
-        CIF <- CIF / S0[rep(unique(idt_str), n_times_id), ]
-        newdataE2 <- newdataE2[last_row_str, ]
-        newdataE2 <- newdataE2[rep(seq_along(times), n_times), ]
-        newdataE2[[object$model_info$var_names$time_var]] <-
-            unlist(times, use.names = FALSE)
+    } else {
+        #########################################################
+        # Calculate the overall survival function (denominator) #
+        #########################################################
+        Data <- prepare_Data_preds(object, newdataL, newdataE)
+        Data$id_h <- paste(Data$id_h, Data$strata, sep = "_")
+        Data$id_h <- match(Data$id_h, unique(Data$id_h))
+        idT <- Data$idT
+        H <- logLik_Event(Data, components_newdata$mcmc)
+        log_S0 <- rowsum(H, idT, reorder = FALSE)
+        #################################################
+        # Calculate CIF from last_times to times per id #
+        #################################################
+        # Function to calculate quadrature points and weights from
+        # last_times to times
+        numer_intgr <-
+            function (low, upp,
+                      type = c("7-Gauss-Kronrod",
+                               "15-Gauss-Kronrod", "Simpson-3/8")) {
+                type <- match.arg(type)
+                if (type == "Simpson-3/8") {
+                    n <- length(upp)
+                    list(qpoints = c(rep(low, n), (2 * low + upp) / 3,
+                                     (low + 2 * upp) / 3, upp),
+                         log_weights = log(c(1, 3, 3, 1) * (upp - low) / 8))
+                } else {
+                    GK <- if (type == "7-Gauss-Kronrod") gaussKronrod(7L) else gaussKronrod(15L)
+                    sk <- GK$sk
+                    P <- c(upp - low) / 2
+                    st <- outer(P, sk) + (c(upp + low) / 2)
+                    log_Pwk <- unname(rep(log(P), each = length(sk)) +
+                                          rep_len(log(GK$wk), length.out = length(st)))
+                    list(qpoints = st, log_weights = log_Pwk)
+
+                }
+            }
+        #  extract strata
+        terms_Surv <- object$model_info$terms$terms_Surv
+        ind_strata <- attr(terms_Surv, "specials")$strata
+        # list of data per id
+        idT <- newdataE2[[id_var]]
+        idT <- factor2(idT)
+        newdataE2_lis <- split(newdataE2, idT)
+        # function to expand the data for the strata and the time points,
+        # and use numerical integration
+        expand_data <- function (d, times_i, last_times_i) {
+            NumerIntgr <- numer_intgr(last_times_i, times_i)
+            qpoints <- t(NumerIntgr$qpoints)
+            tt <- col(qpoints)
+            qpoints <- c(qpoints)
+            log_w <- NumerIntgr$log_weights
+            strt_i <- unclass(model.frame.default(terms_Surv, data = d)[[ind_strata]])
+            nams_strt <- attr(strt_i, "levels")
+            if (is.null(nams_strt)) unique(strt_i)
+            nstrt_i <- length(unique(strt_i))
+            lastRow_strt <- tapply(row.names(d), factor2(strt_i), tail, n = 1L)
+            out <- vector("list", length(qpoints))
+            for (j in seq_along(qpoints)) {
+                d[[Time_var]] <- qpoints[j]
+                d[[".log_weights"]] <- log_w[j]
+                d[[".time"]] <- tt[j]
+                d[[".qpoint"]] <- j
+                r <- vector("list", nstrt_i)
+                for (i in seq_along(strt_i)) {
+                    dd <- d
+                    dd[lastRow_strt[i], event_var] <- 1
+                    dd[[".id_h"]] <- paste(dd[[id_var]][1], j, i, sep = "_")
+                    dd[[".strt"]] <- nams_strt[i]
+                    r[[i]] <- dd
+                }
+                out[[j]] <- do.call("rbind", r)
+            }
+            do.call("rbind", out)
+        }
+        newdataE2. <- do.call("rbind", mapply2(expand_data, newdataE2_lis,
+                                              times, last_times))
+
+        unq_strt <- unique(newdataE2.[[".strt"]])
+        CIFs <- vector("list", length(unq_strt))
+        for (j in seq_along(unq_strt)) {
+            actv_Data <- newdataE2.[newdataE2.[[".strt"]] == unq_strt[j], ]
+            Data <- prepare_Data_preds(object, newdataL2, actv_Data)
+            log_S <- logLik_Event(Data, components_newdata$mcmc)
+            actv_Data <- actv_Data[!duplicated(actv_Data[[".id_h"]]), ]
+            log_weights <- actv_Data$.log_weights
+            ll <- log_weights + log_S
+            ind <- paste(actv_Data[[id_var]], actv_Data[[".time"]], sep = "_")
+            ind <- match(ind, unique(ind))
+            n_combos <- length(unique(ind))
+            log_S <- matrix(0.0, n_combos, ncol(ll))
+            for (i in seq_len(n_combos)) {
+                log_S[i, ] <- colLogSumExps(ll[ind == i, ])
+            }
+            ind. <- rep(seq_len(nrow(log_S0)),
+                        each = length(unique(actv_Data[[".time"]])))
+            cif <- exp(log_S - log_S0[ind., ])
+            CIFs[[j]] <- apply(cif, 2L, function (x, ind) {
+                unlist(lapply(split(x, ind), normalize_CIF), use.names = FALSE)
+            }, ind = ind.)
+        }
+        ind <- paste(newdataE2.[[id_var]], newdataE2.[[".time"]],
+                     newdataE2.[[".strt"]], sep = "_")
+        newdataE2. <- newdataE2.[!duplicated(ind), ]
+        newdataE2.[[Time_var]] <- unlist(lapply(times, rep, each = length(unq_strt)))
+        newdataE2.[[".log_weights"]] <- newdataE2.[[".time"]] <-
+            newdataE2.[[".qpoint"]] <- newdataE2.[[".id_h"]] <- NULL
+        f_strt <- factor(newdataE2.[[".strt"]], levels = unq_strt)
+        newdataE2 <- do.call("rbind", split(newdataE2., f_strt))
+        CIF <- do.call("rbind", CIFs)
     }
     res <- list(pred = rowMeans(CIF, na.rm = TRUE),
                 low = rowQuantiles(CIF, probs = (1 - level) / 2, na.rm = TRUE),
                 upp = rowQuantiles(CIF, probs = (1 + level) / 2, na.rm = TRUE),
-                times = unlist(times, use.names = FALSE),
-                id = rep(levels(idT), n_times),
-                "_strata" = if (CR_MS)
-                    rep(tapply(components_newdata$strata, ff, tail, 1), n_times),
+                times = newdataE2[[Time_var]],
+                id = newdataE2[[id_var]],
+                "_strata" = if (CR_MS) newdataE2[[".strt"]],
                 mcmc = if (return_mcmc) CIF
             )
     if (return_newdata) {
@@ -997,6 +1082,7 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
     class(res) <- c("predict_jm", class(res))
     attr(res, "id_var") <- object$model_info$var_names$idVar
     attr(res, "time_var") <- object$model_info$var_names$time_var
+    attr(res, "Time_var") <- Time_var
     attr(res, "resp_vars") <- object$model_info$var_names$respVars_form
     attr(res, "ranges") <- ranges <- lapply(object$model_data$y, range,
                                             na.rm = TRUE)

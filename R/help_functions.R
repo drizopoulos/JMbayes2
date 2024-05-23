@@ -304,7 +304,7 @@ extract_log_sigmas <- function (object) {
     out
 }
 
-value <- function (x) rep(1, NROW(x))
+value <- function (x, time) rep(1, NROW(x))
 vexpit <- Dexpit <- vexp <- Dexp <- function (x) rep(1, NROW(x))
 vabs <- vsqrt <- vlog <- vlog2 <- vlog10 <- function (x) rep(1, NROW(x))
 poly2 <- poly3 <- poly4 <- function (x) rep(1, NROW(x))
@@ -1423,3 +1423,4 @@ create_sigma_list <- function (sigmas, ss_sigmas, idL) {
 }
 
 lng_unq <- function (x) length(unique(x))
+factor2 <- function (x, ...) factor(x, levels = unique(x), ...)

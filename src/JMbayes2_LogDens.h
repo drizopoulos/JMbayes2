@@ -132,19 +132,20 @@ vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
     return res;
 }
 
-//?? remove later, still used in simulate_REs() in mcmc_fit.cpp
 vec log_surv_old (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
               const vec &W0H2_bs_gammas, const vec &WH_gammas,
               const vec &Wh_gammas, const vec &WH2_gammas,
               const vec &WlongH_alphas, const vec &Wlongh_alphas,
               const vec &WlongH2_alphas, const vec &log_Pwk, const vec &log_Pwk2,
+              const vec &log_weights, const uvec &ind_h2, const uvec &intgr_ind, const bool &intgr,
               const uvec &indFast_H, const uvec &indFast_h, const uvec &which_event,
               const uvec &which_right_event, const uvec &which_left,
-              const bool &any_interval, const uvec &which_interval) {
+              const bool &any_interval, const uvec &which_interval,
+              const bool &calculate_sum = true) {
   vec lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
   vec H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
   uword n = H.n_rows;
-  vec lambda_h(n);
+  vec lambda_h = log_weights;
   lambda_h.rows(which_event) = W0h_bs_gammas.rows(which_event) +
     Wh_gammas.rows(which_event) + Wlongh_alphas.rows(which_event);
   vec out(n);
@@ -159,7 +160,12 @@ vec log_surv_old (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
     out.rows(which_interval) = - H.rows(which_interval) +
       log(- expm1(- H2.rows(which_interval)));
   }
-  out = group_sum(out, indFast_h);
+  if (intgr) {
+      out = lse(out, ind_h2, intgr_ind);
+  }
+  if (calculate_sum) {
+      out = group_sum(out, indFast_h);
+  }
   return out;
 }
 

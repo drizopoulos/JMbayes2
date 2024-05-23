@@ -11,3 +11,7 @@ build_search()
 build_tutorials()
 
 build_article("Causal_Effects.Rmd")
+
+library("JMbayes2")
+library("pkgdown")
+build_site(pkg = "C:/Users/Dimitris/Documents/PackagesGitHub/JMbayes2")

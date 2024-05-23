@@ -17,8 +17,8 @@ simulate_REs <- function(Data, MCMC, control) {
     .Call(`_JMbayes2_simulate_REs`, Data, MCMC, control)
 }
 
-cum_haz <- function(Data, MCMC) {
-    .Call(`_JMbayes2_cum_haz`, Data, MCMC)
+logLik_Event <- function(Data, MCMC) {
+    .Call(`_JMbayes2_logLik_Event`, Data, MCMC)
 }
 
 hSfun <- function(Data, MCMC) {

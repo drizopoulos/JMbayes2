@@ -79,7 +79,7 @@ ND <- list(newdataL = ND_long, newdataE = ND_event)
 The first line extracts the longitudinal measurements, and the second line extracts the event times per cause (i.e., death and transplantation). This patient died at 6.95 years, but to make the calculation of cause-specific cumulative risk more relevant, we presume that she did not have the event, and we set the event status variable `status2` to zero. The last line combines the two datasets in a list. *Note:* this last step is a prerequisite from the `predict()` method for competing risks joint model. That is, the datasets provided in the arguments `newdata` and `newdata2` need to be named lists with two components. The first component needs to be named `newdataL` and contain the dataset with the longitudinal measurements. The second component needs to be named `newdataE` and contain the dataset with the event information.
 
 The predictions are calculated using the `predict()` method. The first call to this function calculates the prediction for the longitudinal outcomes at the times provided in the `times` argument, and the second call calculates the cause-specific cumulative risk probabilities. By setting the argument `return_newdata` to `TRUE` in both calls, we can use the corresponding `plot()` method to depict the predictions:
-```{r, "CIFs"}
+```{r, "CIFs", fig.align = "center", fig.width = 8.5, fig.height = 7.5}
 predLong <- predict(jFit_CR, newdata = ND, return_newdata = TRUE,
                     times = seq(6.5, 15, length = 25))
 

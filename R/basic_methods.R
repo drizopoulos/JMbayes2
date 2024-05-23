@@ -614,6 +614,35 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
     event_var <- object$model_info$var_names$event_var
     type_censoring <- object$model_info$type_censoring
     respVars <- unlist(object$model_info$var_names$respVars)
+    check_varNames <- function (object, newdata, id_var,
+                                process = c("Event", "Longitudinal")) {
+        process <- match.arg(process)
+        name_data <- deparse(substitute(newdata))
+        if (process == "Event") {
+            vars_S <- c(all.vars(object$model_info$terms$terms_Surv), id_var)
+            missing_vars <- vars_S[!vars_S %in% names(newdata)]
+            if (length(missing_vars)) {
+                stop("the data.frame '", name_data, "' should contain the ",
+                     "variable(s): ", paste(missing_vars, collapse = ", "),
+                     ". \nThe '", paste(Time_var, collapse = ", "),
+                     "' variable(s) should denote the last time the subjects",
+                     " were event-free, and\nthe '", event_var,
+                     "' variable should be set to 0.\n")
+            }
+        } else {
+            termsL <- object$model_info$terms$terms_FE
+            vars_L <- c(unlist(lapply(termsL, all.vars), use.names = FALSE), id_var)
+            missing_vars <- vars_L[!vars_L %in% names(newdata)]
+            if (length(missing_vars)) {
+                stop("the data.frame '", name_data, "' should contain the ",
+                     "variable(s): ", paste(missing_vars, collapse = ", "),
+                     "\nFor the 'newdata2' or 'newdata2$newdataL', you will also ",
+                     "need to provide the longitudinal\noutcome variables by ",
+                     "setting them to a random value (these values are not used in ",
+                     "the computations).\n")
+            }
+        }
+    }
     if (object$model_info$CR_MS && is.data.frame(newdata)) {
         stop("for competing risks and multi-state models, argument 'newdata' ",
              "must be a list of two data.frames, one for the longitudinal ",
@@ -626,54 +655,18 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
             stop("'newdata' must be a list with two data.frame elements ",
                  "named 'newdataL' and 'newdataE'.\n")
         }
-        for (i in seq_along(respVars)) {
-            v <- respVars[i]
-            if (is.null(newdata$newdataE[[v]])) {
-                newdata$newdataE[[v]] <- rep(0.1, nrow(newdata$newdataE))
-            }
-        }
-        termsL <- object$model_info$terms$terms_FE_noResp
-        all_vars <- unlist(lapply(termsL, all.vars), use.names = FALSE)
-        all_vars <- all_vars[!all_vars %in% time_var]
-        missing_vars <- all_vars[!all_vars %in% names(newdata$newdataE)]
-        if (length(missing_vars)) {
-            stop("the data.frame 'newdata$newdataE' should contain the ",
-                 "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
-        }
-        missing_vars <- all_vars[!all_vars %in% names(newdata$newdataL)]
-        if (length(missing_vars)) {
-            stop("the data.frame 'newdata$newdataL' should contain the ",
-                 "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
+        check_varNames(object, newdata$newdataE, id_var, "E")
+        check_varNames(object, newdata$newdataL, id_var, "L")
+        unq_ids_L <- newdata$newdataL[[id_var]]
+        unq_ids_E <- newdata$newdataE[[id_var]]
+        if (!all(unq_ids_L %in% unq_ids_E) || !all(unq_ids_E %in% unq_ids_L)) {
+            stop("the subject id's in the datasets 'newdata$newdataL' and ",
+                 "'newdata$newdataE' do not match.\n")
         }
     }
     if (is.data.frame(newdata)) {
-        if (is.null(newdata[[event_var]])) newdata[[event_var]] <- 0
-        if (length(Time_var) > 1L) {
-            if (is.null(newdata[[Time_var[1L]]])) {
-                newdata[[Time_var[1L]]] <- 0
-            }
-            if (is.null(newdata[[Time_var[2L]]])) {
-                last_time <- function (x) max(x, na.rm = TRUE) + 1e-06
-                f <- factor(newdata[[id_var]], unique(newdata[[id_var]]))
-                newdata[[Time_var[2L]]] <- ave(newdata[[time_var]], f,
-                                               FUN = last_time)
-            }
-        } else {
-            if (is.null(newdata[[Time_var]])) {
-                last_time <- function (x) max(x, na.rm = TRUE) + 1e-06
-                f <- factor(newdata[[id_var]], unique(newdata[[id_var]]))
-                newdata[[Time_var]] <- ave(newdata[[time_var]], f, FUN = last_time)
-            }
-        }
-        termsL <- object$model_info$terms$terms_FE_noResp
-        all_vars <- unlist(lapply(termsL, all.vars), use.names = FALSE)
-        all_vars <- all_vars[!all_vars %in% time_var]
-        all_vars <- c(all_vars, all.vars(object$model_info$terms$terms_Surv_noResp))
-        missing_vars <- all_vars[!all_vars %in% names(newdata)]
-        if (length(missing_vars)) {
-            stop("the data.frame 'newdata' should contain the ",
-                 "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
-        }
+        check_varNames(object, newdata, id_var, "E")
+        check_varNames(object, newdata, id_var, "L")
     }
     if (!is.null(newdata2) && !is.data.frame(newdata2)) {
         if (!is.list(newdata2) || length(newdata2) != 2 ||
@@ -681,54 +674,18 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
             stop("'newdata2' must be a list with two data.frame elements ",
                  "named 'newdataL' and 'newdataE'.\n")
         }
-        for (i in seq_along(respVars)) {
-            v <- respVars[i]
-            if (is.null(newdata2$newdataE[[v]])) {
-                newdata2$newdataE[[v]] <- rep(0.1, nrow(newdata2$newdataE))
-            }
-        }
-        termsL <- object$model_info$terms$terms_FE_noResp
-        all_vars <- unlist(lapply(termsL, all.vars), use.names = FALSE)
-        all_vars <- all_vars[!all_vars %in% time_var]
-        missing_vars <- all_vars[!all_vars %in% names(newdata2$newdataE)]
-        if (length(missing_vars)) {
-            stop("the data.frame 'newdata2$newdataE' should contain the ",
-                 "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
-        }
-        missing_vars <- all_vars[!all_vars %in% names(newdata2$newdataL)]
-        if (length(missing_vars)) {
-            stop("the data.frame 'newdata2$newdataL' should contain the ",
-                 "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
+        check_varNames(object, newdata2$newdataE, id_var, "E")
+        check_varNames(object, newdata2$newdataL, id_var, "L")
+        unq_ids_L <- newdata2$newdataL[[id_var]]
+        unq_ids_E <- newdata2$newdataE[[id_var]]
+        if (!all(unq_ids_L %in% unq_ids_E) || !all(unq_ids_E %in% unq_ids_L)) {
+            stop("the subject id's in the datasets 'newdata2$newdataL' and ",
+                 "'newdata2$newdataE' do not match.\n")
         }
     }
     if (!is.null(newdata2) && is.data.frame(newdata2)) {
-        if (is.null(newdata2[[event_var]])) newdata2[[event_var]] <- 0
-        if (length(Time_var) > 1L) {
-            if (is.null(newdata2[[Time_var[1L]]])) {
-                newdata2[[Time_var[1L]]] <- 0
-            }
-            if (is.null(newdata2[[Time_var[2L]]])) {
-                last_time <- function (x) max(x, na.rm = TRUE) + 1e-06
-                f <- factor(newdata2[[id_var]], unique(newdata2[[id_var]]))
-                newdata2[[Time_var[2L]]] <- ave(newdata2[[time_var]], f,
-                                               FUN = last_time)
-            }
-        } else {
-            if (is.null(newdata2[[Time_var]])) {
-                last_time <- function (x) max(x, na.rm = TRUE) + 1e-06
-                f <- factor(newdata2[[id_var]], unique(newdata2[[id_var]]))
-                newdata2[[Time_var]] <- ave(newdata2[[time_var]], f, FUN = last_time)
-            }
-        }
-        termsL <- object$model_info$terms$terms_FE_noResp
-        all_vars <- unlist(lapply(termsL, all.vars), use.names = FALSE)
-        all_vars <- all_vars[!all_vars %in% time_var]
-        all_vars <- c(all_vars, all.vars(object$model_info$terms$terms_Surv_noResp))
-        missing_vars <- all_vars[!all_vars %in% names(newdata2)]
-        if (length(missing_vars)) {
-            stop("the data.frame 'newdata2' should contain the ",
-                 "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
-        }
+        check_varNames(object, newdata2, id_var, "E")
+        check_varNames(object, newdata2, id_var, "L")
     }
     if (is.null(cores)) {
         n <- if (!is.data.frame(newdata)) length(unique(newdata$newdataL[[id_var]]))
@@ -774,6 +731,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
     }
     id_var <- attr(x, "id_var")
     time_var <- attr(x, "time_var")
+    Time_var <- attr(x, "Time_var")
     resp_vars <- attr(x, "resp_vars")
     ranges <- attr(x, "ranges")
     last_times <- attr(x, "last_times")
@@ -851,7 +809,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
     }
     xlim <- NULL
     if (!is.null(pred_Long)) xlim <- range(xlim, pred_Long[[time_var]])
-    if (!is.null(pred_Event)) xlim <- range(xlim, pred_Event[[time_var]])
+    if (!is.null(pred_Event)) xlim <- range(xlim, pred_Event[[Time_var]])
     plot_long_i <- function (outcome, add_xlab = FALSE, box = TRUE,
                              cex_axis = cex_axis) {
         ind <- pos_outcomes[outcome]
@@ -907,7 +865,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         unq_strata <- sort(unique(strata))
         col_line_event <- rep(col_line_event, length.out = length(unq_strata))
         fill_CI_event <- rep(fill_CI_event, length.out = length(unq_strata))
-        times <- pred_Event[[time_var]]
+        times <- pred_Event[[Time_var]]
         ry <- sort(fun_event(c(0, 1)))
         rx <- range(times, na.rm = TRUE)
         plot(rx, ry, type = "n", xlab = "", ylab = "", xlim = xlim,

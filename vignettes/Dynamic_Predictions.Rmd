@@ -76,7 +76,7 @@ We want to calculate predictions for the longitudinal and survival outcomes for 
 t0 <- 5
 ND <- pbc2[pbc2$id %in% c(25, 93), ]
 ND <- ND[ND$year < t0, ]
-ND$status2 <- 0
+ND$event <- 0
 ND$years <- t0
 ```
 
