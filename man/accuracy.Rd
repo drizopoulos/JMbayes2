@@ -22,12 +22,12 @@
 tvROC(object, newdata, Tstart, \dots)
 
 \method{tvROC}{jm}(object, newdata, Tstart, Thoriz = NULL,
-    Dt = NULL, \dots)
+    Dt = NULL, type_weights = c("model-based", "IPCW"), \dots)
 
 tvAUC(object, newdata, Tstart, \dots)
 
 \method{tvAUC}{jm}(object, newdata, Tstart, Thoriz = NULL,
-    Dt = NULL, \dots)
+    Dt = NULL, type_weights = c("model-based", "IPCW"), \dots)
 
 \method{tvAUC}{tvROC}(object, \dots)
 

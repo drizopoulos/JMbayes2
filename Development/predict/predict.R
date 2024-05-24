@@ -99,3 +99,23 @@ cex_xlab = 1; cex_ylab_long = 1; cex_ylab_event = 1
 cex_main = 1; cex_axis = 1; col_axis = "black"
 pos_ylab_long = c(0.1, 2, 0.08); bg = "white"
 
+
+#############################################################
+#############################################################
+
+object = jointFit1
+newdata = pbc2
+Tstart = 5
+Thoriz = NULL
+Dt = 2
+type_weights = "IPCW"
+
+tvAUC(jointFit1, newdata = pbc2, Tstart = 3, Dt = 2)
+tvAUC(jointFit1, newdata = pbc2, Tstart = 3, Dt = 2, type_weights = "I")
+
+xx1 <- tvROC(jointFit1, newdata = pbc2, Tstart = 3, Dt = 2)
+xx2 <- tvROC(jointFit1, newdata = pbc2, Tstart = 3, Dt = 2, type_weights = "I")
+
+plot(xx1)
+plot(xx2)
+

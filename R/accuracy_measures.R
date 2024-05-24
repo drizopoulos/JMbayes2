@@ -2,7 +2,8 @@ tvROC <- function (object, newdata, Tstart, ...) {
     UseMethod("tvROC")
 }
 
-tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
+tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
+                      type_weights = c("model-based", "IPCW"), ...) {
     if (!inherits(object, "jm"))
         stop("Use only with 'jm' objects.\n")
     if (!is.data.frame(newdata) || nrow(newdata) == 0)
@@ -16,6 +17,7 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     type_censoring <- object$model_info$type_censoring
     if (object$model_info$CR_MS)
         stop("'tvROC()' currently only works for right censored data.")
+    type_weights <- match.arg(type_weights)
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
     id_var <- object$model_info$var_names$idVar
@@ -52,7 +54,6 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     qi_u_t <- 1 - preds$pred
     names(qi_u_t) <- preds$id
     qi_u_t <- qi_u_t[preds$times > Tstart]
-
     id <- newdata[[id_var]]
     Time <- newdata[[Time_var]]
     event <- newdata[[event_var]]
@@ -60,36 +61,52 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     Time <- tapply(Time, f, tail, 1L)
     event <- tapply(event, f, tail, 1L)
     names(Time) <- names(event) <- as.character(unique(id))
-    # subjects who died before Thoriz
-    ind1 <- Time < Thoriz & event == 1
-    # subjects who were censored in the interval (Tstart, Thoriz)
-    ind2 <- Time < Thoriz & event == 0
-    ind <- ind1 | ind2
-    if (any(ind2)) {
-        nams <- names(ind2[ind2])
-        preds2 <- predict(object, newdata = newdata[id %in% nams, ],
-                          process = "event", times = Thoriz, ...)
-        pi_u_t <- preds2$pred
-        f <- factor(preds2$id, levels = unique(preds2$id))
-        names(pi_u_t) <- f
-        pi_u_t <- tapply(pi_u_t, f, tail, 1)
-        nams2 <- names(ind2[ind2])
-        ind[ind2] <- ind[ind2] * pi_u_t[nams2]
-    }
-    # calculate sensitivity and specificity
     thrs <- seq(0, 1, length = 101)
     Check <- outer(qi_u_t, thrs, "<")
-    nTP <- colSums(Check * c(ind))
-    nFN <- sum(ind) - nTP
-    TP <- nTP / sum(ind)
-    nFP <- colSums(Check * c(1 - ind))
-    nTN <- sum(1 - ind) - nFP
-    FP <- nFP / sum(1 - ind)
+    if (type_weights == "model-based") {
+        # subjects who died before Thoriz
+        ind1 <- Time < Thoriz & event == 1
+        # subjects who were censored in the interval (Tstart, Thoriz)
+        ind2 <- Time < Thoriz & event == 0
+        ind <- ind1 | ind2
+        if (any(ind2)) {
+            nams <- names(ind2[ind2])
+            preds2 <- predict(object, newdata = newdata[id %in% nams, ],
+                              process = "event", times = Thoriz, ...)
+            pi_u_t <- preds2$pred
+            f <- factor(preds2$id, levels = unique(preds2$id))
+            names(pi_u_t) <- f
+            pi_u_t <- tapply(pi_u_t, f, tail, 1)
+            nams2 <- names(ind2[ind2])
+            ind[ind2] <- ind[ind2] * pi_u_t[nams2]
+        }
+        # calculate sensitivity and specificity
+        nTP <- colSums(Check * c(ind))
+        nFN <- sum(ind) - nTP
+        TP <- nTP / sum(ind)
+        nFP <- colSums(Check * c(1 - ind))
+        nTN <- sum(1 - ind) - nFP
+        FP <- nFP / sum(1 - ind)
+    } else {
+        ind1 <- Time < Thoriz & event == 1
+        ind2 <- Time > Thoriz
+        nFP <- colSums(Check * c(ind2))
+        nTN <- sum(ind2) - nFP
+        FP <- nFP / sum(ind2)
+        cens_data <- data.frame(Time = Time, cens_ind = 1 - event)
+        censoring_dist <- survfit(Surv(Time, cens_ind) ~ 1, data = cens_data)
+        weights <- numeric(length(Time))
+        ss <- summary(censoring_dist, times = Time[ind1])
+        weights[ind1] <- 1 / ss$surv[match(ss$time, Time[ind1])]
+        nTP <- colSums(Check[ind1, , drop = FALSE] / weights[ind1])
+        nFN <- sum(1 / weights[ind1]) - nTP
+        TP <- nTP / sum(1 / weights[ind1])
+    }
     Q <- colMeans(Check)
     Q. <- 1 - Q
     k.1.0 <- (TP - Q) / Q.
     k.0.0 <- (1 - FP - Q.) / Q
-    P <- mean(ind)
+    P <- if (type_weights == "model-based") mean(ind) else mean(ind1)
     P. <- 1 - P
     k.05.0 <- (P * Q. * k.1.0 + P. * Q * k.0.0) / (P * Q. + P. * Q)
     f1score <- 2 * nTP / (2 * nTP + nFN + nFP)
@@ -100,7 +117,7 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
                 qSN = k.1.0, qSP = k.0.0, qOverall = k.05.0,
                 thrs = thrs, F1score = F1score, Youden = Youden,
                 Tstart = Tstart, Thoriz = Thoriz, nr = length(unique(id)),
-                classObject = class(object),
+                classObject = class(object), type_weights = type_weights,
                 nameObject = deparse(substitute(object)))
     class(out) <- "tvROC"
     out
@@ -111,7 +128,10 @@ print.tvROC <- function (x, digits = 4, ...) {
         x$nameObject)
     cat("\n\nAt time:", round(x$Thoriz, digits))
     cat("\nUsing information up to time: ", round(x$Tstart, digits),
-        " (", x$nr, " subjects still at risk)\n\n", sep = "")
+        " (", x$nr, " subjects still at risk)", sep = "")
+    cat("\nAccounting for censoring using ",
+        if (x$type_weights == "IPCW") "inverse probability of censoring Kaplan-Meier weights\n\n"
+        else "model-based weights\n\n", sep = "")
     d <- data.frame("cut-off" = x$thrs, "SN" = x$TP, "SP" = 1 - x$FP,
                     "qSN" = x$qSN, "qSP" = x$qSP, check.names = FALSE,
                     check.rows = FALSE)
@@ -277,12 +297,14 @@ tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
     out
 }
 
-tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL, ...) {
-    roc <- tvROC(object, newdata, Tstart, Thoriz, Dt, ...)
+tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
+                      type_weights = c("model-based", "IPCW"), ...) {
+    roc <- tvROC(object, newdata, Tstart, Thoriz, Dt, type_weights, ...)
     TP <- roc$TP
     FP <- roc$FP
     auc <- sum(0.5 * diff(FP) * (TP[-1L] + TP[-length(TP)]), na.rm = TRUE)
     out <- list(auc = auc, Tstart = Tstart, Thoriz = roc$Thoriz, nr = roc$nr,
+                type_weights = roc$type_weights,
                 classObject = class(object), nameObject = deparse(substitute(object)))
     class(out) <- "tvAUC"
     out
@@ -294,7 +316,8 @@ tvAUC.tvROC <- function (object, ...) {
     auc <- sum(0.5 * diff(FP) * (TP[-1L] + TP[-length(TP)]), na.rm = TRUE)
     out <- list(auc = auc, Tstart = object$Tstart, Thoriz = object$Thoriz,
                 nr = object$nr, classObject = object$classObject,
-                nameObject = object$nameObject)
+                nameObject = object$nameObject,
+                type_weights = object$type_weights)
     class(out) <- "tvAUC"
     out
 }
@@ -310,6 +333,9 @@ print.tvAUC <- function (x, digits = 4, ...) {
     cat("\nAt time:", round(x$Thoriz, digits))
     cat("\nUsing information up to time: ", round(x$Tstart, digits),
         " (", x$nr, " subjects still at risk)", sep = "")
+    cat("\nAccounting for censoring using ",
+        if (x$type_weights == "IPCW") "inverse probability of censoring Kaplan-Meier weights"
+        else "model-based weights", sep = "")
     cat("\n\n")
     invisible(x)
 }
