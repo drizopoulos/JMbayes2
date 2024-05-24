@@ -3,6 +3,10 @@
 ## Major
 * `jm()` now allows for zero-correlations constraints in the covariance matrix of the random effects. When the mixed models provided in the `Mixed_objects` argument have been fitted assuming a diagonal matrix for the random effects, this will also be assumed in the joint model (in previous versions, this was ignored). In addition, the new argument `which_independent` can be used to specify which longitudinal outcomes are to be assumed independent.
 
+* A bug in the `predict()` method causing low AUC values has been corrected.
+
+* The time-varying ROC and AUC now allow to correct for censoring in the interval `Tstart` to `Thoriz` using inverse probability of censoring weighting. The default remains model-based weights
+
 # JMbayes2 0.4.1
 
 ## Major
