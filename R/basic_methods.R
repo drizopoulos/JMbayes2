@@ -695,7 +695,7 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL, times = NULL,
     if (is.null(con$cores)) {
         n <- if (!is.data.frame(newdata)) length(unique(newdata$newdataL[[id_var]]))
         else length(unique(newdata[[id_var]]))
-        cores <- if (n > 20) 4L else 1L
+        con$cores <- if (n > 20) 4L else 1L
     }
     components_newdata <-
         get_components_newdata(object, newdata, con$n_samples,
@@ -1221,7 +1221,7 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
         if (is.data.frame(x)) attr(x, "mcmc") else x[["mcmc"]]
     }
     MCMC <- lapply(preds, extract_mcmc)
-    alp <- 1 - level
+    alp <- 1 - con$level
     if (is.list(MCMC[[1L]])) {
         n_outcomes <- length(MCMC[[1L]])
         pred_ <- qs <- vector("list", n_outcomes)

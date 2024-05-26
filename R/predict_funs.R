@@ -907,8 +907,8 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
                  "maximum time to predict; redefine 'times' accordingly.")
         }
         if (times_per_id) {
-            g <- function (lt, tt, tm) c(lt, min(tt, tm))
-            times <- mapply2(g, lt = last_times, tt = times,
+            gg <- function (lt, tt, tm) c(lt, min(tt, tm))
+            times <- mapply2(gg, lt = last_times, tt = times,
                              MoreArgs = list(tm = t_max))
 
         } else {
