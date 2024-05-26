@@ -136,7 +136,7 @@ Learning</h1>
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2024-05-25</h4>
+            <h4 data-toc-skip class="date">2024-05-26</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Super_Learning.Rmd" class="external-link"><code>vignettes/Super_Learning.Rmd</code></a></small>
       <div class="hidden name"><code>Super_Learning.Rmd</code></div>
@@ -365,12 +365,12 @@ datasets that are provided in the <code>newdata</code> argument:</p>
 <span><span class="co">#&gt; Integrated Brier score per model: 0.0601 0.0575 0.0626 0.0509 0.0601</span></span>
 <span><span class="co">#&gt; Weights per model: 0 0 0 1 0</span></span>
 <span><span class="co">#&gt; Number of folds: 5</span></span></code></pre></div>
-<p>We observe that the first two models dominate the weights. We also
-note that the integrated Brier score based on the combined predictions
-is smaller than the integrated Brier score of each individual model. To
-calculate the model weights using the expected predictive cross-entropy,
-use function <code><a href="../reference/accuracy.html">tvEPCE()</a></code> with an almost identical call as for
-the Brier score:</p>
+<p>We observe that the fourth model dominates the weights. Hence, the
+integrated Brier score based on the combined predictions is essentially
+the integrated Brier score of this model. To calculate the model weights
+using the expected predictive cross-entropy, use function
+<code><a href="../reference/accuracy.html">tvEPCE()</a></code> with an almost identical call as for the Brier
+score:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">EPCE_weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">tvEPCE</a></span><span class="op">(</span><span class="va">Models_folds</span>, newdata <span class="op">=</span> <span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span>, </span>
 <span>                       Tstart <span class="op">=</span> <span class="va">tstr</span>, Thoriz <span class="op">=</span> <span class="va">thor</span><span class="op">)</span></span>
@@ -387,11 +387,10 @@ the Brier score:</p>
 <span><span class="co">#&gt; EPCE per model: 0.3545 0.348 0.3708 0.341 0.4037</span></span>
 <span><span class="co">#&gt; Weights per model: 0.0019 0.567 0.4308 0 3e-04</span></span>
 <span><span class="co">#&gt; Number of folds: 5</span></span></code></pre></div>
-<p>The EPCE results are similar to those from the integrated Brier
-score; however, now only models <code>M2</code> and <code>M3</code>
-share the weights. Again, we see that the EPCE based on the combined
-cross-validated predictions is smaller than the EPCE based on the
-cross-validated predictions of each individual model.</p>
+<p>The EPCE results indicate that models <code>M2</code> and
+<code>M3</code> share the most weight. We observe that the EPCE based on
+the combined cross-validated predictions is smaller than the EPCE based
+on the cross-validated predictions of each individual model.</p>
 <p>To use these weights in practice, we must first refit the five joint
 models we considered in the original dataset.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
