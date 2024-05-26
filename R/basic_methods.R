@@ -1168,9 +1168,9 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
     cores <- min(con$cores, length(object))
     if (cores > 1L) {
         have_mc <- have_snow <- FALSE
-        if (parallel == "multicore") {
+        if (con$parallel == "multicore") {
             have_mc <- .Platform$OS.type != "windows"
-        } else if (parallel == "snow") {
+        } else if (con$parallel == "snow") {
             have_snow <- TRUE
         }
         if (!have_mc && !have_snow) cores <- 1L
