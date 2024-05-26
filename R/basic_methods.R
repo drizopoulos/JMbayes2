@@ -605,8 +605,8 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL, times = NULL,
     type <- match.arg(type)
     con <- list(all_times = FALSE, times_per_id = FALSE, level = 0.95,
                 return_newdata = FALSE, use_Y = TRUE, return_mcmc = FALSE,
-                n_samples = 200L, n_mcmc = 55L,
-                parallel = c("snow", "multicore"), cores = NULL, seed = 123L)
+                n_samples = 200L, n_mcmc = 55L, parallel = "snow",
+                cores = NULL, seed = 123L)
     control <- c(control, list(...))
     namC <- names(con)
     con[(namc <- names(control))] <- control
@@ -1035,8 +1035,7 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
     parallel <- match.arg(parallel)
     con <- list(all_times = FALSE, times_per_id = FALSE, level = 0.95,
                 return_newdata = FALSE, use_Y = TRUE, return_mcmc = FALSE,
-                n_samples = 200L, n_mcmc = 55L,
-                parallel = c("snow", "multicore"),
+                n_samples = 200L, n_mcmc = 55L, parallel = "snow",
                 cores = parallelly::availableCores(omit = 1L), seed = 123L)
     control <- c(control, list(...))
     namC <- names(con)

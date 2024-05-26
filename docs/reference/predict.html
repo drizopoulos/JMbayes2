@@ -302,42 +302,38 @@ longitudinal outcomes are plotted.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># predictions for the longitudinal outcomes using newdata</span></span></span>
 <span class="r-in"><span><span class="va">predLong1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>first element used of 'length.out' argument</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in seq_len(cores):</span> argument must be coercible to non-negative integer</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># predictions for the longitudinal outcomes at future time points</span></span></span>
 <span class="r-in"><span><span class="co"># from year 3 to 10</span></span></span>
 <span class="r-in"><span><span class="va">predLong2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>,</span></span>
 <span class="r-in"><span>                     times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="va">t0</span>, <span class="fl">10</span>, length.out <span class="op">=</span> <span class="fl">51</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                     return_newdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>first element used of 'length.out' argument</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in seq_len(cores):</span> argument must be coercible to non-negative integer</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># predictions for the event outcome at future time points</span></span></span>
 <span class="r-in"><span><span class="co"># from year 3 to 10</span></span></span>
 <span class="r-in"><span><span class="va">predSurv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>, process <span class="op">=</span> <span class="st">"event"</span>,</span></span>
 <span class="r-in"><span>                    times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="va">t0</span>, <span class="fl">10</span>, length.out <span class="op">=</span> <span class="fl">51</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                    return_newdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>first element used of 'length.out' argument</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in seq_len(cores):</span> argument must be coercible to non-negative integer</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong1</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'predLong1' not found</span>
+<span class="r-plt img"><img src="predict-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># for subject 25, outcomes in reverse order</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, outcomes <span class="op">=</span> <span class="fl">3</span><span class="op">:</span><span class="fl">1</span>, subject <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'predLong2' not found</span>
+<span class="r-plt img"><img src="predict-2.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="predict-3.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="predict-4.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># prediction for the event outcome</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predSurv</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'predSurv' not found</span>
+<span class="r-plt img"><img src="predict-5.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># combined into one plot, the first longitudinal outcome and cumulative risk</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, <span class="va">predSurv</span>, outcomes <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'predLong2' not found</span>
+<span class="r-plt img"><img src="predict-6.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># the first two longitudinal outcomes</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong1</span>, <span class="va">predSurv</span>, outcomes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'predLong1' not found</span>
+<span class="r-plt img"><img src="predict-7.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># all three longitudinal outcomes, we display survival probabilities instead</span></span></span>
 <span class="r-in"><span><span class="co"># of cumulative risk, and we transform serum bilirubin to the original scale</span></span></span>
@@ -346,7 +342,7 @@ longitudinal outcomes are plotted.</p></dd>
 <span class="r-in"><span>     ylab_event <span class="op">=</span> <span class="st">"Survival Probabilities"</span>,</span></span>
 <span class="r-in"><span>     ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Serum Bilirubin"</span>, <span class="st">"Prothrombin"</span>, <span class="st">"Ascites"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>     pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.9</span>, <span class="fl">1.9</span>, <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'predLong2' not found</span>
+<span class="r-plt img"><img src="predict-8.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
