@@ -333,16 +333,25 @@
 <dd><p>the seed used in the sampling procedures. Defaults to 123.</p></dd>
 
         <dt><code>MALA</code></dt>
-<dd><p>a <code>logical</code>; if TRUE, the MALA algorithm is used when updating the elements
+<dd><p><code>logical</code>; if <code>TRUE</code>, the MALA algorithm is used when updating the elements
         of the Cholesky factor of the D matrix. Defaults to <code>FALSE</code>.</p></dd>
 
         <dt><code>save_random_effects</code></dt>
-<dd><p>a <code>logical</code>; if TRUE, the full MCMC results of the random
+<dd><p><code>logical</code>; if <code>TRUE</code>, the full MCMC results of the random
         effects will be saved and returned with the <code>jm</code> object. Defaults to <code>FALSE</code>.</p></dd>
+
+
+        <dt><code>save_logLik_contributions</code></dt>
+<dd><p><code>logical</code>; if <code>TRUE</code>, the log-likelihood contributions are
+        saved in the <code>mcmc</code> component of the <code>jm</code> object. Defaults to <code>FALSE</code></p></dd>
 
         <dt><code>cores</code></dt>
 <dd><p>an integer specifying the number of cores to use for running the chains in
         parallel; no point of setting this greater than <code>n_chains</code>.</p></dd>
+
+        <dt><code>parallel</code></dt>
+<dd><p>a character string indicating how the parallel sampling of the chains will
+        be performed. Options are <code>"snow"</code> (default) and <code>multicore</code>.</p></dd>
 
         <dt><code>knots</code></dt>
 <dd><p>a numeric vector with the position of the knots for the B-spline approximation

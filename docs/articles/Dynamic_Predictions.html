@@ -135,7 +135,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2024-04-22</h4>
+            <h4 data-toc-skip class="date">2024-05-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Dynamic_Predictions.Rmd" class="external-link"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="hidden name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -165,10 +165,10 @@ Y_j(t), \mathcal D_n\}\\\\
 \theta)} \; p\{b_j \mid T_j^* &gt; t, \mathcal Y_j(t), \theta\} \;
 p(\theta \mid \mathcal D_n) \; db_j d\theta,
 \end{array}\]</span> where <span class="math inline">\(S(\cdot)\)</span>
-denotes the survival function conditional on the random effects, and
+denotes the survival function conditional on the random effects and
 <span class="math inline">\(\mathcal Y_j(t) = \{\mathcal Y_{1j}(t),
 \ldots, \mathcal Y_{Kj}(t)\}\)</span>. Combining the three terms in the
-integrand we can device a Monte Carlo scheme to obtain estimates of
+integrand, we can devise a Monte Carlo scheme to obtain estimates of
 these probabilities, namely,</p>
 <ol style="list-style-type: decimal">
 <li><p>Sample a value <span class="math inline">\(\tilde \theta\)</span>
@@ -177,8 +177,9 @@ from the posterior of the parameters <span class="math inline">\([\theta
 <li><p>Sample a value <span class="math inline">\(\tilde b_j\)</span>
 from the posterior of the random effects <span class="math inline">\([b_j \mid T_j^* &gt; t, \mathcal Y_j(t), \tilde
 \theta]\)</span>.</p></li>
-<li><p>Compute the ratio of survival probabilities <span class="math inline">\(S(u \mid \tilde b_j, \tilde \theta) \Big / S(t
-\mid \tilde b_j, \tilde \theta)\)</span>.</p></li>
+<li><p>Compute the ratio of survival probabilities <span class="math inline">\(S(u \mid \tilde b_j,
+\tilde \theta) \Big / S(t \mid \tilde b_j, \tilde
+\theta)\)</span>.</p></li>
 </ol>
 <p>Replicating these steps <span class="math inline">\(L\)</span> times,
 we can estimate the conditional cumulative risk probabilities by <span class="math display">\[1 - \frac{1}{L} \sum_{l=1}^L \frac{S(u \mid
@@ -193,7 +194,7 @@ the standard deviation across the Monte Carlo samples.</p>
 <p>We will illustrate the calculation of dynamic predictions using
 package <strong>JMbayes2</strong> from a trivariate joint model fitted
 to the PBC dataset for the longitudinal outcomes <code>serBilir</code>
-(continuous), <code>prothrombin</code> time (continuous) and
+(continuous), <code>prothrombin</code> time (continuous), and
 <code>ascites</code> (dichotomous). We start by fitting the univariate
 mixed models. For the two continuous outcomes, we allow for nonlinear
 subject-specific time effects using natural cubic splines. For
@@ -228,25 +229,25 @@ code:</p>
 <code class="sourceCode R"><span><span class="va">t0</span> <span class="op">&lt;-</span> <span class="fl">5</span></span>
 <span><span class="va">ND</span> <span class="op">&lt;-</span> <span class="va">pbc2</span><span class="op">[</span><span class="va">pbc2</span><span class="op">$</span><span class="va">id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">93</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="va">ND</span> <span class="op">&lt;-</span> <span class="va">ND</span><span class="op">[</span><span class="va">ND</span><span class="op">$</span><span class="va">year</span> <span class="op">&lt;</span> <span class="va">t0</span>, <span class="op">]</span></span>
-<span><span class="va">ND</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span><span class="va">ND</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
 <span><span class="va">ND</span><span class="op">$</span><span class="va">years</span> <span class="op">&lt;-</span> <span class="va">t0</span></span></code></pre></div>
-<p>We will only use the first five years of follow-up (line three), and
-further we specify that the patients were event-free up to this time
-point (lines four and five).</p>
+<p>We will only use the first five years of follow-up (line three) and
+specify that the patients were event-free up to this point (lines four
+and five).</p>
 <p>We start with predictions for the longitudinal outcomes. These are
 produced by the <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> method for class <code>jm</code>
-objects, and follow the same lines as the procedure described above for
+objects and follow the same lines as the procedure described above for
 cumulative risk probabilities. The only difference is in Step 3, where
-instead of calculating the cumulative risk we calculate the predicted
+instead of calculating the cumulative risk, we calculate the predicted
 values for the longitudinal outcomes. There are two options controlled
 by the <code>type_pred</code> argument, namely predictions at the scale
 of the response/outcome (default) or at the linear predictor level. The
-<code>type</code> argument controls if the predictions will be for the
-mean subject (i.e., including only the fixed effects) or
-subject-specific including both the fixed and random effects. In the
+<code>type</code> argument controls whether the predictions will be for
+the mean subject (i.e., including only the fixed effects) or
+subject-specific, including both the fixed and random effects. In the
 <code>newdata</code> argument we provide the available measurements of
-the two patients. This will be used to sample their random effects at
-Step 2 presented above. This is done with a Metropolis-Hastings
+the two patients. This will be used to sample their random effects in
+Step 2, presented above. This is done with a Metropolis-Hastings
 algorithm that runs for <code>n_mcmc</code> iterations; all iterations
 but the last one are discarded as burn-in. Finally, argument
 <code>n_samples</code> corresponds to the value of <span class="math inline">\(L\)</span> defined above and specifies the number
@@ -255,15 +256,15 @@ of Monte Carlo samples:</p>
 <code class="sourceCode R"><span><span class="va">predLong1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Argument <code>return_newdata</code> specifies that the predictions
 are returned as extra columns of the <code>newdata</code> data.frame. By
-default the 95% credible intervals are also included. Using the
+default, the 95% credible intervals are also included. Using the
 <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method for objects returned by
 <code>predict.jm(..., return_newdata = TRUE)</code>, we can display the
-predictions. With the following code we do that for the first
+predictions. With the following code, we do that for the first
 longitudinal outcome:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-6-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>When we want to calculate predictions for other, future time points,
+<p>When we want to calculate predictions for other future time points,
 we can accordingly specify the <code>times</code> argument. In the
 following example, we calculate predictions from time <code>t0</code> to
 time 12:</p>
@@ -292,28 +293,28 @@ the <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, <span class="va">predSurv</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-10-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>Again by default, the plot is for the predictions of the first
-subject (i.e., Patient 25) and for the first longitudinal outcome (i.e.,
+<p>Again, by default, the plot is for the predictions of the first
+subject (i.e., Patient 25) and the first longitudinal outcome (i.e.,
 <code>log(serBilir)</code>). However, the <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method has
-a series of arguments that allows users to customize the plot. We
+a series of arguments that allow users to customize the plot. We
 illustrate some of these capabilities with the following figure. First,
 we specify that we want to depict all three outcomes using
 <code>outcomes = 1:3</code> (note: a max of three outcomes can be
 simultaneously displayed). Next, we specify via the <code>subject</code>
-argument that we want to show the predictions of Patient 93. Note, that
-for serum bilirubin we used the log transformation in the specification
+argument that we want to show the predictions of Patient 93. Note that
+for serum bilirubin, we used the log transformation in the specification
 of the linear mixed model. Hence, we receive predictions on the
 transformed scale. To show predictions on the original scale, we use the
 <code>fun_long</code> argument. Because we have three outcomes, this
 needs to be a list of three functions. The first one, corresponding to
-serum bilirubin is the <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp()</a></code> and for the other two the
+serum bilirubin, is the <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp()</a></code>, and for the other two the
 <code><a href="https://rdrr.io/r/base/identity.html" class="external-link">identity()</a></code> because we do not wish to transform the
 predictions. Analogously, we also have the <code>fun_event</code>
 argument to transform the predictions for the event outcome, and in the
-example below we set that we want to obtain survival probabilities.
+example below, we set the goal of obtaining survival probabilities.
 Using the arguments <code>bg</code>, <code>col_points</code>,
 <code>col_line_long</code>, <code>col_line_event</code>,
-<code>fill_CI_long</code>, and <code>fill_CI_event</code> we have
+<code>fill_CI_long</code>, and <code>fill_CI_event</code>, we have
 changed the appearance of the plot to a dark theme. Finally, the
 <code>pos_ylab_long</code> specifies the relative positive of the y-axis
 labels for the three longitudinal outcomes.</p>
@@ -351,66 +352,69 @@ performed with the following call to <code><a href="../reference/accuracy.html">
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; At time: 8</span></span>
 <span><span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></span>
+<span><span class="co">#&gt; Accounting for censoring using model-based weights</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;    cut-off         SN         SP        qSN         qSP  </span></span>
-<span><span class="co">#&gt; 1     0.06 0.04245478 1.00000000 0.03287933 1.000000000  </span></span>
-<span><span class="co">#&gt; 2     0.07 0.06368217 1.00000000 0.04956683 1.000000000  </span></span>
-<span><span class="co">#&gt; 3     0.09 0.13824070 0.99039566 0.10270423 0.757490419  </span></span>
-<span><span class="co">#&gt; 4     0.11 0.15946809 0.99039566 0.12027230 0.784435928  </span></span>
-<span><span class="co">#&gt; 5     0.14 0.17720224 0.98287707 0.12981598 0.685560692  </span></span>
-<span><span class="co">#&gt; 6     0.15 0.19842963 0.98287707 0.14780414 0.711763968  </span></span>
-<span><span class="co">#&gt; 7     0.16 0.21965702 0.98287707 0.16598264 0.733935970  </span></span>
-<span><span class="co">#&gt; 8     0.19 0.24088441 0.98287707 0.18435453 0.752940544  </span></span>
-<span><span class="co">#&gt; 9     0.22 0.28333920 0.98287707 0.22169095 0.783822976  </span></span>
-<span><span class="co">#&gt; 10    0.23 0.28333920 0.97642092 0.21748388 0.719825009  </span></span>
-<span><span class="co">#&gt; 11    0.25 0.30456659 0.97642092 0.23653506 0.735390286  </span></span>
-<span><span class="co">#&gt; 12    0.26 0.32579398 0.97642092 0.25579444 0.749317113  </span></span>
-<span><span class="co">#&gt; 13    0.27 0.34702137 0.96996477 0.27126141 0.711089652  </span></span>
-<span><span class="co">#&gt; 14    0.32 0.37433642 0.96536013 0.29394390 0.695771598  </span></span>
-<span><span class="co">#&gt; 15    0.36 0.38028575 0.95425727 0.29275549 0.630398775  </span></span>
-<span><span class="co">#&gt; 16    0.38 0.40151314 0.95425727 0.31310031 0.644614207  </span></span>
-<span><span class="co">#&gt; 17    0.39 0.41300182 0.95129532 0.32243639 0.635616827  </span></span>
-<span><span class="co">#&gt; 18    0.43 0.43422921 0.94483917 0.33938902 0.615776271  </span></span>
-<span><span class="co">#&gt; 19    0.44 0.47668399 0.94483917 0.38181384 0.640564899  </span></span>
-<span><span class="co">#&gt; 20    0.46 0.47732481 0.93857792 0.37893889 0.612273095  </span></span>
-<span><span class="co">#&gt; 21    0.49 0.49855220 0.93857792 0.40063635 0.624022395  </span></span>
-<span><span class="co">#&gt; 22    0.52 0.51977959 0.93857792 0.42259212 0.635080560  </span></span>
-<span><span class="co">#&gt; 23    0.54 0.52965629 0.93512569 0.43108126 0.625582558  </span></span>
-<span><span class="co">#&gt; 24    0.58 0.57211107 0.92866954 0.47296608 0.620822291  </span></span>
-<span><span class="co">#&gt; 25    0.60 0.60273913 0.92507253 0.50465003 0.621616281  </span></span>
-<span><span class="co">#&gt; 26    0.63 0.60273913 0.90570408 0.49530380 0.557028461  </span></span>
-<span><span class="co">#&gt; 27    0.64 0.60799325 0.90084593 0.49882681 0.544792672  </span></span>
-<span><span class="co">#&gt; 28    0.66 0.62922064 0.89438978 0.51988827 0.536233371  </span></span>
-<span><span class="co">#&gt; 29    0.68 0.62951537 0.88156712 0.51403965 0.501594951  </span></span>
-<span><span class="co">#&gt; 30    0.69 0.62951537 0.87511097 0.51086344 0.485151330  </span></span>
-<span><span class="co">#&gt; 31    0.70 0.63284491 0.86321132 0.50883889 0.458209535  </span></span>
-<span><span class="co">#&gt; 32    0.71 0.63597971 0.85125244 0.50649598 0.433075346  </span></span>
-<span><span class="co">#&gt; 33    0.72 0.63597971 0.84479629 0.50316150 0.419423165  </span></span>
-<span><span class="co">#&gt; 34    0.73 0.63597971 0.83188399 0.49635549 0.393581535  </span></span>
-<span><span class="co">#&gt; 35    0.74 0.65998105 0.82627151 0.52302897 0.394945617  </span></span>
-<span><span class="co">#&gt; 36    0.76 0.65998105 0.81335921 0.51631107 0.371642681  </span></span>
-<span><span class="co">#&gt; 37    0.77 0.66418799 0.80172642 0.51547124 0.354011885  </span></span>
-<span><span class="co">#&gt; 38    0.78 0.68541538 0.79527027 0.53952106 0.353821788  </span></span>
-<span><span class="co">#&gt; 39    0.79 0.69553457 0.77252334 0.54102972 0.324260513  </span></span>
-<span><span class="co">#&gt; 40    0.80 0.71836140 0.76655365 0.56900760 0.326340532  </span></span>
-<span><span class="co">#&gt; 41    0.82 0.72629360 0.74314156 0.56805709 0.298845892  </span></span>
-<span><span class="co">#&gt; 42    0.83 0.72999422 0.72489863 0.56367067 0.278305494  </span></span>
-<span><span class="co">#&gt; 43    0.84 0.72999422 0.71198633 0.55657588 0.263559976  </span></span>
-<span><span class="co">#&gt; 44    0.85 0.73639713 0.67519682 0.54489077 0.228114791  </span></span>
-<span><span class="co">#&gt; 45    0.86 0.80007930 0.67519682 0.64575455 0.254429059  </span></span>
-<span><span class="co">#&gt; 46    0.87 0.80724902 0.63864053 0.63948428 0.223461563  </span></span>
-<span><span class="co">#&gt; 47    0.88 0.82996019 0.61326721 0.66652388 0.210908847  </span></span>
-<span><span class="co">#&gt; 48    0.89 0.83566180 0.59563285 0.66803683 0.199194476  </span></span>
-<span><span class="co">#&gt; 49    0.90 0.85819121 0.58311655 0.70468685 0.197995653  </span></span>
-<span><span class="co">#&gt; 50    0.91 0.85819121 0.55729195 0.69198521 0.179568567  </span></span>
-<span><span class="co">#&gt; 51    0.92 0.86201058 0.50680438 0.67207221 0.148499865  </span></span>
-<span><span class="co">#&gt; 52    0.93 0.88498038 0.44922896 0.69021383 0.123970472  </span></span>
-<span><span class="co">#&gt; 53    0.94 0.88851980 0.41156854 0.67363769 0.106292074  </span></span>
-<span><span class="co">#&gt; 54    0.95 0.91060251 0.37309178 0.70873720 0.095460992  </span></span>
-<span><span class="co">#&gt; 55    0.96 0.91195076 0.30248418 0.65125594 0.066899363  </span></span>
-<span><span class="co">#&gt; 56    0.97 0.93402438 0.19298699 0.59614921 0.035404565  </span></span>
-<span><span class="co">#&gt; 57    0.98 0.99950031 0.06440953 0.98990626 0.015680861  </span></span>
-<span><span class="co">#&gt; 58    0.99 1.00000000 0.01291230 1.00000000 0.003041425</span></span></code></pre></div>
+<span><span class="co">#&gt;    cut-off         SN        SP        qSN         qSP  </span></span>
+<span><span class="co">#&gt; 1     0.03 0.01512648 0.9981213 0.01022662 0.620510794  </span></span>
+<span><span class="co">#&gt; 2     0.08 0.03647635 0.9981213 0.02684112 0.810255397  </span></span>
+<span><span class="co">#&gt; 3     0.09 0.03647635 0.9916764 0.02195087 0.439546614  </span></span>
+<span><span class="co">#&gt; 4     0.11 0.10052597 0.9916764 0.07299105 0.719773307  </span></span>
+<span><span class="co">#&gt; 5     0.12 0.11870892 0.9907204 0.08707283 0.732218266  </span></span>
+<span><span class="co">#&gt; 6     0.13 0.11870892 0.9842755 0.08236702 0.602957113  </span></span>
+<span><span class="co">#&gt; 7     0.14 0.11870892 0.9778306 0.07761245 0.502420662  </span></span>
+<span><span class="co">#&gt; 8     0.16 0.15223323 0.9750608 0.10340896 0.542026099  </span></span>
+<span><span class="co">#&gt; 9     0.18 0.17358310 0.9750608 0.12138835 0.580190590  </span></span>
+<span><span class="co">#&gt; 10    0.20 0.21628284 0.9750608 0.15792092 0.640163363  </span></span>
+<span><span class="co">#&gt; 11    0.21 0.23763271 0.9750608 0.17648025 0.664152472  </span></span>
+<span><span class="co">#&gt; 12    0.25 0.25898258 0.9750608 0.19523915 0.685142943  </span></span>
+<span><span class="co">#&gt; 13    0.27 0.28033245 0.9750608 0.21420084 0.703663946  </span></span>
+<span><span class="co">#&gt; 14    0.30 0.32303219 0.9750608 0.25274592 0.734857215  </span></span>
+<span><span class="co">#&gt; 15    0.31 0.34438206 0.9686159 0.26831589 0.698115054  </span></span>
+<span><span class="co">#&gt; 16    0.33 0.37464683 0.9648622 0.29429418 0.691398129  </span></span>
+<span><span class="co">#&gt; 17    0.36 0.41734657 0.9584173 0.33127276 0.676934077  </span></span>
+<span><span class="co">#&gt; 18    0.37 0.41842352 0.9522975 0.32869458 0.643114275  </span></span>
+<span><span class="co">#&gt; 19    0.40 0.43977339 0.9522975 0.34962198 0.655860194  </span></span>
+<span><span class="co">#&gt; 20    0.44 0.47216995 0.9491872 0.38010657 0.657860624  </span></span>
+<span><span class="co">#&gt; 21    0.46 0.49351982 0.9491872 0.40170178 0.668897378  </span></span>
+<span><span class="co">#&gt; 22    0.48 0.53621956 0.9491872 0.44565888 0.688964204  </span></span>
+<span><span class="co">#&gt; 23    0.52 0.53621956 0.9427423 0.44235923 0.659821993  </span></span>
+<span><span class="co">#&gt; 24    0.53 0.53621956 0.9362974 0.43902007 0.632345052  </span></span>
+<span><span class="co">#&gt; 25    0.55 0.53621956 0.9298525 0.43564067 0.606394607  </span></span>
+<span><span class="co">#&gt; 26    0.56 0.57891930 0.9298525 0.48135182 0.627110681  </span></span>
+<span><span class="co">#&gt; 27    0.58 0.60026917 0.9298525 0.50462805 0.636671945  </span></span>
+<span><span class="co">#&gt; 28    0.65 0.60026917 0.9234076 0.50157020 0.613208373  </span></span>
+<span><span class="co">#&gt; 29    0.66 0.62161904 0.9234076 0.52526116 0.622642315 *</span></span>
+<span><span class="co">#&gt; 30    0.67 0.62430121 0.9113275 0.52269713 0.583445256  </span></span>
+<span><span class="co">#&gt; 31    0.68 0.62430121 0.9048825 0.51967623 0.563324433  </span></span>
+<span><span class="co">#&gt; 32    0.69 0.62466999 0.8985490 0.51709132 0.544597586  </span></span>
+<span><span class="co">#&gt; 33    0.70 0.62466999 0.8921041 0.51399575 0.526196096  </span></span>
+<span><span class="co">#&gt; 34    0.71 0.65737984 0.8697537 0.54166045 0.484122447  </span></span>
+<span><span class="co">#&gt; 35    0.72 0.66079584 0.8514502 0.53703215 0.444313562  </span></span>
+<span><span class="co">#&gt; 36    0.73 0.68214571 0.8450053 0.56022899 0.440911811  </span></span>
+<span><span class="co">#&gt; 37    0.74 0.68625616 0.8398012 0.56292237 0.432277849  </span></span>
+<span><span class="co">#&gt; 38    0.75 0.68827502 0.8210759 0.55656024 0.397622177  </span></span>
+<span><span class="co">#&gt; 39    0.76 0.69335815 0.8032756 0.55437659 0.369232958  </span></span>
+<span><span class="co">#&gt; 40    0.78 0.71470802 0.7839409 0.57311867 0.348597962  </span></span>
+<span><span class="co">#&gt; 41    0.79 0.71976998 0.7725792 0.57438748 0.334217236  </span></span>
+<span><span class="co">#&gt; 42    0.80 0.72024855 0.7662787 0.57189551 0.325547155  </span></span>
+<span><span class="co">#&gt; 43    0.82 0.72769560 0.7491920 0.57360086 0.305983473  </span></span>
+<span><span class="co">#&gt; 44    0.83 0.72996525 0.7369874 0.57049591 0.291619335  </span></span>
+<span><span class="co">#&gt; 45    0.84 0.75693255 0.7193484 0.60081606 0.282384516  </span></span>
+<span><span class="co">#&gt; 46    0.85 0.77905271 0.7002462 0.62494662 0.270478730  </span></span>
+<span><span class="co">#&gt; 47    0.86 0.80261723 0.6880249 0.65628174 0.267221367  </span></span>
+<span><span class="co">#&gt; 48    0.87 0.80680110 0.6699532 0.65463559 0.250905036  </span></span>
+<span><span class="co">#&gt; 49    0.88 0.80680110 0.6635083 0.65155198 0.244763080  </span></span>
+<span><span class="co">#&gt; 50    0.89 0.83360725 0.6393758 0.68587537 0.233199012  </span></span>
+<span><span class="co">#&gt; 51    0.90 0.85677754 0.6077008 0.71355508 0.215401552  </span></span>
+<span><span class="co">#&gt; 52    0.91 0.86058921 0.5572922 0.69719376 0.179568961  </span></span>
+<span><span class="co">#&gt; 53    0.92 0.88370870 0.5256018 0.72999030 0.166709301  </span></span>
+<span><span class="co">#&gt; 54    0.93 0.88683742 0.4298727 0.68251609 0.114109911  </span></span>
+<span><span class="co">#&gt; 55    0.94 0.92953716 0.4040931 0.78434100 0.114902975  </span></span>
+<span><span class="co">#&gt; 56    0.95 0.95218510 0.3271461 0.81776209 0.087808771  </span></span>
+<span><span class="co">#&gt; 57    0.96 0.97587237 0.2440679 0.87503125 0.063200701  </span></span>
+<span><span class="co">#&gt; 58    0.97 0.97828843 0.1545686 0.82457055 0.035157330  </span></span>
+<span><span class="co">#&gt; 59    0.98 0.97828843 0.0965644 0.72589148 0.018849510  </span></span>
+<span><span class="co">#&gt; 60    0.99 0.99988700 0.0128557 0.98858703 0.002984257</span></span></code></pre></div>
 <p>In the first line we define the event indicator as we did in the
 <code>pbc2.id</code> data.frame. The cut-point with the asterisk on the
 right maximizes the <a href="https://en.wikipedia.org/wiki/Youden%27s_J_statistic" class="external-link">Youden’s
@@ -424,16 +428,17 @@ index</a>. To depict the ROC curve, we use the corresponding
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Time-dependent AUC for the Joint Model jointFit</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated AUC: 0.8088</span></span>
+<span><span class="co">#&gt; Estimated AUC: 0.8282</span></span>
 <span><span class="co">#&gt; At time: 8</span></span>
-<span><span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></span></code></pre></div>
+<span><span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></span>
+<span><span class="co">#&gt; Accounting for censoring using model-based weights</span></span></code></pre></div>
 <p>This function either accepts an object of class <code>tvROC</code> or
 of class <code>jm</code>. In the latter case, the user must also provide
 the <code>newdata</code>, <code>Tstart</code> and <code>Dt</code> or
 <code>Thoriz</code> arguments. Here we have used the same dataset as the
 one to fit the model, but, in principle, discrimination could be
 (better) assessed in another dataset.</p>
-<p>To assess the accuracy of the predictions we produce a calibration
+<p>To assess the accuracy of the predictions, we produce a calibration
 plot:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/accuracy.html">calibration_plot</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
@@ -449,7 +454,7 @@ metrics for the accuracy of predictions:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/accuracy.html">calibration_metrics</a></span><span class="op">(</span><span class="va">jointFit</span>, <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        ICI        E50        E90 </span></span>
-<span><span class="co">#&gt; 0.05763675 0.04720823 0.12893676</span></span></code></pre></div>
+<span><span class="co">#&gt; 0.06123482 0.05621041 0.11553538</span></span></code></pre></div>
 <p>The ICI is the mean absolute difference between the observed and
 predicted probabilities, E50 is the median absolute difference, and E90
 is the 90% percentile of the absolute differences. Finally, we calculate
@@ -460,7 +465,7 @@ computed with the <code><a href="../reference/accuracy.html">tvBrier()</a></code
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Prediction Error for the Joint Model 'jointFit'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated Brier score: 0.1268</span></span>
+<span><span class="co">#&gt; Estimated Brier score: 0.1242</span></span>
 <span><span class="co">#&gt; At time: 8</span></span>
 <span><span class="co">#&gt; For the 202 subjects at risk at time 5</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [5, 8): 40</span></span>
@@ -492,7 +497,7 @@ censoring distribution (however, see the note below):</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Prediction Error for the Joint Model 'jointFit'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated Integrated Brier score: 0.0844</span></span>
+<span><span class="co">#&gt; Estimated Integrated Brier score: 0.0834</span></span>
 <span><span class="co">#&gt; In the time interval: [5, 8)</span></span>
 <span><span class="co">#&gt; For the 202 subjects at risk at time 5</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [5, 8): 40</span></span>
@@ -502,17 +507,17 @@ censoring distribution (however, see the note below):</p>
 <ul>
 <li>To obtain valid estimates of the predictive accuracy measures (i.e.,
 time-varying sensitivity, specificity, and Brier score) we need to
-account for censoring. A popular method to achieve this is via inverse
-probability of censoring weighting. For this approach to be valid, we
-need the model for the weights to be correctly specified. In standard
-survival analysis, this is achieved either using the Kaplan-Meier
-estimator or a Cox model for the censoring distribution. However, in the
-settings where joint models are used, it is often the case that the
-censoring mechanism may depend on the history of the longitudinal
-outcomes in a complex manner. This is especially the case when we
-consider multiple longitudinal outcomes in the analysis. Also, these
-outcomes may be recorded at different time points per patient and have
-missing data. Because of these reasons, in these settings,
+account for censoring. A popular method to achieve this is via the
+inverse probability of censoring weighting. For this approach to be
+valid, we need the model for the weights to be correctly specified. In
+standard survival analysis, this is achieved either using the
+Kaplan-Meier estimator or a Cox model for the censoring distribution.
+However, in the settings where joint models are used, it is often the
+case that the censoring mechanism may depend on the history of the
+longitudinal outcomes in a complex manner. This is especially the case
+when we consider multiple longitudinal outcomes in the analysis. Also,
+these outcomes may be recorded at different time points per patient and
+have missing data. Because of these reasons, in these settings,
 Kaplan-Meier-based or Cox-based censoring weights may be difficult to
 derive or be biased. The functions in <strong>JMbayes2</strong> that
 calculate the predictive accuracy measures use joint-model-based weights

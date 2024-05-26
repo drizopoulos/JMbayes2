@@ -14,15 +14,12 @@ Predict method for object of class \code{"jm"}.
 
 \usage{
 
-\method{predict}{jm}(object, newdata = NULL, newdata2 = NULL, times = NULL,
-  all_times = FALSE, times_per_id = FALSE,
-  process = c("longitudinal", "event"),
-  type_pred = c("response", "link"),
-  type = c("subject_specific", "mean_subject"),
-  level = 0.95, return_newdata = FALSE, use_Y = TRUE, return_mcmc = FALSE,
-  n_samples = 200L, n_mcmc = 55L, parallel = c("snow", "multicore"),
-  cores = NULL, seed = 123L,
-  \dots)
+\method{predict}{jm}(object,
+    newdata = NULL, newdata2 = NULL, times = NULL,
+    process = c("longitudinal", "event"),
+    type_pred = c("response", "link"),
+    type = c("subject_specific", "mean_subject"),
+    control = NULL, \dots)
 
 \method{plot}{predict_jm}(x, x2 = NULL, subject = 1, outcomes = 1,
   fun_long = NULL, fun_event = NULL, CI_long = TRUE, CI_event = TRUE,
@@ -36,15 +33,12 @@ Predict method for object of class \code{"jm"}.
   col_axis = "black", pos_ylab_long = c(0.1, 2, 0.08), bg = "white",
   \dots)
 
-\method{predict}{jmList}(object, weights, newdata = NULL, newdata2 = NULL,
- times = NULL, all_times = FALSE, times_per_id = FALSE,
- process = c("longitudinal", "event"),
- type_pred = c("response", "link"),
- type = c("subject_specific", "mean_subject"),
- level = 0.95, return_newdata = FALSE,
- return_mcmc = FALSE, n_samples = 200L, n_mcmc = 55L,
- parallel = c("snow", "multicore"),
- cores = parallelly::availableCores(omit = 1L), \dots)
+\method{predict}{jmList}(object,
+  weights, newdata = NULL, newdata2 = NULL,
+  times = NULL, process = c("longitudinal", "event"),
+  type_pred = c("response", "link"),
+  type = c("subject_specific", "mean_subject"),
+  control = NULL, \dots)
 }
 
 \arguments{
@@ -56,17 +50,19 @@ Predict method for object of class \code{"jm"}.
 
 \item{times}{a numeric vector of future times to calculate predictions.}
 
-\item{all_times}{logical; if \code{TRUE} predictions for the longitudinal outcomes are calculated for all the times
-given in the \code{times} argumet, not only the ones after the last longitudinal measurement.}.
-
-\item{times_per_id}{logical; if \code{TRUE} the \code{times} argument is a vector of times equal to the number of
-subjects in \code{newdata}.}
-
 \item{process}{for which process to calculation predictions, for the longitudinal outcomes or the event times.}
+
+\item{type}{level of predictions; only relevant when \code{type_pred = "longitudinal"}. Option \code{type = "subject_specific"} combines the fixed- and random-effects parts, whereas \code{type = "mean_subject"} uses only the fixed effects.}
 
 \item{type_pred}{type of predictions; options are \code{"response"} using the inverse link function in GLMMs, and \code{"link"} that correspond to the linear predictor.}
 
-\item{type}{level of predictions; only relevant when \code{type_pred = "longitudinal"}. Option \code{type = "subject_specific"} combines the fixed- and random-effects parts, whereas \code{type = "mean_subject"} uses only the fixed effects.}
+\item{control}{a named \code{list} of control parameters:
+  \describe{
+    \item{all_times}{logical; if \code{TRUE} predictions for the longitudinal outcomes are calculated for all the times
+given in the \code{times} argumet, not only the ones after the last longitudinal measurement.}.
+
+    \item{times_per_id}{logical; if \code{TRUE} the \code{times} argument is a vector of times equal to the number of
+subjects in \code{newdata}.}
 
 \item{level}{the level of the credible interval.}
 
@@ -85,6 +81,8 @@ subjects in \code{newdata}.}
 \item{cores}{how many number of cores to use. If there more than 20 subjects in \code{newdata}, parallel computing is invoked with four cores by default. If \code{cores = 1}, no parallel computing is used.}
 
 \item{seed}{an integer denoting the seed.}
+  }
+}
 
 \item{x, x2}{objects returned by \code{predict.jm()} with argument \code{return_data} set to \code{TRUE}.}
 
@@ -107,7 +105,7 @@ longitudinal outcomes are plotted.}
 
 \item{ylim_long_outcome_range}{logical; if \code{TRUE}, the range of the y-axis spans across the range of the outcome in the data used to fit the model; not only the range of values of the specific subject being plotted.}
 
-\item{\dots}{extra aguments; currently none is used.}
+\item{\dots}{extra aguments passed to control.}
 }
 
 \details{

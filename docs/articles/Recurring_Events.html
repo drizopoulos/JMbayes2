@@ -135,7 +135,7 @@
                         <h4 data-toc-skip class="author">Pedro Miranda
 Afonso</h4>
             
-            <h4 data-toc-skip class="date">2024-04-22</h4>
+            <h4 data-toc-skip class="date">2024-05-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Recurring_Events.Rmd" class="external-link"><code>vignettes/Recurring_Events.Rmd</code></a></small>
       <div class="hidden name"><code>Recurring_Events.Rmd</code></div>
@@ -150,12 +150,12 @@ Afonso</h4>
 <div class="section level3">
 <h3 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h3>
-<p><strong>JMbayes2</strong> provides also the capability to fit joint
-models with a recurrent event process possibly combined with a
+<p><strong>JMbayes2</strong> also provides the capability to fit joint
+models with a recurrent event process, possibly combined with a
 terminating event. Recurrent events are correlated events that may occur
 more than once over the follow-up period for a given subject. Our
 current implementation allows for multiple longitudinal markers with
-different distributions, and various functional forms to link these
+different distributions and various functional forms to link these
 markers with the risk of recurrent and terminal events. Furthermore, it
 enables the risk intervals to be defined in terms of the <em>gap</em> or
 <em>calendar</em> timescales. The two timescales use a different
@@ -164,9 +164,9 @@ the <em>gap</em> uses the end of the previous event (Figure 1).
 <em>Gap</em> assumes a renewal after each event and resets the time to
 zero.</p>
 <div class="figure" style="text-align: center">
-<img src="Recurring_Events_files/figure-html/timescale-1.png" alt="&lt;b&gt;Figure 1&lt;/b&gt; Visual representation of an hazard function under the gap or calendar timescale. During the folow-up the subject experienced three events." width="528"><p class="caption">
+<img src="Recurring_Events_files/figure-html/timescale-1.png" alt="&lt;b&gt;Figure 1&lt;/b&gt; Visual representation of an hazard function under the gap or calendar timescale. During the follow-up, the subject experienced three events." width="528"><p class="caption">
 <b>Figure 1</b> Visual representation of an hazard function under the
-gap or calendar timescale. During the folow-up the subject experienced
+gap or calendar timescale. During the follow-up, the subject experienced
 three events.
 </p>
 </div>
@@ -175,10 +175,10 @@ periods in which the subject is not at risk of experiencing the
 recurring event (Figure 2). For example, while a patient is in the
 hospital, they are not at risk of being hospitalized again.</p>
 <div class="figure" style="text-align: center">
-<img src="Recurring_Events_files/figure-html/disc_risk-1.png" alt="&lt;b&gt;Figure 2&lt;/b&gt; Visual representation of an hazard function under the gap or calendar timescale, while accounting for non-risk periods (gray areas). During the folow-up the subject experienced three events." width="528"><p class="caption">
+<img src="Recurring_Events_files/figure-html/disc_risk-1.png" alt="&lt;b&gt;Figure 2&lt;/b&gt; Visual representation of an hazard function under the gap or calendar timescale, while accounting for non-risk periods (gray areas). During the follow-up, the subject experienced three events." width="528"><p class="caption">
 <b>Figure 2</b> Visual representation of an hazard function under the
 gap or calendar timescale, while accounting for non-risk periods (gray
-areas). During the folow-up the subject experienced three events.
+areas). During the follow-up, the subject experienced three events.
 </p>
 </div>
 <p>A joint model with <span class="math inline">\(p\)</span> normally
@@ -213,9 +213,9 @@ h_{R_i}(t)= h_{R_0}(t)\exp\left\{  w_{R_i}(t)^\top \gamma_R +
 \begin{pmatrix}D &amp; 0 \\ &amp; \sigma^2_F\end{pmatrix}\right), \qquad
 \varepsilon(t) \sim N \left(0, \sigma^2\right),
 \]</span> <br></p>
-<p>where <span class="math inline">\(i = 1, \ldots, n\)</span>. For the
-longitudinal outcomes we specify linear mixed-effects models, and for
-the terminal and recurrence processes, we use proportional hazard
+<p>where <span class="math inline">\(i = 1, \ldots, n\)</span>. We
+specify linear mixed-effects models for the longitudinal outcomes, and
+for the terminal and recurrence processes, we use proportional hazard
 models. The longitudinal and event time processes are linked via a
 latent structure of random effects, highlighted by the same color in the
 equations above. The terms <span class="math inline">\(\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}\)</span>
@@ -224,7 +224,7 @@ describe the functional forms that link the longitudinal marker <span class="mat
 terminal events, respectively. The frailty <span class="math inline">\(b_{F_i}\)</span> is a random effect that accounts
 for the correlations in the recurrent events. The coefficient <span class="math inline">\(\alpha_{F}\)</span> quantifies the strength of the
 association between the terminal and recurrent event processes. For
-notational simplicity, in the formulation presented above we have shown
+notational simplicity, in the formulation presented above, we have shown
 normally distributed longitudinal outcomes; however,
 <strong>JMbayes2</strong> provides the option to consider longitudinal
 outcomes with <a href="https://drizopoulos.github.io/JMbayes2/articles/Non_Gaussian_Mixed_Models.html">different
@@ -237,13 +237,13 @@ distributions</a>.</p>
 <h4 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
 </h4>
 <p>We simulate data from a joint model with three outcomes: one
-longitudinal outcome, one terminal failure-time, and one recurrent
-failure-time. We assume that the underlying value of the longitudinal
+longitudinal outcome, one terminal failure time, and one recurrent
+failure time. We assume that the underlying value of the longitudinal
 outcome is associated with both risk models and use the <em>gap</em>
 timescale. The reader can easily extend this example to accommodate
-multiple longitudinal markers with other forms of association, include
-competing risks, consider only the recurrent events process, or use a
-different timescale.</p>
+multiple longitudinal markers with other forms of association, including
+competing risks, considering only the recurrent events process, or using
+a different timescale.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen_data</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">500</span> <span class="co"># desired number of subjects </span></span>
@@ -397,11 +397,11 @@ different timescale.</p>
 <span><span class="va">recu_data</span> <span class="op">&lt;-</span> <span class="va">fake_data</span><span class="op">$</span><span class="va">rec</span> <span class="co"># recurrent events data</span></span>
 <span><span class="va">lme_data</span> <span class="op">&lt;-</span> <span class="va">fake_data</span><span class="op">$</span><span class="va">long</span> <span class="co"># longitudial marker data</span></span></code></pre></div>
 <p>We now have three data frames, each one corresponding to a different
-outcome. To fit the joint model, the user needs to organize the
-failure-time data in the counting process formulation by combining the
-data for the terminal and recurrent events. Using then a strata variable
-to distinguish between the two processes. To facilitate this, we provide
-in the package the <code><a href="../reference/rc_setup.html">rc_setup()</a></code> function:</p>
+outcome. To fit the joint model, the user must organize the failure-time
+data in the counting process formulation by combining the data for the
+terminal and recurrent events. Then, a strata variable is used to
+distinguish between the two processes. To facilitate this, we provide in
+the package the <code><a href="../reference/rc_setup.html">rc_setup()</a></code> function:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cox_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rc_setup.html">rc_setup</a></span><span class="op">(</span>rc_data <span class="op">=</span> <span class="va">recu_data</span>, trm_data <span class="op">=</span> <span class="va">term_data</span>,</span>
 <span>                     idVar <span class="op">=</span> <span class="st">"id"</span>, statusVar <span class="op">=</span> <span class="st">"status"</span>,</span>
@@ -412,12 +412,12 @@ in the package the <code><a href="../reference/rc_setup.html">rc_setup()</a></co
 their recurrent risk periods plus one for the terminal event. The data
 frame follows the counting process formulation with the risk intervals
 delimited by <code>start</code> and <code>stop</code> variables. The
-<code>strata</code> variable denotes if the type of event,
-<code>1</code> if recurrent or <code>2</code> terminal. The
-<code>status</code> equals <code>1</code> if the subject had an event
-and <code>0</code> otherwise. As shown below and in Figure 3, the
-subject 1 experienced seven recurrent events during the follow up; the
-eighth recurrent event was censored by the terminal event.</p>
+<code>strata</code> variable denotes the type of event, <code>1</code>
+if recurrent, or <code>2</code> terminal. The <code>status</code> equals
+<code>1</code> if the subject had an event and <code>0</code> otherwise.
+As shown below and in Figure 3, subject 1 experienced seven recurrent
+events during the follow-up; the terminal event censored the eighth
+recurrent event.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cox_data</span><span class="op">[</span><span class="va">cox_data</span><span class="op">$</span><span class="va">id</span> <span class="op">==</span> <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"tstart"</span>, <span class="st">"tstop"</span>, <span class="st">"status"</span>, <span class="st">"strata"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt;   id    tstart     tstop status strata</span></span>
@@ -431,19 +431,19 @@ eighth recurrent event was censored by the terminal event.</p>
 <span><span class="co">#&gt; 8  1 3.6251219 4.0375415      0      R</span></span>
 <span><span class="co">#&gt; 9  1 0.0000000 4.0375415      1     T1</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Recurring_Events_files/figure-html/trf_data3-1.png" alt="&lt;b&gt;Figure 3&lt;/b&gt; Visual representation of the failure-time data during the follow-up for subject 1. The horizontal black line denotes risk periods, while the blue line non-risk periods. 'R' and 'T' represent a recurrent and terminal event, respectively." width="528"><p class="caption">
+<img src="Recurring_Events_files/figure-html/trf_data3-1.png" alt="&lt;b&gt;Figure 3&lt;/b&gt; Visual representation of the failure-time data during the follow-up for subject 1. The horizontal black line denotes risk periods, while the blue line denotes non-risk periods. 'R' and 'T' represent a recurrent and terminal event, respectively." width="528"><p class="caption">
 <b>Figure 3</b> Visual representation of the failure-time data during
 the follow-up for subject 1. The horizontal black line denotes risk
-periods, while the blue line non-risk periods. ‘R’ and ‘T’ represent a
-recurrent and terminal event, respectively.
+periods, while the blue line denotes non-risk periods. ‘R’ and ‘T’
+represent a recurrent and terminal event, respectively.
 </p>
 </div>
 </div>
 <div class="section level4">
 <h4 id="fitting-the-model">Fitting the model<a class="anchor" aria-label="anchor" href="#fitting-the-model"></a>
 </h4>
-<p>The user then needs to use the <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code> function to
-first fit the linear mixed model that describes the longitudinal
+<p>The user then needs to use the <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code> function
+first to fit the linear mixed model that describes the longitudinal
 outcome,</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lme_fit</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, B <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span>, </span>
@@ -459,7 +459,7 @@ stratified Cox model using the transformed data,</p>
 <p>These models are then provided as arguments in the <code><a href="../reference/jm.html">jm()</a></code>
 function. The user specifies the desired functional forms for the mixed
 model in each relative-risk model. And with the <code>recurrent</code>
-argument specifies the desired timescale,</p>
+argument specifying the desired timescale,</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">jm_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">cox_fit</span>, <span class="va">lme_fit</span>, time_var <span class="op">=</span> <span class="st">"time"</span>, recurrent <span class="op">=</span> <span class="st">"gap"</span>,</span>
 <span>             functional_forms <span class="op">=</span>  <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">:</span><span class="va">strata</span><span class="op">)</span></span>

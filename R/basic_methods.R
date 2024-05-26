@@ -595,19 +595,24 @@ crisk_setup <- function (data, statusVar, censLevel, nameStrata = "strata",
     dataOut
 }
 
-predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
-                        times = NULL, all_times = FALSE, times_per_id = FALSE,
+predict.jm <- function (object, newdata = NULL, newdata2 = NULL, times = NULL,
                         process = c("longitudinal", "event"),
                         type_pred = c("response", "link"),
                         type = c("subject_specific", "mean_subject"),
-                        level = 0.95, return_newdata = FALSE, use_Y = TRUE,
-                        return_mcmc = FALSE, n_samples = 200L, n_mcmc = 55L,
-                        parallel = c("snow", "multicore"),
-                        cores = NULL, seed = 123L, ...) {
+                        control = NULL, ...) {
     process <- match.arg(process)
     type_pred <- match.arg(type_pred)
     type <- match.arg(type)
-    parallel <- match.arg(parallel)
+    con <- list(all_times = FALSE, times_per_id = FALSE, level = 0.95,
+                return_newdata = FALSE, use_Y = TRUE, return_mcmc = FALSE,
+                n_samples = 200L, n_mcmc = 55L,
+                parallel = c("snow", "multicore"), cores = NULL, seed = 123L)
+    control <- c(control, list(...))
+    namC <- names(con)
+    con[(namc <- names(control))] <- control
+    if (length(noNms <- namc[!namc %in% namC]) > 0) {
+        warning("unknown names in control: ", paste(noNms, collapse = ", "))
+    }
     id_var <- object$model_info$var_names$idVar
     time_var <- object$model_info$var_names$time_var
     Time_var <- object$model_info$var_names$Time_var
@@ -687,21 +692,23 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL,
         check_varNames(object, newdata2, id_var, "E")
         check_varNames(object, newdata2, id_var, "L")
     }
-    if (is.null(cores)) {
+    if (is.null(con$cores)) {
         n <- if (!is.data.frame(newdata)) length(unique(newdata$newdataL[[id_var]]))
         else length(unique(newdata[[id_var]]))
         cores <- if (n > 20) 4L else 1L
     }
     components_newdata <-
-        get_components_newdata(object, newdata, n_samples,
-                               n_mcmc, parallel, cores, seed, use_Y)
+        get_components_newdata(object, newdata, con$n_samples,
+                               con$n_mcmc, con$parallel, con$cores, con$seed,
+                               con$use_Y)
     if (process == "longitudinal") {
         predict_Long(object, components_newdata, newdata, newdata2, times,
-                     all_times, times_per_id, type, type_pred, level,
-                     return_newdata, return_mcmc)
+                     con$all_times, con$times_per_id, type, type_pred, con$level,
+                     con$return_newdata, con$return_mcmc)
     } else {
         predict_Event(object, components_newdata, newdata, newdata2, times,
-                      times_per_id, level, return_newdata, return_mcmc)
+                      con$times_per_id, con$level, con$return_newdata,
+                      con$return_mcmc)
     }
 }
 
@@ -1018,18 +1025,25 @@ rc_setup <- function(rc_data, trm_data,
 }
 
 predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
-                        times = NULL, all_times = FALSE, times_per_id = FALSE,
-                        process = c("longitudinal", "event"),
+                        times = NULL, process = c("longitudinal", "event"),
                         type_pred = c("response", "link"),
                         type = c("subject_specific", "mean_subject"),
-                        level = 0.95, return_newdata = FALSE,
-                        return_mcmc = FALSE, n_samples = 200L, n_mcmc = 55L,
-                        parallel = c("snow", "multicore"),
-                        cores = parallelly::availableCores(omit = 1L), ...) {
+                        control = NULL, ...) {
     process <- match.arg(process)
     type_pred <- match.arg(type_pred)
     type <- match.arg(type)
     parallel <- match.arg(parallel)
+    con <- list(all_times = FALSE, times_per_id = FALSE, level = 0.95,
+                return_newdata = FALSE, use_Y = TRUE, return_mcmc = FALSE,
+                n_samples = 200L, n_mcmc = 55L,
+                parallel = c("snow", "multicore"),
+                cores = parallelly::availableCores(omit = 1L), seed = 123L)
+    control <- c(control, list(...))
+    namC <- names(con)
+    con[(namc <- names(control))] <- control
+    if (length(noNms <- namc[!namc %in% namC]) > 0) {
+        warning("unknown names in control: ", paste(noNms, collapse = ", "))
+    }
     obj <- object[[1L]]
     id_var <- obj$model_info$var_names$idVar
     time_var <- obj$model_info$var_names$time_var
@@ -1153,7 +1167,7 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
                  "variable(s): ", paste(missing_vars, collapse = ", "), ".\n")
         }
     }
-    cores <- min(cores, length(object))
+    cores <- min(con$cores, length(object))
     if (cores > 1L) {
         have_mc <- have_snow <- FALSE
         if (parallel == "multicore") {
@@ -1169,11 +1183,13 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
             preds <-
                 parallel::mclapply(object, predict, newdata = newdata,
                                    newdata2 = newdata2, times = times,
-                                   all_times = all_times,
-                                   times_per_id = times_per_id,
+                                   all_times = con$all_times,
+                                   times_per_id = con$times_per_id,
                                    process = process, type_pred = type_pred,
-                                   type = type, level = level, n_samples = n_samples,
-                                   n_mcmc = n_mcmc, return_newdata = return_newdata,
+                                   type = type, level = con$level,
+                                   n_samples = con$n_samples,
+                                   n_mcmc = con$n_mcmc,
+                                   return_newdata = con$return_newdata,
                                    return_mcmc = TRUE, mc.cores = cores)
         } else {
             cl <- parallel::makePSOCKcluster(rep("localhost", cores))
@@ -1181,11 +1197,13 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
             preds <-
                 parallel::parLapply(cl, object, predict, newdata = newdata,
                                     newdata2 = newdata2, times = times,
-                                    all_times = all_times,
-                                    times_per_id = times_per_id,
+                                    all_times = con$all_times,
+                                    times_per_id = con$times_per_id,
                                     process = process, type_pred = type_pred,
-                                    type = type, level = level, n_samples = n_samples,
-                                    n_mcmc = n_mcmc, return_newdata = return_newdata,
+                                    type = con$type, level = con$level,
+                                    n_samples = con$n_samples,
+                                    n_mcmc = con$n_mcmc,
+                                    return_newdata = con$return_newdata,
                                     return_mcmc = TRUE)
             parallel::stopCluster(cl)
         }
@@ -1193,10 +1211,10 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
         preds <-
             lapply(object, predict, newdata = newdata,
                    newdata2 = newdata2, times = times,
-                   all_times = all_times, times_per_id = times_per_id,
+                   all_times = con$all_times, times_per_id = con$times_per_id,
                    process = process, type_pred = type_pred,
-                   type = type, level = level, n_samples = n_samples,
-                   n_mcmc = n_mcmc, return_newdata = return_newdata,
+                   type = type, level = con$level, n_samples = con$n_samples,
+                   n_mcmc = con$n_mcmc, return_newdata = con$return_newdata,
                    return_mcmc = TRUE)
     }
     extract_mcmc <- function (x) {

@@ -101,14 +101,14 @@ Brier_weights <- tvBrier(Models_folds, newdata = CVdats$testing,
 Brier_weights
 ```
 
-We observe that the first two models dominate the weights. We also note that the integrated Brier score based on the combined predictions is smaller than the integrated Brier score of each individual model. To calculate the model weights using the expected predictive cross-entropy, use function `tvEPCE()` with an almost identical call as for the Brier score:
+We observe that the fourth model dominates the weights. We also note that the integrated Brier score based on the combined predictions is smaller than the integrated Brier score of each individual model. To calculate the model weights using the expected predictive cross-entropy, use function `tvEPCE()` with an almost identical call as for the Brier score:
 ```{r, "calculate EPCE weights"}
 EPCE_weights <- tvEPCE(Models_folds, newdata = CVdats$testing, 
                        Tstart = tstr, Thoriz = thor)
 EPCE_weights
 ```
 
-The EPCE results are similar to those from the integrated Brier score; however, now only models `M2` and `M3` share the weights. Again, we see that the EPCE based on the combined cross-validated predictions is smaller than the EPCE based on the cross-validated predictions of each individual model. 
+The EPCE results indicate that models `M2` and `M3` share the most weight. Again, we see that the EPCE based on the combined cross-validated predictions is smaller than the EPCE based on the cross-validated predictions of each individual model. 
 
 To use these weights in practice, we must first refit the five joint models we considered in the original dataset.
 ```{r, "fit the model in the original dataset", warning = FALSE}

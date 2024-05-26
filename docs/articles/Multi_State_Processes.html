@@ -135,7 +135,7 @@
                         <h4 data-toc-skip class="author">Grigorios
 Papageorgiou</h4>
             
-            <h4 data-toc-skip class="date">2024-04-22</h4>
+            <h4 data-toc-skip class="date">2024-05-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Multi_State_Processes.Rmd" class="external-link"><code>vignettes/Multi_State_Processes.Rmd</code></a></small>
       <div class="hidden name"><code>Multi_State_Processes.Rmd</code></div>
@@ -150,10 +150,10 @@ Papageorgiou</h4>
 <div class="section level3">
 <h3 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h3>
-<p>It is often the case that a subject may transition between multiple
-states and we are interested to assess the association of longitudinal
-marker(s) with each of these transitions. In this vignette we will
-illustrate how to achieve this using <strong>JMbayes2</strong>.</p>
+<p>A subject may often transition between multiple states, and we are
+interested in assessing the association of longitudinal marker(s) with
+each of these transitions. In this vignette, we will illustrate how to
+achieve this using <strong>JMbayes2</strong>.</p>
 <p>We will consider a simple case with one longitudinal outcome and a
 three-state (illness-death) model, but this application can be extended
 for the cases of multiple longitudinal markers and more than three
@@ -162,24 +162,23 @@ states.</p>
 <div class="section level3">
 <h3 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
 </h3>
-<p>First we will simulate data from a joint model with a single linear
+<p>First, we will simulate data from a joint model with a single linear
 mixed effects model and a multi-state process with three possible
-states. The multi-state process can be visualized as:</p>
-<p><img src="Multi_State_Processes_files/figure-html/ms_figure-1.png" width="700"></p>
-<p>where all subjects start from state “Healthy” and then can transition
-to either state “Illness” and then state “Death” or directly to state
-“Death”. In this case, states “Healthy” and “Illness” are
+states. The multi-state process can be visualized as:
+<img src="Multi_State_Processes_files/figure-html/ms_figure-1.png" width="700"></p>
+<p>where all subjects start from the state “Healthy” and then can
+transition to either state “Illness” and then state “Death” or directly
+to state “Death.” In this case, states “Healthy” and “Illness” are
 <em>transient</em> states as the subject, when occupying these states,
-can still transition to other states whereas “Death” is an absorbing
+can still transition to other states, whereas “Death” is an absorbing
 state as when a subject reaches this state then no further transitions
 can occur. This means that three transitions are possible: <span class="math inline">\(1 \rightarrow 2\)</span>, <span class="math inline">\(1 \rightarrow 3\)</span> and <span class="math inline">\(2 \rightarrow 3\)</span> with transition
 intensities <span class="math inline">\(h_{12}\left(t\right)\)</span>,
 <span class="math inline">\(h_{13}\left(t\right)\)</span> and <span class="math inline">\(h_{23}\left(t\right)\)</span> respectively.</p>
-<p>For our example the default functional form is assumed, i.e., that
+<p>For our example, the default functional form is assumed, i.e., that
 the linear predictor <span class="math inline">\(\eta(t)\)</span> of the
-mixed model is associated with the each transition intensity at time
-<span class="math inline">\(t\)</span>. The following piece of code
-simulates the data:</p>
+mixed model is associated with each transition intensity at time <span class="math inline">\(t\)</span>. The following piece of code simulates
+the data:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
 <span><span class="co"># number of subjects</span></span>
@@ -354,38 +353,38 @@ long format:</p>
 <span><span class="co">#&gt; 1.3  1          2        3          3 4.392984 9.094447      0 1.984455</span></span>
 <span><span class="co">#&gt; 2.1  2          1        2          1 0.000000 1.552122      0 7.673231</span></span>
 <span><span class="co">#&gt; 2.2  2          1        3          2 0.000000 1.552122      0 7.673231</span></span></code></pre></div>
-<p>for example subject 1 experienced the following transition: <span class="math inline">\(1 \rightarrow 2\)</span> and therefore is
+<p>for example, subject 1 experienced the following transition: <span class="math inline">\(1 \rightarrow 2\)</span> and therefore is
 represented in 3 rows, one for each transition, because all of these
-transitions were plausible. On the other hand subject 2 is only
+transitions were plausible. On the other hand, subject 2 is only
 represented by two rows, only for transitions <span class="math inline">\(1 \rightarrow 2\)</span> and <span class="math inline">\(1 \rightarrow 3\)</span> since these are the only
-transitions that are possible from state 1. That is, since subject 2
-never actually transitioned to state 2, transition <span class="math inline">\(2 \rightarrow 3\)</span> was never possible and
-therefore no row for this transition is in the dataset. It is also
+transitions possible from state 1. That is since subject 2 never
+actually transitioned to state 2, transition <span class="math inline">\(2 \rightarrow 3\)</span> was never possible, and
+therefore, no row for this transition is in the dataset. It is also
 important to note that the time in the dataset follows the counting
 process formulation with intervals specified by <code>Tstart</code> and
 <code>Tstop</code> and that there is a variable (in this case
-<code>transition</code>) which indicates to which transition the row
-corresponds to.</p>
+<code>transition</code>) indicating which transition the row corresponds
+to.</p>
 </div>
 <div class="section level3">
 <h3 id="fitting-the-model">Fitting the model<a class="anchor" aria-label="anchor" href="#fitting-the-model"></a>
 </h3>
-<p>As soon data in the appropriate format are available, fitting the
+<p>When the data in the appropriate format are available, fitting the
 model is very straightforward. First we fit a linear mixed model using
 the <code>lme()</code> function from package <strong>nlme</strong>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixedmodel</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">X</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">DF</span><span class="op">)</span></span></code></pre></div>
-<p>then we fit a multi-state model using function <code>coxph()</code>
+<code class="sourceCode R"><span><span class="va">mixedmodel</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">time</span> <span class="op">+</span> <span class="va">X</span>, data <span class="op">=</span> <span class="va">DF</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span></code></pre></div>
+<p>Then, we fit a multi-state model using function <code>coxph()</code>
 from package <strong>survival</strong> making sure we use the counting
 process specification and that we add <code>strata(transition)</code> to
 stratify by the transition indicator variable in the dataset.
-Furthermore we add an interaction between covariate <code>X</code> and
+Furthermore, we add an interaction between covariate <code>X</code> and
 each transition to allow the effect of this covariate to vary across
 transitions.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">msmodel</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Tstart</span>, <span class="va">Tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X</span> <span class="op">*</span> <span class="fu">strata</span><span class="op">(</span><span class="va">transition</span><span class="op">)</span>, </span>
 <span>                 data <span class="op">=</span> <span class="va">data_mstate</span><span class="op">)</span></span></code></pre></div>
-<p>Finally, to fit the joint model we simply run:</p>
+<p>Finally, to fit the joint model, we simply run:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">jm_ms_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">msmodel</span>, <span class="va">mixedmodel</span>, time_var <span class="op">=</span> <span class="st">"time"</span>, </span>
 <span>                  functional_forms <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">:</span><span class="va">transition</span>, n_iter <span class="op">=</span> <span class="fl">10000L</span><span class="op">)</span></span>
@@ -432,12 +431,12 @@ transitions.</p>
 <span><span class="co">#&gt; iterations per chain: 10000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 2.8 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 3.1 min</span></span></code></pre></div>
 <p>which differs from a default call to <code><a href="../reference/jm.html">jm()</a></code> by the
-addition of the <code>functional_forms</code> argument by which we
-specify that we want an “interaction” between the value of the marker
-and each transition which translates into a separate association
-parameter for the longitudinal marker and each transition.</p>
+addition of the <code>functional_forms</code> argument specifying that
+we want an “interaction” between the marker’s value and each transition,
+which translates into a separate association parameter for the
+longitudinal marker and each transition.</p>
 </div>
 </div>
   </div>

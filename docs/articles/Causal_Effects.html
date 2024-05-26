@@ -135,7 +135,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2024-04-22</h4>
+            <h4 data-toc-skip class="date">2024-05-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Causal_Effects.Rmd" class="external-link"><code>vignettes/Causal_Effects.Rmd</code></a></small>
       <div class="hidden name"><code>Causal_Effects.Rmd</code></div>
@@ -206,7 +206,7 @@ submodel, we only include the treatment effect.</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 19 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 20 sec</span></span></code></pre></div>
 <p>The coefficient for <code>drugD-penicil</code> for the survival
 outcome in the output produced by the <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method
 denotes the residual/direct effect of treatment on the risk of the
@@ -259,12 +259,13 @@ calculated by the corresponding elements of the <code>Pr1</code> and
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># estimate </span></span>
 <span><span class="va">Pr1</span><span class="op">$</span><span class="va">pred</span><span class="op">[</span><span class="fl">2L</span><span class="op">]</span> <span class="op">-</span> <span class="va">Pr0</span><span class="op">$</span><span class="va">pred</span><span class="op">[</span><span class="fl">2L</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] 0.002916962</span></span>
-<span></span>
+<span><span class="co">#&gt; [1] 0.002916423</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
 <span><span class="co"># MCMC variability</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">Pr1</span><span class="op">$</span><span class="va">mcmc</span><span class="op">[</span><span class="fl">2L</span>, <span class="op">]</span> <span class="op">-</span> <span class="va">Pr0</span><span class="op">$</span><span class="va">mcmc</span><span class="op">[</span><span class="fl">2L</span>, <span class="op">]</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       2.5%      97.5% </span></span>
-<span><span class="co">#&gt; -0.1790865  0.1952537</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.1790905  0.1952539</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="time-varying-treatments">Time-varying treatments<a class="anchor" aria-label="anchor" href="#time-varying-treatments"></a>
 </h3>

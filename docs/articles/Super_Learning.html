@@ -136,7 +136,7 @@ Learning</h1>
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2024-04-22</h4>
+            <h4 data-toc-skip class="date">2024-05-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Super_Learning.Rmd" class="external-link"><code>vignettes/Super_Learning.Rmd</code></a></small>
       <div class="hidden name"><code>Super_Learning.Rmd</code></div>
@@ -159,10 +159,10 @@ becomes available. As a result, they have found numerous applications in
 precision medicine, including cancer and cardiovascular diseases.
 Previous applications of joint models have considered a single model for
 obtaining dynamic predictions. However, finding a well-specified model
-can be challenging, especially when multiple longitudinal outcomes are
-considered. Moreover, due to the dynamic nature of these predictions,
+can be challenging, especially considering multiple longitudinal
+outcomes. Moreover, due to the dynamic nature of these predictions,
 different models may provide different levels of accuracy at different
-follow-up times. Here we consider multiple joint models instead, and we
+follow-up times. Here, we consider multiple joint models instead and
 combine the dynamic predictions from these models to optimize the
 predictive accuracy. We use the concept of super learning (SL) to
 achieve this. SL is an ensemble method that allows researchers to
@@ -175,14 +175,14 @@ the area under the receiver operating characteristic curve.</p>
 optimize the cross-validated predictions. More specifically, we let
 <span class="math inline">\(\mathcal{L} = \{M_1, \ldots, M_L\}\)</span>
 denote a library with <span class="math inline">\(L\)</span> models.
-There are no restrictions to the models included in this library, and
-actually, it is recommended to consider a wide range of possible models.
-Among others, these joint models differ in the specification of the time
-trend in the longitudinal submodels and the functions form and event
-submodel. We split the original dataset <span class="math inline">\(\mathcal{D}_n\)</span> in <span class="math inline">\(V\)</span> folds. The choice of <span class="math inline">\(V\)</span> will depend on the size and number of
+There are no restrictions to the models included in this library, and it
+is recommended to consider a wide range of possible models. Among
+others, these joint models differ in the specification of the time trend
+in the longitudinal submodels and the functions form and event submodel.
+We split the original dataset <span class="math inline">\(\mathcal{D}_n\)</span> in <span class="math inline">\(V\)</span> folds. The choice of <span class="math inline">\(V\)</span> will depend on the size and number of
 events in <span class="math inline">\(\mathcal{D}_n\)</span>. In
 particular, for each fold, we need to have a sufficient number of events
-to robustly quantify the predictive performance. Using the
+to quantify the predictive performance robustly. Using the
 cross-validation method, we fit the <span class="math inline">\(L\)</span> models in the combined <span class="math inline">\(v-1\)</span> folds, and we will calculate
 predictions for the <span class="math inline">\(v\)</span>-th fold we
 left outside. Due to the dynamic nature of the predictions, we want to
@@ -283,8 +283,8 @@ within the function we should have the call
 <strong>JMbayes2</strong> in each worker. The output of this function
 should be a list of the fitted joint models with class
 <code>"jmList"</code>. Assigning this class to the resulting list will
-facilitate combining the predictions later. For our example we use the
-following specification:</p>
+facilitate combining the predictions later. For our example, we use the
+following specifications:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_models</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://drizopoulos.github.io/JMbayes2/">"JMbayes2"</a></span><span class="op">)</span></span>
@@ -315,18 +315,18 @@ following specification:</p>
 the longitudinal outcome <code>serBilir</code> and the composite event
 transplantation or death. The first three models consider a simple
 linear mixed effects model for serum bilirubin with random intercepts
-and random slopes per subject, and no other covariates. Also, in the Cox
-model for the composite event we do not specify any baseline covariates;
-hence, the risk of the composite event depends only on serum bilirubin.
-The three models differ in the corresponding functional forms, i.e., the
-current value of log serum bilirubin, the current slope/velocity of log
-serum bilirubin, and the current value plus the area under the log serum
-bilurubin trajectory. The last models consider a more elaborate
-specification of the linear mixed model that includes natural cubic
-splines in both the fixed and random effects to allow for
-non-linearities in the log serum bilirubin trajectories, and the main
+and random slopes per subject and no other covariates. Also, in the Cox
+model for the composite event, we do not specify any baseline
+covariates; hence, the risk of the composite event depends only on serum
+bilirubin. The three models differ in the corresponding functional
+forms, i.e., the current value of log serum bilirubin, the current
+slope/velocity of log serum bilirubin, and the current value plus the
+area under the log serum bilirubin trajectory. The last models consider
+a more elaborate specification of the linear mixed model that includes
+natural cubic splines in both the fixed and random effects to allow for
+non-linearities in the log serum bilirubin trajectories and the main
 effects of sex and age in both the mixed and Cox models. The functional
-forms are again the current value and the current slope.</p>
+forms are, again, the current value and the current slope.</p>
 <p>We fit these models in the training datasets using parallel computing
 as facilitated using the <strong>parallel</strong> package
 (<em>note</em>: this and the subsequent computations require some time
@@ -338,12 +338,12 @@ run the whole vignette):</p>
 <span><span class="va">Models_folds</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span><span class="va">cl</span>, <span class="va">CVdats</span><span class="op">$</span><span class="va">training</span>, <span class="va">fit_models</span><span class="op">)</span></span>
 <span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></code></pre></div>
 <p>We calculate the weights to combine the predictions from these five
-models to optimize the integrated Brier score the expected predictive
-cross-entropy at follow-up time <span class="math inline">\(t =
-6\)</span> years and for a relevant window of <span class="math inline">\(\Delta t = 2\)</span> years. Function
-<code><a href="../reference/accuracy.html">tvBrier()</a></code> automatically performs this task by providing as
-a first argument the list of joint models fitted in the training
-datasets. The integrated Brier score is calculated using the testing
+models to optimize the integrated Brier score and the expected
+predictive cross-entropy at follow-up time <span class="math inline">\(t
+= 6\)</span> years and for a relevant window of <span class="math inline">\(\Delta t = 2\)</span> years. The function
+<code><a href="../reference/accuracy.html">tvBrier()</a></code> automatically performs this task by providing the
+list of joint models fitted in the training datasets as a first
+argument. The integrated Brier score is calculated using the testing
 datasets that are provided in the <code>newdata</code> argument:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tstr</span> <span class="op">&lt;-</span> <span class="fl">6</span></span>
@@ -355,20 +355,20 @@ datasets that are provided in the <code>newdata</code> argument:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Cross-Validated Prediction Error using the Library of Joint Models 'Models_folds'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Super Learning Estimated Integrated Brier score: 0.0551</span></span>
+<span><span class="co">#&gt; Super Learning Estimated Integrated Brier score: 0.0509</span></span>
 <span><span class="co">#&gt; In the time interval: [6, 8)</span></span>
 <span><span class="co">#&gt; For the 166 subjects at risk at time 6</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 8): 18</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 8): 44</span></span>
 <span><span class="co">#&gt; Accounting for censoring using model-based weights</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Integrated Brier score per model: 0.0601 0.0575 0.0626 0.0579 0.0611</span></span>
-<span><span class="co">#&gt; Weights per model: 0.2945 0.5574 0.0585 0.0669 0.0227</span></span>
+<span><span class="co">#&gt; Integrated Brier score per model: 0.0601 0.0575 0.0626 0.0509 0.0601</span></span>
+<span><span class="co">#&gt; Weights per model: 0 0 0 1 0</span></span>
 <span><span class="co">#&gt; Number of folds: 5</span></span></code></pre></div>
 <p>We observe that the first two models dominate the weights. We also
 note that the integrated Brier score based on the combined predictions
 is smaller than the integrated Brier score of each individual model. To
-calculate the model weights using the expected predictive cross-entropy
+calculate the model weights using the expected predictive cross-entropy,
 use function <code><a href="../reference/accuracy.html">tvEPCE()</a></code> with an almost identical call as for
 the Brier score:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -384,22 +384,22 @@ the Brier score:</p>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 8): 18</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 8): 44</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; EPCE per model: 0.3545 0.348 0.3708 0.3617 0.413</span></span>
-<span><span class="co">#&gt; Weights per model: 0.0027 0.5659 0.4306 0 9e-04</span></span>
+<span><span class="co">#&gt; EPCE per model: 0.3545 0.348 0.3708 0.341 0.4037</span></span>
+<span><span class="co">#&gt; Weights per model: 0.0019 0.567 0.4308 0 3e-04</span></span>
 <span><span class="co">#&gt; Number of folds: 5</span></span></code></pre></div>
-<p>The EPCE results are similar with the ones from the integrated Brier
+<p>The EPCE results are similar to those from the integrated Brier
 score; however, now only models <code>M2</code> and <code>M3</code>
-share the weights. Again we see that the EPCE based on the combined
+share the weights. Again, we see that the EPCE based on the combined
 cross-validated predictions is smaller than the EPCE based on the
 cross-validated predictions of each individual model.</p>
-<p>To put these weights in practice we need first to refit the five
-joint models we considered in the original dataset.</p>
+<p>To use these weights in practice, we must first refit the five joint
+models we considered in the original dataset.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Models</span> <span class="op">&lt;-</span> <span class="fu">fit_models</span><span class="op">(</span><span class="va">pbc2</span><span class="op">)</span></span></code></pre></div>
-<p>Then we construct the dataset with the subjects at risk at year six
+<p>Then, we construct the dataset with the subjects at risk at year six
 and consider the longitudinal measurements collected before this
 follow-up time. Also, we set in this dataset the observed event time to
-six, and the event variable to zero, i.e., indicating that patients were
+six and the event variable to zero, i.e., indicating that patients were
 event-free up to this time:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ND</span> <span class="op">&lt;-</span> <span class="va">pbc2</span><span class="op">[</span><span class="va">pbc2</span><span class="op">$</span><span class="va">years</span> <span class="op">&gt;</span> <span class="va">tstr</span> <span class="op">&amp;</span> <span class="va">pbc2</span><span class="op">$</span><span class="va">year</span> <span class="op">&lt;=</span> <span class="va">tstr</span>, <span class="op">]</span></span>

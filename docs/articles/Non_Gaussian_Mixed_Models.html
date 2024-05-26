@@ -135,7 +135,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2024-04-22</h4>
+            <h4 data-toc-skip class="date">2024-05-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Non_Gaussian_Mixed_Models.Rmd" class="external-link"><code>vignettes/Non_Gaussian_Mixed_Models.Rmd</code></a></small>
       <div class="hidden name"><code>Non_Gaussian_Mixed_Models.Rmd</code></div>
@@ -160,23 +160,23 @@ call to <code>mixed_model()</code>.</p>
 <h3 id="beta-mixed-models">Beta mixed models<a class="anchor" aria-label="anchor" href="#beta-mixed-models"></a>
 </h3>
 <p>With very few exceptions, continuous outcomes that we wish to analyze
-have some natural bounds. For example, the levels of blood biomarker for
-a set of patients. However, often, the majority of the observations are
-located far away from these natural bounds, and an assumption of a
-normal distribution for the outcome can be safely done. In some settings
+have some natural bounds. For example, the levels of blood biomarkers
+for a set of patients. However, most observations are often located far
+away from these natural bounds, and an assumption of a normal
+distribution for the outcome can be safely made. In some settings,
 though, we can have outcomes for which a substantial percentage of the
 observations are located near the boundaries leading to skewed or
-U-shaped distributions. For such longitudinal outcomes, a linear mixed
-model with normal error terms often does not provide a good fit. A
+U-shaped distributions. A linear mixed model with normal error terms
+often does not provide a good fit for such longitudinal outcomes. A
 natural alternative is to select a distribution that respects the
 bounded nature of the outcome. The most well-known distribution for such
 outcomes is the Beta distribution defined in the <span class="math inline">\((0, 1)\)</span> interval (<em>note:</em> a bounded
 outcome <span class="math inline">\(Y^*\)</span> in the <span class="math inline">\((a, b)\)</span> interval can be transformed to the
 <span class="math inline">\(Y = (Y^* - a) / (b - a)\)</span> in the
 <span class="math inline">\((0, 1)\)</span> interval).</p>
-<p>The following piece of code illustrates how to simulate data from a
-joint model with a Beta mixed effects model. The default functional form
-is assumed, i.e., that the linear predictor <span class="math inline">\(\eta(t)\)</span> of the mixed model is associated
+<p>The following code illustrates how to simulate data from a joint
+model with a Beta mixed effects model. The default functional form is
+assumed, i.e., that the linear predictor <span class="math inline">\(\eta(t)\)</span> of the mixed model is associated
 with the hazard of an event at time <span class="math inline">\(t\)</span>. The linear predictor is related to the
 mean <span class="math inline">\(\mu(t)\)</span> of the Beta
 distribution under the logit link function, i.e., <span class="math inline">\(\log[\mu(t) / \{1 - \mu(t)\}] =
@@ -320,13 +320,13 @@ using the <code>beta.fam()</code> family object into the call of
 typical example of such outcomes is when we have limit of detection
 issues. That is, the values of the outcome cannot be detected below a
 specified threshold having to do with the (laboratory) equipment used to
-determine the measurements. In these settings and even if the complete
-data follow a normal distribution the observed censored data cannot be
+determine the measurements. In these settings, and even if the complete
+data follows a normal distribution the observed censored data cannot be
 analyzed with a standard mixed model. The <code>mixed_model()</code>
 function can accommodate such outcomes using the
 <code>censored.normal()</code> family object.</p>
 <p>The following piece of code simulates data from a joint model with a
-linear mixed model for the longitudinal outcomes, but applies censoring
+linear mixed model for the longitudinal outcomes but applies censoring
 in the realized longitudinal observations.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
@@ -459,15 +459,15 @@ syntax:</p>
 <div class="section level3">
 <h3 id="studentss-t-mixed-models">Students’s-t mixed models<a class="anchor" aria-label="anchor" href="#studentss-t-mixed-models"></a>
 </h3>
-<p>Outlying observations is a common occurring issue in practice.
-Several methods have been proposed in the literature for identifying
-such observations in the context of longitudinal data. However, removing
-such values from the analysis is in general not recommended unless we
-also have external information why these values are outlying. Hence, in
-these settings we would need to fit mixed models to accommodate these
-observations. A well-known approach to achieve this is to replace the
-normal distribution for the error terms in the linear mixed model with a
-Student’s-t distribution that has heavier tails.</p>
+<p>Outlying observations are a common issue in practice. Several methods
+have been proposed in the literature for identifying such observations
+in the context of longitudinal data. However, removing such values from
+the analysis is generally not recommended unless we also have external
+information as to why these values are outlying. Hence, we would need to
+fit mixed models to accommodate these observations in these settings. A
+well-known approach to achieve this is replacing the normal distribution
+for the error terms in the linear mixed model with a Student’s-t
+distribution with heavier tails.</p>
 <p>The following syntax simulates data from a joint model with a
 Student’s-t mixed effects model:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -602,12 +602,12 @@ Student’s-t mixed effects model:</p>
 <h3 id="negative-binomial-mixed-models">Negative binomial mixed models<a class="anchor" aria-label="anchor" href="#negative-binomial-mixed-models"></a>
 </h3>
 <p>Count longitudinal outcomes are typically modeled with the Poisson
-distribution. However, often these outcomes exhibit more variance than
-what is allowed from the Poisson distribution leading to the well-known
-problem of over-dispersion. To accommodate this over-dispersion
-typically the Negative Binomial distribution is used.</p>
+distribution. However, these outcomes often exhibit more variance than
+what is allowed from the Poisson distribution, leading to the well-known
+problem of over-dispersion. To accommodate this over-dispersion,
+typically, the negative binomial distribution is used.</p>
 <p>The following piece of code simulates data from a joint model for
-count longitudinal data that follow the Negative Binomial
+count longitudinal data that follow the negative binomial
 distribution:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
@@ -734,7 +734,7 @@ syntax:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 25 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 26 sec</span></span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -742,11 +742,11 @@ syntax:</p>
 <div class="section level3">
 <h3 id="beta-binomial-longitudinal-outcomes">Beta-binomial longitudinal outcomes<a class="anchor" aria-label="anchor" href="#beta-binomial-longitudinal-outcomes"></a>
 </h3>
-<p>As for count data also for Binomial data we may have the
-over-dispersion problem. In this case, we can change to standard
-Binomial distribution to a Beta-Binomial one to accommodate this.</p>
+<p>For count data and binomial data, we may have an over-dispersion
+problem. To accommodate this, we can change the standard binomial
+distribution to a beta-binomial one.</p>
 <p>The following piece of code simulates data from a joint model for
-binomial longitudinal data that follow the Beta-Binomial
+binomial longitudinal data that follow the beta-binomial
 distribution:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
@@ -876,10 +876,7 @@ distribution:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 48 sec</span></span></code></pre></div>
-<div align="right">
-<a href="#top">Back to top</a>
-</div>
+<span><span class="co">#&gt; time: 51 sec</span></span></code></pre></div>
 </div>
 </div>
   </div>

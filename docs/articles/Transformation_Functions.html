@@ -136,7 +136,7 @@ Forms</h1>
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2024-04-22</h4>
+            <h4 data-toc-skip class="date">2024-05-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Transformation_Functions.Rmd" class="external-link"><code>vignettes/Transformation_Functions.Rmd</code></a></small>
       <div class="hidden name"><code>Transformation_Functions.Rmd</code></div>
@@ -166,9 +166,9 @@ or death, including sex as a baseline covariate:</p>
 <p>Our aim is to assess the strength of the association between the risk
 of the composite event and whether the patients experienced hepatomegaly
 during follow-up. We will describe the patient-specific profiles over
-time for this biomarker using a mixed-effects logistic model, where both
-in the fixed- and random-effects we include an intercept and the time
-effect. The syntax to fit this model with <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code>
+time for this biomarker using a mixed-effects logistic model, where we
+include an intercept and the time effect in both fixed and random
+effects. The syntax to fit this model with <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code>
 is:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model</a></span><span class="op">(</span><span class="va">hepatomegaly</span> <span class="op">~</span> <span class="va">year</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, </span>
@@ -214,11 +214,11 @@ time-varying covariate in the survival relative risk model:</p>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
 <span><span class="co">#&gt; time: 15 sec</span></span></code></pre></div>
-<p>In the output this is named as <code>value(hepatomegaly)</code> to
+<p>In the output, this is named <code>value(hepatomegaly)</code> to
 denote that the current value functional form is used. That is, we
 assume that the risk at a specific time <span class="math inline">\(t\)</span> is associated with the value of the
 linear predictor of the longitudinal outcome at the same time point
-<span class="math inline">\(t\)</span>. In this particular case, the
+<span class="math inline">\(t\)</span>. In this case, the
 subject-specific linear predictor denotes the log odds of experiencing
 hepatomegaly at time <span class="math inline">\(t\)</span>.</p>
 </div>
@@ -228,10 +228,10 @@ hepatomegaly at time <span class="math inline">\(t\)</span>.</p>
 <p>The fact that the default version of the current value functional
 form is on the linear predictor scale of the mixed model may be
 problematic to interpret when this linear predictor is connected with a
-nonlinear link function to mean of the longitudinal outcome. In these
-situations we may want to transform the subject-specific linear
-predictor back to the scale of the outcome. To achieve this we can use a
-transformation function. Continuing on the previous example, we update
+nonlinear link function to the mean of the longitudinal outcome. In
+these situations, we may want to transform the subject-specific linear
+predictor back to the scale of the outcome. To achieve this, we can use
+a transformation function. Continuing on the previous example, we update
 <code>jointFit1</code> by now linking the expit transformation of the
 linear predictor (i.e., <span class="math inline">\(\mbox{expit}(x) =
 \exp(x) / \{1 + \exp(x)\}\)</span>) with the risk of an event. This is
@@ -274,12 +274,11 @@ done using the <code><a href="../reference/jm.html">vexpit()</a></code> function
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 17 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 16 sec</span></span></code></pre></div>
 <p>Other available functions to use in the definition of the
-<code>functional_forms</code> argument are <code><a href="../reference/jm.html">vexp()</a></code> for
-calculating the exponent, <code><a href="../reference/jm.html">vlog()</a></code> for calculating the
-natural logarithm, and <code><a href="../reference/jm.html">vsqrt()</a></code> for calculating the square
-root.</p>
+<code>functional_forms</code> argument are <code><a href="../reference/jm.html">vexp()</a></code> to
+calculate the exponent, <code><a href="../reference/jm.html">vlog()</a></code> to calculate the natural
+logarithm, and <code><a href="../reference/jm.html">vsqrt()</a></code> to calculate the square root.</p>
 <p>If we want to include the time-varying slope of the transformed
 linear predictor, we also have the <code><a href="../reference/jm.html">Dexpit()</a></code> and
 <code><a href="../reference/jm.html">Dexp()</a></code> functions available. As an example, we extend
@@ -381,8 +380,9 @@ This calculates the term <span class="math inline">\(\{\eta(t) - \eta(t
 <span><span class="co">#&gt;                          Rhat</span></span>
 <span><span class="co">#&gt; sexfemale            1.008869</span></span>
 <span><span class="co">#&gt; value(log(serBilir)) 1.010025</span></span>
-<span><span class="co">#&gt; slope(log(serBilir)) 1.043587</span></span>
-<span></span>
+<span><span class="co">#&gt; slope(log(serBilir)) 1.043587</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jFit2</span><span class="op">)</span><span class="op">$</span><span class="va">Survival</span></span>
 <span><span class="co">#&gt;                                                         Mean     StDev</span></span>
 <span><span class="co">#&gt; sexfemale                                         -0.1647358 0.2732504</span></span>

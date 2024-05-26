@@ -141,7 +141,7 @@ print.tvROC <- function (x, digits = 4, ...) {
     d <- d[!is.na(d$qSN) & !is.na(d$qSP), ]
     d <- d[!duplicated(d[c("SN", "SP")]), ]
     row.names(d) <- 1:nrow(d)
-    print(d)
+    print(d, digits = digits)
     cat("\n")
     invisible(x)
 }
