@@ -1032,7 +1032,6 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
     process <- match.arg(process)
     type_pred <- match.arg(type_pred)
     type <- match.arg(type)
-    parallel <- match.arg(parallel)
     con <- list(all_times = FALSE, times_per_id = FALSE, level = 0.95,
                 return_newdata = FALSE, use_Y = TRUE, return_mcmc = FALSE,
                 n_samples = 200L, n_mcmc = 55L, parallel = "snow",

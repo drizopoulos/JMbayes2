@@ -185,7 +185,7 @@ The Brier score evaluates the predictive accuracy at time `Tstart + Dt`. To summ
 tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE)
 ```
 
-The `tvBrier()` also implements inverse probability of censoring weights to account for censoring in the interval `(t0, t0 + Dt]` using the Kaplan-Meier estimate of the censoring distribution (however, see the note below):
+The `tvBrier()` and `tvROC()` also implement inverse probability of censoring weights to account for censoring in the interval `(t0, t0 + Dt]` using the Kaplan-Meier estimate of the censoring distribution (however, see the note below):
 ```{r}
 tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE,
         type_weights = "IPCW")

@@ -616,10 +616,10 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                          newdataE = newdataE2[foldE, ])
                 } else newdata2[fold, ]
                 # calculate Pr(T_i^* > \tilde T_i | T_i^* > t)
-                preds <- predict(object[[v]][[l]], process = "event",
-                                 times = tilde_Time[[v]],
+                preds <- predict(object[[v]][[l]], newdata = ND2,
+                                 times = tilde_Time[[v]], process = "event",
                                  times_per_id = TRUE, parallel = parallel,
-                                 cores = cores, newdata = ND2, n_samples = 400L)
+                                 cores = cores, n_samples = 400L)
                 pi_u_t <- preds$pred
                 names(pi_u_t) <- preds$id
                 # cumulative risk at tilde_Time
@@ -633,10 +633,11 @@ tvEPCE <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                          newdataE = newdataE3[foldE, ])
                 } else newdata3[fold, ]
                 # calculate Pr(T_i^* > \tilde T_i + eps | T_i^* > \tilde T_i)
-                preds2 <- predict(object[[v]][[l]], process = "event",
+                preds2 <- predict(object[[v]][[l]], newdata = ND3,
                                   times = tilde_Time[[v]] + eps,
-                                  times_per_id = TRUE, parallel = parallel,
-                                  cores = cores, newdata = ND3, n_samples = 400L)
+                                  process = "event", times_per_id = TRUE,
+                                  parallel = parallel, cores = cores,
+                                  n_samples = 400L)
                 pi_u_t2 <- preds2$pred
                 names(pi_u_t2) <- preds2$id
                 # cumulative risk at tilde_Time + eps
