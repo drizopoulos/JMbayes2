@@ -968,14 +968,15 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
         # last_times to times
         numer_intgr <-
             function (low, upp,
-                      type = c("7-Gauss-Kronrod",
-                               "15-Gauss-Kronrod", "Simpson-3/8")) {
+                      type = c("7-Gauss-Kronrod", "15-Gauss-Kronrod",
+                               "Simpson-3/8")) {
                 type <- match.arg(type)
                 if (type == "Simpson-3/8") {
                     n <- length(upp)
-                    list(qpoints = c(rep(low, n), (2 * low + upp) / 3,
+                    if (n > 1) low <- rep(low, length.out = n)
+                    list(qpoints = cbind(low, (2 * low + upp) / 3,
                                      (low + 2 * upp) / 3, upp),
-                         log_weights = log(c(1, 3, 3, 1) * (upp - low) / 8))
+                         log_weights = log(c(c(1, 3, 3, 1) %o% (upp - low)) / 8))
                 } else {
                     GK <- if (type == "7-Gauss-Kronrod") gaussKronrod(7L) else gaussKronrod(15L)
                     sk <- GK$sk
@@ -984,7 +985,6 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
                     log_Pwk <- unname(rep(log(P), each = length(sk)) +
                                           rep_len(log(GK$wk), length.out = length(st)))
                     list(qpoints = st, log_weights = log_Pwk)
-
                 }
             }
         #  extract strata
@@ -1009,12 +1009,12 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
             lastRow_strt <- tapply(row.names(d), factor2(strt_i), tail, n = 1L)
             out <- vector("list", length(qpoints))
             for (j in seq_along(qpoints)) {
-                d[[Time_var]] <- qpoints[j]
+                d[lastRow_strt, Time_var] <- qpoints[j]
                 d[[".log_weights"]] <- log_w[j]
                 d[[".time"]] <- tt[j]
                 d[[".qpoint"]] <- j
                 r <- vector("list", nstrt_i)
-                for (i in seq_along(strt_i)) {
+                for (i in seq_len(nstrt_i)) {
                     dd <- d
                     dd[lastRow_strt[i], event_var] <- 1
                     dd[[".id_h"]] <- paste(dd[[id_var]][1], j, i, sep = "_")

@@ -39,6 +39,7 @@ jointFit <- jm(CoxFit, lmeFit, time_var = "year", functional_forms = fForms,
 
 summary(jointFit)
 
+
 #-----------------------------
 # Conditional Causal Effects -
 #-----------------------------
@@ -51,6 +52,7 @@ newdataL <- pbc2[pbc2$id %in% c(81), ]
 newdataL$status2 <- 0
 # The data.frame 'newdataE_withIE' contains the event information in the
 # presence of the IE.
+pbc2_CR$serBilir <- 0.1
 newdataE_withIE <- pbc2_CR[pbc2_CR$id == 81, ]
 newdataE_withIE$event <- 0
 # The data.frame 'newdataE_withoutIE' contains the event information in the
@@ -77,7 +79,7 @@ for (i in seq_along(t0)) {
     newdataE_withoutIE_i$stop <- t0[i]
     # In the event data.frame with the IE we set that the IE occurs a bit after t0
     # and a bit afterward is the last time the patient was available
-    newdataE_withIE_i <- newdataE_withoutIE_i
+    newdataE_withIE_i <- newdataE_withIE
     newdataE_withIE_i$IE <- 1
 
     # We calculate the predictions using the two datasets

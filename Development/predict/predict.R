@@ -32,8 +32,10 @@ if (FALSE) {
          file = "C:/Users/drizo/OneDrive/Desktop/predict_simpleExample.RData")
 
     load("C:/Users/drizo/OneDrive/Desktop/predict_simpleExample.RData")
+    load("C:/Users/drizo/OneDrive/Desktop/predict_CRExample.RData")
     data("pbc2", package = "JM")
     data("pbc2.id", package = "JM")
+
     pbc2.idCR <- JMbayes2::crisk_setup(pbc2.id, statusVar = "status", censLevel = "alive",
                              nameStrata = "CR")
 
@@ -53,22 +55,53 @@ if (FALSE) {
     source("./R/help_functions.R")
     source("./R/predict_funs.R")
     Rcpp::sourceCpp('src/mcmc_fit.cpp')
+
+    source("./Development/CI/prepare_data.R")
+    source("./Development/CI/causal_effects_fun.R")
+    newdataL <- pbc2[pbc2$id %in% c(81), ]
+    newdataL$status2 <- 0
+    # The data.frame 'newdataE_withIE' contains the event information in the
+    # presence of the IE.
+    pbc2_CR$serBilir <- 0.1
+    newdataE_withIE <- pbc2_CR[pbc2_CR$id == 81, ]
+    newdataE_withIE$event <- 0
+    # The data.frame 'newdataE_withoutIE' contains the event information in the
+    # absence of the IE.
+    newdataE_withoutIE <- newdataE_withIE[c(1, 3), ]
+
+    t0 <- 5
+
+    newdataL_i <- newdataL[newdataL$year <= t0, ]
+    # In the event data.frame without the IE we set the stop time at t0
+    newdataE_withoutIE_i <- newdataE_withoutIE
+    newdataE_withoutIE_i$stop <- t0
+    # In the event data.frame with the IE we set that the IE occurs a bit after t0
+    # and a bit afterward is the last time the patient was available
+    newdataE_withIE_i <- newdataE_withIE
+    newdataE_withIE_i$stop[c(2, 4)] <- t0
+
+    # We calculate the predictions using the two datasets
+    newdata_withIE_i <- list(newdataL = newdataL_i, newdataE = newdataE_withIE_i)
+    newdata_withoutIE_i <- list(newdataL = newdataL_i, newdataE = newdataE_withoutIE_i)
+
 }
 
 
-object <- jointFit2
-ND <- pbc2[pbc2$id %in% c(2, 3), ]
-ND$id <- factor(ND$id)
-ND <- ND[ND$year < 1, ]
-ND$status2 <- 0
-ND$years <- 1 #with(ND, ave(year, id, FUN = function (x) max(x, na.rm = T)))
-ND. <- pbc2.idCR[pbc2.idCR$id %in% c(2, 3), ]
-ND.$id <- factor(ND.$id)
-ND.$status2 <- 0
-ND.$years <- 1
-newdata = list(newdataL = ND, newdataE = ND.)
-newdata2 = NULL
-times = c(2, 3)
+object <- jointFit
+control = NULL
+#ND <- pbc2[pbc2$id %in% c(2, 3), ]
+#ND$id <- factor(ND$id)
+#ND <- ND[ND$year < 1, ]
+#ND$status2 <- 0
+#ND$years <- 1 #with(ND, ave(year, id, FUN = function (x) max(x, na.rm = T)))
+#ND. <- pbc2.idCR[pbc2.idCR$id %in% c(2, 3), ]
+#ND.$id <- factor(ND.$id)
+#ND.$status2 <- 0
+#ND.$years <- 1
+#newdata = list(newdataL = ND, newdataE = ND.)
+newdata = newdata_withoutIE_i
+newdata2 = newdata_withIE_i
+times = c(6, 7, 8)
 process = "event"
 type_pred = "response"
 type = "subject_specific"

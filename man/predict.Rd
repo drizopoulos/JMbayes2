@@ -76,7 +76,7 @@ subjects in \code{newdata}.}
 
 \item{n_mcmc}{the number of Metropolis-Hastings iterations for sampling the random effects per iteration of \code{n_samples}; only the last iteration is retained.}
 
-\item{parallel}{character string; what type of parallel computing to use.}
+\item{parallel}{character string; what type of parallel computing to use. Options are \code{"snow"} (default) and \code{"multicore"}.}
 
 \item{cores}{how many number of cores to use. If there more than 20 subjects in \code{newdata}, parallel computing is invoked with four cores by default. If \code{cores = 1}, no parallel computing is used.}
 
@@ -105,7 +105,7 @@ longitudinal outcomes are plotted.}
 
 \item{ylim_long_outcome_range}{logical; if \code{TRUE}, the range of the y-axis spans across the range of the outcome in the data used to fit the model; not only the range of values of the specific subject being plotted.}
 
-\item{\dots}{extra aguments passed to control.}
+\item{\dots}{aguments passed to control.}
 }
 
 \details{

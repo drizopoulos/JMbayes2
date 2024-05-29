@@ -162,7 +162,7 @@ tv(x, knots = NULL, ord = 2L)
         \item{\code{cores}}{an integer specifying the number of cores to use for running the chains in
         parallel; no point of setting this greater than \code{n_chains}.}
         \item{\code{parallel}}{a character string indicating how the parallel sampling of the chains will
-        be performed. Options are \code{"snow"} (default) and \code{multicore}.}
+        be performed. Options are \code{"snow"} (default) and \code{"multicore"}.}
         \item{\code{knots}}{a numeric vector with the position of the knots for the B-spline approximation
         of the log baseline hazard function.}
     }
