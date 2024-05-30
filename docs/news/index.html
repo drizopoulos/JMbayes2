@@ -100,8 +100,9 @@
 <div class="section level3">
 <h3 id="major-0-5-0">Major<a class="anchor" aria-label="anchor" href="#major-0-5-0"></a></h3>
 <ul><li><p><code><a href="../reference/jm.html">jm()</a></code> now allows for zero-correlations constraints in the covariance matrix of the random effects. When the mixed models provided in the <code>Mixed_objects</code> argument have been fitted assuming a diagonal matrix for the random effects, this will also be assumed in the joint model (in previous versions, this was ignored). In addition, the new argument <code>which_independent</code> can be used to specify which longitudinal outcomes are to be assumed independent.</p></li>
+<li><p><code><a href="../reference/jm.html">jm()</a></code> can fit joint models with a combination of interval-censored data and competing risks (e.g., one of the the competing events is interval-censored and the other(s) not).</p></li>
 <li><p>A bug in the <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> method causing low AUC values has been corrected.</p></li>
-<li><p>The time-varying ROC and AUC now allow to correct for censoring in the interval <code>Tstart</code> to <code>Thoriz</code> using inverse probability of censoring weighting. The default remains model-based weights</p></li>
+<li><p>The time-varying ROC and AUC now allow to correct for censoring in the interval <code>Tstart</code> to <code>Thoriz</code> using inverse probability of censoring weighting. The default remains model-based weights.</p></li>
 </ul></div>
 </div>
     <div class="section level2">
