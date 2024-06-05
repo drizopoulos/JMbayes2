@@ -140,12 +140,11 @@ print.tvROC <- function (x, digits = 4, ...) {
         if (x$type_weights == "IPCW") "inverse probability of censoring Kaplan-Meier weights\n\n"
         else "model-based weights\n\n", sep = "")
     d <- data.frame("cut-off" = x$thrs, "SN" = x$TP, "SP" = 1 - x$FP,
-                    "qSN" = x$qSN, "qSP" = x$qSP, check.names = FALSE,
-                    check.rows = FALSE)
+                    check.names = FALSE, check.rows = FALSE)
     xx <- rep("", nrow(d))
     xx[which.min(abs(x$thr - x$Youden))] <- "*"
     d[[" "]] <- xx
-    d <- d[!is.na(d$qSN) & !is.na(d$qSP), ]
+    d <- d[!is.na(d$SN) & !is.na(d$SP), ]
     d <- d[!duplicated(d[c("SN", "SP")]), ]
     row.names(d) <- 1:nrow(d)
     print(d, digits = digits)
