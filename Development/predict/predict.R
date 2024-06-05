@@ -141,7 +141,7 @@ newdata = pbc2
 Tstart = 5
 Thoriz = NULL
 Dt = 2
-type_weights = "IPCW"
+type_weights = "model-based"
 
 tvAUC(jointFit1, newdata = pbc2, Tstart = 3, Dt = 2)
 tvAUC(jointFit1, newdata = pbc2, Tstart = 3, Dt = 2, type_weights = "I")
@@ -151,4 +151,7 @@ xx2 <- tvROC(jointFit1, newdata = pbc2, Tstart = 3, Dt = 2, type_weights = "I")
 
 plot(xx1)
 plot(xx2)
+tvAUC(xx1)
+tvAUC(xx2)
+
 
