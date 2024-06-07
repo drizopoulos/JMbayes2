@@ -63,6 +63,7 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     names(Time) <- names(event) <- as.character(unique(id))
     thrs <- seq(0, 1, length = 101)
     Check <- lapply(seq_len(ncol(qi_u_t)), function (i) outer(qi_u_t[, i], thrs, "<"))
+    Check_mean <- outer(1 - preds$pred[preds$times > Tstart], thrs, "<")
     # outer(qi_u_t, thrs, "<")
     if (type_weights == "model-based") {
         # subjects who died before Thoriz
@@ -83,25 +84,25 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         }
         # calculate sensitivity and specificity
         ntp <- lapply(Check, function (x) colSums(x * c(ind)))
-        nTP <- rowMeans(do.call("cbind", ntp))
-        nfn <- lapply(ntp, function (x) sum(ind) - x)
-        nFN <- sum(ind) - nTP
         tp <- lapply(ntp, function (x) x / sum(ind))
+        #nTP <- rowMeans(do.call("cbind", ntp))
+        nTP <- colSums(Check_mean * c(ind))
+        nFN <- sum(ind) - nTP
         TP <- nTP / sum(ind)
         nfp <- lapply(Check, function (x) colSums(x * c(1 - ind)))
-        nFP <- rowMeans(do.call("cbind", nfp))
-        ntn <- lapply(nfp, function (x) sum(1 - ind) - x)
-        nTN <- sum(1 - ind) - nFP
         fp <- lapply(nfp, function (x) x / sum(1 - ind))
+        nFP <- rowMeans(do.call("cbind", nfp))
+        nFP <- colSums(Check_mean * c(1 - ind))
+        nTN <- sum(1 - ind) - nFP
         FP <- nFP / sum(1 - ind)
     } else {
         ind1 <- Time < Thoriz & event == 1
         ind2 <- Time > Thoriz
         nfp <- lapply(Check, function (x) colSums(x * c(ind2)))
-        nFP <- rowMeans(do.call("cbind", nfp))
-        ntn <- lapply(nfp, function (x) sum(ind2) - x)
-        nTN <- sum(ind2) - nFP
         fp <- lapply(nfp, function (x) x / sum(ind2))
+        #nFP <- rowMeans(do.call("cbind", nfp))
+        nFP <- colSums(Check_mean * c(ind2))
+        nTN <- sum(ind2) - nFP
         FP <- nFP / sum(ind2)
         cens_data <- data.frame(Time = Time, cens_ind = 1 - event)
         censoring_dist <- survfit(Surv(Time, cens_ind) ~ 1, data = cens_data)
@@ -109,11 +110,10 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         ss <- summary(censoring_dist, times = Time[ind1])
         weights[ind1] <- 1 / ss$surv[match(ss$time, Time[ind1])]
         ntp <- lapply(Check, function (x) colSums(x[ind1, , drop = FALSE] / weights[ind1]))
-        nTP <- rowMeans(do.call("cbind", ntp))
-        #nTP <- colSums(Check[ind1, , drop = FALSE] / weights[ind1])
-        nfn <- lapply(ntp, function (x) sum(1 / weights[ind1]) - x)
-        nFN <- sum(1 / weights[ind1]) - nTP
         tp <- lapply(ntp, function (x) x /  sum(1 / weights[ind1]))
+        #nTP <- rowMeans(do.call("cbind", ntp))
+        nTP <- colSums(Check_mean[ind1, , drop = FALSE] / weights[ind1])
+        nFN <- sum(1 / weights[ind1]) - nTP
         TP <- nTP / sum(1 / weights[ind1])
     }
     f1score <- 2 * nTP / (2 * nTP + nFN + nFP)
@@ -317,8 +317,10 @@ tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         aucs[i] <- sum(0.5 * diff(fp[, i]) * (tp[-1L, i] + tp[-length(TP), i]),
                        na.rm = TRUE)
     }
-    out <- list(auc = auc, mcmc_auc = aucs, low_auc = quantile(aucs, 0.025),
-                upp_auc = quantile(aucs, 0.975),
+    out <- list(auc = auc,
+                #mcmc_auc = aucs,
+                #low_auc = quantile(aucs, 0.025),
+                #upp_auc = quantile(aucs, 0.975),
                 Tstart = Tstart, Thoriz = roc$Thoriz, nr = roc$nr,
                 type_weights = roc$type_weights,
                 classObject = class(object), nameObject = deparse(substitute(object)))
@@ -338,8 +340,10 @@ tvAUC.tvROC <- function (object, ...) {
         aucs[i] <- sum(0.5 * diff(fp[, i]) * (tp[-1L, i] + tp[-length(TP), i]),
                        na.rm = TRUE)
     }
-    out <- list(auc = auc, mcmc_auc = aucs, low_auc = quantile(aucs, 0.025),
-                upp_auc = quantile(aucs, 0.975),
+    out <- list(auc = auc,
+                #mcmc_auc = aucs,
+                #low_auc = quantile(aucs, 0.025),
+                #upp_auc = quantile(aucs, 0.975),
                 Tstart = object$Tstart, Thoriz = object$Thoriz,
                 nr = object$nr, classObject = object$classObject,
                 nameObject = object$nameObject,
@@ -355,9 +359,10 @@ print.tvAUC <- function (x, digits = 4, ...) {
         cat("\n\tTime-dependent AUC for the Joint Model",  x$nameObject)
     else
         cat("\n\tTime-dependent AUC for the Cox Model",  x$nameObject)
-    cat("\n\nEstimated AUC: ", round(x$auc, digits),
-        " (95% CI: ", round(x$low_auc, digits), "-", round(x$upp_auc, digits),
-        ")", sep = "")
+    cat("\n\nEstimated AUC: ", round(x$auc, digits))
+    #cat("\n\nEstimated AUC: ", round(x$auc, digits),
+    #    " (95% CI: ", round(x$low_auc, digits), "-", round(x$upp_auc, digits),
+    #    ")", sep = "")
     cat("\nAt time:", round(x$Thoriz, digits))
     cat("\nUsing information up to time: ", round(x$Tstart, digits),
         " (", x$nr, " subjects still at risk)", sep = "")
