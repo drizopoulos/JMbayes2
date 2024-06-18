@@ -180,6 +180,12 @@ and \code{"backward"}.}
 
 \details{
 The mathematical details regarding the definition of the multivariate joint model, and the capabilities of the package can be found in the vignette in the doc directory.
+
+Notes:
+\itemize{
+\item{The ordering of the subjects in the datasets used to fit the mixed and Cox regression models needs to be the same.}
+\item{The units of the time variables in the mixed and Cox models need to be the same.}
+}
 }
 
 \value{
