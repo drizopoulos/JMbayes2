@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-1</span>
       </span>
     </div>
 
@@ -135,7 +135,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2024-05-30</h4>
+            <h4 data-toc-skip class="date">2024-06-21</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Dynamic_Predictions.Rmd" class="external-link"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="hidden name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -354,67 +354,69 @@ performed with the following call to <code><a href="../reference/accuracy.html">
 <span><span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></span>
 <span><span class="co">#&gt; Accounting for censoring using model-based weights</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;    cut-off      SN      SP     qSN      qSP  </span></span>
-<span><span class="co">#&gt; 1     0.03 0.01513 0.99812 0.01023 0.620511  </span></span>
-<span><span class="co">#&gt; 2     0.08 0.03648 0.99812 0.02684 0.810255  </span></span>
-<span><span class="co">#&gt; 3     0.09 0.03648 0.99168 0.02195 0.439547  </span></span>
-<span><span class="co">#&gt; 4     0.11 0.10053 0.99168 0.07299 0.719773  </span></span>
-<span><span class="co">#&gt; 5     0.12 0.11871 0.99072 0.08707 0.732218  </span></span>
-<span><span class="co">#&gt; 6     0.13 0.11871 0.98428 0.08237 0.602957  </span></span>
-<span><span class="co">#&gt; 7     0.14 0.11871 0.97783 0.07761 0.502421  </span></span>
-<span><span class="co">#&gt; 8     0.16 0.15223 0.97506 0.10341 0.542026  </span></span>
-<span><span class="co">#&gt; 9     0.18 0.17358 0.97506 0.12139 0.580191  </span></span>
-<span><span class="co">#&gt; 10    0.20 0.21628 0.97506 0.15792 0.640163  </span></span>
-<span><span class="co">#&gt; 11    0.21 0.23763 0.97506 0.17648 0.664152  </span></span>
-<span><span class="co">#&gt; 12    0.25 0.25898 0.97506 0.19524 0.685143  </span></span>
-<span><span class="co">#&gt; 13    0.27 0.28033 0.97506 0.21420 0.703664  </span></span>
-<span><span class="co">#&gt; 14    0.30 0.32303 0.97506 0.25275 0.734857  </span></span>
-<span><span class="co">#&gt; 15    0.31 0.34438 0.96862 0.26832 0.698115  </span></span>
-<span><span class="co">#&gt; 16    0.33 0.37465 0.96486 0.29429 0.691398  </span></span>
-<span><span class="co">#&gt; 17    0.36 0.41735 0.95842 0.33127 0.676934  </span></span>
-<span><span class="co">#&gt; 18    0.37 0.41842 0.95230 0.32869 0.643114  </span></span>
-<span><span class="co">#&gt; 19    0.40 0.43977 0.95230 0.34962 0.655860  </span></span>
-<span><span class="co">#&gt; 20    0.44 0.47217 0.94919 0.38011 0.657861  </span></span>
-<span><span class="co">#&gt; 21    0.46 0.49352 0.94919 0.40170 0.668897  </span></span>
-<span><span class="co">#&gt; 22    0.48 0.53622 0.94919 0.44566 0.688964  </span></span>
-<span><span class="co">#&gt; 23    0.52 0.53622 0.94274 0.44236 0.659822  </span></span>
-<span><span class="co">#&gt; 24    0.53 0.53622 0.93630 0.43902 0.632345  </span></span>
-<span><span class="co">#&gt; 25    0.55 0.53622 0.92985 0.43564 0.606395  </span></span>
-<span><span class="co">#&gt; 26    0.56 0.57892 0.92985 0.48135 0.627111  </span></span>
-<span><span class="co">#&gt; 27    0.58 0.60027 0.92985 0.50463 0.636672  </span></span>
-<span><span class="co">#&gt; 28    0.65 0.60027 0.92341 0.50157 0.613208  </span></span>
-<span><span class="co">#&gt; 29    0.66 0.62162 0.92341 0.52526 0.622642 *</span></span>
-<span><span class="co">#&gt; 30    0.67 0.62430 0.91133 0.52270 0.583445  </span></span>
-<span><span class="co">#&gt; 31    0.68 0.62430 0.90488 0.51968 0.563324  </span></span>
-<span><span class="co">#&gt; 32    0.69 0.62467 0.89855 0.51709 0.544598  </span></span>
-<span><span class="co">#&gt; 33    0.70 0.62467 0.89210 0.51400 0.526196  </span></span>
-<span><span class="co">#&gt; 34    0.71 0.65738 0.86975 0.54166 0.484122  </span></span>
-<span><span class="co">#&gt; 35    0.72 0.66080 0.85145 0.53703 0.444314  </span></span>
-<span><span class="co">#&gt; 36    0.73 0.68215 0.84501 0.56023 0.440912  </span></span>
-<span><span class="co">#&gt; 37    0.74 0.68626 0.83980 0.56292 0.432278  </span></span>
-<span><span class="co">#&gt; 38    0.75 0.68828 0.82108 0.55656 0.397622  </span></span>
-<span><span class="co">#&gt; 39    0.76 0.69336 0.80328 0.55438 0.369233  </span></span>
-<span><span class="co">#&gt; 40    0.78 0.71471 0.78394 0.57312 0.348598  </span></span>
-<span><span class="co">#&gt; 41    0.79 0.71977 0.77258 0.57439 0.334217  </span></span>
-<span><span class="co">#&gt; 42    0.80 0.72025 0.76628 0.57190 0.325547  </span></span>
-<span><span class="co">#&gt; 43    0.82 0.72770 0.74919 0.57360 0.305983  </span></span>
-<span><span class="co">#&gt; 44    0.83 0.72997 0.73699 0.57050 0.291619  </span></span>
-<span><span class="co">#&gt; 45    0.84 0.75693 0.71935 0.60082 0.282385  </span></span>
-<span><span class="co">#&gt; 46    0.85 0.77905 0.70025 0.62495 0.270479  </span></span>
-<span><span class="co">#&gt; 47    0.86 0.80262 0.68802 0.65628 0.267221  </span></span>
-<span><span class="co">#&gt; 48    0.87 0.80680 0.66995 0.65464 0.250905  </span></span>
-<span><span class="co">#&gt; 49    0.88 0.80680 0.66351 0.65155 0.244763  </span></span>
-<span><span class="co">#&gt; 50    0.89 0.83361 0.63938 0.68588 0.233199  </span></span>
-<span><span class="co">#&gt; 51    0.90 0.85678 0.60770 0.71356 0.215402  </span></span>
-<span><span class="co">#&gt; 52    0.91 0.86059 0.55729 0.69719 0.179569  </span></span>
-<span><span class="co">#&gt; 53    0.92 0.88371 0.52560 0.72999 0.166709  </span></span>
-<span><span class="co">#&gt; 54    0.93 0.88684 0.42987 0.68252 0.114110  </span></span>
-<span><span class="co">#&gt; 55    0.94 0.92954 0.40409 0.78434 0.114903  </span></span>
-<span><span class="co">#&gt; 56    0.95 0.95219 0.32715 0.81776 0.087809  </span></span>
-<span><span class="co">#&gt; 57    0.96 0.97587 0.24407 0.87503 0.063201  </span></span>
-<span><span class="co">#&gt; 58    0.97 0.97829 0.15457 0.82457 0.035157  </span></span>
-<span><span class="co">#&gt; 59    0.98 0.97829 0.09656 0.72589 0.018850  </span></span>
-<span><span class="co">#&gt; 60    0.99 0.99989 0.01286 0.98859 0.002984</span></span></code></pre></div>
+<span><span class="co">#&gt;    cut-off      SN      SP  </span></span>
+<span><span class="co">#&gt; 1     0.00 0.00000 1.00000  </span></span>
+<span><span class="co">#&gt; 2     0.03 0.01513 0.99812  </span></span>
+<span><span class="co">#&gt; 3     0.08 0.03648 0.99812  </span></span>
+<span><span class="co">#&gt; 4     0.09 0.03648 0.99168  </span></span>
+<span><span class="co">#&gt; 5     0.11 0.10053 0.99168  </span></span>
+<span><span class="co">#&gt; 6     0.12 0.11871 0.99072  </span></span>
+<span><span class="co">#&gt; 7     0.13 0.11871 0.98428  </span></span>
+<span><span class="co">#&gt; 8     0.14 0.11871 0.97783  </span></span>
+<span><span class="co">#&gt; 9     0.16 0.15223 0.97506  </span></span>
+<span><span class="co">#&gt; 10    0.18 0.17358 0.97506  </span></span>
+<span><span class="co">#&gt; 11    0.20 0.21628 0.97506  </span></span>
+<span><span class="co">#&gt; 12    0.21 0.23763 0.97506  </span></span>
+<span><span class="co">#&gt; 13    0.25 0.25898 0.97506  </span></span>
+<span><span class="co">#&gt; 14    0.27 0.28033 0.97506  </span></span>
+<span><span class="co">#&gt; 15    0.30 0.32303 0.97506  </span></span>
+<span><span class="co">#&gt; 16    0.31 0.34438 0.96862  </span></span>
+<span><span class="co">#&gt; 17    0.33 0.37465 0.96486  </span></span>
+<span><span class="co">#&gt; 18    0.36 0.41735 0.95842  </span></span>
+<span><span class="co">#&gt; 19    0.37 0.41842 0.95230  </span></span>
+<span><span class="co">#&gt; 20    0.40 0.43977 0.95230  </span></span>
+<span><span class="co">#&gt; 21    0.44 0.47217 0.94919  </span></span>
+<span><span class="co">#&gt; 22    0.46 0.49352 0.94919  </span></span>
+<span><span class="co">#&gt; 23    0.48 0.53622 0.94919  </span></span>
+<span><span class="co">#&gt; 24    0.52 0.53622 0.94274  </span></span>
+<span><span class="co">#&gt; 25    0.53 0.53622 0.93630  </span></span>
+<span><span class="co">#&gt; 26    0.55 0.53622 0.92985  </span></span>
+<span><span class="co">#&gt; 27    0.56 0.57892 0.92985  </span></span>
+<span><span class="co">#&gt; 28    0.58 0.60027 0.92985  </span></span>
+<span><span class="co">#&gt; 29    0.65 0.60027 0.92341  </span></span>
+<span><span class="co">#&gt; 30    0.66 0.62162 0.92341 *</span></span>
+<span><span class="co">#&gt; 31    0.67 0.62430 0.91133  </span></span>
+<span><span class="co">#&gt; 32    0.68 0.62430 0.90488  </span></span>
+<span><span class="co">#&gt; 33    0.69 0.62467 0.89855  </span></span>
+<span><span class="co">#&gt; 34    0.70 0.62467 0.89210  </span></span>
+<span><span class="co">#&gt; 35    0.71 0.65738 0.86975  </span></span>
+<span><span class="co">#&gt; 36    0.72 0.66080 0.85145  </span></span>
+<span><span class="co">#&gt; 37    0.73 0.68215 0.84501  </span></span>
+<span><span class="co">#&gt; 38    0.74 0.68626 0.83980  </span></span>
+<span><span class="co">#&gt; 39    0.75 0.68828 0.82108  </span></span>
+<span><span class="co">#&gt; 40    0.76 0.69336 0.80328  </span></span>
+<span><span class="co">#&gt; 41    0.78 0.71471 0.78394  </span></span>
+<span><span class="co">#&gt; 42    0.79 0.71977 0.77258  </span></span>
+<span><span class="co">#&gt; 43    0.80 0.72025 0.76628  </span></span>
+<span><span class="co">#&gt; 44    0.82 0.72770 0.74919  </span></span>
+<span><span class="co">#&gt; 45    0.83 0.72997 0.73699  </span></span>
+<span><span class="co">#&gt; 46    0.84 0.75693 0.71935  </span></span>
+<span><span class="co">#&gt; 47    0.85 0.77905 0.70025  </span></span>
+<span><span class="co">#&gt; 48    0.86 0.80262 0.68802  </span></span>
+<span><span class="co">#&gt; 49    0.87 0.80680 0.66995  </span></span>
+<span><span class="co">#&gt; 50    0.88 0.80680 0.66351  </span></span>
+<span><span class="co">#&gt; 51    0.89 0.83361 0.63938  </span></span>
+<span><span class="co">#&gt; 52    0.90 0.85678 0.60770  </span></span>
+<span><span class="co">#&gt; 53    0.91 0.86059 0.55729  </span></span>
+<span><span class="co">#&gt; 54    0.92 0.88371 0.52560  </span></span>
+<span><span class="co">#&gt; 55    0.93 0.88684 0.42987  </span></span>
+<span><span class="co">#&gt; 56    0.94 0.92954 0.40409  </span></span>
+<span><span class="co">#&gt; 57    0.95 0.95219 0.32715  </span></span>
+<span><span class="co">#&gt; 58    0.96 0.97587 0.24407  </span></span>
+<span><span class="co">#&gt; 59    0.97 0.97829 0.15457  </span></span>
+<span><span class="co">#&gt; 60    0.98 0.97829 0.09656  </span></span>
+<span><span class="co">#&gt; 61    0.99 0.99989 0.01286  </span></span>
+<span><span class="co">#&gt; 62    1.00 1.00000 0.00000</span></span></code></pre></div>
 <p>In the first line we define the event indicator as we did in the
 <code>pbc2.id</code> data.frame. The cut-point with the asterisk on the
 right maximizes the <a href="https://en.wikipedia.org/wiki/Youden%27s_J_statistic" class="external-link">Youden’s
@@ -428,7 +430,7 @@ index</a>. To depict the ROC curve, we use the corresponding
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Time-dependent AUC for the Joint Model jointFit</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated AUC: 0.8282</span></span>
+<span><span class="co">#&gt; Estimated AUC: 0.8282 (95% CI: 0.752-0.826)</span></span>
 <span><span class="co">#&gt; At time: 8</span></span>
 <span><span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></span>
 <span><span class="co">#&gt; Accounting for censoring using model-based weights</span></span></code></pre></div>
@@ -497,7 +499,7 @@ the censoring distribution (however, see the note below):</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Prediction Error for the Joint Model 'jointFit'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated Integrated Brier score: 0.0834</span></span>
+<span><span class="co">#&gt; Estimated Integrated Brier score: 0.0841</span></span>
 <span><span class="co">#&gt; In the time interval: [5, 8)</span></span>
 <span><span class="co">#&gt; For the 202 subjects at risk at time 5</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [5, 8): 40</span></span>

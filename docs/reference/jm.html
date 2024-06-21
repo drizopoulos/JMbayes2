@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-1</span>
       </span>
     </div>
 
@@ -389,7 +389,9 @@ and <code>"backward"</code>.</p></dd>
     <div id="details">
     <h2>Details</h2>
     <p>The mathematical details regarding the definition of the multivariate joint model, and the capabilities of the package can be found in the vignette in the doc directory.</p>
-    </div>
+<p>Notes:</p><ul><li><p>The ordering of the subjects in the datasets used to fit the mixed and Cox regression models needs to be the same.</p></li>
+<li><p>The units of the time variables in the mixed and Cox models need to be the same.</p></li>
+</ul></div>
     <div id="value">
     <h2>Value</h2>
     
@@ -509,7 +511,7 @@ and <code>"backward"</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> iterations per chain: 11000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> burn-in per chain: 1000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> thinning: 1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> time: 37 sec</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> time: 36 sec</span>
 <span class="r-in"><span><span class="fu"><a href="coda_methods.html">traceplot</a></span><span class="op">(</span><span class="va">joint_model_fit_1</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="jm-1.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="jm-2.png" alt="" width="700" height="433"></span>
@@ -789,7 +791,7 @@ and <code>"backward"</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> iterations per chain: 11000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> burn-in per chain: 1000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> thinning: 1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> time: 1.6 min</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> time: 1.8 min</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>

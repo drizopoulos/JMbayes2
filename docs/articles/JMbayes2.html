@@ -53,7 +53,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-1</span>
       </span>
     </div>
 
@@ -135,7 +135,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2024-05-30</h4>
+            <h4 data-toc-skip class="date">2024-06-21</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/JMbayes2.Rmd" class="external-link"><code>vignettes/JMbayes2.Rmd</code></a></small>
       <div class="hidden name"><code>JMbayes2.Rmd</code></div>
@@ -215,7 +215,7 @@ fitted with the following call to the <code><a href="../reference/jm.html">jm()<
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 16 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 15 sec</span></span></code></pre></div>
 <p>The output of the <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method provides some
 descriptive statistics of the sample at hand, followed by some fit
 statistics based on the marginal (random effects are integrated out
@@ -244,6 +244,16 @@ syntax:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/coda_methods.html">ggdensityplot</a></span><span class="op">(</span><span class="va">jointFit1</span>, <span class="st">"alphas"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="JMbayes2_files/figure-html/unnamed-chunk-5-1.png" width="700" style="display: block; margin: auto;"></p>
+<div class="section level4">
+<h4 id="notes">Notes<a class="anchor" aria-label="anchor" href="#notes"></a>
+</h4>
+<ul>
+<li><p>The ordering of the subjects in the datasets used to fit the
+mixed and Cox regression models needs to be the same.</p></li>
+<li><p>The units of the time variables in the mixed and Cox models need
+to be the same.</p></li>
+</ul>
+</div>
 </div>
 <div class="section level3">
 <h3 id="multivariate">Multivariate<a class="anchor" aria-label="anchor" href="#multivariate"></a>
