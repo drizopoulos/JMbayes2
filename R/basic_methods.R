@@ -717,7 +717,7 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
                              CI_long = TRUE, CI_event = TRUE,
                              xlab = "Follow-up Time", ylab_long = NULL,
                              ylab_event = "Cumulative Risk", main = "",
-                             lwd_long = 2, lwd_event = 2,
+                             lwd_long = 2, lwd_event = 2, ylim_event = c(0, 1),
                              ylim_long_outcome_range = TRUE,
                              col_line_long = "#0000FF",
                              col_line_event = c("#FF0000", "#03BF3D", "#8000FF"),
@@ -876,7 +876,8 @@ plot.predict_jm <- function (x, x2 = NULL, subject = 1, outcomes = 1,
         ry <- sort(fun_event(c(0, 1)))
         rx <- range(times, na.rm = TRUE)
         plot(rx, ry, type = "n", xlab = "", ylab = "", xlim = xlim,
-             axes = FALSE, col.axis = col_axis, col.lab = col_axis, ylim = ry)
+             axes = FALSE, col.axis = col_axis, col.lab = col_axis,
+             ylim = ylim_event)
         if (box) box(col = col_axis)
         axis(axis_side, cex.axis = cex_axis, col = col_axis,
              col.ticks = col_axis, col.axis = col_axis)

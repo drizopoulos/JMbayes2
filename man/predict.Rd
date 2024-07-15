@@ -24,7 +24,8 @@ Predict method for object of class \code{"jm"}.
 \method{plot}{predict_jm}(x, x2 = NULL, subject = 1, outcomes = 1,
   fun_long = NULL, fun_event = NULL, CI_long = TRUE, CI_event = TRUE,
   xlab = "Follow-up Time", ylab_long = NULL, ylab_event = "Cumulative Risk",
-  main = "", lwd_long = 2, lwd_event = 2, ylim_long_outcome_range = TRUE,
+  main = "", lwd_long = 2, lwd_event = 2, ylim_event = c(0, 1),
+  ylim_long_outcome_range = TRUE,
   col_line_long = "#0000FF",
   col_line_event = c("#FF0000", "#03BF3D", "#8000FF"), pch_points = 16,
   col_points = "blue", cex_points = 1, fill_CI_long = "#0000FF4D",
@@ -102,6 +103,8 @@ subjects in \code{newdata}.}
 
 \item{pos_ylab_long}{controls the position of the y-axis labels when multiple
 longitudinal outcomes are plotted.}
+
+\item{ylim_event}{the \code{ylim} for the event outcome.}
 
 \item{ylim_long_outcome_range}{logical; if \code{TRUE}, the range of the y-axis spans across the range of the outcome in the data used to fit the model; not only the range of values of the specific subject being plotted.}
 
