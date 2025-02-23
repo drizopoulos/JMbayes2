@@ -1,11 +1,8 @@
-tvROC <- function (object, newdata, Tstart, ...) {
-    UseMethod("tvROC")
-}
-
-tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
-                      type_weights = c("model-based", "IPCW"), ...) {
-    if (!inherits(object, "jm"))
-        stop("Use only with 'jm' objects.\n")
+tvROC.coxph <-
+    function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
+              type_weights = c("model-based", "IPCW"), ...) {
+    if (!inherits(object, "coxph"))
+        stop("Use only with 'coxph' objects.\n")
     if (!is.data.frame(newdata) || nrow(newdata) == 0)
         stop("'newdata' must be a data.frame with more than one rows.\n")
     if (is.null(Thoriz) && is.null(Dt))
@@ -14,12 +11,13 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         stop("'Thoriz' must be larger than 'Tstart'.")
     if (is.null(Thoriz))
         Thoriz <- Tstart + Dt
-    type_censoring <- object$model_info$type_censoring
-    if (object$model_info$CR_MS)
+    type_censoring <- attr(object$y, "type")
+    if (type_censoring != "right")
         stop("'tvROC()' currently only works for right censored data.")
     type_weights <- match.arg(type_weights)
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
+
     id_var <- object$model_info$var_names$idVar
     time_var <- object$model_info$var_names$time_var
     Time_var <- object$model_info$var_names$Time_var
@@ -443,8 +441,6 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     qs <- quantile(pi_u_t, probs = c(0.01, 0.99))
     probs_grid <- data.frame(preds = seq(qs[1L], qs[2L], length.out = 100L))
     obs <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$surv)
-    low <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$low)
-    upp <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$upp)
     obs_pi_u_t <- 1 - c(summary(survfit(cal_Cox, newdata = cal_DF), times = Thoriz)$surv)
     if (plot) {
         plot(probs_grid$preds, obs, type = "l", col = col, lwd = lwd, lty = lty,
@@ -460,7 +456,7 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
         invisible()
     } else {
         list("observed" = obs, "predicted" = probs_grid$preds,
-             "pi_u_t" = pi_u_t, "obs_pi_u_t" = obs_pi_u_t, low = low, upp = upp)
+             "pi_u_t" = pi_u_t, "obs_pi_u_t" = obs_pi_u_t)
     }
 }
 
