@@ -375,8 +375,9 @@ print.tvAUC <- function (x, digits = 4, ...) {
 
 calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
                               Dt = NULL, df_ns = 3, plot = TRUE,
-                              add_density = TRUE, col = "red", lty = 1, lwd = 1,
-                              col_dens = "grey",
+                              col = "red", lty = 1, lwd = 1,
+                              add_CI = TRUE, col_CI = "lightgrey",
+                              add_density = TRUE, col_dens = "grey",
                               xlab = "Predicted Probabilities",
                               ylab = "Observed Probabilities", main = "", ...) {
     if (!inherits(object, "jm"))
@@ -446,10 +447,15 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     low <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$low)
     upp <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$upp)
     obs_pi_u_t <- 1 - c(summary(survfit(cal_Cox, newdata = cal_DF), times = Thoriz)$surv)
+    preds <- probs_grid$preds
     if (plot) {
-        plot(probs_grid$preds, obs, type = "l", col = col, lwd = lwd, lty = lty,
-             xlab = xlab, ylab = ylab, main = main, xlim = c(0, 1),
-             ylim = c(0, 1))
+        plot(preds, obs, type = "n", xlab = xlab, ylab = ylab, main = main,
+             xlim = c(0, 1), ylim = c(0, 1))
+        if (add_CI) {
+            polygon(c(preds, rev(preds)), c(low, rev(upp)), border = NA,
+                    col = col_CI)
+        }
+        lines(preds, obs, lty = lty, col = col, lwd = lwd)
         abline(0, 1, lty = 2)
         if (add_density) {
             par(new = TRUE)
@@ -459,8 +465,8 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
         }
         invisible()
     } else {
-        list("observed" = obs, "predicted" = probs_grid$preds,
-             "pi_u_t" = pi_u_t, "obs_pi_u_t" = obs_pi_u_t, low = low, upp = upp)
+        list("observed" = obs, "predicted" = preds, "pi_u_t" = pi_u_t,
+             "obs_pi_u_t" = obs_pi_u_t, "low" = low, "upp" = upp)
     }
 }
 

@@ -32,9 +32,11 @@ tvAUC(object, newdata, Tstart, \dots)
 \method{tvAUC}{tvROC}(object, \dots)
 
 calibration_plot(object, newdata, Tstart, Thoriz = NULL,
-    Dt = NULL, df_ns = 3, plot = TRUE, add_density = TRUE,
+    Dt = NULL, df_ns = 3, plot = TRUE,
     col = "red", lty = 1, lwd = 1,
-    col_dens = "grey", xlab = "Predicted Probabilities",
+    add_CI = TRUE, col_CI = "lightgrey",
+    add_density = TRUE, col_dens = "grey",
+    xlab = "Predicted Probabilities",
     ylab = "Observed Probabilities", main = "", \dots)
 
 calibration_metrics(object, newdata, Tstart, Thoriz = NULL,
