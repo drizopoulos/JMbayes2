@@ -434,7 +434,7 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     event <- tapply(event, f, tail, 1L)
     names(Time) <- names(event) <- as.character(unique(id))
     cal_DF <- data.frame(Time = Time, event = event, preds = pi_u_t[names(Time)])
-    cloglog <- function (x) log(-log(1 - x))
+    cloglog <- function (x) log(-log(1.0 - x))
     Bounds <- quantile(cloglog(pi_u_t), probs = c(0.05, 0.95))
     form <- paste0("ns(cloglog(preds), df = ", df_ns,
                    ", B = c(", round(Bounds[1L], 2), ", ",
@@ -461,7 +461,7 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
             par(new = TRUE)
             plot(density(pi_u_t), axes = FALSE, xlab = "", ylab = "", main = "",
                  col = col_dens)
-            axis(side = 4)
+            #axis(side = 4)
         }
         invisible()
     } else {

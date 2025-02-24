@@ -88,6 +88,10 @@ predicted probabilities used in the Cox model that assess calibration.}
 
 \item{plot}{logical; should a plot be produced. If \code{FALSE}, a list is returned with the observed and predicted probabilities.}
 
+\item{add_CI}{logical; should 0.95 pointwise confidence intervals be added around the calibration line.}
+
+\item{col_CI}{character; the color of the shaded area representing the 0.95 pointwise confidence intervals around the calibration line.}
+
 \item{add_density}{logical; should the kernal density estimation of the predicted probabilities be superimposed in the calibration plot.}
 
 \item{col, lwd, lty, col_dens, xlab, ylab, main}{graphical parameters.}
