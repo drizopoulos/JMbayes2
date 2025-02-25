@@ -131,8 +131,13 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
 }
 
 print.tvROC <- function (x, digits = 4, ...) {
-    cat("\n\tTime-dependent Sensitivity and Specificity for the Joint Model",
-        x$nameObject)
+    if (x$classObject == "jm") {
+        cat("\n\tTime-dependent Sensitivity and Specificity for the Joint Model",
+            x$nameObject)
+    } else if (x$classObject == "coxph") {
+        cat("\n\tTime-dependent Sensitivity and Specificity for the Cox Model",
+            x$nameObject)
+    }
     cat("\n\nAt time:", round(x$Thoriz, digits))
     cat("\nUsing information up to time: ", round(x$Tstart, digits),
         " (", x$nr, " subjects still at risk)", sep = "")
@@ -309,21 +314,22 @@ tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     TP <- roc$TP
     FP <- roc$FP
     auc <- sum(0.5 * diff(FP) * (TP[-1L] + TP[-length(TP)]), na.rm = TRUE)
-    tp <- roc$tp
-    fp <- roc$fp
-    M <- ncol(tp)
-    aucs <- length(M)
-    for (i in seq_len(M)) {
-        aucs[i] <- sum(0.5 * diff(fp[, i]) * (tp[-1L, i] + tp[-length(TP), i]),
-                       na.rm = TRUE)
-    }
+    #tp <- roc$tp
+    #fp <- roc$fp
+    #M <- ncol(tp)
+    #aucs <- length(M)
+    #for (i in seq_len(M)) {
+    #    aucs[i] <- sum(0.5 * diff(fp[, i]) * (tp[-1L, i] + tp[-length(TP), i]),
+    #                   na.rm = TRUE)
+    #}
     out <- list(auc = auc,
                 #mcmc_auc = aucs,
                 #low_auc = quantile(aucs, 0.025),
                 #upp_auc = quantile(aucs, 0.975),
                 Tstart = Tstart, Thoriz = roc$Thoriz, nr = roc$nr,
                 type_weights = roc$type_weights,
-                classObject = class(object), nameObject = deparse(substitute(object)))
+                classObject = class(object),
+                nameObject = deparse(substitute(object)))
     class(out) <- "tvAUC"
     out
 }
@@ -332,14 +338,14 @@ tvAUC.tvROC <- function (object, ...) {
     TP <- object$TP
     FP <- object$FP
     auc <- sum(0.5 * diff(FP) * (TP[-1L] + TP[-length(TP)]), na.rm = TRUE)
-    tp <- object$tp
-    fp <- object$fp
-    M <- ncol(tp)
-    aucs <- length(M)
-    for (i in seq_len(M)) {
-        aucs[i] <- sum(0.5 * diff(fp[, i]) * (tp[-1L, i] + tp[-length(TP), i]),
-                       na.rm = TRUE)
-    }
+    #tp <- object$tp
+    #fp <- object$fp
+    #M <- ncol(tp)
+    #aucs <- length(M)
+    #for (i in seq_len(M)) {
+    #    aucs[i] <- sum(0.5 * diff(fp[, i]) * (tp[-1L, i] + tp[-length(TP), i]),
+    #                   na.rm = TRUE)
+    #}
     out <- list(auc = auc,
                 #mcmc_auc = aucs,
                 #low_auc = quantile(aucs, 0.025),
