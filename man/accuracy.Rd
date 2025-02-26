@@ -8,6 +8,7 @@
 \alias{calibration_plot}
 \alias{calibration_metrics}
 \alias{tvBrier}
+\alias{tvBrier.jm}
 \alias{tvEPCE}
 \alias{create_folds}
 
@@ -42,7 +43,9 @@ calibration_plot(object, newdata, Tstart, Thoriz = NULL,
 calibration_metrics(object, newdata, Tstart, Thoriz = NULL,
     Dt = NULL, df_ns = 3, \dots)
 
-tvBrier(object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
+tvBrier(object, newdata, Tstart, \dots)
+
+\method{tvBrier}{jm}(object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     integrated = FALSE, type_weights = c("model-based", "IPCW"),
     model_weights = NULL, eventData_fun = NULL,
     parallel = c("snow", "multicore"),
