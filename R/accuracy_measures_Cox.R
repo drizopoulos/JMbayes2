@@ -92,3 +92,15 @@ tvAUC.coxph <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     out
 }
 
+
+tvBrier.coxph <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
+                           integrated = FALSE,
+                           type_weights = c("model-based", "IPCW"), ...) {
+    out <- list(Brier = Brier,
+                nr = length(out$Time), nint = sum(out$ind1),
+                ncens = sum(out$ind3), Tstart = Tstart, Thoriz = Thoriz,
+                integrated = integrated, type_weights = type_weights,
+                nameObject = deparse(substitute(object)))
+    class(out) <- "tvBrier"
+    out
+}

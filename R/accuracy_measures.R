@@ -338,18 +338,7 @@ tvAUC.tvROC <- function (object, ...) {
     TP <- object$TP
     FP <- object$FP
     auc <- sum(0.5 * diff(FP) * (TP[-1L] + TP[-length(TP)]), na.rm = TRUE)
-    #tp <- object$tp
-    #fp <- object$fp
-    #M <- ncol(tp)
-    #aucs <- length(M)
-    #for (i in seq_len(M)) {
-    #    aucs[i] <- sum(0.5 * diff(fp[, i]) * (tp[-1L, i] + tp[-length(TP), i]),
-    #                   na.rm = TRUE)
-    #}
     out <- list(auc = auc,
-                #mcmc_auc = aucs,
-                #low_auc = quantile(aucs, 0.025),
-                #upp_auc = quantile(aucs, 0.975),
                 Tstart = object$Tstart, Thoriz = object$Thoriz,
                 nr = object$nr, classObject = object$classObject,
                 nameObject = object$nameObject,
@@ -854,11 +843,16 @@ print.tvEPCE <- function (x, digits = 4, ...) {
 }
 
 
-tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
-                     integrated = FALSE, type_weights = c("model-based", "IPCW"),
-                     model_weights = NULL, eventData_fun = NULL,
-                     parallel = c("snow", "multicore"),
-                     cores = parallelly::availableCores(omit = 1L), ...) {
+tvBrier <- function (object, newdata, Tstart, ...) {
+    UseMethod("tvBrier")
+}
+
+tvBrier.jm <-
+    function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
+              integrated = FALSE, type_weights = c("model-based", "IPCW"),
+              model_weights = NULL, eventData_fun = NULL,
+              parallel = c("snow", "multicore"),
+              cores = parallelly::availableCores(omit = 1L), ...) {
     parallel <- match.arg(parallel)
     is_jm <- function (object) inherits(object, "jm")
     is_jmList <- function (object) inherits(object, "jmList")
@@ -1242,6 +1236,8 @@ tvBrier <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     class(out) <- "tvBrier"
     out
 }
+
+tvBrier.jmList <- tvBrier.jm
 
 print.tvBrier <- function (x, digits = 4, ...) {
     if (!inherits(x, "tvBrier"))
