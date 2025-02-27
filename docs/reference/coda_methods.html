@@ -9,7 +9,7 @@
 
   gtag('config', 'G-YDBZ5DBBSP');
 </script></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-2</span>
       </span>
     </div>
 
@@ -37,7 +37,7 @@
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
@@ -74,25 +74,25 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/drizopoulos/JMbayes2/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul><form class="navbar-form navbar-right hidden-xs hidden-sm" role="search">
         <div class="form-group">
           <input type="search" class="form-control" name="search-input" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off"></div>
       </form>
-      
+
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Various Methods for Functions from the <em>coda</em> Package</h1>
-    
+
     <div class="hidden name"><code>coda_methods.Rd</code></div>
     </div>
 
@@ -103,14 +103,14 @@
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">traceplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for jm</span></span>
+<span><span class="co"># S3 method for class 'jm'</span></span>
 <span><span class="fu">traceplot</span><span class="op">(</span><span class="va">object</span>,</span>
 <span>  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,</span>
 <span>           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">ggtraceplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for jm</span></span>
+<span><span class="co"># S3 method for class 'jm'</span></span>
 <span><span class="fu">ggtraceplot</span><span class="op">(</span><span class="va">object</span>,</span>
 <span>  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,</span>
 <span>           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>,</span>
@@ -121,21 +121,21 @@
 <span></span>
 <span><span class="fu">gelman_diag</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for jm</span></span>
+<span><span class="co"># S3 method for class 'jm'</span></span>
 <span><span class="fu">gelman_diag</span><span class="op">(</span><span class="va">object</span>,</span>
 <span>  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,</span>
 <span>           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">densplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for jm</span></span>
+<span><span class="co"># S3 method for class 'jm'</span></span>
 <span><span class="fu">densplot</span><span class="op">(</span><span class="va">object</span>,</span>
 <span>  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,</span>
 <span>           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">ggdensityplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for jm</span></span>
+<span><span class="co"># S3 method for class 'jm'</span></span>
 <span><span class="fu">ggdensityplot</span><span class="op">(</span><span class="va">object</span>,</span>
 <span>  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,</span>
 <span>           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>,</span>
@@ -146,7 +146,7 @@
 <span></span>
 <span><span class="fu">cumuplot</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for jm</span></span>
+<span><span class="co"># S3 method for class 'jm'</span></span>
 <span><span class="fu">cumuplot</span><span class="op">(</span><span class="va">object</span>,</span>
 <span>  parm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"betas"</span>, <span class="st">"sigmas"</span>, <span class="st">"D"</span>, <span class="st">"bs_gammas"</span>,</span>
 <span>           <span class="st">"tau_bs_gammas"</span>, <span class="st">"gammas"</span>, <span class="st">"alphas"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
@@ -154,40 +154,41 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>object</dt>
+
+
+<dl><dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
 <dd><p>an object inheriting from class <code>"jm"</code>.</p></dd>
 
-<dt>parm</dt>
+<dt id="arg-parm">parm<a class="anchor" aria-label="anchor" href="#arg-parm"></a></dt>
 <dd><p>a character string specifying which parameters of the joint model to plot. Possible options are <code>'all'</code>, <code>'betas'</code>, <code>'alphas'</code>, <code>'sigmas'</code>, <code>'D'</code>, <code>'bs_gammas'</code>, <code>'tau_bs_gammas'</code>, or <code>'gammas'</code>.<br></p></dd>
 
-<dt>size</dt>
+<dt id="arg-size">size<a class="anchor" aria-label="anchor" href="#arg-size"></a></dt>
 <dd><p>the width of the traceplot line in mm. Defaults to 1.</p></dd>
 
-<dt>alpha</dt>
+<dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
 <dd><p>the opacity level of the traceplot line. Defaults to 0.8.</p></dd>
 
-<dt>theme</dt>
+<dt id="arg-theme">theme<a class="anchor" aria-label="anchor" href="#arg-theme"></a></dt>
 <dd><p>a character string specifying the color theme to be used. Possible options are <code>'standard'</code>, <code>'catalog'</code>, <code>'metro'</code>, <code>'pastel'</code>, <code>'beach'</code>, <code>'moonlight'</code>, <code>'goo'</code>, or <code>'sunset'</code>. Note that this option supports fitted objects with three chains. If the object was fitted using a different number of chains then the colors are either automatically chosen, or can be specified by the user via the argument <code>custom_theme</code>. <br></p></dd>
 
-<dt>grid</dt>
+<dt id="arg-grid">grid<a class="anchor" aria-label="anchor" href="#arg-grid"></a></dt>
 <dd><p>logical; defaults to <code>FALSE</code>. If <code>TRUE</code>, the plots are returned in grids split over multiple pages. For more details see the documentation for <code><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">gridExtra::marrangeGrob()</a></code>. <br></p></dd>
 
-<dt>gridrows</dt>
+<dt id="arg-gridrows">gridrows<a class="anchor" aria-label="anchor" href="#arg-gridrows"></a></dt>
 <dd><p>number of rows per page for the grid. Only relevant when using <code>grid = TRUE</code>. Defaults to 3.</p></dd>
 
-<dt>gridcols</dt>
+<dt id="arg-gridcols">gridcols<a class="anchor" aria-label="anchor" href="#arg-gridcols"></a></dt>
 <dd><p>number of columns per page for the grid. Only relevant when using <code>grid = TRUE</code>. Defaults to 1.</p></dd>
 
-<dt>custom_theme</dt>
+<dt id="arg-custom-theme">custom_theme<a class="anchor" aria-label="anchor" href="#arg-custom-theme"></a></dt>
 <dd><p>A named character vector with elements equal to the number of chains (<code>n_chains</code>). The name of each element should be the number corresponding to the respective chain. Defaults to <code>NULL</code>.</p></dd>
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>further arguments passed to the corresponding function from the <b>coda</b> package.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
 
 <dl><dt><code>traceplot()</code></dt>
 <dd><p>Plots the evolution of the estimated parameter vs. iterations in a fitted joint model.</p></dd>
@@ -310,20 +311,20 @@
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by <a href="http://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>.</p>
+  <p></p><p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.1/docsearch.min.js" integrity="sha256-GKvGqXDznoRYHCwKXGnuchvKSwmx9SRMrZOTh2g4Sb0=" crossorigin="anonymous"></script><script>
   docsearch({
-    
-    
+
+
     apiKey: '66a8ef39105517ba1ce2f07aa1c70890',
     indexName: 'drizopoulos',
     inputSelector: 'input#search-input.form-control',

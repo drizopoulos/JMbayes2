@@ -165,6 +165,13 @@ tvAUC(roc)
 
 This function either accepts an object of class `tvROC` or of class `jm`. In the latter case, the user must also provide the `newdata`, `Tstart` and `Dt` or `Thoriz` arguments. Here we have used the same dataset as the one to fit the model, but, in principle, discrimination could be (better) assessed in another dataset.
 
+The `tvROC()` and `tvAUC()` functions also work for Cox regression models for right censored data. We compare the added value of using the longitudinal data compared to only using the baseline value of the markers,
+```{r}
+baseline_Cox <- coxph(Surv(years, event) ~ drug + age + log(serBilir) + 
+                          prothrombin + ascites, data = pbc2.id)
+tvAUC(baseline_Cox, newdata = pbc2.id, Tstart = t0, Dt = 3)
+```
+
 To assess the accuracy of the predictions, we produce a calibration plot:
 ```{r, fig.align = "center", fig.width = 8.5, fig.height = 7.5}
 calibration_plot(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
@@ -183,6 +190,11 @@ tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 The Brier score evaluates the predictive accuracy at time `Tstart + Dt`. To summarize the predictive accuracy in the interval `(t0, t0 + Dt]` we can use the integrated Brier score. The corresponding integral is approximated using the Simpson's rule:
 ```{r}
 tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE)
+```
+
+Function `tvBrier()` also works for Cox models, e.g.,
+```{r}
+tvBrier(baseline_Cox, newdata = pbc2.id, Tstart = t0, Dt = 3, integrated = TRUE)
 ```
 
 The `tvBrier()` and `tvROC()` also implement inverse probability of censoring weights to account for censoring in the interval `(t0, t0 + Dt]` using the Kaplan-Meier estimate of the censoring distribution (however, see the note below):

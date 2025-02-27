@@ -9,7 +9,7 @@
 
   gtag('config', 'G-YDBZ5DBBSP');
 </script></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-2</span>
       </span>
     </div>
 
@@ -37,7 +37,7 @@
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
@@ -74,25 +74,25 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/drizopoulos/JMbayes2/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul><form class="navbar-form navbar-right hidden-xs hidden-sm" role="search">
         <div class="form-group">
           <input type="search" class="form-control" name="search-input" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off"></div>
       </form>
-      
+
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Predictions from Joint Models</h1>
-    
+
     <div class="hidden name"><code>predict.Rd</code></div>
     </div>
 
@@ -101,7 +101,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for jm</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'jm'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">object</span>,</span>
 <span>    newdata <span class="op">=</span> <span class="cn">NULL</span>, newdata2 <span class="op">=</span> <span class="cn">NULL</span>, times <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>    process <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"longitudinal"</span>, <span class="st">"event"</span><span class="op">)</span>,</span>
@@ -109,11 +109,12 @@
 <span>    type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"subject_specific"</span>, <span class="st">"mean_subject"</span><span class="op">)</span>,</span>
 <span>    control <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for predict_jm</span></span>
+<span><span class="co"># S3 method for class 'predict_jm'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, x2 <span class="op">=</span> <span class="cn">NULL</span>, subject <span class="op">=</span> <span class="fl">1</span>, outcomes <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  fun_long <span class="op">=</span> <span class="cn">NULL</span>, fun_event <span class="op">=</span> <span class="cn">NULL</span>, CI_long <span class="op">=</span> <span class="cn">TRUE</span>, CI_event <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  xlab <span class="op">=</span> <span class="st">"Follow-up Time"</span>, ylab_long <span class="op">=</span> <span class="cn">NULL</span>, ylab_event <span class="op">=</span> <span class="st">"Cumulative Risk"</span>,</span>
-<span>  main <span class="op">=</span> <span class="st">""</span>, lwd_long <span class="op">=</span> <span class="fl">2</span>, lwd_event <span class="op">=</span> <span class="fl">2</span>, ylim_long_outcome_range <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  main <span class="op">=</span> <span class="st">""</span>, lwd_long <span class="op">=</span> <span class="fl">2</span>, lwd_event <span class="op">=</span> <span class="fl">2</span>, ylim_event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  ylim_long_outcome_range <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  col_line_long <span class="op">=</span> <span class="st">"#0000FF"</span>,</span>
 <span>  col_line_event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#FF0000"</span>, <span class="st">"#03BF3D"</span>, <span class="st">"#8000FF"</span><span class="op">)</span>, pch_points <span class="op">=</span> <span class="fl">16</span>,</span>
 <span>  col_points <span class="op">=</span> <span class="st">"blue"</span>, cex_points <span class="op">=</span> <span class="fl">1</span>, fill_CI_long <span class="op">=</span> <span class="st">"#0000FF4D"</span>,</span>
@@ -122,7 +123,7 @@
 <span>  col_axis <span class="op">=</span> <span class="st">"black"</span>, pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">2</span>, <span class="fl">0.08</span><span class="op">)</span>, bg <span class="op">=</span> <span class="st">"white"</span>,</span>
 <span>  <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for jmList</span></span>
+<span><span class="co"># S3 method for class 'jmList'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">object</span>,</span>
 <span>  <span class="va">weights</span>, newdata <span class="op">=</span> <span class="cn">NULL</span>, newdata2 <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  times <span class="op">=</span> <span class="cn">NULL</span>, process <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"longitudinal"</span>, <span class="st">"event"</span><span class="op">)</span>,</span>
@@ -133,35 +134,37 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>object</dt>
+
+
+<dl><dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
 <dd><p>an object inheriting from class <code>"jm"</code> or a list of <code>"jm"</code> objects.</p></dd>
 
 
-<dt>weights</dt>
+<dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>
 <dd><p>a numeric vector of model weights.</p></dd>
 
 
-<dt>newdata, newdata2</dt>
+<dt id="arg-newdata-newdata-">newdata, newdata2<a class="anchor" aria-label="anchor" href="#arg-newdata-newdata-"></a></dt>
 <dd><p>data.frames.</p></dd>
 
 
-<dt>times</dt>
+<dt id="arg-times">times<a class="anchor" aria-label="anchor" href="#arg-times"></a></dt>
 <dd><p>a numeric vector of future times to calculate predictions.</p></dd>
 
 
-<dt>process</dt>
+<dt id="arg-process">process<a class="anchor" aria-label="anchor" href="#arg-process"></a></dt>
 <dd><p>for which process to calculation predictions, for the longitudinal outcomes or the event times.</p></dd>
 
 
-<dt>type</dt>
+<dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
 <dd><p>level of predictions; only relevant when <code>type_pred = "longitudinal"</code>. Option <code>type = "subject_specific"</code> combines the fixed- and random-effects parts, whereas <code>type = "mean_subject"</code> uses only the fixed effects.</p></dd>
 
 
-<dt>type_pred</dt>
+<dt id="arg-type-pred">type_pred<a class="anchor" aria-label="anchor" href="#arg-type-pred"></a></dt>
 <dd><p>type of predictions; options are <code>"response"</code> using the inverse link function in GLMMs, and <code>"link"</code> that correspond to the linear predictor.</p></dd>
 
 
-<dt>control</dt>
+<dt id="arg-control">control<a class="anchor" aria-label="anchor" href="#arg-control"></a></dt>
 <dd><p>a named <code>list</code> of control parameters:</p><dl><dt>all_times</dt>
 <dd><p>logical; if <code>TRUE</code> predictions for the longitudinal outcomes are calculated for all the times
 given in the <code>times</code> argumet, not only the ones after the last longitudinal measurement.</p></dd>
@@ -207,50 +210,54 @@ subjects in <code>newdata</code>.</p></dd>
 <dt>seed</dt>
 <dd><p>an integer denoting the seed.</p></dd>
 
-  
+
 </dl></dd>
 
 
-<dt>x, x2</dt>
+<dt id="arg-x-x-">x, x2<a class="anchor" aria-label="anchor" href="#arg-x-x-"></a></dt>
 <dd><p>objects returned by <code>predict.jm()</code> with argument <code>return_data</code> set to <code>TRUE</code>.</p></dd>
 
 
-<dt>subject</dt>
+<dt id="arg-subject">subject<a class="anchor" aria-label="anchor" href="#arg-subject"></a></dt>
 <dd><p>when multiple subjects are included in the data.frames <code>x</code> and <code>x2</code>, it selects which one to plot. Only a single subject can be plotted each time.</p></dd>
 
 
-<dt>outcomes</dt>
+<dt id="arg-outcomes">outcomes<a class="anchor" aria-label="anchor" href="#arg-outcomes"></a></dt>
 <dd><p>when multiple longitudinal outcomes are included in the data.frames <code>x</code> and <code>x2</code>, it selects which ones to plot. A maximum of three outcomes can be plotted each time.</p></dd>
 
 
-<dt>fun_long, fun_event</dt>
+<dt id="arg-fun-long-fun-event">fun_long, fun_event<a class="anchor" aria-label="anchor" href="#arg-fun-long-fun-event"></a></dt>
 <dd><p>function to apply to the predictions for the longitudinal and event outcomes, respectively. When multiple longitudinal outcomes are plotted, <code>fun_long</code> can be a list of functions; see examples below.</p></dd>
 
 
-<dt>CI_long, CI_event</dt>
+<dt id="arg-ci-long-ci-event">CI_long, CI_event<a class="anchor" aria-label="anchor" href="#arg-ci-long-ci-event"></a></dt>
 <dd><p>logical; should credible interval areas be plotted.</p></dd>
 
 
-<dt>xlab, ylab_long, ylab_event</dt>
+<dt id="arg-xlab-ylab-long-ylab-event">xlab, ylab_long, ylab_event<a class="anchor" aria-label="anchor" href="#arg-xlab-ylab-long-ylab-event"></a></dt>
 <dd><p>characture strings or a chracter vector for <code>ylab_long</code> when multiple longitudinal outcomes are considered with the labels for the horizontal axis, and the two vertical axes.</p></dd>
 
 
-<dt>lwd_long, lwd_event, col_line_long, col_line_event, main,
+<dt id="arg-lwd-long-lwd-event-col-line-long-col-line-event-main-fill-ci-long-fill-ci-event-cex-xlab-cex-ylab-long-cex-ylab-event-cex-main-cex-axis-pch-points-col-points-cex-points-col-axis-bg">lwd_long, lwd_event, col_line_long, col_line_event, main,
   fill_CI_long, fill_CI_event, cex_xlab, cex_ylab_long, cex_ylab_event, cex_main,
-  cex_axis, pch_points, col_points, cex_points, col_axis, bg</dt>
+  cex_axis, pch_points, col_points, cex_points, col_axis, bg<a class="anchor" aria-label="anchor" href="#arg-lwd-long-lwd-event-col-line-long-col-line-event-main-fill-ci-long-fill-ci-event-cex-xlab-cex-ylab-long-cex-ylab-event-cex-main-cex-axis-pch-points-col-points-cex-points-col-axis-bg"></a></dt>
 <dd><p>graphical parameters; see <code>par</code>.</p></dd>
 
 
-<dt>pos_ylab_long</dt>
+<dt id="arg-pos-ylab-long">pos_ylab_long<a class="anchor" aria-label="anchor" href="#arg-pos-ylab-long"></a></dt>
 <dd><p>controls the position of the y-axis labels when multiple
 longitudinal outcomes are plotted.</p></dd>
 
 
-<dt>ylim_long_outcome_range</dt>
+<dt id="arg-ylim-event">ylim_event<a class="anchor" aria-label="anchor" href="#arg-ylim-event"></a></dt>
+<dd><p>the <code>ylim</code> for the event outcome.</p></dd>
+
+
+<dt id="arg-ylim-long-outcome-range">ylim_long_outcome_range<a class="anchor" aria-label="anchor" href="#arg-ylim-long-outcome-range"></a></dt>
 <dd><p>logical; if <code>TRUE</code>, the range of the y-axis spans across the range of the outcome in the data used to fit the model; not only the range of values of the specific subject being plotted.</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>aguments passed to control.</p></dd>
 
 </dl></div>
@@ -260,11 +267,7 @@ longitudinal outcomes are plotted.</p></dd>
     </div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>Method <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> returns a list or a data.frame (if <code>return_newdata</code> was set to <code>TRUE</code>) with the predictions.</p>
-
-
+    <p>Method <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> returns a list or a data.frame (if <code>return_newdata</code> was set to <code>TRUE</code>) with the predictions.</p>
 <p>Method <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> produces figures of the predictions from a single subject.</p>
     </div>
     <div id="author">
@@ -354,20 +357,20 @@ longitudinal outcomes are plotted.</p></dd>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by <a href="http://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>.</p>
+  <p></p><p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.1/docsearch.min.js" integrity="sha256-GKvGqXDznoRYHCwKXGnuchvKSwmx9SRMrZOTh2g4Sb0=" crossorigin="anonymous"></script><script>
   docsearch({
-    
-    
+
+
     apiKey: '66a8ef39105517ba1ce2f07aa1c70890',
     indexName: 'drizopoulos',
     inputSelector: 'input#search-input.form-control',

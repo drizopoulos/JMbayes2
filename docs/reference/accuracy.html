@@ -9,7 +9,7 @@
 
   gtag('config', 'G-YDBZ5DBBSP');
 </script></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-2</span>
       </span>
     </div>
 
@@ -37,7 +37,7 @@
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
@@ -74,25 +74,25 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/drizopoulos/JMbayes2/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul><form class="navbar-form navbar-right hidden-xs hidden-sm" role="search">
         <div class="form-group">
           <input type="search" class="form-control" name="search-input" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off"></div>
       </form>
-      
+
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Time-Dependent Predictive Accuracy Measures for Joint Models</h1>
-    
+
     <div class="hidden name"><code>accuracy.Rd</code></div>
     </div>
 
@@ -103,28 +103,33 @@
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">tvROC</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for jm</span></span>
+<span><span class="co"># S3 method for class 'jm'</span></span>
 <span><span class="fu">tvROC</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>    Dt <span class="op">=</span> <span class="cn">NULL</span>, type_weights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"model-based"</span>, <span class="st">"IPCW"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">tvAUC</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for jm</span></span>
+<span><span class="co"># S3 method for class 'jm'</span></span>
 <span><span class="fu">tvAUC</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>    Dt <span class="op">=</span> <span class="cn">NULL</span>, type_weights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"model-based"</span>, <span class="st">"IPCW"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S3 method for tvROC</span></span>
+<span><span class="co"># S3 method for class 'tvROC'</span></span>
 <span><span class="fu">tvAUC</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">calibration_plot</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>    Dt <span class="op">=</span> <span class="cn">NULL</span>, df_ns <span class="op">=</span> <span class="fl">3</span>, plot <span class="op">=</span> <span class="cn">TRUE</span>, add_density <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    Dt <span class="op">=</span> <span class="cn">NULL</span>, df_ns <span class="op">=</span> <span class="fl">3</span>, plot <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    col <span class="op">=</span> <span class="st">"red"</span>, lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>    col_dens <span class="op">=</span> <span class="st">"grey"</span>, xlab <span class="op">=</span> <span class="st">"Predicted Probabilities"</span>,</span>
+<span>    add_CI <span class="op">=</span> <span class="cn">TRUE</span>, col_CI <span class="op">=</span> <span class="st">"lightgrey"</span>,</span>
+<span>    add_density <span class="op">=</span> <span class="cn">TRUE</span>, col_dens <span class="op">=</span> <span class="st">"grey"</span>,</span>
+<span>    xlab <span class="op">=</span> <span class="st">"Predicted Probabilities"</span>,</span>
 <span>    ylab <span class="op">=</span> <span class="st">"Observed Probabilities"</span>, main <span class="op">=</span> <span class="st">""</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">calibration_metrics</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>    Dt <span class="op">=</span> <span class="cn">NULL</span>, df_ns <span class="op">=</span> <span class="fl">3</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu">tvBrier</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'jm'</span></span>
 <span><span class="fu">tvBrier</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>, Dt <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>    integrated <span class="op">=</span> <span class="cn">FALSE</span>, type_weights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"model-based"</span>, <span class="st">"IPCW"</span><span class="op">)</span>,</span>
 <span>    model_weights <span class="op">=</span> <span class="cn">NULL</span>, eventData_fun <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -141,102 +146,110 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>object</dt>
+
+
+<dl><dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
 <dd><p>an object inheriting from class <code>jm</code>, except for <code>tvAUC.tvROC()</code> where this is an object of class <code>tvROC</code>. For <code>tvBrier()</code> and <code>tvEPCE()</code> it can also be a library of joint models.</p></dd>
 
 
-<dt>newdata</dt>
+<dt id="arg-newdata">newdata<a class="anchor" aria-label="anchor" href="#arg-newdata"></a></dt>
 <dd><p>a data.frame that contains the longitudinal and covariate information for the subjects for which prediction of survival probabilities is required. The names of the variables in this data.frame must be the same as in the data.frames that were used to fit the linear mixed effects and the event process model that were supplied as the two first argument of <code><a href="jm.html">jm</a></code>.</p></dd>
 
 
-<dt>Tstart</dt>
+<dt id="arg-tstart">Tstart<a class="anchor" aria-label="anchor" href="#arg-tstart"></a></dt>
 <dd><p>numeric scalar denoting the time point up to which longitudinal information is to be used to derive predictions.</p></dd>
 
 
-<dt>Thoriz</dt>
+<dt id="arg-thoriz">Thoriz<a class="anchor" aria-label="anchor" href="#arg-thoriz"></a></dt>
 <dd><p>numeric scalar denoting the time point for which a prediction of the survival status is of interest; <code>Thoriz</code> must be later than <code>Tstart</code> and either <code>Dt</code> or <code>Thoriz</code> must be specified. If <code>Thoriz</code> is <code>NULL</code> is set equal to <code>Tstart + Dt</code>.</p></dd>
 
 
-<dt>Dt</dt>
+<dt id="arg-dt">Dt<a class="anchor" aria-label="anchor" href="#arg-dt"></a></dt>
 <dd><p>numeric scalar denoting the length of the time interval of prediction; either <code>Dt</code> or <code>Thoriz</code> must be specified.</p></dd>
 
 
-<dt>integrated</dt>
+<dt id="arg-integrated">integrated<a class="anchor" aria-label="anchor" href="#arg-integrated"></a></dt>
 <dd><p>logical; if <code>TRUE</code> the integrated Brier score is calculated.</p></dd>
 
 
-<dt>type_weights</dt>
+<dt id="arg-type-weights">type_weights<a class="anchor" aria-label="anchor" href="#arg-type-weights"></a></dt>
 <dd><p>character string denoting the type of weights to use to account for censorting. Options are model-based (default) and inverse probability of censoring weighting (using the Kaplan-Meier estimate of the censoring distribution).</p></dd>
 
 
-<dt>eps</dt>
+<dt id="arg-eps">eps<a class="anchor" aria-label="anchor" href="#arg-eps"></a></dt>
 <dd><p>numeric scalar used in the approximation of the hazard function.</p></dd>
 
 
-<dt>model_weights</dt>
+<dt id="arg-model-weights">model_weights<a class="anchor" aria-label="anchor" href="#arg-model-weights"></a></dt>
 <dd><p>a numeric vector of weights to combine predictions when <code>object</code> is a list of joint models of class <code>"jmList"</code>.</p></dd>
 
 
-<dt>eventData_fun</dt>
+<dt id="arg-eventdata-fun">eventData_fun<a class="anchor" aria-label="anchor" href="#arg-eventdata-fun"></a></dt>
 <dd><p>a function that takes as input the <code>newdata</code> and produces the dataset used for the event process model. This is useful when, for example, the event process model contains other time-varying covariates.
 It is important that this function does not alter the ordering of the subjects in <code>newdata</code>.</p></dd>
 
 
-<dt>parallel</dt>
+<dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
 <dd><p>character string; what type of parallel computing to use.</p></dd>
 
 
-<dt>cores</dt>
+<dt id="arg-cores">cores<a class="anchor" aria-label="anchor" href="#arg-cores"></a></dt>
 <dd><p>integer denoting the number of cores to be used when a library of joint models has been provided in
     <code>object</code>. If <code>cores = 1</code>, no parallel computing is used.</p></dd>
 
 
-<dt>df_ns</dt>
+<dt id="arg-df-ns">df_ns<a class="anchor" aria-label="anchor" href="#arg-df-ns"></a></dt>
 <dd><p>the degrees of freedom for the natural cubic spline of the cloglog transformation of the
 predicted probabilities used in the Cox model that assess calibration.</p></dd>
 
 
-<dt>plot</dt>
+<dt id="arg-plot">plot<a class="anchor" aria-label="anchor" href="#arg-plot"></a></dt>
 <dd><p>logical; should a plot be produced. If <code>FALSE</code>, a list is returned with the observed and predicted probabilities.</p></dd>
 
 
-<dt>add_density</dt>
+<dt id="arg-add-ci">add_CI<a class="anchor" aria-label="anchor" href="#arg-add-ci"></a></dt>
+<dd><p>logical; should 0.95 pointwise confidence intervals be added around the calibration line.</p></dd>
+
+
+<dt id="arg-col-ci">col_CI<a class="anchor" aria-label="anchor" href="#arg-col-ci"></a></dt>
+<dd><p>character; the color of the shaded area representing the 0.95 pointwise confidence intervals around the calibration line.</p></dd>
+
+
+<dt id="arg-add-density">add_density<a class="anchor" aria-label="anchor" href="#arg-add-density"></a></dt>
 <dd><p>logical; should the kernal density estimation of the predicted probabilities be superimposed in the calibration plot.</p></dd>
 
 
-<dt>col, lwd, lty, col_dens, xlab, ylab, main</dt>
+<dt id="arg-col-lwd-lty-col-dens-xlab-ylab-main">col, lwd, lty, col_dens, xlab, ylab, main<a class="anchor" aria-label="anchor" href="#arg-col-lwd-lty-col-dens-xlab-ylab-main"></a></dt>
 <dd><p>graphical parameters.</p></dd>
 
 
-<dt>data</dt>
+<dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>the data.frame to split in folds.</p></dd>
 
 
-<dt>V</dt>
+<dt id="arg-v">V<a class="anchor" aria-label="anchor" href="#arg-v"></a></dt>
 <dd><p>numeric scalar denoting the number of folds.</p></dd>
 
 
-<dt>id_var</dt>
+<dt id="arg-id-var">id_var<a class="anchor" aria-label="anchor" href="#arg-id-var"></a></dt>
 <dd><p>character string denoting the name of the subject id variable in <code>data</code>.</p></dd>
 
 
-<dt>strata</dt>
+<dt id="arg-strata">strata<a class="anchor" aria-label="anchor" href="#arg-strata"></a></dt>
 <dd><p>character vector with the names of stratifying variables.</p></dd>
 
 
-<dt>seed</dt>
+<dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
 <dd><p>integer denoting the seed.</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>additional arguments passed to <code><a href="predict.html">predict.jm()</a></code>.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A list of class <code>tvAUC</code> with components:</p>
+    <p>A list of class <code>tvAUC</code> with components:</p>
 <dl><dt>auc</dt>
 <dd><p>a numeric scalar denoting the estimated prediction error.</p></dd>
 
@@ -285,23 +298,23 @@ predicted probabilities used in the Cox model that assess calibration.</p></dd>
     <div id="references">
     <h2>References</h2>
     <p>Antolini, L., Boracchi, P., and Biganzoli, E. (2005). A time-dependent discrimination index
-for survival data. <em>Statistics in Medicine</em> <b>24</b>, 3927--3944.</p>
+for survival data. <em>Statistics in Medicine</em> <b>24</b>, 3927–3944.</p>
 <p>Commenges, D., Liquet, B., and Proust-Lima, C. (2012). Choice of prognostic estimators
 in joint models by estimating differences of expected conditional Kullback-Leibler risks.
-<em>Biometrics</em> <b>68</b>, 380--387.</p>
+<em>Biometrics</em> <b>68</b>, 380–387.</p>
 <p>Harrell, F., Kerry, L. and Mark, D. (1996). Multivariable prognostic models: issues in
 developing models, evaluating assumptions and adequacy, and measuring and reducing errors.
-<em>Statistics in Medicine</em> <b>15</b>, 361--387.</p>
+<em>Statistics in Medicine</em> <b>15</b>, 361–387.</p>
 <p>Heagerty, P. and Zheng, Y. (2005). Survival model predictive accuracy and ROC curves.
-<em>Biometrics</em> <b>61</b>, 92--105.</p>
+<em>Biometrics</em> <b>61</b>, 92–105.</p>
 <p>Rizopoulos, D. (2016). The R package JMbayes for fitting joint models for longitudinal and
-time-to-event data using MCMC. <em>Journal of Statistical Software</em> <b>72(7)</b>, 1--45.
+time-to-event data using MCMC. <em>Journal of Statistical Software</em> <b>72(7)</b>, 1–45.
 doi:10.18637/jss.v072.i07.</p>
 <p>Rizopoulos, D. (2012) <em>Joint Models for Longitudinal and Time-to-Event Data: with
 Applications in R</em>. Boca Raton: Chapman and Hall/CRC.</p>
 <p>Rizopoulos, D. (2011). Dynamic predictions and prospective accuracy in joint models for
-longitudinal and time-to-event data. <em>Biometrics</em> <b>67</b>, 819--829.</p>
-<p>Rizopoulos, D., Molenberghs, G. and Lesaffre, E.M.E.H. (2017). Dynamic predictions with time-dependent covariates in survival analysis using joint modeling and landmarking. <em>Biometrical Journal</em> <b>59</b>, 1261--1276.</p>
+longitudinal and time-to-event data. <em>Biometrics</em> <b>67</b>, 819–829.</p>
+<p>Rizopoulos, D., Molenberghs, G. and Lesaffre, E.M.E.H. (2017). Dynamic predictions with time-dependent covariates in survival analysis using joint modeling and landmarking. <em>Biometrical Journal</em> <b>59</b>, 1261–1276.</p>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -414,7 +427,7 @@ longitudinal and time-to-event data. <em>Biometrics</em> <b>67</b>, 819--829.</p
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 	Time-dependent AUC for the Joint Model jointFit</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Estimated AUC: 0.8374 (95% CI: 0.7618-0.8338)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Estimated AUC:  0.8374</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> At time: 7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Using information up to time: 4 (225 subjects still at risk)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Accounting for censoring using model-based weights</span>
@@ -432,20 +445,20 @@ longitudinal and time-to-event data. <em>Biometrics</em> <b>67</b>, 819--829.</p
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by <a href="http://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>.</p>
+  <p></p><p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.1/docsearch.min.js" integrity="sha256-GKvGqXDznoRYHCwKXGnuchvKSwmx9SRMrZOTh2g4Sb0=" crossorigin="anonymous"></script><script>
   docsearch({
-    
-    
+
+
     apiKey: '66a8ef39105517ba1ce2f07aa1c70890',
     indexName: 'drizopoulos',
     inputSelector: 'input#search-input.form-control',

@@ -177,6 +177,7 @@ tvBrier.coxph <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                 ncens = sum(Time < Thoriz & event == 0),
                 Tstart = Tstart, Thoriz = Thoriz,
                 integrated = integrated, type_weights = type_weights,
+                classObject = class(object),
                 nameObject = deparse(substitute(object)))
     class(out) <- "tvBrier"
     out

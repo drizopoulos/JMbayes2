@@ -11,7 +11,7 @@
 
   gtag('config', 'G-YDBZ5DBBSP');
 </script></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -25,7 +25,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-2</span>
       </span>
     </div>
 
@@ -39,7 +39,7 @@
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
@@ -76,25 +76,25 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/drizopoulos/JMbayes2/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul><form class="navbar-form navbar-right hidden-xs hidden-sm" role="search">
         <div class="form-group">
           <input type="search" class="form-control" name="search-input" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off"></div>
       </form>
-      
+
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Transform Competing Risks Data in Long Format</h1>
-    
+
     <div class="hidden name"><code>cr_setup.Rd</code></div>
     </div>
 
@@ -111,24 +111,25 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>data</dt>
+    <p></p>
+<dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>the data frame containing the competing risk data with a single
       row per subject.</p></dd>
 
-  <dt>statusVar</dt>
+  <dt id="arg-statusvar">statusVar<a class="anchor" aria-label="anchor" href="#arg-statusvar"></a></dt>
 <dd><p>a character string denoting the name of the variable in
           <code>data</code> that identifies the status variable which equals 1 if the
           subject had any of the competing events and 0 otherwise.</p></dd>
 
-  <dt>censLevel</dt>
+  <dt id="arg-censlevel">censLevel<a class="anchor" aria-label="anchor" href="#arg-censlevel"></a></dt>
 <dd><p>a character string or a scalar denoting the censoring level
       in the <code>statusVar</code> variable of <code>data</code>.</p></dd>
 
-  <dt>nameStrata</dt>
+  <dt id="arg-namestrata">nameStrata<a class="anchor" aria-label="anchor" href="#arg-namestrata"></a></dt>
 <dd><p>a character string denoting the variable that will be added
     in the long version of <code>data</code> denoting the various causes of event.</p></dd>
 
-  <dt>nameStatus</dt>
+  <dt id="arg-namestatus">nameStatus<a class="anchor" aria-label="anchor" href="#arg-namestatus"></a></dt>
 <dd><p>a character string denoting the variable that will be added
     in the long version of <code>data</code> denoting if the subject experience any
     of the competing events.</p></dd>
@@ -136,9 +137,7 @@
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A data frame in the long format with multiple rows per subject.</p>
+    <p>A data frame in the long format with multiple rows per subject.</p>
     </div>
     <div id="references">
     <h2>References</h2>
@@ -146,7 +145,7 @@
 Applications in R</em>. Boca Raton: Chapman and Hall/CRC.</p>
 <p>Putter, H., Fiocco, M., and Geskus, R. (2007). Tutorial in biostatistics:
 Competing risks and multi-state models. <em>Statistics in Medicine</em> <b>26</b>,
-2389--2430.</p>
+2389–2430.</p>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -187,20 +186,20 @@ Competing risks and multi-state models. <em>Statistics in Medicine</em> <b>26</b
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by <a href="http://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>.</p>
+  <p></p><p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.1/docsearch.min.js" integrity="sha256-GKvGqXDznoRYHCwKXGnuchvKSwmx9SRMrZOTh2g4Sb0=" crossorigin="anonymous"></script><script>
   docsearch({
-    
-    
+
+
     apiKey: '66a8ef39105517ba1ce2f07aa1c70890',
     indexName: 'drizopoulos',
     inputSelector: 'input#search-input.form-control',

@@ -1232,31 +1232,42 @@ tvBrier.jm <-
                 ncens = sum(out$ind3), Tstart = Tstart, Thoriz = Thoriz,
                 nfolds = if (!is_jm(object) && !is_jmList(object)) length(object),
                 integrated = integrated, type_weights = type_weights,
+                classObject = class(object),
                 nameObject = deparse(substitute(object)))
     class(out) <- "tvBrier"
     out
 }
 
-tvBrier.jmList <- tvBrier.jm
+tvBrier.jmList <- tvBrier.list <- tvBrier.jm
 
 print.tvBrier <- function (x, digits = 4, ...) {
     if (!inherits(x, "tvBrier"))
         stop("Use only with 'tvBrier' objects.\n")
-    if (!is.null(x$Brier_per_model)) {
-        cat("\nCross-Validated Prediction Error using the Library of Joint Models '", x$nameObject, "'",
-            sep = "")
-        if (x$integrated) {
-            cat("\n\nSuper Learning Estimated Integrated Brier score:", round(x$Brier, digits))
-        } else {
-            cat("\n\nSuper Learning Estimated Brier score:", round(x$Brier, digits))
-        }
-    } else {
-        cat("\nPrediction Error for the Joint Model '", x$nameObject, "'",
+    if (inherits(x$classObject, "coxph")) {
+        cat("\nPrediction Error for the Cox Model '", x$nameObject, "'",
             sep = "")
         if (x$integrated) {
             cat("\n\nEstimated Integrated Brier score:", round(x$Brier, digits))
         } else {
             cat("\n\nEstimated Brier score:", round(x$Brier, digits))
+        }
+    } else {
+        if (!is.null(x$Brier_per_model)) {
+            cat("\nCross-Validated Prediction Error using the Library of Joint Models '", x$nameObject, "'",
+                sep = "")
+            if (x$integrated) {
+                cat("\n\nSuper Learning Estimated Integrated Brier score:", round(x$Brier, digits))
+            } else {
+                cat("\n\nSuper Learning Estimated Brier score:", round(x$Brier, digits))
+            }
+        } else {
+            cat("\nPrediction Error for the Joint Model '", x$nameObject, "'",
+                sep = "")
+            if (x$integrated) {
+                cat("\n\nEstimated Integrated Brier score:", round(x$Brier, digits))
+            } else {
+                cat("\n\nEstimated Brier score:", round(x$Brier, digits))
+            }
         }
     }
     if (x$integrated) {

@@ -9,7 +9,7 @@
 
   gtag('config', 'G-YDBZ5DBBSP');
 </script></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-2</span>
       </span>
     </div>
 
@@ -37,7 +37,7 @@
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
@@ -74,25 +74,25 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/drizopoulos/JMbayes2/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul><form class="navbar-form navbar-right hidden-xs hidden-sm" role="search">
         <div class="form-group">
           <input type="search" class="form-control" name="search-input" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off"></div>
       </form>
-      
+
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Joint Models for Longitudinal and Time-to-Event Data</h1>
-    
+
     <div class="hidden name"><code>jm.Rd</code></div>
     </div>
 
@@ -135,35 +135,37 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>Surv_object</dt>
+
+
+<dl><dt id="arg-surv-object">Surv_object<a class="anchor" aria-label="anchor" href="#arg-surv-object"></a></dt>
 <dd><p>an object: <br></p><ul><li><p>of class 'coxph' fitted by function <code>coxph()</code> from package <b>survival</b>, or</p></li>
 <li><p>of class 'survreg' fitted by function <code>survreg()</code> from package <b>survival</b>.</p></li>
 </ul></dd>
 
-<dt>Mixed_objects</dt>
+<dt id="arg-mixed-objects">Mixed_objects<a class="anchor" aria-label="anchor" href="#arg-mixed-objects"></a></dt>
 <dd><p>a <code>list</code> of objects or a single object. Objects may be: <br></p><ul><li><p>of class 'lme' fitted by function <code>lme()</code> from package <b>nlme</b>, or</p></li>
 <li><p>of class 'MixMod' fitted by function <code>mixed_model()</code> from package <b>GLMMadaptive</b>.</p></li>
 </ul></dd>
 
-<dt>time_var</dt>
+<dt id="arg-time-var">time_var<a class="anchor" aria-label="anchor" href="#arg-time-var"></a></dt>
 <dd><p>a <code>character</code> string indicating the time variable in the mixed-effects model(s).</p></dd>
 
-<dt>recurrent</dt>
+<dt id="arg-recurrent">recurrent<a class="anchor" aria-label="anchor" href="#arg-recurrent"></a></dt>
 <dd><p>a <code>character</code> string indicating "calendar" or "gap" timescale to fit a recurrent event model.</p></dd>
 
-<dt>functional_forms</dt>
+<dt id="arg-functional-forms">functional_forms<a class="anchor" aria-label="anchor" href="#arg-functional-forms"></a></dt>
 <dd><p>a <code>list</code> of formulas. Each formula corresponds to one longitudinal outcome and specifies the association structure between that outcome and the survival submodel as well as any interaction terms between the components of the longitudinal outcome and the survival submodel. See <b>Examples</b>.</p></dd>
 
-<dt>which_independent</dt>
+<dt id="arg-which-independent">which_independent<a class="anchor" aria-label="anchor" href="#arg-which-independent"></a></dt>
 <dd><p>a numeric indicator matrix denoting which outcomes are independent. It can also be the character string <code>"all"</code> in which case all longitudinal outcomes are assumed independent. Only relevant in joint models with multiple longitudinal outcomes.</p></dd>
 
-<dt>data_Surv</dt>
+<dt id="arg-data-surv">data_Surv<a class="anchor" aria-label="anchor" href="#arg-data-surv"></a></dt>
 <dd><p>the <code>data.frame</code> used to fit the Cox/AFT survival submodel.</p></dd>
 
-<dt>id_var</dt>
+<dt id="arg-id-var">id_var<a class="anchor" aria-label="anchor" href="#arg-id-var"></a></dt>
 <dd><p>a <code>character</code> string indicating the id variable in the survival submodel.</p></dd>
 
-<dt>priors</dt>
+<dt id="arg-priors">priors<a class="anchor" aria-label="anchor" href="#arg-priors"></a></dt>
 <dd><p>a named <code>list</code> of user-specified prior parameters:</p><dl><dt><code>mean_betas_HC</code></dt>
 <dd><p>the prior mean vector of the normal prior for the regression coefficients of the covariates of the longitudinal model(s), which were hierarchically centered.</p></dd>
 
@@ -299,10 +301,10 @@
         <dt><code>sigmas_sigma</code></dt>
 <dd><p>the prior sigma parameter for the half-t prior for the error term(s).</p></dd>
 
-    
+
 </dl></dd>
 
-<dt>control</dt>
+<dt id="arg-control">control<a class="anchor" aria-label="anchor" href="#arg-control"></a></dt>
 <dd><p>a list of control values with components:</p><dl><dt><code>GK_k</code></dt>
 <dd><p>the number of quadrature points for the Gauss Kronrod rule; options 15 and 7.</p></dd>
 
@@ -357,32 +359,32 @@
 <dd><p>a numeric vector with the position of the knots for the B-spline approximation
         of the log baseline hazard function.</p></dd>
 
-    
+
 </dl><p></p></dd>
 
-<dt>x</dt>
+<dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>a numeric input variable.</p></dd>
 
-<dt>knots</dt>
+<dt id="arg-knots">knots<a class="anchor" aria-label="anchor" href="#arg-knots"></a></dt>
 <dd><p>a numeric vector of knots.</p></dd>
 
-<dt>ord</dt>
+<dt id="arg-ord">ord<a class="anchor" aria-label="anchor" href="#arg-ord"></a></dt>
 <dd><p>an integer denoting the order of the spline.</p></dd>
 
-<dt>zero_ind</dt>
+<dt id="arg-zero-ind">zero_ind<a class="anchor" aria-label="anchor" href="#arg-zero-ind"></a></dt>
 <dd><p>a list with integer vectors indicating which coefficients are set to zero in the calculation of the value  term. This can be used to include for example only the random intercept; default is <code>NULL</code>.</p></dd>
 
-<dt>eps</dt>
+<dt id="arg-eps">eps<a class="anchor" aria-label="anchor" href="#arg-eps"></a></dt>
 <dd><p>numeric scalar denoting the step-size for the finite difference approximation.</p></dd>
 
-<dt>direction</dt>
+<dt id="arg-direction">direction<a class="anchor" aria-label="anchor" href="#arg-direction"></a></dt>
 <dd><p>character string for the direction of the numerical derivative, options are <code>"both"</code>,
 and <code>"backward"</code>.</p></dd>
 
-<dt>time_window</dt>
+<dt id="arg-time-window">time_window<a class="anchor" aria-label="anchor" href="#arg-time-window"></a></dt>
 <dd><p>numeric scalar denoting the lower limit for calculating the integral.</p></dd>
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>arguments passed to <code>control</code>.</p></dd>
 
 </dl></div>
@@ -394,9 +396,7 @@ and <code>"backward"</code>.</p></dd>
 </ul></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A list of class <code>jm</code> with components:</p>
+    <p>A list of class <code>jm</code> with components:</p>
 <dl><dt>mcmc</dt>
 <dd><p>a <code>list</code> of the MCMC samples for each parameter.</p></dd>
 
@@ -511,7 +511,7 @@ and <code>"backward"</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> iterations per chain: 11000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> burn-in per chain: 1000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> thinning: 1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> time: 36 sec</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> time: 38 sec</span>
 <span class="r-in"><span><span class="fu"><a href="coda_methods.html">traceplot</a></span><span class="op">(</span><span class="va">joint_model_fit_1</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="jm-1.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="jm-2.png" alt="" width="700" height="433"></span>
@@ -629,7 +629,7 @@ and <code>"backward"</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> iterations per chain: 11000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> burn-in per chain: 1000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> thinning: 1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> time: 1.4 min</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> time: 1.5 min</span>
 <span class="r-in"><span><span class="fu"><a href="coda_methods.html">traceplot</a></span><span class="op">(</span><span class="va">joint_model_fit_2</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="jm-27.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="jm-28.png" alt="" width="700" height="433"></span>
@@ -791,7 +791,7 @@ and <code>"backward"</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> iterations per chain: 11000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> burn-in per chain: 1000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> thinning: 1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> time: 1.8 min</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> time: 1.6 min</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
@@ -804,20 +804,20 @@ and <code>"backward"</code>.</p></dd>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by <a href="http://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>.</p>
+  <p></p><p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.1/docsearch.min.js" integrity="sha256-GKvGqXDznoRYHCwKXGnuchvKSwmx9SRMrZOTh2g4Sb0=" crossorigin="anonymous"></script><script>
   docsearch({
-    
-    
+
+
     apiKey: '66a8ef39105517ba1ce2f07aa1c70890',
     indexName: 'drizopoulos',
     inputSelector: 'input#search-input.form-control',
