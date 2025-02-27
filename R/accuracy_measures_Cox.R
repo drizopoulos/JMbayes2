@@ -26,7 +26,7 @@ tvROC.coxph <-
     Time <- Y[, 'time']
     event <- Y[, 'status']
     sfit <- summary(survfit(object, newdata = newdata), times = Thoriz)
-    qi_u_t <- sfit$surv[1L, ]
+    qi_u_t <- as.matrix(sfit$surv)[1L, ]
     thrs <- seq(0, 1, length = 101)
     Check <- outer(qi_u_t, thrs, "<")
     if (type_weights == "model-based") {
@@ -38,7 +38,7 @@ tvROC.coxph <-
         if (any(ind2)) {
             sfit2 <- summary(survfit(object, newdata = newdata[ind2, ]),
                              times = Thoriz)
-            pi_u_t <- 1.0 - sfit2$surv[1L, ]
+            pi_u_t <- 1.0 - as.matrix(sfit2$surv)[1L, ]
             nams <- names(ind2[ind2])
             ind[nams] <- ind[nams] * pi_u_t[nams]
         }
@@ -96,9 +96,83 @@ tvAUC.coxph <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
 tvBrier.coxph <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                            integrated = FALSE,
                            type_weights = c("model-based", "IPCW"), ...) {
-    out <- list(Brier = NA,
-                nr = length(out$Time), nint = sum(out$ind1),
-                ncens = sum(out$ind3), Tstart = Tstart, Thoriz = Thoriz,
+    if (!inherits(object, "coxph"))
+        stop("Use only with 'coxph' objects.\n")
+    if (!is.data.frame(newdata) || nrow(newdata) == 0)
+        stop("'newdata' must be a data.frame with more than one rows.\n")
+    if (is.null(Thoriz) && is.null(Dt))
+        stop("either 'Thoriz' or 'Dt' must be non null.\n")
+    if (!is.null(Thoriz) && Thoriz <= Tstart)
+        stop("'Thoriz' must be larger than 'Tstart'.")
+    if (is.null(Thoriz))
+        Thoriz <- Tstart + Dt
+    type_censoring <- attr(object$y, "type")
+    if (type_censoring != "right")
+        stop("'tvROC()' currently only works for right censored data.")
+    #type_weights <- match.arg(type_weights)
+    Tstart <- Tstart + 1e-06
+    Thoriz <- Thoriz + 1e-06
+    mframe <- model.frame(object$terms, data = newdata)
+    Y <- model.response(mframe)
+    Time <- Y[, 'time']
+    newdata <- newdata[Time >= Tstart, ]
+    mframe <- model.frame(object$terms, data = newdata)
+    Y <- model.response(mframe)
+    Time <- Y[, 'time']
+    event <- Y[, 'status']
+    brier_fun <- function (pi_u_t, type_weights, weights, ind1, ind2, ind3) {
+        loss <- function (x) x * x
+        res <- if (type_weights == "model-based") {
+            events <- sum(loss(1.0 - pi_u_t[ind1]), na.rm = TRUE)
+            no_events <- sum(loss(pi_u_t[ind2]), na.rm = TRUE)
+            censored <- if (any(ind3)) {
+                sum(weights * loss(1.0 - pi_u_t[ind3]) +
+                        (1.0 - weights) * loss(pi_u_t[ind3]), na.rm = TRUE)
+            } else 0.0
+            (events + no_events + censored) / length(ind1)
+        } else {
+            mean(loss(as.numeric(ind1) - pi_u_t) * weights)
+        }
+        res
+    }
+    ############################################################################
+    br <- function (Thoriz) {
+        sfit <- summary(survfit(object, newdata = newdata), times = Thoriz)
+        pi_u_t <- 1.0 - as.matrix(sfit$surv)[1L, ]
+        # subjects who had the event before Thoriz
+        ind1 <- Time < Thoriz & event == 1
+        # subjects who had the event after Thoriz
+        ind2 <- Time > Thoriz
+        # subjects who were censored in the interval (Tstart, Thoriz)
+        ind3 <- Time < Thoriz & event == 0
+        if (sum(ind1) < 5) {
+            warning("there are fewer than 5 subjects with an event in the interval [",
+                    Tstart, ", ", Thoriz, ").\n")
+        }
+        if (type_weights == "IPCW") {
+            cens_data <- data.frame(Time = Time, cens_ind = 1 - event)
+            censoring_dist <- survfit(Surv(Time, cens_ind) ~ 1, data = cens_data)
+            weights <- numeric(length(Time))
+            ss <- summary(censoring_dist, times = Time[ind1])
+            weights[ind1] <- 1.0 / ss$surv[match(ss$time, Time[ind1])]
+            weights[ind2] <- 1.0 / summary(censoring_dist, times = Thoriz)$surv
+        } else {
+            sfit2 <- summary(survfit(object, newdata = newdata[ind3, ]),
+                             times = Thoriz)
+            weights <- 1.0 - as.matrix(sfit2$surv)[1L, ]
+        }
+        brier_fun(pi_u_t, type_weights, weights, ind1, ind2, ind3)
+    }
+    Brier <- if (integrated) {
+        br1 <- br(0.5 * (Tstart + Thoriz))
+        br2 <- br(Thoriz)
+        2 * br1 / 3 + br2 / 6
+    } else {
+        br(Thoriz)
+    }
+    out <- list(Brier = Brier,
+                nr = length(Time), nint = sum(ind1),
+                ncens = sum(ind3), Tstart = Tstart, Thoriz = Thoriz,
                 integrated = integrated, type_weights = type_weights,
                 nameObject = deparse(substitute(object)))
     class(out) <- "tvBrier"
