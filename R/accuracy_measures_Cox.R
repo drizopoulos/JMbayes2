@@ -109,7 +109,7 @@ tvBrier.coxph <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     type_censoring <- attr(object$y, "type")
     if (type_censoring != "right")
         stop("'tvROC()' currently only works for right censored data.")
-    #type_weights <- match.arg(type_weights)
+    type_weights <- match.arg(type_weights)
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
     mframe <- model.frame(object$terms, data = newdata)
