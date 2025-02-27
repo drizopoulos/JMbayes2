@@ -1243,7 +1243,7 @@ tvBrier.jmList <- tvBrier.list <- tvBrier.jm
 print.tvBrier <- function (x, digits = 4, ...) {
     if (!inherits(x, "tvBrier"))
         stop("Use only with 'tvBrier' objects.\n")
-    if (inherits(x$classObject, "coxph")) {
+    if (x$classObject == "coxph") {
         cat("\nPrediction Error for the Cox Model '", x$nameObject, "'",
             sep = "")
         if (x$integrated) {
