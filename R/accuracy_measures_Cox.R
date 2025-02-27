@@ -173,8 +173,9 @@ tvBrier.coxph <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         br(Thoriz)
     }
     out <- list(Brier = Brier,
-                nr = length(Time), nint = sum(ind1),
-                ncens = sum(ind3), Tstart = Tstart, Thoriz = Thoriz,
+                nr = length(Time), nint = sum(Time < Thoriz & event),
+                ncens = sum(Time < Thoriz & event == 0),
+                Tstart = Tstart, Thoriz = Thoriz,
                 integrated = integrated, type_weights = type_weights,
                 nameObject = deparse(substitute(object)))
     class(out) <- "tvBrier"
