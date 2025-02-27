@@ -157,9 +157,11 @@ tvBrier.coxph <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
             weights[ind1] <- 1.0 / ss$surv[match(ss$time, Time[ind1])]
             weights[ind2] <- 1.0 / summary(censoring_dist, times = Thoriz)$surv
         } else {
-            sfit2 <- summary(survfit(object, newdata = newdata[ind3, ]),
-                             times = Thoriz)
-            weights <- 1.0 - as.matrix(sfit2$surv)[1L, ]
+            weights <- if (any(ind3)) {
+                sfit2 <- summary(survfit(object, newdata = newdata[ind3, ]),
+                                 times = Thoriz)
+                1.0 - as.matrix(sfit2$surv)[1L, ]
+            }
         }
         brier_fun(pi_u_t, type_weights, weights, ind1, ind2, ind3)
     }
