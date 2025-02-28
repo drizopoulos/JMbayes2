@@ -129,7 +129,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-02-27</h4>
+            <h4 data-toc-skip class="date">2025-02-28</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Dynamic_Predictions.Rmd" class="external-link"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="hidden name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -468,7 +468,9 @@ identical to that of <code><a href="../reference/accuracy.html">tvROC()</a></cod
 is of the estimated probabilities
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>π</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>∣</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>π</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mn>8</mn><mo>∣</mo><mn>5</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\pi_j(t + \Delta t \mid t) = \pi_j(8 \mid 5)</annotation></semantics></math>
 for all individuals at risk at year <code>t0</code> in the data frame
-provided in the <code>newdata</code> argument. Using the
+provided in the <code>newdata</code> argument. The grey shaded area
+represents the 95% pointwise confidence intervals of the predicted
+cumulative risks probabilities. Using the
 <code><a href="../reference/accuracy.html">calibration_metrics()</a></code> function we can also calculate
 metrics for the accuracy of predictions:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
