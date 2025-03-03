@@ -420,7 +420,6 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     pi_u_t <- preds$pred
     names(pi_u_t) <- preds$id
     pi_u_t <- pi_u_t[preds$times > Tstart]
-
     id <- newdata[[id_var]]
     Time <- newdata[[Time_var]]
     event <- newdata[[event_var]]
@@ -428,16 +427,13 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     Time <- tapply(Time, f, tail, 1L)
     event <- tapply(event, f, tail, 1L)
     names(Time) <- names(event) <- as.character(unique(id))
-    cal_DF <- data.frame(Time = Time, event = event, preds = pi_u_t[names(Time)])
+    pi_u_t <- pi_u_t[names(Time)]
     cloglog <- function (x) log(-log(1.0 - x))
-    Bounds <- quantile(cloglog(pi_u_t), probs = c(0.05, 0.95))
-    form <- paste0("ns(cloglog(preds), df = ", df_ns,
-                   ", B = c(", round(Bounds[1L], 2), ", ",
-                   round(Bounds[2L], 2), "))")
-    form <- paste("Surv(Time, event) ~", form)
+    cal_DF <- data.frame(Time = Time, event = event, preds = pi_u_t)
+    form <- paste0("Surv(Time, event) ~ nsk(cloglog(preds), df = ", df_ns, ")")
     cal_Cox <- coxph(as.formula(form), data = cal_DF)
     qs <- quantile(pi_u_t, probs = c(0.01, 0.99))
-    probs_grid <- data.frame(preds = seq(qs[1L], qs[2L], length.out = 100L))
+    probs_grid <- data.frame(preds = seq(qs[1L], qs[2L], length.out = 101L))
     obs <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$surv)
     low <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$low)
     upp <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$upp)
@@ -463,6 +459,26 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
         list("observed" = obs, "predicted" = preds, "pi_u_t" = pi_u_t,
              "obs_pi_u_t" = obs_pi_u_t, "low" = low, "upp" = upp)
     }
+}
+
+if (FALSE) {
+    cal_DF <- data.frame(Time = Time, event = event, preds = pi_u_t)
+    cuts <- as.vector(quantile(cal_DF$Time, c(0.33, 0.66)))
+    cal_DF <- survSplit(Surv(Time, event) ~ ., data = cal_DF, zero = Tstart,
+                        cut = cuts, episode = "grp")
+    form <- paste0("Surv(tstart, Time, event) ~ nsk(cloglog(preds), df = ",
+                   df_ns, "):strata(grp)")
+    cal_Cox <- coxph(as.formula(form), data = cal_DF)
+    qs <- quantile(pi_u_t, probs = c(0.01, 0.99))
+    probs_grid <- expand.grid(
+        tstart = c(Tstart, cuts),
+        event = 0,
+        grp = 1:3,
+        preds = seq(qs[1L], qs[2L], length.out = 4)
+    )
+    probs_grid$Time <- rep(c(cuts, max(cal_DF$Time)), length.out = nrow(probs_grid))
+    obs <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$surv)
+
 }
 
 calibration_metrics <- function (object, newdata, Tstart, Thoriz = NULL,
