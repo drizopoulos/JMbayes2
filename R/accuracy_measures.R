@@ -429,7 +429,9 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     names(Time) <- names(event) <- as.character(unique(id))
     pi_u_t <- pi_u_t[names(Time)]
     cloglog <- function (x) log(-log(1.0 - x))
-    cal_DF <- data.frame(Time = Time, event = event, preds = pi_u_t)
+    #cal_DF <- data.frame(Time = Time, event = event, preds = pi_u_t)
+    cal_DF <- data.frame(Time = pmin(Thoriz, Time),
+                         event = event * (Time <= Thoriz), preds = pi_u_t)
     form <- paste0("Surv(Time, event) ~ nsk(cloglog(preds), df = ", df_ns, ")")
     cal_Cox <- coxph(as.formula(form), data = cal_DF)
     qs <- quantile(pi_u_t, probs = c(0.01, 0.99))
