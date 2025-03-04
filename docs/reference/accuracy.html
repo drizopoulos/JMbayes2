@@ -117,7 +117,7 @@
 <span><span class="fu">tvAUC</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">calibration_plot</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>    Dt <span class="op">=</span> <span class="cn">NULL</span>, df_ns <span class="op">=</span> <span class="fl">3</span>, plot <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    Dt <span class="op">=</span> <span class="cn">NULL</span>, df_ns <span class="op">=</span> <span class="cn">NULL</span>, plot <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    col <span class="op">=</span> <span class="st">"red"</span>, lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>    add_CI <span class="op">=</span> <span class="cn">TRUE</span>, col_CI <span class="op">=</span> <span class="st">"lightgrey"</span>,</span>
 <span>    add_density <span class="op">=</span> <span class="cn">TRUE</span>, col_dens <span class="op">=</span> <span class="st">"grey"</span>,</span>
@@ -125,7 +125,7 @@
 <span>    ylab <span class="op">=</span> <span class="st">"Observed Probabilities"</span>, main <span class="op">=</span> <span class="st">""</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">calibration_metrics</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, Thoriz <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>    Dt <span class="op">=</span> <span class="cn">NULL</span>, df_ns <span class="op">=</span> <span class="fl">3</span>, <span class="va">...</span><span class="op">)</span></span>
+<span>    Dt <span class="op">=</span> <span class="cn">NULL</span>, df_ns <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">tvBrier</span><span class="op">(</span><span class="va">object</span>, <span class="va">newdata</span>, <span class="va">Tstart</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
@@ -199,8 +199,9 @@ It is important that this function does not alter the ordering of the subjects i
 
 
 <dt id="arg-df-ns">df_ns<a class="anchor" aria-label="anchor" href="#arg-df-ns"></a></dt>
-<dd><p>the degrees of freedom for the natural cubic spline of the cloglog transformation of the
-predicted probabilities used in the Cox model that assess calibration.</p></dd>
+<dd><p>the degrees of freedom for the natural cubic spline of the cloglog transformation of the predicted
+    probabilities used in the Cox model that assesses calibration. The default is 3 unless there are less than 25 events
+    in the interval (<code>Tstart</code>, <code>Thoriz</code>] in which case it is 2.</p></dd>
 
 
 <dt id="arg-plot">plot<a class="anchor" aria-label="anchor" href="#arg-plot"></a></dt>
