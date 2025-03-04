@@ -441,10 +441,12 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     cal_Cox <- coxph(as.formula(form), data = cal_DF)
     qs <- quantile(pi_u_t, probs = c(0.01, 0.99))
     probs_grid <- data.frame(preds = seq(qs[1L], qs[2L], length.out = 101L))
-    obs <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$surv)
-    low <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$low)
-    upp <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$upp)
-    obs_pi_u_t <- 1 - c(summary(survfit(cal_Cox, newdata = cal_DF), times = Thoriz)$surv)
+    ss <- summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)
+    obs <- 1 - c(ss$surv)
+    low <- 1 - c(ss$low)
+    upp <- 1 - c(ss$upp)
+    obs_pi_u_t <- 1 - c(summary(survfit(cal_Cox, newdata = cal_DF),
+                                times = Thoriz)$surv)
     preds <- probs_grid$preds
     if (plot) {
         plot(preds, obs, type = "n", xlab = xlab, ylab = ylab, main = main,
