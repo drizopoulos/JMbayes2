@@ -33,7 +33,7 @@ tvAUC(object, newdata, Tstart, \dots)
 \method{tvAUC}{tvROC}(object, \dots)
 
 calibration_plot(object, newdata, Tstart, Thoriz = NULL,
-    Dt = NULL, df_ns = 3, plot = TRUE,
+    Dt = NULL, df_ns = NULL, plot = TRUE,
     col = "red", lty = 1, lwd = 1,
     add_CI = TRUE, col_CI = "lightgrey",
     add_density = TRUE, col_dens = "grey",
@@ -41,7 +41,7 @@ calibration_plot(object, newdata, Tstart, Thoriz = NULL,
     ylab = "Observed Probabilities", main = "", \dots)
 
 calibration_metrics(object, newdata, Tstart, Thoriz = NULL,
-    Dt = NULL, df_ns = 3, \dots)
+    Dt = NULL, df_ns = NULL, \dots)
 
 tvBrier(object, newdata, Tstart, \dots)
 
@@ -86,8 +86,9 @@ It is important that this function does not alter the ordering of the subjects i
 \item{cores}{integer denoting the number of cores to be used when a library of joint models has been provided in
     \code{object}. If \code{cores = 1}, no parallel computing is used.}
 
-\item{df_ns}{the degrees of freedom for the natural cubic spline of the cloglog transformation of the
-predicted probabilities used in the Cox model that assess calibration.}
+\item{df_ns}{the degrees of freedom for the natural cubic spline of the cloglog transformation of the predicted
+    probabilities used in the Cox model that assesses calibration. The default is 3 unless there are less than 25 events
+    in the interval (\code{Tstart}, \code{Thoriz}] in which case it is 2.}
 
 \item{plot}{logical; should a plot be produced. If \code{FALSE}, a list is returned with the observed and predicted probabilities.}
 

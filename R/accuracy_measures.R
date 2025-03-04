@@ -369,7 +369,7 @@ print.tvAUC <- function (x, digits = 4, ...) {
 }
 
 calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
-                              Dt = NULL, df_ns = 3, plot = TRUE,
+                              Dt = NULL, df_ns = NULL, plot = TRUE,
                               col = "red", lty = 1, lwd = 1,
                               add_CI = TRUE, col_CI = "lightgrey",
                               add_density = TRUE, col_dens = "grey",
@@ -429,9 +429,14 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     names(Time) <- names(event) <- as.character(unique(id))
     pi_u_t <- pi_u_t[names(Time)]
     cloglog <- function (x) log(-log(1.0 - x))
-    #cal_DF <- data.frame(Time = Time, event = event, preds = pi_u_t)
     cal_DF <- data.frame(Time = pmin(Thoriz, Time),
                          event = event * (Time <= Thoriz), preds = pi_u_t)
+    if (is.null(df_ns)) {
+        df_ns <- if (sum(cal_DF$event) > 25L) 3L else 2L
+    } else {
+        if (!is.numeric(df_ns) || length(df_ns) != 1L)
+            stop("'df_ns' must be a numeric scalar.")
+    }
     form <- paste0("Surv(Time, event) ~ nsk(cloglog(preds), df = ", df_ns, ")")
     cal_Cox <- coxph(as.formula(form), data = cal_DF)
     qs <- quantile(pi_u_t, probs = c(0.01, 0.99))
@@ -454,7 +459,6 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
             par(new = TRUE)
             plot(density(pi_u_t), axes = FALSE, xlab = "", ylab = "", main = "",
                  col = col_dens)
-            #axis(side = 4)
         }
         invisible()
     } else {
@@ -463,30 +467,11 @@ calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
     }
 }
 
-if (FALSE) {
-    cal_DF <- data.frame(Time = Time, event = event, preds = pi_u_t)
-    cuts <- as.vector(quantile(cal_DF$Time, c(0.33, 0.66)))
-    cal_DF <- survSplit(Surv(Time, event) ~ ., data = cal_DF, zero = Tstart,
-                        cut = cuts, episode = "grp")
-    form <- paste0("Surv(tstart, Time, event) ~ nsk(cloglog(preds), df = ",
-                   df_ns, "):strata(grp)")
-    cal_Cox <- coxph(as.formula(form), data = cal_DF)
-    qs <- quantile(pi_u_t, probs = c(0.01, 0.99))
-    probs_grid <- expand.grid(
-        tstart = c(Tstart, cuts),
-        event = 0,
-        grp = 1:3,
-        preds = seq(qs[1L], qs[2L], length.out = 4)
-    )
-    probs_grid$Time <- rep(c(cuts, max(cal_DF$Time)), length.out = nrow(probs_grid))
-    obs <- 1 - c(summary(survfit(cal_Cox, newdata = probs_grid), times = Thoriz)$surv)
-
-}
-
 calibration_metrics <- function (object, newdata, Tstart, Thoriz = NULL,
-                                 Dt = NULL, df_ns = 3, ...) {
-    comps <- calibration_plot(object, newdata, Tstart, Thoriz = Thoriz, Dt = Dt,
-                              df_ns = df_ns, plot = FALSE)
+                                 Dt = NULL, df_ns = NULL, ...) {
+    comps <-
+        calibration_plot(object, newdata, Tstart, Thoriz = Thoriz, Dt = Dt,
+                         df_ns = df_ns, plot = FALSE)
     diff <- abs(as.vector(comps$pi_u_t) - comps$obs_pi_u_t)
     ICI <- mean(diff)
     E50 <- median(diff)
