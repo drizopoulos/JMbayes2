@@ -32,7 +32,7 @@ provides a number of functions to summarize and visualize the results.
 install.packages("JMbayes2")
 ```
 
-The developments version can be installed from GitHub:
+The development version can be installed from GitHub:
 
 ``` r
 # install.packages("remotes")

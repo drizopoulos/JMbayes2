@@ -22,7 +22,7 @@ The package **JMbayes2** fits joint models for longitudinal and time-to-event da
 install.packages("JMbayes2")
 ```
 
-The developments version can be installed from GitHub:
+The development version can be installed from GitHub:
 ```{r gh-installation, eval = FALSE}
 # install.packages("remotes")
 remotes::install_github("drizopoulos/jmbayes2")
