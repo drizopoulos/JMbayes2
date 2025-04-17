@@ -47,7 +47,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-3</span>
       </span>
     </div>
 
@@ -207,7 +207,7 @@ time-varying covariate in the survival relative risk model:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 17 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 16 sec</span></span></code></pre></div>
 <p>In the output, this is named <code>value(hepatomegaly)</code> to
 denote that the current value functional form is used. That is, we
 assume that the risk at a specific time
@@ -272,7 +272,7 @@ function:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 19 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 18 sec</span></span></code></pre></div>
 <p>Other available functions to use in the definition of the
 <code>functional_forms</code> argument are <code><a href="../reference/jm.html">vexp()</a></code> to
 calculate the exponent, <code><a href="../reference/jm.html">vlog()</a></code> to calculate the natural
@@ -327,7 +327,7 @@ transformation:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 21 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 20 sec</span></span></code></pre></div>
 <p>The call to <code>Dexpit(slope(hepatomegaly))</code> is internally
 transformed to
 <code>Dexpit(value(hepatomegaly)):slope(hepatomegaly)</code>, which
