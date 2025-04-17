@@ -18,8 +18,6 @@ knitr::opts_chunk$set(
 )
 library('JMbayes2')
 library('MASS')
-library('dplyr')
-library('purrr')
 ```
 
 # Multi-state Processes
