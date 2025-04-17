@@ -16,7 +16,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-library("JMbayes2")
+library('JMbayes2')
+library('MASS')
 ```
 
 # Multi-state Processes
@@ -37,7 +38,7 @@ dline <- data.frame("x1" = c(15), "y1" = c(55), "xend" = c(45), "yend" = c(55))
 
 dcurve <- data.frame("x1" = c(7.5, 52.5), "y1" = c(50, 50), 
                      "xend" = c(22.4, 37.4), "yend" = c(7.5, 7.5), 
-                     "curvature" = c(1, -1))
+                     "curvature" = c(0, 0))
 
 ggplot() + geom_rect(data = d, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax), 
                      fill = "#ffffff", color = 'black', 
@@ -51,10 +52,10 @@ ggplot() + geom_rect(data = d, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax =
   geom_segment(data = dline, aes(x = x1, y = y1, xend = xend, yend = yend), size = 1, 
                arrow = arrow(length = unit(0.02, "npc"))) + 
   geom_curve(data = dcurve[1, ], aes(x = x1, y = y1, xend = xend, yend = yend), 
-             size = 1, curvature = 0.3, 
+             size = 1, curvature = 0, 
              arrow = arrow(length = unit(0.02, "npc"))) +
   geom_curve(data = dcurve[2, ], aes(x = x1, y = y1, xend = xend, yend = yend), 
-             size = 1, curvature = -0.3, 
+             size = 1, curvature = 0, 
              arrow = arrow(length = unit(0.02, "npc"))) +
   ylim(0, 60) + xlim(0, 60) + 
   theme_void()
@@ -64,174 +65,92 @@ where all subjects start from the state "Healthy" and then can transition to eit
 
 For our example, the default functional form is assumed, i.e., that the linear predictor $\eta(t)$ of the mixed model is associated with each transition intensity at time $t$. The following piece of code simulates the data:
 ```{r "simulate_Multi_State"}
-set.seed(1234)
-# number of subjects
-N <- 500
-# number of measurements per subject  
-n <- 20
-# vector of ids
-id <- rep(1:N, each = n)
-# minimum and maximum follow-up times  
-min.t <- 0.01
-max.t <- 16
-# sample time-points
-time <- replicate(N, c(0, sort(runif(n - 1, min = min.t, max = max.t))), simplify = FALSE)
-time <- do.call(c, time)
-# sample continuous covariate  values
-Xcov.s <- rnorm(N, mean = 4.763, sd = 2.8) # wide version
-Xcov <- rep(Xcov.s, each = n) # long
-# initiate data frame to store results
-DF <- data.frame("id" = id, "time" = time, "X" = Xcov)
-# design matrices for fixed and random effects  
-X <- model.matrix(~ 1 + time + X, data = DF)
-Z <- model.matrix(~ 1 + time, data = DF)
-D11 <- 1.0 # variance of random intercepts
-D22 <- 0.5 # variance of random slopes
-# we simulate random effects
-b <- cbind(rnorm(N, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
-# fixed effects coefficients  
-true.betas <- c(-0.482, 0.243, 1.52)
-# linear predictor  
-eta.y <- as.vector(X %*% true.betas + rowSums(Z * b[id, ]))
-# residual standard error  
-sigma.e <- 1.242
-# sample longitudinal outcome values  
-DF$y <- rnorm(N * n, eta.y, sigma.e)
-# values for the association parameter per transition  
-alpha <- c("alpha.01" = 0.8, "alpha.02" = 0.55, "alpha.12" = 1.25)
-# shape of Weibull for each transition  
-phi <- c("phi.01" = 12.325, "phi.02" = 8.216, "phi.12" = 3.243)
-# regression coefficients for transition intensities  
-gammas <- c("(Intercept)1" = -22.25, "X" = 1.2,  
-            "(Intercept)2" = -18.25, "X" = 1.2,
-            "(Intercept)3" = -19.25, "X" = 1.2)
-# design matrix transition intensities
-W <- cbind("(Intercept)1"= rep(1, N), Xcov[seq(1, by = n, N*n)], 
-           "(Intercept)2"= rep(1, N), Xcov[seq(1, by = n, N*n)],
-           "(Intercept)3"= rep(1, N), Xcov[seq(1, by = n, N*n)])
+# Set seed for reproducibility
+set.seed(1710)
 
-## linear predictor for transition: 0 -> 1
-eta.t1 <- as.vector(W[, c(1, 2), drop = FALSE] %*% gammas[1:2])
-## linear predictor for transition: 0 -> 2
-eta.t2 <- as.vector(W[, c(3, 4), drop = FALSE] %*% gammas[3:4])
-## linear predictor for transition: 1 -> 2
-eta.t3 <- as.vector(W[, c(5, 6), drop = FALSE] %*% gammas[5:6])
-# we simulate event times using inverse transform sampling
-invS01 <- function(t, u, i) {
-  h <- function(s) {
-    XX <- cbind(1, s, Xcov[i])
-    ZZ <- cbind(1, s)
-    f1 <- as.vector(XX %*% true.betas + rowSums(ZZ * b[rep(i, nrow(ZZ)), ]))
-    exp(log(phi["phi.01"]) + (phi["phi.01"] - 1)*log(s) + eta.t1[i] + f1*alpha["alpha.01"])
-  }
-  integrate(h, lower = 0, upper = t, subdivisions = 10000L)$value + log(u)
+# Sample sizes and settings
+N <- 1500
+n_per <- 14
+
+# Baseline covariate (binary)
+X <- rbinom(N, 1, 0.5)
+
+# Longitudinal parameters
+beta <- c(5, -0.1)
+sigma_e <- 1
+D <- matrix(c(1.0, 0.2, 0.2, 0.3), 2, 2)
+b <- MASS::mvrnorm(N, mu = c(0, 0), Sigma = D)
+
+# Simulate longitudinal data
+df_long <- do.call(rbind, lapply(1:N, function(i) {
+    obs_times <- sort(c(0, runif(n_per - 1, 0, 18)))
+    XX <- cbind(1, obs_times)
+    eta <- XX %*% beta + XX %*% b[i, ]
+    y <- rnorm(n_per, eta, sigma_e)
+    data.frame(id = i, time = obs_times, y = y, X = X[i])
+}))
+
+# Weibull hazard parameters (shape, scale), association, covariate effects
+weib_shape <- c(2.2, 1.8, 2.5)
+weib_scale <- c(0.04, 0.03, 0.05)
+alpha <- c(0.6, 0.4, 0.8) # different for each transition
+gamma <- c(0.5, -0.3, 0.7) # different for each transition
+Ctimes <- runif(N, 7, 10)
+
+# Longitudinal trajectory function
+yfun <- function(b_i, t) beta[1] + b_i[1] + (beta[2] + b_i[2]) * t
+
+# Simulate event time via inverse transform
+sim_time <- function(shape, scale, alpha, gamma, X, b_i, tmax = 20) {
+    U <- runif(1)
+    cumhaz <- function(t) {
+        integrate(function(s) {
+            h0 <- shape * scale * (scale * s)^(shape - 1)
+            h0 * exp(alpha * yfun(b_i, s) + gamma * X)
+        }, 0, t)$value
+    }
+    f <- function(t) cumhaz(t) + log(U)
+    out <- try(uniroot(f, c(1e-5, tmax))$root, silent = TRUE)
+    if (inherits(out, "try-error")) Inf else out
 }
 
-invS02 <- function(t, u, i) {
-  h <- function(s) {
-    XX <- cbind(1, s, Xcov[i])
-    ZZ <- cbind(1, s)
-    f1 <- as.vector(XX %*% true.betas + rowSums(ZZ * b[rep(i, nrow(ZZ)), ]))
-    exp(log(phi["phi.02"]) + (phi["phi.02"] - 1)*log(s) + eta.t2[i] + f1*alpha["alpha.02"])
-  }
-  integrate(h, lower = 0, upper = t, subdivisions = 10000)$value + log(u)
-}
-
-invS12 <- function (t, u, i) {
-  h <- function (s) {
-    XX <- cbind(1, s, Xcov[i])
-    ZZ <- cbind(1, s)
-    f1 <- as.vector(XX %*% true.betas + rowSums(ZZ * b[rep(i, nrow(ZZ)), ]))
-    exp(log(phi["phi.12"]) + (phi["phi.12"] - 1) * log(s) + 
-          eta.t3[i] + f1 * alpha["alpha.12"])
-  }
-  integrate(h, lower = 0, upper = t, subdivisions = 10000)$value + log(u)
-}
-
-# Probability for each transition
-u01 <- runif(N, 0, 1)
-u02 <- runif(N, 0, 1)
-u12 <- runif(N, 0, 1)
-# initiate vectors to save true event times
-trueT01 <- numeric(N)
-trueT02 <- numeric(N)
-trueT12 <- numeric(N)
-
-# sample censoring times
-mean.Cens <- 9
-Ctimes <- runif(N, 0, 2 * mean.Cens)
-
-# simulate time-to-event data
-for (i in 1:N) {
-  Root01 <- NULL
-  Root02 <- NULL
-  Root12 <- NULL
-  
-  Up <- 50
-  tries <- 5
-  # Transition 0->1
-  Up <- 200
-  Root01 <- try(uniroot(invS01, interval = c(1e-05, Up), u = u01[i], i = i)$root, TRUE)
-  trueT01[i] <- if (!inherits(Root01, "try-error")) Root01 else 500
-  
-  # Transition 0->2
-  Up <- 200
-  Root02 <- try(uniroot(invS02, interval = c(1e-05, Up), u = u02[i], i = i)$root, TRUE)
-  trueT02[i] <- if (!inherits(Root02, "try-error")) Root02 else 500
-  
-  # Transition 1->2
-  if(as.numeric(trueT01[i]) < as.numeric(trueT02[i]) && as.numeric(trueT01[i]) < Ctimes[i]) {
-  Up <- Up + 200
-  Root12 <- try(uniroot(invS12, interval = c(as.numeric(trueT01[i]), Up), u = u12[i], i = i)$root, TRUE)
-  } else {Root12 <- 500}
-  trueT12[i] <- if (!inherits(Root12, "try-error")) Root12 else 500
-}
-
-# initiate multi-state dataset in wide format
-data_mstate <- data.frame('id' = 1:N, 'trueT01' = trueT01, 'trueT02' = trueT02, 'trueT12' = trueT12, 
-                          'Ctimes' = Ctimes, 'X' = Xcov.s)
-
-# split by id
-data_mstate_split.by.id <- split(data_mstate, data_mstate$id)
-
-# function to pass to lapply to prepare multi-state data per id
-ms_arrange <- function (x) {
-  if (x$Ctimes < min(x$trueT01, x$trueT02)) {
-    x_new <- data.frame('id' = rep(x$id, 2), 'from_state' = rep(1, 2), 'to_state' = 2:3, 
-                        'transition' = 1:2, 'Tstart' = rep(0, 2), 'Tstop' = x$Ctimes, 'status' = rep(0, 2), 
-                        'X' = x$X)
-  } else {
-    if (x$trueT02 < x$trueT01) {
-      x_new <- data.frame('id' = rep(x$id, 2), 'from_state' = rep(1, 2), 'to_state' = 2:3, 
-                          'transition' = 1:2, 'Tstart' = rep(0, 2), 'Tstop' = x$trueT02, 'status' = c(0, 1), 
-                          'X' = x$X)
+# Simulate multi-state transitions
+df_surv <- do.call(rbind, lapply(1:N, function(i) {
+    b_i <- b[i, ]; X_i <- X[i]; C <- Ctimes[i]
+    T01 <- sim_time(weib_shape[1], weib_scale[1], alpha[1], gamma[1], X_i, b_i)
+    T02 <- sim_time(weib_shape[2], weib_scale[2], alpha[2], gamma[2], X_i, b_i)
+    
+    if (T01 < T02 && T01 < C) {
+        T12 <- sim_time(weib_shape[3], weib_scale[3], alpha[3], gamma[3], X_i, b_i)
+        Tdeath <- T01 + T12
+        data.frame(id = i, 
+                   transition = c(1, 2, 3), 
+                   Tstart = c(0, 0, T01), 
+                   Tstop = c(T01, T01, min(Tdeath, C)), 
+                   status = c(1, 0, as.integer(T12 < (C - T01))), 
+                   X = X_i)
+    } else if (T02 < C) {
+        data.frame(id = i, transition = c(1, 2), Tstart = c(0, 0), Tstop = c(T02, T02), status = c(0, 1), X = X_i)
     } else {
-      if (x$Ctimes < x$trueT12) {
-        x_new <- data.frame('id' = rep(x$id, 3), 'from_state' = c(1, 1, 2), 'to_state' = c(2:3, 3), 
-                            'transition' = 1:3, 'Tstart' = c(rep(0, 2), x$trueT01), 
-                            'Tstop' = c(rep(x$trueT01, 2), x$Ctimes), 'status' = c(1, 0, 0), 
-                            'X' = x$X)
-      } else {
-        x_new <- data.frame('id' = rep(x$id, 3), 'from_state' = c(1, 1, 2), 'to_state' = c(2:3, 3), 
-                            'transition' = 1:3, 'Tstart' = c(rep(0, 2), x$trueT01), 
-                            'Tstop' = c(rep(x$trueT01, 2), x$trueT12), 'status' = c(1, 0, 1), 
-                            'X' = x$X)
-      }
-    } 
-  }
-}
-data_mstate_split.by.id <- lapply(data_mstate_split.by.id, ms_arrange)
-data_mstate <- do.call(rbind, data_mstate_split.by.id)
-data_mstate$transition <- factor(data_mstate$transition)
+        data.frame(id = i,
+                   transition = c(1, 2),
+                   Tstart = 0,
+                   Tstop = C,
+                   status = 0,
+                   X = X_i)
+    }
+}))
 
-Tstop <- tapply(data_mstate$Tstop, data_mstate$id, max)
-Tstop <- Tstop[id]
-DF <- DF[DF$time <= Tstop, ]
+# Filter longitudinal data to observed period
+df_long2 <- merge(df_long, df_surv[, c("id", "Tstop")], by = c("id"))
+df_long2 <- df_long2[!duplicated(df_long2, by = c('id', 'time')), ]
+df_long2 <- df_long2[df_long2$time <= df_long2$Tstop, ]
+
 ```
 
 The data for the multi-state process need to be in the appropriate long format:
 ```{r}
-head(data_mstate, n = 5L)
+head(df_surv, n = 5L)
 ```
 
 for example, subject 1 experienced the following transition: $1 \rightarrow 2$ and therefore is represented in 3 rows, one for each transition, because all of these transitions were plausible. On the other hand, subject 2 is only represented by two rows, only for transitions $1 \rightarrow 2$ and $1 \rightarrow 3$ since these are the only transitions possible from state 1. That is since subject 2 never actually transitioned to state 2, transition $2 \rightarrow 3$ was never possible, and therefore, no row for this transition is in the dataset. It is also important to note that the time in the dataset follows the counting process formulation with intervals specified by `Tstart` and `Tstop` and that there is a variable (in this case `transition`) indicating which transition the row corresponds to.
@@ -240,19 +159,19 @@ for example, subject 1 experienced the following transition: $1 \rightarrow 2$ a
 
 When the data in the appropriate format are available, fitting the model is very straightforward. First we fit a linear mixed model using the `lme()` function from package **nlme**:
 ```{r, "mixed_model_fit"}
-mixedmodel <- lme(y ~ time + X, data = DF, random = ~ time | id)
+mixedmodel <- lme(y ~ time, random = ~ time | id, data = df_long2)
 ```
 
 Then, we fit a multi-state model using function `coxph()` from package **survival** making sure we use the counting process specification and that we add `strata(transition)` to stratify by the transition indicator variable in the dataset. Furthermore, we add an interaction between covariate `X` and each transition to allow the effect of this covariate to vary across transitions.
 ```{r, "multi_state_model_fit"}
-msmodel <- coxph(Surv(Tstart, Tstop, status) ~ X * strata(transition), 
-                 data = data_mstate)
+msmodel <- coxph(Surv(Tstart, Tstop, status) ~ X:strata(transition), data = df_surv, x = TRUE)
 ```
 
 Finally, to fit the joint model, we simply run:
 ```{r, "jm_fit"}
-jm_ms_model <- jm(msmodel, mixedmodel, time_var = "time", 
-                  functional_forms = ~ value(y):transition, n_iter = 10000L)
+jm_ms_model <- jm(msmodel, mixedmodel, time_var = "time",
+                functional_forms = ~ value(y):strata(transition), 
+                control = list(n_iter = 5000L))
 
 summary(jm_ms_model)
 ```
