@@ -6,6 +6,7 @@
 \alias{tvAUC.tvROC}
 \alias{tvROC.jm}
 \alias{calibration_plot}
+\alias{calibration_plot.jm}
 \alias{calibration_metrics}
 \alias{tvBrier}
 \alias{tvBrier.jm}
@@ -32,7 +33,9 @@ tvAUC(object, newdata, Tstart, \dots)
 
 \method{tvAUC}{tvROC}(object, \dots)
 
-calibration_plot(object, newdata, Tstart, Thoriz = NULL,
+calibration_plot(object, newdata, Tstart, \dots)
+
+\method{calibration_plot}{jm}(object, newdata, Tstart, Thoriz = NULL,
     Dt = NULL, df_ns = NULL, plot = TRUE,
     col = "red", lty = 1, lwd = 1,
     add_CI = TRUE, col_CI = "lightgrey",

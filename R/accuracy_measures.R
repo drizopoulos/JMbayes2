@@ -368,7 +368,11 @@ print.tvAUC <- function (x, digits = 4, ...) {
     invisible(x)
 }
 
-calibration_plot <- function (object, newdata, Tstart, Thoriz = NULL,
+calibration_plot <- function (object, newdata, Tstart, ...) {
+    UseMethod("calibration_plot")
+}
+
+calibration_plot.jm <- function (object, newdata, Tstart, Thoriz = NULL,
                               Dt = NULL, df_ns = NULL, plot = TRUE,
                               col = "red", lty = 1, lwd = 1,
                               add_CI = TRUE, col_CI = "lightgrey",

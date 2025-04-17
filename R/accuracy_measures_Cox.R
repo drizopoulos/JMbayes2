@@ -25,8 +25,9 @@ tvROC.coxph <-
     Y <- model.response(mframe)
     Time <- Y[, 'time']
     event <- Y[, 'status']
+    sfit0 <- summary(survfit(object, newdata = newdata), times = Tstart)
     sfit <- summary(survfit(object, newdata = newdata), times = Thoriz)
-    qi_u_t <- as.matrix(sfit$surv)[1L, ]
+    qi_u_t <- as.matrix(sfit$surv)[1L, ] / as.matrix(sfit0$surv)[1L, ]
     thrs <- seq(0, 1, length = 101)
     Check <- outer(qi_u_t, thrs, "<")
     if (type_weights == "model-based") {
@@ -36,9 +37,11 @@ tvROC.coxph <-
         ind2 <- Time < Thoriz & event == 0
         ind <- ind1 | ind2
         if (any(ind2)) {
+            sfit02 <- summary(survfit(object, newdata = newdata[ind2, ]),
+                             times = Tstart)
             sfit2 <- summary(survfit(object, newdata = newdata[ind2, ]),
                              times = Thoriz)
-            pi_u_t <- 1.0 - as.matrix(sfit2$surv)[1L, ]
+            pi_u_t <- 1.0 - (as.matrix(sfit2$surv)[1L, ] / as.matrix(sfit02$surv)[1L, ])
             nams <- names(ind2[ind2])
             ind[nams] <- ind[nams] * pi_u_t[nams]
         }
@@ -137,8 +140,9 @@ tvBrier.coxph <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     }
     ############################################################################
     br <- function (Thoriz) {
+        sfit0 <- summary(survfit(object, newdata = newdata), times = Tstart)
         sfit <- summary(survfit(object, newdata = newdata), times = Thoriz)
-        pi_u_t <- 1.0 - as.matrix(sfit$surv)[1L, ]
+        pi_u_t <- 1.0 - (as.matrix(sfit$surv)[1L, ] / as.matrix(sfit0$surv)[1L, ])
         # subjects who had the event before Thoriz
         ind1 <- Time < Thoriz & event == 1
         # subjects who had the event after Thoriz
@@ -200,48 +204,19 @@ calibration_plot.coxph <-
     if (is.null(Thoriz))
         Thoriz <- Tstart + Dt
     type_censoring <- object$model_info$type_censoring
-    if (object$model_info$CR_MS)
-        stop("'tvROC()' currently only works for right censored data.")
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
-    id_var <- object$model_info$var_names$idVar
-    time_var <- object$model_info$var_names$time_var
-    Time_var <- object$model_info$var_names$Time_var
-    event_var <- object$model_info$var_names$event_var
-    if (is.null(newdata[[id_var]]))
-        stop("cannot find the '", id_var, "' variable in newdata.", sep = "")
-    if (is.null(newdata[[time_var]]))
-        stop("cannot find the '", time_var, "' variable in newdata.", sep = "")
-    if (any(sapply(Time_var, function (nmn) is.null(newdata[[nmn]]))))
-        stop("cannot find the '", paste(Time_var, collapse = ", "),
-             "' variable(s) in newdata.", sep = "")
-    if (is.null(newdata[[event_var]]))
-        stop("cannot find the '", event_var, "' variable in newdata.", sep = "")
-    newdata <- newdata[newdata[[Time_var]] > Tstart, ]
-    newdata <- newdata[newdata[[time_var]] <= Tstart, ]
-    if (!nrow(newdata))
-        stop("there are no data on subjects who had an observed event time after Tstart ",
-             "and longitudinal measurements before Tstart.")
-    newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
-    test1 <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
-    if (!any(test1))
-        stop("it seems that there are no events in the interval [Tstart, Thoriz).")
-    newdata2 <- newdata
-    newdata2[[Time_var]] <- Tstart
-    newdata2[[event_var]] <- 0
-    preds <- predict(object, newdata = newdata2, process = "event",
-                     times = Thoriz, ...)
-    pi_u_t <- preds$pred
-    names(pi_u_t) <- preds$id
-    pi_u_t <- pi_u_t[preds$times > Tstart]
-    id <- newdata[[id_var]]
-    Time <- newdata[[Time_var]]
-    event <- newdata[[event_var]]
-    f <- factor(id, levels = unique(id))
-    Time <- tapply(Time, f, tail, 1L)
-    event <- tapply(event, f, tail, 1L)
-    names(Time) <- names(event) <- as.character(unique(id))
-    pi_u_t <- pi_u_t[names(Time)]
+    mframe <- model.frame(object$terms, data = newdata)
+    Y <- model.response(mframe)
+    Time <- Y[, 'time']
+    newdata <- newdata[Time >= Tstart, ]
+    mframe <- model.frame(object$terms, data = newdata)
+    Y <- model.response(mframe)
+    Time <- Y[, 'time']
+    event <- Y[, 'status']
+    sfit0 <- summary(survfit(object, newdata = newdata), times = Tstart)
+    sfit <- summary(survfit(object, newdata = newdata), times = Thoriz)
+    pi_u_t <- 1.0 - (as.matrix(sfit$surv)[1L, ] / as.matrix(sfit0$surv)[1L, ])
     cloglog <- function (x) log(-log(1.0 - x))
     cal_DF <- data.frame(Time = pmin(Thoriz, Time),
                          event = event * (Time <= Thoriz), preds = pi_u_t)
