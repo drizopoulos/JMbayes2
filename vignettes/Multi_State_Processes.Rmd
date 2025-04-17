@@ -73,7 +73,6 @@ set.seed(1710)
 # Sample sizes and settings
 N <- 1500
 n_per <- 14
-obs_times <- seq(0, 18, length.out = n_per)
 
 # Baseline covariate (binary)
 X <- rbinom(N, 1, 0.5)
@@ -85,11 +84,13 @@ D <- matrix(c(1.0, 0.2, 0.2, 0.3), 2, 2)
 b <- MASS::mvrnorm(N, mu = c(0, 0), Sigma = D)
 
 # Simulate longitudinal data
-df_long <- map_dfr(1:N, function(i) {
-    eta <- beta[1] + b[i, 1] + (beta[2] + b[i, 2]) * obs_times
+df_long <- do.call(rbind, lapply(1:N, function(i) {
+    obs_times <- sort(c(0, runif(n_per - 1, 0, 18)))
+    XX <- cbind(1, obs_times)
+    eta <- XX %*% beta + XX %*% b[i, ]
     y <- rnorm(n_per, eta, sigma_e)
-    tibble(id = i, time = obs_times, y = y, X = X[i])
-})
+    data.frame(id = i, time = obs_times, y = y, X = X[i])
+}))
 
 # Weibull hazard parameters (shape, scale), association, covariate effects
 weib_shape <- c(2.2, 1.8, 2.5)
@@ -116,7 +117,7 @@ sim_time <- function(shape, scale, alpha, gamma, X, b_i, tmax = 20) {
 }
 
 # Simulate multi-state transitions
-df_surv <- map_dfr(1:N, function(i) {
+df_surv <- do.call(rbind, lapply(1:N, function(i) {
     b_i <- b[i, ]; X_i <- X[i]; C <- Ctimes[i]
     T01 <- sim_time(weib_shape[1], weib_scale[1], alpha[1], gamma[1], X_i, b_i)
     T02 <- sim_time(weib_shape[2], weib_scale[2], alpha[2], gamma[2], X_i, b_i)
@@ -124,27 +125,28 @@ df_surv <- map_dfr(1:N, function(i) {
     if (T01 < T02 && T01 < C) {
         T12 <- sim_time(weib_shape[3], weib_scale[3], alpha[3], gamma[3], X_i, b_i)
         Tdeath <- T01 + T12
-        tibble(id = i,
-               transition = c(1, 2, 3),
-               Tstart = c(0, 0, T01),
-               Tstop = c(T01, T01, min(Tdeath, C)),
-               status = c(1, 0, as.integer(T12 < (C - T01))),
-               X = X_i)
+        data.frame(id = i, 
+                   transition = c(1, 2, 3), 
+                   Tstart = c(0, 0, T01), 
+                   Tstop = c(T01, T01, min(Tdeath, C)), 
+                   status = c(1, 0, as.integer(T12 < (C - T01))), 
+                   X = X_i)
     } else if (T02 < C) {
-        tibble(id = i, transition = c(1, 2), Tstart = c(0, 0), Tstop = c(T02, T02), status = c(0, 1), X = X_i)
+        data.frame(id = i, transition = c(1, 2), Tstart = c(0, 0), Tstop = c(T02, T02), status = c(0, 1), X = X_i)
     } else {
-        tibble(id = i,
-               transition = c(1, 2),
-               Tstart = 0,
-               Tstop = C,
-               status = 0,
-               X = X_i)
+        data.frame(id = i,
+                   transition = c(1, 2),
+                   Tstart = 0,
+                   Tstop = C,
+                   status = 0,
+                   X = X_i)
     }
-})
+}))
 
 # Filter longitudinal data to observed period
-last_time <- df_surv |> group_by(id) |> summarise(Tstop = max(Tstop), .groups = "drop")
-df_long2 <- df_long |> left_join(last_time, by = "id") |> filter(time <= Tstop)
+df_long2 <- merge(df_long, df_surv[, c("id", "Tstop")], by = c("id"))
+df_long2 <- df_long2[!duplicated(df_long2, by = c('id', 'time')), ]
+df_long2 <- df_long2[df_long2$time <= df_long2$Tstop, ]
 
 ```
 
