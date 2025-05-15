@@ -59,7 +59,8 @@ tvEPCE(object, newdata, Tstart, Thoriz = NULL, Dt = NULL, eps = 0.001,
     parallel = c("snow", "multicore"),
     cores = parallelly::availableCores(omit = 1L), \dots)
 
-create_folds(data, V = 5, id_var = "id", strata = NULL, seed = 123L)
+create_folds(data, V = 5, id_var = "id",
+    method = c("CV", "Bootstrap"), strata = NULL, seed = 123L)
 }
 
 \arguments{
@@ -105,11 +106,16 @@ It is important that this function does not alter the ordering of the subjects i
 
 \item{data}{the data.frame to split in folds.}
 
-\item{V}{numeric scalar denoting the number of folds.}
+\item{V}{numeric scalar denoting the number of folds for cross-validation or the number of sample for the Bootstrap methods.}
 
 \item{id_var}{character string denoting the name of the subject id variable in \code{data}.}
 
 \item{strata}{character vector with the names of stratifying variables.}
+
+\item{method}{character string indicating which method to use to create the training and testing datasets in
+\code{create_folds()}. The default is V-fold cross-validation. For the \code{Bootstrap} option, \code{V} samples
+with replacement from the original dataset are proruced as training data. The testing data contains the subjects
+that were not selected in the respective Bootstrap sample.}
 
 \item{seed}{integer denoting the seed.}
 

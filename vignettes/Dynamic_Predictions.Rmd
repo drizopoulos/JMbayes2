@@ -207,3 +207,72 @@ tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE,
 
 - To obtain valid estimates of the predictive accuracy measures (i.e., time-varying sensitivity, specificity, and Brier score) we need to account for censoring. A popular method to achieve this is via the inverse probability of censoring weighting. For this approach to be valid, we need the model for the weights to be correctly specified. In standard survival analysis, this is achieved either using the Kaplan-Meier estimator or a Cox model for the censoring distribution. However, in the settings where joint models are used, it is often the case that the censoring mechanism may depend on the history of the longitudinal outcomes in a complex manner. This is especially the case when we consider multiple longitudinal outcomes in the analysis. Also, these outcomes may be recorded at different time points per patient and have missing data. Because of these reasons, in these settings, Kaplan-Meier-based or Cox-based censoring weights may be difficult to derive or be biased. The functions in **JMbayes2** that calculate the predictive accuracy measures use joint-model-based weights to account for censoring. These weights allow censoring to depend in any possible manner on the history of the longitudinal outcomes. However, they require that the model is appropriately calibrated.
 - The calibration curve, produced by `calibration_plot()`, and the calibration metrics, produced by `calibration_metrics())`, are calculated using the procedure described in [Austin et al., 2020](https://doi.org/10.1002/sim.8570).
+
+
+## Cross-Validation
+
+```{r}
+CVdats <- create_folds(pbc2, V = 5, id_var = "id")
+```
+
+```{r}
+fit_model <- function (data) {
+    library("JMbayes2")
+    # data
+    data$event <- as.numeric(data$status != "alive")
+    data_id <- data[!duplicated(data$id), ]
+    # mixed-effects models
+    fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = data,
+               random = list(id = pdDiag(form = ~ ns(year, 3))), 
+               control = lmeControl(opt = 'optim'))
+    fm2 <- lme(prothrombin ~ ns(year, 2) * sex, data = data,
+               random = list(id = pdDiag(form = ~ ns(year, 2))), 
+               control = lmeControl(opt = 'optim'))
+    fm3 <- mixed_model(ascites ~ year * sex, data = data,
+                       random = ~ year | id, family = binomial())
+    # Cox model
+    CoxFit <- coxph(Surv(years, event) ~ drug + age, data = data_id)
+    # joint model
+    jm(CoxFit, list(fm1, fm2, fm3), time_var = "year")
+}
+```
+
+```{r}
+cl <- parallel::makeCluster(5L)
+Model_folds <- parallel::parLapply(cl, CVdats$training, fit_model)
+parallel::stopCluster(cl)
+```
+
+```{r}
+CVdats$testing[] <- 
+    lapply(CVdats$testing, function (d) {
+        d$event <- as.numeric(d$status != "alive")
+        d
+    })
+```
+
+```{r, warning = FALSE}
+Brier_per_fold <- 
+    mapply(tvBrier, object = Model_folds, newdata = CVdats$testing,
+           MoreArgs = list(Tstart = t0, Dt = 3, integrated = TRUE),
+           SIMPLIFY = FALSE)
+```
+
+```{r}
+average_Brier <- mean(sapply(Brier_per_fold, "[[", "Brier"))
+average_Brier
+```
+
+
+```{r, warning = FALSE}
+AUC_per_fold <- 
+    mapply(tvAUC, object = Model_folds, newdata = CVdats$testing,
+           MoreArgs = list(Tstart = t0, Dt = 3),
+           SIMPLIFY = FALSE)
+```
+
+```{r}
+average_AUC <- mean(sapply(AUC_per_fold, "[[", "auc"))
+average_AUC
+```
+

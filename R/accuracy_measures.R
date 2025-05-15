@@ -1181,27 +1181,16 @@ print.tvBrier <- function (x, digits = 4, ...) {
     invisible(x)
 }
 
-create_folds <- function (data, V = 5, id_var = "id", seed = 123L) {
-    if (!exists(".Random.seed", envir = .GlobalEnv))
-        runif(1L)
-    RNGstate <- get(".Random.seed", envir = .GlobalEnv)
-    on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
-    set.seed(seed)
-    data <- as.data.frame(data)
-    ids <- data[[id_var]]
-    unq_ids <- unique(ids)
-    n <- length(unq_ids)
-    splits <- split(seq_len(n), sample(rep(seq_len(V), length.out = n)))
-    training <- testing <- vector("list", V)
-    for (i in seq_along(training)) {
-        ind <- ids %in% unq_ids[splits[[i]]]
-        training[[i]] <- data[!ind, ]
-        testing[[i]] <- data[ind, ]
-    }
-    list("training" = training, "testing" = testing)
+if (FALSE) {
+    data('pbc2', package = 'JM')
+    data = pbc2
+    V = 5
+    id_var = "id"
+    strata = NULL
+    method = 'Boot'
 }
 
-create_folds <- function(data, V = 5, id_var = "id", strata = NULL,
+create_folds_old <- function(data, V = 5, id_var = "id", strata = NULL,
                          seed = 123L) {
     if (!exists(".Random.seed", envir = .GlobalEnv))
         runif(1L)
@@ -1213,7 +1202,7 @@ create_folds <- function(data, V = 5, id_var = "id", strata = NULL,
         stop("The variable specified in the 'id_var' argument cannot be found in ",
              "'data'.\n") }
     training <- validation <- vector("list", V)
-    temp_data <- data[!duplicated(data[[id_var]]) ,]
+    temp_data <- data[!duplicated(data[[id_var]]), ]
     if (is.null(strata)) {
         temp_data$fold <- runif(n = nrow(temp_data))
     } else {
@@ -1221,12 +1210,12 @@ create_folds <- function(data, V = 5, id_var = "id", strata = NULL,
             stop("One or multiple variable(s) specified in the 'strata' argument ",
                  "cannot be found in 'data'.\n")
         for(i in strata) {
-            temp_data[[i]] <- factor(temp_data[[i]])
+            temp_data[[i]] <- factor2(temp_data[[i]])
         }
         temp_data$interaction <- interaction(temp_data[strata])
         split_data <- split(x = temp_data, f = temp_data$interaction)
         split_data[] <- lapply(split_data,
-                              function (x) cbind(x, fold = runif(n = nrow(x))))
+                               function (x) cbind(x, fold = runif(n = nrow(x))))
         temp_data <- do.call("rbind", split_data)
     }
     init_step <- 0
@@ -1240,4 +1229,70 @@ create_folds <- function(data, V = 5, id_var = "id", strata = NULL,
     }
     list("training" = training, "testing" = validation)
 }
+
+create_folds <-
+    function (data, V = 5, id_var = "id", method = c("CV", "Bootstrap"),
+              strata = NULL, seed = 123L) {
+    if (!exists(".Random.seed", envir = .GlobalEnv))
+        runif(1L)
+    RNGstate <- get(".Random.seed", envir = .GlobalEnv)
+    on.exit(assign(".Random.seed", RNGstate, envir = .GlobalEnv))
+    set.seed(seed)
+    method <- match.arg(method)
+    data <- as.data.frame(data)
+    strt <- if (is.null(strata)) {
+        factor(rep(1, nrow(data)))
+    } else {
+        if(!(all(strata %in% names(data))))
+            stop("One or multiple variable(s) specified in the 'strata' argument ",
+                 "cannot be found in 'data'.\n")
+        for(i in strata) {
+            if (!is.factor(data[[i]])) {
+                data[[i]] <- factor2(data[[i]])
+            }
+        }
+        interaction(data[strata])
+    }
+    if (!id_var %in% names(data)) {
+        stop("The variable specified in the 'id_var' argument cannot be found in 'data'.\n")
+    }
+    get_ids <- function (ids, V, method) {
+        unq_ids <- unique(ids)
+        n <- length(unq_ids)
+        if (method == "CV") {
+            split(unq_ids, sample(rep(seq_len(V), length.out = n)))
+        } else {
+            lapply(seq_len(V), function (i, x) sample(x, replace = TRUE),
+                   x = unq_ids)
+        }
+    }
+    ids <- data[[id_var]]
+    ids_folds_strt <- lapply(split(ids, strt), get_ids, V = V, method = method)
+    ids_folds <- vector("list", V)
+    for (i in seq_len(V)) {
+        for (j in seq_along(ids_folds_strt)) {
+            ids_folds[[i]] <- c(ids_folds[[i]], ids_folds_strt[[j]][[i]])
+        }
+    }
+    training <- testing <- vector("list", V)
+    for (i in seq_len(V)) {
+        if (method == "CV") {
+            ind <- ids %in% ids_folds[[i]]
+            training[[i]] <- data[!ind, ]
+            testing[[i]] <- data[ind, ]
+        } else {
+            boot_ids <- ids_folds[[i]]
+            testing[[i]] <- data[!ids %in% boot_ids, ]
+            boot_data <- vector('list', length(boot_ids))
+            for (b in seq_along(boot_ids)) {
+                dd <- data[ids == boot_ids[b], ]
+                dd[[id_var]] <- paste0("B_", b)
+                boot_data[[b]] <- dd
+            }
+            training[[i]] <- do.call('rbind', boot_data)
+        }
+    }
+    list("training" = training, "testing" = testing)
+}
+
 
