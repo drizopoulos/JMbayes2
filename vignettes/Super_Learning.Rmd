@@ -51,9 +51,9 @@ We will illustrate the application of super learning for combining dynamic predi
 CVdats <- create_folds(pbc2, V = 5, id_var = "id")
 ```
 
-The first argument for this function is the `data.frame` we wish to split in `V` folds. The argument `id_var` specifies the name of the subjects id variable in this dataset. The output of `create_folds()` is a list with two components named `"training"` and `"testing"`. Each component is another list with `V` data.frames.
+The first argument for this function is the `data.frame` we wish to split in `V` folds. The argument `id_var` specifies the name of the subject's id variable in this dataset. The output of `create_folds()` is a list with two components named `"training"` and `"testing"`. Each component is another list with `V` data.frames.
 
-Next, we define the function that will fit the joint models we wish to consider for calculating predictions. This function should have as a single argument a `data.frame` that will be used to fit the joint models. To optimize computational performance we will use parallel computing to fit these models to the different training datasets. Hence, within the function we should have the call `library("JMbayes2")` to load package **JMbayes2** in each worker. The output of this function should be a list of the fitted joint models with class `"jmList"`. Assigning this class to the resulting list will facilitate combining the predictions later. For our example, we use the following specifications:
+Next, we define the function that will fit the joint models we wish to consider for calculating predictions. This function should have as a single argument a `data.frame` that will be used to fit the joint models. To optimize computational performance we will use parallel computing to fit these models to the different training datasets. Hence, within the function we should have the call `library("JMbayes2")` to load package **JMbayes2** for each worker. The output of this function should be a list of the fitted joint models with class `"jmList"`. Assigning this class to the resulting list will facilitate combining the predictions later. For our example, we use the following specifications:
 ```{r, "fit models function"}
 fit_models <- function (data) {
     library("JMbayes2")

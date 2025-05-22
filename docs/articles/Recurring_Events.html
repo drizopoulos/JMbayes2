@@ -6,12 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Recurrent Events • JMbayes2</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="48x48" href="../favicon-48x48.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
@@ -47,7 +46,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-4</span>
       </span>
     </div>
 
@@ -129,7 +128,7 @@
                         <h4 data-toc-skip class="author">Pedro Miranda
 Afonso</h4>
             
-            <h4 data-toc-skip class="date">2025-04-17</h4>
+            <h4 data-toc-skip class="date">2025-05-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Recurring_Events.Rmd" class="external-link"><code>vignettes/Recurring_Events.Rmd</code></a></small>
       <div class="hidden name"><code>Recurring_Events.Rmd</code></div>
@@ -449,15 +448,15 @@ represent a recurrent and terminal event, respectively.
 first to fit the linear mixed model that describes the longitudinal
 outcome,</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lme_fit</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, B <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span>, </span>
-<span>               random <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu">pdDiag</span><span class="op">(</span>form <span class="op">=</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, </span>
+<code class="sourceCode R"><span><span class="va">lme_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, B <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span>, </span>
+<span>               random <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/pdDiag.html" class="external-link">pdDiag</a></span><span class="op">(</span>form <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, </span>
 <span>                                                       B <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>               data <span class="op">=</span> <span class="va">lme_data</span>,</span>
-<span>               control <span class="op">=</span> <span class="fu">lmeControl</span><span class="op">(</span>opt <span class="op">=</span> <span class="st">"optim"</span>, niterEM <span class="op">=</span> <span class="fl">45</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>               control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lmeControl.html" class="external-link">lmeControl</a></span><span class="op">(</span>opt <span class="op">=</span> <span class="st">"optim"</span>, niterEM <span class="op">=</span> <span class="fl">45</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Then, we use the <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code> function to fit a
 stratified Cox model using the transformed data,</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="op">(</span><span class="va">group</span> <span class="op">+</span> <span class="va">age</span><span class="op">)</span><span class="op">:</span><span class="fu">strata</span><span class="op">(</span><span class="va">strata</span><span class="op">)</span>,</span>
+<code class="sourceCode R"><span><span class="va">cox_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="op">(</span><span class="va">group</span> <span class="op">+</span> <span class="va">age</span><span class="op">)</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata</a></span><span class="op">(</span><span class="va">strata</span><span class="op">)</span>,</span>
 <span>                 data <span class="op">=</span> <span class="va">cox_data</span><span class="op">)</span></span></code></pre></div>
 <p>These models are then provided as arguments in the <code><a href="../reference/jm.html">jm()</a></code>
 function. The user specifies the desired functional forms for the mixed
@@ -571,7 +570,7 @@ would be <u>the entry time in the study</u>.<a href="#fnref1" class="footnote-ba
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
       </footer>

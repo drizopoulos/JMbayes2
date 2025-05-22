@@ -6,12 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Combined Dynamic Predictions via Super Learning • JMbayes2</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="48x48" href="../favicon-48x48.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
@@ -47,7 +46,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-4</span>
       </span>
     </div>
 
@@ -130,7 +129,7 @@ Learning</h1>
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-04-17</h4>
+            <h4 data-toc-skip class="date">2025-05-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Super_Learning.Rmd" class="external-link"><code>vignettes/Super_Learning.Rmd</code></a></small>
       <div class="hidden name"><code>Super_Learning.Rmd</code></div>
@@ -317,7 +316,7 @@ splitting the <code>pbc2</code> database into five folds using function
 <code class="sourceCode R"><span><span class="va">CVdats</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">create_folds</a></span><span class="op">(</span><span class="va">pbc2</span>, V <span class="op">=</span> <span class="fl">5</span>, id_var <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span></span></code></pre></div>
 <p>The first argument for this function is the <code>data.frame</code>
 we wish to split in <code>V</code> folds. The argument
-<code>id_var</code> specifies the name of the subjects id variable in
+<code>id_var</code> specifies the name of the subject’s id variable in
 this dataset. The output of <code><a href="../reference/accuracy.html">create_folds()</a></code> is a list with
 two components named <code>"training"</code> and <code>"testing"</code>.
 Each component is another list with <code>V</code> data.frames.</p>
@@ -328,7 +327,7 @@ joint models. To optimize computational performance we will use parallel
 computing to fit these models to the different training datasets. Hence,
 within the function we should have the call
 <code><a href="https://drizopoulos.github.io/JMbayes2/">library("JMbayes2")</a></code> to load package
-<strong>JMbayes2</strong> in each worker. The output of this function
+<strong>JMbayes2</strong> for each worker. The output of this function
 should be a list of the fitted joint models with class
 <code>"jmList"</code>. Assigning this class to the resulting list will
 facilitate combining the predictions later. For our example, we use the
@@ -406,15 +405,15 @@ argument:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Cross-Validated Prediction Error using the Library of Joint Models 'Models_folds'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Super Learning Estimated Integrated Brier score: 0.0509</span></span>
+<span><span class="co">#&gt; Super Learning Estimated Integrated Brier score: 0.0548</span></span>
 <span><span class="co">#&gt; In the time interval: [6, 8)</span></span>
 <span><span class="co">#&gt; For the 166 subjects at risk at time 6</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 8): 18</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 8): 44</span></span>
 <span><span class="co">#&gt; Accounting for censoring using model-based weights</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Integrated Brier score per model: 0.0601 0.0575 0.0626 0.0509 0.0601</span></span>
-<span><span class="co">#&gt; Weights per model: 0 0 0 1 0</span></span>
+<span><span class="co">#&gt; Integrated Brier score per model: 0.0596 0.0588 0.0613 0.0523 0.0611</span></span>
+<span><span class="co">#&gt; Weights per model: 0.199 0.1976 0.1925 0.214 0.1969</span></span>
 <span><span class="co">#&gt; Number of folds: 5</span></span></code></pre></div>
 <p>We observe that the fourth model dominates the weights. Hence, the
 integrated Brier score based on the combined predictions is essentially
@@ -429,14 +428,14 @@ score:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Cross-Validated Expected Predictive Cross-Entropy using the Library of Joint Models 'Models_folds'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Super Learning Estimated EPCE: 0.304</span></span>
+<span><span class="co">#&gt; Super Learning Estimated EPCE: 0.3109</span></span>
 <span><span class="co">#&gt; In the time interval: [6, 8)</span></span>
 <span><span class="co">#&gt; For the 166 subjects at risk at time 6</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 8): 18</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 8): 44</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; EPCE per model: 0.3545 0.348 0.3708 0.341 0.4037</span></span>
-<span><span class="co">#&gt; Weights per model: 0.0019 0.567 0.4308 0 3e-04</span></span>
+<span><span class="co">#&gt; EPCE per model: 0.3568 0.3599 0.3639 0.3589 0.4157</span></span>
+<span><span class="co">#&gt; Weights per model: 0.0014 0.5387 0.4598 0 1e-04</span></span>
 <span><span class="co">#&gt; Number of folds: 5</span></span></code></pre></div>
 <p>The EPCE results indicate that models <code>M2</code> and
 <code>M3</code> share the most weight. We observe that the EPCE based on
@@ -491,7 +490,7 @@ the Dynamic Predictions vignette):</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
       </footer>

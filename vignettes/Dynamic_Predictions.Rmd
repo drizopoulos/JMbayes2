@@ -209,12 +209,18 @@ tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE,
 - The calibration curve, produced by `calibration_plot()`, and the calibration metrics, produced by `calibration_metrics())`, are calculated using the procedure described in [Austin et al., 2020](https://doi.org/10.1002/sim.8570).
 
 
-## Cross-Validation
+## Internal Validation
+### Cross-Validation
+In calculating the predictive accuracy measures presented above, we used the same dataset in which we fitted the models. This is known to produce overoptimistic accuracy estimates. More objective estimates can be obtained using internal validation. This section illustrates how internal validation can be performed in **JMbayes2** using cross-validation and the Bootstrap methods.
 
+Both testing and training datasets for both techniques can be created using the `create_folds()` function. We start with cross-validation and split the `pbc2` database into five folds using the syntax:
 ```{r}
 CVdats <- create_folds(pbc2, V = 5, id_var = "id")
 ```
 
+The first argument for this function is the `data.frame` we wish to split into `V` folds. The argument `id_var` specifies the name of the subject's id variable in this dataset. The output of `create_folds()` is a list with two components named `"training"` and `"testing"`. Each component is another list with `V` data.frames.
+
+Next, we define the function that will fit the joint models we wish to consider for calculating predictions. This function should have as a single argument a `data.frame` that will be used to fit the joint models. We will use parallel computing to optimize computational performance and fit these models to the different training datasets. Hence, within the function we should have the call `library("JMbayes2")` to load package **JMbayes2** for each worker. The output of this function is the fitted joint model we wish to internally validate.
 ```{r}
 fit_model <- function (data) {
     library("JMbayes2")
@@ -237,12 +243,14 @@ fit_model <- function (data) {
 }
 ```
 
+We fit the model in the training datasets using parallel computing as facilitated by the **parallel** package (*note*: this and the subsequent computations require some time to perform depending on the characteristics of your computing environment):
 ```{r}
 cl <- parallel::makeCluster(5L)
 Model_folds <- parallel::parLapply(cl, CVdats$training, fit_model)
 parallel::stopCluster(cl)
 ```
 
+Before calculating the predictive accuracy measures in the testing datasets, we must create the `event` variable in each one. This is achieved with the following piece of code:
 ```{r}
 CVdats$testing[] <- 
     lapply(CVdats$testing, function (d) {
@@ -251,6 +259,7 @@ CVdats$testing[] <-
     })
 ```
 
+The following syntax calculates the integrated Brier score in the testing datasets at follow-up year `t0 = 5` and for a window of `Dt = 3` years:
 ```{r, warning = FALSE}
 Brier_per_fold <- 
     mapply(tvBrier, object = Model_folds, newdata = CVdats$testing,
@@ -258,21 +267,75 @@ Brier_per_fold <-
            SIMPLIFY = FALSE)
 ```
 
+The cross-validated estimate of the integrated Brier score is the average of the estimated Brier scores in the testing datasets:
 ```{r}
 average_Brier <- mean(sapply(Brier_per_fold, "[[", "Brier"))
 average_Brier
 ```
 
-
+The calculation of the cross-validated estimate of the AUC at follow-up year 5 and for a window of 3 years proceeds similarly:
 ```{r, warning = FALSE}
 AUC_per_fold <- 
     mapply(tvAUC, object = Model_folds, newdata = CVdats$testing,
            MoreArgs = list(Tstart = t0, Dt = 3),
            SIMPLIFY = FALSE)
-```
 
-```{r}
 average_AUC <- mean(sapply(AUC_per_fold, "[[", "auc"))
 average_AUC
 ```
 
+### Bootstrap
+We continue the illustration of internal validation in **JMbayes2** using the Bootstrap method. The training and testing datasets are again created with the `create_folds()` function by specifying `method = "Bootstrap"`:
+```{r}
+bootDats <- create_folds(pbc2, V = 10, id_var = "id", method = "Bootstrap")
+```
+
+Argument `V` now denotes the number of Bootstrap samples we want to create. Each training Bootstrap sample is a sample with replacement from the original dataset `pbc2`. The subjects not used in the specific Bootstrap sample form the testing dataset. We fit the joint model in the training datasets using parallel computing:
+```{r}
+cl <- parallel::makeCluster(5L)
+Model_bootSamples <- parallel::parLapply(cl, bootDats$training, fit_model)
+parallel::stopCluster(cl)
+```
+
+Before calculating the predictive accuracy measures in the testing datasets, we must create again the `event` variable in each one.
+```{r}
+bootDats$testing[] <- lapply(bootDats$testing, function (d) {
+    d$event <- as.numeric(d$status != "alive")
+    d
+})
+```
+
+Following we calculate the integrated Brier score in each testing dataset and compute the average:
+```{r}
+Brier_per_bootSample <- 
+    mapply(tvBrier, object = Model_bootSamples, newdata = bootDats$testing,
+           MoreArgs = list(Tstart = t0, Dt = 3, integrated = TRUE),
+           SIMPLIFY = FALSE)
+
+average_Brier_bootSamples <- mean(sapply(Brier_per_bootSample, "[[", "Brier"))
+```
+
+The evaluation of the model's predictive accuracy in the testing datasets will produce a pessimistic estimate of model performance. On the contrary, the estimate of the integrate Brier score in the `pbc2` dataset used to fit the joint model will be highly optimistic:
+```{r}
+Brier_original <- tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, 
+                          integrated = TRUE)
+```
+
+Efron proposed the .632 estimator, which combines the performance obtained in the original dataset and the estimates from the Bootstrap samples to reduce the upward bias: 
+```{r}
+0.368 * Brier_original$Brier + 0.632 * average_Brier_bootSamples
+```
+
+We perform the same calculations also for the AUC:
+```{r}
+AUC_per_bootSample <- 
+    mapply(tvAUC, object = Model_folds, newdata = bootDats$testing,
+           MoreArgs = list(Tstart = t0, Dt = 3),
+           SIMPLIFY = FALSE)
+
+average_AUC_bootSamples <- mean(sapply(AUC_per_bootSample, "[[", "auc"))
+
+AUC_original <- tvAUC(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
+
+0.368 * AUC_original$auc + 0.632 * average_AUC_bootSamples
+```

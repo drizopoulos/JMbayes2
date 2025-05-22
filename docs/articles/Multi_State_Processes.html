@@ -6,12 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Multi-State Processes • JMbayes2</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="48x48" href="../favicon-48x48.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
@@ -47,7 +46,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-4</span>
       </span>
     </div>
 
@@ -129,7 +128,7 @@
                         <h4 data-toc-skip class="author">Grigorios
 Papageorgiou</h4>
             
-            <h4 data-toc-skip class="date">2025-04-17</h4>
+            <h4 data-toc-skip class="date">2025-05-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Multi_State_Processes.Rmd" class="external-link"><code>vignettes/Multi_State_Processes.Rmd</code></a></small>
       <div class="hidden name"><code>Multi_State_Processes.Rmd</code></div>
@@ -297,10 +296,10 @@ row corresponds to.</p>
 </h3>
 <p>When the data in the appropriate format are available, fitting the
 model is very straightforward. First we fit a linear mixed model using
-the <code>lme()</code> function from package <strong>nlme</strong>:</p>
+the <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme()</a></code> function from package <strong>nlme</strong>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixedmodel</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">df_long2</span><span class="op">)</span></span></code></pre></div>
-<p>Then, we fit a multi-state model using function <code>coxph()</code>
+<code class="sourceCode R"><span><span class="va">mixedmodel</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">df_long2</span><span class="op">)</span></span></code></pre></div>
+<p>Then, we fit a multi-state model using function <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph()</a></code>
 from package <strong>survival</strong> making sure we use the counting
 process specification and that we add <code>strata(transition)</code> to
 stratify by the transition indicator variable in the dataset.
@@ -308,11 +307,11 @@ Furthermore, we add an interaction between covariate <code>X</code> and
 each transition to allow the effect of this covariate to vary across
 transitions.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">msmodel</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Tstart</span>, <span class="va">Tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X</span><span class="op">:</span><span class="fu">strata</span><span class="op">(</span><span class="va">transition</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">df_surv</span>, x <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">msmodel</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">Tstart</span>, <span class="va">Tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata</a></span><span class="op">(</span><span class="va">transition</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">df_surv</span>, x <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Finally, to fit the joint model, we simply run:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">jm_ms_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">msmodel</span>, <span class="va">mixedmodel</span>, time_var <span class="op">=</span> <span class="st">"time"</span>,</span>
-<span>                functional_forms <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">:</span><span class="fu">strata</span><span class="op">(</span><span class="va">transition</span><span class="op">)</span>, </span>
+<span>                functional_forms <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata</a></span><span class="op">(</span><span class="va">transition</span><span class="op">)</span>, </span>
 <span>                control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n_iter <span class="op">=</span> <span class="fl">5000L</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jm_ms_model</span><span class="op">)</span></span>
@@ -363,7 +362,7 @@ transitions.</p>
 <span><span class="co">#&gt; iterations per chain: 5000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 4.5 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 4.7 min</span></span></code></pre></div>
 <p>which differs from a default call to <code><a href="../reference/jm.html">jm()</a></code> by the
 addition of the <code>functional_forms</code> argument specifying that
 we want an “interaction” between the marker’s value and each transition,
@@ -388,7 +387,7 @@ longitudinal marker and each transition.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
       </footer>

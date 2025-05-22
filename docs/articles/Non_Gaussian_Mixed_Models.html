@@ -6,12 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Non-Gaussian Mixed Models • JMbayes2</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="48x48" href="../favicon-48x48.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
@@ -47,7 +46,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-4</span>
       </span>
     </div>
 
@@ -129,7 +128,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-04-17</h4>
+            <h4 data-toc-skip class="date">2025-05-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Non_Gaussian_Mixed_Models.Rmd" class="external-link"><code>vignettes/Non_Gaussian_Mixed_Models.Rmd</code></a></small>
       <div class="hidden name"><code>Non_Gaussian_Mixed_Models.Rmd</code></div>
@@ -149,7 +148,7 @@ namely, first, a short motivation for each mixed-model is given,
 followed by a piece of R code simulating data from a joint model with
 the respective mixed-effects sub-model, closing by the syntax to fit the
 joint model. In this last part, the main difference per example is the
-call to <code>mixed_model()</code>.</p>
+call to <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code>.</p>
 <div class="section level3">
 <h3 id="beta-mixed-models">Beta mixed models<a class="anchor" aria-label="anchor" href="#beta-mixed-models"></a>
 </h3>
@@ -265,13 +264,13 @@ of the Beta distribution under the logit link function, i.e.,
 <span><span class="va">DF</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="va">event</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span></span>
 <span><span class="va">DF</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="va">DF</span><span class="op">$</span><span class="va">Time</span>, <span class="op">]</span></span></code></pre></div>
 <p>To fit the corresponding joint model, we fit first a Beta mixed model
-using the <code>beta.fam()</code> family object into the call of
-<code>mixed_model()</code>:</p>
+using the <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/extra_fams.html" class="external-link">beta.fam()</a></code> family object into the call of
+<code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">DF_id</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span></span>
-<span><span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span></span>
-<span><span class="va">Beta_MixMod</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">*</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">DF</span>,</span>
-<span>                           family <span class="op">=</span> <span class="fu">beta.fam</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span></span>
+<span><span class="va">Beta_MixMod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">*</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">DF</span>,</span>
+<span>                           family <span class="op">=</span> <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/extra_fams.html" class="external-link">beta.fam</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">jointFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">Cox_fit</span>, <span class="va">Beta_MixMod</span>, time_var <span class="op">=</span> <span class="st">"time"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jointFit</span><span class="op">)</span></span>
@@ -312,7 +311,7 @@ using the <code>beta.fam()</code> family object into the call of
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 19 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 20 sec</span></span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -326,9 +325,9 @@ issues. That is, the values of the outcome cannot be detected below a
 specified threshold having to do with the (laboratory) equipment used to
 determine the measurements. In these settings, and even if the complete
 data follows a normal distribution the observed censored data cannot be
-analyzed with a standard mixed model. The <code>mixed_model()</code>
+analyzed with a standard mixed model. The <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code>
 function can accommodate such outcomes using the
-<code>censored.normal()</code> family object.</p>
+<code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/extra_fams.html" class="external-link">censored.normal()</a></code> family object.</p>
 <p>The following piece of code simulates data from a joint model with a
 linear mixed model for the longitudinal outcomes but applies censoring
 in the realized longitudinal observations.</p>
@@ -414,10 +413,10 @@ in the realized longitudinal observations.</p>
 syntax:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">DF_id</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span></span>
-<span><span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span></span>
+<span><span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span></span>
 <span><span class="va">CensNorm_MixMod</span> <span class="op">&lt;-</span></span>
-<span>    <span class="fu">mixed_model</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">ind</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">*</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">DF</span>,</span>
-<span>                family <span class="op">=</span> <span class="fu">censored.normal</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">ind</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">*</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">DF</span>,</span>
+<span>                family <span class="op">=</span> <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/extra_fams.html" class="external-link">censored.normal</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">jointFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">Cox_fit</span>, <span class="va">CensNorm_MixMod</span>, time_var <span class="op">=</span> <span class="st">"time"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jointFit</span><span class="op">)</span></span>
@@ -431,27 +430,27 @@ syntax:</p>
 <span><span class="co">#&gt;   cbind(y, ind): 1346</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    3718.725 4647.513 -3335.920</span></span>
-<span><span class="co">#&gt; conditional 3331.812 3219.133 -1758.015</span></span>
+<span><span class="co">#&gt; marginal    3718.336 4647.791 -3267.595</span></span>
+<span><span class="co">#&gt; conditional 3330.882 3218.840 -1744.693</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                     </span></span>
 <span><span class="co">#&gt;        StdDev   Corr</span></span>
-<span><span class="co">#&gt; (Intr) 0.9485 (Intr)</span></span>
-<span><span class="co">#&gt; time   0.6648 0.1439</span></span>
+<span><span class="co">#&gt; (Intr) 0.9502 (Intr)</span></span>
+<span><span class="co">#&gt; time   0.6633 0.1447</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival Outcome:</span></span>
 <span><span class="co">#&gt;                        Mean  StDev   2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale            0.6119 0.2493 0.1334 1.0954 0.0127 1.0044</span></span>
-<span><span class="co">#&gt; value(cbind(y, ind)) 0.8658 0.0639 0.7507 1.0006 0.0000 1.0848</span></span>
+<span><span class="co">#&gt; sexfemale            0.6065 0.2483 0.1192 1.0889 0.0107 1.0027</span></span>
+<span><span class="co">#&gt; value(cbind(y, ind)) 0.8702 0.0641 0.7540 1.0005 0.0000 1.0477</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: cbind(y, ind) (family = censored normal, link = identity)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)    -2.2623 0.1023 -2.4652 -2.0611 0.0000 1.0021</span></span>
-<span><span class="co">#&gt; sexfemale      -0.0248 0.1432 -0.3076  0.2503 0.8658 1.0012</span></span>
-<span><span class="co">#&gt; time            0.3357 0.0699  0.1994  0.4754 0.0000 1.0004</span></span>
-<span><span class="co">#&gt; sexfemale:time -0.1199 0.0982 -0.3117  0.0709 0.2158 1.0008</span></span>
-<span><span class="co">#&gt; sigma           0.4950 0.0139  0.4685  0.5232 0.0000 1.0105</span></span>
+<span><span class="co">#&gt; (Intercept)    -2.2588 0.1023 -2.4597 -2.0543 0.0000 1.0019</span></span>
+<span><span class="co">#&gt; sexfemale      -0.0300 0.1433 -0.3120  0.2483 0.8382 1.0011</span></span>
+<span><span class="co">#&gt; time            0.3344 0.0698  0.1989  0.4710 0.0000 1.0001</span></span>
+<span><span class="co">#&gt; sexfemale:time -0.1175 0.0983 -0.3082  0.0732 0.2260 1.0011</span></span>
+<span><span class="co">#&gt; sigma           0.4947 0.0138  0.4690  0.5227 0.0000 1.0028</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
@@ -550,14 +549,14 @@ Student’s-t mixed effects model:</p>
 <span><span class="va">DF</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="va">event</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">]</span></span>
 <span><span class="va">DF</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="va">DF</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="va">DF</span><span class="op">$</span><span class="va">Time</span>, <span class="op">]</span></span></code></pre></div>
 <p>To fit the corresponding joint model we use the
-<code>students.t()</code> family object in the call to
-<code>mixed_model()</code>:</p>
+<code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/extra_fams.html" class="external-link">students.t()</a></code> family object in the call to
+<code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">DF_id</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span></span>
-<span><span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span></span>
+<span><span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span></span>
 <span><span class="va">Stdt_MixMod</span> <span class="op">&lt;-</span></span>
-<span>    <span class="fu">mixed_model</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">*</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">DF</span>,</span>
-<span>                family <span class="op">=</span> <span class="fu">students.t</span><span class="op">(</span>df <span class="op">=</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">*</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">DF</span>,</span>
+<span>                family <span class="op">=</span> <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/extra_fams.html" class="external-link">students.t</a></span><span class="op">(</span>df <span class="op">=</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">jointFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">Cox_fit</span>, <span class="va">Stdt_MixMod</span>, time_var <span class="op">=</span> <span class="st">"time"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jointFit</span><span class="op">)</span></span>
@@ -597,7 +596,7 @@ Student’s-t mixed effects model:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 14 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 15 sec</span></span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -695,9 +694,9 @@ distribution:</p>
 syntax:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">DF_id</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span></span>
-<span><span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span></span>
-<span><span class="va">NB_MixMod</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">*</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">DF</span>,</span>
-<span>                         family <span class="op">=</span> <span class="fu">negative.binomial</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span></span>
+<span><span class="va">NB_MixMod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">*</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">DF</span>,</span>
+<span>                         family <span class="op">=</span> <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/negative_binomial.html" class="external-link">negative.binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">jointFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">Cox_fit</span>, <span class="va">NB_MixMod</span>, time_var <span class="op">=</span> <span class="st">"time"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jointFit</span><span class="op">)</span></span>
@@ -836,10 +835,10 @@ distribution:</p>
 <p>The corresponding joint model is then fitted with the syntax:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">DF_id</span> <span class="op">&lt;-</span> <span class="va">DF</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">DF</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span></span>
-<span><span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span></span>
+<span><span class="va">Cox_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">Time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">DF_id</span><span class="op">)</span></span>
 <span><span class="va">BetaBinom_MixMod</span> <span class="op">&lt;-</span></span>
-<span>    <span class="fu">mixed_model</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">y</span>, <span class="fl">20</span> <span class="op">-</span> <span class="va">y</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">*</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">DF</span>,</span>
-<span>                family <span class="op">=</span> <span class="fu">beta.binomial</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">y</span>, <span class="fl">20</span> <span class="op">-</span> <span class="va">y</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">*</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">DF</span>,</span>
+<span>                family <span class="op">=</span> <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/extra_fams.html" class="external-link">beta.binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">jointFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">Cox_fit</span>, <span class="va">BetaBinom_MixMod</span>, time_var <span class="op">=</span> <span class="st">"time"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jointFit</span><span class="op">)</span></span>
@@ -900,7 +899,7 @@ distribution:</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
       </footer>

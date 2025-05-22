@@ -6,12 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dynamic Predictions • JMbayes2</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="48x48" href="../favicon-48x48.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
@@ -47,7 +46,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-4</span>
       </span>
     </div>
 
@@ -129,7 +128,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-04-17</h4>
+            <h4 data-toc-skip class="date">2025-05-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Dynamic_Predictions.Rmd" class="external-link"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="hidden name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -362,7 +361,7 @@ The calculations are performed with the following call to
 <span><span class="co">#&gt; 2     0.03 0.01513 0.99812  </span></span>
 <span><span class="co">#&gt; 3     0.08 0.03648 0.99812  </span></span>
 <span><span class="co">#&gt; 4     0.09 0.03648 0.99168  </span></span>
-<span><span class="co">#&gt; 5     0.11 0.10053 0.99168  </span></span>
+<span><span class="co">#&gt; 5     0.11 0.10052 0.99168  </span></span>
 <span><span class="co">#&gt; 6     0.12 0.11871 0.99072  </span></span>
 <span><span class="co">#&gt; 7     0.13 0.11871 0.98428  </span></span>
 <span><span class="co">#&gt; 8     0.14 0.11871 0.97783  </span></span>
@@ -374,48 +373,48 @@ The calculations are performed with the following call to
 <span><span class="co">#&gt; 14    0.27 0.28033 0.97506  </span></span>
 <span><span class="co">#&gt; 15    0.30 0.32303 0.97506  </span></span>
 <span><span class="co">#&gt; 16    0.31 0.34438 0.96862  </span></span>
-<span><span class="co">#&gt; 17    0.33 0.37465 0.96486  </span></span>
-<span><span class="co">#&gt; 18    0.36 0.41735 0.95842  </span></span>
+<span><span class="co">#&gt; 17    0.33 0.37464 0.96486  </span></span>
+<span><span class="co">#&gt; 18    0.36 0.41734 0.95842  </span></span>
 <span><span class="co">#&gt; 19    0.37 0.41842 0.95230  </span></span>
 <span><span class="co">#&gt; 20    0.40 0.43977 0.95230  </span></span>
-<span><span class="co">#&gt; 21    0.44 0.47217 0.94919  </span></span>
-<span><span class="co">#&gt; 22    0.46 0.49352 0.94919  </span></span>
-<span><span class="co">#&gt; 23    0.48 0.53622 0.94919  </span></span>
-<span><span class="co">#&gt; 24    0.52 0.53622 0.94274  </span></span>
-<span><span class="co">#&gt; 25    0.53 0.53622 0.93630  </span></span>
-<span><span class="co">#&gt; 26    0.55 0.53622 0.92985  </span></span>
-<span><span class="co">#&gt; 27    0.56 0.57892 0.92985  </span></span>
-<span><span class="co">#&gt; 28    0.58 0.60027 0.92985  </span></span>
-<span><span class="co">#&gt; 29    0.65 0.60027 0.92341  </span></span>
-<span><span class="co">#&gt; 30    0.66 0.62162 0.92341 *</span></span>
-<span><span class="co">#&gt; 31    0.67 0.62430 0.91133  </span></span>
-<span><span class="co">#&gt; 32    0.68 0.62430 0.90488  </span></span>
-<span><span class="co">#&gt; 33    0.69 0.62467 0.89855  </span></span>
-<span><span class="co">#&gt; 34    0.70 0.62467 0.89210  </span></span>
-<span><span class="co">#&gt; 35    0.71 0.65738 0.86975  </span></span>
-<span><span class="co">#&gt; 36    0.72 0.66080 0.85145  </span></span>
-<span><span class="co">#&gt; 37    0.73 0.68215 0.84501  </span></span>
-<span><span class="co">#&gt; 38    0.74 0.68626 0.83980  </span></span>
-<span><span class="co">#&gt; 39    0.75 0.68828 0.82108  </span></span>
-<span><span class="co">#&gt; 40    0.76 0.69336 0.80328  </span></span>
-<span><span class="co">#&gt; 41    0.78 0.71471 0.78394  </span></span>
-<span><span class="co">#&gt; 42    0.79 0.71977 0.77258  </span></span>
-<span><span class="co">#&gt; 43    0.80 0.72025 0.76628  </span></span>
-<span><span class="co">#&gt; 44    0.82 0.72770 0.74919  </span></span>
-<span><span class="co">#&gt; 45    0.83 0.72997 0.73699  </span></span>
-<span><span class="co">#&gt; 46    0.84 0.75693 0.71935  </span></span>
-<span><span class="co">#&gt; 47    0.85 0.77905 0.70025  </span></span>
-<span><span class="co">#&gt; 48    0.86 0.80262 0.68802  </span></span>
-<span><span class="co">#&gt; 49    0.87 0.80680 0.66995  </span></span>
-<span><span class="co">#&gt; 50    0.88 0.80680 0.66351  </span></span>
-<span><span class="co">#&gt; 51    0.89 0.83361 0.63938  </span></span>
-<span><span class="co">#&gt; 52    0.90 0.85678 0.60770  </span></span>
-<span><span class="co">#&gt; 53    0.91 0.86059 0.55729  </span></span>
-<span><span class="co">#&gt; 54    0.92 0.88371 0.52560  </span></span>
-<span><span class="co">#&gt; 55    0.93 0.88684 0.42987  </span></span>
-<span><span class="co">#&gt; 56    0.94 0.92954 0.40409  </span></span>
-<span><span class="co">#&gt; 57    0.95 0.95219 0.32715  </span></span>
-<span><span class="co">#&gt; 58    0.96 0.97587 0.24407  </span></span>
+<span><span class="co">#&gt; 21    0.44 0.47216 0.94919  </span></span>
+<span><span class="co">#&gt; 22    0.46 0.49351 0.94919  </span></span>
+<span><span class="co">#&gt; 23    0.48 0.53621 0.94919  </span></span>
+<span><span class="co">#&gt; 24    0.52 0.53621 0.94274  </span></span>
+<span><span class="co">#&gt; 25    0.53 0.53621 0.93630  </span></span>
+<span><span class="co">#&gt; 26    0.55 0.53621 0.92985  </span></span>
+<span><span class="co">#&gt; 27    0.56 0.57891 0.92985  </span></span>
+<span><span class="co">#&gt; 28    0.58 0.60026 0.92985  </span></span>
+<span><span class="co">#&gt; 29    0.65 0.60026 0.92341  </span></span>
+<span><span class="co">#&gt; 30    0.66 0.62161 0.92341 *</span></span>
+<span><span class="co">#&gt; 31    0.67 0.62429 0.91133  </span></span>
+<span><span class="co">#&gt; 32    0.68 0.62429 0.90488  </span></span>
+<span><span class="co">#&gt; 33    0.69 0.62466 0.89855  </span></span>
+<span><span class="co">#&gt; 34    0.70 0.62466 0.89210  </span></span>
+<span><span class="co">#&gt; 35    0.71 0.65737 0.86975  </span></span>
+<span><span class="co">#&gt; 36    0.72 0.66079 0.85145  </span></span>
+<span><span class="co">#&gt; 37    0.73 0.68214 0.84500  </span></span>
+<span><span class="co">#&gt; 38    0.74 0.68625 0.83980  </span></span>
+<span><span class="co">#&gt; 39    0.75 0.68827 0.82108  </span></span>
+<span><span class="co">#&gt; 40    0.76 0.69335 0.80327  </span></span>
+<span><span class="co">#&gt; 41    0.78 0.71470 0.78394  </span></span>
+<span><span class="co">#&gt; 42    0.79 0.71976 0.77258  </span></span>
+<span><span class="co">#&gt; 43    0.80 0.72024 0.76628  </span></span>
+<span><span class="co">#&gt; 44    0.82 0.72769 0.74919  </span></span>
+<span><span class="co">#&gt; 45    0.83 0.72996 0.73699  </span></span>
+<span><span class="co">#&gt; 46    0.84 0.75692 0.71935  </span></span>
+<span><span class="co">#&gt; 47    0.85 0.77904 0.70025  </span></span>
+<span><span class="co">#&gt; 48    0.86 0.80261 0.68802  </span></span>
+<span><span class="co">#&gt; 49    0.87 0.80679 0.66995  </span></span>
+<span><span class="co">#&gt; 50    0.88 0.80679 0.66351  </span></span>
+<span><span class="co">#&gt; 51    0.89 0.83360 0.63937  </span></span>
+<span><span class="co">#&gt; 52    0.90 0.85677 0.60770  </span></span>
+<span><span class="co">#&gt; 53    0.91 0.86058 0.55729  </span></span>
+<span><span class="co">#&gt; 54    0.92 0.88370 0.52560  </span></span>
+<span><span class="co">#&gt; 55    0.93 0.88683 0.42987  </span></span>
+<span><span class="co">#&gt; 56    0.94 0.92953 0.40409  </span></span>
+<span><span class="co">#&gt; 57    0.95 0.95217 0.32714  </span></span>
+<span><span class="co">#&gt; 58    0.96 0.97586 0.24407  </span></span>
 <span><span class="co">#&gt; 59    0.97 0.97829 0.15457  </span></span>
 <span><span class="co">#&gt; 60    0.98 0.97829 0.09656  </span></span>
 <span><span class="co">#&gt; 61    0.99 0.99989 0.01286  </span></span>
@@ -565,6 +564,167 @@ described in <a href="https://doi.org/10.1002/sim.8570" class="external-link">Au
 2020</a>.</li>
 </ul>
 </div>
+<div class="section level3">
+<h3 id="internal-validation">Internal Validation<a class="anchor" aria-label="anchor" href="#internal-validation"></a>
+</h3>
+<div class="section level4">
+<h4 id="cross-validation">Cross-Validation<a class="anchor" aria-label="anchor" href="#cross-validation"></a>
+</h4>
+<p>In calculating the predictive accuracy measures presented above, we
+used the same dataset in which we fitted the models. This is known to
+produce overoptimistic accuracy estimates. More objective estimates can
+be obtained using internal validation. This section illustrates how
+internal validation can be performed in <strong>JMbayes2</strong> using
+cross-validation and the Bootstrap methods.</p>
+<p>Both testing and training datasets for both techniques can be created
+using the <code><a href="../reference/accuracy.html">create_folds()</a></code> function. We start with
+cross-validation and split the <code>pbc2</code> database into five
+folds using the syntax:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">CVdats</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">create_folds</a></span><span class="op">(</span><span class="va">pbc2</span>, V <span class="op">=</span> <span class="fl">5</span>, id_var <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span></span></code></pre></div>
+<p>The first argument for this function is the <code>data.frame</code>
+we wish to split into <code>V</code> folds. The argument
+<code>id_var</code> specifies the name of the subject’s id variable in
+this dataset. The output of <code><a href="../reference/accuracy.html">create_folds()</a></code> is a list with
+two components named <code>"training"</code> and <code>"testing"</code>.
+Each component is another list with <code>V</code> data.frames.</p>
+<p>Next, we define the function that will fit the joint models we wish
+to consider for calculating predictions. This function should have as a
+single argument a <code>data.frame</code> that will be used to fit the
+joint models. We will use parallel computing to optimize computational
+performance and fit these models to the different training datasets.
+Hence, within the function we should have the call
+<code><a href="https://drizopoulos.github.io/JMbayes2/">library("JMbayes2")</a></code> to load package
+<strong>JMbayes2</strong> for each worker. The output of this function
+is the fitted joint model we wish to internally validate.</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_model</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://drizopoulos.github.io/JMbayes2/">"JMbayes2"</a></span><span class="op">)</span></span>
+<span>    <span class="co"># data</span></span>
+<span>    <span class="va">data</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span></span>
+<span>    <span class="va">data_id</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span></span>
+<span>    <span class="co"># mixed-effects models</span></span>
+<span>    <span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">data</span>,</span>
+<span>               random <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/pdDiag.html" class="external-link">pdDiag</a></span><span class="op">(</span>form <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, </span>
+<span>               control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lmeControl.html" class="external-link">lmeControl</a></span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">data</span>,</span>
+<span>               random <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/pdDiag.html" class="external-link">pdDiag</a></span><span class="op">(</span>form <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, </span>
+<span>               control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lmeControl.html" class="external-link">lmeControl</a></span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model</a></span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">data</span>,</span>
+<span>                       random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="co"># Cox model</span></span>
+<span>    <span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">years</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">data_id</span><span class="op">)</span></span>
+<span>    <span class="co"># joint model</span></span>
+<span>    <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>We fit the model in the training datasets using parallel computing as
+facilitated by the <strong>parallel</strong> package (<em>note</em>:
+this and the subsequent computations require some time to perform
+depending on the characteristics of your computing environment):</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">5L</span><span class="op">)</span></span>
+<span><span class="va">Model_folds</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span><span class="va">cl</span>, <span class="va">CVdats</span><span class="op">$</span><span class="va">training</span>, <span class="va">fit_model</span><span class="op">)</span></span>
+<span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></code></pre></div>
+<p>Before calculating the predictive accuracy measures in the testing
+datasets, we must create the <code>event</code> variable in each one.
+This is achieved with the following piece of code:</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span>, <span class="kw">function</span> <span class="op">(</span><span class="va">d</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">d</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span></span>
+<span>        <span class="va">d</span></span>
+<span>    <span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<p>The following syntax calculates the integrated Brier score in the
+testing datasets at follow-up year <code>t0 = 5</code> and for a window
+of <code>Dt = 3</code> years:</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Brier_per_fold</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/mapply.html" class="external-link">mapply</a></span><span class="op">(</span><span class="va">tvBrier</span>, object <span class="op">=</span> <span class="va">Model_folds</span>, newdata <span class="op">=</span> <span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span>,</span>
+<span>           MoreArgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span>, integrated <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>           SIMPLIFY <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<p>The cross-validated estimate of the integrated Brier score is the
+average of the estimated Brier scores in the testing datasets:</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">average_Brier</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">Brier_per_fold</span>, <span class="st">"[["</span>, <span class="st">"Brier"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">average_Brier</span></span>
+<span><span class="co">#&gt; [1] 0.0862818</span></span></code></pre></div>
+<p>The calculation of the cross-validated estimate of the AUC at
+follow-up year 5 and for a window of 3 years proceeds similarly:</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">AUC_per_fold</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/mapply.html" class="external-link">mapply</a></span><span class="op">(</span><span class="va">tvAUC</span>, object <span class="op">=</span> <span class="va">Model_folds</span>, newdata <span class="op">=</span> <span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span>,</span>
+<span>           MoreArgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
+<span>           SIMPLIFY <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">average_AUC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">AUC_per_fold</span>, <span class="st">"[["</span>, <span class="st">"auc"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">average_AUC</span></span>
+<span><span class="co">#&gt; [1] 0.8183163</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="bootstrap">Bootstrap<a class="anchor" aria-label="anchor" href="#bootstrap"></a>
+</h4>
+<p>We continue the illustration of internal validation in
+<strong>JMbayes2</strong> using the Bootstrap method. The training and
+testing datasets are again created with the <code><a href="../reference/accuracy.html">create_folds()</a></code>
+function by specifying <code>method = "Bootstrap"</code>:</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bootDats</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">create_folds</a></span><span class="op">(</span><span class="va">pbc2</span>, V <span class="op">=</span> <span class="fl">10</span>, id_var <span class="op">=</span> <span class="st">"id"</span>, method <span class="op">=</span> <span class="st">"Bootstrap"</span><span class="op">)</span></span></code></pre></div>
+<p>Argument <code>V</code> now denotes the number of Bootstrap samples
+we want to create. Each training Bootstrap sample is a sample with
+replacement from the original dataset <code>pbc2</code>. The subjects
+not used in the specific Bootstrap sample form the testing dataset. We
+fit the joint model in the training datasets using parallel
+computing:</p>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">5L</span><span class="op">)</span></span>
+<span><span class="va">Model_bootSamples</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span><span class="va">cl</span>, <span class="va">bootDats</span><span class="op">$</span><span class="va">training</span>, <span class="va">fit_model</span><span class="op">)</span></span>
+<span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></code></pre></div>
+<p>Before calculating the predictive accuracy measures in the testing
+datasets, we must create again the <code>event</code> variable in each
+one.</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bootDats</span><span class="op">$</span><span class="va">testing</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">bootDats</span><span class="op">$</span><span class="va">testing</span>, <span class="kw">function</span> <span class="op">(</span><span class="va">d</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">d</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span></span>
+<span>    <span class="va">d</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<p>Following we calculate the integrated Brier score in each testing
+dataset and compute the average:</p>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Brier_per_bootSample</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/mapply.html" class="external-link">mapply</a></span><span class="op">(</span><span class="va">tvBrier</span>, object <span class="op">=</span> <span class="va">Model_bootSamples</span>, newdata <span class="op">=</span> <span class="va">bootDats</span><span class="op">$</span><span class="va">testing</span>,</span>
+<span>           MoreArgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span>, integrated <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>           SIMPLIFY <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">average_Brier_bootSamples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">Brier_per_bootSample</span>, <span class="st">"[["</span>, <span class="st">"Brier"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>The evaluation of the model’s predictive accuracy in the testing
+datasets will produce a pessimistic estimate of model performance. On
+the contrary, the estimate of the integrate Brier score in the
+<code>pbc2</code> dataset used to fit the joint model will be highly
+optimistic:</p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Brier_original</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">tvBrier</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span>, </span>
+<span>                          integrated <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>Efron proposed the .632 estimator, which combines the performance
+obtained in the original dataset and the estimates from the Bootstrap
+samples to reduce the upward bias:</p>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fl">0.368</span> <span class="op">*</span> <span class="va">Brier_original</span><span class="op">$</span><span class="va">Brier</span> <span class="op">+</span> <span class="fl">0.632</span> <span class="op">*</span> <span class="va">average_Brier_bootSamples</span></span>
+<span><span class="co">#&gt; [1] 0.08170688</span></span></code></pre></div>
+<p>We perform the same calculations also for the AUC:</p>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">AUC_per_bootSample</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/mapply.html" class="external-link">mapply</a></span><span class="op">(</span><span class="va">tvAUC</span>, object <span class="op">=</span> <span class="va">Model_folds</span>, newdata <span class="op">=</span> <span class="va">bootDats</span><span class="op">$</span><span class="va">testing</span>,</span>
+<span>           MoreArgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
+<span>           SIMPLIFY <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">average_AUC_bootSamples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">AUC_per_bootSample</span>, <span class="st">"[["</span>, <span class="st">"auc"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">AUC_original</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">tvAUC</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fl">0.368</span> <span class="op">*</span> <span class="va">AUC_original</span><span class="op">$</span><span class="va">auc</span> <span class="op">+</span> <span class="fl">0.632</span> <span class="op">*</span> <span class="va">average_AUC_bootSamples</span></span>
+<span><span class="co">#&gt; [1] 0.8201467</span></span></code></pre></div>
+</div>
+</div>
 </div>
   </div>
 
@@ -583,7 +743,7 @@ described in <a href="https://doi.org/10.1002/sim.8570" class="external-link">Au
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
       </footer>

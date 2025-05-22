@@ -6,12 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Univariate and Multivariate Joint Models • JMbayes2</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="48x48" href="../favicon-48x48.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
@@ -47,7 +46,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-4</span>
       </span>
     </div>
 
@@ -129,7 +128,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-04-17</h4>
+            <h4 data-toc-skip class="date">2025-05-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/JMbayes2.Rmd" class="external-link"><code>vignettes/JMbayes2.Rmd</code></a></small>
       <div class="hidden name"><code>JMbayes2.Rmd</code></div>
@@ -146,10 +145,10 @@ Rizopoulos</h4>
 </h3>
 <p>The function that fits joint models in <strong>JMbayes2</strong> is
 called <code><a href="../reference/jm.html">jm()</a></code>. It has three required arguments,
-<code>Surv_object</code> a Cox model fitted by <code>coxph()</code> or
-an Accelerated Failure time model fitted by <code>survreg()</code>,
+<code>Surv_object</code> a Cox model fitted by <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph()</a></code> or
+an Accelerated Failure time model fitted by <code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survreg()</a></code>,
 <code>Mixed_objects</code> a single or a list of mixed models fitted
-either by the <code>lme()</code> or <code>mixed_model()</code>
+either by the <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme()</a></code> or <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code>
 functions, and <code>time_var</code> a character string indicating the
 name of the time variable in the specification of the mixed-effects
 models. We will illustrate the basic use of the package in the PBC
@@ -157,16 +156,16 @@ dataset. We start by fitting a Cox model for the composite event
 transplantation or death, including sex as a baseline covariate:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">'alive'</span><span class="op">)</span></span>
-<span><span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span></code></pre></div>
 <p>We aim to assess the strength of the association between the risk of
 the composite event and the serum bilirubin levels collected during
 follow-up. We will describe the patient-specific profiles over time for
 this biomarker using a linear mixed model, with fixed effects, time,
 sex, and their interaction, and as random effects, random intercepts,
-and random slopes. The syntax to fit this model with <code>lme()</code>
+and random slopes. The syntax to fit this model with <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme()</a></code>
 is:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span></code></pre></div>
 <p>The joint model that links the survival and longitudinal submodels is
 fitted with the following call to the <code><a href="../reference/jm.html">jm()</a></code> function:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -209,7 +208,7 @@ fitted with the following call to the <code><a href="../reference/jm.html">jm()<
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 16 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 17 sec</span></span></code></pre></div>
 <p>The output of the <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method provides some
 descriptive statistics of the sample at hand, followed by some fit
 statistics based on the marginal (random effects are integrated out
@@ -261,9 +260,9 @@ we fitted above by also including the prothrombin time and the log odds
 of the presence or absence of ascites as time-varying covariates in the
 relative risk model for the composite event. Ascites is a dichotomous
 outcome, and therefore, we fit a mixed-effects logistic regression model
-for it using the <code>mixed_model()</code> function from the
+for it using the <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code> function from the
 <strong>GLMMadaptive</strong> package. The use of <code>||</code> in the
-<code>random</code> argument of <code>mixed_model()</code> specifies
+<code>random</code> argument of <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code> specifies
 that the random intercepts and random slopes are assumed uncorrelated.
 In addition, the argument <code>which_independent</code> can be used to
 specify which longitudinal outcomes are to be assumed independent; here,
@@ -275,8 +274,8 @@ joint model is more complex, we increase the number of MCMC iterations,
 the number of burn-in iterations, and the thinning per chain using the
 corresponding control arguments:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span>
-<span><span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
+<code class="sourceCode R"><span><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span>
+<span><span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model</a></span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
 <span>                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">||</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">jointFit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,</span>
@@ -344,7 +343,7 @@ corresponding control arguments:</p>
 <span><span class="co">#&gt; iterations per chain: 12000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 2000 </span></span>
 <span><span class="co">#&gt; thinning: 5 </span></span>
-<span><span class="co">#&gt; time: 1.9 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 2.1 min</span></span></code></pre></div>
 <p>The survival submodel output now contains the estimated coefficients
 for <code>value(prothrombin)</code> and <code>value(ascites)</code>, as
 well as parameter estimates for all three longitudinal submodels.</p>
@@ -452,7 +451,7 @@ corresponding syntax to fit this model is:</p>
 <span><span class="co">#&gt; iterations per chain: 12000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 2000 </span></span>
 <span><span class="co">#&gt; thinning: 5 </span></span>
-<span><span class="co">#&gt; time: 2.1 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 2.2 min</span></span></code></pre></div>
 <p>As seen above, the <code>functional_forms</code> argument is a named
 list with elements corresponding to the longitudinal outcomes. If a
 longitudinal outcome is not specified in this list, then the default
@@ -505,7 +504,7 @@ longitudinal outcomes in the relative risk model):</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
       </footer>
