@@ -24,7 +24,7 @@ Taking advantage of the versatility of the [**GLMMadaptive**](https://drizopoulo
 
 
 ## Beta mixed models
-With very few exceptions, continuous outcomes that we wish to analyze have some natural bounds. For example, the levels of blood biomarkers for a set of patients. However, most observations are often located far away from these natural bounds, and an assumption of a normal distribution for the outcome can be safely made. In some settings, though, we can have outcomes for which a substantial percentage of the observations are located near the boundaries leading to skewed or U-shaped distributions. A linear mixed model with normal error terms often does not provide a good fit for such longitudinal outcomes. A natural alternative is to select a distribution that respects the bounded nature of the outcome. The most well-known distribution for such outcomes is the Beta distribution defined in the $(0, 1)$ interval (*note:* a bounded outcome $Y^*$ in the $(a, b)$ interval can be transformed to the $Y = (Y^* - a) / (b - a)$ in the $(0, 1)$ interval). 
+With very few exceptions, continuous outcomes that we wish to analyze have some natural bounds. For example, the levels of blood biomarkers for a set of patients. However, most observations are often located far away from these natural bounds, and an assumption of a normal distribution for the outcome can be safely made. In some settings, though, we can have outcomes for which a substantial percentage of the observations are located near the boundaries, leading to skewed or U-shaped distributions. A linear mixed model with normal error terms often does not fit such longitudinal outcomes well. A natural alternative is to select a distribution that respects the bounded nature of the outcome. The most well-known distribution for such outcomes is the Beta distribution defined in the $(0, 1)$ interval (*note:* a bounded outcome $Y^*$ in the $(a, b)$ interval can be transformed to the $Y = (Y^* - a) / (b - a)$ in the $(0, 1)$ interval). 
 
 The following code illustrates how to simulate data from a joint model with a Beta mixed effects model. The default functional form is assumed, i.e., that the linear predictor $\eta(t)$ of the mixed model is associated with the hazard of an event at time $t$. The linear predictor is related to the mean $\mu(t)$ of the Beta distribution under the logit link function, i.e., $\log[\mu(t) / \{1 - \mu(t)\}] = \eta(t)$.
 ```{r, "simulate_Beta"}
@@ -123,9 +123,9 @@ summary(jointFit)
 
 
 ## Censored linear mixed models
-Some continuous longitudinal outcomes may have a censored nature. A typical example of such outcomes is when we have limit of detection issues. That is, the values of the outcome cannot be detected below a specified threshold having to do with the (laboratory) equipment used to determine the measurements. In these settings, and even if the complete data follows a normal distribution the observed censored data cannot be analyzed with a standard mixed model. The `mixed_model()` function can accommodate such outcomes using the `censored.normal()` family object.
+Some continuous longitudinal outcomes may have a censored nature. A typical example of such outcomes is when we have a limit of detection issue. That is, the values of the outcome cannot be detected below a specified threshold having to do with the (laboratory) equipment used to determine the measurements. In these settings, even if the complete data follows a normal distribution the observed censored data cannot be analyzed using a standard mixed model. The `mixed_model()` function can accommodate such outcomes using the `censored.normal()` family object.
 
-The following piece of code simulates data from a joint model with a linear mixed model for the longitudinal outcomes but applies censoring in the realized longitudinal observations.
+The following code simulates data from a joint model with a linear mixed model for the longitudinal outcomes but applies censoring in the realized longitudinal observations.
 ```{r, "simulate_CensNorm"}
 set.seed(1234)
 n <- 200 # number of subjects

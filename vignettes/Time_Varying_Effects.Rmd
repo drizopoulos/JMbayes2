@@ -68,7 +68,7 @@ legend("topright", c("time-varying coefficient", "proportional hazards"),
        lty = c(1, 2), lwd = c(2, 1), col = "red", bty = "n")
 ```
 
-We observe that the 95% credible interval for the time-varying coefficient includes the horizontal line that corresponds to proportional hazards. This is also confirmed by comparing the two models:
+We observe that the 95% credible interval for the time-varying coefficient includes the horizontal line corresponding to proportional hazards. This is also confirmed by comparing the two models:
 ```{r}
 compare_jm(jointFit1, jointFit2)
 ```
