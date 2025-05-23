@@ -128,7 +128,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-05-22</h4>
+            <h4 data-toc-skip class="date">2025-05-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/JMbayes2.Rmd" class="external-link"><code>vignettes/JMbayes2.Rmd</code></a></small>
       <div class="hidden name"><code>JMbayes2.Rmd</code></div>
@@ -208,7 +208,7 @@ fitted with the following call to the <code><a href="../reference/jm.html">jm()<
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 17 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 19 sec</span></span></code></pre></div>
 <p>The output of the <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method provides some
 descriptive statistics of the sample at hand, followed by some fit
 statistics based on the marginal (random effects are integrated out
@@ -253,21 +253,21 @@ to be the same.</p></li>
 <div class="section level3">
 <h3 id="multivariate">Multivariate<a class="anchor" aria-label="anchor" href="#multivariate"></a>
 </h3>
-<p>To fit a joint model with multiple longitudinal outcomes, we simply
-provide a list of mixed models as the second argument of
-<code><a href="../reference/jm.html">jm()</a></code>. In the following example, we extend the joint model
-we fitted above by also including the prothrombin time and the log odds
-of the presence or absence of ascites as time-varying covariates in the
-relative risk model for the composite event. Ascites is a dichotomous
-outcome, and therefore, we fit a mixed-effects logistic regression model
-for it using the <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code> function from the
+<p>To fit a joint model with multiple longitudinal outcomes, we provide
+a list of mixed models as the second argument of <code><a href="../reference/jm.html">jm()</a></code>. In
+the following example, we extend the joint model we fitted above by
+including the prothrombin time and the log odds of the presence or
+absence of ascites as time-varying covariates in the relative risk model
+for the composite event. Ascites is a dichotomous outcome, and
+therefore, we fit a mixed-effects logistic regression model for it using
+the <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code> function from the
 <strong>GLMMadaptive</strong> package. The use of <code>||</code> in the
 <code>random</code> argument of <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code> specifies
 that the random intercepts and random slopes are assumed uncorrelated.
 In addition, the argument <code>which_independent</code> can be used to
-specify which longitudinal outcomes are to be assumed independent; here,
-as an illustration, we specify that the first (i.e., serum bilirubin)
-and second (i.e., prothrombin time) longitudinal outcomes are
+determine which longitudinal outcomes are to be assumed independent;
+here, as an illustration, we specify that the first (i.e., serum
+bilirubin) and second (i.e., prothrombin time) longitudinal outcomes are
 independent. To assume that all longitudinal outcomes are independent,
 we can use <code>jm(..., which_independent = "all")</code>. Because this
 joint model is more complex, we increase the number of MCMC iterations,
@@ -343,7 +343,7 @@ corresponding control arguments:</p>
 <span><span class="co">#&gt; iterations per chain: 12000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 2000 </span></span>
 <span><span class="co">#&gt; thinning: 5 </span></span>
-<span><span class="co">#&gt; time: 2.1 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 2 min</span></span></code></pre></div>
 <p>The survival submodel output now contains the estimated coefficients
 for <code>value(prothrombin)</code> and <code>value(ascites)</code>, as
 well as parameter estimates for all three longitudinal submodels.</p>
@@ -451,7 +451,7 @@ corresponding syntax to fit this model is:</p>
 <span><span class="co">#&gt; iterations per chain: 12000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 2000 </span></span>
 <span><span class="co">#&gt; thinning: 5 </span></span>
-<span><span class="co">#&gt; time: 2.2 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 2 min</span></span></code></pre></div>
 <p>As seen above, the <code>functional_forms</code> argument is a named
 list with elements corresponding to the longitudinal outcomes. If a
 longitudinal outcome is not specified in this list, then the default

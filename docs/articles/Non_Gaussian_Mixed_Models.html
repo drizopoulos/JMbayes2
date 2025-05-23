@@ -128,7 +128,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-05-22</h4>
+            <h4 data-toc-skip class="date">2025-05-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Non_Gaussian_Mixed_Models.Rmd" class="external-link"><code>vignettes/Non_Gaussian_Mixed_Models.Rmd</code></a></small>
       <div class="hidden name"><code>Non_Gaussian_Mixed_Models.Rmd</code></div>
@@ -158,12 +158,12 @@ for a set of patients. However, most observations are often located far
 away from these natural bounds, and an assumption of a normal
 distribution for the outcome can be safely made. In some settings,
 though, we can have outcomes for which a substantial percentage of the
-observations are located near the boundaries leading to skewed or
+observations are located near the boundaries, leading to skewed or
 U-shaped distributions. A linear mixed model with normal error terms
-often does not provide a good fit for such longitudinal outcomes. A
-natural alternative is to select a distribution that respects the
-bounded nature of the outcome. The most well-known distribution for such
-outcomes is the Beta distribution defined in the
+often does not fit such longitudinal outcomes well. A natural
+alternative is to select a distribution that respects the bounded nature
+of the outcome. The most well-known distribution for such outcomes is
+the Beta distribution defined in the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(0, 1)</annotation></semantics></math>
 interval (<em>note:</em> a bounded outcome
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Y</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Y^*</annotation></semantics></math>
@@ -320,17 +320,17 @@ using the <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/ex
 <h3 id="censored-linear-mixed-models">Censored linear mixed models<a class="anchor" aria-label="anchor" href="#censored-linear-mixed-models"></a>
 </h3>
 <p>Some continuous longitudinal outcomes may have a censored nature. A
-typical example of such outcomes is when we have limit of detection
-issues. That is, the values of the outcome cannot be detected below a
+typical example of such outcomes is when we have a limit of detection
+issue. That is, the values of the outcome cannot be detected below a
 specified threshold having to do with the (laboratory) equipment used to
-determine the measurements. In these settings, and even if the complete
-data follows a normal distribution the observed censored data cannot be
-analyzed with a standard mixed model. The <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code>
+determine the measurements. In these settings, even if the complete data
+follows a normal distribution the observed censored data cannot be
+analyzed using a standard mixed model. The <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code>
 function can accommodate such outcomes using the
 <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/extra_fams.html" class="external-link">censored.normal()</a></code> family object.</p>
-<p>The following piece of code simulates data from a joint model with a
-linear mixed model for the longitudinal outcomes but applies censoring
-in the realized longitudinal observations.</p>
+<p>The following code simulates data from a joint model with a linear
+mixed model for the longitudinal outcomes but applies censoring in the
+realized longitudinal observations.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">200</span> <span class="co"># number of subjects</span></span>
@@ -457,7 +457,7 @@ syntax:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 14 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 15 sec</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="studentss-t-mixed-models">Students’s-t mixed models<a class="anchor" aria-label="anchor" href="#studentss-t-mixed-models"></a>
@@ -596,7 +596,7 @@ Student’s-t mixed effects model:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 15 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 14 sec</span></span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -737,7 +737,7 @@ syntax:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 27 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 26 sec</span></span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -879,7 +879,7 @@ distribution:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 49 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 50 sec</span></span></code></pre></div>
 </div>
 </div>
   </div>

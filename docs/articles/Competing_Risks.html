@@ -128,7 +128,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-05-22</h4>
+            <h4 data-toc-skip class="date">2025-05-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Competing_Risks.Rmd" class="external-link"><code>vignettes/Competing_Risks.Rmd</code></a></small>
       <div class="hidden name"><code>Competing_Risks.Rmd</code></div>
@@ -161,7 +161,7 @@ using the function <code><a href="../reference/cr_setup.html">crisk_setup()</a><
 main arguments the survival data in the standard format with a single
 row per patient, the name of the status variable, and the level in this
 status variable that corresponds to censoring. We illustrate the use of
-this function in the PBC data, in which we treat as competing risks
+this function in the PBC data, where we treat as competing risks
 transplantation and death:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pbc2.id</span><span class="op">[</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"years"</span>, <span class="st">"status"</span><span class="op">)</span><span class="op">]</span></span>
@@ -183,7 +183,7 @@ transplantation and death:</p>
 <span><span class="co">#&gt; 5    5  4.120578 transplanted       0         dead</span></span>
 <span><span class="co">#&gt; 5.1  5  4.120578 transplanted       1 transplanted</span></span></code></pre></div>
 <p>Note that each patient is now represented by two rows (we have two
-possible causes of discontinuation from the study, death and
+possible causes of discontinuation from the study, death, and
 transplantation), the event time variable <code>years</code> is
 identical in both rows of each patient, variable <code>CR</code> denotes
 the cause for the specific line of the long dataset, and variable
@@ -192,7 +192,7 @@ the cause for the specific line of the long dataset, and variable
 <div class="section level3">
 <h3 id="fit-models">Fit models<a class="anchor" aria-label="anchor" href="#fit-models"></a>
 </h3>
-<p>For the event process, we specify cause-specific relative risks
+<p>For the event process, we specify cause-specific relative risk
 models. Using dataset <code>pbc2.idCR</code>, we fit the corresponding
 cause-specific Cox regressions by including the interaction terms of age
 and treatment with variable <code>CR</code>, which is treated as a
@@ -200,8 +200,8 @@ stratification variable using the <code>strata()</code> function:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">CoxFit_CR</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="op">(</span><span class="va">age</span> <span class="op">+</span> <span class="va">drug</span><span class="op">)</span> <span class="op">*</span> <span class="fu">strata</span><span class="op">(</span><span class="va">CR</span><span class="op">)</span>,</span>
 <span>                     data <span class="op">=</span> <span class="va">pbc2.idCR</span><span class="op">)</span></span></code></pre></div>
-<p>We include two longitudinal outcomes for the longitudinal process,
-namely serum bilirubin and the prothrombin time. For the former, we use
+<p>We include two longitudinal outcomes for the longitudinal process:
+serum bilirubin and the prothrombin time. For the former, we use
 quadratic orthogonal polynomials in the fixed- and random-effects parts,
 and for the latter, linear evolutions:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -301,8 +301,8 @@ chain):</p>
 </h3>
 <p>Based on the fitted competing risks joint model, we will illustrate
 how (dynamic) predictions can be calculated for the cause-specific
-cumulative risk probabilities. We will show these calculations for
-Patient 81 from the PBC dataset as an example. First, we extract the
+cumulative risk probabilities. As an example, we will show these
+calculations for Patient 81 from the PBC dataset. First, we extract the
 data on this subject.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ND_long</span> <span class="op">&lt;-</span> <span class="va">pbc2</span><span class="op">[</span><span class="va">pbc2</span><span class="op">$</span><span class="va">id</span> <span class="op">==</span> <span class="fl">81</span>, <span class="op">]</span></span>
