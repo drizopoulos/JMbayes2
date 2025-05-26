@@ -1424,3 +1424,24 @@ create_sigma_list <- function (sigmas, ss_sigmas, idL) {
 
 lng_unq <- function (x) length(unique(x))
 factor2 <- function (x, ...) factor(x, levels = unique(x), ...)
+
+plot_hazard <- function (object, CI = TRUE) {
+    r <- range(object$model_data$Time_right)
+    tt <- seq(r[1L], r[2L], len = 501)
+    nstrata <- length(unique(object$model_data$strata))
+    strt <- rep(1, length(tt))
+    W0 <- create_W0(tt, object$control$knots,
+                    object$control$Bsplines_degree + 1, strt)
+    h <- exp(c(W0 %*% object$statistics$Mean$bs_gammas))
+    low <- exp(c(W0 %*% object$statistics$CI_low$bs_gammas))
+    upp <- exp(c(W0 %*% object$statistics$CI_upp$bs_gammas))
+    plot(r, range(low, upp), type = "n", xlab = "Time",
+         ylab = "Baseline Hazard Function")
+    if (CI) {
+        polygon(c(tt, rev(tt)), c(low, rev(upp)), col = "lightgrey",
+                border = NA)
+    }
+    lines(tt, h, lwd = 2, col = "red")
+}
+
+
