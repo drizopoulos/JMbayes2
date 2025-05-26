@@ -329,7 +329,7 @@ Efron proposed the .632 estimator, which combines the performance obtained in th
 We perform the same calculations also for the AUC:
 ```{r}
 AUC_per_bootSample <- 
-    mapply(tvAUC, object = Model_folds, newdata = bootDats$testing,
+    mapply(tvAUC, object = Model_bootSamples, newdata = bootDats$testing,
            MoreArgs = list(Tstart = t0, Dt = 3),
            SIMPLIFY = FALSE)
 
