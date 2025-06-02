@@ -252,19 +252,25 @@ parallel::stopCluster(cl)
 
 Before calculating the predictive accuracy measures in the testing datasets, we must create the `event` variable in each one. This is achieved with the following piece of code:
 ```{r}
-CVdats$testing[] <- 
-    lapply(CVdats$testing, function (d) {
-        d$event <- as.numeric(d$status != "alive")
-        d
-    })
+CVdats$testing[] <- lapply(CVdats$testing, function (d) {
+    d$event <- as.numeric(d$status != "alive")
+    d
+})
 ```
 
-The following syntax calculates the integrated Brier score in the testing datasets at follow-up year `t0 = 5` and for a window of `Dt = 3` years:
+The following syntax calculates the integrated Brier score in the testing datasets at follow-up year `t0 = 5` and for a window of `Dt = 3` years (we use parallel computing again):
 ```{r, warning = FALSE}
+calculate_Brier <- function (v, models, testing_data) {
+    library("JMbayes2")
+    tvBrier(models[[v]], newdata = testing_data[[v]], Tstart = 5, Dt = 3, 
+            integrated = TRUE)
+}
+
+cl <- parallel::makeCluster(5L)
 Brier_per_fold <- 
-    mapply(tvBrier, object = Model_folds, newdata = CVdats$testing,
-           MoreArgs = list(Tstart = t0, Dt = 3, integrated = TRUE),
-           SIMPLIFY = FALSE)
+    parallel::parLapply(cl, seq_len(5), calculate_Brier, models = Model_folds,
+                        testing_data = CVdats$testing)
+parallel::stopCluster(cl)
 ```
 
 The cross-validated estimate of the integrated Brier score is the average of the estimated Brier scores in the testing datasets:
@@ -275,10 +281,16 @@ average_Brier
 
 The calculation of the cross-validated estimate of the AUC at follow-up year 5 and for a window of 3 years proceeds similarly:
 ```{r, warning = FALSE}
+calculate_AUC <- function (v, models, testing_data) {
+    library("JMbayes2")
+    tvAUC(models[[v]], newdata = testing_data[[v]], Tstart = 5, Dt = 3)
+}
+
+cl <- parallel::makeCluster(5L)
 AUC_per_fold <- 
-    mapply(tvAUC, object = Model_folds, newdata = CVdats$testing,
-           MoreArgs = list(Tstart = t0, Dt = 3),
-           SIMPLIFY = FALSE)
+    parallel::parLapply(cl, seq_len(5), calculate_AUC, models = Model_folds,
+                        testing_data = CVdats$testing)
+parallel::stopCluster(cl)
 
 average_AUC <- mean(sapply(AUC_per_fold, "[[", "auc"))
 average_AUC
@@ -307,10 +319,11 @@ bootDats$testing[] <- lapply(bootDats$testing, function (d) {
 
 Following we calculate the integrated Brier score in each testing dataset and compute the average:
 ```{r}
+cl <- parallel::makeCluster(10L)
 Brier_per_bootSample <- 
-    mapply(tvBrier, object = Model_bootSamples, newdata = bootDats$testing,
-           MoreArgs = list(Tstart = t0, Dt = 3, integrated = TRUE),
-           SIMPLIFY = FALSE)
+    parallel::parLapply(cl, seq_len(10), calculate_Brier, models = Model_bootSamples,
+                        testing_data = bootDats$testing)
+parallel::stopCluster(cl)
 
 average_Brier_bootSamples <- mean(sapply(Brier_per_bootSample, "[[", "Brier"))
 ```
@@ -321,17 +334,18 @@ Brier_original <- tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3,
                           integrated = TRUE)
 ```
 
-Efron proposed the .632 estimator, which combines the performance obtained in the original dataset and the estimates from the Bootstrap samples to reduce the upward bias: 
+[Efron and Tibshirani (1997)](https://doi.org/10.1080/01621459.1997.10474007) proposed the .632 estimator, which combines the performance obtained in the original dataset and the estimates from the Bootstrap samples to reduce the upward bias: 
 ```{r}
 0.368 * Brier_original$Brier + 0.632 * average_Brier_bootSamples
 ```
 
 We perform the same calculations also for the AUC:
 ```{r}
+cl <- parallel::makeCluster(10L)
 AUC_per_bootSample <- 
-    mapply(tvAUC, object = Model_bootSamples, newdata = bootDats$testing,
-           MoreArgs = list(Tstart = t0, Dt = 3),
-           SIMPLIFY = FALSE)
+    parallel::parLapply(cl, seq_len(10), calculate_AUC, models = Model_bootSamples,
+                        testing_data = bootDats$testing)
+parallel::stopCluster(cl)
 
 average_AUC_bootSamples <- mean(sapply(AUC_per_bootSample, "[[", "auc"))
 
