@@ -12,7 +12,8 @@ importFrom("stats", "coef", "terms", "model.frame", "model.frame.default",
            "lm.fit", "sd", "ar", "var", "vcov", "optim", "delete.response",
            "model.response", "rnorm", "quantile", "runif", "rlnorm", "cov2cor",
            "as.formula", "gaussian", ".getXlevels", "makepredictcall", "plogis",
-           "reformulate", "predict", "pnorm", "ave", "median", "density")
+           "reformulate", "predict", "pnorm", "ave", "median", "density",
+           "simulate")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
            "clusterSetRNGStream", "makePSOCKcluster", "mclapply")
 importFrom("parallelly", "availableCores")
@@ -64,6 +65,7 @@ S3method(calibration_plot, coxph)
 S3method(calibration_plot, jm)
 S3method(tvROC, jm)
 S3method(tvROC, coxph)
+S3method(simulate, jm)
 S3method(print, tvROC)
 S3method(plot, tvROC)
 S3method(print, tvAUC)
