@@ -1360,14 +1360,14 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
         valY[[j]] <- y
 
         u <- runif(nT)
+        Up <- max(Times) * 1.5
         trueTimes <- Times
         for (i in seq_len(nT)) {
             if (event[i]) {
-                Up <- 100
                 Root <- try(
                     uniroot(invS, interval = c(1e-05, Up), u = u, subj = i)$root,
                     silent = TRUE)
-                trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
+                trueTimes[i] <- if (!inherits(Root, "try-error")) Root else Up
             }
         }
         valT[, j] <- trueTimes
