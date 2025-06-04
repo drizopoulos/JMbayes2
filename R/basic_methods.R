@@ -1331,7 +1331,6 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
             W0 <- create_W0(t, knots, Bspline_dgr + 1, strata[subj])
             log_h0 <- c(W0 %*% bs_gammas)
             covariates <- c(W[subj, , drop = FALSE] %*% gammas)
-
             eta_h <- linpred_surv(X_h, betas, Z_h, b_list, id_h)
             Wlong <- create_Wlong(eta_h, FunForms_per_outcome, U_h,
                                   Funs_FunForms)
@@ -1363,12 +1362,10 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
         Up <- max(Times) * 1.5
         trueTimes <- Times
         for (i in seq_len(nT)) {
-            if (event[i]) {
-                Root <- try(
-                    uniroot(invS, interval = c(1e-05, Up), u = u, subj = i)$root,
-                    silent = TRUE)
-                trueTimes[i] <- if (!inherits(Root, "try-error")) Root else Up
-            }
+            Root <- try(
+                uniroot(invS, interval = c(1e-05, Up), u = u, subj = i)$root,
+                silent = TRUE)
+            trueTimes[i] <- if (!inherits(Root, "try-error")) Root else Up
         }
         valT[, j] <- trueTimes
 
