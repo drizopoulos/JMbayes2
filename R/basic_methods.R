@@ -1331,11 +1331,12 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
             W0 <- create_W0(t, knots, Bspline_dgr + 1, strata[subj])
             log_h0 <- c(W0 %*% bs_gammas)
             covariates <- c(W[subj, , drop = FALSE] %*% gammas)
-            eta_h <- linpred_surv(X_h, betas, Z_h, b_list, id_h)
+            #eta_h <- linpred_surv(X_h, betas, Z_h, b_list, id_h)
+            eta_h <- linpred_surv(X_h, betas, Z_h, b_list, id_h, subj)
             Wlong <- create_Wlong(eta_h, FunForms_per_outcome, U_h,
-                                  Funs_FunForms)
+                                  Funs_FunForms, subj)
             Wlong <- do.call('cbind', Wlong)
-            long <- c(Wlong[subj, , drop = FALSE] %*% alphas)
+            long <- c(Wlong %*% alphas)
             exp(log_h0 + covariates + long)
         }
         integrate(hazard, lower = 0, upper = t, subj = subj)$value + log(u[subj])

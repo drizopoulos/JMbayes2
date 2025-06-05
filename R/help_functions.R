@@ -457,7 +457,7 @@ extract_vcov_prop_RE <- function (object, Z_k, id_k) {
     }
 }
 
-linpred_surv <- function (X, betas, Z, b, id) {
+linpred_surv <- function (X, betas, Z, b, id, subj = NULL) {
     out <- vector("list", length(X))
     for (i in seq_along(X)) {
         X_i <- X[[i]]
@@ -465,11 +465,17 @@ linpred_surv <- function (X, betas, Z, b, id) {
         betas_i <- betas[[i]]
         b_i <- b[[i]]
         id_i <- id[[i]]
-        out[[i]] <- matrix(0.0, nrow = nrow(X_i[[1]]), ncol = length(X_i))
+        nr <- if (is.null(subj)) nrow(X_i[[1]]) else 1
+        out[[i]] <- matrix(0.0, nrow = nr, ncol = length(X_i))
         for (j in seq_along(X_i)) {
             X_ij <- X_i[[j]]
             Z_ij <- Z_i[[j]]
-            out[[i]][, j] <- X_ij %*% betas_i + rowSums(Z_ij * b_i[id_i, ])
+            out[[i]][, j] <- if (is.null(subj)) {
+                X_ij %*% betas_i + rowSums(Z_ij * b_i[id_i, ])
+            } else {
+                X_ij[subj, , drop = FALSE] %*% betas_i +
+                    rowSums(Z_ij[subj, , drop = FALSE] * b_i[id_i[subj], ])
+            }
         }
     }
     out
@@ -553,13 +559,14 @@ transf_eta <- function (eta, fun_nams) {
     out
 }
 
-create_Wlong <- function (eta, functional_forms, U, Funs_FunForms) {
+create_Wlong <- function (eta, functional_forms, U, Funs_FunForms, subj = NULL) {
     Wlong <- vector("list", length(eta))
     for (i in seq_along(functional_forms)) {
         FF_i <- functional_forms[[i]]
         eta_i <- mapply2(transf_eta, split(eta[[i]], col(eta[[i]])),
                          Funs_FunForms[[i]])
         U_i <- U[[i]]
+        if (!is.null(subj)) U_i <- U_i[subj, , drop = FALSE]
         Wlong_i <- matrix(1.0, nrow(U_i), ncol(U_i))
         for (j in seq_along(FF_i)) {
             ind <- FF_i[[j]]
