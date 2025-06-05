@@ -1291,23 +1291,9 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
     ind_RE <- object$model_data$ind_RE
     X <- object$model_data$X
     Z <- object$model_data$Z
-    Times <- object$model_data$Time_right
-    event <- object$model_data$delta
-    W <- object$model_data$W_h
-    X_h <- object$model_data$X_h
-    Z_h <- object$model_data$Z_h
-    U_h <- object$model_data$U_h
-    idT <- object$model_data$idT
-    nT <- length(idT)
-    id_h <- rep(list(unclass(idT)), length(X_h))
-    FunForms_per_outcome <- object$model_info$FunForms_per_outcome
-    Funs_FunForms <- object$model_info$Funs_FunForms
-    strata <- object$model_data$strata
     n_outcomes <- length(idL_lp)
     families <- object$model_info$families
     has_sigmas <- as.logical(object$model_data$has_sigmas)
-    knots <- object$control$knots
-    Bspline_dgr <- object$control$Bsplines_degree
 
     # MCMC results
     ncz <- sum(sapply(Z, ncol))
@@ -1316,39 +1302,16 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
     mcmc_betas[] <- lapply(mcmc_betas, function (x) do.call('rbind', x))
     mcmc_sigmas <- matrix(0.0, nrow(mcmc_betas[[1]]), n_outcomes)
     mcmc_sigmas[, has_sigmas] <- do.call('rbind', object$mcmc$sigmas)
-    mcmc_bs_gammas <- do.call('rbind', object$mcmc$bs_gammas)
-    mcmc_gammas <- do.call('rbind', object$mcmc$gammas)
-    mcmc_alphas <- do.call('rbind', object$mcmc$alphas)
     # random effects
     b <- ranef(object)
-    b_list <- lapply(ind_RE, function (ind) b[, ind, drop = FALSE])
     # simulate outcome vectors
     valY <- vector("list", nsim)
-    valT <- matrix(0.0, nT, nsim)
     indices <- sample(nrow(mcmc_betas[[1]]), nsim)
-    invS <- function (t, u, subj) {
-        hazard <- function (t, subj) {
-            W0 <- create_W0(t, knots, Bspline_dgr + 1, strata[subj])
-            log_h0 <- c(W0 %*% bs_gammas)
-            covariates <- c(W[subj, , drop = FALSE] %*% gammas)
-            #eta_h <- linpred_surv(X_h, betas, Z_h, b_list, id_h)
-            eta_h <- linpred_surv(X_h, betas, Z_h, b_list, id_h, subj)
-            Wlong <- create_Wlong(eta_h, FunForms_per_outcome, U_h,
-                                  Funs_FunForms, subj)
-            Wlong <- do.call('cbind', Wlong)
-            long <- c(Wlong %*% alphas)
-            exp(log_h0 + covariates + long)
-        }
-        integrate(hazard, lower = 0, upper = t, subj = subj)$value + log(u[subj])
-    }
     for (j in seq_len(nsim)) {
         # parameters
         jj <- indices[j]
         betas <- lapply(mcmc_betas, function (x) x[jj, ])
         sigmas <- mcmc_sigmas[jj, ]
-        bs_gammas <- mcmc_bs_gammas[jj, ]
-        gammas <- mcmc_gammas[jj, ]
-        alphas <- mcmc_alphas[jj, ]
 
         y <- vector("list", n_outcomes)
         for (i in seq_len(n_outcomes)) {
@@ -1358,21 +1321,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
             y[[i]] <- sim_fun(families[[i]], length(eta), mu, sigmas[i])
         }
         valY[[j]] <- y
-
-        u <- runif(nT)
-        Up <- max(Times) * 1.5
-        trueTimes <- Times
-        for (i in seq_len(nT)) {
-            Root <- try(
-                uniroot(invS, interval = c(1e-05, Up), u = u, subj = i)$root,
-                silent = TRUE)
-            trueTimes[i] <- if (!inherits(Root, "try-error")) Root else Up
-        }
-        valT[, j] <- trueTimes
-
     }
-    names(valY) <- colnames(valT) <- paste0("sim_", seq_len(nsim))
-    out <- list(Long = valY, Event = valT)
-    attr(out, "seed") <- RNGstate
-    out
+    names(valY) <- paste0("sim_", seq_len(nsim))
+    attr(valY, "seed") <- RNGstate
+    valY
 }
