@@ -1303,7 +1303,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
     mcmc_sigmas <- matrix(0.0, nrow(mcmc_betas[[1]]), n_outcomes)
     mcmc_sigmas[, has_sigmas] <- do.call('rbind', object$mcmc$sigmas)
     # random effects
-    mcmc_RE <- dim(object$mcmc[["b"]])[3L] > 1L
+    mcmc_RE <- dim(object$mcmc[["b"]][[1L]])[3L] > 1L
     if (mcmc_RE) {
         mcmc_b <- abind::abind(object$mcmc[["b"]])
     } else {
