@@ -29,6 +29,7 @@ importFrom("ggplot2", "ggplot", "geom_density", "aes", "ggtitle", "theme_bw",
 importFrom("gridExtra", "marrangeGrob")
 importFrom("matrixStats", "rowQuantiles", "colVars", "colLogSumExps",
            "colCumsums")
+importFrom("abind", "abind")
 importFrom("graphics", "abline", "axis", "box", "lines", "mtext", "par",
            "polygon", "title", "plot", "points")
 

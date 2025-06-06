@@ -1303,7 +1303,12 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
     mcmc_sigmas <- matrix(0.0, nrow(mcmc_betas[[1]]), n_outcomes)
     mcmc_sigmas[, has_sigmas] <- do.call('rbind', object$mcmc$sigmas)
     # random effects
-    b <- ranef(object)
+    mcmc_RE <- !is.null(object$mcmc[["b"]])
+    if (mcmc_RE) {
+        mcmc_b <- abind::abind(object$mcmc[["b"]])
+    } else {
+        b <- ranef(object)
+    }
     # simulate outcome vectors
     valY <- vector("list", nsim)
     indices <- sample(nrow(mcmc_betas[[1]]), nsim)
@@ -1312,6 +1317,9 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
         jj <- indices[j]
         betas <- lapply(mcmc_betas, function (x) x[jj, ])
         sigmas <- mcmc_sigmas[jj, ]
+        if (mcmc_RE) {
+            b <- mcmc_b[, , jj]
+        }
 
         y <- vector("list", n_outcomes)
         for (i in seq_len(n_outcomes)) {
