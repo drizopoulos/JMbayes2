@@ -353,3 +353,21 @@ AUC_original <- tvAUC(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 
 0.368 * AUC_original$auc + 0.632 * average_AUC_bootSamples
 ```
+
+A 95% confidence interval for the AUC in the original sample can be derived by calculating the AUC in the Bootstrap training samples, i.e.,
+```{r}
+bootDats$training[] <- lapply(bootDats$training, function (d) {
+    d$event <- as.numeric(d$status != "alive")
+    d
+})
+
+cl <- parallel::makeCluster(10L)
+AUC_per_bootSample_training <- 
+    parallel::parLapply(cl, seq_len(10), calculate_AUC, models = Model_bootSamples, 
+                        testing_data = bootDats$training)
+parallel::stopCluster(cl)
+AUC_per_bootSample_training <- sapply(AUC_per_bootSample_training, "[[", "auc")
+
+quantile(AUC_per_bootSample_training, probs = c(0.025, 0.975))
+```
+
