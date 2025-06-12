@@ -1323,10 +1323,11 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
 
         y <- vector("list", n_outcomes)
         for (i in seq_len(n_outcomes)) {
-            eta <- c(X[[i]] %*% betas[[i]])
-            eta <- eta + rowSums(Z[[i]] * b[idL_lp[[i]], ind_RE[[i]]])
+            fixed_effects <- c(X[[i]] %*% betas[[i]])
+            random_effects <- rowSums(Z[[i]] * b[idL_lp[[i]], ind_RE[[i]]])
+            eta <- fixed_effects + random_effects
             mu <- families[[i]]$linkinv(eta)
-            y[[i]] <- sim_fun(families[[i]], length(eta), mu, sigmas[i])
+            y[[i]] <- sim_fun(families[[i]], length(mu), mu, sigmas[i])
         }
         valY[[j]] <- y
     }

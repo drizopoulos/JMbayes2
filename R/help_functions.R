@@ -1432,8 +1432,10 @@ create_sigma_list <- function (sigmas, ss_sigmas, idL) {
 lng_unq <- function (x) length(unique(x))
 factor2 <- function (x, ...) factor(x, levels = unique(x), ...)
 
-plot_hazard <- function (object, CI = TRUE, plot = TRUE) {
+plot_hazard <- function (object, CI = TRUE, plot = TRUE,
+                         tmax = NULL) {
     r <- range(object$model_data$Time_right)
+    if (!is.null(tmax)) r[2L] <- tmax
     tt <- seq(r[1L], r[2L], len = 501)
     nstrata <- length(unique(object$model_data$strata))
     strt <- rep(1, length(tt))
