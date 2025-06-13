@@ -46,7 +46,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">JMbayes2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5-6</span>
       </span>
     </div>
 
@@ -128,7 +128,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-05-23</h4>
+            <h4 data-toc-skip class="date">2025-06-13</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Dynamic_Predictions.Rmd" class="external-link"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="hidden name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -629,19 +629,25 @@ depending on the characteristics of your computing environment):</p>
 datasets, we must create the <code>event</code> variable in each one.
 This is achieved with the following piece of code:</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> </span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span>, <span class="kw">function</span> <span class="op">(</span><span class="va">d</span><span class="op">)</span> <span class="op">{</span></span>
-<span>        <span class="va">d</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span></span>
-<span>        <span class="va">d</span></span>
-<span>    <span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span>, <span class="kw">function</span> <span class="op">(</span><span class="va">d</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">d</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span></span>
+<span>    <span class="va">d</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>The following syntax calculates the integrated Brier score in the
 testing datasets at follow-up year <code>t0 = 5</code> and for a window
-of <code>Dt = 3</code> years:</p>
+of <code>Dt = 3</code> years (we use parallel computing again):</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Brier_per_fold</span> <span class="op">&lt;-</span> </span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/mapply.html" class="external-link">mapply</a></span><span class="op">(</span><span class="va">tvBrier</span>, object <span class="op">=</span> <span class="va">Model_folds</span>, newdata <span class="op">=</span> <span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span>,</span>
-<span>           MoreArgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span>, integrated <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>           SIMPLIFY <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">calculate_Brier</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">v</span>, <span class="va">models</span>, <span class="va">testing_data</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://drizopoulos.github.io/JMbayes2/">"JMbayes2"</a></span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/accuracy.html">tvBrier</a></span><span class="op">(</span><span class="va">models</span><span class="op">[[</span><span class="va">v</span><span class="op">]</span><span class="op">]</span>, newdata <span class="op">=</span> <span class="va">testing_data</span><span class="op">[[</span><span class="va">v</span><span class="op">]</span><span class="op">]</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span>, </span>
+<span>            integrated <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">5L</span><span class="op">)</span></span>
+<span><span class="va">Brier_per_fold</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span><span class="va">cl</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span>, <span class="va">calculate_Brier</span>, models <span class="op">=</span> <span class="va">Model_folds</span>,</span>
+<span>                        testing_data <span class="op">=</span> <span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span><span class="op">)</span></span>
+<span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></code></pre></div>
 <p>The cross-validated estimate of the integrated Brier score is the
 average of the estimated Brier scores in the testing datasets:</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
@@ -651,10 +657,16 @@ average of the estimated Brier scores in the testing datasets:</p>
 <p>The calculation of the cross-validated estimate of the AUC at
 follow-up year 5 and for a window of 3 years proceeds similarly:</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">AUC_per_fold</span> <span class="op">&lt;-</span> </span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/mapply.html" class="external-link">mapply</a></span><span class="op">(</span><span class="va">tvAUC</span>, object <span class="op">=</span> <span class="va">Model_folds</span>, newdata <span class="op">=</span> <span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span>,</span>
-<span>           MoreArgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
-<span>           SIMPLIFY <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">calculate_AUC</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">v</span>, <span class="va">models</span>, <span class="va">testing_data</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://drizopoulos.github.io/JMbayes2/">"JMbayes2"</a></span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/accuracy.html">tvAUC</a></span><span class="op">(</span><span class="va">models</span><span class="op">[[</span><span class="va">v</span><span class="op">]</span><span class="op">]</span>, newdata <span class="op">=</span> <span class="va">testing_data</span><span class="op">[[</span><span class="va">v</span><span class="op">]</span><span class="op">]</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">5L</span><span class="op">)</span></span>
+<span><span class="va">AUC_per_fold</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span><span class="va">cl</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span>, <span class="va">calculate_AUC</span>, models <span class="op">=</span> <span class="va">Model_folds</span>,</span>
+<span>                        testing_data <span class="op">=</span> <span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span><span class="op">)</span></span>
+<span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">average_AUC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">AUC_per_fold</span>, <span class="st">"[["</span>, <span class="st">"auc"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">average_AUC</span></span>
@@ -690,10 +702,11 @@ one.</p>
 <p>Following we calculate the integrated Brier score in each testing
 dataset and compute the average:</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Brier_per_bootSample</span> <span class="op">&lt;-</span> </span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/mapply.html" class="external-link">mapply</a></span><span class="op">(</span><span class="va">tvBrier</span>, object <span class="op">=</span> <span class="va">Model_bootSamples</span>, newdata <span class="op">=</span> <span class="va">bootDats</span><span class="op">$</span><span class="va">testing</span>,</span>
-<span>           MoreArgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span>, integrated <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>           SIMPLIFY <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">10L</span><span class="op">)</span></span>
+<span><span class="va">Brier_per_bootSample</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span><span class="va">cl</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, <span class="va">calculate_Brier</span>, models <span class="op">=</span> <span class="va">Model_bootSamples</span>,</span>
+<span>                        testing_data <span class="op">=</span> <span class="va">bootDats</span><span class="op">$</span><span class="va">testing</span><span class="op">)</span></span>
+<span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">average_Brier_bootSamples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">Brier_per_bootSample</span>, <span class="st">"[["</span>, <span class="st">"Brier"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>The evaluation of the model’s predictive accuracy in the testing
@@ -702,27 +715,58 @@ the contrary, the estimate of the integrate Brier score in the
 <code>pbc2</code> dataset used to fit the joint model will be highly
 optimistic:</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Brier_original</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">tvBrier</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span>, </span>
+<code class="sourceCode R"><span><span class="va">jointFit</span> <span class="op">&lt;-</span> <span class="fu">fit_model</span><span class="op">(</span><span class="va">pbc2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">Brier_original</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">tvBrier</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span>, </span>
 <span>                          integrated <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>Efron proposed the .632 estimator, which combines the performance
-obtained in the original dataset and the estimates from the Bootstrap
-samples to reduce the upward bias:</p>
+<p><a href="https://doi.org/10.1080/01621459.1997.10474007" class="external-link">Efron and
+Tibshirani (1997)</a> proposed the .632 estimator, which combines the
+performance obtained in the original dataset and the estimates from the
+Bootstrap samples to reduce the upward bias:</p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fl">0.368</span> <span class="op">*</span> <span class="va">Brier_original</span><span class="op">$</span><span class="va">Brier</span> <span class="op">+</span> <span class="fl">0.632</span> <span class="op">*</span> <span class="va">average_Brier_bootSamples</span></span>
-<span><span class="co">#&gt; [1] 0.08170688</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.08199523</span></span></code></pre></div>
 <p>We perform the same calculations also for the AUC:</p>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">AUC_per_bootSample</span> <span class="op">&lt;-</span> </span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/mapply.html" class="external-link">mapply</a></span><span class="op">(</span><span class="va">tvAUC</span>, object <span class="op">=</span> <span class="va">Model_folds</span>, newdata <span class="op">=</span> <span class="va">bootDats</span><span class="op">$</span><span class="va">testing</span>,</span>
-<span>           MoreArgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
-<span>           SIMPLIFY <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">10L</span><span class="op">)</span></span>
+<span><span class="va">AUC_per_bootSample</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span><span class="va">cl</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, <span class="va">calculate_AUC</span>, models <span class="op">=</span> <span class="va">Model_bootSamples</span>,</span>
+<span>                        testing_data <span class="op">=</span> <span class="va">bootDats</span><span class="op">$</span><span class="va">testing</span><span class="op">)</span></span>
+<span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">average_AUC_bootSamples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">AUC_per_bootSample</span>, <span class="st">"[["</span>, <span class="st">"auc"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">AUC_original</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">tvAUC</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fl">0.368</span> <span class="op">*</span> <span class="va">AUC_original</span><span class="op">$</span><span class="va">auc</span> <span class="op">+</span> <span class="fl">0.632</span> <span class="op">*</span> <span class="va">average_AUC_bootSamples</span></span>
-<span><span class="co">#&gt; [1] 0.8201467</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.8165295</span></span></code></pre></div>
+<p>A 95% confidence interval for the AUC in the original sample can be
+derived by calculating the AUC in the Bootstrap training samples,
+i.e.,</p>
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bootDats</span><span class="op">$</span><span class="va">training</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">bootDats</span><span class="op">$</span><span class="va">training</span>, <span class="kw">function</span> <span class="op">(</span><span class="va">d</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">d</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span></span>
+<span>    <span class="va">d</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">10L</span><span class="op">)</span></span>
+<span><span class="va">AUC_per_bootSample_training</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span><span class="va">cl</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, <span class="va">calculate_AUC</span>, models <span class="op">=</span> <span class="va">Model_bootSamples</span>, </span>
+<span>                        testing_data <span class="op">=</span> <span class="va">bootDats</span><span class="op">$</span><span class="va">training</span><span class="op">)</span></span>
+<span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
+<span><span class="va">AUC_per_bootSample_training</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">AUC_per_bootSample_training</span>, <span class="st">"[["</span>, <span class="st">"auc"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">AUC_original</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Time-dependent AUC for the Joint Model jointFit</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Estimated AUC:  0.8175</span></span>
+<span><span class="co">#&gt; At time: 8</span></span>
+<span><span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></span>
+<span><span class="co">#&gt; Accounting for censoring using model-based weights</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">AUC_per_bootSample_training</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      2.5%     97.5% </span></span>
+<span><span class="co">#&gt; 0.7765123 0.8436562</span></span></code></pre></div>
 </div>
 </div>
 </div>
@@ -743,7 +787,7 @@ samples to reduce the upward bias:</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
       </footer>
