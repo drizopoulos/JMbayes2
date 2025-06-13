@@ -330,6 +330,8 @@ average_Brier_bootSamples <- mean(sapply(Brier_per_bootSample, "[[", "Brier"))
 
 The evaluation of the model's predictive accuracy in the testing datasets will produce a pessimistic estimate of model performance. On the contrary, the estimate of the integrate Brier score in the `pbc2` dataset used to fit the joint model will be highly optimistic:
 ```{r}
+jointFit <- fit_model(pbc2)
+
 Brier_original <- tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, 
                           integrated = TRUE)
 ```
@@ -368,6 +370,7 @@ AUC_per_bootSample_training <-
 parallel::stopCluster(cl)
 AUC_per_bootSample_training <- sapply(AUC_per_bootSample_training, "[[", "auc")
 
+AUC_original
 quantile(AUC_per_bootSample_training, probs = c(0.025, 0.975))
 ```
 
