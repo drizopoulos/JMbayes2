@@ -5,6 +5,7 @@ home:
   description: Extended joint models for longitudinal and time-to-event data.
 
 template:
+  bootstrap: 5
   opengraph:
     image:
       src: man/figures/square_logo.png
