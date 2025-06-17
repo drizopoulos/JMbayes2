@@ -243,7 +243,7 @@ fit_model <- function (data) {
 }
 ```
 
-We fit the model in the training datasets using parallel computing as facilitated by the **parallel** package (*note*: this and the subsequent computations require some time to perform depending on the characteristics of your computing environment):
+We fit the model in the training datasets using parallel computing as facilitated by the **parallel** package (*note*: this and the subsequent computations require some time to perform depending on the capabilities of your computing environment):
 ```{r}
 cl <- parallel::makeCluster(5L)
 Model_folds <- parallel::parLapply(cl, CVdats$training, fit_model)
@@ -372,7 +372,7 @@ AUC_per_bootSample_training <- sapply(AUC_per_bootSample_training, "[[", "auc")
 
 AUC_original
 
-# 95% CI
+# 95% Bootstrap CI
 quantile(AUC_per_bootSample_training, probs = c(0.025, 0.975))
 ```
 
