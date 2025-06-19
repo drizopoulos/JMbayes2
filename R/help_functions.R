@@ -1451,9 +1451,9 @@ plot_hazard <- function (object, CI = TRUE, plot = TRUE,
                                Wlong_std_alphas[i, ])
     }
     h <- colMeans(h_vals, na.rm = TRUE)
-    CI <- apply(h_vals, 2L, quantile2)
-    low <- CI[1L, ]
-    upp <- CI[2L, ]
+    ci <- apply(h_vals, 2L, quantile2)
+    low <- ci[1L, ]
+    upp <- ci[2L, ]
     if (plot) {
         plot(r, range(low, upp), type = "n", xlab = "Time",
              ylab = "Baseline Hazard Function")
