@@ -1441,9 +1441,15 @@ plot_hazard <- function (object, CI = TRUE, plot = TRUE,
     strt <- rep(1, length(tt))
     W0 <- create_W0(tt, object$control$knots,
                     object$control$Bsplines_degree + 1, strt)
-    h <- exp(c(W0 %*% object$statistics$Mean$bs_gammas))
-    low <- exp(c(W0 %*% object$statistics$CI_low$bs_gammas))
-    upp <- exp(c(W0 %*% object$statistics$CI_upp$bs_gammas))
+    h <- exp(c(W0 %*% object$statistics$Mean$bs_gammas) -
+                 object$statistics$Mean$W_std_gammas -
+                 object$statistics$Mean$Wlong_std_alphas)
+    low <- exp(c(W0 %*% object$statistics$CI_low$bs_gammas) -
+                   object$statistics$CI_low$W_std_gammas -
+                   object$statistics$CI_low$Wlong_std_alphas)
+    upp <- exp(c(W0 %*% object$statistics$CI_upp$bs_gammas) -
+                   object$statistics$CI_low$W_std_gammas -
+                   object$statistics$CI_low$Wlong_std_alphas)
     if (plot) {
         plot(r, range(low, upp), type = "n", xlab = "Time",
              ylab = "Baseline Hazard Function")
