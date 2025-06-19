@@ -1438,7 +1438,8 @@ plot_hazard <- function (object, CI = TRUE, plot = TRUE,
     if (!is.null(tmax)) r[2L] <- tmax
     tt <- seq(r[1L], r[2L], len = 501)
     nstrata <- length(unique(object$model_data$strata))
-    strt <- rep(1, length(tt))
+    strt <- rep(seq_len(nstrata), each = length(tt))
+    tt <- rep(tt, nstrata)
     W0 <- create_W0(tt, object$control$knots,
                     object$control$Bsplines_degree + 1, strt)
     bs_gammas <- do.call('rbind', object$mcmc$bs_gammas)
@@ -1455,15 +1456,18 @@ plot_hazard <- function (object, CI = TRUE, plot = TRUE,
     low <- ci[1L, ]
     upp <- ci[2L, ]
     if (plot) {
-        plot(r, range(low, upp), type = "n", xlab = "Time",
-             ylab = "Baseline Hazard Function")
-        if (CI) {
-            polygon(c(tt, rev(tt)), c(low, rev(upp)), col = "lightgrey",
-                    border = NA)
+        for (j in seq_len(nstrata)) {
+            jj <- strt == j
+            plot(r, range(low[jj], upp[jj]), type = "n", xlab = "Time",
+                 ylab = "Baseline Hazard Function")
+            if (CI) {
+                polygon(c(tt[jj], rev(tt[jj])), c(low[jj], rev(upp[jj])),
+                        col = "lightgrey", border = NA)
+            }
+            lines(tt[jj], h[jj], lwd = 2, col = "red")
         }
-        lines(tt, h, lwd = 2, col = "red")
     } else {
-        cbind(time = tt, h = h, low = low, upp = upp)
+        cbind(time = tt, h = h, low = low, upp = upp, strata = strt)
     }
 }
 
