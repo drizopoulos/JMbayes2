@@ -1448,8 +1448,8 @@ plot_hazard <- function (object, CI = TRUE, plot = TRUE,
                    object$statistics$CI_low$W_std_gammas -
                    object$statistics$CI_low$Wlong_std_alphas)
     upp <- exp(c(W0 %*% object$statistics$CI_upp$bs_gammas) -
-                   object$statistics$CI_low$W_std_gammas -
-                   object$statistics$CI_low$Wlong_std_alphas)
+                   object$statistics$CI_upp$W_std_gammas -
+                   object$statistics$CI_upp$Wlong_std_alphas)
     if (plot) {
         plot(r, range(low, upp), type = "n", xlab = "Time",
              ylab = "Baseline Hazard Function")
