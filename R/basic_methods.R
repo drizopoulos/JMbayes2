@@ -1402,6 +1402,9 @@ simulate.jm <-
             rescale_factor <- Wlong_std_alphas + W_std_gammas
             Up <- max(Times) * 1.05
             rep_Times <- numeric(n)
+            if (j == 1) {
+                invS(0.5, runif(1L), 1, rescale_factor)
+            }
             for (i in seq_len(n)) {
                 Root <-
                     try(uniroot(invS, interval = c(0, Up), u = runif(1L),
