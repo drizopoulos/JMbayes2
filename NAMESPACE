@@ -30,6 +30,7 @@ importFrom("gridExtra", "marrangeGrob")
 importFrom("matrixStats", "rowQuantiles", "colVars", "colLogSumExps",
            "colCumsums")
 importFrom("abind", "abind")
+importFrom("MASS", "mvrnorm")
 importFrom("graphics", "abline", "axis", "box", "lines", "mtext", "par",
            "polygon", "title", "plot", "points")
 

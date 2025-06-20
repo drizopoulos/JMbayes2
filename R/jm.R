@@ -714,7 +714,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     ############################################################################
     # Fit the model
     Fit <- jm_fit(Data, model_info, initial_values, priors, con)
-    out <- c(Fit, list(model_data = Data, model_info = model_info,
+    out <- c(Fit, list(model_data = c(Data, data), model_info = model_info,
                        initial_values = initial_values, control = con,
                        priors = priors, call = call))
     class(out) <- "jm"

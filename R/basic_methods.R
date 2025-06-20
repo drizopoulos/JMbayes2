@@ -1267,7 +1267,11 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
     out
 }
 
-simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
+simulate.jm <-
+    function (object, nsim = 1L, seed = NULL,
+              process = c("longitudinal", "event"),
+              random_effects = c("posterior_means", "mcmc", "prior"),
+              Fforms_fun = NULL, tol = 0.001, ...) {
     if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
         runif(1L)
     if (is.null(seed))
@@ -1278,14 +1282,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
         RNGstate <- structure(seed, kind = as.list(RNGkind()))
         on.exit(assign(".Random.seed", R.seed, envir = .GlobalEnv))
     }
-    sim_fun <- function (family, n, mu, phi) {
-        switch(family$family,
-               "gaussian" = rnorm(n, mu, phi),
-               "Student's-t" = mu + phi * rt(n, df = 4),
-               "binomial" = rbinom(n, 1, mu),
-               "poisson" = rpois(n, mu),
-               "beta" = rbeta(n, shape1 = mu * phi, shape2 = phi * (1.0 - mu)))
-    }
+    process <- match.arg(process)
+    random_effects <- match.arg(random_effects)
     # information from fitted joint model
     n <- object$model_data$n
     idL_lp <- object$model_data$idL_lp
@@ -1295,6 +1293,12 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
     n_outcomes <- length(idL_lp)
     families <- object$model_info$families
     has_sigmas <- as.logical(object$model_data$has_sigmas)
+    Bspline_dgr <- object$control$Bsplines_degree
+    knots <- object$control$knots[[1]]
+    W <- object$model_data$W_h
+    Times <- object$model_data$Time_right
+    event <- object$model_data$delta
+    dataS <- object$model_data$dataS
 
     # MCMC results
     ncz <- sum(sapply(Z, ncol))
@@ -1303,36 +1307,114 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, ...) {
     mcmc_betas[] <- lapply(mcmc_betas, function (x) do.call('rbind', x))
     mcmc_sigmas <- matrix(0.0, nrow(mcmc_betas[[1]]), n_outcomes)
     mcmc_sigmas[, has_sigmas] <- do.call('rbind', object$mcmc$sigmas)
+    mcmc_bs_gammas <- do.call('rbind', object$mcmc$bs_gammas)
+    has_gammas <- !is.null(object$mcmc$gammas)
+    if (has_gammas) mcmc_gammas <- do.call('rbind', object$mcmc$gammas)
+    mcmc_W_std_gammas <- do.call('rbind', object$mcmc$W_std_gammas)
+    mcmc_alphas <- do.call('rbind', object$mcmc$alphas)
+    mcmc_Wlong_std_alphas <- do.call('rbind', object$mcmc$Wlong_std_alphas)
     # random effects
-    mcmc_RE <- dim(object$mcmc[["b"]][[1L]])[3L] > 1L
-    if (mcmc_RE) {
-        mcmc_b <- abind::abind(object$mcmc[["b"]])
-    } else {
-        b <- ranef(object)
+    b <- ranef(object)
+    if (random_effects == "mcmc") {
+        mcmc_RE <- dim(object$mcmc[["b"]][[1L]])[3L] > 1L
+        if (mcmc_RE) {
+            mcmc_b <- abind::abind(object$mcmc[["b"]])
+        } else {
+            stop("refit the model using 'jm(..., save_random_effects = TRUE)'.\n")
+        }
+    }
+    get_D <- function (x, n) {
+        m <- matrix(0.0, n, n)
+        m[lower.tri(m, TRUE)] <- x
+        m <- m + t(m)
+        diag(m) <- diag(m) * 0.5
+        m
+    }
+    xx <- do.call('rbind', object$mcmc$D)
+    mcmc_D <- array(0.0, c(ncz, ncz, nrow(xx)))
+    for (m in seq_len(nrow(mcmc_betas[[1L]]))) {
+        mcmc_D[, , m] <- get_D(xx[m, ], ncz)
     }
     # simulate outcome vectors
-    valY <- vector("list", nsim)
-    indices <- sample(nrow(mcmc_betas[[1]]), nsim)
-    for (j in seq_len(nsim)) {
-        # parameters
-        jj <- indices[j]
-        betas <- lapply(mcmc_betas, function (x) x[jj, ])
-        sigmas <- mcmc_sigmas[jj, ]
-        if (mcmc_RE) {
-            b <- mcmc_b[, , jj]
+    if (process == "longitudinal") {
+        sim_fun <- function (family, n, mu, phi) {
+            switch(family$family,
+                   "gaussian" = rnorm(n, mu, phi),
+                   "Student's-t" = mu + phi * rt(n, df = 4),
+                   "binomial" = rbinom(n, 1, mu),
+                   "poisson" = rpois(n, mu),
+                   "beta" = rbeta(n, shape1 = mu * phi, shape2 = phi * (1.0 - mu)))
         }
-
-        y <- vector("list", n_outcomes)
-        for (i in seq_len(n_outcomes)) {
-            fixed_effects <- c(X[[i]] %*% betas[[i]])
-            random_effects <- rowSums(Z[[i]] * b[idL_lp[[i]], ind_RE[[i]]])
-            eta <- fixed_effects + random_effects
-            mu <- families[[i]]$linkinv(eta)
-            y[[i]] <- sim_fun(families[[i]], length(mu), mu, sigmas[i])
+        val <- vector("list", nsim)
+        indices <- sample(nrow(mcmc_betas[[1]]), nsim)
+        for (j in seq_len(nsim)) {
+            # parameters
+            jj <- indices[j]
+            betas <- lapply(mcmc_betas, function (x) x[jj, ])
+            sigmas <- mcmc_sigmas[jj, ]
+            bb <-
+                switch(random_effects,
+                       "mcmc" = mcmc_b[, , jj],
+                       "posterior_means" = b,
+                       "prior" = MASS::mvrnorm(n, rep(0, ncz), mcmc_D[, , jj]))
+            y <- vector("list", n_outcomes)
+            for (i in seq_len(n_outcomes)) {
+                FE <- c(X[[i]] %*% betas[[i]])
+                RE <- rowSums(Z[[i]] * bb[idL_lp[[i]], ind_RE[[i]]])
+                eta <- FE + RE
+                mu <- families[[i]]$linkinv(eta)
+                y[[i]] <- sim_fun(families[[i]], length(mu), mu, sigmas[i])
+            }
+            val[[j]] <- y
         }
-        valY[[j]] <- y
+        names(val) <- paste0("sim_", seq_len(nsim))
+    } else {
+        if (is.null(Fforms_fun) || !is.function(Fforms_fun)) {
+            stop("you need to provide the 'Fforms_fun' function; ",
+                 "see the examples in `?simulate.jm` for more information.\n")
+        }
+        invS <- function (t, u, subj, rescale_factor) {
+            hazard <- function (t, subj, rescale_factor) {
+                W0 <- splineDesign(knots, t, Bspline_dgr + 1L, outer.ok = TRUE)
+                log_h0 <- c(W0 %*% bs_gammas) - rescale_factor
+                covariates <- if (has_gammas) c(W[subj, , drop = FALSE] %*% gammas) else 0.0
+                long <- c(Fforms_fun(t, betas, b[subj, ], dataS[subj, ]) %*% alphas)
+                exp(log_h0 + covariates + long)
+            }
+            integrate(hazard, lower = 0, upper = t, subj = subj,
+                      rescale_factor = rescale_factor, rel.tol = tol)$value + log(u)
+        }
+        valT <- eventT <- matrix(0.0, n, nsim)
+        indices <- sample(nrow(mcmc_betas[[1]]), nsim)
+        for (j in seq_len(nsim)) {
+            jj <- indices[j]
+            betas <- lapply(mcmc_betas, function (x) x[jj, ])
+            bb <-
+                switch(random_effects,
+                       "mcmc" = mcmc_b[, , jj],
+                       "posterior_means" = b,
+                       "prior" = MASS::mvrnorm(n, rep(0, nRE), mcmc_D[, , jj]))
+            bs_gammas <- mcmc_bs_gammas[jj, ]
+            if (has_gammas) gammas <- mcmc_gammas[jj, ]
+            alphas <- mcmc_alphas[jj, ]
+            Wlong_std_alphas <- mcmc_Wlong_std_alphas[jj, ]
+            W_std_gammas <- mcmc_W_std_gammas[jj, ]
+            rescale_factor <- Wlong_std_alphas + W_std_gammas
+            Up <- max(Times) * 1.05
+            rep_Times <- numeric(n)
+            for (i in seq_len(n)) {
+                Root <-
+                    try(uniroot(invS, interval = c(0, Up), u = runif(1L),
+                                subj = i, rescale_factor = rescale_factor)$root,
+                        silent = TRUE)
+                rep_Times[i] <- if (!inherits(Root, "try-error")) Root else Up
+            }
+            valT[, j] <- rep_Times
+            eventT[, j] <- as.numeric(rep_Times < Up)
+        }
+        colnames(valT) <- colnames(eventT) <- paste0("sim_", seq_len(nsim))
+        val <- list(Times = valT, event = eventT)
     }
-    names(valY) <- paste0("sim_", seq_len(nsim))
-    attr(valY, "seed") <- RNGstate
-    valY
+    attr(val, "seed") <- RNGstate
+    val
 }
