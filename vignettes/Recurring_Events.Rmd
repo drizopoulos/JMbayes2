@@ -5,6 +5,7 @@ date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
+    mathjax: default
 vignette: >
   %\VignetteIndexEntry{Recurrent Events}
   %\VignetteEngine{knitr::rmarkdown}
