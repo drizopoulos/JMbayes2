@@ -5,7 +5,6 @@ date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
-    mathjax: default
 vignette: >
   %\VignetteIndexEntry{Recurrent Events}
   %\VignetteEngine{knitr::rmarkdown}
@@ -216,20 +215,22 @@ abline(v = ev_start, lty = 2)
 
 A joint model with $p$ normally distributed longitudinal markers, a terminal event process, and a recurrent event process can be described as follows:
 
-$$\small\require{color}
+$$
+\small{
 \begin{cases}
-y_{1_i}(t)= \colorbox{#79FCFD80}{$ x_{1_i}(t)^\top\beta_1 +  z_{1_i}(t)^\top b_{1_i}$} + \varepsilon_1(t) = \colorbox{#79FCFD80}{$ \eta_{1_i}(t)$} + \varepsilon_1(t) & \text{Longitudinal marker 1}\\
+y_{1_i}(t)= \color{blue}{\boxed{\color{black}{x_{1_i}(t)^\top\beta_1 +  z_{1_i}(t)^\top b_{1_i}}}} + \varepsilon_1(t) = \color{blue}{\boxed{\color{black}{\eta_{1_i}(t)}}} + \varepsilon_1(t) & \text{Longitudinal marker 1}\\
 \vdots \\
-y_{p_i}(t)= \colorbox{#FCFF5580}{$ x_{p_i}(t)^\top\beta_p +  z_{p_i}(t)^\top b_{p_i}$} + \varepsilon_p(t) = \colorbox{#FCFF5580}{$ \eta_{p_i}(t)$} + \varepsilon_p(t) & \text{Longitudinal marker p}\\
-h_{T_i}(t)= h_{T_0}(t)\exp\left\{  w_{T_i}(t)^\top \gamma_T + \colorbox{#79FCFD80}{$\mathcal{f}_{T_1}\left\{\eta_{1_i}(t)\right\}$} \alpha_{T_1} + \dots + \colorbox{#FCFF5580}{$\mathcal{f}_{T_p}\left\{\eta_{p_i}(t)\right\}$} \alpha_{T_p} + \colorbox{#5FFFAB80}{$b_{F_i}$} \alpha_{F} \right\} & \text{Terminal event}\\
-h_{R_i}(t)= h_{R_0}(t)\exp\left\{  w_{R_i}(t)^\top \gamma_R + \colorbox{#79FCFD80}{$\mathcal{f}_{R_1}\left\{\eta_{2_i}(t)\right\}$} \alpha_{R_1} + \dots + \colorbox{#FCFF5580}{$\mathcal{f}_{R_p}\left\{\eta_{p_i}(t)\right\}$} \alpha_{R_p} + \colorbox{#5FFFAB80}{$b_{F_i}$} \right\} & \text{Recurrent event}\\
+y_{p_i}(t)= \color{red}{\boxed{\color{black}{x_{p_i}(t)^\top\beta_p +  z_{p_i}(t)^\top b_{p_i}}}} + \varepsilon_p(t) = \color{red}{\boxed{\color{black}{\eta_{p_i}(t)}}} + \varepsilon_p(t) & \text{Longitudinal marker p}\\
+h_{T_i}(t)= h_{T_0}(t)\exp\left\{  w_{T_i}(t)^\top \gamma_T + \color{blue}{\boxed{\color{black}{\mathcal{f}_{T_1}\left\{\eta_{1_i}(t)\right\}}}} \alpha_{T_1} + \dots + \color{red}{\boxed{\color{black}{\mathcal{f}_{T_p}\left\{\eta_{p_i}(t)\right\}}}} \alpha_{T_p} + \color{green}{\boxed{\color{black}{b_{F_i}}}} \alpha_{F} \right\} & \text{Terminal event}\\
+h_{R_i}(t)= h_{R_0}(t)\exp\left\{  w_{R_i}(t)^\top \gamma_R + \color{blue}{\boxed{\color{black}{\mathcal{f}_{R_1}\left\{\eta_{2_i}(t)\right\}}}} \alpha_{R_1} + \dots + \color{red}{\boxed{\color{black}{\mathcal{f}_{R_p}\left\{\eta_{p_i}(t)\right\}}}} \alpha_{R_p} + \color{green}{\boxed{\color{black}{b_{F_i}}}} \right\} & \text{Recurrent event}\\
 \end{cases},
+}
 $$
 
 <br>
 
 $$
-\begin{pmatrix} \colorbox{#79FCFD80}{$b_{1_i}$} \\ \vdots \\ \colorbox{#FCFF5580}{$b_{p_i}$} \\ \colorbox{#5FFFAB80}{$b_{F_i}$}\end{pmatrix} \sim MVN \left(0, \begin{pmatrix}D & 0 \\ & \sigma^2_F\end{pmatrix}\right), \qquad
+\begin{pmatrix} \color{blue}{\boxed{\color{black}{b_{1_i}}}} \\ \vdots \\ \color{red}{\boxed{\color{black}{b_{p_i}}}} \\ \color{green}{\boxed{\color{black}{b_{F_i}}}}\end{pmatrix} \sim MVN \left(0, \begin{pmatrix}D & 0 \\ & \sigma^2_F\end{pmatrix}\right), \qquad
 \varepsilon(t) \sim N \left(0, \sigma^2\right),
 $$
 
