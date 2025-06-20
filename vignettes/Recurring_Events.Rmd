@@ -214,7 +214,8 @@ abline(v = ev_start, lty = 2)
 ```
 
 A joint model with $p$ normally distributed longitudinal markers, a terminal event process, and a recurrent event process can be described as follows:
-$$\small{\require{color}
+
+$$\small\require{color}
 \begin{cases}
 y_{1_i}(t)= \colorbox{#79FCFD80}{$ x_{1_i}(t)^\top\beta_1 +  z_{1_i}(t)^\top b_{1_i}$} + \varepsilon_1(t) = \colorbox{#79FCFD80}{$ \eta_{1_i}(t)$} + \varepsilon_1(t) & \text{Longitudinal marker 1}\\
 \vdots \\
@@ -222,13 +223,15 @@ y_{p_i}(t)= \colorbox{#FCFF5580}{$ x_{p_i}(t)^\top\beta_p +  z_{p_i}(t)^\top b_{
 h_{T_i}(t)= h_{T_0}(t)\exp\left\{  w_{T_i}(t)^\top \gamma_T + \colorbox{#79FCFD80}{$\mathcal{f}_{T_1}\left\{\eta_{1_i}(t)\right\}$} \alpha_{T_1} + \dots + \colorbox{#FCFF5580}{$\mathcal{f}_{T_p}\left\{\eta_{p_i}(t)\right\}$} \alpha_{T_p} + \colorbox{#5FFFAB80}{$b_{F_i}$} \alpha_{F} \right\} & \text{Terminal event}\\
 h_{R_i}(t)= h_{R_0}(t)\exp\left\{  w_{R_i}(t)^\top \gamma_R + \colorbox{#79FCFD80}{$\mathcal{f}_{R_1}\left\{\eta_{2_i}(t)\right\}$} \alpha_{R_1} + \dots + \colorbox{#FCFF5580}{$\mathcal{f}_{R_p}\left\{\eta_{p_i}(t)\right\}$} \alpha_{R_p} + \colorbox{#5FFFAB80}{$b_{F_i}$} \right\} & \text{Recurrent event}\\
 \end{cases},
-}
 $$
+
 <br>
+
 $$
 \begin{pmatrix} \colorbox{#79FCFD80}{$b_{1_i}$} \\ \vdots \\ \colorbox{#FCFF5580}{$b_{p_i}$} \\ \colorbox{#5FFFAB80}{$b_{F_i}$}\end{pmatrix} \sim MVN \left(0, \begin{pmatrix}D & 0 \\ & \sigma^2_F\end{pmatrix}\right), \qquad
 \varepsilon(t) \sim N \left(0, \sigma^2\right),
 $$
+
 <br>
 
 where $i = 1, \ldots, n$. We specify linear mixed-effects models for the longitudinal outcomes, and for the terminal and recurrence processes, we use proportional hazard models. The longitudinal and event time processes are linked via a latent structure of random effects, highlighted by the same color in the equations above. The terms $\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}$ and $\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}$ describe the functional forms that link the longitudinal marker $j$ with the risk of the recurrent and terminal events, respectively. The frailty $b_{F_i}$ is a random effect that accounts for the correlations in the recurrent events. The coefficient $\alpha_{F}$ quantifies the strength of the association between the terminal and recurrent event processes. For notational simplicity, in the formulation presented above, we have shown normally distributed longitudinal outcomes; however, **JMbayes2** provides the option to consider longitudinal outcomes with [different distributions](https://drizopoulos.github.io/JMbayes2/articles/Non_Gaussian_Mixed_Models.html).
