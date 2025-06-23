@@ -1545,7 +1545,7 @@ simulate.jm <-
             invS <- function (time, log_u, subj, rescale_factor) {
                 integrate(hazard, lower = 0.0, upper = time, subj = subj,
                           rescale_factor = rescale_factor, rel.tol = tol,
-                          subdivisions = subdivisions)$value + log_u
+                          subdivisions = subdivisions, stop.on.error = FALSE)$value + log_u
             }
             nr_root <- function (interval, fn, gr, ..., tol = tol, iter = 35L) {
                 Low <- low <- interval[1L]
