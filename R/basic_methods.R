@@ -1609,7 +1609,7 @@ simulate.jm <-
         val
     }
 
-ppcheck <- function (object, nsim = 10L, seed = NULL,
+ppcheck <- function (object, nsim = 15L, seed = NULL,
                      process = c("longitudinal", "event"),
                      outcomes = Inf,
                      random_effects = c("posterior_means", "mcmc", "prior"),
