@@ -1429,7 +1429,7 @@ simulate.jm <-
     function (object, nsim = 1L, seed = NULL,
               process = c("longitudinal", "event"),
               random_effects = c("posterior_means", "mcmc", "prior"),
-              Fforms_fun = NULL, tol = 0.001, ...) {
+              Fforms_fun = NULL, tol = 0.001, subdivisions = 2L, ...) {
         if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
             runif(1L)
         if (is.null(seed))
@@ -1544,7 +1544,8 @@ simulate.jm <-
             }
             invS <- function (time, log_u, subj, rescale_factor) {
                 integrate(hazard, lower = 0.0, upper = time, subj = subj,
-                          rescale_factor = rescale_factor, rel.tol = tol)$value + log_u
+                          rescale_factor = rescale_factor, rel.tol = tol,
+                          subdivisions = subdivisions)$value + log_u
             }
             nr_root <- function (interval, fn, gr, ..., tol = tol, iter = 35L) {
                 Low <- low <- interval[1L]
@@ -1614,11 +1615,11 @@ ppcheck <- function (object, nsim = 15L, seed = NULL,
                      process = c("longitudinal", "event"),
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
-                     Fforms_fun = NULL) {
+                     Fforms_fun = NULL, ...) {
     process <- match.arg(process)
     if (process == "longitudinal") {
         out <- simulate(object, nsim = nsim, process = "longitudinal",
-                        random_effects = random_effects, seed = seed)
+                        random_effects = random_effects, seed = seed, ...)
         n_outcomes <- length(object$model_data$y)
         index <- seq_len(n_outcomes)
         if (outcomes < Inf) index <- index[index %in% outcomes]
@@ -1640,7 +1641,8 @@ ppcheck <- function (object, nsim = 15L, seed = NULL,
         Times <- object$model_data$Time_right
         event <- object$model_data$delta
         out <- simulate(object, nsim = nsim, process = "event", seed = seed,
-                        random_effects = random_effects, Fforms_fun = Fforms_fun)
+                        random_effects = random_effects, Fforms_fun = Fforms_fun,
+                        ...)
         r2 <- quantile(Times, probs = percentiles[2L], na.rm = TRUE)
         xvals <- seq(0, r2, length.out = 500)
         plot(range(Times), c(0, 1), type = "n", xlab = "Time",
@@ -1651,7 +1653,6 @@ ppcheck <- function (object, nsim = 15L, seed = NULL,
         lines(survfit(Surv(Times, event) ~ 1), fun = "event")
         legend("bottomright", c("replicated data", "observed data"), lty = 1,
                col = c("lightgrey", "black"), bty = "n", cex = 0.8)
-
     }
 }
 
