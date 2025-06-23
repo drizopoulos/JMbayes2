@@ -1612,7 +1612,7 @@ simulate.jm <-
 
 ppcheck <- function (object, nsim = 15L, seed = NULL,
                      process = c("longitudinal", "event"),
-                     outcomes = Inf,
+                     outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
                      Fforms_fun = NULL) {
     process <- match.arg(process)
@@ -1624,7 +1624,9 @@ ppcheck <- function (object, nsim = 15L, seed = NULL,
         if (outcomes < Inf) index <- index[index %in% outcomes]
         for (j in index) {
             y <- object$model_data$y[[j]]
-            x_vals <- seq(min(y), max(y), length.out = 500)
+            r1 <- quantile(y, probs = percentiles[1L], na.rm = TRUE)
+            r2 <- quantile(y, probs = percentiles[2L], na.rm = TRUE)
+            x_vals <- seq(r1, r2, length.out = 500)
             rep_y <- sapply(out, function (x, x_vals) ecdf(x[[j]])(x_vals),
                             x_vals = x_vals)
             matplot(x_vals, rep_y, type = "l", lty = 1, col = "lightgrey",
@@ -1639,7 +1641,8 @@ ppcheck <- function (object, nsim = 15L, seed = NULL,
         event <- object$model_data$delta
         out <- simulate(object, nsim = nsim, process = "event", seed = seed,
                         random_effects = random_effects, Fforms_fun = Fforms_fun)
-        xvals <- seq(0, max(Times), length.out = 500)
+        r2 <- quantile(Times, probs = percentiles[2L], na.rm = TRUE)
+        xvals <- seq(0, r2, length.out = 500)
         plot(range(Times), c(0, 1), type = "n", xlab = "Time",
              ylab = "Cumulative Incidence")
         for (k in seq_len(ncol(out$Times))) {
