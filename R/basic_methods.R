@@ -1373,7 +1373,7 @@ simulate.jm <-
             stop("you need to provide the 'Fforms_fun' function; ",
                  "see the examples in `?simulate.jm` for more information.\n")
         }
-        invS <- function (t, u, subj, rescale_factor) {
+        invS <- function (t, log_u, subj, rescale_factor) {
             hazard <- function (t, subj, rescale_factor) {
                 W0 <- splineDesign(knots, t, Bspline_dgr + 1L, outer.ok = TRUE)
                 log_h0 <- c(W0 %*% bs_gammas) - rescale_factor
@@ -1382,7 +1382,7 @@ simulate.jm <-
                 exp(log_h0 + covariates + long)
             }
             integrate(hazard, lower = 0, upper = t, subj = subj,
-                      rescale_factor = rescale_factor, rel.tol = tol)$value + log(u)
+                      rescale_factor = rescale_factor, rel.tol = tol)$value + log_u
         }
         valT <- eventT <- matrix(0.0, n, nsim)
         indices <- sample(nrow(mcmc_betas[[1]]), nsim)
@@ -1406,9 +1406,11 @@ simulate.jm <-
                 invS(0.5, runif(1L), 1, rescale_factor)
             }
             for (i in seq_len(n)) {
+                log_u <- log(runif(1L))
                 Root <-
-                    try(uniroot(invS, interval = c(0, Up), u = runif(1L),
-                                subj = i, rescale_factor = rescale_factor)$root,
+                    try(uniroot(invS, interval = c(0, Up), log_u = log_u,
+                                subj = i, rescale_factor = rescale_factor,
+                                tol = tol, f.lower = log_u)$root,
                         silent = TRUE)
                 rep_Times[i] <- if (!inherits(Root, "try-error")) Root else Up
             }
@@ -1421,3 +1423,229 @@ simulate.jm <-
     attr(val, "seed") <- RNGstate
     val
 }
+
+
+simulate.jm <-
+    function (object, nsim = 1L, seed = NULL,
+              process = c("longitudinal", "event"),
+              random_effects = c("posterior_means", "mcmc", "prior"),
+              Fforms_fun = NULL, tol = 0.001, ...) {
+        if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
+            runif(1L)
+        if (is.null(seed))
+            RNGstate <- get(".Random.seed", envir = .GlobalEnv)
+        else {
+            R.seed <- get(".Random.seed", envir = .GlobalEnv)
+            set.seed(seed)
+            RNGstate <- structure(seed, kind = as.list(RNGkind()))
+            on.exit(assign(".Random.seed", R.seed, envir = .GlobalEnv))
+        }
+        process <- match.arg(process)
+        random_effects <- match.arg(random_effects)
+        # information from fitted joint model
+        n <- object$model_data$n
+        idL_lp <- object$model_data$idL_lp
+        ind_RE <- object$model_data$ind_RE
+        X <- object$model_data$X
+        Z <- object$model_data$Z
+        n_outcomes <- length(idL_lp)
+        families <- object$model_info$families
+        has_sigmas <- as.logical(object$model_data$has_sigmas)
+        Bspline_dgr <- object$control$Bsplines_degree
+        knots <- object$control$knots[[1]]
+        W <- object$model_data$W_h
+        Times <- object$model_data$Time_right
+        event <- object$model_data$delta
+        dataS <- object$model_data$dataS
+
+        # MCMC results
+        ncz <- sum(sapply(Z, ncol))
+        ind_betas <- grep("betas", names(object$statistics$Mean), fixed = TRUE)
+        mcmc_betas <- object$mcmc[ind_betas]
+        mcmc_betas[] <- lapply(mcmc_betas, function (x) do.call('rbind', x))
+        mcmc_sigmas <- matrix(0.0, nrow(mcmc_betas[[1]]), n_outcomes)
+        mcmc_sigmas[, has_sigmas] <- do.call('rbind', object$mcmc$sigmas)
+        mcmc_bs_gammas <- do.call('rbind', object$mcmc$bs_gammas)
+        has_gammas <- !is.null(object$mcmc$gammas)
+        if (has_gammas) mcmc_gammas <- do.call('rbind', object$mcmc$gammas)
+        mcmc_W_std_gammas <- do.call('rbind', object$mcmc$W_std_gammas)
+        mcmc_alphas <- do.call('rbind', object$mcmc$alphas)
+        mcmc_Wlong_std_alphas <- do.call('rbind', object$mcmc$Wlong_std_alphas)
+        # random effects
+        b <- ranef(object)
+        if (random_effects == "mcmc") {
+            mcmc_RE <- dim(object$mcmc[["b"]][[1L]])[3L] > 1L
+            if (mcmc_RE) {
+                mcmc_b <- abind::abind(object$mcmc[["b"]])
+            } else {
+                stop("refit the model using 'jm(..., save_random_effects = TRUE)'.\n")
+            }
+        }
+        get_D <- function (x, n) {
+            m <- matrix(0.0, n, n)
+            m[lower.tri(m, TRUE)] <- x
+            m <- m + t(m)
+            diag(m) <- diag(m) * 0.5
+            m
+        }
+        xx <- do.call('rbind', object$mcmc$D)
+        mcmc_D <- array(0.0, c(ncz, ncz, nrow(xx)))
+        for (m in seq_len(nrow(mcmc_betas[[1L]]))) {
+            mcmc_D[, , m] <- get_D(xx[m, ], ncz)
+        }
+        # simulate outcome vectors
+        if (process == "longitudinal") {
+            sim_fun <- function (family, n, mu, phi) {
+                switch(family$family,
+                       "gaussian" = rnorm(n, mu, phi),
+                       "Student's-t" = mu + phi * rt(n, df = 4),
+                       "binomial" = rbinom(n, 1, mu),
+                       "poisson" = rpois(n, mu),
+                       "beta" = rbeta(n, shape1 = mu * phi, shape2 = phi * (1.0 - mu)))
+            }
+            val <- vector("list", nsim)
+            indices <- sample(nrow(mcmc_betas[[1]]), nsim)
+            for (j in seq_len(nsim)) {
+                # parameters
+                jj <- indices[j]
+                betas <- lapply(mcmc_betas, function (x) x[jj, ])
+                sigmas <- mcmc_sigmas[jj, ]
+                bb <-
+                    switch(random_effects,
+                           "mcmc" = mcmc_b[, , jj],
+                           "posterior_means" = b,
+                           "prior" = MASS::mvrnorm(n, rep(0, ncz), mcmc_D[, , jj]))
+                y <- vector("list", n_outcomes)
+                for (i in seq_len(n_outcomes)) {
+                    FE <- c(X[[i]] %*% betas[[i]])
+                    RE <- rowSums(Z[[i]] * bb[idL_lp[[i]], ind_RE[[i]]])
+                    eta <- FE + RE
+                    mu <- families[[i]]$linkinv(eta)
+                    y[[i]] <- sim_fun(families[[i]], length(mu), mu, sigmas[i])
+                }
+                val[[j]] <- y
+            }
+            names(val) <- paste0("sim_", seq_len(nsim))
+        } else {
+            if (is.null(Fforms_fun) || !is.function(Fforms_fun)) {
+                stop("you need to provide the 'Fforms_fun' function; ",
+                     "see the examples in `?simulate.jm` for more information.\n")
+            }
+            hazard <- function (time, log_u, subj, rescale_factor) {
+                W0 <- splineDesign(knots, time, Bspline_dgr + 1L, outer.ok = TRUE)
+                log_h0 <- c(W0 %*% bs_gammas) - rescale_factor
+                covariates <- if (has_gammas) c(W[subj, , drop = FALSE] %*% gammas) else 0.0
+                long <- c(Fforms_fun(time, betas, b[subj, ], dataS[subj, ]) %*% alphas)
+                exp(log_h0 + covariates + long)
+            }
+            invS <- function (time, log_u, subj, rescale_factor) {
+                integrate(hazard, lower = 0.0, upper = time, subj = subj,
+                          rescale_factor = rescale_factor, rel.tol = tol)$value + log_u
+            }
+            nr_root <- function (interval, fn, gr, ..., tol = tol, iter = 35L) {
+                Low <- low <- interval[1L]
+                Upp <- upp <- interval[2L]
+                fn_Low <- fn(Low, ...)
+                fn_Upp <- fn(Upp, ...)
+                if (fn_Upp < 0) return(Upp)
+                tt <- tt_old <- sum(interval) / 2
+                for (i in seq_len(iter)) {
+                    ffn <- fn(tt, ...)
+                    # check convergence
+                    if (abs(ffn) < tol) return(tt)
+                    # if proposed value outside interval do bisection,
+                    # else Newton-Raphson
+                    ggr <- gr(tt, ...)
+                    tt <- tt - ffn / ggr
+                    if (tt < Low || tt > Upp) {
+                        if (ffn < 0 && ffn > fn_Low) {
+                            low <- tt_old
+                            fn_Low <- ffn
+                        } else {
+                            upp <- tt_old
+                        }
+                        tt <- tt_old <- (low + upp) / 2
+                    }
+                }
+                tt
+            }
+            valT <- eventT <- matrix(0.0, n, nsim)
+            indices <- sample(nrow(mcmc_betas[[1]]), nsim)
+            for (j in seq_len(nsim)) {
+                jj <- indices[j]
+                betas <- lapply(mcmc_betas, function (x) x[jj, ])
+                bb <-
+                    switch(random_effects,
+                           "mcmc" = mcmc_b[, , jj],
+                           "posterior_means" = b,
+                           "prior" = MASS::mvrnorm(n, rep(0, nRE), mcmc_D[, , jj]))
+                bs_gammas <- mcmc_bs_gammas[jj, ]
+                if (has_gammas) gammas <- mcmc_gammas[jj, ]
+                alphas <- mcmc_alphas[jj, ]
+                Wlong_std_alphas <- mcmc_Wlong_std_alphas[jj, ]
+                W_std_gammas <- mcmc_W_std_gammas[jj, ]
+                rescale_factor <- Wlong_std_alphas + W_std_gammas
+                Up <- max(Times) * 1.05
+                rep_Times <- numeric(n)
+                if (j == 1) {
+                    invS(0.5, -0.69, 1, rescale_factor)
+                }
+                for (i in seq_len(n)) {
+                    log_u <- log(runif(1L))
+                    rep_Times[i] <-
+                        nr_root(c(0, Up), invS, hazard, subj = i, log_u = log_u,
+                                rescale_factor = rescale_factor, tol = tol)
+                }
+                valT[, j] <- rep_Times
+                eventT[, j] <- as.numeric(rep_Times < Up)
+            }
+            colnames(valT) <- colnames(eventT) <- paste0("sim_", seq_len(nsim))
+            val <- list(Times = valT, event = eventT)
+        }
+        attr(val, "seed") <- RNGstate
+        val
+    }
+
+ppcheck <- function (object, nsim = 10L, seed = NULL,
+                     process = c("longitudinal", "event"),
+                     outcomes = Inf,
+                     random_effects = c("posterior_means", "mcmc", "prior"),
+                     Fforms_fun = NULL) {
+    process <- match.arg(process)
+    if (process == "longitudinal") {
+        out <- simulate(object, nsim = nsim, process = "longitudinal",
+                        random_effects = random_effects, seed = seed)
+        n_outcomes <- length(object$model_data$y)
+        index <- seq_len(n_outcomes)
+        if (outcomes < Inf) index <- index[index %in% outcomes]
+        for (j in index) {
+            y <- object$model_data$y[[j]]
+            x_vals <- seq(min(y), max(y), length.out = 500)
+            rep_y <- sapply(out, function (x, x_vals) ecdf(x[[j]])(x_vals),
+                            x_vals = x_vals)
+            matplot(x_vals, rep_y, type = "l", lty = 1, col = "lightgrey",
+                    xlab = object$model_info$var_names$respVars_form[[j]],
+                    ylab = "Empirical CDF")
+            lines(x_vals, ecdf(y)(x_vals))
+            legend("bottomright", c("replicated data", "observed data"),
+                   lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.8)
+        }
+    } else {
+        Times <- object$model_data$Time_right
+        event <- object$model_data$delta
+        out <- simulate(object, nsim = nsim, process = "event", seed = seed,
+                        random_effects = random_effects, Fforms_fun = Fforms_fun)
+        xvals <- seq(0, max(Times), length.out = 500)
+        plot(range(Times), c(0, 1), type = "n", xlab = "Time",
+             ylab = "Cumulative Incidence")
+        for (k in seq_len(ncol(out$Times))) {
+            lines(survfit(Surv(out$Times[, k], out$event[, k]) ~ 1), col = "lightgrey",
+                  conf.int = FALSE, fun = "event")
+        }
+        lines(survfit(Surv(Times, event) ~ 1), fun = "event")
+        legend("bottomright", c("replicated data", "observed data"), lty = 1,
+               col = c("lightgrey", "black"), bty = "n", cex = 0.8)
+
+    }
+}
+
