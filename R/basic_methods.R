@@ -1464,7 +1464,7 @@ simulate.jm <-
         mcmc_betas <- object$mcmc[ind_betas]
         mcmc_betas[] <- lapply(mcmc_betas, function (x) do.call('rbind', x))
         mcmc_sigmas <- matrix(0.0, nrow(mcmc_betas[[1]]), n_outcomes)
-        mcmc_sigmas[, has_sigmas] <- do.call('rbind', object$mcmc$sigmas)
+        if (has_sigmas) mcmc_sigmas[, has_sigmas] <- do.call('rbind', object$mcmc$sigmas)
         mcmc_bs_gammas <- do.call('rbind', object$mcmc$bs_gammas)
         has_gammas <- !is.null(object$mcmc$gammas)
         if (has_gammas) mcmc_gammas <- do.call('rbind', object$mcmc$gammas)
