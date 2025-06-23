@@ -1531,6 +1531,9 @@ simulate.jm <-
                 stop("you need to provide the 'Fforms_fun' function; ",
                      "see the examples in `?simulate.jm` for more information.\n")
             }
+            if (length(unique(object$model_data$strata)) > 1L) {
+                stop("'simulate.jm()' does not currently support stratified joint models.\n")
+            }
             hazard <- function (time, log_u, subj, rescale_factor) {
                 W0 <- splineDesign(knots, time, Bspline_dgr + 1L, outer.ok = TRUE)
                 log_h0 <- c(W0 %*% bs_gammas) - rescale_factor
@@ -1639,8 +1642,7 @@ ppcheck <- function (object, nsim = 10L, seed = NULL,
         plot(range(Times), c(0, 1), type = "n", xlab = "Time",
              ylab = "Cumulative Incidence")
         for (k in seq_len(ncol(out$Times))) {
-            lines(survfit(Surv(out$Times[, k], out$event[, k]) ~ 1), col = "lightgrey",
-                  conf.int = FALSE, fun = "event")
+            lines(xvals, ecdf(out$Times[, k])(xvals), col = "lightgrey")
         }
         lines(survfit(Surv(Times, event) ~ 1), fun = "event")
         legend("bottomright", c("replicated data", "observed data"), lty = 1,
