@@ -1501,6 +1501,7 @@ simulate.jm <-
                        "Student's-t" = mu + phi * rt(n, df = 4),
                        "binomial" = rbinom(n, 1, mu),
                        "poisson" = rpois(n, mu),
+                       "negative binomial" = rnbinom(n, size = phi, mu = mu),
                        "beta" = rbeta(n, shape1 = mu * phi, shape2 = phi * (1.0 - mu)))
             }
             val <- vector("list", nsim)
