@@ -1267,7 +1267,7 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
     out
 }
 
-simulate.jm <-
+simulate_old.jm <-
     function (object, nsim = 1L, seed = NULL,
               process = c("longitudinal", "event"),
               random_effects = c("posterior_means", "mcmc", "prior"),
