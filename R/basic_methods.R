@@ -1816,8 +1816,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
     val
 }
 
-
-ppcheck <- function (object, nsim = 15L, seed = NULL,
+ppcheck <- function (object, nsim = 30L, seed = NULL,
                      process = c("longitudinal", "event"),
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
