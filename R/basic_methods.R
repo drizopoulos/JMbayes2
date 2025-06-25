@@ -1758,6 +1758,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
             upp <- upp[!negUpp]
             fn_Low <- fn_Low[!negUpp]
             tt <- tt_old <- rep((Low + Upp) / 2, length(subjs))
+            tt_vals <- matrix(0.0, n, iter)
             for (i in seq_len(iter)) {
                 ffn <- fn(tt, subjs)
                 # check convergence
@@ -1785,6 +1786,9 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
                 ind <- out_of_int & (ind1 | ind2)
                 tt[ind] <- tt_old[ind] <- (low[ind] + upp[ind]) / 2
                 simulated_times[subjs] <- tt
+                tt_vals[, i] <- simulated_times
+                if (i > 1 &&
+                    max(abs(tt_vals[, i] - tt_vals[, i - 1])) < .Machine$double.eps^0.5) break
             }
             simulated_times
         }
