@@ -1784,8 +1784,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
                 upp[out_of_int & ind2] <- tt_old[out_of_int & ind2]
                 ind <- out_of_int & (ind1 | ind2)
                 tt[ind] <- tt_old[ind] <- (low[ind] + upp[ind]) / 2
+                simulated_times[subjs] <- tt
             }
-            simulated_times[subjs] <- tt
             simulated_times
         }
         valT <- eventT <- matrix(0.0, n, nsim)
