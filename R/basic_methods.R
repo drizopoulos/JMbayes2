@@ -1879,7 +1879,7 @@ ppcheck <- function (object, nsim = 30L, seed = NULL,
         lines(x_vals, F0_upp, lty = 2)
         legend("bottomright", c("replicated data", "observed data"),
                lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.9)
-        text(r1 + 0.15 * (r2 - r1), 0.9, paste("MISE =", round(MISE, 5)))
+        text(0.15 * r2, 0.9, paste("MISE =", round(MISE, 5)))
     }
 }
 
