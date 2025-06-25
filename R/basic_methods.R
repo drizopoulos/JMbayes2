@@ -1831,6 +1831,9 @@ ppcheck <- function (object, nsim = 30L, seed = NULL,
                      random_effects = c("posterior_means", "mcmc", "prior"),
                      Fforms_fun = NULL, ...) {
     process <- match.arg(process)
+    trapezoid_rule <- function (f, x) {
+        sum(0.5 * diff(x) * (f[-length(x)] + f[-1]))
+    }
     if (process == "longitudinal") {
         out <- simulate(object, nsim = nsim, process = "longitudinal",
                         random_effects = random_effects, seed = seed, ...)
@@ -1844,12 +1847,15 @@ ppcheck <- function (object, nsim = 30L, seed = NULL,
             x_vals <- seq(r1, r2, length.out = 500)
             rep_y <- sapply(out, function (x, x_vals) ecdf(x[[j]])(x_vals),
                             x_vals = x_vals)
+            F0 <- ecdf(y)(x_vals)
+            MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
             matplot(x_vals, rep_y, type = "l", lty = 1, col = "lightgrey",
                     xlab = object$model_info$var_names$respVars_form[[j]],
                     ylab = "Empirical CDF")
-            lines(x_vals, ecdf(y)(x_vals))
+            lines(x_vals, F0)
             legend("bottomright", c("replicated data", "observed data"),
-                   lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.8)
+                   lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.9)
+            text(r1 + 0.15 * (r2 - r1), 0.9, paste("MISE =", round(MISE, 5)))
         }
     } else {
         Times <- object$model_data$Time_right
@@ -1858,15 +1864,21 @@ ppcheck <- function (object, nsim = 30L, seed = NULL,
                         random_effects = random_effects, Fforms_fun = Fforms_fun,
                         ...)
         r2 <- quantile(Times, probs = percentiles[2L], na.rm = TRUE)
-        xvals <- seq(0, r2, length.out = 500)
-        plot(range(Times), c(0, 1), type = "n", xlab = "Time",
-             ylab = "Cumulative Incidence")
-        for (k in seq_len(ncol(out$Times))) {
-            lines(xvals, ecdf(out$Times[, k])(xvals), col = "lightgrey")
-        }
-        lines(survfit(Surv(Times, event) ~ 1), fun = "event")
-        legend("bottomright", c("replicated data", "observed data"), lty = 1,
-               col = c("lightgrey", "black"), bty = "n", cex = 0.8)
-    }
+        x_vals <- seq(0, r2, length.out = 500)
+        rep_T <- apply(out$Times, 2L, function (x, x_vals) ecdf(x)(x_vals),
+                        x_vals = x_vals)
+        ss <- summary(survfit(Surv(Times, event) ~ 1), times = x_vals)
+        F0 <- 1 - ss$surv
+        F0_low <- 1 - ss$lower
+        F0_upp <- 1 - ss$upper
+        MISE <- mean(apply((rep_T - F0)^2, 2L, trapezoid_rule, x = x_vals))
+        matplot(x_vals, rep_T, type = "l", lty = 1, col = "lightgrey",
+                xlab = "Times", ylab = "Empirical CDF", ylim = c(0, 1))
+        lines(x_vals, F0)
+        lines(x_vals, F0_low, lty = 2)
+        lines(x_vals, F0_upp, lty = 2)
+        legend("bottomright", c("replicated data", "observed data"),
+               lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.9)
+        text(r1 + 0.15 * (r2 - r1), 0.9, paste("MISE =", round(MISE, 5)))
 }
 
