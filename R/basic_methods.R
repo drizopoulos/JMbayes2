@@ -1736,7 +1736,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
             P <- time / 2
             st <- outer(P, sk + 1)
             id_GQ <- rep(subj, each = K)
-            log_Pwk <- rep(wk, length(P)) * rep(P, each = K)
+            log_Pwk <- rep(log(wk), length(P)) + rep(log(P), each = K)
             log_integrand <- log_Pwk + log_hazard(c(t(st)), id_GQ)
             c(rowsum(exp(log_integrand), id_GQ, reorder = FALSE)) + log_u[subj]
         }
