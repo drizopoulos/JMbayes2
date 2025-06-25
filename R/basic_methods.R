@@ -1649,7 +1649,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
     mcmc_betas <- object$mcmc[ind_betas]
     mcmc_betas[] <- lapply(mcmc_betas, function (x) do.call('rbind', x))
     mcmc_sigmas <- matrix(0.0, nrow(mcmc_betas[[1]]), n_outcomes)
-    if (has_sigmas) mcmc_sigmas[, has_sigmas] <- do.call('rbind', object$mcmc$sigmas)
+    if (any(has_sigmas)) mcmc_sigmas[, has_sigmas] <- do.call('rbind', object$mcmc$sigmas)
     mcmc_bs_gammas <- do.call('rbind', object$mcmc$bs_gammas)
     has_gammas <- !is.null(object$mcmc$gammas)
     if (has_gammas) mcmc_gammas <- do.call('rbind', object$mcmc$gammas)
@@ -1720,13 +1720,13 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
         if (length(unique(object$model_data$strata)) > 1L) {
             stop("'simulate.jm()' does not currently support stratified joint models.\n")
         }
-        hazard <- function (time, subj) {
+        log_hazard <- function (time, subj) {
             W0 <- splineDesign(knots, time, Bspline_dgr + 1L, outer.ok = TRUE)
             log_h0 <- c(W0 %*% bs_gammas) - rescale_factor
             covariates <- if (has_gammas) c(W[subj, , drop = FALSE] %*% gammas) else 0.0
             if (length(time) != length(subj)) subj <- rep(subj, length(time))
             long <- c(Fforms_fun(time, betas, b[subj, ], dataS[subj, ]) %*% alphas)
-            exp(log_h0 + covariates + long)
+            log_h0 + covariates + long
         }
         invS <- function (time, subj) {
             GQ <- gaussLegendre(20)
@@ -1736,8 +1736,9 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
             P <- time / 2
             st <- outer(P, sk + 1)
             id_GQ <- rep(subj, each = K)
-            P * c(rowsum(rep(wk, length(P)) * hazard(c(t(st)), id_GQ), id_GQ,
-                         reorder = FALSE)) + log_u[subj]
+            log_Pwk <- rep(wk, length(P)) * rep(P, each = K)
+            log_integrand <- log_Pwk + log_hazard(c(t(st)), id_GQ)
+            c(rowsum(exp(log_integrand), id_GQ, reorder = FALSE)) + log_u[subj]
         }
         nr_root <- function (interval, fn, gr, n, tol = 0.001, iter = 100L) {
             subjs <- seq_len(n)
@@ -1773,7 +1774,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
                 fn_Low <- fn_Low[!check]
                 # if proposed value outside interval do bisection,
                 # else Newton-Raphson
-                ggr <- gr(tt, subjs)
+                ggr <- exp(gr(tt, subjs))
                 tt <- tt - ffn / ggr
                 out_of_int <- tt < Low | tt > Upp
                 ind1 <- ffn < 0 & ffn > fn_Low
@@ -1805,7 +1806,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
             rescale_factor <- Wlong_std_alphas + W_std_gammas
             Up <- max(Times) * 1.05
             log_u <- log(runif(n))
-            rep_Times <- nr_root(c(0, Up), invS, hazard, n, tol = tol)
+            rep_Times <- nr_root(c(0, Up), invS, log_hazard, n, tol = tol)
             valT[, j] <- rep_Times
             eventT[, j] <- as.numeric(rep_Times < Up)
         }
