@@ -34,6 +34,11 @@ symm_mat <- function (M) {
     0.5 * (M + t(M))
 }
 
+group_sum <- function (x, ind) {
+    xx <- c(0, cumsum(x)[ind])
+    xx[-1L] - xx[-length(xx)]
+}
+
 extract_terms <- function (object, which = c("fixed", "random"), data) {
     which <- match.arg(which)
     if (inherits(object, "MixMod")) {

@@ -1631,6 +1631,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
     n <- object$model_data$n
     idL_lp <- object$model_data$idL_lp
     ind_RE <- object$model_data$ind_RE
+    y <- object$model_data$y
     X <- object$model_data$X
     Z <- object$model_data$Z
     n_outcomes <- length(idL_lp)
@@ -1683,8 +1684,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
         sim_fun <- function (family, n, mu, phi) {
             switch(family$family,
                    "gaussian" = rnorm(n, mu, phi),
-                   "Student's-t" = mu + phi * rt(n, df = 4),
-                   "binomial" = rbinom(n, 1, mu),
+                   "Student's-t" = mu + phi * rt(n, df = .df),
+                   "binomial" = rbinom(n, .N, mu),
                    "poisson" = rpois(n, mu),
                    "negative binomial" = rnbinom(n, size = phi, mu = mu),
                    "beta" = rbeta(n, shape1 = mu * phi, shape2 = phi * (1.0 - mu)))
@@ -1701,15 +1702,21 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
                        "mcmc" = mcmc_b[, , jj],
                        "posterior_means" = b,
                        "prior" = MASS::mvrnorm(n, rep(0, ncz), mcmc_D[, , jj]))
-            y <- vector("list", n_outcomes)
+            rep_y <- vector("list", n_outcomes)
             for (i in seq_len(n_outcomes)) {
                 FE <- c(X[[i]] %*% betas[[i]])
                 RE <- rowSums(Z[[i]] * bb[idL_lp[[i]], ind_RE[[i]]])
                 eta <- FE + RE
                 mu <- families[[i]]$linkinv(eta)
-                y[[i]] <- sim_fun(families[[i]], length(mu), mu, sigmas[i])
+                if (families[[i]][['family']] == "binomial") {
+                    .N <- if (NCOL(y[[i]]) == 1) rep(1, length(mu)) else y[[i]][, 2]
+                }
+                if (families[[i]][['family']] == "Student's-t") {
+                    .df <- families[[i]][['df']]
+                }
+                rep_y[[i]] <- sim_fun(families[[i]], length(mu), mu, sigmas[i])
             }
-            val[[j]] <- y
+            val[[j]] <- rep_y
         }
         names(val) <- paste0("sim_", seq_len(nsim))
     } else {
@@ -1725,7 +1732,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
             log_h0 <- c(W0 %*% bs_gammas) - rescale_factor
             covariates <- if (has_gammas) c(W[subj, , drop = FALSE] %*% gammas) else 0.0
             if (length(time) != length(subj)) subj <- rep(subj, length(time))
-            long <- c(Fforms_fun(time, betas, b[subj, ], dataS[subj, ]) %*% alphas)
+            long <- c(Fforms_fun(time, betas, b[subj, , drop = FALSE],
+                                 dataS[subj, ]) %*% alphas)
             log_h0 + covariates + long
         }
         invS <- function (time, subj) {
@@ -1758,7 +1766,6 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
             upp <- upp[!negUpp]
             fn_Low <- fn_Low[!negUpp]
             tt <- tt_old <- rep((Low + Upp) / 2, length(subjs))
-            tt_vals <- matrix(0.0, n, iter)
             for (i in seq_len(iter)) {
                 ffn <- fn(tt, subjs)
                 # check convergence
@@ -1786,9 +1793,6 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
                 ind <- out_of_int & (ind1 | ind2)
                 tt[ind] <- tt_old[ind] <- (low[ind] + upp[ind]) / 2
                 simulated_times[subjs] <- tt
-                tt_vals[, i] <- simulated_times
-                if (i > 1 &&
-                    max(abs(tt_vals[, i] - tt_vals[, i - 1])) < .Machine$double.eps^0.5) break
             }
             simulated_times
         }
