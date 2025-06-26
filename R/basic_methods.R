@@ -1270,7 +1270,7 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
 simulate.jm <- function (object, nsim = 1L, seed = NULL,
                          process = c("longitudinal", "event"),
                          random_effects = c("posterior_means", "mcmc", "prior"),
-                         Fforms_fun = NULL, tol = 0.001, iter = 80, ...) {
+                         Fforms_fun = NULL, tol = 0.001, iter = 100L, ...) {
     if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
         runif(1L)
     if (is.null(seed))
@@ -1482,14 +1482,14 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
     val
 }
 
-ppcheck <- function (object, nsim = 50L, seed = NULL,
+ppcheck <- function (object, nsim = 40L, seed = NULL,
                      process = c("longitudinal", "event"),
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
                      Fforms_fun = NULL, transform_fun = NULL, ...) {
     process <- match.arg(process)
     trapezoid_rule <- function (f, x) {
-        sum(0.5 * diff(x) * (f[-length(x)] + f[-1]))
+        sum(0.5 * diff(x) * (f[-length(x)] + f[-1L]))
     }
     if (process == "longitudinal") {
         out <- simulate(object, nsim = nsim, process = "longitudinal",
