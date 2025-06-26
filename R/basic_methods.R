@@ -1829,7 +1829,7 @@ ppcheck <- function (object, nsim = 30L, seed = NULL,
                      process = c("longitudinal", "event"),
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
-                     Fforms_fun = NULL, ...) {
+                     Fforms_fun = NULL, transform_fun = NULL, ...) {
     process <- match.arg(process)
     trapezoid_rule <- function (f, x) {
         sum(0.5 * diff(x) * (f[-length(x)] + f[-1]))
@@ -1842,6 +1842,17 @@ ppcheck <- function (object, nsim = 30L, seed = NULL,
         if (outcomes < Inf) index <- index[index %in% outcomes]
         for (j in index) {
             y <- object$model_data$y[[j]]
+            if (!is.null(transform_fun)) {
+                if (is.list(transform_fun)) {
+                    y <- transform_fun[[j]](y)
+                    out[] <- lapply(out, function (outcome)
+                        mapply(function (f, out) f(out), transform_fun, outcome))
+                } else {
+                    y <- transform_fun(y)
+                    out[] <- lapply(out, function (outcome)
+                        lapply(outcome, transform_fun))
+                }
+            }
             r1 <- quantile(y, probs = percentiles[1L], na.rm = TRUE)
             r2 <- quantile(y, probs = percentiles[2L], na.rm = TRUE)
             x_vals <- seq(r1, r2, length.out = 500)
