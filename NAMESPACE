@@ -13,7 +13,7 @@ importFrom("stats", "coef", "terms", "model.frame", "model.frame.default",
            "model.response", "rnorm", "quantile", "runif", "rlnorm", "cov2cor",
            "as.formula", "gaussian", ".getXlevels", "makepredictcall", "plogis",
            "reformulate", "predict", "pnorm", "ave", "median", "density",
-           "simulate", "rbinom", "rpois", "rt", "rbeta")
+           "simulate", "rbinom", "rpois", "rt", "rbeta", "ecdf", "rnbinom")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
            "clusterSetRNGStream", "makePSOCKcluster", "mclapply")
 importFrom("parallelly", "availableCores")
@@ -32,7 +32,7 @@ importFrom("matrixStats", "rowQuantiles", "colVars", "colLogSumExps",
 importFrom("abind", "abind")
 importFrom("MASS", "mvrnorm")
 importFrom("graphics", "abline", "axis", "box", "lines", "mtext", "par",
-           "polygon", "title", "plot", "points")
+           "polygon", "title", "plot", "points", "legend", "matplot", "text")
 
 useDynLib(JMbayes2, .registration = TRUE)
 

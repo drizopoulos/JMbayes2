@@ -1267,7 +1267,7 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
     out
 }
 
-simulate.jm <- function (object, nsim = 1L, newdata = NULL, seed = NULL,
+simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                          process = c("longitudinal", "event"),
                          random_effects = c("posterior_means", "mcmc", "prior"),
                          Fforms_fun = NULL, tol = 0.001, iter = 100L, ...) {
@@ -1331,7 +1331,7 @@ simulate.jm <- function (object, nsim = 1L, newdata = NULL, seed = NULL,
     } else {
         dataS <- newdata[tapply(row.names(newdata), id, tail, n = 1L), ]
         terms_event <- terms(object, process = "event")
-        frames_event <- model.frame.default(terms_event, data = newdata)
+        frames_event <- model.frame.default(terms_event, data = dataS)
         y <- model.response(frames_event)
         type_censoring <- attr(y, "type")
         if (type_censoring == "right") {
@@ -1513,7 +1513,7 @@ simulate.jm <- function (object, nsim = 1L, newdata = NULL, seed = NULL,
                 switch(random_effects,
                        "mcmc" = mcmc_b[, , jj],
                        "posterior_means" = b,
-                       "prior" = MASS::mvrnorm(n, rep(0, nRE), mcmc_D[, , jj]))
+                       "prior" = MASS::mvrnorm(n, rep(0, ncz), mcmc_D[, , jj]))
             bs_gammas <- mcmc_bs_gammas[jj, ]
             if (has_gammas) gammas <- mcmc_gammas[jj, ]
             alphas <- mcmc_alphas[jj, ]
@@ -1602,7 +1602,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = NULL,
             id <- factor(id, levels = unique(id))
             dataS <- newdata[tapply(row.names(newdata), id, tail, n = 1L), ]
             terms_event <- terms(object, process = "event")
-            frames_event <- model.frame.default(terms_event, data = newdata)
+            frames_event <- model.frame.default(terms_event, data = dataS)
             y <- model.response(frames_event)
             type_censoring <- attr(y, "type")
             if (type_censoring == "right") {
