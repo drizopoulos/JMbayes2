@@ -1393,7 +1393,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
             log_h0 + covariates + long
         }
         invS <- function (time, subj) {
-            GQ <- gaussLegendre(20)
+            GQ <- gaussLegendre(.K)
             wk <- GQ$wk
             sk <- GQ$sk
             K <- length(sk)
@@ -1410,6 +1410,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
             Upp <- interval[2L]
             low <- rep(Low, n)
             upp <- rep(Upp, n)
+            .K <- 32
             fn_Low <- fn(low, subjs)
             fn_Upp <- fn(upp, subjs)
             simulated_times <- numeric(n)
@@ -1421,9 +1422,12 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
             low <- low[!negUpp]
             upp <- upp[!negUpp]
             fn_Low <- fn_Low[!negUpp]
+            fn_Upp <- fn_Upp[!negUpp]
             tt <- tt_old <- rep((Low + Upp) / 2, length(subjs))
+            .K <- 18
+            ffn <- fn(tt, subjs)
+            ggr <- exp(gr(tt, subjs))
             for (i in seq_len(iter)) {
-                ffn <- fn(tt, subjs)
                 # check convergence
                 check <- abs(ffn) < tol
                 simulated_times[subjs[check]] <- tt[check]
@@ -1435,19 +1439,23 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
                 low <- low[!check]
                 upp <- upp[!check]
                 ffn <- ffn[!check]
+                ggr <- ggr[!check]
                 fn_Low <- fn_Low[!check]
-                # if proposed value outside interval do bisection,
-                # else Newton-Raphson
-                ggr <- exp(gr(tt, subjs))
+                fn_Upp <- fn_Upp[!check]
+                # propose new value using Newton-Raphson
                 tt <- tt - ffn / ggr
                 out_of_int <- tt < Low | tt > Upp
+                if (any(out_of_int)) {
+                    tt[out_of_int] <- (low[out_of_int] + upp[out_of_int]) / 2
+                }
+                ffn <- fn(tt, subjs)
+                ggr <- exp(gr(tt, subjs))
                 ind1 <- ffn < 0 & ffn > fn_Low
-                low[out_of_int & ind1] <- tt_old[out_of_int & ind1]
-                fn_Low[out_of_int & ind1] <- ffn[out_of_int & ind1]
-                ind2 <- !ind1
-                upp[out_of_int & ind2] <- tt_old[out_of_int & ind2]
-                ind <- out_of_int & (ind1 | ind2)
-                tt[ind] <- tt_old[ind] <- (low[ind] + upp[ind]) / 2
+                fn_Low[ind1] <- ffn[ind1]
+                low[ind1] <- tt[ind1]
+                ind2 <- ffn > 0 & ffn < fn_Upp
+                fn_Upp[ind2] <- ffn[ind2]
+                upp[ind2] <- tt[ind2]
                 simulated_times[subjs] <- tt
             }
             simulated_times
@@ -1523,7 +1531,8 @@ ppcheck <- function (object, nsim = 40L, seed = NULL,
             lines(x_vals, F0)
             legend("bottomright", c("replicated data", "observed data"),
                    lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.9)
-            text(r1 + 0.15 * (r2 - r1), 0.9, paste("MISE =", round(MISE, 5)))
+            rootMISE <- round(sqrt(MISE), 5)
+            text(r1 + 0.15 * (r2 - r1), 0.9, bquote(sqrt(MISE) == .(rootMISE)))
         }
     } else {
         Times <- object$model_data$Time_right
@@ -1547,7 +1556,8 @@ ppcheck <- function (object, nsim = 40L, seed = NULL,
         lines(x_vals, F0_upp, lty = 2)
         legend("bottomright", c("replicated data", "observed data"),
                lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.9)
-        text(0.15 * r2, 0.9, paste("MISE =", round(MISE, 5)))
+        rootMISE <- round(sqrt(MISE), 5)
+        text(0.15 * r2, 0.9, bquote(sqrt(MISE) == .(rootMISE)))
     }
 }
 
