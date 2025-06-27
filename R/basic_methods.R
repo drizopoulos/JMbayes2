@@ -1267,7 +1267,7 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
     out
 }
 
-simulate.jm <- function (object, nsim = 1L, seed = NULL,
+simulate.jm <- function (object, nsim = 1L, newdata = NULL, seed = NULL,
                          process = c("longitudinal", "event"),
                          random_effects = c("posterior_means", "mcmc", "prior"),
                          Fforms_fun = NULL, tol = 0.001, iter = 100L, ...) {
@@ -1284,21 +1284,67 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
     process <- match.arg(process)
     random_effects <- match.arg(random_effects)
     # information from fitted joint model
-    n <- object$model_data$n
-    idL_lp <- object$model_data$idL_lp
     ind_RE <- object$model_data$ind_RE
-    y <- object$model_data$y
-    X <- object$model_data$X
-    Z <- object$model_data$Z
+    if (is.null(newdata)) {
+        n <- object$model_data$n
+        y <- object$model_data$y
+        X <- object$model_data$X
+        Z <- object$model_data$Z
+        idL_lp <- object$model_data$idL_lp
+    } else {
+        id_var <- object$model_info$var_names$idVar
+        if (is.null(id_var)) {
+            stop("The id variable '", id_var, "' cannot be found in newdata.\n")
+        }
+        id <- newdata[[id_var]]
+        id <- factor(id, levels = unique(id))
+        n <- length(unique(id))
+        terms_FE <- terms(object)
+        frames_FE <- lapply(terms_FE, model.frame.default, data = newdata)
+        terms_RE <- terms(object, type = "random")
+        frames_RE <- lapply(terms_RE, model.frame.default, data = newdata)
+        NAs_FE <- lapply(frames_FE, attr, "na.action")
+        NAs_RE <- lapply(frames_RE, attr, "na.action")
+        frames_FE <- mapply2(fix_NAs_fixed, frames_FE, NAs_FE, NAs_RE)
+        frames_RE <- mapply2(fix_NAs_random, frames_RE, NAs_RE, NAs_FE)
+        y <- lapply(frames_FE, model.response)
+        y <- lapply(y, function (yy) {
+            if (is.factor(yy)) as.numeric(yy != levels(yy)[1L]) else yy
+        })
+        X <- lapply(frames_FE, model.matrix.default, data = newdata)
+        Z <- lapply(frames_RE, model.matrix.default, data = newdata)
+        unq_id <- unique(id)
+        id <- mapply2(exclude_NAs, NAs_FE, NAs_RE, MoreArgs = list(id = id))
+        id[] <- lapply(id, match, table = unq_id)
+        idL_lp <- lapply(id, function (x) match(x, unique(x)))
+    }
     n_outcomes <- length(idL_lp)
     families <- object$model_info$families
     has_sigmas <- as.logical(object$model_data$has_sigmas)
     Bspline_dgr <- object$control$Bsplines_degree
     knots <- object$control$knots[[1]]
-    W <- object$model_data$W_h
-    Times <- object$model_data$Time_right
-    event <- object$model_data$delta
-    dataS <- object$model_data$dataS
+    if (is.null(newdata)) {
+        dataS <- object$model_data$dataS
+        Times <- object$model_data$Time_right
+        event <- object$model_data$delta
+        W <- object$model_data$W_h
+    } else {
+        dataS <- newdata[tapply(row.names(newdata), id, tail, n = 1L), ]
+        terms_event <- terms(object, process = "event")
+        frames_event <- model.frame.default(terms_event, data = newdata)
+        y <- model.response(frames_event)
+        type_censoring <- attr(y, "type")
+        if (type_censoring == "right") {
+            Times <- unname(y[, "time"])
+            event <- unname(y[, "status"])
+        } else if (type_censoring == "counting") {
+            Times <- unname(Surv_Response[, "stop"])
+            event <-  unname(Surv_Response[, "status"])
+        } else {
+            stop("simulate.jm() does not yet work for this type of censoring.\n")
+        }
+        W <- model.matrix.default(frames_event, data = dataS)[, -1L, drop = FALSE]
+    }
 
     # MCMC results
     ncz <- sum(sapply(Z, ncol))
@@ -1488,7 +1534,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
     val
 }
 
-ppcheck <- function (object, nsim = 40L, seed = NULL,
+ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = NULL,
                      process = c("longitudinal", "event"),
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
@@ -1498,13 +1544,24 @@ ppcheck <- function (object, nsim = 40L, seed = NULL,
         sum(0.5 * diff(x) * (f[-length(x)] + f[-1L]))
     }
     if (process == "longitudinal") {
-        out <- simulate(object, nsim = nsim, process = "longitudinal",
+        out <- simulate(object, nsim = nsim, newdata = newdata,
+                        process = "longitudinal",
                         random_effects = random_effects, seed = seed, ...)
         n_outcomes <- length(object$model_data$y)
         index <- seq_len(n_outcomes)
         if (outcomes < Inf) index <- index[index %in% outcomes]
+        yy <- if (is.null(newdata)) {
+            object$model_data$y
+        } else {
+            terms_FE <- terms(object)
+            frames_FE <- lapply(terms_FE, model.frame.default, data = newdata)
+            oo <- lapply(frames_FE, model.response)
+            lapply(oo, function (yy) {
+                if (is.factor(yy)) as.numeric(yy != levels(yy)[1L]) else yy
+            })
+        }
         for (j in index) {
-            y <- object$model_data$y[[j]]
+            y <- yy[[j]]
             if (!is.null(transform_fun)) {
                 if (is.list(transform_fun)) {
                     y <- transform_fun[[j]](y)
@@ -1533,9 +1590,31 @@ ppcheck <- function (object, nsim = 40L, seed = NULL,
             text(r1 + 0.15 * (r2 - r1), 0.9, bquote(sqrt(MISE) == .(rootMISE)))
         }
     } else {
-        Times <- object$model_data$Time_right
-        event <- object$model_data$delta
-        out <- simulate(object, nsim = nsim, process = "event", seed = seed,
+        if (is.null(newdata)) {
+            Times <- object$model_data$Time_right
+            event <- object$model_data$delta
+        } else {
+            id_var <- object$model_info$var_names$idVar
+            if (is.null(id_var)) {
+                stop("The id variable '", id_var, "' cannot be found in newdata.\n")
+            }
+            id <- newdata[[id_var]]
+            id <- factor(id, levels = unique(id))
+            dataS <- newdata[tapply(row.names(newdata), id, tail, n = 1L), ]
+            terms_event <- terms(object, process = "event")
+            frames_event <- model.frame.default(terms_event, data = newdata)
+            y <- model.response(frames_event)
+            type_censoring <- attr(y, "type")
+            if (type_censoring == "right") {
+                Times <- unname(y[, "time"])
+                event <- unname(y[, "status"])
+            } else if (type_censoring == "counting") {
+                Times <- unname(Surv_Response[, "stop"])
+                event <-  unname(Surv_Response[, "status"])
+            }
+        }
+        out <- simulate(object, nsim = nsim, newdata = newdata,
+                        process = "event", seed = seed,
                         random_effects = random_effects, Fforms_fun = Fforms_fun,
                         ...)
         r2 <- quantile(Times, probs = percentiles[2L], na.rm = TRUE)
