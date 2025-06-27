@@ -1392,7 +1392,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
                                  dataS[subj, ]) %*% alphas)
             log_h0 + covariates + long
         }
-        invS <- function (time, subj) {
+        invS <- function (time, subj, .K) {
             GQ <- gaussLegendre(.K)
             wk <- GQ$wk
             sk <- GQ$sk
@@ -1410,9 +1410,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
             Upp <- interval[2L]
             low <- rep(Low, n)
             upp <- rep(Upp, n)
-            .K <- 32
-            fn_Low <- fn(low, subjs)
-            fn_Upp <- fn(upp, subjs)
+            fn_Low <- fn(low, subjs, 32)
+            fn_Upp <- fn(upp, subjs, 32)
             simulated_times <- numeric(n)
             negUpp <- fn_Upp < 0
             simulated_times[negUpp] <- Upp
@@ -1424,8 +1423,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
             fn_Low <- fn_Low[!negUpp]
             fn_Upp <- fn_Upp[!negUpp]
             tt <- tt_old <- rep((Low + Upp) / 2, length(subjs))
-            .K <- 18
-            ffn <- fn(tt, subjs)
+            ffn <- fn(tt, subjs, 18)
             ggr <- exp(gr(tt, subjs))
             for (i in seq_len(iter)) {
                 # check convergence
@@ -1448,7 +1446,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL,
                 if (any(out_of_int)) {
                     tt[out_of_int] <- (low[out_of_int] + upp[out_of_int]) / 2
                 }
-                ffn <- fn(tt, subjs)
+                ffn <- fn(tt, subjs, 18)
                 ggr <- exp(gr(tt, subjs))
                 ind1 <- ffn < 0 & ffn > fn_Low
                 fn_Low[ind1] <- ffn[ind1]
