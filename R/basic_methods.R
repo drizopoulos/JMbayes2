@@ -1434,7 +1434,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
             log_h0 <- c(W0 %*% bs_gammas) - rescale_factor
             covariates <- if (has_gammas) c(W[subj, , drop = FALSE] %*% gammas) else 0.0
             if (length(time) != length(subj)) subj <- rep(subj, length(time))
-            long <- c(Fforms_fun(time, betas, b[subj, , drop = FALSE],
+            long <- c(Fforms_fun(time, betas, bb[subj, , drop = FALSE],
                                  dataS[subj, ]) %*% alphas)
             log_h0 + covariates + long
         }
