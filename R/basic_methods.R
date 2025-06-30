@@ -1270,7 +1270,8 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
 simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                          process = c("longitudinal", "event"),
                          random_effects = c("posterior_means", "mcmc", "prior"),
-                         Fforms_fun = NULL, tol = 0.001, iter = 100L, ...) {
+                         Fforms_fun = NULL, include_outcome = FALSE,
+                         tol = 0.001, iter = 100L, ...) {
     if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
         runif(1L)
     if (is.null(seed))
@@ -1332,11 +1333,11 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         dataS <- newdata[tapply(row.names(newdata), id, tail, n = 1L), ]
         terms_event <- terms(object, process = "event")
         frames_event <- model.frame.default(terms_event, data = dataS)
-        y <- model.response(frames_event)
-        type_censoring <- attr(y, "type")
+        Surv_Response <- model.response(frames_event)
+        type_censoring <- attr(Surv_Response, "type")
         if (type_censoring == "right") {
-            Times <- unname(y[, "time"])
-            event <- unname(y[, "status"])
+            Times <- unname(Surv_Response[, "time"])
+            event <- unname(Surv_Response[, "status"])
         } else if (type_censoring == "counting") {
             Times <- unname(Surv_Response[, "stop"])
             event <-  unname(Surv_Response[, "status"])
@@ -1421,6 +1422,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
             val[[j]] <- rep_y
         }
         names(val) <- paste0("sim_", seq_len(nsim))
+        if (include_outcome) val <- c(val, list(outcome = y))
     } else {
         if (is.null(Fforms_fun) || !is.function(Fforms_fun)) {
             stop("you need to provide the 'Fforms_fun' function; ",
@@ -1529,6 +1531,9 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         }
         colnames(valT) <- colnames(eventT) <- paste0("sim_", seq_len(nsim))
         val <- list(Times = valT, event = eventT)
+        if (include_outcome) {
+            val <- c(val, list(outcome = list("Times" = Times, "event" = event)))
+        }
     }
     attr(val, "seed") <- RNGstate
     val
@@ -1545,21 +1550,13 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = NULL,
     }
     if (process == "longitudinal") {
         out <- simulate(object, nsim = nsim, newdata = newdata,
-                        process = "longitudinal",
+                        process = "longitudinal", include_outcome = TRUE,
                         random_effects = random_effects, seed = seed, ...)
         n_outcomes <- length(object$model_data$y)
         index <- seq_len(n_outcomes)
         if (outcomes < Inf) index <- index[index %in% outcomes]
-        yy <- if (is.null(newdata)) {
-            object$model_data$y
-        } else {
-            terms_FE <- terms(object)
-            frames_FE <- lapply(terms_FE, model.frame.default, data = newdata)
-            oo <- lapply(frames_FE, model.response)
-            lapply(oo, function (yy) {
-                if (is.factor(yy)) as.numeric(yy != levels(yy)[1L]) else yy
-            })
-        }
+        yy <- out$outcome
+        out <- out[names(out) != "outcome"]
         for (j in index) {
             y <- yy[[j]]
             if (!is.null(transform_fun)) {
@@ -1590,33 +1587,13 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = NULL,
             text(r1 + 0.15 * (r2 - r1), 0.9, bquote(sqrt(MISE) == .(rootMISE)))
         }
     } else {
-        if (is.null(newdata)) {
-            Times <- object$model_data$Time_right
-            event <- object$model_data$delta
-        } else {
-            id_var <- object$model_info$var_names$idVar
-            if (is.null(id_var)) {
-                stop("The id variable '", id_var, "' cannot be found in newdata.\n")
-            }
-            id <- newdata[[id_var]]
-            id <- factor(id, levels = unique(id))
-            dataS <- newdata[tapply(row.names(newdata), id, tail, n = 1L), ]
-            terms_event <- terms(object, process = "event")
-            frames_event <- model.frame.default(terms_event, data = dataS)
-            y <- model.response(frames_event)
-            type_censoring <- attr(y, "type")
-            if (type_censoring == "right") {
-                Times <- unname(y[, "time"])
-                event <- unname(y[, "status"])
-            } else if (type_censoring == "counting") {
-                Times <- unname(Surv_Response[, "stop"])
-                event <-  unname(Surv_Response[, "status"])
-            }
-        }
         out <- simulate(object, nsim = nsim, newdata = newdata,
-                        process = "event", seed = seed,
+                        process = "event", seed = seed, include_outcome = TRUE,
                         random_effects = random_effects, Fforms_fun = Fforms_fun,
                         ...)
+        Times <- out$outcome$Times
+        event <- out$outcome$event
+        out <- out[names(out) != "outcome"]
         r2 <- quantile(Times, probs = percentiles[2L], na.rm = TRUE)
         x_vals <- seq(0, r2, length.out = 500)
         rep_T <- apply(out$Times, 2L, function (x, x_vals) ecdf(x)(x_vals),
