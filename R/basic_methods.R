@@ -1532,7 +1532,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         colnames(valT) <- colnames(eventT) <- paste0("sim_", seq_len(nsim))
         val <- list(Times = valT, event = eventT)
         if (include_outcome) {
-            val <- c(val, list(outcome = list("Times" = Times, "event" = event)))
+            val <- c(val, outcome = list("Times" = Times, "event" = event))
         }
     }
     attr(val, "seed") <- RNGstate
@@ -1549,10 +1549,34 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = NULL,
         sum(0.5 * diff(x) * (f[-length(x)] + f[-1L]))
     }
     if (process == "longitudinal") {
-        out <- simulate(object, nsim = nsim, newdata = newdata,
-                        process = "longitudinal", include_outcome = TRUE,
-                        random_effects = random_effects, seed = seed, ...)
-        n_outcomes <- length(object$model_data$y)
+        out <- if (inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
+                   inherits(newdata, 'list')) {
+            sims_per_fold <-
+                mapply(simulate, object = object, newdata = newdata,
+                       MoreArgs = list(process = "longitudinal",
+                                       include_outcome = TRUE,
+                                       random_effects = random_effects,
+                                       seed = seed, nsim = nsim, ...),
+                       SIMPLIFY = FALSE)
+            bind <- function (sims) {
+                out <- sims[[1L]]
+                for (i in seq_along(sims)[-1L]) {
+                    out_i <- sims[[i]]
+                    for (j in seq_along(out)) {
+                        for (k in seq_along(out[[1L]])) {
+                            out[[j]][[k]] <- c(out[[j]][[k]], out_i[[j]][[k]])
+                        }
+                    }
+                }
+                out
+            }
+            bind(sims_per_fold)
+        } else {
+            simulate(object, nsim = nsim, newdata = newdata,
+                     process = "longitudinal", include_outcome = TRUE,
+                     random_effects = random_effects, seed = seed, ...)
+        }
+        n_outcomes <- length(out[[1L]])
         index <- seq_len(n_outcomes)
         if (outcomes < Inf) index <- index[index %in% outcomes]
         yy <- out$outcome
@@ -1587,12 +1611,35 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = NULL,
             text(r1 + 0.15 * (r2 - r1), 0.9, bquote(sqrt(MISE) == .(rootMISE)))
         }
     } else {
-        out <- simulate(object, nsim = nsim, newdata = newdata,
-                        process = "event", seed = seed, include_outcome = TRUE,
-                        random_effects = random_effects, Fforms_fun = Fforms_fun,
-                        ...)
-        Times <- out$outcome$Times
-        event <- out$outcome$event
+        out <- if (inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
+                   inherits(newdata, 'list')) {
+            sims_per_fold <-
+                mapply(simulate, object = object, newdata = newdata,
+                       MoreArgs = list(process = "event", include_outcome = TRUE,
+                                       Fforms_fun = Fforms_fun,
+                                       random_effects = random_effects,
+                                       seed = seed, nsim = nsim, ...),
+                       SIMPLIFY = FALSE)
+            bind <- function (sims) {
+                out <- sims[[1L]]
+                for (i in seq_along(sims)[-1L]) {
+                    out_i <- sims[[i]]
+                    for (j in seq_along(out)) {
+                        out[[j]] <- if (is.matrix(out[[j]]))
+                            rbind(out[[j]], out_i[[j]]) else c(out[[j]], out_i[[j]])
+                    }
+                }
+                out
+            }
+            bind(sims_per_fold)
+        } else {
+            simulate(object, nsim = nsim, newdata = newdata,
+                     process = "event", seed = seed, include_outcome = TRUE,
+                     random_effects = random_effects, Fforms_fun = Fforms_fun,
+                     ...)
+        }
+        Times <- out$outcome.Times
+        event <- out$outcome.event
         out <- out[names(out) != "outcome"]
         r2 <- quantile(Times, probs = percentiles[2L], na.rm = TRUE)
         x_vals <- seq(0, r2, length.out = 500)
