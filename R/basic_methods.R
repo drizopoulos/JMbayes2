@@ -1600,11 +1600,17 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = NULL,
             rep_y <- sapply(out, function (x, x_vals) ecdf(x[[j]])(x_vals),
                             x_vals = x_vals)
             F0 <- ecdf(y)(x_vals)
+            F0u <- pmin(F0 + 0.06039421, 1)
+            F0l <- pmax(F0 - 0.06039421, 0)
+            #F0u <- stepfun(x_vals, c(F0u, 1))
+            #F0l <- stepfun(x_vals, c(F0l, F0l[500]))
             MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
             matplot(x_vals, rep_y, type = "l", lty = 1, col = "lightgrey",
                     xlab = object$model_info$var_names$respVars_form[[j]],
-                    ylab = "Empirical CDF")
-            lines(x_vals, F0)
+                    ylab = "Empirical CDF", ylim = c(0, 1))
+            lines(x_vals, F0, lwd = 1.5)
+            lines(x_vals, F0l, lwd = 1.5, lty = 2)
+            lines(x_vals, F0u, lwd = 1.5, lty = 2)
             legend("bottomright", c("replicated data", "observed data"),
                    lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.9)
             rootMISE <- round(sqrt(MISE), 5)
@@ -1652,9 +1658,9 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = NULL,
         MISE <- mean(apply((rep_T - F0)^2, 2L, trapezoid_rule, x = x_vals))
         matplot(x_vals, rep_T, type = "l", lty = 1, col = "lightgrey",
                 xlab = "Times", ylab = "Empirical CDF", ylim = c(0, 1))
-        lines(x_vals, F0)
-        lines(x_vals, F0_low, lty = 2)
-        lines(x_vals, F0_upp, lty = 2)
+        lines(x_vals, F0, lwd = 1.5)
+        lines(x_vals, F0_low, lty = 2, lwd = 1.5)
+        lines(x_vals, F0_upp, lty = 2, lwd = 1.5)
         legend("bottomright", c("replicated data", "observed data"),
                lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.9)
         rootMISE <- round(sqrt(MISE), 5)
