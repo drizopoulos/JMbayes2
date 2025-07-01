@@ -603,6 +603,7 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
     }
     control <- list(GK_k = object$control$GK_k, n_samples = n_samples,
                     n_iter = n_mcmc, use_Y = use_Y)
+    control$n_samples <- cores * ceiling(control$n_samples / cores)
     id_samples <-
         split(seq_len(control$n_samples),
               rep(seq_len(cores), each = ceiling(control$n_samples / cores),
