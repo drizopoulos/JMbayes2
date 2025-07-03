@@ -1283,7 +1283,9 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         on.exit(assign(".Random.seed", R.seed, envir = .GlobalEnv))
     }
     process <- match.arg(process)
-    random_effects <- match.arg(random_effects)
+    if (is.character(random_effects)) {
+        random_effects <- match.arg(random_effects)
+    }
     # information from fitted joint model
     ind_RE <- object$model_data$ind_RE
     if (is.null(newdata)) {
@@ -1292,6 +1294,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         X <- object$model_data$X
         Z <- object$model_data$Z
         idL_lp <- object$model_data$idL_lp
+        times <- object$model_data$dataL[[object$model_info$var_names$time_var]]
     } else {
         id_var <- object$model_info$var_names$idVar
         if (is.null(id_var)) {
@@ -1318,6 +1321,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         id <- mapply2(exclude_NAs, NAs_FE, NAs_RE, MoreArgs = list(id = id))
         id[] <- lapply(id, match, table = unq_id)
         idL_lp <- lapply(id, function (x) match(x, unique(x)))
+        times <- newdata[[object$model_info$var_names$time_var]]
     }
     n_outcomes <- length(idL_lp)
     families <- object$model_info$families
@@ -1346,7 +1350,6 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         }
         W <- model.matrix.default(frames_event, data = dataS)[, -1L, drop = FALSE]
     }
-
     # MCMC results
     ncz <- sum(sapply(Z, ncol))
     ind_betas <- grep("betas", names(object$statistics$Mean), fixed = TRUE)
@@ -1362,7 +1365,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
     mcmc_Wlong_std_alphas <- do.call('rbind', object$mcmc$Wlong_std_alphas)
     # random effects
     b <- ranef(object)
-    if (random_effects == "mcmc") {
+    if (length(random_effects) == 1L && random_effects == "mcmc") {
         mcmc_RE <- dim(object$mcmc[["b"]][[1L]])[3L] > 1L
         if (mcmc_RE) {
             mcmc_b <- abind::abind(object$mcmc[["b"]])
@@ -1393,20 +1396,31 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                    "negative binomial" = rnbinom(n, size = phi, mu = mu),
                    "beta" = rbeta(n, shape1 = mu * phi, shape2 = phi * (1.0 - mu)))
         }
-        val <- vector("list", nsim)
         indices <- sample(nrow(mcmc_betas[[1]]), nsim)
-        for (j in seq_len(nsim)) {
-            # parameters
-            jj <- indices[j]
-            betas <- lapply(mcmc_betas, function (x) x[jj, ])
-            sigmas <- mcmc_sigmas[jj, ]
-            bb <-
-                switch(random_effects,
-                       "mcmc" = mcmc_b[, , jj],
-                       "posterior_means" = b,
-                       "prior" = MASS::mvrnorm(n, rep(0, ncz), mcmc_D[, , jj]))
-            rep_y <- vector("list", n_outcomes)
-            for (i in seq_len(n_outcomes)) {
+        val <- vector("list", n_outcomes)
+        names(val) <- object$model_info$var_names$respVars_form
+        if (length(random_effects) == 1L && random_effects == "prior") {
+            simulated_RE <- array(0.0, c(n, ncz, nsim))
+            for (j in seq_len(nsim)) {
+                simulated_RE[, , j] <-
+                    MASS::mvrnorm(n, rep(0, ncz), mcmc_D[, , indices[j]])
+            }
+        }
+        for (i in seq_len(n_outcomes)) {
+            rep_y <- matrix(0.0, nrow(X[[i]]), nsim)
+            for (j in seq_len(nsim)) {
+                # parameters
+                jj <- indices[j]
+                betas <- lapply(mcmc_betas, function (x) x[jj, ])
+                sigmas <- mcmc_sigmas[jj, ]
+                bb <- if (length(random_effects) == 1L && is.character(random_effects)) {
+                    switch(random_effects,
+                           "mcmc" = mcmc_b[, , jj],
+                           "posterior_means" = b,
+                           "prior" = simulated_RE[, , j])
+                } else {
+                    random_effects
+                }
                 FE <- c(X[[i]] %*% betas[[i]])
                 RE <- rowSums(Z[[i]] * bb[idL_lp[[i]], ind_RE[[i]]])
                 eta <- FE + RE
@@ -1417,11 +1431,21 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                 if (families[[i]][['family']] == "Student's-t") {
                     .df <- families[[i]][['df']]
                 }
-                rep_y[[i]] <- sim_fun(families[[i]], length(mu), mu, sigmas[i])
+                rep_y[, j] <- sim_fun(families[[i]], length(mu), mu, sigmas[i])
             }
-            val[[j]] <- rep_y
+            colnames(rep_y) <- paste0("sim_", seq_len(nsim))
+            val[[i]] <- rep_y
         }
-        names(val) <- paste0("sim_", seq_len(nsim))
+        if (length(random_effects) == 1L && random_effects == "prior") {
+            outT <- simulate(object, nsim = nsim, newdata = newdata,
+                         process = "event", seed = seed, tol = tol, iter = iter,
+                         random_effects = simulated_RE, Fforms_fun = Fforms_fun)
+            for (i in seq_len(n_outcomes)) {
+                for (j in seq_len(ncol(val[[i]]))) {
+                    val[[i]][times > outT$Times[idL_lp[[i]], j], j] <- NA_real_
+                }
+            }
+        }
         if (include_outcome) val <- c(val, list(outcome = y))
     } else {
         if (is.null(Fforms_fun) || !is.function(Fforms_fun)) {
@@ -1511,11 +1535,15 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         for (j in seq_len(nsim)) {
             jj <- indices[j]
             betas <- lapply(mcmc_betas, function (x) x[jj, ])
-            bb <-
+            bb <- if (length(random_effects) == 1L && is.character(random_effects)) {
                 switch(random_effects,
                        "mcmc" = mcmc_b[, , jj],
                        "posterior_means" = b,
                        "prior" = MASS::mvrnorm(n, rep(0, ncz), mcmc_D[, , jj]))
+            } else {
+                random_effects[, , j]
+            }
+
             bs_gammas <- mcmc_bs_gammas[jj, ]
             if (has_gammas) gammas <- mcmc_gammas[jj, ]
             alphas <- mcmc_alphas[jj, ]
@@ -1539,14 +1567,26 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
     val
 }
 
-ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = NULL,
+ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      process = c("longitudinal", "event"),
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
-                     Fforms_fun = NULL, transform_fun = NULL, ...) {
+                     Fforms_fun = NULL, ...) {
     process <- match.arg(process)
+    random_effects <- match.arg(random_effects)
     trapezoid_rule <- function (f, x) {
         sum(0.5 * diff(x) * (f[-length(x)] + f[-1L]))
+    }
+    bind <- function (sims) {
+        out <- sims[[1L]]
+        for (i in seq_along(sims)[-1L]) {
+            out_i <- sims[[i]]
+            for (j in seq_along(out)) {
+                out[[j]] <- if (is.matrix(out[[j]]))
+                    rbind(out[[j]], out_i[[j]]) else c(out[[j]], out_i[[j]])
+            }
+        }
+        out
     }
     if (process == "longitudinal") {
         out <- if (inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
@@ -1556,48 +1596,27 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = NULL,
                        MoreArgs = list(process = "longitudinal",
                                        include_outcome = TRUE,
                                        random_effects = random_effects,
-                                       seed = seed, nsim = nsim, ...),
+                                       seed = seed, nsim = nsim,
+                                       Fforms_fun = Fforms_fun, ...),
                        SIMPLIFY = FALSE)
-            bind <- function (sims) {
-                out <- sims[[1L]]
-                for (i in seq_along(sims)[-1L]) {
-                    out_i <- sims[[i]]
-                    for (j in seq_along(out)) {
-                        for (k in seq_along(out[[1L]])) {
-                            out[[j]][[k]] <- c(out[[j]][[k]], out_i[[j]][[k]])
-                        }
-                    }
-                }
-                out
-            }
             bind(sims_per_fold)
         } else {
             simulate(object, nsim = nsim, newdata = newdata,
                      process = "longitudinal", include_outcome = TRUE,
-                     random_effects = random_effects, seed = seed, ...)
+                     random_effects = random_effects, seed = seed,
+                     Fforms_fun = Fforms_fun, ...)
         }
-        n_outcomes <- length(out[[1L]])
-        index <- seq_len(n_outcomes)
-        if (outcomes < Inf) index <- index[index %in% outcomes]
         yy <- out$outcome
         out <- out[names(out) != "outcome"]
+        n_outcomes <- length(out)
+        index <- seq_len(n_outcomes)
+        if (outcomes < Inf) index <- index[index %in% outcomes]
         for (j in index) {
             y <- yy[[j]]
-            if (!is.null(transform_fun)) {
-                if (is.list(transform_fun)) {
-                    y <- transform_fun[[j]](y)
-                    out[] <- lapply(out, function (outcome)
-                        mapply(function (f, out) f(out), transform_fun, outcome))
-                } else {
-                    y <- transform_fun(y)
-                    out[] <- lapply(out, function (outcome)
-                        lapply(outcome, transform_fun))
-                }
-            }
             r1 <- quantile(y, probs = percentiles[1L], na.rm = TRUE)
             r2 <- quantile(y, probs = percentiles[2L], na.rm = TRUE)
             x_vals <- seq(r1, r2, length.out = 500)
-            rep_y <- sapply(out, function (x, x_vals) ecdf(x[[j]])(x_vals),
+            rep_y <- apply(out[[j]], 2L, function (x, x_vals) ecdf(x)(x_vals),
                             x_vals = x_vals)
             F0 <- ecdf(y)(x_vals)
             F0u <- pmin(F0 + 0.06039421, 1)
@@ -1628,17 +1647,6 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = NULL,
                                        random_effects = random_effects,
                                        seed = seed, nsim = nsim, ...),
                        SIMPLIFY = FALSE)
-            bind <- function (sims) {
-                out <- sims[[1L]]
-                for (i in seq_along(sims)[-1L]) {
-                    out_i <- sims[[i]]
-                    for (j in seq_along(out)) {
-                        out[[j]] <- if (is.matrix(out[[j]]))
-                            rbind(out[[j]], out_i[[j]]) else c(out[[j]], out_i[[j]])
-                    }
-                }
-                out
-            }
             bind(sims_per_fold)
         } else {
             simulate(object, nsim = nsim, newdata = newdata,
