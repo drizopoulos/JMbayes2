@@ -1615,16 +1615,23 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             y <- yy[[j]]
             r1 <- quantile(y, probs = percentiles[1L], na.rm = TRUE)
             r2 <- quantile(y, probs = percentiles[2L], na.rm = TRUE)
-            x_vals <- seq(r1, r2, length.out = 500)
+            x_vals <- seq(r1, r2, length.out = 2000)
             rep_y <- apply(out[[j]], 2L, function (x, x_vals) ecdf(x)(x_vals),
                             x_vals = x_vals)
-            F0 <- ecdf(y)(x_vals)
-            F0u <- pmin(F0 + 0.06039421, 1)
-            F0l <- pmax(F0 - 0.06039421, 0)
-            F0u <- pmin(F0 + 1.959964 * sqrt(F0 * (1 - F0) / length(y)), 1)
-            F0l <- pmax(F0 - 1.959964 * sqrt(F0 * (1 - F0) / length(y)), 0)
-            #F0u <- stepfun(x_vals, c(F0u, 1))
-            #F0l <- stepfun(x_vals, c(F0l, F0l[500]))
+            F0 <- ecdf(y)
+            # Dvoretzky–Kiefer–Wolfowitz inequality
+            # https://stats.stackexchange.com/questions/181724/confidence-intervals-for-ecdf
+            #xx <- get("x", envir = environment(F0))
+            #ff <- get("y", envir = environment(F0))
+            #eps <- sqrt(log(2 / 0.05) / (2 * length(y)))
+            #F0u <- pmin(ff + eps, 1)
+            #F0l <- pmax(ff - eps, 0)
+            #F0u <- stepfun(xx, c(F0u, 1))(x_vals)
+            #F0l <- stepfun(xx, c(F0l, F0l[length(y)]))(x_vals)
+            F0 <- F0(x_vals)
+            se <- sqrt(F0 * (1 - F0) / length(y))
+            F0u <- pmin(F0 + 1.959964 * se, 1)
+            F0l <- pmax(F0 - 1.959964 * se, 0)
             MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
             matplot(x_vals, rep_y, type = "s", lty = 1, col = "lightgrey",
                     xlab = object$model_info$var_names$respVars_form[[j]],
