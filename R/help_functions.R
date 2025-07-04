@@ -1593,4 +1593,30 @@ plot_hazard <- function (object, CI = TRUE, plot = TRUE,
     }
 }
 
+ecdf_compare <- function (rep_y, obs_y, percentiles = c(0.025, 0.975)) {
+    trapezoid_rule <- function (f, x) {
+        sum(0.5 * diff(x) * (f[-length(x)] + f[-1L]))
+    }
+    r1 <- quantile(obs_y, probs = percentiles[1L], na.rm = TRUE)
+    r2 <- quantile(obs_y, probs = percentiles[2L], na.rm = TRUE)
+    x_vals <- seq(r1, r2, length.out = 2000)
+    rep_y <- apply(rep_y, 2L, function (x, x_vals) ecdf(x)(x_vals),
+                   x_vals = x_vals)
+    F0 <- ecdf(obs_y)
+    F0 <- F0(x_vals)
+    se <- sqrt(F0 * (1 - F0) / length(obs_y))
+    F0u <- pmin(F0 + 1.959964 * se, 1)
+    F0l <- pmax(F0 - 1.959964 * se, 0)
+    MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
+    matplot(x_vals, rep_y, type = "s", lty = 1, col = "lightgrey",
+            xlab = "values", ylab = "Empirical CDF", ylim = c(0, 1))
+    lines(x_vals, F0, lwd = 1.5, type = "s")
+    lines(x_vals, F0l, lwd = 1.5, lty = 2, type = "s")
+    lines(x_vals, F0u, lwd = 1.5, lty = 2, type = "s")
+    legend("bottomright", c("replicated data", "observed data"),
+           lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.9)
+    rootMISE <- round(sqrt(MISE), 5)
+    text(r1 + 0.15 * (r2 - r1), 0.9, bquote(sqrt(MISE) == .(rootMISE)))
+}
+
 
