@@ -1599,7 +1599,7 @@ ecdf_compare <- function (rep_y, obs_y, percentiles = c(0.025, 0.975)) {
     }
     r1 <- quantile(obs_y, probs = percentiles[1L], na.rm = TRUE)
     r2 <- quantile(obs_y, probs = percentiles[2L], na.rm = TRUE)
-    x_vals <- seq(r1, r2, length.out = 2000)
+    x_vals <- seq(r1, r2, length.out = 500)
     rep_y <- apply(rep_y, 2L, function (x, x_vals) ecdf(x)(x_vals),
                    x_vals = x_vals)
     F0 <- ecdf(obs_y)

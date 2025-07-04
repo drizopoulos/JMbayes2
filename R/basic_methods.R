@@ -1615,7 +1615,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             y <- yy[[j]]
             r1 <- quantile(y, probs = percentiles[1L], na.rm = TRUE)
             r2 <- quantile(y, probs = percentiles[2L], na.rm = TRUE)
-            x_vals <- seq(r1, r2, length.out = 2000)
+            x_vals <- seq(r1, r2, length.out = 600)
             rep_y <- apply(out[[j]], 2L, function (x, x_vals) ecdf(x)(x_vals),
                             x_vals = x_vals)
             F0 <- ecdf(y)
