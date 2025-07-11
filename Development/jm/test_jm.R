@@ -51,10 +51,10 @@ fForms <- ~ value(log(serBilir)) * slope(prothrombin)
 
 
 Surv_object = Cox
-Mixed_objects = Mixed
+Mixed_objects = fm1
 time_var = 'year'
 functional_forms = NULL#fForms
-which_independent = cbind(1, 2)
+which_independent = NULL
 recurrent = FALSE
 data_Surv = NULL
 id_var = NULL

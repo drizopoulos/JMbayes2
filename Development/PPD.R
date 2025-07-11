@@ -9,11 +9,45 @@ CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
 
 # a linear mixed model for log serum bilirubin
 fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
-           random = list(id = pdDiag(~ ns(year, 3))), na.action = na.exclude)
+           random = list(id = pdDiag(~ ns(year, 3))))
 
 # the joint model
-jointFit <- jm(CoxFit, fm1, time_var = "year")
+jointFit1 <- jm(CoxFit, fm1, time_var = "year")
+jointFit2 <- jm(CoxFit, fm1, time_var = "year", Bsplines_degree = 0L)
+jointFit3 <- jm(CoxFit, fm1, time_var = "year", Bsplines_degree = 1L)
+jointFit4 <- jm(CoxFit, fm1, time_var = "year", Bsplines_degree = 1L,
+                base_hazard_segments = 2L)
+jointFit5 <- jm(CoxFit, fm1, time_var = "year", basis = "ns",
+                base_hazard_segments = 1L)
 
+
+JMbayes2:::plot_hazard(jointFit1, tmax = 14)
+JMbayes2:::plot_hazard(jointFit2, tmax = 14)
+JMbayes2:::plot_hazard(jointFit3, tmax = 14)
+JMbayes2:::plot_hazard(jointFit4, tmax = 14)
+JMbayes2:::plot_hazard(jointFit5, tmax = 14)
+JMbayes2:::plot_hazard(jointFit4, tmax = 18)
+JMbayes2:::plot_hazard(jointFit5, tmax = 18)
+
+jointFit1. <- jm(CoxFit, fm1, time_var = "year", timescale_base_hazard = "log", basis = "ns")
+jointFit2. <- jm(CoxFit, fm1, time_var = "year", timescale_base_hazard = "log",
+                 Bsplines_degree = 0L)
+jointFit3. <- jm(CoxFit, fm1, time_var = "year", timescale_base_hazard = "log",
+                 Bsplines_degree = 1L)
+jointFit4. <- jm(CoxFit, fm1, time_var = "year", timescale_base_hazard = "log",
+                base_hazard_segments = 2L, Bsplines_degree = 1L)
+jointFit5. <- jm(CoxFit, fm1, time_var = "year", timescale_base_hazard = "log",
+                 basis = "ns", base_hazard_segments = 1L)
+
+JMbayes2:::plot_hazard(jointFit1., tmax = 14)
+JMbayes2:::plot_hazard(jointFit2., tmax = 14)
+JMbayes2:::plot_hazard(jointFit3., tmax = 14)
+JMbayes2:::plot_hazard(jointFit4., tmax = 14)
+JMbayes2:::plot_hazard(jointFit5., tmax = 14)
+JMbayes2:::plot_hazard(jointFit5., tmax = 18)
+
+
+jointFit.$statistics$Mean$bs_gammas
 # Posterior Predictive Checks - Longitudinal Outcome
 JMbayes2:::ppcheck(jointFit)
 JMbayes2:::ppcheck(jointFit, random_effects = "prior",

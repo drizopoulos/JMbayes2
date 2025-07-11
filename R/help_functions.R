@@ -400,11 +400,15 @@ knots <- function (xl, xr, ndx, deg) {
     }
 }
 
-knots <- function (xl, xr, ndx, deg) {
-    xl <- 0#xl - 0.001
+knots <- function (xl, xr, ndx, deg, basis) {
+    xl <- sqrt(.Machine$double.eps)
     xr <- xr + 0.001
-    kn <- seq(xl, xr, length.out = ndx)
-    c(rep(xl, deg), kn, rep(xr, deg))
+    if (basis == "bs") {
+        kn <- seq(xl, xr, length.out = ndx)
+        c(rep(xl, deg), kn, rep(xr, deg))
+    } else {
+        seq(xl, xr, length.out = ndx + 1)
+    }
 }
 
 extract_b <- function (object, id, n, unq_id) {
@@ -907,9 +911,14 @@ makepredictcall.tv <- function (var, call) {
     x
 }
 
-
-create_W0 <- function (times, knots, ord, strata) {
-    W0 <- lapply(knots, splineDesign, x = times, ord = ord, outer.ok = TRUE)
+create_W0 <- function (times, knots, ord, strata, basis) {
+    W0 <- if (basis == "bs") {
+        lapply(knots, splineDesign, x = times, ord = ord, outer.ok = TRUE)
+    } else {
+        lapply(knots, function (kn, times)
+            ns(x = times, knots = kn[-c(1, length(kn))], intercept = TRUE,
+               Boundary.knots = kn[c(1, length(kn))]), times = times)
+    }
     n_strata <- length(unique(strata))
     ncW0 <- ncol(W0[[1L]])
     ind_cols <- matrix(seq_len(ncW0 * n_strata), ncW0)
@@ -1559,11 +1568,15 @@ plot_hazard <- function (object, CI = TRUE, plot = TRUE,
     r <- range(object$model_data$Time_right)
     if (!is.null(tmax)) r[2L] <- tmax
     tt <- seq(r[1L], r[2L], len = 501)
+    if (object$control$timescale_base_hazard != "identity") {
+        tt <- log(tt)
+    }
     nstrata <- length(unique(object$model_data$strata))
     strt <- rep(seq_len(nstrata), each = length(tt))
     tt <- rep(tt, nstrata)
     W0 <- create_W0(tt, object$control$knots,
-                    object$control$Bsplines_degree + 1, strt)
+                    object$control$Bsplines_degree + 1, strt,
+                    object$control$basis)
     bs_gammas <- do.call('rbind', object$mcmc$bs_gammas)
     W_std_gammas <- do.call('rbind', object$mcmc$W_std_gammas)
     Wlong_std_alphas <- do.call('rbind', object$mcmc$Wlong_std_alphas)
@@ -1577,6 +1590,9 @@ plot_hazard <- function (object, CI = TRUE, plot = TRUE,
     ci <- apply(h_vals, 2L, quantile2)
     low <- ci[1L, ]
     upp <- ci[2L, ]
+    if (object$control$timescale_base_hazard != "identity") {
+        tt <- exp(tt)
+    }
     if (plot) {
         for (j in seq_len(nstrata)) {
             jj <- strt == j

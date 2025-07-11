@@ -359,14 +359,16 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     ////////////////////////////////////////////////////////////////////////
 
-    for (uword j = 0; j < n_strata; ++j) {
-      vec bs_gammas_j =
-        bs_gammas.rows(j * n_per_stratum, (j + 1) * n_per_stratum - 1);
-      double quad = as_scalar(bs_gammas_j.t() * Tau_bs_gammas.at(j) *
-                              bs_gammas_j);
-      double post_B_tau = B_tau_bs_gammas.at(j) + 0.5 * quad;
-      tau_bs_gammas.at(j) = R::rgamma(post_A_tau_bs_gammas.at(j), 1 / post_B_tau);
-      res_tau_bs_gammas.at(it, j) = tau_bs_gammas.at(j);
+    if (n_bs_gammas > 2) {
+        for (uword j = 0; j < n_strata; ++j) {
+            vec bs_gammas_j =
+                bs_gammas.rows(j * n_per_stratum, (j + 1) * n_per_stratum - 1);
+            double quad = as_scalar(bs_gammas_j.t() * Tau_bs_gammas.at(j) *
+                                    bs_gammas_j);
+            double post_B_tau = B_tau_bs_gammas.at(j) + 0.5 * quad;
+            tau_bs_gammas.at(j) = R::rgamma(post_A_tau_bs_gammas.at(j), 1 / post_B_tau);
+            res_tau_bs_gammas.at(it, j) = tau_bs_gammas.at(j);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////

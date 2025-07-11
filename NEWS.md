@@ -1,3 +1,12 @@
+# JMbayes2 0.6.0
+
+## Major
+* `jm()` allows for greater flexibility in specifying the baseline hazard function via the control arguments `basis`, `Bsplines_degree`, `base_hazard_segments`, and `timescale_base_hazard`. For example, now piecewise-constant, piecewise-linear, and the Weibull baseline hazard functions are possible. Also, it is possible to extrapolate after the last event time when `basis = "ns"`. 
+
+* The new function `ppcheck()` performs posterior predictive checks.
+
+* Functions `tvROC()`, `tvAUC()` and `tvBrier()` now also work for Cox regression models.
+
 # JMbayes2 0.5.0
 
 ## Major

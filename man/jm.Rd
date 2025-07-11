@@ -142,11 +142,6 @@ tv(x, knots = NULL, ord = 2L)
 \item{control}{a list of control values with components:
     \describe{
         \item{\code{GK_k}}{the number of quadrature points for the Gauss Kronrod rule; options 15 and 7.}
-        \item{\code{Bsplines_degree}}{the degree of the splines in each basis; default quadratic splines.}
-        \item{\code{base_hazard_segments}}{the number of segments to split the follow-up period.
-        Defaults to 10.}
-        \item{\code{diff}}{the order of the difference used in the penalty matrix for the B-splines for
-        h_0. Defaults to 2.}
         \item{\code{n_chains}}{an integer specifying the number of chains for the MCMC. Defaults to 3.}
         \item{\code{n_burnin}}{an integer specifying the number of burn-in iterations. Defaults to 500.}
         \item{\code{n_iter}}{an integer specifying the number of total iterations per chain. Defaults to 3500.}
@@ -163,8 +158,22 @@ tv(x, knots = NULL, ord = 2L)
         parallel; no point of setting this greater than \code{n_chains}.}
         \item{\code{parallel}}{a character string indicating how the parallel sampling of the chains will
         be performed. Options are \code{"snow"} (default) and \code{"multicore"}.}
-        \item{\code{knots}}{a numeric vector with the position of the knots for the B-spline approximation
-        of the log baseline hazard function.}
+        \item{\code{basis}}{character string with possible values \code{"bs"} (default) or \code{"ns"}.
+            When \code{"bs"} a B-spline basis is used to approximate the log baseline hazard function with
+            degree of the spline specified by the \code{Bsplines_degree}. When \code{"ns"} a natrual cubic
+            spline basis is used; in this case the value of the \code{Bsplines_degree} control argument is
+            ignored.}
+        \item{\code{Bsplines_degree}}{the degree of the splines in each basis; default is quadratic splines.}
+        \item{\code{base_hazard_segments}}{the number of segments to split the follow-up period for the
+            spline approximation of the log baseline hazard function. Defaults to 10.}
+        \item{\code{timescale_base_hazard}}{character string with possible values \code{"identity"} (default)
+            or \code{"log"}. When \code{"identity"} the spline basis is specified for the time variable in its
+            orginal scale. When \code{"log"} the spline basis is specified for the logarithm of the time variable.}
+        \item{\code{diff}}{the order of the difference used in the penalty matrix for the coefficients of the
+            splines used to approximate the log baseline hazard function. Defaults to 2.}
+        \item{\code{knots}}{a numeric vector with the position of the knots for the spline approximation
+            of the log baseline hazard function. The default is equally-spaced knots starting from
+            \code{sqrt(.Machine$double.eps)} until the maximum follow-up time.}
     }
   }
 \item{x}{a numeric input variable.}
