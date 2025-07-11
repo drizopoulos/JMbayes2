@@ -1466,7 +1466,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
             stop("'simulate.jm()' does not currently support stratified joint models.\n")
         }
         log_hazard <- function (time, subj) {
-            if (length(time) != length(subj)) subjj <- rep(subj, length(time))
+            subjj <- if (length(time) != length(subj)) rep(subj, length(time)) else subj
             tt <- if (timescale_base_hazard == "identity") time else log(time)
             W0 <- create_W0(tt, knots, Bspline_dgr + 1L, strt[subj], basis)
             log_h0 <- c(W0 %*% bs_gammas) - rescale_factor
