@@ -47,7 +47,7 @@ JMbayes2:::plot_hazard(jointFit5., tmax = 14)
 JMbayes2:::plot_hazard(jointFit5., tmax = 18)
 
 
-jointFit.$statistics$Mean$bs_gammas
+jointFit = jointFit1
 # Posterior Predictive Checks - Longitudinal Outcome
 JMbayes2:::ppcheck(jointFit)
 JMbayes2:::ppcheck(jointFit, random_effects = "prior",
