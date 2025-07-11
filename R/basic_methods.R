@@ -1288,6 +1288,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
     }
     # information from fitted joint model
     ind_RE <- object$model_data$ind_RE
+    control <- object$control
     if (is.null(newdata)) {
         n <- object$model_data$n
         y <- object$model_data$y
@@ -1326,13 +1327,16 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
     n_outcomes <- length(idL_lp)
     families <- object$model_info$families
     has_sigmas <- as.logical(object$model_data$has_sigmas)
-    Bspline_dgr <- object$control$Bsplines_degree
-    knots <- object$control$knots[[1]]
+    Bspline_dgr <- control$Bsplines_degree
+    knots <- control$knots
+    basis <- control$basis
+    timescale_base_hazard <- control$timescale_base_hazard
     if (is.null(newdata)) {
         dataS <- object$model_data$dataS
         Times <- object$model_data$Time_right
         event <- object$model_data$delta
         W <- object$model_data$W_h
+        strt <- object$model_data$strata
     } else {
         dataS <- newdata[tapply(row.names(newdata), id, tail, n = 1L), ]
         terms_event <- terms(object, process = "event")
@@ -1349,6 +1353,12 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
             stop("simulate.jm() does not yet work for this type of censoring.\n")
         }
         W <- model.matrix.default(frames_event, data = dataS)[, -1L, drop = FALSE]
+        ind_strata <- attr(terms_event, "specials")$strata
+        strt <- if (is.null(ind_strata)) {
+            rep(1, nrow(frames_event))
+        } else {
+            unclass(frames_event[[ind_strata]])
+        }
     }
     # MCMC results
     ncz <- sum(sapply(Z, ncol))
@@ -1456,7 +1466,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
             stop("'simulate.jm()' does not currently support stratified joint models.\n")
         }
         log_hazard <- function (time, subj) {
-            W0 <- splineDesign(knots, time, Bspline_dgr + 1L, outer.ok = TRUE)
+            tt <- if (timescale_base_hazard == "identity") time else log(time)
+            W0 <- create_W0(tt, knots, Bspline_dgr + 1L, strt, basis)
             log_h0 <- c(W0 %*% bs_gammas) - rescale_factor
             covariates <- if (has_gammas) c(W[subj, , drop = FALSE] %*% gammas) else 0.0
             if (length(time) != length(subj)) subj <- rep(subj, length(time))
