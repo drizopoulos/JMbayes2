@@ -1636,11 +1636,11 @@ ecdf_compare <- function (rep_y, obs_y, percentiles = c(0.025, 0.975)) {
 }
 
 get_hazard <- function (base_hazard) {
-    pwc_const <- length(grep("[pP]iecewice.*[cC]onst", base_hazard))
+    pwc_const <- length(grep("[pP]iecewise.*[cC]onst", base_hazard))
     #
-    pwc_linear <- length(grep("[pP]iecewice.*[lL]inear", base_hazard))
+    pwc_linear <- length(grep("[pP]iecewise.*[lL]inear", base_hazard))
     #
-    pwc_quad <- length(grep("[pP]iecewice.*[qQ]uad", base_hazard))
+    pwc_quad <- length(grep("[pP]iecewise.*[qQ]uad", base_hazard))
     #
     weibull <- length(grep("[wW]eibull", base_hazard))
     #
