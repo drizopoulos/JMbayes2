@@ -1635,4 +1635,25 @@ ecdf_compare <- function (rep_y, obs_y, percentiles = c(0.025, 0.975)) {
     text(r1 + 0.15 * (r2 - r1), 0.9, bquote(sqrt(MISE) == .(rootMISE)))
 }
 
-
+get_hazard <- function (base_hazard) {
+    pwc_const <- length(grep("[pP]iecewice.*[cC]onst", base_hazard))
+    #
+    pwc_linear <- length(grep("[pP]iecewice.*[lL]inear", base_hazard))
+    #
+    pwc_quad <- length(grep("[pP]iecewice.*[qQ]uad", base_hazard))
+    #
+    weibull <- length(grep("[wW]eibull", base_hazard))
+    #
+    log_time <- length(grep("[logLog].*time", base_hazard))
+    #
+    ns <- length(grep("[nN]s", base_hazard)) |
+        length(grep("[nN]atural.*cubic", base_hazard)) |
+        length(grep("[nN]atural.*spline", base_hazard))
+    out <- c(pwc_const = pwc_const, pwc_linear = pwc_linear,
+             pwc_quad = pwc_quad, weibull = weibull, log_time = log_time,
+             ns = ns)
+    if (!sum(out)) {
+        stop("could not discern a specific baseline hazard from the input; ",
+             "use the control arguments instead.\n")
+    } else out
+}

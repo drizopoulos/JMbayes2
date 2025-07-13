@@ -31,8 +31,8 @@ Fits multivariate joint models for longitudinal and time-to-event data.
 \usage{
 jm(Surv_object, Mixed_objects, time_var, recurrent = FALSE,
   functional_forms = NULL, which_independent = NULL,
-  data_Surv = NULL, id_var = NULL, priors = NULL,
-  control = NULL, \dots)
+  base_hazard = NULL, data_Surv = NULL, id_var = NULL,
+  priors = NULL, control = NULL, \dots)
 
 value(x)
 coefs(x, zero_ind = NULL)
@@ -76,6 +76,7 @@ tv(x, knots = NULL, ord = 2L)
 \item{recurrent}{a \code{character} string indicating "calendar" or "gap" timescale to fit a recurrent event model.}
 \item{functional_forms}{a \code{list} of formulas. Each formula corresponds to one longitudinal outcome and specifies the association structure between that outcome and the survival submodel as well as any interaction terms between the components of the longitudinal outcome and the survival submodel. See \bold{Examples}.}
 \item{which_independent}{a numeric indicator matrix denoting which outcomes are independent. It can also be the character string \code{"all"} in which case all longitudinal outcomes are assumed independent. Only relevant in joint models with multiple longitudinal outcomes.}
+\item{base_hazard}{a \code{character} vector indicating the type of hazard function.}
 \item{data_Surv}{the \code{data.frame} used to fit the Cox/AFT survival submodel.}
 \item{id_var}{a \code{character} string indicating the id variable in the survival submodel.}
 \item{priors}{a named \code{list} of user-specified prior parameters:

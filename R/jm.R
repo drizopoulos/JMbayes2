@@ -1,7 +1,7 @@
 jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 functional_forms = NULL, which_independent = NULL,
-                data_Surv = NULL, id_var = NULL, priors = NULL,
-                control = NULL, ...) {
+                base_hazard = NULL, data_Surv = NULL, id_var = NULL,
+                priors = NULL, control = NULL, ...) {
     call <- match.call()
     # control argument:
     # - GK_k: number of quadrature points for the Gauss Kronrod rule; options 15 and 7
@@ -29,6 +29,18 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 knots = NULL, timescale_base_hazard = "identity", diff = 2L,
                 parallel = "snow",
                 cores = parallelly::availableCores(omit = 1L))
+    if (!is.null(base_hazard)) {
+        base_hazard <- get_hazard(base_hazard)
+        if (base_hazard['log_time']) con$timescale_base_hazard <- "log"
+        if (base_hazard['ns']) con$basis <- "ns"
+        if (base_hazard['pwc_const']) con$Bsplines_degree <- 0L
+        if (base_hazard['pwc_linear']) con$Bsplines_degree <- 1L
+        if (base_hazard['weibull']) {
+            con$timescale_base_hazard <- "log"
+            con$basis <- "ns"
+            con$base_hazard_segments <- 1L
+        }
+    }
     control <- c(control, list(...))
     namC <- names(con)
     con[(namc <- names(control))] <- control
