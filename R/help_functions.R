@@ -1646,7 +1646,8 @@ get_hazard <- function (base_hazard) {
     #
     log_time <- length(grep("[logLog].*time", base_hazard))
     #
-    ns <- length(grep("[nN]s", base_hazard)) |
+    ns <- length(grep("[nN]s(?!ta)", base_hazard, perl = TRUE)) |
+        length(grep("[nN]S(?!ta)", base_hazard, perl = TRUE)) |
         length(grep("[nN]atural.*cubic", base_hazard)) |
         length(grep("[nN]atural.*spline", base_hazard))
     out <- c(pwc_const = pwc_const, pwc_linear = pwc_linear,
