@@ -32,6 +32,8 @@
 ^vignettes/Super_Learning.Rmd$
 ^vignettes/Time_Varying_Effects.Rmd$
 ^vignettes/Causal_Effects.Rmd$
+^vignettes/Baseline_Hazard.Rmd$
+
 
 
 

@@ -1,0 +1,76 @@
+---
+title: "Baseline Hazard Function"
+author: "Dimitris Rizopoulos"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Baseline Hazard Function}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("JMbayes2")
+```
+
+# Baseline Hazard Function
+The basic definition of the joint model assumes the coefficients that quantify the association between the versions of the longitudinal outcomes and the hazard of the event are time-constant (i.e., the proportional hazards assumption). We can relax this assumption by specifying time-varying coefficients via the `functional_forms` argument of function `jm()`.
+
+We will illustrate this capability using the PBC dataset. We start by fitting a Cox model for the composite event transplantation or death, including sex as a baseline covariate:
+```{r, 'Cox_and_LMM'}
+# Cox regression
+CoxFit <- coxph(Surv(Time, death) ~ drug, data = aids.id)
+
+# a linear mixed model for log serum bilirubin
+fm <- lme(CD4 ~ ns(obstime, 2) * drug, data = aids,
+           random = list(patient = pdDiag(~ ns(obstime, 2))))
+```
+
+We aim to assess the strength of the association between the risk of the composite event and the serum bilirubin level. We will describe the patient-specific profiles over time for this biomarker using a linear mixed-effects model, where we include an intercept in both the fixed and random effects, as well as the linear and quadratic time effects. In the fixed effects, we also include the interaction of the time effect and sex. The syntax to fit this model with `lme()` is:
+
+The default call to `jm()` adds the subject-specific linear predictor of the mixed model as a time-varying covariate in the survival relative risk model:
+```{r, 'default JM'}
+jointFit1 <- jm(CoxFit, fm, time_var = "obstime")
+```
+
+```{r, 'default JM - estimated base hazard', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+JMbayes2:::plot_hazard(jointFit1)
+```
+
+```{r, 'log time', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+jointFit2 <- update(jointFit1, base_hazard = "log time")
+JMbayes2:::plot_hazard(jointFit2)
+```
+
+
+```{r, 'piecewise constant', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+jointFit3 <- update(jointFit1, base_hazard = "piecewise constant")
+JMbayes2:::plot_hazard(jointFit3)
+```
+
+```{r, 'piecewise constant2', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+jointFit4 <- update(jointFit1, base_hazard = "piecewise constant", 
+                    base_hazard_segments = 5L)
+JMbayes2:::plot_hazard(jointFit4)
+```
+
+
+```{r, 'piecewise linear', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+jointFit5 <- update(jointFit1, base_hazard = "piecewise linear")
+JMbayes2:::plot_hazard(jointFit5)
+```
+
+```{r, 'weibull', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+jointFit6 <- update(jointFit1, base_hazard = "weibull")
+JMbayes2:::plot_hazard(jointFit6)
+```
+
+```{r, 'weibull-ext', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+JMbayes2:::plot_hazard(jointFit6, tmax = 24)
+```

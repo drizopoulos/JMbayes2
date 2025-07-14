@@ -404,7 +404,7 @@ knots <- function (xl, xr, ndx, deg, basis) {
     xl <- sqrt(.Machine$double.eps)
     xr <- xr + 0.001
     if (basis == "bs") {
-        kn <- seq(xl, xr, length.out = ndx)
+        kn <- seq(xl, xr, length.out = ndx + 1)
         c(rep(xl, deg), kn, rep(xr, deg))
     } else {
         seq(xl, xr, length.out = ndx + 1)

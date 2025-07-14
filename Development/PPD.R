@@ -24,8 +24,7 @@ jointFit2.$control
 jointFit3 <- jm(CoxFit, fm1, time_var = "year", Bsplines_degree = 1L)
 jointFit4 <- jm(CoxFit, fm1, time_var = "year", Bsplines_degree = 1L,
                 base_hazard_segments = 2L)
-jointFit5 <- jm(CoxFit, fm1, time_var = "year", basis = "ns",
-                base_hazard_segments = 1L)
+jointFit5 <- jm(CoxFit, fm1, time_var = "year", base_hazard = "Weibull")
 
 
 JMbayes2:::plot_hazard(jointFit1, tmax = 14)
