@@ -145,6 +145,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uword n_burnin = as<uword>(control["n_burnin"]);
   bool MALA = as<bool>(control["MALA"]);
   // priors
+  bool penalized_bs_gammas = as<bool>(priors["penalized_bs_gammas"]);
   field<vec> mean_bs_gammas = List2Field_vec(as<List>(priors["mean_bs_gammas"]));
   field<mat> Tau_bs_gammas = List2Field_mat(as<List>(priors["Tau_bs_gammas"]));
   vec post_A_tau_bs_gammas = as<vec>(priors["A_tau_bs_gammas"]) +
@@ -359,7 +360,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     ////////////////////////////////////////////////////////////////////////
 
-    if (n_bs_gammas > 2) {
+    if (penalized_bs_gammas) {
         for (uword j = 0; j < n_strata; ++j) {
             vec bs_gammas_j =
                 bs_gammas.rows(j * n_per_stratum, (j + 1) * n_per_stratum - 1);

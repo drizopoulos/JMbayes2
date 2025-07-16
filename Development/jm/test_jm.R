@@ -58,8 +58,9 @@ which_independent = NULL
 recurrent = FALSE
 data_Surv = NULL
 id_var = NULL
-priors = NULL
+priors = list(penalized_bs_gammas = FALSE)
 control = NULL
+base_hazard = NULL
 #
 model_data <- Data
 control <- con

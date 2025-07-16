@@ -691,6 +691,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     prs <- list(mean_betas_HC = mean_betas_HC, Tau_betas_HC = Tau_betas_HC,
                 mean_betas_nHC = mean_betas_nHC, Tau_betas_nHC = Tau_betas_nHC,
                 mean_bs_gammas = lapply(Tau_bs_gammas, function (x) x[, 1] * 0),
+                penalized_bs_gammas = TRUE,
                 Tau_bs_gammas = Tau_bs_gammas,
                 A_tau_bs_gammas = rep(5, n_strata),
                 B_tau_bs_gammas = rep(0.5, n_strata),
@@ -730,6 +731,14 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         ind <- intersect(names(priors), names(prs))
         prs[ind] <- priors[ind]
         priors <- prs
+    }
+    if (!is.null(base_hazard) && base_hazard['weibull']) {
+        priors$penalized_bs_gammas <- FALSE
+    }
+    if (!priors$penalized_bs_gammas) {
+        priors$Tau_bs_gammas[] <-
+            lapply(priors$Tau_bs_gammas, function (m) 0.1 *  diag(, ncol(m)))
+        initial_values$tau_bs_gammas <- 1
     }
     if (!priors$penalty_gammas %in% c("none", "ridge", "horseshoe")) {
         warning("'priors$penalty_gammas' can only take values, 'none', ",

@@ -13,7 +13,7 @@ fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
 
 # the joint model
 jointFit1 <- jm(CoxFit, fm1, time_var = "year")
-jointFit2 <- jm(CoxFit, fm1, time_var = "year", Bsplines_degree = 0L)
+jointFit2 <- jm(CoxFit, fm1, time_var = "year", priors = list(penalized_bs_gammas = FALSE))
 jointFit2. <- jm(CoxFit, fm1, time_var = "year", base_hazard = "piecewice linear")
 
 JMbayes2:::plot_hazard(jointFit2, tmax = 14)
