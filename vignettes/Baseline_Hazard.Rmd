@@ -21,7 +21,8 @@ library("JMbayes2")
 
 # Baseline Hazard Function
 The submodel for the event process in the joint models fitted in **JMbayes2** is a relative hazard model postulating a multiplicative effect of the covariates in the hazard scale. The default specification of the baseline hazard function takes the form: $$\log h_0(t) = \sum \limits_{p = 1}^P \gamma_{p} B_p(t, \lambda),$$
-where $B_p(t, \lambda)$ denotes the $p$-th basis function of a B-spline with knots $\lambda_1, \ldots, \lambda_P$ and $\gamma$ the vector of spline coefficients. To ensure smoothness of the baseline hazard function $h_0(t)$, we postulate a 'penalized' prior distribution for the regression coefficients $\gamma$: $$p(\gamma \mid \tau) \propto \tau^{\rho(K)/2}\exp \Bigl (-\frac{\tau}{2} \gamma^\top K \gamma \Bigr ),$$
+where $B_p(t, \lambda)$ denotes the $p$-th basis function of a B-spline with knots $\lambda_1, \ldots, \lambda_P$ and $\gamma$ the vector of spline coefficients. To ensure smoothness of the baseline hazard function $h_0(t)$, we postulate a 'penalized' prior distribution for the regression coefficients $\gamma$: 
+$$p(\gamma \mid \tau) \propto \tau^{\rho(K)/2}\exp \Bigl (-\frac{\tau}{2} \gamma^\top K \gamma \Bigr ),$$
 where $\tau$ is the smoothing parameter that takes a $\mbox{Gamma}(5, 0.5)$ hyper-prior to ensure a proper posterior, $K = \Delta_r^\top \Delta_r$, where $\Delta_r$ denotes $r$-th difference penalty matrix, and $\rho(K)$ denotes the rank of $K$. Via the `base_hazard` and `control` arguments of `jm()`, different baseline hazard functions can be specified. We will illustrate this capability using the AIDS dataset. We start with the default joint model for the time to death and the longitudinal measurements of the square root CD4 cell counts:
 ```{r, 'Cox_and_LMM'}
 # Cox regression
