@@ -20,7 +20,7 @@ library("JMbayes2")
 ```
 
 # Baseline Hazard Function
-The submodel for the event process in the joint models fitted in **JMbayes2** is a relative hazard model postulating a multiplicative effect of the covariates in the hazard scale. The default specification of the baseline hazard function $h_0(t)$ takes the form: $$\log h_0(t) = \sum \limits_{p = 1}^P \gamma_p B_p(t, \lambda),$$
+The submodel for the event process in the joint models fitted in **JMbayes2** is a relative hazard model postulating a multiplicative effect of the covariates in the hazard scale. The default specification of the baseline hazard function $h_0(t)$ takes the form: $$\log \{ h_0(t) \} = \sum \limits_{p = 1}^P \gamma_p B_p(t, \lambda),$$
 where $B_p(t, \lambda)$ denotes the $p$-th basis function of a B-spline with knots $\lambda_1, \ldots, \lambda_P$ and $\gamma$ the vector of spline coefficients. To ensure smoothness of the baseline hazard function, we postulate a 'penalized' prior distribution for the spline coefficients $\gamma$: 
 
 $$p(\gamma \mid \tau) \propto \tau^{\rho(K)/2}\exp \left (-\frac{\tau}{2} \gamma^\top K \gamma \right ),$$
