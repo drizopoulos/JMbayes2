@@ -111,10 +111,9 @@ hazard function
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">h_0(t)</annotation></semantics></math>,
 we postulate a ‘penalized’ prior distribution for the spline
 coefficients
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>:
-<span class="math display">$$p(\gamma \mid \tau) \propto
-\tau^{\rho(K)/2}\exp \Bigl (-\frac{\tau}{2} \gamma^\top K \gamma \Bigr
-),$$</span> where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>γ</mi><mo>∣</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>∝</mo><msup><mi>τ</mi><mrow><mi>ρ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>K</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mn>2</mn></mrow></msup><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>−</mi><mfrac><mi>τ</mi><mn>2</mn></mfrac><msup><mi>γ</mi><mi>⊤</mi></msup><mi>K</mi><mi>γ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">p(\gamma \mid \tau) \propto \tau^{\rho(K)/2}\exp \left (-\frac{\tau}{2} \gamma^\top K \gamma \right ),</annotation></semantics></math></p>
+<p>where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>τ</mi><annotation encoding="application/x-tex">\tau</annotation></semantics></math>
 is the smoothing parameter that takes a
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">Gamma</mtext><mrow><mo stretchy="true" form="prefix">(</mo><mn>5</mn><mo>,</mo><mn>0.5</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mbox{Gamma}(5, 0.5)</annotation></semantics></math>
