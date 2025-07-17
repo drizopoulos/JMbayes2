@@ -96,8 +96,10 @@ Rizopoulos</h4>
 <p>The submodel for the event process in the joint models fitted in
 <strong>JMbayes2</strong> is a relative hazard model postulating a
 multiplicative effect of the covariates in the hazard scale. The default
-specification of the baseline hazard function takes the form:
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>log</mo><msub><mi>h</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><munderover><mo>∑</mo><mrow><mi>p</mi><mo>=</mo><mn>1</mn></mrow><mi>P</mi></munderover><msub><mi>γ</mi><mi>p</mi></msub><msub><mi>B</mi><mi>p</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>,</mo><mi>λ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">\log h_0(t) = \sum \limits_{p = 1}^P \gamma_{p} B_p(t, \lambda),</annotation></semantics></math>
+specification of the baseline hazard function
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">h_0(t)</annotation></semantics></math>
+takes the form:
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>log</mo><msub><mi>h</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><munderover><mo>∑</mo><mrow><mi>p</mi><mo>=</mo><mn>1</mn></mrow><mi>P</mi></munderover><msub><mi>γ</mi><mi>p</mi></msub><msub><mi>B</mi><mi>p</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>,</mo><mi>λ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">\log h_0(t) = \sum \limits_{p = 1}^P \gamma_p B_p(t, \lambda),</annotation></semantics></math>
 where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>B</mi><mi>p</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>,</mo><mi>λ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">B_p(t, \lambda)</annotation></semantics></math>
 denotes the
@@ -107,10 +109,8 @@ basis function of a B-spline with knots
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
 the vector of spline coefficients. To ensure smoothness of the baseline
-hazard function
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">h_0(t)</annotation></semantics></math>,
-we postulate a ‘penalized’ prior distribution for the spline
-coefficients
+hazard function, we postulate a ‘penalized’ prior distribution for the
+spline coefficients
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>:</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>γ</mi><mo>∣</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>∝</mo><msup><mi>τ</mi><mrow><mi>ρ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>K</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mn>2</mn></mrow></msup><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>−</mi><mfrac><mi>τ</mi><mn>2</mn></mfrac><msup><mi>γ</mi><mi>⊤</mi></msup><mi>K</mi><mi>γ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">p(\gamma \mid \tau) \propto \tau^{\rho(K)/2}\exp \left (-\frac{\tau}{2} \gamma^\top K \gamma \right ),</annotation></semantics></math></p>
 <p>where
@@ -127,11 +127,12 @@ difference penalty matrix, and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>K</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\rho(K)</annotation></semantics></math>
 denotes the rank of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math>.
-Via the <code>base_hazard</code> and <code>control</code> arguments of
-<code><a href="../reference/jm.html">jm()</a></code>, different baseline hazard functions can be specified.
-We will illustrate this capability using the AIDS dataset. We start with
-the default joint model for the time to death and the longitudinal
-measurements of the square root CD4 cell counts:</p>
+Different baseline hazard functions can be specified using the
+<code>base_hazard</code> and <code>control</code> arguments of
+<code><a href="../reference/jm.html">jm()</a></code>. We will illustrate this capability using the AIDS
+dataset. We start with the default joint model for the time to death and
+the longitudinal measurements of the square root transformed CD4 cell
+counts:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Cox regression</span></span>
 <span><span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">death</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">aids.id</span><span class="op">)</span></span>
@@ -142,7 +143,9 @@ measurements of the square root CD4 cell counts:</p>
 <span></span>
 <span><span class="co"># default baseline hazard</span></span>
 <span><span class="va">jointFit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="va">fm</span>, time_var <span class="op">=</span> <span class="st">"obstime"</span><span class="op">)</span></span></code></pre></div>
-<p>By default, equally-spaced knots are placed in the interval
+<p>By default, the knots
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>λ</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>λ</mi><mi>P</mi></msub></mrow><annotation encoding="application/x-tex">\lambda_1, \ldots, \lambda_P</annotation></semantics></math>
+are placed equidistantly in the interval
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">(</mo><msup><mn>10</mn><mrow><mi>−</mi><mn>8</mn></mrow></msup><mo>,</mo><msub><mi>T</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(10^{-8}, T_{max})</annotation></semantics></math>,
 where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">T_{max}</annotation></semantics></math>
