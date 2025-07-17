@@ -46,7 +46,7 @@ jointFit2 <- update(jointFit1, base_hazard = "log time, ns")
 JMbayes2:::plot_hazard(jointFit2)
 ```
 
-Setting `base_hazard = "log time, ns"` corresponds to setting the control arguments `timescale_base_hazard = "log"` and `basis = "ns"`. Using regular expressions look-up of the user input in the `base_hazard` argument, the `jm()` function attempts to set the corresponding control arguments. For example, the following call would also set B-splines with the log time: `update(jointFit1, base_hazard = "ns, log-time")`.
+Setting `base_hazard = "log time, ns"` corresponds to setting the control arguments `timescale_base_hazard = "log"` and `basis = "ns"`. Using regular expressions look-up of the user input in the `base_hazard` argument, the `jm()` function attempts to set the corresponding control arguments. For example, the following call would also set natural cubic splines with the log time: `update(jointFit1, base_hazard = "ns, log-time")`.
 
 To fit a piecewise-constant baseline hazard function by splitting the follow-up period into five equidistant intervals, we use the call (note that the piecewise-constant approximation is defined for time in its original scale again):
 ```{r, 'piecewise constant', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
