@@ -38,7 +38,7 @@ fm <- lme(CD4 ~ ns(obstime, 2) * drug, data = aids,
 jointFit1 <- jm(CoxFit, fm, time_var = "obstime")
 ```
 
-By default, the knots $\lambda_1, \ldots, \lambda_P$ are placed equidistantly in the interval $(10^{-8}, T_{max})$, where $T_{max}$ is the maximum follow-up time. The number of knots is specified by the control argument `base_hazard_segments`, which has a default value of 9. The internal function `JMbayes2:::plot_hazard()` can be used to depict the estimated baseline hazard function:
+By default, the knots $\lambda_1, \ldots, \lambda_P$ are placed equidistantly in the interval $(10^{-8}, T_{max})$, where $T_{max}$ is the maximum follow-up time. The number of knots is specified by the control argument `base_hazard_segments`, which has a default value of 9. The degree of the polynomials in the B-spline basis is specified by the control argument `Bsplines_degree`; the default is 2, i.e., quadratic polynomials. The value of $r$ in the penalty matrix $\Delta_r$ is specified by the control argument `diff`; by default, second-order differences are used. The internal function `JMbayes2:::plot_hazard()` can be used to depict the estimated baseline hazard function:
 ```{r, 'default JM - estimated base hazard', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
 JMbayes2:::plot_hazard(jointFit1)
 ```
