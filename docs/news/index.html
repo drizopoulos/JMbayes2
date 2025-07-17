@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,7 +25,8 @@
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/Baseline_Hazard.html">Baseline Hazard Function</a></li>
+    <li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
     <li><a class="dropdown-item" href="../articles/Competing_Risks.html">Competing Risks</a></li>
     <li><a class="dropdown-item" href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a></li>
     <li><a class="dropdown-item" href="../articles/Multi_State_Processes.html">Multi-State Processes</a></li>
@@ -50,6 +51,15 @@
       <small>Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.0" id="jmbayes2-060">JMbayes2 0.6.0<a class="anchor" aria-label="anchor" href="#jmbayes2-060"></a></h2>
+<div class="section level3">
+<h3 id="major-0-6-0">Major<a class="anchor" aria-label="anchor" href="#major-0-6-0"></a></h3>
+<ul><li><p><code><a href="../reference/jm.html">jm()</a></code> allows for greater flexibility in specifying the baseline hazard function via the control arguments <code>basis</code>, <code>Bsplines_degree</code>, <code>base_hazard_segments</code>, and <code>timescale_base_hazard</code>. For example, now piecewise-constant, piecewise-linear, and the Weibull baseline hazard functions are possible. Also, it is possible to extrapolate after the last event time when <code>basis = "ns"</code>.</p></li>
+<li><p>The new function <code>ppcheck()</code> performs posterior predictive checks.</p></li>
+<li><p>Functions <code><a href="../reference/accuracy.html">tvROC()</a></code>, <code><a href="../reference/accuracy.html">tvAUC()</a></code> and <code><a href="../reference/accuracy.html">tvBrier()</a></code> now also work for Cox regression models.</p></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.0" id="jmbayes2-050">JMbayes2 0.5.0<a class="anchor" aria-label="anchor" href="#jmbayes2-050"></a></h2>
 <div class="section level3">

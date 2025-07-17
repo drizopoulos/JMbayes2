@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,7 +25,8 @@
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/Baseline_Hazard.html">Baseline Hazard Function</a></li>
+    <li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
     <li><a class="dropdown-item" href="../articles/Competing_Risks.html">Competing Risks</a></li>
     <li><a class="dropdown-item" href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a></li>
     <li><a class="dropdown-item" href="../articles/Multi_State_Processes.html">Multi-State Processes</a></li>
@@ -59,7 +60,7 @@
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
 
-<table class="table table"><tr><td>Package:</td><td>JMbayes2</td></tr><tr><td>Type:</td><td>Package</td></tr><tr><td>Version:</td><td>0.5-7</td></tr><tr><td>Date:</td><td>2025-06-16</td></tr><tr><td>License:</td><td>GPL (&gt;=3)</td></tr></table><p>This package fits joint models for longitudinal and time-to-event data. It can accommodate multiple longitudinal outcomes of different type (e.g., continuous, dichotomous, ordinal, counts), and assuming different distributions, i.e., Gaussian, Student's-t, Gamma, Beta, unit Lindley, censored Normal, Binomial, Poisson, Negative Binomial, and Beta-Binomial. For the event time process, right, left and interval censored data can be handled, while competing risks and multi-sate processes are also covered.</p>
+<table class="table table"><tr><td>Package:</td><td>JMbayes2</td></tr><tr><td>Type:</td><td>Package</td></tr><tr><td>Version:</td><td>0.5-9</td></tr><tr><td>Date:</td><td>2025-07-11</td></tr><tr><td>License:</td><td>GPL (&gt;=3)</td></tr></table><p>This package fits joint models for longitudinal and time-to-event data. It can accommodate multiple longitudinal outcomes of different type (e.g., continuous, dichotomous, ordinal, counts), and assuming different distributions, i.e., Gaussian, Student's-t, Gamma, Beta, unit Lindley, censored Normal, Binomial, Poisson, Negative Binomial, and Beta-Binomial. For the event time process, right, left and interval censored data can be handled, while competing risks and multi-sate processes are also covered.</p>
 <p><span class="pkg">JMbayes2</span> fits joint models using Markov chain Monte Carlo algorithms implemented in C++. The package also offers several utility functions that can extract useful information from
 fitted joint models. The most important of those are included in the
 <b>See also</b> Section below.</p>

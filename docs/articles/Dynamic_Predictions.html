@@ -33,7 +33,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +47,8 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
+<li><a class="dropdown-item" href="../articles/Baseline_Hazard.html">Baseline Hazard Function</a></li>
+    <li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
     <li><a class="dropdown-item" href="../articles/Competing_Risks.html">Competing Risks</a></li>
     <li><a class="dropdown-item" href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a></li>
     <li><a class="dropdown-item" href="../articles/Multi_State_Processes.html">Multi-State Processes</a></li>
@@ -81,7 +82,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-06-16</h4>
+            <h4 data-toc-skip class="date">2025-07-17</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Dynamic_Predictions.Rmd" class="external-link"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="d-none name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -572,7 +573,7 @@ is the fitted joint model we wish to internally validate.</p>
 <p>We fit the model in the training datasets using parallel computing as
 facilitated by the <strong>parallel</strong> package (<em>note</em>:
 this and the subsequent computations require some time to perform
-depending on the characteristics of your computing environment):</p>
+depending on the capabilities of your computing environment):</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">5L</span><span class="op">)</span></span>
 <span><span class="va">Model_folds</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span><span class="va">cl</span>, <span class="va">CVdats</span><span class="op">$</span><span class="va">training</span>, <span class="va">fit_model</span><span class="op">)</span></span>
@@ -717,7 +718,7 @@ i.e.,</p>
 <span><span class="co">#&gt; Using information up to time: 5 (202 subjects still at risk)</span></span>
 <span><span class="co">#&gt; Accounting for censoring using model-based weights</span></span>
 <span></span>
-<span><span class="co"># 95% CI</span></span>
+<span><span class="co"># 95% Bootstrap CI</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">AUC_per_bootSample_training</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      2.5%     97.5% </span></span>
 <span><span class="co">#&gt; 0.7765123 0.8436562</span></span></code></pre></div>
