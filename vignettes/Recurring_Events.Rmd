@@ -230,7 +230,7 @@ $$
 <br>
 
 $$
-\begin{pmatrix} \mathcolor{blue}{\boxed{\mathcolor{black}{b_{1_i}}}} \\ \vdots \\ \mathcolor{red}{\boxed{\mathcolor{black}{b_{p_i}}}} \\ \mathcolor{green}{\boxed{\mathcolor{black}{b_{F_i}}}}\end{pmatrix} \sim MVN \left(0, \begin{pmatrix}D & 0 \\ & \sigma^2_F\end{pmatrix}\right), \qquad
+\begin{pmatrix} \colorbox{blue}{$b_{1_i}$} \\ \vdots \\ \colorbox{red}{$b_{p_i}$} \\ \colorbox{green}{$b_{F_i}$}\end{pmatrix} \sim \mathcal{N} \left(0, \begin{pmatrix}D & 0 \\ & \sigma^2_F\end{pmatrix}\right), \qquad
 \varepsilon(t) \sim N \left(0, \sigma^2\right),
 $$
 
