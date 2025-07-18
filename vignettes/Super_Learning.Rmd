@@ -30,18 +30,18 @@ $$\hat{\tilde{\pi}}_i^{v}(t_q + \Delta t \mid t_q) = \sum\limits_{l = 1}^L \varp
 with $\varpi_l(t_q) > 0$, for $l = 1, \ldots, L$, and $\sum_l \varpi_l(t_q) = 1$. Note that the weights $\varpi_l(\cdot)$ are time-varying, i.e., at different follow-up times, different combinations of the $L$ models may yield more accurate predictions.
 
 For any time $t$, we will select the weights $\{\varpi_l(t); l = 1, \ldots, L\}$ that optimize the predictive performance of the combined cross-validated predictions using proper scoring rules. A scoring rule $\mathcal{S}\{\pi_i(u \mid t), \mathbb{I}(t < T_i^* < u)\}$ is called proper if the true distribution achieves the optimal expected score, i.e., in our case if
-$$E \Bigl [\mathcal{S}\{\pi_i^{true}(u \mid t), \; \mathbb{I}(t < T_i^* < u) \} \Bigr] \leq E \Bigl [\mathcal{S}\{\hat{\pi}_i(u \mid t), \; \mathbb{I}(t < T_i^* < u) \} \Bigr], \quad u > t,$$
+$$E \left [\mathcal{S}\{\pi_i^{true}(u \mid t), \; \mathbb{I}(t < T_i^* < u) \} \right] \leq E \left [\mathcal{S}\{\hat{\pi}_i(u \mid t), \; \mathbb{I}(t < T_i^* < u) \} \right], \quad u > t,$$
 
 where $\pi_i^{true}(u \mid t)$ denotes the conditional risk probabilities under the true model, and $\hat{\pi}_i(u \mid t)$ is an estimate of $\pi_i^{true}(u \mid t)$. The expectation is taken with respect to the conditional density of the survival outcome under the true model $\{T_i^* \mid T_i^* > t, \mathcal Y_i(t)\}$, with $\mathcal Y_i(t) = \{ y_i(t_{il}); 0 \leq t_{il} \leq t, l = 1, \ldots, n_i\}$, and the scoring rule $\mathcal S(\cdot, \cdot)$ is defined such that a lower score indicates better accuracy.
 
 The Brier score is a proper scoring rule that combines discrimination and calibration to measure overall predictive performance. In particular, at follow-up time $t$ and for a medically-relevant time window $\Delta t$, we define the Brier score as
-$$\mbox{BS}(t + \Delta t, t) = E \biggl [\Bigl \{ \mathbb{I}(T_i^* \leq t + \Delta t) - \tilde{\pi}_i^{v}(t + \Delta t \mid t) \Bigr\}^2 \; \Big | \; T_i^* > t \biggr].$$
+$$\mbox{BS}(t + \Delta t, t) = E \left [\left \{ \mathbb{I}(T_i^* \leq t + \Delta t) - \tilde{\pi}_i^{v}(t + \Delta t \mid t) \right \}^2 \; \Big | \; T_i^* > t \right].$$
 
 As an alternative proper scoring rule in the interval $(t, t + \Delta t]$ we consider an adaptation of the expected predictive cross-entropy (EPCE):
-$$\mbox{EPCE}(t + \Delta t, t) = E \biggl \{-\log \Bigl [ p \bigl \{ T_i^* \mid t < T_i^* < t + \Delta t, \mathcal Y_i(t), \mathcal D_{n} \bigr \} \Bigr ] \biggr \},$$
+$$\mbox{EPCE}(t + \Delta t, t) = E \left \{-\log \left [ p \bigl \{ T_i^* \mid t < T_i^* < t + \Delta t, \mathcal Y_i(t), \mathcal D_{n} \bigr \} \right ] \right \},$$
 
 where the expectation is taken with respect to $\{T_i^* \mid T_i^* > t, \mathcal Y_i(t)\}$ under the true model. In our context, both $\mbox{BS}(t + \Delta t, t)$ and $\mbox{EPCE}(t + \Delta t, t)$ are calculated using the convex combination of the cross-validated predictions $\hat{\tilde{\pi}}_i^{v}(t + \Delta t \mid t)$. In particular, using the super-learning procedure, we obtain the weights $\widehat{\varpi}_l(t)$ that minimize a proper scoring rule (in our case, either the $\mbox{BS}(t + \Delta t, t)$ or $\mbox{EPCE}(t + \Delta t, t)$) of the cross-validated predictions,
-$$\widehat{\varpi}_l(t) = \mbox{argmin}_{\varpi} \biggl [ \mathcal{S} \Bigl \{ \sum_{l = 1}^L \varpi_l \hat{\pi}_i^{(v)}(t + \Delta t \mid t, M_l), T_i, \delta_i \Bigr \} \biggr], \quad v = 1, \ldots, V,$$
+$$\widehat{\varpi}_l(t) = \mbox{argmin}_{\varpi} \left [ \mathcal{S} \left \{ \sum_{l = 1}^L \varpi_l \hat{\pi}_i^{(v)}(t + \Delta t \mid t, M_l), T_i, \delta_i \right \} \right], \quad v = 1, \ldots, V,$$
 
 under the constraints $\varpi_l(t) > 0$, for $l = 1, \ldots, L$, and $\sum_l \varpi_l(t) = 1$.
 
