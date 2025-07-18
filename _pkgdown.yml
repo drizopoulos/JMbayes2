@@ -5,7 +5,7 @@ home:
   description: Extended joint models for longitudinal and time-to-event data.
 
 template:
-  math-rendering: mathjax
+  math-rendering: katex
   bootstrap: 5
   opengraph:
     image:
@@ -15,7 +15,6 @@ template:
       creator: "@drizopoulos"
       card: summary_large_image
   params:
-    math_method: mathjax
     bootswatch: yeti
     noindex: true
     ganalytics: G-YDBZ5DBBSP
