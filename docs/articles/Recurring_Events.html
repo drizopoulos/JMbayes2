@@ -11,13 +11,8 @@
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
-<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
-  window.MathJax = {
-    chtml: {
-      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
-    }
-  };
-</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="../katex-auto.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -133,56 +128,58 @@ gap or calendar timescale, while accounting for non-risk periods (gray
 areas). During the follow-up, the subject experienced three events.
 </p>
 </div>
-<p>A joint model with <span class="math inline">\(p\)</span> normally
+<p>A joint model with <span class="math inline">p</span> normally
 distributed longitudinal markers, a terminal event process, and a
 recurrent event process can be described as follows:</p>
-<p><span class="math display">\[
+<p><span class="math display">
 \small{
 \begin{cases}
-y_{1_i}(t)= \color{blue}{\boxed{\color{black}{x_{1_i}(t)^\top\beta_1
+y_{1_i}(t)=
+\mathcolor{blue}{\boxed{\mathcolor{black}{x_{1_i}(t)^\top\beta_1
 +  z_{1_i}(t)^\top b_{1_i}}}} + \varepsilon_1(t) =
-\color{blue}{\boxed{\color{black}{\eta_{1_i}(t)}}} + \varepsilon_1(t)
-&amp; \text{Longitudinal marker 1}\\
+\mathcolor{blue}{\boxed{\mathcolor{black}{\eta_{1_i}(t)}}} +
+\varepsilon_1(t) &amp; \text{Longitudinal marker 1}\\
 \vdots \\
-y_{p_i}(t)= \color{red}{\boxed{\color{black}{x_{p_i}(t)^\top\beta_p
+y_{p_i}(t)=
+\mathcolor{red}{\boxed{\mathcolor{black}{x_{p_i}(t)^\top\beta_p
 +  z_{p_i}(t)^\top b_{p_i}}}} + \varepsilon_p(t) =
-\color{red}{\boxed{\color{black}{\eta_{p_i}(t)}}} + \varepsilon_p(t)
-&amp; \text{Longitudinal marker p}\\
+\mathcolor{red}{\boxed{\mathcolor{black}{\eta_{p_i}(t)}}} +
+\varepsilon_p(t) &amp; \text{Longitudinal marker p}\\
 h_{T_i}(t)= h_{T_0}(t)\exp\left\{  w_{T_i}(t)^\top \gamma_T +
-\color{blue}{\boxed{\color{black}{\mathcal{f}_{T_1}\left\{\eta_{1_i}(t)\right\}}}}
+\mathcolor{blue}{\boxed{\mathcolor{black}{\mathcal{f}_{T_1}\left\{\eta_{1_i}(t)\right\}}}}
 \alpha_{T_1} + \dots +
-\color{red}{\boxed{\color{black}{\mathcal{f}_{T_p}\left\{\eta_{p_i}(t)\right\}}}}
-\alpha_{T_p} + \color{green}{\boxed{\color{black}{b_{F_i}}}} \alpha_{F}
-\right\} &amp; \text{Terminal event}\\
+\mathcolor{red}{\boxed{\mathcolor{black}{\mathcal{f}_{T_p}\left\{\eta_{p_i}(t)\right\}}}}
+\alpha_{T_p} + \mathcolor{green}{\boxed{\mathcolor{black}{b_{F_i}}}}
+\alpha_{F} \right\} &amp; \text{Terminal event}\\
 h_{R_i}(t)= h_{R_0}(t)\exp\left\{  w_{R_i}(t)^\top \gamma_R +
-\color{blue}{\boxed{\color{black}{\mathcal{f}_{R_1}\left\{\eta_{2_i}(t)\right\}}}}
+\mathcolor{blue}{\boxed{\mathcolor{black}{\mathcal{f}_{R_1}\left\{\eta_{2_i}(t)\right\}}}}
 \alpha_{R_1} + \dots +
-\color{red}{\boxed{\color{black}{\mathcal{f}_{R_p}\left\{\eta_{p_i}(t)\right\}}}}
-\alpha_{R_p} + \color{green}{\boxed{\color{black}{b_{F_i}}}} \right\}
-&amp; \text{Recurrent event}\\
+\mathcolor{red}{\boxed{\mathcolor{black}{\mathcal{f}_{R_p}\left\{\eta_{p_i}(t)\right\}}}}
+\alpha_{R_p} + \mathcolor{green}{\boxed{\mathcolor{black}{b_{F_i}}}}
+\right\} &amp; \text{Recurrent event}\\
 \end{cases},
 }
-\]</span></p>
+</span></p>
 <p><br></p>
-<p><span class="math display">\[
-\begin{pmatrix} \color{blue}{\boxed{\color{black}{b_{1_i}}}} \\ \vdots
-\\ \color{red}{\boxed{\color{black}{b_{p_i}}}} \\
-\color{green}{\boxed{\color{black}{b_{F_i}}}}\end{pmatrix} \sim MVN
-\left(0, \begin{pmatrix}D &amp; 0 \\ &amp;
+<p><span class="math display">
+\begin{pmatrix} \mathcolor{blue}{\boxed{\mathcolor{black}{b_{1_i}}}} \\
+\vdots \\ \mathcolor{red}{\boxed{\mathcolor{black}{b_{p_i}}}} \\
+\mathcolor{green}{\boxed{\mathcolor{black}{b_{F_i}}}}\end{pmatrix} \sim
+MVN \left(0, \begin{pmatrix}D &amp; 0 \\ &amp;
 \sigma^2_F\end{pmatrix}\right), \qquad
 \varepsilon(t) \sim N \left(0, \sigma^2\right),
-\]</span></p>
+</span></p>
 <p><br></p>
-<p>where <span class="math inline">\(i = 1, \ldots, n\)</span>. We
-specify linear mixed-effects models for the longitudinal outcomes, and
-for the terminal and recurrence processes, we use proportional hazard
-models. The longitudinal and event time processes are linked via a
-latent structure of random effects, highlighted by the same color in the
-equations above. The terms <span class="math inline">\(\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}\)</span>
-and <span class="math inline">\(\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}\)</span>
-describe the functional forms that link the longitudinal marker <span class="math inline">\(j\)</span> with the risk of the recurrent and
-terminal events, respectively. The frailty <span class="math inline">\(b_{F_i}\)</span> is a random effect that accounts
-for the correlations in the recurrent events. The coefficient <span class="math inline">\(\alpha_{F}\)</span> quantifies the strength of the
+<p>where <span class="math inline">i = 1, \ldots, n</span>. We specify
+linear mixed-effects models for the longitudinal outcomes, and for the
+terminal and recurrence processes, we use proportional hazard models.
+The longitudinal and event time processes are linked via a latent
+structure of random effects, highlighted by the same color in the
+equations above. The terms <span class="math inline">\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}</span>
+and <span class="math inline">\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}</span>
+describe the functional forms that link the longitudinal marker <span class="math inline">j</span> with the risk of the recurrent and terminal
+events, respectively. The frailty <span class="math inline">b_{F_i}</span> is a random effect that accounts for
+the correlations in the recurrent events. The coefficient <span class="math inline">\alpha_{F}</span> quantifies the strength of the
 association between the terminal and recurrent event processes. For
 notational simplicity, in the formulation presented above, we have shown
 normally distributed longitudinal outcomes; however,
@@ -480,20 +477,20 @@ argument specifying the desired timescale,</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 1.7 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 1.6 min</span></span></code></pre></div>
 <p>One can find the association parameters between the underlying value
 of the longitudinal outcome and the recurrent and terminating event
 processes in the summary output as <code>value(y):strataRec</code>
-(<span class="math inline">\(\alpha_{R_1}\)</span>) and
-<code>value(y):strataTer</code> (<span class="math inline">\(\alpha_{T_1}\)</span>), respectively. <span class="math inline">\(\exp\{\alpha_{R_1}\}\)</span> denotes the relative
-increase in the risk of the next recurrent event at time <span class="math inline">\(t\)</span> that results from one unit increase in
-<span class="math inline">\(\eta_{1_i}(t)\)</span> since <u>the end of
-the previous event</u><a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;This is the time reference because we are using the gap
+(<span class="math inline">\alpha_{R_1}</span>) and
+<code>value(y):strataTer</code> (<span class="math inline">\alpha_{T_1}</span>), respectively. <span class="math inline">\exp\{\alpha_{R_1}\}</span> denotes the relative
+increase in the risk of the next recurrent event at time <span class="math inline">t</span> that results from one unit increase in
+<span class="math inline">\eta_{1_i}(t)</span> since <u>the end of the
+previous event</u><a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;This is the time reference because we are using the gap
 timescale. Alternatively, if we were using the calendar timescale, it
 would be &lt;u&gt;the entry time in the study&lt;/u&gt;.&lt;/p&gt;"><sup>1</sup></a>. The association parameter for the frailty
-term in the terminal risk model, <span class="math inline">\(\alpha_{F}\)</span>, is identified in the output
-as <code>frailty</code>. The <code>sigma_frailty</code> refers to the
-frailty standard deviation, <span class="math inline">\(\sigma_F\)</span>.</p>
+term in the terminal risk model, <span class="math inline">\alpha_{F}</span>, is identified in the output as
+<code>frailty</code>. The <code>sigma_frailty</code> refers to the
+frailty standard deviation, <span class="math inline">\sigma_F</span>.</p>
 </div>
 </div>
 </div>
