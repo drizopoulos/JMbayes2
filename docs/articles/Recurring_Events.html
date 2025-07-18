@@ -11,7 +11,13 @@
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
+  window.MathJax = {
+    chtml: {
+      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
+    }
+  };
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -127,11 +133,10 @@ gap or calendar timescale, while accounting for non-risk periods (gray
 areas). During the follow-up, the subject experienced three events.
 </p>
 </div>
-<p>A joint model with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
-normally distributed longitudinal markers, a terminal event process, and
-a recurrent event process can be described as follows:</p>
-<p><span class="math display">$$
+<p>A joint model with <span class="math inline">\(p\)</span> normally
+distributed longitudinal markers, a terminal event process, and a
+recurrent event process can be described as follows:</p>
+<p><span class="math display">\[
 \small{
 \begin{cases}
 y_{1_i}(t)= \color{blue}{\boxed{\color{black}{x_{1_i}(t)^\top\beta_1
@@ -157,40 +162,32 @@ h_{R_i}(t)= h_{R_0}(t)\exp\left\{  w_{R_i}(t)^\top \gamma_R +
 &amp; \text{Recurrent event}\\
 \end{cases},
 }
-$$</span></p>
+\]</span></p>
 <p><br></p>
-<p><span class="math display">$$
+<p><span class="math display">\[
 \begin{pmatrix} \color{blue}{\boxed{\color{black}{b_{1_i}}}} \\ \vdots
 \\ \color{red}{\boxed{\color{black}{b_{p_i}}}} \\
 \color{green}{\boxed{\color{black}{b_{F_i}}}}\end{pmatrix} \sim MVN
 \left(0, \begin{pmatrix}D &amp; 0 \\ &amp;
 \sigma^2_F\end{pmatrix}\right), \qquad
 \varepsilon(t) \sim N \left(0, \sigma^2\right),
-$$</span></p>
+\]</span></p>
 <p><br></p>
-<p>where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">i = 1, \ldots, n</annotation></semantics></math>.
-We specify linear mixed-effects models for the longitudinal outcomes,
-and for the terminal and recurrence processes, we use proportional
-hazard models. The longitudinal and event time processes are linked via
-a latent structure of random effects, highlighted by the same color in
-the equations above. The terms
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝒻</mi><msub><mi>R</mi><mi>j</mi></msub></msub><mrow><mo stretchy="true" form="prefix">{</mo><msub><mi>η</mi><msub><mi>j</mi><mi>i</mi></msub></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow></mrow><annotation encoding="application/x-tex">\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝒻</mi><msub><mi>R</mi><mi>j</mi></msub></msub><mrow><mo stretchy="true" form="prefix">{</mo><msub><mi>η</mi><msub><mi>j</mi><mi>i</mi></msub></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow></mrow><annotation encoding="application/x-tex">\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}</annotation></semantics></math>
-describe the functional forms that link the longitudinal marker
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>j</mi><annotation encoding="application/x-tex">j</annotation></semantics></math>
-with the risk of the recurrent and terminal events, respectively. The
-frailty
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>b</mi><msub><mi>F</mi><mi>i</mi></msub></msub><annotation encoding="application/x-tex">b_{F_i}</annotation></semantics></math>
-is a random effect that accounts for the correlations in the recurrent
-events. The coefficient
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>α</mi><mi>F</mi></msub><annotation encoding="application/x-tex">\alpha_{F}</annotation></semantics></math>
-quantifies the strength of the association between the terminal and
-recurrent event processes. For notational simplicity, in the formulation
-presented above, we have shown normally distributed longitudinal
-outcomes; however, <strong>JMbayes2</strong> provides the option to
-consider longitudinal outcomes with <a href="https://drizopoulos.github.io/JMbayes2/articles/Non_Gaussian_Mixed_Models.html">different
+<p>where <span class="math inline">\(i = 1, \ldots, n\)</span>. We
+specify linear mixed-effects models for the longitudinal outcomes, and
+for the terminal and recurrence processes, we use proportional hazard
+models. The longitudinal and event time processes are linked via a
+latent structure of random effects, highlighted by the same color in the
+equations above. The terms <span class="math inline">\(\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}\)</span>
+and <span class="math inline">\(\mathcal{f}_{R_j}\left\{\eta_{j_i}(t)\right\}\)</span>
+describe the functional forms that link the longitudinal marker <span class="math inline">\(j\)</span> with the risk of the recurrent and
+terminal events, respectively. The frailty <span class="math inline">\(b_{F_i}\)</span> is a random effect that accounts
+for the correlations in the recurrent events. The coefficient <span class="math inline">\(\alpha_{F}\)</span> quantifies the strength of the
+association between the terminal and recurrent event processes. For
+notational simplicity, in the formulation presented above, we have shown
+normally distributed longitudinal outcomes; however,
+<strong>JMbayes2</strong> provides the option to consider longitudinal
+outcomes with <a href="https://drizopoulos.github.io/JMbayes2/articles/Non_Gaussian_Mixed_Models.html">different
 distributions</a>.</p>
 </div>
 <div class="section level3">
@@ -409,15 +406,15 @@ represent a recurrent and terminal event, respectively.
 first to fit the linear mixed model that describes the longitudinal
 outcome,</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lme_fit</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, B <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span>, </span>
-<span>               random <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu">pdDiag</span><span class="op">(</span>form <span class="op">=</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, </span>
+<code class="sourceCode R"><span><span class="va">lme_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, B <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span>, </span>
+<span>               random <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/pdDiag.html" class="external-link">pdDiag</a></span><span class="op">(</span>form <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, </span>
 <span>                                                       B <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>               data <span class="op">=</span> <span class="va">lme_data</span>,</span>
-<span>               control <span class="op">=</span> <span class="fu">lmeControl</span><span class="op">(</span>opt <span class="op">=</span> <span class="st">"optim"</span>, niterEM <span class="op">=</span> <span class="fl">45</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>               control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lmeControl.html" class="external-link">lmeControl</a></span><span class="op">(</span>opt <span class="op">=</span> <span class="st">"optim"</span>, niterEM <span class="op">=</span> <span class="fl">45</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Then, we use the <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code> function to fit a
 stratified Cox model using the transformed data,</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cox_fit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="op">(</span><span class="va">group</span> <span class="op">+</span> <span class="va">age</span><span class="op">)</span><span class="op">:</span><span class="fu">strata</span><span class="op">(</span><span class="va">strata</span><span class="op">)</span>,</span>
+<code class="sourceCode R"><span><span class="va">cox_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="op">(</span><span class="va">group</span> <span class="op">+</span> <span class="va">age</span><span class="op">)</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata</a></span><span class="op">(</span><span class="va">strata</span><span class="op">)</span>,</span>
 <span>                 data <span class="op">=</span> <span class="va">cox_data</span><span class="op">)</span></span></code></pre></div>
 <p>These models are then provided as arguments in the <code><a href="../reference/jm.html">jm()</a></code>
 function. The user specifies the desired functional forms for the mixed
@@ -487,24 +484,16 @@ argument specifying the desired timescale,</p>
 <p>One can find the association parameters between the underlying value
 of the longitudinal outcome and the recurrent and terminating event
 processes in the summary output as <code>value(y):strataRec</code>
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>α</mi><msub><mi>R</mi><mn>1</mn></msub></msub><annotation encoding="application/x-tex">\alpha_{R_1}</annotation></semantics></math>)
-and <code>value(y):strataTer</code>
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>α</mi><msub><mi>T</mi><mn>1</mn></msub></msub><annotation encoding="application/x-tex">\alpha_{T_1}</annotation></semantics></math>),
-respectively.
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>exp</mo><mo stretchy="false" form="prefix">{</mo><msub><mi>α</mi><msub><mi>R</mi><mn>1</mn></msub></msub><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\exp\{\alpha_{R_1}\}</annotation></semantics></math>
-denotes the relative increase in the risk of the next recurrent event at
-time
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
-that results from one unit increase in
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>η</mi><msub><mn>1</mn><mi>i</mi></msub></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\eta_{1_i}(t)</annotation></semantics></math>
-since <u>the end of the previous event</u><a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;This is the time reference because we are using the gap
+(<span class="math inline">\(\alpha_{R_1}\)</span>) and
+<code>value(y):strataTer</code> (<span class="math inline">\(\alpha_{T_1}\)</span>), respectively. <span class="math inline">\(\exp\{\alpha_{R_1}\}\)</span> denotes the relative
+increase in the risk of the next recurrent event at time <span class="math inline">\(t\)</span> that results from one unit increase in
+<span class="math inline">\(\eta_{1_i}(t)\)</span> since <u>the end of
+the previous event</u><a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;This is the time reference because we are using the gap
 timescale. Alternatively, if we were using the calendar timescale, it
-would be &lt;u&gt;the entry time in the study&lt;/u&gt;.&lt;/p&gt;"><sup>1</sup></a>. The association
-parameter for the frailty term in the terminal risk model,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>α</mi><mi>F</mi></msub><annotation encoding="application/x-tex">\alpha_{F}</annotation></semantics></math>,
-is identified in the output as <code>frailty</code>. The
-<code>sigma_frailty</code> refers to the frailty standard deviation,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>F</mi></msub><annotation encoding="application/x-tex">\sigma_F</annotation></semantics></math>.</p>
+would be &lt;u&gt;the entry time in the study&lt;/u&gt;.&lt;/p&gt;"><sup>1</sup></a>. The association parameter for the frailty
+term in the terminal risk model, <span class="math inline">\(\alpha_{F}\)</span>, is identified in the output
+as <code>frailty</code>. The <code>sigma_frailty</code> refers to the
+frailty standard deviation, <span class="math inline">\(\sigma_F\)</span>.</p>
 </div>
 </div>
 </div>
