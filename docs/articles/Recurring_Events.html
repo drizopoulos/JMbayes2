@@ -134,37 +134,28 @@ recurrent event process can be described as follows:</p>
 <p><span class="math display">
 \small{
 \begin{cases}
-y_{1_i}(t)=
-\mathcolor{blue}{\boxed{\mathcolor{black}{x_{1_i}(t)^\top\beta_1
-+  z_{1_i}(t)^\top b_{1_i}}}} + \varepsilon_1(t) =
-\mathcolor{blue}{\boxed{\mathcolor{black}{\eta_{1_i}(t)}}} +
-\varepsilon_1(t) &amp; \text{Longitudinal marker 1}\\
+y_{1_i}(t)= x_{1_i}(t)^\top beta_1 +  z_{1_i}(t)^\top b_{1_i} +
+\varepsilon_1(t) = \eta_{1_i}(t) + \varepsilon_1(t) &amp;
+\text{Longitudinal marker 1}\\
 \vdots \\
-y_{p_i}(t)=
-\mathcolor{red}{\boxed{\mathcolor{black}{x_{p_i}(t)^\top\beta_p
-+  z_{p_i}(t)^\top b_{p_i}}}} + \varepsilon_p(t) =
-\mathcolor{red}{\boxed{\mathcolor{black}{\eta_{p_i}(t)}}} +
-\varepsilon_p(t) &amp; \text{Longitudinal marker p}\\
-h_{T_i}(t)= h_{T_0}(t)\exp\left\{  w_{T_i}(t)^\top \gamma_T +
-\mathcolor{blue}{\boxed{\mathcolor{black}{\mathcal{f}_{T_1}\left\{\eta_{1_i}(t)\right\}}}}
-\alpha_{T_1} + \dots +
-\mathcolor{red}{\boxed{\mathcolor{black}{\mathcal{f}_{T_p}\left\{\eta_{p_i}(t)\right\}}}}
-\alpha_{T_p} + \mathcolor{green}{\boxed{\mathcolor{black}{b_{F_i}}}}
+y_{p_i}(t)= x_{p_i}(t)^\top \beta_p +  z_{p_i}(t)^\top b_{p_i} +
+\varepsilon_p(t) = \eta_{p_i}(t) + \varepsilon_p(t) &amp;
+\text{Longitudinal marker p}\\
+h_{T_i}(t)= h_{T_0}(t)\exp \left \{  w_{T_i}(t)^\top \gamma_T +
+\mathcal{f}_{T_1}\left\{\eta_{1_i}(t)\right\} \alpha_{T_1} + \dots +
+\mathcal{f}_{T_p}\left\{\eta_{p_i}(t)\right\} \alpha_{T_p} + b_{F_i}
 \alpha_{F} \right\} &amp; \text{Terminal event}\\
 h_{R_i}(t)= h_{R_0}(t)\exp\left\{  w_{R_i}(t)^\top \gamma_R +
-\mathcolor{blue}{\boxed{\mathcolor{black}{\mathcal{f}_{R_1}\left\{\eta_{2_i}(t)\right\}}}}
-\alpha_{R_1} + \dots +
-\mathcolor{red}{\boxed{\mathcolor{black}{\mathcal{f}_{R_p}\left\{\eta_{p_i}(t)\right\}}}}
-\alpha_{R_p} + \mathcolor{green}{\boxed{\mathcolor{black}{b_{F_i}}}}
+\mathcal{f}_{R_1}\left\{\eta_{2_i}(t)\right\} \alpha_{R_1} + \dots +
+\mathcal{f}_{R_p}\left\{\eta_{p_i}(t)\right\} \alpha_{R_p} + b_{F_i}
 \right\} &amp; \text{Recurrent event}\\
 \end{cases},
 }
 </span></p>
 <p><br></p>
 <p><span class="math display">
-\begin{pmatrix} \colorbox{blue}{$b_{1_i}$} \\ \vdots \\
-\colorbox{red}{$b_{p_i}$} \\ \colorbox{green}{$b_{F_i}$}\end{pmatrix}
-\sim MVN \left(0, \begin{pmatrix}D &amp; 0 \\ &amp;
+\begin{pmatrix} b_{1_i} \\ \vdots \\ b_{p_i} \\ b_{F_i}\end{pmatrix}
+\sim \mathcal{N} \left(0, \begin{pmatrix}D &amp; 0 \\ &amp;
 \sigma^2_F\end{pmatrix}\right), \qquad
 \varepsilon(t) \sim N \left(0, \sigma^2\right),
 </span></p>
@@ -476,7 +467,7 @@ argument specifying the desired timescale,</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 1.6 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 1.5 min</span></span></code></pre></div>
 <p>One can find the association parameters between the underlying value
 of the longitudinal outcome and the recurrent and terminating event
 processes in the summary output as <code>value(y):strataRec</code>
