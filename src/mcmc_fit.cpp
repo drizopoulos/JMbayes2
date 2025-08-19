@@ -145,7 +145,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uword n_burnin = as<uword>(control["n_burnin"]);
   bool MALA = as<bool>(control["MALA"]);
   // priors
-  bool penalized_bs_gammas = as<bool>(priors["penalized_bs_gammas"]);
+  LogicalVector penalized_bs_gammas = as<LogicalVector>(priors["penalized_bs_gammas"]);
   field<vec> mean_bs_gammas = List2Field_vec(as<List>(priors["mean_bs_gammas"]));
   field<mat> Tau_bs_gammas = List2Field_mat(as<List>(priors["Tau_bs_gammas"]));
   vec post_A_tau_bs_gammas = as<vec>(priors["A_tau_bs_gammas"]) +
@@ -207,7 +207,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   uword n_b = b_mat.n_rows;
   uword n_bs_gammas = bs_gammas.n_rows;
   uword n_strata = tau_bs_gammas.n_rows;
-  uword n_per_stratum = n_bs_gammas / n_strata;
+  uvec ncoefs_per_stratum(n_strata);
+  for (uword i = 0; i < n_strata; ++i) {
+      ncoefs_per_stratum.at(i) = mean_bs_gammas.at(i).n_rows;
+  }
+  uword str1 = 0;
+  uword str2 = ncoefs_per_stratum.at(0) - 1;
   uword n_gammas = gammas.n_rows;
   uword n_alphas = alphas.n_rows;
   uword n_alphaF = alphaF.n_rows;
@@ -360,17 +365,22 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     ////////////////////////////////////////////////////////////////////////
 
-    if (penalized_bs_gammas) {
-        for (uword j = 0; j < n_strata; ++j) {
-            vec bs_gammas_j =
-                bs_gammas.rows(j * n_per_stratum, (j + 1) * n_per_stratum - 1);
+    for (uword j = 0; j < n_strata; ++j) {
+         if (penalized_bs_gammas[j]) {
+            vec bs_gammas_j = bs_gammas.rows(str1, str2);
             double quad = as_scalar(bs_gammas_j.t() * Tau_bs_gammas.at(j) *
                                     bs_gammas_j);
             double post_B_tau = B_tau_bs_gammas.at(j) + 0.5 * quad;
             tau_bs_gammas.at(j) = R::rgamma(post_A_tau_bs_gammas.at(j), 1 / post_B_tau);
             res_tau_bs_gammas.at(it, j) = tau_bs_gammas.at(j);
         }
+        if (j + 1 < n_strata) {
+            str1 += ncoefs_per_stratum.at(j);
+            str2 += ncoefs_per_stratum.at(j + 1);
+        }
     }
+    str1 = 0;
+    str2 = ncoefs_per_stratum.at(0) - 1;
 
     ////////////////////////////////////////////////////////////////////////
 

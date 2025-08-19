@@ -22,13 +22,22 @@ double logPrior_surv (
     mat &prior_Tau_alphaF, const vec &lambda_alphaF, const double &tau_alphaF,
     const bool &shrink_alphaF) {
   uword n_strata = prior_mean_bs_gammas.n_elem;
-  uword n_per_stratum = bs_gammas.n_rows / n_strata;
+  uvec ncoefs_per_stratum(n_strata);
+  for (uword i = 0; i < n_strata; ++i) {
+      ncoefs_per_stratum.at(i) = prior_mean_bs_gammas.at(i).n_rows;
+  }
+  uword str1 = 0;
+  uword str2 = ncoefs_per_stratum.at(0) - 1;
   double out(0.0);
   for (uword i = 0; i < n_strata; ++i) {
-    vec mu = prior_mean_bs_gammas.at(i);
-    out += logPrior(bs_gammas.rows(i * n_per_stratum, (i + 1) * n_per_stratum - 1),
-                    mu, prior_Tau_bs_gammas.at(i), mu.ones(), tau_bs_gammas.at(i),
-                    false);
+      vec mu = prior_mean_bs_gammas.at(i);
+      vec bs_gammas_i = bs_gammas.rows(str1, str2);
+      out += logPrior(bs_gammas_i, mu, prior_Tau_bs_gammas.at(i), mu.ones(),
+                      tau_bs_gammas.at(i), false);
+      if (i + 1 < n_strata) {
+          str1 += ncoefs_per_stratum.at(i);
+          str2 += ncoefs_per_stratum.at(i + 1);
+      }
   }
   out += logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, lambda_gammas,
                   tau_gammas, shrink_gammas);

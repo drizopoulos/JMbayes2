@@ -400,7 +400,9 @@ knots <- function (xl, xr, ndx, deg) {
     }
 }
 
-knots <- function (xl, xr, ndx, deg, basis) {
+knots <- function (x, ndx, deg, basis) {
+    xl <- x[1L]
+    xr <- x[2L]
     xl <- sqrt(.Machine$double.eps)
     xr <- xr + 0.001
     if (basis == "bs") {
@@ -911,23 +913,44 @@ makepredictcall.tv <- function (var, call) {
     x
 }
 
-create_W0 <- function (times, knots, ord, strata, basis) {
-    W0 <- if (basis == "bs") {
-        lapply(knots, splineDesign, x = times, ord = ord, outer.ok = TRUE)
-    } else {
-        lapply(knots, function (kn, times)
-            ns(x = times, knots = kn[-c(1, length(kn))], intercept = TRUE,
-               Boundary.knots = kn[c(1, length(kn))]), times = times)
-    }
+create_W0 <- function (times, knots, degree, strata, basis,
+                       timescale_base_hazard) {
+    #times = c(t(st - trunc_Time))
+    #knots = con$knots
+    #degree = con$Bsplines_degree
+    #strata = strata_H
+    #basis = con$basis
+    #timescale_base_hazard = con$timescale_base_hazard
     n_strata <- length(unique(strata))
-    ncW0 <- ncol(W0[[1L]])
-    ind_cols <- matrix(seq_len(ncW0 * n_strata), ncW0)
-    out <- matrix(0.0, nrow(W0[[1L]]), ncW0 * n_strata)
+    W0 <- vector("list", n_strata)
+    for (k in seq_len(n_strata)) {
+        tt <- if (timescale_base_hazard[k] == "identity") times else log(times)
+        W0[[k]] <- if (basis[k] == "bs") {
+            splineDesign(knots[[k]], tt, ord = degree[k] + 1L,
+                         outer.ok = TRUE)
+        } else {
+            kn <- knots[[k]]
+            ns(x = tt, knots = kn[-c(1, length(kn))], intercept = TRUE,
+               Boundary.knots = kn[c(1, length(kn))])
+        }
+    }
+    #W0 <- if (basis == "bs") {
+    #    lapply(knots, splineDesign, x = times, ord = degree + 1L,
+    #           outer.ok = TRUE)
+    #} else {
+    #    lapply(knots, function (kn, times)
+    #        ns(x = times, knots = kn[-c(1, length(kn))], intercept = TRUE,
+    #           Boundary.knots = kn[c(1, length(kn))]), times = times)
+    #}
+    ncW0 <- sapply(W0, ncol)
+    ind_cols <- mapply2(":", c(1, cumsum(ncW0) + 1), c(cumsum(ncW0), 200))
+    out <- matrix(0.0, nrow(W0[[1L]]), sum(ncW0))
     for (i in seq_len(n_strata)) {
         row_inds <- strata == i
-        col_inds <- ind_cols[, i]
+        col_inds <- ind_cols[[i]]
         out[row_inds, col_inds] <- W0[[i]][row_inds, ]
     }
+    attr(out, "ncW0") <- ncW0
     out
 }
 
@@ -1568,15 +1591,12 @@ plot_hazard <- function (object, CI = TRUE, plot = TRUE,
     r <- range(object$model_data$Time_right)
     if (!is.null(tmax)) r[2L] <- tmax
     tt <- seq(r[1L], r[2L], len = 501)
-    if (object$control$timescale_base_hazard != "identity") {
-        tt <- log(tt)
-    }
     nstrata <- length(unique(object$model_data$strata))
     strt <- rep(seq_len(nstrata), each = length(tt))
     tt <- rep(tt, nstrata)
     W0 <- create_W0(tt, object$control$knots,
-                    object$control$Bsplines_degree + 1, strt,
-                    object$control$basis)
+                    object$control$Bsplines_degree, strt,
+                    object$control$basis, object$control$timescale_base_hazard)
     bs_gammas <- do.call('rbind', object$mcmc$bs_gammas)
     W_std_gammas <- do.call('rbind', object$mcmc$W_std_gammas)
     Wlong_std_alphas <- do.call('rbind', object$mcmc$Wlong_std_alphas)
@@ -1590,9 +1610,6 @@ plot_hazard <- function (object, CI = TRUE, plot = TRUE,
     ci <- apply(h_vals, 2L, quantile2)
     low <- ci[1L, ]
     upp <- ci[2L, ]
-    if (object$control$timescale_base_hazard != "identity") {
-        tt <- exp(tt)
-    }
     if (plot) {
         for (j in seq_len(nstrata)) {
             jj <- strt == j

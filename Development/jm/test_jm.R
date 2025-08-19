@@ -19,6 +19,14 @@ source("./Development/jm/PBC_data.R")
 Rcpp::sourceCpp('src/mcmc_fit.cpp')
 
 
+fm1 <- lme(log(serBilir) ~ ns(year, 2, B = c(0, 15)) * sex, data = pbc2,
+           random = list(id = pdDiag(form = ~ ns(year, 2, B = c(0, 15)))))
+Cox <- coxph(Surv(years, status2) ~ age + strata(sex), data = pbc2.id)
+
+jmFit <- jm(Cox, fm1, time_var = "year", base_hazard = c("Weibull", NA))
+
+JMbayes2:::plot_hazard(jmFit)
+
 #
 pbc2$prothrombin[pbc2$id == levels(pbc2$id)[1L]] <- NA
 pbc2$prothrombin[pbc2$id == levels(pbc2$id)[2L]] <- NA
@@ -33,7 +41,7 @@ fm2 <- lme(prothrombin ~ ns(year, 2, B = c(0, 15)) * sex, data = pbc2,
 fm3 <- mixed_model(ascites ~ year * sex, data = pbc2,
                    random = ~ year || id, family = binomial())
 Mixed <- list(fm1, fm2, fm3)
-Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
+Cox <- coxph(Surv(years, status2) ~ age + strata(sex), data = pbc2.id)
 
 #system.time(obj <- jm(Cox, Mixed, time_var = "year"))
 
@@ -58,7 +66,7 @@ which_independent = NULL
 recurrent = FALSE
 data_Surv = NULL
 id_var = NULL
-priors = list(penalized_bs_gammas = FALSE)
+priors = NULL
 control = NULL
 base_hazard = NULL
 #

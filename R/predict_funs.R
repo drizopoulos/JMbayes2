@@ -248,13 +248,8 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
 
     # Design matrices
     strata_H <- rep(strata, each = control$GK_k)
-    W0_H <- if (control$timescale_base_hazard == "identity") {
-        create_W0(c(t(st)), knots, control$Bsplines_degree + 1, strata_H,
-                  control$basis)
-    } else {
-        create_W0(log(c(t(st))), knots, control$Bsplines_degree + 1, strata_H,
-                  control$basis)
-    }
+    W0_H <- create_W0(c(t(st)), knots, control$Bsplines_degree, strata_H,
+                      control$basis, control$timescale_base_hazard)
     idT_str <- paste0(idT, "_", strata)
     dataS_H <- SurvData_HazardModel(split(st, row(st)), dataS, Time_start,
                                     idT_str, time_var,
@@ -275,13 +270,8 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
                                             eps, direction, zero_ind_Z, time_window)
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
     if (length(which_event)) {
-        W0_h <- if (control$timescale_base_hazard == "identity") {
-            create_W0(Time_right, knots, control$Bsplines_degree + 1,
-                      strata, control$basis)
-        } else {
-            create_W0(log(Time_right), knots, control$Bsplines_degree + 1,
-                      strata, control$basis)
-        }
+        W0_h <- create_W0(Time_right, knots, control$Bsplines_degree,
+                          strata, control$basis, control$timescale_base_hazard)
         dataS_h <- SurvData_HazardModel(split(Time_right, seq_along(Time_right)),
                                         dataS, Time_start,
                                         idT_str, time_var,
@@ -305,13 +295,8 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
         X_h <- Z_h <- U_h <- rep(list(matrix(0.0)), length(respVars))
     }
     if (length(which_interval)) {
-        W0_H2 <- if (control$timescale_base_hazard == "identity") {
-            create_W0(c(t(st2)), knots, control$Bsplines_degree + 1,
-                      strata_H, control$basis)
-        } else {
-            create_W0(log(c(t(st2))), knots, control$Bsplines_degree + 1,
-                      strata_H, control$basis)
-        }
+        W0_H2 <- create_W0(c(t(st2)), knots, control$Bsplines_degree,
+                           strata_H, control$basis, control$timescale_base_hazard)
         dataS_H2 <- SurvData_HazardModel(split(st2, row(st2)), dataS, Time_start,
                                          idT_str, time_var,
                                          match(idT_str, unique(idT_str)))
@@ -469,13 +454,8 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
     } else {
         rep(strata, each = control$GK_k)
     }
-    W0_H <- if (control$timescale_base_hazard == "identity") {
-        create_W0(c(t(st)), knots, control$Bsplines_degree + 1, strata_H,
-                  control$basis)
-    } else {
-        create_W0(log(c(t(st))), knots, control$Bsplines_degree + 1, strata_H,
-                  control$basis)
-    }
+    W0_H <- create_W0(c(t(st)), knots, control$Bsplines_degree, strata_H,
+                      control$basis, control$timescale_base_hazard)
     dataS_H <- SurvData_HazardModel(split(st, row(st)), dataS, last_times,
                                     paste0(idT, "_", strata), time_var,
                                     rep(index, each = control$GK_k))
@@ -506,13 +486,8 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
                                             eps, direction, zero_ind_Z, time_window)
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
     if (length(which_event)) {
-        W0_h <- if (control$timescale_base_hazard == "identity") {
-            create_W0(c(t(st0)), knots, control$Bsplines_degree + 1,
-                      strata, control$basis)
-        } else {
-            create_W0(log(c(t(st0))), knots, control$Bsplines_degree + 1,
-                      strata, control$basis)
-        }
+        W0_h <- create_W0(c(t(st0)), knots, control$Bsplines_degree,
+                          strata, control$basis, control$timescale_base_hazard)
         dataS_h <- SurvData_HazardModel(split(st0, row(st0)), dataS, last_times,
                                         paste0(idT, "_", strata), time_var,
                                         index)
@@ -535,13 +510,9 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
         X_h <- Z_h <- U_h <- rep(list(matrix(0.0)), length(respVars))
     }
     if (length(which_interval)) {
-        W0_H2 <- if (control$timescale_base_hazard == "identity") {
-            create_W0(c(t(st2)), knots, control$Bsplines_degree + 1,
-                      strata_H, control$basis)
-        } else {
-            create_W0(log(c(t(st2))), knots, control$Bsplines_degree + 1,
-                      strata_H, control$basis)
-        }
+        W0_H2 <- create_W0(c(t(st2)), knots, control$Bsplines_degree,
+                           strata_H, control$basis,
+                           control$timescale_base_hazard)
         dataS_H2 <- SurvData_HazardModel(split(st2, row(st2)), dataS, last_times,
                                          paste0(idT, "_", strata), time_var,
                                          rep(index, each = control$GK_k))

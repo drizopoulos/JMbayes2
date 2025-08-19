@@ -29,18 +29,6 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 knots = NULL, timescale_base_hazard = "identity", diff = 2L,
                 parallel = "snow",
                 cores = parallelly::availableCores(omit = 1L))
-    if (!is.null(base_hazard)) {
-        base_hazard <- get_hazard(base_hazard)
-        if (base_hazard['log_time']) con$timescale_base_hazard <- "log"
-        if (base_hazard['ns']) con$basis <- "ns"
-        if (base_hazard['pwc_const']) con$Bsplines_degree <- 0L
-        if (base_hazard['pwc_linear']) con$Bsplines_degree <- 1L
-        if (base_hazard['weibull']) {
-            con$timescale_base_hazard <- "log"
-            con$basis <- "ns"
-            con$base_hazard_segments <- 1L
-        }
-    }
     control <- c(control, list(...))
     namC <- names(con)
     con[(namc <- names(control))] <- control
@@ -315,6 +303,33 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         unclass(strt)
     }
     n_strata <- length(unique(strata))
+    con$basis <- rep_len(con$basis, n_strata)
+    con$Bsplines_degree <- rep_len(con$Bsplines_degree, n_strata)
+    con$base_hazard_segments <- rep_len(con$base_hazard_segments, n_strata)
+    con$timescale_base_hazard <- rep_len(con$timescale_base_hazard, n_strata)
+    con$diff <- rep_len(con$diff, n_strata)
+    if (!is.null(base_hazard)) {
+        if (length(base_hazard) != n_strata) {
+            base_hazard <- rep_len(base_hazard, n_strata)
+            warning("length of 'base_hazard' has been replicated to match the ",
+                    "length of strata.\n")
+        }
+        bhh <- matrix(NA_real_, n_strata, 6)
+        for (k in seq_len(n_strata)) {
+            if (!is.na(base_hazard[k])) {
+                bhh[k, ] <- bh <- get_hazard(base_hazard[k])
+                if (bh['log_time']) con$timescale_base_hazard[k] <- "log"
+                if (bh['ns']) con$basis[k] <- "ns"
+                if (bh['pwc_const']) con$Bsplines_degree[k] <- 0L
+                if (bh['pwc_linear']) con$Bsplines_degree[k] <- 1L
+                if (bh['weibull']) {
+                    con$timescale_base_hazard[k] <- "log"
+                    con$basis[k] <- "ns"
+                    con$base_hazard_segments[k] <- 1L
+                }
+            }
+        }
+    }
 
     # extract weights if present, otherwise set wegiht equal to one for all subjects
     indx <- match("weights", names(Surv_object$call), nomatch = 0)
@@ -384,12 +399,13 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         } else {
             lapply(split(Time_right, strata), range)
         }
-        con$knots <- lapply(qs, function (x)
-            knots(x[1L], x[2L], con$base_hazard_segments,
-                  con$Bsplines_degree, con$basis))
+        con$knots <- mapply2(knots, x = qs, ndx = con$base_hazard_segments,
+                             deg = con$Bsplines_degree, basis = con$basis)
     }
-    if (con$timescale_base_hazard != "identity") {
-        con$knots[] <- lapply(con$knots, log)
+    for (k in seq_len(n_strata)) {
+        if (con$timescale_base_hazard[k] != "identity") {
+            con$knots[[k]] <- log(con$knots[[k]])
+        }
     }
 
     # Extract functional forms per longitudinal outcome
@@ -457,22 +473,12 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     # 'Time_right', we put "_H" to denote calculation at the 'Time_integration', and
     # "_H2" to denote calculation at the 'Time_integration2'.
     strata_H <- rep(strata, each = con$GK_k)
-    W0_H <- if (con$timescale_base_hazard == "identity") {
-        if (recurrent == "gap") {
-            create_W0(c(t(st - trunc_Time)), con$knots, con$Bsplines_degree + 1,
-                      strata_H, con$basis)
-        } else {
-            create_W0(c(t(st)), con$knots, con$Bsplines_degree + 1, strata_H,
-                      con$basis)
-        }
+    W0_H <- if (recurrent == "gap") {
+        create_W0(c(t(st - trunc_Time)), con$knots, con$Bsplines_degree,
+                  strata_H, con$basis, con$timescale_base_hazard)
     } else {
-        if (recurrent == "gap") {
-            create_W0(log(c(t(st - trunc_Time))), con$knots, con$Bsplines_degree + 1,
-                      strata_H, con$basis)
-        } else {
-            create_W0(log(c(t(st))), con$knots, con$Bsplines_degree + 1,
-                      strata_H, con$basis)
-        }
+        create_W0(c(t(st)), con$knots, con$Bsplines_degree, strata_H,
+                  con$basis, con$timescale_base_hazard)
     }
     dataS_H <- SurvData_HazardModel(split(st, row(st)), dataS, Time_start,
                                     paste0(idT, "_", strata), time_var)
@@ -499,22 +505,13 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                                             eps, direction, zero_ind_Z, time_window)
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
     if (length(which_event)) {
-        W0_h <- if (con$timescale_base_hazard == "identity") {
-            if (recurrent == "gap") {
-                create_W0(Time_right - trunc_Time, con$knots,
-                          con$Bsplines_degree + 1, strata, con$basis)
-            } else {
-                create_W0(Time_right, con$knots, con$Bsplines_degree + 1,
-                          strata, con$basis)
-            }
+        W0_h <- if (recurrent == "gap") {
+            create_W0(Time_right - trunc_Time, con$knots,
+                      con$Bsplines_degree, strata, con$basis,
+                      con$timescale_base_hazard)
         } else {
-            if (recurrent == "gap") {
-                create_W0(log(Time_right - trunc_Time), con$knots,
-                          con$Bsplines_degree + 1, strata, con$basis)
-            } else {
-                create_W0(log(Time_right), con$knots, con$Bsplines_degree + 1,
-                          strata, con$basis)
-            }
+            create_W0(Time_right, con$knots, con$Bsplines_degree,
+                      strata, con$basis, con$timescale_base_hazard)
         }
         dataS_h <- SurvData_HazardModel(split(Time_right, seq_along(Time_right)),
                                         dataS, Time_start,
@@ -538,13 +535,8 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         X_h <- Z_h <- U_h <- rep(list(matrix(0.0)), length(respVars))
     }
     if (length(which_interval)) {
-        W0_H2 <- if (con$timescale_base_hazard == "identity") {
-            create_W0(c(t(st2)), con$knots, con$Bsplines_degree + 1, strata_H,
-                      con$basis)
-        } else {
-            create_W0(log(c(t(st2))), con$knots, con$Bsplines_degree + 1,
-                      strata_H, con$basis)
-        }
+        W0_H2 <- create_W0(c(t(st2)), con$knots, con$Bsplines_degree, strata_H,
+                      con$basis, con$timescale_base_hazard)
         dataS_H2 <- SurvData_HazardModel(split(st2, row(st2)), dataS, Time_start,
                                          paste0(idT, "_", strata), time_var)
         mf2 <- model.frame.default(terms_Surv_noResp, data = dataS_H2)
@@ -661,7 +653,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         list(betas = betas, log_sigmas = log_sigmas,
              sigmas = sigmas, D = D, b = b, bs_gammas = bs_gammas,
              gammas = gammas, alphas = alphas,
-             tau_bs_gammas = if (con$base_hazard_segments > 1L) rep(20, n_strata) else rep(0.001, n_strata),
+             tau_bs_gammas = ifelse(con$base_hazard_segments > 1L, 20, 0.001),
              alphaF = alphaF, frailty = frailty, sigmaF = sigmaF)
     ############################################################################
     ############################################################################
@@ -672,12 +664,10 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     ############################################################################
     ############################################################################
     # Priors
-    Tau_bs_gammas <- if (ncol(W0_H) / n_strata > 3) {
-        crossprod(diff(diag(ncol(W0_H) / n_strata), differences = con$diff))
-    } else {
-        crossprod(diff(diag(ncol(W0_H) / n_strata), differences = 1))
-    }
-    Tau_bs_gammas <- rep(list(Tau_bs_gammas), n_strata)
+    Tau_bs_gammas <-
+        mapply2(function (nc, d)
+            crossprod(diff(diag(nc), differences = if (nc > 3) d else 1)),
+                nc = attr(W0_H, "ncW0"), d = con$diff)
     mean_betas <- lapply(betas, unname)
     mean_betas <- mapply2(function (b, m) {b[1] <- b[1] + m; b},
                           mean_betas, mapply2("%*%", Xbar, betas))
@@ -691,7 +681,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     prs <- list(mean_betas_HC = mean_betas_HC, Tau_betas_HC = Tau_betas_HC,
                 mean_betas_nHC = mean_betas_nHC, Tau_betas_nHC = Tau_betas_nHC,
                 mean_bs_gammas = lapply(Tau_bs_gammas, function (x) x[, 1] * 0),
-                penalized_bs_gammas = TRUE,
+                penalized_bs_gammas = rep(TRUE, n_strata),
                 Tau_bs_gammas = Tau_bs_gammas,
                 A_tau_bs_gammas = rep(5, n_strata),
                 B_tau_bs_gammas = rep(0.5, n_strata),
@@ -725,20 +715,20 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                 sigmaF_sigmas = 5.0,
                 sigmaF_shape = 0.25/0.4,
                 sigmaF_mean = 0.25)
+    if (!is.null(base_hazard)) {
+        weib_ind <- !is.na(bhh[, 4]) & bhh[, 4] > 0
+        prs$penalized_bs_gammas[weib_ind] <- FALSE
+    }
+    prs$Tau_bs_gammas[!prs$penalized_bs_gammas] <-
+        lapply(prs$Tau_bs_gammas[!prs$penalized_bs_gammas],
+               function (m) 0.1 *  diag(, ncol(m)))
+    initial_values$tau_bs_gammas[!prs$penalized_bs_gammas] <- 1
     if (is.null(priors) || !is.list(priors)) {
         priors <- prs
     } else {
         ind <- intersect(names(priors), names(prs))
         prs[ind] <- priors[ind]
         priors <- prs
-    }
-    if (!is.null(base_hazard) && base_hazard['weibull']) {
-        priors$penalized_bs_gammas <- FALSE
-    }
-    if (!priors$penalized_bs_gammas) {
-        priors$Tau_bs_gammas[] <-
-            lapply(priors$Tau_bs_gammas, function (m) 0.1 *  diag(, ncol(m)))
-        initial_values$tau_bs_gammas <- 1
     }
     if (!priors$penalty_gammas %in% c("none", "ridge", "horseshoe")) {
         warning("'priors$penalty_gammas' can only take values, 'none', ",
