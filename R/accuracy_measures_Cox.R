@@ -43,7 +43,7 @@ tvROC.coxph <-
                              times = Thoriz)
             pi_u_t <- 1.0 - (as.matrix(sfit2$surv)[1L, ] / as.matrix(sfit02$surv)[1L, ])
             nams <- names(ind2[ind2])
-            ind[nams] <- ind[nams] * pi_u_t[nams]
+            ind[nams] <- ind[nams] * pi_u_t
         }
         # calculate sensitivity and specificity
         nTP <- colSums(Check * c(ind))
