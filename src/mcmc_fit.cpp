@@ -211,8 +211,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   for (uword i = 0; i < n_strata; ++i) {
       ncoefs_per_stratum.at(i) = mean_bs_gammas.at(i).n_rows;
   }
-  uword str1 = 0;
-  uword str2 = ncoefs_per_stratum.at(0) - 1;
   uword n_gammas = gammas.n_rows;
   uword n_alphas = alphas.n_rows;
   uword n_alphaF = alphaF.n_rows;
@@ -365,6 +363,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     ////////////////////////////////////////////////////////////////////////
 
+    uword str1 = 0;
+    uword str2 = ncoefs_per_stratum.at(0) - 1;
     for (uword j = 0; j < n_strata; ++j) {
          if (penalized_bs_gammas[j]) {
             vec bs_gammas_j = bs_gammas.rows(str1, str2);
@@ -379,8 +379,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
             str2 += ncoefs_per_stratum.at(j + 1);
         }
     }
-    str1 = 0;
-    str2 = ncoefs_per_stratum.at(0) - 1;
 
     ////////////////////////////////////////////////////////////////////////
 

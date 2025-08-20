@@ -27,6 +27,8 @@ jmFit <- jm(Cox, fm1, time_var = "year", base_hazard = c("Weibull", NA))
 
 JMbayes2:::plot_hazard(jmFit)
 
+object = jmFit
+
 #
 pbc2$prothrombin[pbc2$id == levels(pbc2$id)[1L]] <- NA
 pbc2$prothrombin[pbc2$id == levels(pbc2$id)[2L]] <- NA

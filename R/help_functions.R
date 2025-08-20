@@ -1588,12 +1588,16 @@ factor2 <- function (x, ...) factor(x, levels = unique(x), ...)
 
 plot_hazard <- function (object, CI = TRUE, plot = TRUE,
                          tmax = NULL) {
-    r <- range(object$model_data$Time_right)
-    if (!is.null(tmax)) r[2L] <- tmax
-    tt <- seq(r[1L], r[2L], len = 501)
     nstrata <- length(unique(object$model_data$strata))
-    strt <- rep(seq_len(nstrata), each = length(tt))
-    tt <- rep(tt, nstrata)
+    r <- range(object$model_data$Time_right)
+    r <- rep(list(r), nstrata)
+    if (!is.null(tmax)) {
+        tmax <- rep_len(tmax, nstrata)
+        r[] <- mapply2(function (rr, ttmax) {rr[2L] <- ttmax; rr}, r, tmax)
+    }
+    tt <- lapply(r, function (rr) seq(rr[1L], rr[2L], length.out = 501))
+    strt <- rep(seq_len(nstrata), sapply(tt, length))
+    tt <- unlist(tt)
     W0 <- create_W0(tt, object$control$knots,
                     object$control$Bsplines_degree, strt,
                     object$control$basis, object$control$timescale_base_hazard)
@@ -1601,7 +1605,7 @@ plot_hazard <- function (object, CI = TRUE, plot = TRUE,
     W_std_gammas <- do.call('rbind', object$mcmc$W_std_gammas)
     Wlong_std_alphas <- do.call('rbind', object$mcmc$Wlong_std_alphas)
     n_mcmc <- nrow(bs_gammas)
-    h_vals <- matrix(0.0, n_mcmc, length(tt))
+    h_vals <- matrix(0.0, n_mcmc, nrow(W0))
     for (i in seq_len(n_mcmc)) {
         h_vals[i, ] <- exp(c(W0 %*% bs_gammas[i, ]) - W_std_gammas[i, ] -
                                Wlong_std_alphas[i, ])
@@ -1613,7 +1617,7 @@ plot_hazard <- function (object, CI = TRUE, plot = TRUE,
     if (plot) {
         for (j in seq_len(nstrata)) {
             jj <- strt == j
-            plot(r, range(low[jj], upp[jj]), type = "n", xlab = "Time",
+            plot(r[[j]], range(low[jj], upp[jj]), type = "n", xlab = "Time",
                  ylab = "Baseline Hazard Function")
             if (CI) {
                 polygon(c(tt[jj], rev(tt[jj])), c(low[jj], rev(upp[jj])),
