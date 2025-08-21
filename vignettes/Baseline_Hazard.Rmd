@@ -20,6 +20,7 @@ library("JMbayes2")
 ```
 
 # Baseline Hazard Function
+## Penalized B-splines
 The submodel for the event process in the joint models fitted in **JMbayes2** is a relative hazard model postulating a multiplicative effect of the covariates in the hazard scale. The default specification of the baseline hazard function $h_0(t)$ takes the form: $$\log \{ h_0(t) \} = \sum \limits_{p = 1}^P \gamma_p B_p(t, \lambda),$$
 where $B_p(t, \lambda)$ denotes the $p$-th basis function of a B-spline with knots $\lambda_1, \ldots, \lambda_P$ and $\gamma$ the vector of spline coefficients. To ensure smoothness of the baseline hazard function, we postulate a 'penalized' prior distribution for the spline coefficients $\gamma$: 
 
@@ -51,6 +52,7 @@ JMbayes2:::plot_hazard(jointFit2)
 
 Setting `base_hazard = "log time, ns"` corresponds to setting the control arguments `timescale_base_hazard = "log"` and `basis = "ns"`. Using regular expressions look-up of the user input in the `base_hazard` argument, the `jm()` function attempts to set the corresponding control arguments. For example, the following call would also set natural cubic splines with the log time: `update(jointFit1, base_hazard = "ns, log-time")`.
 
+## Piecewise Constant
 To fit a piecewise-constant baseline hazard function by splitting the follow-up period into five equidistant intervals, we use the call (note that the piecewise-constant approximation is defined for time in its original scale again):
 ```{r, 'piecewise constant', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
 jointFit3 <- update(jointFit1, base_hazard = "piecewise constant",
@@ -58,6 +60,7 @@ jointFit3 <- update(jointFit1, base_hazard = "piecewise constant",
 JMbayes2:::plot_hazard(jointFit3)
 ```
 
+## Piecewise Linear
 A piecewise-linear baseline hazard function for the log time variable with three interconnected lines is fitted using the syntax:
 ```{r, 'piecewise linear', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
 jointFit4 <- update(jointFit1, base_hazard = "piecewise linear, log time",
@@ -68,6 +71,7 @@ JMbayes2:::plot_hazard(jointFit4)
 
 Via the `priors` argument, we specified that the $\gamma$ coefficients for the piecewise-linear baseline hazard should not be penalized. In this case, they have a normal prior with a mean zero and variance 10.
 
+## Weibull
 The Weibull baseline hazard function in the log scale corresponds to a simple linear model with an intercept and a slope term for the logarithm of the time variable. Hence, it is a special case of the models we considered above. We can fit a joint model with the Weibull baseline hazard using the call:
 ```{r, 'weibull', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
 jointFit5 <- update(jointFit1, base_hazard = "weibull")
@@ -78,3 +82,18 @@ This baseline hazard function also allows extrapolating beyond the range of obse
 ```{r, 'weibull-ext', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
 JMbayes2:::plot_hazard(jointFit5, tmax = 24)
 ```
+
+## Stratified Models
+In case of stratified models, a different baseline hazard is fitted per stratum. The `base_hazard` argument can in this case be a character vector with each element specifying the baseline hazard per stratum. As an example, we refit the Cox model by stratifying for drug. Via the `base_hazard` we specify that for the ddC group the baseline hazard is Weibull, and for the ddI group a penalized natural cubic spline for the logarithm of the time variable:
+```{r, 'strata', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+# Cox regression
+CoxFit2 <- coxph(Surv(Time, death) ~ strata(drug), data = aids.id)
+
+# default baseline hazard
+jointFit6 <- jm(CoxFit2, fm, time_var = "obstime", 
+                base_hazard = c("weibull", "log time, ns"))
+
+JMbayes2:::plot_hazard(jointFit6)
+```
+
+Specifying an `NA` element in `base_hazard` will imply that the default baseline hazard function will be used for this stratum.

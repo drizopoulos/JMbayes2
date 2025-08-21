@@ -722,7 +722,6 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     prs$Tau_bs_gammas[!prs$penalized_bs_gammas] <-
         lapply(prs$Tau_bs_gammas[!prs$penalized_bs_gammas],
                function (m) 0.1 *  diag(, ncol(m)))
-    initial_values$tau_bs_gammas[!prs$penalized_bs_gammas] <- 1
     if (is.null(priors) || !is.list(priors)) {
         priors <- prs
     } else {
@@ -755,6 +754,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         priors$A_lambda_gammas <- 1
         priors$B_lambda_gammas <- 1
     }
+    initial_values$tau_bs_gammas[!priors$penalized_bs_gammas] <- 1
     ############################################################################
     ############################################################################
     # Fit the model
