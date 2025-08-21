@@ -14,6 +14,7 @@ tvROC.coxph <-
     type_censoring <- attr(object$y, "type")
     if (type_censoring != "right")
         stop("'tvROC()' currently only works for right censored data.")
+    newdata <- as.data.frame(newdata)
     type_weights <- match.arg(type_weights)
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
@@ -43,7 +44,7 @@ tvROC.coxph <-
                              times = Thoriz)
             pi_u_t <- 1.0 - (as.matrix(sfit2$surv)[1L, ] / as.matrix(sfit02$surv)[1L, ])
             nams <- names(ind2[ind2])
-            ind[nams] <- ind[nams] * pi_u_t
+            ind[nams] <- ind[nams] * pi_u_t[nams]
         }
         # calculate sensitivity and specificity
         nTP <- colSums(Check * c(ind))
@@ -109,6 +110,7 @@ tvBrier.coxph <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         stop("'Thoriz' must be larger than 'Tstart'.")
     if (is.null(Thoriz))
         Thoriz <- Tstart + Dt
+    newdata <- as.data.frame(newdata)
     type_censoring <- attr(object$y, "type")
     if (type_censoring != "right")
         stop("'tvROC()' currently only works for right censored data.")
@@ -203,6 +205,7 @@ calibration_plot.coxph <-
         stop("'Thoriz' must be larger than 'Tstart'.")
     if (is.null(Thoriz))
         Thoriz <- Tstart + Dt
+    newdata <- as.data.frame(newdata)
     type_censoring <- object$model_info$type_censoring
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
