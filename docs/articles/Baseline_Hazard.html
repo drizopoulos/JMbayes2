@@ -11,7 +11,8 @@
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="../katex-auto.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -33,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-91</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,7 +83,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-07-17</h4>
+            <h4 data-toc-skip class="date">2025-08-21</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Baseline_Hazard.Rmd" class="external-link"><code>vignettes/Baseline_Hazard.Rmd</code></a></small>
       <div class="d-none name"><code>Baseline_Hazard.Rmd</code></div>
@@ -93,46 +94,31 @@ Rizopoulos</h4>
 <div class="section level2">
 <h2 id="baseline-hazard-function">Baseline Hazard Function<a class="anchor" aria-label="anchor" href="#baseline-hazard-function"></a>
 </h2>
+<div class="section level3">
+<h3 id="penalized-b-splines">Penalized B-splines<a class="anchor" aria-label="anchor" href="#penalized-b-splines"></a>
+</h3>
 <p>The submodel for the event process in the joint models fitted in
 <strong>JMbayes2</strong> is a relative hazard model postulating a
 multiplicative effect of the covariates in the hazard scale. The default
-specification of the baseline hazard function
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">h_0(t)</annotation></semantics></math>
-takes the form:
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>log</mo><mo stretchy="false" form="prefix">{</mo><msub><mi>h</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>p</mi><mo>=</mo><mn>1</mn></mrow><mi>P</mi></munderover><msub><mi>γ</mi><mi>p</mi></msub><msub><mi>B</mi><mi>p</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>,</mo><mi>λ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">\log \{ h_0(t) \} = \sum \limits_{p = 1}^P \gamma_p B_p(t, \lambda),</annotation></semantics></math>
-where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>B</mi><mi>p</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>,</mo><mi>λ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">B_p(t, \lambda)</annotation></semantics></math>
-denotes the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>-th
-basis function of a B-spline with knots
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>λ</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>λ</mi><mi>P</mi></msub></mrow><annotation encoding="application/x-tex">\lambda_1, \ldots, \lambda_P</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
-the vector of spline coefficients. To ensure smoothness of the baseline
+specification of the baseline hazard function <span class="math inline">h_0(t)</span> takes the form: <span class="math display">\log \{ h_0(t) \} = \sum \limits_{p = 1}^P \gamma_p
+B_p(t, \lambda),</span> where <span class="math inline">B_p(t,
+\lambda)</span> denotes the <span class="math inline">p</span>-th basis
+function of a B-spline with knots <span class="math inline">\lambda_1,
+\ldots, \lambda_P</span> and <span class="math inline">\gamma</span> the
+vector of spline coefficients. To ensure smoothness of the baseline
 hazard function, we postulate a ‘penalized’ prior distribution for the
-spline coefficients
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>γ</mi><mo>∣</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>∝</mo><msup><mi>τ</mi><mrow><mi>ρ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>K</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mn>2</mn></mrow></msup><mo>exp</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>−</mi><mfrac><mi>τ</mi><mn>2</mn></mfrac><msup><mi>γ</mi><mi>⊤</mi></msup><mi>K</mi><mi>γ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">p(\gamma \mid \tau) \propto \tau^{\rho(K)/2}\exp \left (-\frac{\tau}{2} \gamma^\top K \gamma \right ),</annotation></semantics></math></p>
-<p>where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>τ</mi><annotation encoding="application/x-tex">\tau</annotation></semantics></math>
-is the smoothing parameter that takes a
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">Gamma</mtext><mrow><mo stretchy="true" form="prefix">(</mo><mn>5</mn><mo>,</mo><mn>0.5</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mbox{Gamma}(5, 0.5)</annotation></semantics></math>
-hyper-prior to ensure a proper posterior,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi><mo>=</mo><msubsup><mi>Δ</mi><mi>r</mi><mi>⊤</mi></msubsup><msub><mi>Δ</mi><mi>r</mi></msub></mrow><annotation encoding="application/x-tex">K = \Delta_r^\top \Delta_r</annotation></semantics></math>,
-where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mi>r</mi></msub><annotation encoding="application/x-tex">\Delta_r</annotation></semantics></math>
-denotes
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>-th
-difference penalty matrix, and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>K</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\rho(K)</annotation></semantics></math>
-denotes the rank of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math>.
-Different baseline hazard functions can be specified using the
-<code>base_hazard</code> and <code>control</code> arguments of
-<code><a href="../reference/jm.html">jm()</a></code>. We will illustrate this capability using the AIDS
-dataset. We start with the default joint model for the time to death and
-the longitudinal measurements of the square root transformed CD4 cell
-counts:</p>
+spline coefficients <span class="math inline">\gamma</span>:</p>
+<p><span class="math display">p(\gamma \mid \tau) \propto
+\tau^{\rho(K)/2}\exp \left (-\frac{\tau}{2} \gamma^\top K \gamma \right
+),</span></p>
+<p>where <span class="math inline">\tau</span> is the smoothing
+parameter that takes a <span class="math inline">\mbox{Gamma}(5,
+0.5)</span> hyper-prior to ensure a proper posterior, <span class="math inline">K = \Delta_r^\top \Delta_r</span>, where <span class="math inline">\Delta_r</span> denotes <span class="math inline">r</span>-th difference penalty matrix, and <span class="math inline">\rho(K)</span> denotes the rank of <span class="math inline">K</span>. Different baseline hazard functions can be
+specified using the <code>base_hazard</code> and <code>control</code>
+arguments of <code><a href="../reference/jm.html">jm()</a></code>. We will illustrate this capability using
+the AIDS dataset. We start with the default joint model for the time to
+death and the longitudinal measurements of the square root transformed
+CD4 cell counts:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Cox regression</span></span>
 <span><span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">death</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">aids.id</span><span class="op">)</span></span>
@@ -143,21 +129,15 @@ counts:</p>
 <span></span>
 <span><span class="co"># default baseline hazard</span></span>
 <span><span class="va">jointFit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="va">fm</span>, time_var <span class="op">=</span> <span class="st">"obstime"</span><span class="op">)</span></span></code></pre></div>
-<p>By default, the knots
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>λ</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>λ</mi><mi>P</mi></msub></mrow><annotation encoding="application/x-tex">\lambda_1, \ldots, \lambda_P</annotation></semantics></math>
-are placed equidistantly in the interval
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">(</mo><msup><mn>10</mn><mrow><mi>−</mi><mn>8</mn></mrow></msup><mo>,</mo><msub><mi>T</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(10^{-8}, T_{max})</annotation></semantics></math>,
-where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">T_{max}</annotation></semantics></math>
-is the maximum follow-up time. The number of knots is specified by the
-control argument <code>base_hazard_segments</code>, which has a default
-value of 9. The degree of the polynomials in the B-spline basis is
-specified by the control argument <code>Bsplines_degree</code>; the
-default is 2, i.e., quadratic polynomials. The value of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>
-in the penalty matrix
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mi>r</mi></msub><annotation encoding="application/x-tex">\Delta_r</annotation></semantics></math>
-is specified by the control argument <code>diff</code>; by default,
+<p>By default, the knots <span class="math inline">\lambda_1, \ldots,
+\lambda_P</span> are placed equidistantly in the interval <span class="math inline">(10^{-8}, T_{max})</span>, where <span class="math inline">T_{max}</span> is the maximum follow-up time. The
+number of knots is specified by the control argument
+<code>base_hazard_segments</code>, which has a default value of 9. The
+degree of the polynomials in the B-spline basis is specified by the
+control argument <code>Bsplines_degree</code>; the default is 2, i.e.,
+quadratic polynomials. The value of <span class="math inline">r</span>
+in the penalty matrix <span class="math inline">\Delta_r</span> is
+specified by the control argument <code>diff</code>; by default,
 second-order differences are used. The internal function
 <code>JMbayes2:::plot_hazard()</code> can be used to depict the
 estimated baseline hazard function:</p>
@@ -185,6 +165,10 @@ user input in the <code>base_hazard</code> argument, the
 arguments. For example, the following call would also set natural cubic
 splines with the log time:
 <code>update(jointFit1, base_hazard = "ns, log-time")</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="piecewise-constant">Piecewise Constant<a class="anchor" aria-label="anchor" href="#piecewise-constant"></a>
+</h3>
 <p>To fit a piecewise-constant baseline hazard function by splitting the
 follow-up period into five equidistant intervals, we use the call (note
 that the piecewise-constant approximation is defined for time in its
@@ -194,6 +178,10 @@ original scale again):</p>
 <span>                    base_hazard_segments <span class="op">=</span> <span class="fl">5L</span><span class="op">)</span></span>
 <span><span class="fu">JMbayes2</span><span class="fu">:::</span><span class="fu">plot_hazard</span><span class="op">(</span><span class="va">jointFit3</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Baseline_Hazard_files/figure-html/piecewise%20constant-1.png" width="816" style="display: block; margin: auto;"></p>
+</div>
+<div class="section level3">
+<h3 id="piecewise-linear">Piecewise Linear<a class="anchor" aria-label="anchor" href="#piecewise-linear"></a>
+</h3>
 <p>A piecewise-linear baseline hazard function for the log time variable
 with three interconnected lines is fitted using the syntax:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -202,11 +190,13 @@ with three interconnected lines is fitted using the syntax:</p>
 <span>                    priors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>penalized_bs_gammas <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">JMbayes2</span><span class="fu">:::</span><span class="fu">plot_hazard</span><span class="op">(</span><span class="va">jointFit4</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Baseline_Hazard_files/figure-html/piecewise%20linear-1.png" width="816" style="display: block; margin: auto;"></p>
-<p>Via the <code>priors</code> argument, we specified that the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
-coefficients for the piecewise-linear baseline hazard should not be
-penalized. In this case, they have a normal prior with a mean zero and
-variance 10.</p>
+<p>Via the <code>priors</code> argument, we specified that the <span class="math inline">\gamma</span> coefficients for the piecewise-linear
+baseline hazard should not be penalized. In this case, they have a
+normal prior with a mean zero and variance 10.</p>
+</div>
+<div class="section level3">
+<h3 id="weibull">Weibull<a class="anchor" aria-label="anchor" href="#weibull"></a>
+</h3>
 <p>The Weibull baseline hazard function in the log scale corresponds to
 a simple linear model with an intercept and a slope term for the
 logarithm of the time variable. Hence, it is a special case of the
@@ -223,6 +213,31 @@ we extrapolate until month 24:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">JMbayes2</span><span class="fu">:::</span><span class="fu">plot_hazard</span><span class="op">(</span><span class="va">jointFit5</span>, tmax <span class="op">=</span> <span class="fl">24</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Baseline_Hazard_files/figure-html/weibull-ext-1.png" width="816" style="display: block; margin: auto;"></p>
+</div>
+<div class="section level3">
+<h3 id="stratified-models">Stratified Models<a class="anchor" aria-label="anchor" href="#stratified-models"></a>
+</h3>
+<p>In case of stratified models, a different baseline hazard is fitted
+per stratum. The <code>base_hazard</code> argument can in this case be a
+character vector with each element specifying the baseline hazard per
+stratum. As an example, we refit the Cox model by stratifying for drug.
+Via the <code>base_hazard</code> we specify that for the ddC group the
+baseline hazard is Weibull, and for the ddI group a penalized natural
+cubic spline for the logarithm of the time variable:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Cox regression</span></span>
+<span><span class="va">CoxFit2</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">death</span><span class="op">)</span> <span class="op">~</span> <span class="fu">strata</span><span class="op">(</span><span class="va">drug</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">aids.id</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># default baseline hazard</span></span>
+<span><span class="va">jointFit6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit2</span>, <span class="va">fm</span>, time_var <span class="op">=</span> <span class="st">"obstime"</span>, </span>
+<span>                base_hazard <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"weibull"</span>, <span class="st">"log time, ns"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">JMbayes2</span><span class="fu">:::</span><span class="fu">plot_hazard</span><span class="op">(</span><span class="va">jointFit6</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Baseline_Hazard_files/figure-html/strata-1.png" width="816" style="display: block; margin: auto;"><img src="Baseline_Hazard_files/figure-html/strata-2.png" width="816" style="display: block; margin: auto;"></p>
+<p>Specifying an <code>NA</code> element in <code>base_hazard</code>
+will imply that the default baseline hazard function will be used for
+this stratum.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

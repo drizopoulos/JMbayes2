@@ -11,7 +11,8 @@
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="../katex-auto.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -33,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-91</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,7 +83,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-07-17</h4>
+            <h4 data-toc-skip class="date">2025-08-21</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Dynamic_Predictions.Rmd" class="external-link"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="d-none name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -98,46 +99,40 @@ Rizopoulos</h4>
 </h3>
 <p>Based on the general framework of joint models presented earlier, we
 are interested in deriving cumulative risk probabilities for a new
-subject
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>j</mi><annotation encoding="application/x-tex">j</annotation></semantics></math>
-that has survived up to time point
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
-and has provided longitudinal measurements
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝒴</mi><mrow><mi>k</mi><mi>j</mi></mrow></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo stretchy="false" form="prefix">{</mo><msub><mi>y</mi><mrow><mi>k</mi><mi>j</mi></mrow></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>t</mi><mrow><mi>j</mi><mi>l</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>;</mo><mn>0</mn><mo>≤</mo><msub><mi>t</mi><mrow><mi>j</mi><mi>l</mi></mrow></msub><mo>≤</mo><mi>t</mi><mo>,</mo><mi>l</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>n</mi><mi>j</mi></msub><mo>,</mo><mi>k</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>K</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\mathcal Y_{kj}(t) = \{ y_{kj}(t_{jl}); 0 \leq t_{jl} \leq t, l = 1, \ldots, n_j, k = 1, \ldots, K\}</annotation></semantics></math>,
-with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math>
-denoting the number of longitudinal outcomes. The probabilities of
-interest are
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="left" style="text-align: left"><msub><mi>π</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo>∣</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mtext mathvariant="normal">Pr</mtext><mo stretchy="false" form="prefix">{</mo><msubsup><mi>T</mi><mi>j</mi><mo>*</mo></msubsup><mo>≤</mo><mi>u</mi><mo>∣</mo><msubsup><mi>T</mi><mi>j</mi><mo>*</mo></msubsup><mo>&gt;</mo><mi>t</mi><mo>,</mo><msub><mi>𝒴</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><msub><mi>𝒟</mi><mi>n</mi></msub><mo stretchy="false" form="postfix">}</mo></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><mo>=</mo><mn>1</mn><mo>−</mo><mo>∫</mo><mo>∫</mo><mfrac><mrow><mi>S</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo>∣</mo><msub><mi>b</mi><mi>j</mi></msub><mo>,</mo><mi>θ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi>S</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>∣</mo><msub><mi>b</mi><mi>j</mi></msub><mo>,</mo><mi>θ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac><mspace width="0.278em"></mspace><mi>p</mi><mo stretchy="false" form="prefix">{</mo><msub><mi>b</mi><mi>j</mi></msub><mo>∣</mo><msubsup><mi>T</mi><mi>j</mi><mo>*</mo></msubsup><mo>&gt;</mo><mi>t</mi><mo>,</mo><msub><mi>𝒴</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mi>θ</mi><mo stretchy="false" form="postfix">}</mo><mspace width="0.278em"></mspace><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>θ</mi><mo>∣</mo><msub><mi>𝒟</mi><mi>n</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mspace width="0.278em"></mspace><mi>d</mi><msub><mi>b</mi><mi>j</mi></msub><mi>d</mi><mi>θ</mi><mo>,</mo></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{array}{l}
-\pi_j(u \mid t) = \mbox{Pr}\{T_j^* \leq u \mid T_j^* &gt; t, \mathcal Y_j(t), \mathcal D_n\}\\\\
-= \displaystyle 1 - \int\int \frac{S(u \mid b_j, \theta)}{S(t \mid b_j, \theta)} \; p\{b_j \mid T_j^* &gt; t, \mathcal Y_j(t), \theta\} \; p(\theta \mid \mathcal D_n) \; db_j d\theta,
-\end{array}</annotation></semantics></math> where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>⋅</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">S(\cdot)</annotation></semantics></math>
+subject <span class="math inline">j</span> that has survived up to time
+point <span class="math inline">t</span> and has provided longitudinal
+measurements <span class="math inline">\mathcal Y_{kj}(t) = \{
+y_{kj}(t_{jl}); 0 \leq t_{jl} \leq t, l = 1, \ldots, n_j, k = 1, \ldots,
+K\}</span>, with <span class="math inline">K</span> denoting the number
+of longitudinal outcomes. The probabilities of interest are <span class="math display">\begin{array}{l}
+\pi_j(u \mid t) = \mbox{Pr}\{T_j^* \leq u \mid T_j^* &gt; t, \mathcal
+Y_j(t), \mathcal D_n\}\\\\
+= \displaystyle 1 - \int\int \frac{S(u \mid b_j, \theta)}{S(t \mid b_j,
+\theta)} \; p\{b_j \mid T_j^* &gt; t, \mathcal Y_j(t), \theta\} \;
+p(\theta \mid \mathcal D_n) \; db_j d\theta,
+\end{array}</span> where <span class="math inline">S(\cdot)</span>
 denotes the survival function conditional on the random effects and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝒴</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo stretchy="false" form="prefix">{</mo><msub><mi>𝒴</mi><mrow><mn>1</mn><mi>j</mi></mrow></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>𝒴</mi><mrow><mi>K</mi><mi>j</mi></mrow></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\mathcal Y_j(t) = \{\mathcal Y_{1j}(t), \ldots, \mathcal Y_{Kj}(t)\}</annotation></semantics></math>.
-Combining the three terms in the integrand, we can devise a Monte Carlo
-scheme to obtain estimates of these probabilities, namely,</p>
+<span class="math inline">\mathcal Y_j(t) = \{\mathcal Y_{1j}(t),
+\ldots, \mathcal Y_{Kj}(t)\}</span>. Combining the three terms in the
+integrand, we can devise a Monte Carlo scheme to obtain estimates of
+these probabilities, namely,</p>
 <ol style="list-style-type: decimal">
-<li><p>Sample a value
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>θ</mi><mo accent="true">̃</mo></mover><annotation encoding="application/x-tex">\tilde \theta</annotation></semantics></math>
-from the posterior of the parameters
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">[</mo><mi>θ</mi><mo>∣</mo><msub><mi>𝒟</mi><mi>n</mi></msub><mo stretchy="true" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[\theta \mid \mathcal D_n]</annotation></semantics></math>.</p></li>
-<li><p>Sample a value
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>b</mi><mo accent="true">̃</mo></mover><mi>j</mi></msub><annotation encoding="application/x-tex">\tilde b_j</annotation></semantics></math>
-from the posterior of the random effects
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">[</mo><msub><mi>b</mi><mi>j</mi></msub><mo>∣</mo><msubsup><mi>T</mi><mi>j</mi><mo>*</mo></msubsup><mo>&gt;</mo><mi>t</mi><mo>,</mo><msub><mi>𝒴</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mover><mi>θ</mi><mo accent="true">̃</mo></mover><mo stretchy="true" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[b_j \mid T_j^* &gt; t, \mathcal Y_j(t), \tilde \theta]</annotation></semantics></math>.</p></li>
-<li><p>Compute the ratio of survival probabilities
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo>∣</mo><msub><mover><mi>b</mi><mo accent="true">̃</mo></mover><mi>j</mi></msub><mo>,</mo><mover><mi>θ</mi><mo accent="true">̃</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow><mi minsize="1.8" maxsize="1.8">/</mi><mi>S</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>∣</mo><msub><mover><mi>b</mi><mo accent="true">̃</mo></mover><mi>j</mi></msub><mo>,</mo><mover><mi>θ</mi><mo accent="true">̃</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">S(u \mid \tilde b_j,
-\tilde \theta) \Big / S(t \mid \tilde b_j, \tilde \theta)</annotation></semantics></math>.</p></li>
+<li><p>Sample a value <span class="math inline">\tilde \theta</span>
+from the posterior of the parameters <span class="math inline">[\theta
+\mid \mathcal D_n]</span>.</p></li>
+<li><p>Sample a value <span class="math inline">\tilde b_j</span> from
+the posterior of the random effects <span class="math inline">[b_j \mid
+T_j^* &gt; t, \mathcal Y_j(t), \tilde \theta]</span>.</p></li>
+<li><p>Compute the ratio of survival probabilities <span class="math inline">S(u \mid \tilde b_j,
+\tilde \theta) \Big / S(t \mid \tilde b_j, \tilde
+\theta)</span>.</p></li>
 </ol>
-<p>Replicating these steps
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-times, we can estimate the conditional cumulative risk probabilities by
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><mfrac><mn>1</mn><mi>L</mi></mfrac><munderover><mo>∑</mo><mrow><mi>l</mi><mo>=</mo><mn>1</mn></mrow><mi>L</mi></munderover><mfrac><mrow><mi>S</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo>∣</mo><msubsup><mover><mi>b</mi><mo accent="true">̃</mo></mover><mi>j</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>l</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>,</mo><msup><mover><mi>θ</mi><mo accent="true">̃</mo></mover><mrow><mo stretchy="true" form="prefix">(</mo><mi>l</mi><mo stretchy="true" form="postfix">)</mo></mrow></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mrow><mi>S</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>∣</mo><msubsup><mover><mi>b</mi><mo accent="true">̃</mo></mover><mi>j</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>l</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>,</mo><msup><mover><mi>θ</mi><mo accent="true">̃</mo></mover><mrow><mo stretchy="true" form="prefix">(</mo><mi>l</mi><mo stretchy="true" form="postfix">)</mo></mrow></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac><mo>,</mo></mrow><annotation encoding="application/x-tex">1 - \frac{1}{L} \sum_{l=1}^L \frac{S(u \mid \tilde b_j^{(l)}, 
-\tilde \theta^{(l)})}{S(t \mid \tilde b_j^{(l)}, 
-\tilde \theta^{(l)})},</annotation></semantics></math> and their
-standard error by calculating the standard deviation across the Monte
-Carlo samples.</p>
+<p>Replicating these steps <span class="math inline">L</span> times, we
+can estimate the conditional cumulative risk probabilities by <span class="math display">1 - \frac{1}{L} \sum_{l=1}^L \frac{S(u \mid \tilde
+b_j^{(l)},
+\tilde \theta^{(l)})}{S(t \mid \tilde b_j^{(l)},
+\tilde \theta^{(l)})},</span> and their standard error by calculating
+the standard deviation across the Monte Carlo samples.</p>
 </div>
 <div class="section level3">
 <h3 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
@@ -201,9 +196,8 @@ the two patients. This will be used to sample their random effects in
 Step 2, presented above. This is done with a Metropolis-Hastings
 algorithm that runs for <code>n_mcmc</code> iterations; all iterations
 but the last one are discarded as burn-in. Finally, argument
-<code>n_samples</code> corresponds to the value of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-defined above and specifies the number of Monte Carlo samples:</p>
+<code>n_samples</code> corresponds to the value of <span class="math inline">L</span> defined above and specifies the number of
+Monte Carlo samples:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">predLong1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">ND</span>, return_newdata <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Argument <code>return_newdata</code> specifies that the predictions
@@ -292,12 +286,10 @@ methodology. We calculate the components of the ROC curve using
 information up to year five, and we are interested in events occurring
 within a three-year window. That is discriminating between patients who
 will get the event in the interval <code>(t0, t0 + Dt]</code>, (i.e., in
-our case
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mi>j</mi></msub><mo>∈</mo><mo stretchy="false" form="prefix">(</mo><mn>5</mn><mo>,</mo><mn>8</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">T_j \in (5, 8]</annotation></semantics></math>)
-from patients who will survive at least 8 years (i.e.,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mi>j</mi></msub><mo>&gt;</mo><mn>8</mn></mrow><annotation encoding="application/x-tex">T_j &gt; 8</annotation></semantics></math>).
-The calculations are performed with the following call to
-<code><a href="../reference/accuracy.html">tvROC()</a></code>:</p>
+our case <span class="math inline">T_j \in (5, 8]</span>) from patients
+who will survive at least 8 years (i.e., <span class="math inline">T_j
+&gt; 8</span>). The calculations are performed with the following call
+to <code><a href="../reference/accuracy.html">tvROC()</a></code>:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pbc2</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">pbc2</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span></span>
 <span><span class="va">roc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">tvROC</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
@@ -417,14 +409,13 @@ plot:</p>
 <p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-17-1.png" width="816" style="display: block; margin: auto;"></p>
 <p>The syntax of the <code><a href="../reference/accuracy.html">calibration_plot()</a></code> function is almost
 identical to that of <code><a href="../reference/accuracy.html">tvROC()</a></code>. The kernel density estimation
-is of the estimated probabilities
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>π</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>∣</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>π</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mn>8</mn><mo>∣</mo><mn>5</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\pi_j(t + \Delta t \mid t) = \pi_j(8 \mid 5)</annotation></semantics></math>
-for all individuals at risk at year <code>t0</code> in the data frame
-provided in the <code>newdata</code> argument. The grey shaded area
-represents the 95% pointwise confidence intervals of the predicted
-cumulative risks probabilities. Using the
-<code><a href="../reference/accuracy.html">calibration_metrics()</a></code> function we can also calculate
-metrics for the accuracy of predictions:</p>
+is of the estimated probabilities <span class="math inline">\pi_j(t +
+\Delta t \mid t) = \pi_j(8 \mid 5)</span> for all individuals at risk at
+year <code>t0</code> in the data frame provided in the
+<code>newdata</code> argument. The grey shaded area represents the 95%
+pointwise confidence intervals of the predicted cumulative risks
+probabilities. Using the <code><a href="../reference/accuracy.html">calibration_metrics()</a></code> function we
+can also calculate metrics for the accuracy of predictions:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/accuracy.html">calibration_metrics</a></span><span class="op">(</span><span class="va">jointFit</span>, <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        ICI        E50        E90 </span></span>

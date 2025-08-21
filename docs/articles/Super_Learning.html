@@ -11,7 +11,8 @@
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="../katex-auto.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -33,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-91</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,7 +83,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-07-18</h4>
+            <h4 data-toc-skip class="date">2025-08-21</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Super_Learning.Rmd" class="external-link"><code>vignettes/Super_Learning.Rmd</code></a></small>
       <div class="d-none name"><code>Super_Learning.Rmd</code></div>
@@ -111,143 +112,91 @@ follow-up times. Here, we consider multiple joint models instead and
 combine the dynamic predictions from these models to optimize the
 predictive accuracy. We use the concept of super learning (SL) to
 achieve this. SL is an ensemble method that allows researchers to
-combine several different prediction algorithms into one. It uses
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>-fold
-cross-validation to build the optimally weighted combination of
-predictions from a library of candidate algorithms. Optimality is
-defined by a user-specified objective function, such as minimizing mean
-squared error or maximizing the area under the receiver operating
-characteristic curve.</p>
+combine several different prediction algorithms into one. It uses <span class="math inline">V</span>-fold cross-validation to build the
+optimally weighted combination of predictions from a library of
+candidate algorithms. Optimality is defined by a user-specified
+objective function, such as minimizing mean squared error or maximizing
+the area under the receiver operating characteristic curve.</p>
 <p>The basic idea behind super learning is to derive model weights that
 optimize the cross-validated predictions. More specifically, we let
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ℒ</mi><mo>=</mo><mo stretchy="false" form="prefix">{</mo><msub><mi>M</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>M</mi><mi>L</mi></msub><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\mathcal{L} = \{M_1, \ldots, M_L\}</annotation></semantics></math>
-denote a library with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-models. There are no restrictions to the models included in this
-library, and it is recommended to consider a wide range of possible
-models. Among others, these joint models differ in the specification of
-the time trend in the longitudinal submodels and the functions form and
-event submodel. We split the original dataset
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>𝒟</mi><mi>n</mi></msub><annotation encoding="application/x-tex">\mathcal{D}_n</annotation></semantics></math>
-in
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
-folds. The choice of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
-will depend on the size and number of events in
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>𝒟</mi><mi>n</mi></msub><annotation encoding="application/x-tex">\mathcal{D}_n</annotation></semantics></math>.
-In particular, for each fold, we need to have a sufficient number of
-events to quantify the predictive performance robustly. Using the
-cross-validation method, we fit the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-models in the combined
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">v-1</annotation></semantics></math>
-folds, and we will calculate predictions for the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>-th
-fold we left outside. Due to the dynamic nature of the predictions, we
-want to derive optimal weights at different follow-up times. More
-specifically, we consider the sequence of time points
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>t</mi><mi>Q</mi></msub></mrow><annotation encoding="application/x-tex">t_1, \ldots, t_Q</annotation></semantics></math>.
-The number and placing of these time points should again consider the
-available event information in
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>𝒟</mi><mi>n</mi></msub><annotation encoding="application/x-tex">\mathcal{D}_n</annotation></semantics></math>.
-For
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mi>q</mi></msub><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><msub><mi>t</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>t</mi><mi>Q</mi></msub><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">t_q \in \{t_1, \ldots, t_Q\}</annotation></semantics></math>,
-we define
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ℛ</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>t</mi><mi>q</mi></msub><mo>,</mo><mi>v</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mathcal{R}(t_q, v)</annotation></semantics></math>
-to denote the subjects at risk at time
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>q</mi></msub><annotation encoding="application/x-tex">t_q</annotation></semantics></math>
-that belong to the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>-th
-fold. For all subjects in
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ℛ</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>t</mi><mi>q</mi></msub><mo>,</mo><mi>v</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mathcal{R}(t_q, v)</annotation></semantics></math>,
-we calculate the cross-validated predictions,
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>π</mi><mo accent="true">̂</mo></mover><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>v</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>t</mi><mi>q</mi></msub><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>∣</mo><msub><mi>t</mi><mi>q</mi></msub><mo>,</mo><msub><mi>M</mi><mi>l</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo>Pr</mo><mo stretchy="false" form="prefix">{</mo><msubsup><mi>T</mi><mi>i</mi><mo>*</mo></msubsup><mo>&lt;</mo><msub><mi>t</mi><mi>q</mi></msub><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>∣</mo><msubsup><mi>T</mi><mi>i</mi><mo>*</mo></msubsup><mo>&gt;</mo><msub><mi>t</mi><mi>q</mi></msub><mo>,</mo><msub><mi>ℋ</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><msub><mi>M</mi><mi>l</mi></msub><mo>,</mo><msubsup><mi>𝒟</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>−</mi><mi>v</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo stretchy="false" form="postfix">}</mo><mi>.</mi></mrow><annotation encoding="application/x-tex">\hat{\pi}_i^{(v)}(t_q + \Delta t \mid t_q, M_l) = \Pr \{T_i^* &lt; t_q + \Delta t \mid T_i^* &gt; t_q, \mathcal H_i(t), M_l, \mathcal{D}_n^{(-v)}\}.</annotation></semantics></math>
-These predictions are calculated based on model
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>l</mi></msub><annotation encoding="application/x-tex">M_l</annotation></semantics></math>
-in library
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ℒ</mi><annotation encoding="application/x-tex">\mathcal{L}</annotation></semantics></math>
-that was fitted in the dataset
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>𝒟</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>−</mi><mi>v</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><annotation encoding="application/x-tex">\mathcal{D}_n^{(-v)}</annotation></semantics></math>
-the excludes the patients in the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>v</mi><annotation encoding="application/x-tex">v</annotation></semantics></math>-th
-fold. The calculation is based on a Monte Carlo approach. We define
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mover><mi>π</mi><mo accent="true">̃</mo></mover><mo accent="true">̂</mo></mover><mi>i</mi><mi>v</mi></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>t</mi><mi>q</mi></msub><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>∣</mo><msub><mi>t</mi><mi>q</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\hat{\tilde{\pi}}_i^{v}(t_q + \Delta t \mid t_q)</annotation></semantics></math>
-to denote the convex combination of the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-predictions, i.e.,
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mover><mi>π</mi><mo accent="true">̃</mo></mover><mo accent="true">̂</mo></mover><mi>i</mi><mi>v</mi></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>t</mi><mi>q</mi></msub><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>∣</mo><msub><mi>t</mi><mi>q</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><munderover><mo>∑</mo><mrow><mi>l</mi><mo>=</mo><mn>1</mn></mrow><mi>L</mi></munderover><msub><mo>ϖ</mo><mi>l</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>t</mi><mi>q</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><msubsup><mover><mi>π</mi><mo accent="true">̂</mo></mover><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>v</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>t</mi><mi>q</mi></msub><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>∣</mo><msub><mi>t</mi><mi>q</mi></msub><mo>,</mo><msub><mi>M</mi><mi>l</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="1.0em"></mspace><mrow><mtext mathvariant="normal">for all </mtext><mspace width="0.333em"></mspace></mrow><mi>v</mi><mo>∈</mo><mrow><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>V</mi></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">\hat{\tilde{\pi}}_i^{v}(t_q + \Delta t \mid t_q) = \sum\limits_{l = 1}^L \varpi_l(t_q) \hat{\pi}_i^{(v)}(t_q + \Delta t \mid t_q, M_l), \quad \mbox{for all } v \in {1, \ldots, V},</annotation></semantics></math>
-with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>ϖ</mo><mi>l</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>t</mi><mi>q</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\varpi_l(t_q) &gt; 0</annotation></semantics></math>,
-for
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>L</mi></mrow><annotation encoding="application/x-tex">l = 1, \ldots, L</annotation></semantics></math>,
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>∑</mo><mi>l</mi></msub><msub><mo>ϖ</mo><mi>l</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>t</mi><mi>q</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\sum_l \varpi_l(t_q) = 1</annotation></semantics></math>.
-Note that the weights
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>ϖ</mo><mi>l</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>⋅</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\varpi_l(\cdot)</annotation></semantics></math>
-are time-varying, i.e., at different follow-up times, different
-combinations of the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-models may yield more accurate predictions.</p>
-<p>For any time
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>,
-we will select the weights
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">{</mo><msub><mo>ϖ</mo><mi>l</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>;</mo><mi>l</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>L</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\{\varpi_l(t); l = 1, \ldots, L\}</annotation></semantics></math>
-that optimize the predictive performance of the combined cross-validated
-predictions using proper scoring rules. A scoring rule
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝒮</mi><mo stretchy="false" form="prefix">{</mo><msub><mi>π</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo>∣</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mi>𝕀</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>&lt;</mo><msubsup><mi>T</mi><mi>i</mi><mo>*</mo></msubsup><mo>&lt;</mo><mi>u</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\mathcal{S}\{\pi_i(u \mid t), \mathbb{I}(t &lt; T_i^* &lt; u)\}</annotation></semantics></math>
-is called proper if the true distribution achieves the optimal expected
-score, i.e., in our case if
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mrow><mo stretchy="true" form="prefix">[</mo><mi>𝒮</mi><mo stretchy="false" form="prefix">{</mo><msubsup><mi>π</mi><mi>i</mi><mrow><mi>t</mi><mi>r</mi><mi>u</mi><mi>e</mi></mrow></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo>∣</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="0.278em"></mspace><mi>𝕀</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>&lt;</mo><msubsup><mi>T</mi><mi>i</mi><mo>*</mo></msubsup><mo>&lt;</mo><mi>u</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo><mo stretchy="true" form="postfix">]</mo></mrow><mo>≤</mo><mi>E</mi><mrow><mo stretchy="true" form="prefix">[</mo><mi>𝒮</mi><mo stretchy="false" form="prefix">{</mo><msub><mover><mi>π</mi><mo accent="true">̂</mo></mover><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo>∣</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="0.278em"></mspace><mi>𝕀</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>&lt;</mo><msubsup><mi>T</mi><mi>i</mi><mo>*</mo></msubsup><mo>&lt;</mo><mi>u</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo><mo stretchy="true" form="postfix">]</mo></mrow><mo>,</mo><mspace width="1.0em"></mspace><mi>u</mi><mo>&gt;</mo><mi>t</mi><mo>,</mo></mrow><annotation encoding="application/x-tex">E \left [\mathcal{S}\{\pi_i^{true}(u \mid t), \; \mathbb{I}(t &lt; T_i^* &lt; u) \} \right] \leq E \left [\mathcal{S}\{\hat{\pi}_i(u \mid t), \; \mathbb{I}(t &lt; T_i^* &lt; u) \} \right], \quad u &gt; t,</annotation></semantics></math></p>
-<p>where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>π</mi><mi>i</mi><mrow><mi>t</mi><mi>r</mi><mi>u</mi><mi>e</mi></mrow></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo>∣</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\pi_i^{true}(u \mid t)</annotation></semantics></math>
-denotes the conditional risk probabilities under the true model, and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>π</mi><mo accent="true">̂</mo></mover><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo>∣</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\hat{\pi}_i(u \mid t)</annotation></semantics></math>
-is an estimate of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>π</mi><mi>i</mi><mrow><mi>t</mi><mi>r</mi><mi>u</mi><mi>e</mi></mrow></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><mi>u</mi><mo>∣</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\pi_i^{true}(u \mid t)</annotation></semantics></math>.
-The expectation is taken with respect to the conditional density of the
-survival outcome under the true model
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">{</mo><msubsup><mi>T</mi><mi>i</mi><mo>*</mo></msubsup><mo>∣</mo><msubsup><mi>T</mi><mi>i</mi><mo>*</mo></msubsup><mo>&gt;</mo><mi>t</mi><mo>,</mo><msub><mi>𝒴</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\{T_i^* \mid T_i^* &gt; t, \mathcal Y_i(t)\}</annotation></semantics></math>,
-with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝒴</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo stretchy="false" form="prefix">{</mo><msub><mi>y</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>t</mi><mrow><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>;</mo><mn>0</mn><mo>≤</mo><msub><mi>t</mi><mrow><mi>i</mi><mi>l</mi></mrow></msub><mo>≤</mo><mi>t</mi><mo>,</mo><mi>l</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>n</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\mathcal Y_i(t) = \{ y_i(t_{il}); 0 \leq t_{il} \leq t, l = 1, \ldots, n_i\}</annotation></semantics></math>,
-and the scoring rule
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝒮</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>⋅</mi><mo>,</mo><mi>⋅</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mathcal S(\cdot, \cdot)</annotation></semantics></math>
-is defined such that a lower score indicates better accuracy.</p>
+<span class="math inline">\mathcal{L} = \{M_1, \ldots, M_L\}</span>
+denote a library with <span class="math inline">L</span> models. There
+are no restrictions to the models included in this library, and it is
+recommended to consider a wide range of possible models. Among others,
+these joint models differ in the specification of the time trend in the
+longitudinal submodels and the functions form and event submodel. We
+split the original dataset <span class="math inline">\mathcal{D}_n</span> in <span class="math inline">V</span> folds. The choice of <span class="math inline">V</span> will depend on the size and number of
+events in <span class="math inline">\mathcal{D}_n</span>. In particular,
+for each fold, we need to have a sufficient number of events to quantify
+the predictive performance robustly. Using the cross-validation method,
+we fit the <span class="math inline">L</span> models in the combined
+<span class="math inline">v-1</span> folds, and we will calculate
+predictions for the <span class="math inline">v</span>-th fold we left
+outside. Due to the dynamic nature of the predictions, we want to derive
+optimal weights at different follow-up times. More specifically, we
+consider the sequence of time points <span class="math inline">t_1,
+\ldots, t_Q</span>. The number and placing of these time points should
+again consider the available event information in <span class="math inline">\mathcal{D}_n</span>. For <span class="math inline">t_q \in \{t_1, \ldots, t_Q\}</span>, we define <span class="math inline">\mathcal{R}(t_q, v)</span> to denote the subjects at
+risk at time <span class="math inline">t_q</span> that belong to the
+<span class="math inline">v</span>-th fold. For all subjects in <span class="math inline">\mathcal{R}(t_q, v)</span>, we calculate the
+cross-validated predictions, <span class="math display">\hat{\pi}_i^{(v)}(t_q + \Delta t \mid t_q, M_l) =
+\Pr \{T_i^* &lt; t_q + \Delta t \mid T_i^* &gt; t_q, \mathcal H_i(t),
+M_l, \mathcal{D}_n^{(-v)}\}.</span> These predictions are calculated
+based on model <span class="math inline">M_l</span> in library <span class="math inline">\mathcal{L}</span> that was fitted in the dataset
+<span class="math inline">\mathcal{D}_n^{(-v)}</span> the excludes the
+patients in the <span class="math inline">v</span>-th fold. The
+calculation is based on a Monte Carlo approach. We define <span class="math inline">\hat{\tilde{\pi}}_i^{v}(t_q + \Delta t \mid
+t_q)</span> to denote the convex combination of the <span class="math inline">L</span> predictions, i.e., <span class="math display">\hat{\tilde{\pi}}_i^{v}(t_q + \Delta t \mid t_q) =
+\sum\limits_{l = 1}^L \varpi_l(t_q) \hat{\pi}_i^{(v)}(t_q + \Delta t
+\mid t_q, M_l), \quad \mbox{for all } v \in {1, \ldots, V},</span> with
+<span class="math inline">\varpi_l(t_q) &gt; 0</span>, for <span class="math inline">l = 1, \ldots, L</span>, and <span class="math inline">\sum_l \varpi_l(t_q) = 1</span>. Note that the
+weights <span class="math inline">\varpi_l(\cdot)</span> are
+time-varying, i.e., at different follow-up times, different combinations
+of the <span class="math inline">L</span> models may yield more accurate
+predictions.</p>
+<p>For any time <span class="math inline">t</span>, we will select the
+weights <span class="math inline">\{\varpi_l(t); l = 1, \ldots,
+L\}</span> that optimize the predictive performance of the combined
+cross-validated predictions using proper scoring rules. A scoring rule
+<span class="math inline">\mathcal{S}\{\pi_i(u \mid t), \mathbb{I}(t
+&lt; T_i^* &lt; u)\}</span> is called proper if the true distribution
+achieves the optimal expected score, i.e., in our case if <span class="math display">E \left [\mathcal{S}\{\pi_i^{true}(u \mid t), \;
+\mathbb{I}(t &lt; T_i^* &lt; u) \} \right] \leq E \left
+[\mathcal{S}\{\hat{\pi}_i(u \mid t), \; \mathbb{I}(t &lt; T_i^* &lt; u)
+\} \right], \quad u &gt; t,</span></p>
+<p>where <span class="math inline">\pi_i^{true}(u \mid t)</span> denotes
+the conditional risk probabilities under the true model, and <span class="math inline">\hat{\pi}_i(u \mid t)</span> is an estimate of <span class="math inline">\pi_i^{true}(u \mid t)</span>. The expectation is
+taken with respect to the conditional density of the survival outcome
+under the true model <span class="math inline">\{T_i^* \mid T_i^* &gt;
+t, \mathcal Y_i(t)\}</span>, with <span class="math inline">\mathcal
+Y_i(t) = \{ y_i(t_{il}); 0 \leq t_{il} \leq t, l = 1, \ldots,
+n_i\}</span>, and the scoring rule <span class="math inline">\mathcal
+S(\cdot, \cdot)</span> is defined such that a lower score indicates
+better accuracy.</p>
 <p>The Brier score is a proper scoring rule that combines discrimination
 and calibration to measure overall predictive performance. In
-particular, at follow-up time
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
-and for a medically-relevant time window
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Δ</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">\Delta t</annotation></semantics></math>,
-we define the Brier score as
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">BS</mtext><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>,</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>E</mi><mrow><mo stretchy="true" form="prefix">[</mo><msup><mrow><mo stretchy="true" form="prefix">{</mo><mi>𝕀</mi><mrow><mo stretchy="true" form="prefix">(</mo><msubsup><mi>T</mi><mi>i</mi><mo>*</mo></msubsup><mo>≤</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><msubsup><mover><mi>π</mi><mo accent="true">̃</mo></mover><mi>i</mi><mi>v</mi></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>∣</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow><mn>2</mn></msup><mspace width="0.278em"></mspace><mo minsize="1.8" maxsize="1.8" stretchy="false" form="prefix">|</mo><mspace width="0.278em"></mspace><msubsup><mi>T</mi><mi>i</mi><mo>*</mo></msubsup><mo>&gt;</mo><mi>t</mi><mo stretchy="true" form="postfix">]</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">\mbox{BS}(t + \Delta t, t) = E \left [\left \{ \mathbb{I}(T_i^* \leq t + \Delta t) - \tilde{\pi}_i^{v}(t + \Delta t \mid t) \right \}^2 \; \Big | \; T_i^* &gt; t \right].</annotation></semantics></math></p>
-<p>As an alternative proper scoring rule in the interval
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo>,</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">(t, t + \Delta t]</annotation></semantics></math>
-we consider an adaptation of the expected predictive cross-entropy
-(EPCE):
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">EPCE</mtext><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>,</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>E</mi><mrow><mo stretchy="true" form="prefix">{</mo><mi>−</mi><mo>log</mo><mrow><mo stretchy="true" form="prefix">[</mo><mi>p</mi><mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">{</mo><msubsup><mi>T</mi><mi>i</mi><mo>*</mo></msubsup><mo>∣</mo><mi>t</mi><mo>&lt;</mo><msubsup><mi>T</mi><mi>i</mi><mo>*</mo></msubsup><mo>&lt;</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>,</mo><msub><mi>𝒴</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><msub><mi>𝒟</mi><mi>n</mi></msub><mo minsize="1.2" maxsize="1.2" stretchy="false" form="postfix">}</mo><mo stretchy="true" form="postfix">]</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">\mbox{EPCE}(t + \Delta t, t) = E \left \{-\log \left [ p \bigl \{ T_i^* \mid t &lt; T_i^* &lt; t + \Delta t, \mathcal Y_i(t), \mathcal D_{n} \bigr \} \right ] \right \},</annotation></semantics></math></p>
-<p>where the expectation is taken with respect to
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">{</mo><msubsup><mi>T</mi><mi>i</mi><mo>*</mo></msubsup><mo>∣</mo><msubsup><mi>T</mi><mi>i</mi><mo>*</mo></msubsup><mo>&gt;</mo><mi>t</mi><mo>,</mo><msub><mi>𝒴</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\{T_i^* \mid T_i^* &gt; t, \mathcal Y_i(t)\}</annotation></semantics></math>
-under the true model. In our context, both
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">BS</mtext><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>,</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mbox{BS}(t + \Delta t, t)</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">EPCE</mtext><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>,</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mbox{EPCE}(t + \Delta t, t)</annotation></semantics></math>
-are calculated using the convex combination of the cross-validated
-predictions
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mover><mi>π</mi><mo accent="true">̃</mo></mover><mo accent="true">̂</mo></mover><mi>i</mi><mi>v</mi></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>∣</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\hat{\tilde{\pi}}_i^{v}(t + \Delta t \mid t)</annotation></semantics></math>.
+particular, at follow-up time <span class="math inline">t</span> and for
+a medically-relevant time window <span class="math inline">\Delta
+t</span>, we define the Brier score as <span class="math display">\mbox{BS}(t + \Delta t, t) = E \left [\left \{
+\mathbb{I}(T_i^* \leq t + \Delta t) - \tilde{\pi}_i^{v}(t + \Delta t
+\mid t) \right \}^2 \; \Big | \; T_i^* &gt; t \right].</span></p>
+<p>As an alternative proper scoring rule in the interval <span class="math inline">(t, t + \Delta t]</span> we consider an adaptation
+of the expected predictive cross-entropy (EPCE): <span class="math display">\mbox{EPCE}(t + \Delta t, t) = E \left \{-\log
+\left [ p \bigl \{ T_i^* \mid t &lt; T_i^* &lt; t + \Delta t, \mathcal
+Y_i(t), \mathcal D_{n} \bigr \} \right ] \right \},</span></p>
+<p>where the expectation is taken with respect to <span class="math inline">\{T_i^* \mid T_i^* &gt; t, \mathcal Y_i(t)\}</span>
+under the true model. In our context, both <span class="math inline">\mbox{BS}(t + \Delta t, t)</span> and <span class="math inline">\mbox{EPCE}(t + \Delta t, t)</span> are calculated
+using the convex combination of the cross-validated predictions <span class="math inline">\hat{\tilde{\pi}}_i^{v}(t + \Delta t \mid t)</span>.
 In particular, using the super-learning procedure, we obtain the weights
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mo>ϖ</mo><mo accent="true">̂</mo></mover><mi>l</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\widehat{\varpi}_l(t)</annotation></semantics></math>
-that minimize a proper scoring rule (in our case, either the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">BS</mtext><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>,</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mbox{BS}(t + \Delta t, t)</annotation></semantics></math>
-or
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">EPCE</mtext><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>,</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mbox{EPCE}(t + \Delta t, t)</annotation></semantics></math>)
-of the cross-validated predictions,
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mo>ϖ</mo><mo accent="true">̂</mo></mover><mi>l</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mtext mathvariant="normal">argmin</mtext><mo>ϖ</mo></msub><mrow><mo stretchy="true" form="prefix">[</mo><mi>𝒮</mi><mrow><mo stretchy="true" form="prefix">{</mo><munderover><mo>∑</mo><mrow><mi>l</mi><mo>=</mo><mn>1</mn></mrow><mi>L</mi></munderover><msub><mo>ϖ</mo><mi>l</mi></msub><msubsup><mover><mi>π</mi><mo accent="true">̂</mo></mover><mi>i</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>v</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>+</mo><mi>Δ</mi><mi>t</mi><mo>∣</mo><mi>t</mi><mo>,</mo><msub><mi>M</mi><mi>l</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><msub><mi>T</mi><mi>i</mi></msub><mo>,</mo><msub><mi>δ</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">}</mo></mrow><mo stretchy="true" form="postfix">]</mo></mrow><mo>,</mo><mspace width="1.0em"></mspace><mi>v</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>V</mi><mo>,</mo></mrow><annotation encoding="application/x-tex">\widehat{\varpi}_l(t) = \mbox{argmin}_{\varpi} \left [ \mathcal{S} \left \{ \sum_{l = 1}^L \varpi_l \hat{\pi}_i^{(v)}(t + \Delta t \mid t, M_l), T_i, \delta_i \right \} \right], \quad v = 1, \ldots, V,</annotation></semantics></math></p>
-<p>under the constraints
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>ϖ</mo><mi>l</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\varpi_l(t) &gt; 0</annotation></semantics></math>,
-for
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>L</mi></mrow><annotation encoding="application/x-tex">l = 1, \ldots, L</annotation></semantics></math>,
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>∑</mo><mi>l</mi></msub><msub><mo>ϖ</mo><mi>l</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\sum_l \varpi_l(t) = 1</annotation></semantics></math>.</p>
+<span class="math inline">\widehat{\varpi}_l(t)</span> that minimize a
+proper scoring rule (in our case, either the <span class="math inline">\mbox{BS}(t + \Delta t, t)</span> or <span class="math inline">\mbox{EPCE}(t + \Delta t, t)</span>) of the
+cross-validated predictions, <span class="math display">\widehat{\varpi}_l(t) = \mbox{argmin}_{\varpi}
+\left [ \mathcal{S} \left \{ \sum_{l = 1}^L \varpi_l \hat{\pi}_i^{(v)}(t
++ \Delta t \mid t, M_l), T_i, \delta_i \right \} \right], \quad v = 1,
+\ldots, V,</span></p>
+<p>under the constraints <span class="math inline">\varpi_l(t) &gt;
+0</span>, for <span class="math inline">l = 1, \ldots, L</span>, and
+<span class="math inline">\sum_l \varpi_l(t) = 1</span>.</p>
 </div>
 <div class="section level3">
 <h3 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
@@ -330,15 +279,12 @@ run the whole vignette):</p>
 <span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></code></pre></div>
 <p>We calculate the weights to combine the predictions from these five
 models to optimize the integrated Brier score and the expected
-predictive cross-entropy at follow-up time
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>6</mn></mrow><annotation encoding="application/x-tex">t = 6</annotation></semantics></math>
-years and for a relevant window of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Δ</mi><mi>t</mi><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">\Delta t = 2</annotation></semantics></math>
-years. The function <code><a href="../reference/accuracy.html">tvBrier()</a></code> automatically performs this
-task by providing the list of joint models fitted in the training
-datasets as a first argument. The integrated Brier score is calculated
-using the testing datasets that are provided in the <code>newdata</code>
-argument:</p>
+predictive cross-entropy at follow-up time <span class="math inline">t =
+6</span> years and for a relevant window of <span class="math inline">\Delta t = 2</span> years. The function
+<code><a href="../reference/accuracy.html">tvBrier()</a></code> automatically performs this task by providing the
+list of joint models fitted in the training datasets as a first
+argument. The integrated Brier score is calculated using the testing
+datasets that are provided in the <code>newdata</code> argument:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tstr</span> <span class="op">&lt;-</span> <span class="fl">6</span></span>
 <span><span class="va">thor</span> <span class="op">&lt;-</span> <span class="fl">8</span></span>
