@@ -24,7 +24,7 @@ library("JMbayes2")
 Based on the general framework of joint models presented earlier, we are interested in deriving cumulative risk probabilities for a new subject $j$ that has survived up to time point $t$ and has provided longitudinal measurements $\mathcal Y_{kj}(t) = \{ y_{kj}(t_{jl}); 0 \leq t_{jl} \leq t, l = 1, \ldots, n_j, k = 1, \ldots, K\}$, with $K$ denoting the number of longitudinal outcomes. The probabilities of 
 interest are 
 $$\begin{array}{l}
-\pi_j(u \mid t) = \mbox{Pr}\{T_j^* \leq u \mid T_j^* > t, \mathcal Y_j(t), \mathcal D_n\}\\\\
+\pi_j(u \mid t) = \mathrm{Pr}\{T_j^* \leq u \mid T_j^* > t, \mathcal Y_j(t), \mathcal D_n\}\\\\
 = \displaystyle 1 - \int\int \frac{S(u \mid b_j, \theta)}{S(t \mid b_j, \theta)} \; p\{b_j \mid T_j^* > t, \mathcal Y_j(t), \theta\} \; p(\theta \mid \mathcal D_n) \; db_j d\theta,
 \end{array}$$
 where $S(\cdot)$ denotes the survival function conditional on the random effects and $\mathcal Y_j(t) = \{\mathcal Y_{1j}(t), \ldots, \mathcal Y_{Kj}(t)\}$. Combining the 

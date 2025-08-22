@@ -83,7 +83,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-08-21</h4>
+            <h4 data-toc-skip class="date">2025-08-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Super_Learning.Rmd" class="external-link"><code>vignettes/Super_Learning.Rmd</code></a></small>
       <div class="d-none name"><code>Super_Learning.Rmd</code></div>
@@ -148,8 +148,8 @@ patients in the <span class="math inline">v</span>-th fold. The
 calculation is based on a Monte Carlo approach. We define <span class="math inline">\hat{\tilde{\pi}}_i^{v}(t_q + \Delta t \mid
 t_q)</span> to denote the convex combination of the <span class="math inline">L</span> predictions, i.e., <span class="math display">\hat{\tilde{\pi}}_i^{v}(t_q + \Delta t \mid t_q) =
 \sum\limits_{l = 1}^L \varpi_l(t_q) \hat{\pi}_i^{(v)}(t_q + \Delta t
-\mid t_q, M_l), \quad \mbox{for all } v \in {1, \ldots, V},</span> with
-<span class="math inline">\varpi_l(t_q) &gt; 0</span>, for <span class="math inline">l = 1, \ldots, L</span>, and <span class="math inline">\sum_l \varpi_l(t_q) = 1</span>. Note that the
+\mid t_q, M_l), \quad \mathrm{for all } v \in {1, \ldots, V},</span>
+with <span class="math inline">\varpi_l(t_q) &gt; 0</span>, for <span class="math inline">l = 1, \ldots, L</span>, and <span class="math inline">\sum_l \varpi_l(t_q) = 1</span>. Note that the
 weights <span class="math inline">\varpi_l(\cdot)</span> are
 time-varying, i.e., at different follow-up times, different combinations
 of the <span class="math inline">L</span> models may yield more accurate
@@ -177,20 +177,20 @@ better accuracy.</p>
 and calibration to measure overall predictive performance. In
 particular, at follow-up time <span class="math inline">t</span> and for
 a medically-relevant time window <span class="math inline">\Delta
-t</span>, we define the Brier score as <span class="math display">\mbox{BS}(t + \Delta t, t) = E \left [\left \{
+t</span>, we define the Brier score as <span class="math display">\mathrm{BS}(t + \Delta t, t) = E \left [\left \{
 \mathbb{I}(T_i^* \leq t + \Delta t) - \tilde{\pi}_i^{v}(t + \Delta t
 \mid t) \right \}^2 \; \Big | \; T_i^* &gt; t \right].</span></p>
 <p>As an alternative proper scoring rule in the interval <span class="math inline">(t, t + \Delta t]</span> we consider an adaptation
-of the expected predictive cross-entropy (EPCE): <span class="math display">\mbox{EPCE}(t + \Delta t, t) = E \left \{-\log
+of the expected predictive cross-entropy (EPCE): <span class="math display">\mathrm{EPCE}(t + \Delta t, t) = E \left \{-\log
 \left [ p \bigl \{ T_i^* \mid t &lt; T_i^* &lt; t + \Delta t, \mathcal
 Y_i(t), \mathcal D_{n} \bigr \} \right ] \right \},</span></p>
 <p>where the expectation is taken with respect to <span class="math inline">\{T_i^* \mid T_i^* &gt; t, \mathcal Y_i(t)\}</span>
-under the true model. In our context, both <span class="math inline">\mbox{BS}(t + \Delta t, t)</span> and <span class="math inline">\mbox{EPCE}(t + \Delta t, t)</span> are calculated
+under the true model. In our context, both <span class="math inline">\mathrm{BS}(t + \Delta t, t)</span> and <span class="math inline">\mathrm{EPCE}(t + \Delta t, t)</span> are calculated
 using the convex combination of the cross-validated predictions <span class="math inline">\hat{\tilde{\pi}}_i^{v}(t + \Delta t \mid t)</span>.
 In particular, using the super-learning procedure, we obtain the weights
 <span class="math inline">\widehat{\varpi}_l(t)</span> that minimize a
-proper scoring rule (in our case, either the <span class="math inline">\mbox{BS}(t + \Delta t, t)</span> or <span class="math inline">\mbox{EPCE}(t + \Delta t, t)</span>) of the
-cross-validated predictions, <span class="math display">\widehat{\varpi}_l(t) = \mbox{argmin}_{\varpi}
+proper scoring rule (in our case, either the <span class="math inline">\mathrm{BS}(t + \Delta t, t)</span> or <span class="math inline">\mathrm{EPCE}(t + \Delta t, t)</span>) of the
+cross-validated predictions, <span class="math display">\widehat{\varpi}_l(t) = \mathrm{argmin}_{\varpi}
 \left [ \mathcal{S} \left \{ \sum_{l = 1}^L \varpi_l \hat{\pi}_i^{(v)}(t
 + \Delta t \mid t, M_l), T_i, \delta_i \right \} \right], \quad v = 1,
 \ldots, V,</span></p>
