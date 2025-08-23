@@ -83,7 +83,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-08-22</h4>
+            <h4 data-toc-skip class="date">2025-08-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Baseline_Hazard.Rmd" class="external-link"><code>vignettes/Baseline_Hazard.Rmd</code></a></small>
       <div class="d-none name"><code>Baseline_Hazard.Rmd</code></div>
@@ -225,10 +225,8 @@ Via the <code>base_hazard</code> we specify that for the ddC group the
 baseline hazard is Weibull, and for the ddI group a penalized natural
 cubic spline for the logarithm of the time variable:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Cox regression</span></span>
-<span><span class="va">CoxFit2</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">death</span><span class="op">)</span> <span class="op">~</span> <span class="fu">strata</span><span class="op">(</span><span class="va">drug</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">aids.id</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">CoxFit2</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">death</span><span class="op">)</span> <span class="op">~</span> <span class="fu">strata</span><span class="op">(</span><span class="va">drug</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">aids.id</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># default baseline hazard</span></span>
 <span><span class="va">jointFit6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit2</span>, <span class="va">fm</span>, time_var <span class="op">=</span> <span class="st">"obstime"</span>, </span>
 <span>                base_hazard <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"weibull"</span>, <span class="st">"log time, ns"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>

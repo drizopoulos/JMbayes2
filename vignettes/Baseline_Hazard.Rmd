@@ -86,10 +86,8 @@ JMbayes2:::plot_hazard(jointFit5, tmax = 24)
 ## Stratified Models
 In case of stratified models, a different baseline hazard is fitted per stratum. The `base_hazard` argument can in this case be a character vector with each element specifying the baseline hazard per stratum. As an example, we refit the Cox model by stratifying for drug. Via the `base_hazard` we specify that for the ddC group the baseline hazard is Weibull, and for the ddI group a penalized natural cubic spline for the logarithm of the time variable:
 ```{r, 'strata', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
-# Cox regression
 CoxFit2 <- coxph(Surv(Time, death) ~ strata(drug), data = aids.id)
 
-# default baseline hazard
 jointFit6 <- jm(CoxFit2, fm, time_var = "obstime", 
                 base_hazard = c("weibull", "log time, ns"))
 
