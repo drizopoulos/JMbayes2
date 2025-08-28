@@ -41,6 +41,8 @@ JMbayes2:::ppcheck(jointFit, process = "event", Fforms_fun = FF,
 
 JMbayes2:::plot_hazard(jointFit, tmax = 14)
 
+variogram(pbc2$id, pbc2$year, pbc2$serBilir)
+
 #############################################################################
 #############################################################################
 

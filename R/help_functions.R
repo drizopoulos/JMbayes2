@@ -1679,3 +1679,114 @@ get_hazard <- function (base_hazard) {
              "use the control arguments instead.\n")
     } else out
 }
+
+variogram <- function (y, times, id) {
+    na_ind <- is.na(y) | is.na(times)
+    y <- as.vector(y[!na_ind])
+    times <- as.vector(times[!na_ind])
+    id <- id[!na_ind]
+    id <- match(id, unique(id))
+    unq_id <- unique(id)
+    n <- length(unq_id)
+    vv <- vt <- vector("list", n)
+    vtot <- count <- 0
+    for (i in seq_len(n)) {
+        id_i <- id == unq_id[i]
+        y_i <- y[id_i]
+        times_i <- times[id_i]
+        n_i <- length(y_i)
+        if (n_i > 1L) {
+            inds <- combn(n_i, 2)
+            vv[[i]] <- 0.5 * (y_i[inds[1L, ]] - y_i[inds[2L, ]])^2
+            vt[[i]] <- abs(times_i[inds[1L, ]] - times_i[inds[2L, ]])
+        } else {
+            vv[[i]] <- vt[[i]] <- 0
+        }
+        ii <- i + 1
+        while (ii <= n) {
+            id_ii <- id == unq_id[ii]
+            y_ii <- y[id_ii]
+            dtot <- outer(y_i, y_ii, function (x, y) 0.5 * (x - y)^2)
+            vtot <- vtot + sum(dtot)
+            count <- count + length(dtot)
+            ii <- ii + 1
+        }
+    }
+    svar <- cbind(unlist(vt, use.names = FALSE), unlist(vv, use.names = FALSE))
+    sigma2 <- mean(vtot)
+    vrgm <- list(svar = svar, sigma2 = vtot / count)
+    class(vrgm) <- "vrgm"
+    vrgm
+}
+
+plot.vrgm <-
+    function (x, smooth = FALSE, bdw = NULL, follow.time = NULL,
+              points = TRUE, ...) {
+    if (!inherits(x, "vargm")) {
+        stop("Data must be of class 'vargm'\n")
+    }
+    vargm <- x
+    svar <- vargm$svar
+    sigma2 <- vargm$sigma2
+    if (is.null(follow.time)) {
+        left <- min(svar[, 1])
+        right <- max(svar[, 1])
+    }
+    else {
+        left <- follow.time[1]
+        right <- follow.time[2]
+    }
+    if (is.null(bdw)) {
+        bdw <- (right - left)/10
+    }
+    nbdw <- (right - left)/bdw
+    Mid <- c()
+    Mean <- c()
+    Count <- c()
+    for (it in 1:(nbdw)) {
+        lt <- left + (it - 1) * bdw
+        rt <- left + it * bdw
+        mid <- lt + (rt - lt)/2
+        if (length(svar[svar[, 1] < rt & svar[, 1] >= lt, 2]) > 0) {
+            mean <- mean(svar[svar[, 1] < rt & svar[, 1] >= lt, 2])
+            Count <- c(Count, length(svar[svar[, 1] < rt & svar[, 1] >= lt, 2]))
+        }
+        else {
+            mean <- NA
+            Count <- c(Count, 0)
+        }
+        Mid <- c(Mid, mid)
+        Mean <- c(Mean, mean)
+    }
+    mean.line <- cbind(Mid[!is.na(Mean)], Mean[!is.na(Mean)])
+    Count <- Count[!is.na(Mean)]
+    if (points) {
+        plot(svar[, 1], svar[, 2], xlab = "u", ylab = "Variogram",
+             pch = ".", ...)
+        if (smooth) {
+            lines(smooth.spline(svar[, 1], svar[, 2]), lty = 1,
+                  lwd = 1.3)
+        }
+        else {
+            lines(mean.line, lwd = 1.3, lty = 1)
+        }
+        abline(h = sigma2, lwd = 1.3, lty = 1)
+    }
+    else {
+        if (smooth) {
+            plot(smooth.spline(svar[, 1], svar[, 2]), xlab = "u",
+                 ylab = "Variogram", ...)
+        }
+        else {
+            plot(mean.line, type = "l", xlab = "u", ylab = "Variogram",
+                 ...)
+        }
+        abline(h = sigma2, lwd = 2, lty = 1)
+        abline(h = min(mean.line[mean.line[, 1] <= right & mean.line[,
+                                                                     1] >= left, 2]), lty = 2)
+        abline(h = max(mean.line[mean.line[, 1] <= right & mean.line[,
+                                                                     1] >= left, 2]), lty = 2)
+    }
+}
+
+
