@@ -1468,7 +1468,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         log_hazard <- function (time, subj) {
             subjj <- if (length(time) != length(subj)) rep(subj, length(time)) else subj
             tt <- if (timescale_base_hazard == "identity") time else log(time)
-            W0 <- create_W0(tt, knots, Bspline_dgr, strt[subj], basis)
+            W0 <- create_W0(tt, knots, Bspline_dgr, strt[subj], basis,
+                            timescale_base_hazard)
             log_h0 <- c(W0 %*% bs_gammas) - rescale_factor
             covariates <- if (has_gammas) c(W[subj, , drop = FALSE] %*% gammas) else 0.0
             long <- c(Fforms_fun(time, betas, bb[subjj, , drop = FALSE],

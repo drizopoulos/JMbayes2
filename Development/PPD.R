@@ -13,44 +13,6 @@ fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
 
 # the joint model
 jointFit1 <- jm(CoxFit, fm1, time_var = "year")
-jointFit2 <- jm(CoxFit, fm1, time_var = "year", priors = list(penalized_bs_gammas = FALSE))
-jointFit2. <- jm(CoxFit, fm1, time_var = "year", base_hazard = "piecewice linear")
-
-JMbayes2:::plot_hazard(jointFit2, tmax = 14)
-JMbayes2:::plot_hazard(jointFit2., tmax = 20)
-jointFit2.$control
-
-
-jointFit3 <- jm(CoxFit, fm1, time_var = "year", Bsplines_degree = 1L)
-jointFit4 <- jm(CoxFit, fm1, time_var = "year", Bsplines_degree = 1L,
-                base_hazard_segments = 2L)
-jointFit5 <- jm(CoxFit, fm1, time_var = "year", base_hazard = "Weibull")
-
-
-JMbayes2:::plot_hazard(jointFit1, tmax = 14)
-JMbayes2:::plot_hazard(jointFit2, tmax = 14)
-JMbayes2:::plot_hazard(jointFit3, tmax = 14)
-JMbayes2:::plot_hazard(jointFit4, tmax = 14)
-JMbayes2:::plot_hazard(jointFit5, tmax = 14)
-JMbayes2:::plot_hazard(jointFit4, tmax = 18)
-JMbayes2:::plot_hazard(jointFit5, tmax = 18)
-
-jointFit1. <- jm(CoxFit, fm1, time_var = "year", timescale_base_hazard = "log", basis = "ns")
-jointFit2. <- jm(CoxFit, fm1, time_var = "year", timescale_base_hazard = "log",
-                 Bsplines_degree = 0L)
-jointFit3. <- jm(CoxFit, fm1, time_var = "year", timescale_base_hazard = "log",
-                 Bsplines_degree = 1L)
-jointFit4. <- jm(CoxFit, fm1, time_var = "year", timescale_base_hazard = "log",
-                base_hazard_segments = 2L, Bsplines_degree = 1L)
-jointFit5. <- jm(CoxFit, fm1, time_var = "year", timescale_base_hazard = "log",
-                 basis = "ns", base_hazard_segments = 1L)
-
-JMbayes2:::plot_hazard(jointFit1., tmax = 14)
-JMbayes2:::plot_hazard(jointFit2., tmax = 14)
-JMbayes2:::plot_hazard(jointFit3., tmax = 14)
-JMbayes2:::plot_hazard(jointFit4., tmax = 14)
-JMbayes2:::plot_hazard(jointFit5., tmax = 14)
-JMbayes2:::plot_hazard(jointFit5., tmax = 18)
 
 
 jointFit = jointFit1
