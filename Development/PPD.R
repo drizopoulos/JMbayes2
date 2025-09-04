@@ -14,11 +14,42 @@ fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
 # the joint model
 jointFit1 <- jm(CoxFit, fm1, time_var = "year", save_random_effects = TRUE)
 
-ss1 <- simulate(jointFit1, nsim = 800L)[[1L]]
-ss2 <- simulate(jointFit1, nsim = 800L, random_effects = "mcmc")[[1L]]
+object = jointFit1
+nsim = 40L
+newdata = NULL
+seed = 123L
+process = "longitudinal"
+type = "variogram"
+outcomes = Inf
+percentiles = c(0.025, 0.975)
+random_effects = "posterior_means"
+Fforms_fun = NULL
 
-colMeans(cbind(apply(ss1, 1, sd), apply(ss2, 1, sd)))
 
+
+ss1 <- simulate(jointFit1, nsim = 30L)[[1L]]
+ss2 <- simulate(jointFit1, nsim = 30L, random_effects = "mcmc")[[1L]]
+
+yy <- log(pbc2$serBilir)
+tt <- pbc2$year
+ids <- pbc2$id
+fit_lm <- lm.fit(jointFit1$model_data$X[[1]], yy)$fitted.values
+vrgm_obs <- variogram(yy - fit_lm, tt, ids, compute_var = FALSE)[[1L]]
+ttt <- seq(min(tt), max(tt), len = 501)
+loess_obs <- loess(vrg ~ tt, data = data.frame(vrg = vrgm_obs[, 2], tt = vrgm_obs[, 1]))
+vrgm_obs_loess <- predict(loess_obs, data.frame(tt = ttt))
+
+vrgm_rep_loess <- matrix(0, length(ttt), ncol(ss1))
+for (i in seq_len(ncol(ss1))) {
+    vrgm_rep_i <- variogram(ss1[, i] - fit_lm, tt, ids,
+                            compute_var = FALSE)[[1L]][, 2L]
+    loess_rep_i <- loess(vrg ~ tt, data = data.frame(vrg = vrgm_rep_i,
+                                                     tt = vrgm_obs[, 1]))
+    vrgm_rep_loess[, i] <- predict(loess_rep_i, data.frame(tt = ttt))
+}
+
+matplot(ttt, vrgm_rep_loess, type = "l", col = "grey", lty = 1)
+lines(ttt, vrgm_obs_loess, lwd = 2)
 
 
 jointFit = jointFit1

@@ -1714,7 +1714,8 @@ variogram <- function (y, times, id, compute_var = TRUE) {
             }
         }
     }
-    svar <- cbind(unlist(vt, use.names = FALSE), unlist(vv, use.names = FALSE))
+    svar <- cbind(time_lag = unlist(vt, use.names = FALSE),
+                  diffs2 = unlist(vv, use.names = FALSE))
     sigma2 <- mean(vtot)
     vrgm <- list(svar = svar, sigma2 = vtot / count)
     class(vrgm) <- "vrgm"

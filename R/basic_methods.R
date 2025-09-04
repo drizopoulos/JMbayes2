@@ -1581,10 +1581,12 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
 
 ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      process = c("longitudinal", "event"),
+                     type = c("ecdf", "variogram"),
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
                      Fforms_fun = NULL, ...) {
     process <- match.arg(process)
+    type <- math.arg(type)
     random_effects <- match.arg(random_effects)
     trapezoid_rule <- function (f, x) {
         sum(0.5 * diff(x) * (f[-length(x)] + f[-1L]))
@@ -1624,37 +1626,60 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         index <- seq_len(n_outcomes)
         if (outcomes < Inf) index <- index[index %in% outcomes]
         for (j in index) {
-            y <- yy[[j]]
-            r1 <- quantile(y, probs = percentiles[1L], na.rm = TRUE)
-            r2 <- quantile(y, probs = percentiles[2L], na.rm = TRUE)
-            x_vals <- seq(r1, r2, length.out = 600)
-            rep_y <- apply(out[[j]], 2L, function (x, x_vals) ecdf(x)(x_vals),
-                            x_vals = x_vals)
-            F0 <- ecdf(y)
-            # Dvoretzky–Kiefer–Wolfowitz inequality
-            # https://stats.stackexchange.com/questions/181724/confidence-intervals-for-ecdf
-            #xx <- get("x", envir = environment(F0))
-            #ff <- get("y", envir = environment(F0))
-            #eps <- sqrt(log(2 / 0.05) / (2 * length(y)))
-            #F0u <- pmin(ff + eps, 1)
-            #F0l <- pmax(ff - eps, 0)
-            #F0u <- stepfun(xx, c(F0u, 1))(x_vals)
-            #F0l <- stepfun(xx, c(F0l, F0l[length(y)]))(x_vals)
-            F0 <- F0(x_vals)
-            se <- sqrt(F0 * (1 - F0) / length(y))
-            F0u <- pmin(F0 + 1.959964 * se, 1)
-            F0l <- pmax(F0 - 1.959964 * se, 0)
-            MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
-            matplot(x_vals, rep_y, type = "s", lty = 1, col = "lightgrey",
-                    xlab = object$model_info$var_names$respVars_form[[j]],
-                    ylab = "Empirical CDF", ylim = c(0, 1))
-            lines(x_vals, F0, lwd = 1.5, type = "s")
-            lines(x_vals, F0l, lwd = 1.5, lty = 2, type = "s")
-            lines(x_vals, F0u, lwd = 1.5, lty = 2, type = "s")
-            legend("bottomright", c("replicated data", "observed data"),
-                   lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.9)
-            rootMISE <- round(sqrt(MISE), 5)
-            text(r1 + 0.15 * (r2 - r1), 0.9, bquote(sqrt(MISE) == .(rootMISE)))
+            if (type == "ecdf") {
+                y <- yy[[j]]
+                r1 <- quantile(y, probs = percentiles[1L], na.rm = TRUE)
+                r2 <- quantile(y, probs = percentiles[2L], na.rm = TRUE)
+                x_vals <- seq(r1, r2, length.out = 600)
+                rep_y <- apply(out[[j]], 2L, function (x, x_vals) ecdf(x)(x_vals),
+                               x_vals = x_vals)
+                F0 <- ecdf(y)
+                # Dvoretzky–Kiefer–Wolfowitz inequality
+                # https://stats.stackexchange.com/questions/181724/confidence-intervals-for-ecdf
+                #xx <- get("x", envir = environment(F0))
+                #ff <- get("y", envir = environment(F0))
+                #eps <- sqrt(log(2 / 0.05) / (2 * length(y)))
+                #F0u <- pmin(ff + eps, 1)
+                #F0l <- pmax(ff - eps, 0)
+                #F0u <- stepfun(xx, c(F0u, 1))(x_vals)
+                #F0l <- stepfun(xx, c(F0l, F0l[length(y)]))(x_vals)
+                F0 <- F0(x_vals)
+                se <- sqrt(F0 * (1 - F0) / length(y))
+                F0u <- pmin(F0 + 1.959964 * se, 1)
+                F0l <- pmax(F0 - 1.959964 * se, 0)
+                MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
+                matplot(x_vals, rep_y, type = "s", lty = 1, col = "lightgrey",
+                        xlab = object$model_info$var_names$respVars_form[[j]],
+                        ylab = "Empirical CDF", ylim = c(0, 1))
+                lines(x_vals, F0, lwd = 1.5, type = "s")
+                lines(x_vals, F0l, lwd = 1.5, lty = 2, type = "s")
+                lines(x_vals, F0u, lwd = 1.5, lty = 2, type = "s")
+                legend("bottomright", c("replicated data", "observed data"),
+                       lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.9)
+                rootMISE <- round(sqrt(MISE), 5)
+                text(r1 + 0.15 * (r2 - r1), 0.9, bquote(sqrt(MISE) == .(rootMISE)))
+            } else {
+                y <- yy[[j]]
+                X <- object$model_data$X[[j]]
+                lm_fit <- lm.fit(X, y)$fitted.values
+                resd_obs <- y - lm_fit
+                tt <- object$model_data$dataL[[object$model_info$var_names$time_var]]
+                id <- object$model_data$idL[[j]]
+                vrgm_DF <- data.frame(variogram(resd_obs, tt, id, compute_var = FALSE)[[1L]])
+                loess_obs <- loess(diffs2 ~ time_lag, data = vrgm_DF)
+                ttt <- seq(min(tt), max(tt), len = 501)
+                vrgm_obs_loess <- predict(loess_obs, data.frame(time_lag = ttt))
+                vrgm_rep_loess <- matrix(0, length(ttt), ncol(out[[j]]))
+                for (i in seq_len(ncol(out[[j]]))) {
+                    vrgm_DF$diffs2 <- variogram(out[[j]][, i] - lm_fit, tt, id,
+                                            compute_var = FALSE)[[1L]][, 'diffs2']
+                    loess_rep_i <- loess(diffs2 ~ time_lag, data = vrgm_DF)
+                    vrgm_rep_loess[, i] <- predict(loess_rep_i, data.frame(time_lag = ttt))
+                }
+                matplot(ttt, vrgm_rep_loess, type = "l", col = "lightgrey", lty = 1,
+                        xlab = "Time lags", ylab = "Half Squared Differences")
+                lines(ttt, vrgm_obs_loess, lwd = 2)
+            }
         }
     } else {
         out <- if (inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
