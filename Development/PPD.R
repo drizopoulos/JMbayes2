@@ -12,12 +12,19 @@ fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
            random = list(id = pdDiag(~ ns(year, 3))))
 
 # the joint model
-jointFit1 <- jm(CoxFit, fm1, time_var = "year")
+jointFit1 <- jm(CoxFit, fm1, time_var = "year", save_random_effects = TRUE)
+
+ss1 <- simulate(jointFit1, nsim = 800L)[[1L]]
+ss2 <- simulate(jointFit1, nsim = 800L, random_effects = "mcmc")[[1L]]
+
+colMeans(cbind(apply(ss1, 1, sd), apply(ss2, 1, sd)))
+
 
 
 jointFit = jointFit1
 # Posterior Predictive Checks - Longitudinal Outcome
 JMbayes2:::ppcheck(jointFit)
+JMbayes2:::ppcheck(jointFit, random_effects = "mcmc")
 JMbayes2:::ppcheck(jointFit, random_effects = "prior",
                    Fforms_fun = FF)
 
@@ -41,7 +48,13 @@ JMbayes2:::ppcheck(jointFit, process = "event", Fforms_fun = FF,
 
 JMbayes2:::plot_hazard(jointFit, tmax = 14)
 
-variogram(pbc2$id, pbc2$year, pbc2$serBilir)
+vrgm_obs <- JMbayes2:::variogram(log(pbc2$serBilir), pbc2$year, pbc2$id)
+
+DF_vrgm_obs <- data.frame(diffs = vrgm_obs$svar[, 2L],
+                          times = vrgm_obs$svar[, 1L])
+vrgm_obs_loess <- loess(diffs ~ times, DF_vrgm_obs)
+
+reps <- simulate(jointFit, nsim =)
 
 #############################################################################
 #############################################################################

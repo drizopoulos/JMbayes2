@@ -1404,7 +1404,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                    "binomial" = rbinom(n, .N, mu),
                    "poisson" = rpois(n, mu),
                    "negative binomial" = rnbinom(n, size = phi, mu = mu),
-                   "beta" = rbeta(n, shape1 = mu * phi, shape2 = phi * (1.0 - mu)))
+                   "beta" = rbeta(n, shape1 = mu * phi, shape2 = phi * (1 - mu)))
         }
         indices <- sample(nrow(mcmc_betas[[1]]), nsim)
         val <- vector("list", n_outcomes)

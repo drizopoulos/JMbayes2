@@ -1680,7 +1680,7 @@ get_hazard <- function (base_hazard) {
     } else out
 }
 
-variogram <- function (y, times, id) {
+variogram <- function (y, times, id, compute_var = TRUE) {
     na_ind <- is.na(y) | is.na(times)
     y <- as.vector(y[!na_ind])
     times <- as.vector(times[!na_ind])
@@ -1702,14 +1702,16 @@ variogram <- function (y, times, id) {
         } else {
             vv[[i]] <- vt[[i]] <- 0
         }
-        ii <- i + 1
-        while (ii <= n) {
-            id_ii <- id == unq_id[ii]
-            y_ii <- y[id_ii]
-            dtot <- outer(y_i, y_ii, function (x, y) 0.5 * (x - y)^2)
-            vtot <- vtot + sum(dtot)
-            count <- count + length(dtot)
-            ii <- ii + 1
+        if (compute_var) {
+            ii <- i + 1
+            while (ii <= n) {
+                id_ii <- id == unq_id[ii]
+                y_ii <- y[id_ii]
+                dtot <- outer(y_i, y_ii, function (x, y) 0.5 * (x - y)^2)
+                vtot <- vtot + sum(dtot)
+                count <- count + length(dtot)
+                ii <- ii + 1
+            }
         }
     }
     svar <- cbind(unlist(vt, use.names = FALSE), unlist(vv, use.names = FALSE))

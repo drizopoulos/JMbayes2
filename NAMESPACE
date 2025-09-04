@@ -3,7 +3,7 @@ export(area, calibration_metrics, calibration_plot, cumuplot, coef, compare_jm,
        ggdensityplot, ggtraceplot, jm, model.frame, model.matrix, ranef, slope,
        terms, traceplot, tv, tvAUC, tvBrier, tvEPCE, tvROC, value, vexpit,
        Dexpit, vexp, vabs, Dexp, vlog, vlog2, vlog10, vsqrt, poly2, poly3, poly4,
-       velocity, acceleration, coefs, create_folds)
+       velocity, acceleration, coefs, create_folds, variogram)
 
 import(Rcpp)
 importFrom("utils", "glob2rx", "tail", "head", "combn")
