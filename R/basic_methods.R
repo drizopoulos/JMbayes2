@@ -1586,7 +1586,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      random_effects = c("posterior_means", "mcmc", "prior"),
                      Fforms_fun = NULL, ...) {
     process <- match.arg(process)
-    type <- math.arg(type)
+    type <- match.arg(type)
     random_effects <- match.arg(random_effects)
     trapezoid_rule <- function (f, x) {
         sum(0.5 * diff(x) * (f[-length(x)] + f[-1L]))
