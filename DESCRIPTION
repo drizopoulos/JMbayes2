@@ -1,14 +1,14 @@
 Package: JMbayes2
 Type: Package
 Title: Extended Joint Models for Longitudinal and Time-to-Event Data
-Version: 0.5-91
+Version: 0.5-92
 Authors@R: c(
     person("Dimitris", "Rizopoulos", email = "d.rizopoulos@erasmusmc.nl", role = c("aut", "cre"), comment = c(ORCID = '0000-0001-9397-0900')),
     person("Pedro", "Miranda Afonso", email = "p.mirandaafonso@erasmusmc.nl", role = "aut"),
     person("Grigorios", "Papageorgiou", email = "papageorgiou.grigorios@gmail.com", role = "aut")
     )
 Maintainer: Dimitris Rizopoulos <d.rizopoulos@erasmusmc.nl>
-Date: 2025-08-21
+Date: 2025-09-05
 BugReports: https://github.com/drizopoulos/JMbayes2/issues
 Description: Fit joint models for longitudinal and time-to-event data under the Bayesian approach. Multiple longitudinal outcomes of mixed type (continuous/categorical) and multiple event times (competing risks and multi-state processes) are accommodated. Rizopoulos (2012, ISBN:9781439872864).
 Suggests: lattice, knitr, rmarkdown, pkgdown
