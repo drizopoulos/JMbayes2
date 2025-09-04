@@ -26,32 +26,6 @@ random_effects = "posterior_means"
 Fforms_fun = NULL
 
 
-
-ss1 <- simulate(jointFit1, nsim = 30L)[[1L]]
-ss2 <- simulate(jointFit1, nsim = 30L, random_effects = "mcmc")[[1L]]
-
-yy <- log(pbc2$serBilir)
-tt <- pbc2$year
-ids <- pbc2$id
-fit_lm <- lm.fit(jointFit1$model_data$X[[1]], yy)$fitted.values
-vrgm_obs <- variogram(yy - fit_lm, tt, ids, compute_var = FALSE)[[1L]]
-ttt <- seq(min(tt), max(tt), len = 501)
-loess_obs <- loess(vrg ~ tt, data = data.frame(vrg = vrgm_obs[, 2], tt = vrgm_obs[, 1]))
-vrgm_obs_loess <- predict(loess_obs, data.frame(tt = ttt))
-
-vrgm_rep_loess <- matrix(0, length(ttt), ncol(ss1))
-for (i in seq_len(ncol(ss1))) {
-    vrgm_rep_i <- variogram(ss1[, i] - fit_lm, tt, ids,
-                            compute_var = FALSE)[[1L]][, 2L]
-    loess_rep_i <- loess(vrg ~ tt, data = data.frame(vrg = vrgm_rep_i,
-                                                     tt = vrgm_obs[, 1]))
-    vrgm_rep_loess[, i] <- predict(loess_rep_i, data.frame(tt = ttt))
-}
-
-matplot(ttt, vrgm_rep_loess, type = "l", col = "grey", lty = 1)
-lines(ttt, vrgm_obs_loess, lwd = 2)
-
-
 jointFit = jointFit1
 # Posterior Predictive Checks - Longitudinal Outcome
 JMbayes2:::ppcheck(jointFit)
@@ -60,8 +34,7 @@ JMbayes2:::ppcheck(jointFit, random_effects = "prior",
                    Fforms_fun = FF)
 
 
-simulate(jointFit, random_effects = "prior",
-         Fforms_fun = FF)
+JMbayes2:::ppcheck(jointFit, type = "v")
 
 FF <- function (t, betas, bi, data) {
     sex <- as.numeric(data$sex == "female")
