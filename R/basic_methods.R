@@ -1679,9 +1679,9 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 vrgm_rep_loess <- matrix(0, length(ttt), ncol(out[[j]]))
                 for (i in seq_len(ncol(out[[j]]))) {
                     na_ind <- is.na(out[[j]][, i])
-                    vrgm_DF$diffs2 <-
-                        variogram(out[[j]][, i] - lm_fit[!na_ind], tt[!na_ind],
-                                  id[!na_ind], compute_var = FALSE)[[1L]]
+                    vrgm_DF <-
+                        variogram(out[[j]][!na_ind, i] - lm_fit[!na_ind],
+                                  tt[!na_ind], id[!na_ind], compute_var = FALSE)[[1L]]
                     loess_rep_i <- loess(diffs2 ~ time_lag,
                                          data = data.frame(vrgm_DF))
                     vrgm_rep_loess[, i] <- predict(loess_rep_i, data.frame(time_lag = ttt))

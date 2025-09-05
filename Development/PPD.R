@@ -30,11 +30,13 @@ jointFit = jointFit1
 # Posterior Predictive Checks - Longitudinal Outcome
 ppcheck(jointFit)
 ppcheck(jointFit, random_effects = "mcmc")
-ppcheck(jointFit, random_effects = "prior",
-                   Fforms_fun = FF)
+ppcheck(jointFit, random_effects = "prior", Fforms_fun = FF)
 
 
-JMbayes2:::ppcheck(jointFit, type = "v")
+ppcheck(jointFit, type = "v")
+ppcheck(jointFit, type = "v", random_effects = "mcmc")
+ppcheck(jointFit, type = "v", random_effects = "prior", Fforms_fun = FF)
+
 
 FF <- function (t, betas, bi, data) {
     sex <- as.numeric(data$sex == "female")
