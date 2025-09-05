@@ -1417,6 +1417,13 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
             }
         }
         for (i in seq_len(n_outcomes)) {
+            if (include_outcome) {
+                lm_fit <- lm.fit(X[[i]], y[[i]])$fitted.values
+                attr(y[[i]], "lm_fit") <- lm_fit
+                attr(y[[i]], "resd_obs") <- y[[i]] - lm_fit
+                attr(y[[i]], "times") <- times
+                attr(y[[i]], "id") <- idL_lp[[i]]
+            }
             rep_y <- matrix(0.0, nrow(X[[i]]), nsim)
             for (j in seq_len(nsim)) {
                 # parameters
@@ -1452,7 +1459,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                          random_effects = simulated_RE, Fforms_fun = Fforms_fun)
             for (i in seq_len(n_outcomes)) {
                 for (j in seq_len(ncol(val[[i]]))) {
-                    val[[i]][times > outT$Times[idL_lp[[i]], j], j] <- NA_real_
+                    na_ind <- times > outT$Times[idL_lp[[i]], j]
+                    val[[i]][na_ind, j] <- NA_real_
                 }
             }
         }
@@ -1660,20 +1668,22 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 text(r1 + 0.15 * (r2 - r1), 0.9, bquote(sqrt(MISE) == .(rootMISE)))
             } else {
                 y <- yy[[j]]
-                X <- object$model_data$X[[j]]
-                lm_fit <- lm.fit(X, y)$fitted.values
-                resd_obs <- y - lm_fit
-                tt <- object$model_data$dataL[[object$model_info$var_names$time_var]]
-                id <- object$model_data$idL[[j]]
-                vrgm_DF <- data.frame(variogram(resd_obs, tt, id, compute_var = FALSE)[[1L]])
-                loess_obs <- loess(diffs2 ~ time_lag, data = vrgm_DF)
+                lm_fit <- attr(y, "lm_fit")
+                resd_obs <- attr(y, "resd_obs")
+                tt <- attr(y, "times")
+                id <- attr(y, "id")
+                vrgm_DF <- variogram(resd_obs, tt, id, compute_var = FALSE)[[1L]]
+                loess_obs <- loess(diffs2 ~ time_lag, data = data.frame(vrgm_DF))
                 ttt <- seq(min(tt), max(tt), len = 501)
                 vrgm_obs_loess <- predict(loess_obs, data.frame(time_lag = ttt))
                 vrgm_rep_loess <- matrix(0, length(ttt), ncol(out[[j]]))
                 for (i in seq_len(ncol(out[[j]]))) {
-                    vrgm_DF$diffs2 <- variogram(out[[j]][, i] - lm_fit, tt, id,
-                                            compute_var = FALSE)[[1L]][, 'diffs2']
-                    loess_rep_i <- loess(diffs2 ~ time_lag, data = vrgm_DF)
+                    na_ind <- is.na(out[[j]][, i])
+                    vrgm_DF$diffs2 <-
+                        variogram(out[[j]][, i] - lm_fit[!na_ind], tt[!na_ind],
+                                  id[!na_ind], compute_var = FALSE)[[1L]]
+                    loess_rep_i <- loess(diffs2 ~ time_lag,
+                                         data = data.frame(vrgm_DF))
                     vrgm_rep_loess[, i] <- predict(loess_rep_i, data.frame(time_lag = ttt))
                 }
                 matplot(ttt, vrgm_rep_loess, type = "l", col = "lightgrey", lty = 1,

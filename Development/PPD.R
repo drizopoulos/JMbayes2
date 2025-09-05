@@ -28,9 +28,9 @@ Fforms_fun = NULL
 
 jointFit = jointFit1
 # Posterior Predictive Checks - Longitudinal Outcome
-JMbayes2:::ppcheck(jointFit)
-JMbayes2:::ppcheck(jointFit, random_effects = "mcmc")
-JMbayes2:::ppcheck(jointFit, random_effects = "prior",
+ppcheck(jointFit)
+ppcheck(jointFit, random_effects = "mcmc")
+ppcheck(jointFit, random_effects = "prior",
                    Fforms_fun = FF)
 
 
