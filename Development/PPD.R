@@ -14,17 +14,6 @@ fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
 # the joint model
 jointFit1 <- jm(CoxFit, fm1, time_var = "year", save_random_effects = TRUE)
 
-object = jointFit1
-nsim = 40L
-newdata = NULL
-seed = 123L
-process = "longitudinal"
-type = "variogram"
-outcomes = Inf
-percentiles = c(0.025, 0.975)
-random_effects = "posterior_means"
-Fforms_fun = NULL
-
 
 jointFit = jointFit1
 # Posterior Predictive Checks - Longitudinal Outcome
@@ -179,8 +168,8 @@ JMbayes2:::ecdf_compare(rep_y, obs_y, percentiles = c(0.2, 0.9))
 
 CoxFit <- coxph(Surv(Time, death) ~ 1, data = aids.id)
 
-fm1 <- lme(CD4 ~ ns(obstime, k = 6), data = aids,
-           random = list(patient = pdDiag(~ ns(obstime, k = 6))))
+fm1 <- lme(CD4 ~ ns(obstime, k = c(6, 10)), data = aids,
+           random = list(patient = pdDiag(~ ns(obstime, k = c(6, 10)))))
 jointFit1 <- jm(CoxFit, fm1, time_var = "obstime")
 ##
 fm2 <- mixed_model(I(CD4^2) ~ ns(obstime, k = 6), data = aids,
@@ -196,16 +185,22 @@ jointFit3 <- jm(CoxFit, fm3, time_var = "obstime")
 
 
 # Posterior Predictive Checks - Longitudinal Outcome
-JMbayes2:::ppcheck(jointFit1, nsim = 200L)
-JMbayes2:::ppcheck(jointFit1, nsim = 200L, random_effects = "prior", Fforms_fun = FF)
-JMbayes2:::ppcheck(jointFit2, nsim = 200L)
-JMbayes2:::ppcheck(jointFit2, nsim = 200L, random_effects = "prior", Fforms_fun = FF)
-JMbayes2:::ppcheck(jointFit3, nsim = 200L)
+ppcheck(jointFit1, nsim = 50L)
+ppcheck(jointFit1, nsim = 50L, random_effects = "prior", Fforms_fun = FF)
+ppcheck(jointFit1, nsim = 50L, type = "v")
+
+
+ppcheck(jointFit2, nsim = 50L)
+ppcheck(jointFit2, nsim = 50L, random_effects = "prior", Fforms_fun = FF)
+ppcheck(jointFit2, nsim = 50L, type = "v")
+
+
+ppcheck(jointFit3, nsim = 50L)
 
 
 # Posterior Predictive Checks - Event Outcome
 FF <- function (t, betas, bi, data) {
-    NS <- ns(t, k = 6, B = c(0, 18))
+    NS <- ns(t, k = c(6, 10), B = c(0, 18))
     X <- cbind(1, NS)
     Z <- cbind(1, NS)
     eta <- c(X %*% betas[[1]]) + rowSums(Z * bi)

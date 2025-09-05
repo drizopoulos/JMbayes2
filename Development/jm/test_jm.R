@@ -60,6 +60,15 @@ fForms <- ~ value(log(serBilir)) * slope(prothrombin)
 # system.time(obj <- jm(Cox, Mixed, time_var = "year", functional_forms = fForms))
 
 
+Cox <- coxph(Surv(Time, death) ~ 1, data = aids.id)
+
+fm1 <- mixed_model(I(CD4^2) ~ ns(obstime, k = 6), data = aids,
+                   random = ~ ns(obstime, k = 6) || patient,
+                   family = negative.binomial(),
+                   control = list(iter_EM = 0L, iter_qN_outer = 0L, nAGQ = 1L))
+jointFit3 <- jm(Cox, fm1, time_var = "obstime")
+
+
 Surv_object = Cox
 Mixed_objects = fm1
 time_var = 'year'

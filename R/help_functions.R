@@ -1722,11 +1722,10 @@ variogram <- function (y, times, id, compute_var = TRUE) {
     vrgm
 }
 
-plot.vrgm <-
-    function (x, smooth = FALSE, bdw = NULL, follow.time = NULL,
+plot.vrgm <- function (x, smooth = FALSE, bdw = NULL, follow.time = NULL,
               points = TRUE, ...) {
-    if (!inherits(x, "vargm")) {
-        stop("Data must be of class 'vargm'\n")
+    if (!inherits(x, "vrgm")) {
+        stop("Data must be of class 'vrgm'\n")
     }
     vargm <- x
     svar <- vargm$svar
@@ -1734,8 +1733,7 @@ plot.vrgm <-
     if (is.null(follow.time)) {
         left <- min(svar[, 1])
         right <- max(svar[, 1])
-    }
-    else {
+    } else {
         left <- follow.time[1]
         right <- follow.time[2]
     }
@@ -1767,28 +1765,21 @@ plot.vrgm <-
         plot(svar[, 1], svar[, 2], xlab = "u", ylab = "Variogram",
              pch = ".", ...)
         if (smooth) {
-            lines(smooth.spline(svar[, 1], svar[, 2]), lty = 1,
-                  lwd = 1.3)
-        }
-        else {
+            lines(smooth.spline(svar[, 1], svar[, 2]), lty = 1, lwd = 1.3)
+        } else {
             lines(mean.line, lwd = 1.3, lty = 1)
         }
         abline(h = sigma2, lwd = 1.3, lty = 1)
-    }
-    else {
+    } else {
         if (smooth) {
             plot(smooth.spline(svar[, 1], svar[, 2]), xlab = "u",
                  ylab = "Variogram", ...)
-        }
-        else {
-            plot(mean.line, type = "l", xlab = "u", ylab = "Variogram",
-                 ...)
+        } else {
+            plot(mean.line, type = "l", xlab = "u", ylab = "Variogram", ...)
         }
         abline(h = sigma2, lwd = 2, lty = 1)
-        abline(h = min(mean.line[mean.line[, 1] <= right & mean.line[,
-                                                                     1] >= left, 2]), lty = 2)
-        abline(h = max(mean.line[mean.line[, 1] <= right & mean.line[,
-                                                                     1] >= left, 2]), lty = 2)
+        abline(h = min(mean.line[mean.line[, 1] <= right & mean.line[, 1] >= left, 2]), lty = 2)
+        abline(h = max(mean.line[mean.line[, 1] <= right & mean.line[, 1] >= left, 2]), lty = 2)
     }
 }
 
