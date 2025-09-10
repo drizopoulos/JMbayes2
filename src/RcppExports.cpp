@@ -93,3 +93,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// variogram_cpp
+arma::mat variogram_cpp(const arma::field<arma::vec>& y, const arma::field<arma::vec>& times);
+RcppExport SEXP _JMbayes2_variogram_cpp(SEXP ySEXP, SEXP timesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::field<arma::vec>& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::field<arma::vec>& >::type times(timesSEXP);
+    rcpp_result_gen = Rcpp::wrap(variogram_cpp(y, times));
+    return rcpp_result_gen;
+END_RCPP
+}

@@ -58,10 +58,11 @@ CR_forms <- list(
 )
 ```
 
-Finally, the competing risks joint model is fitted with the following call to `jm()` (due to the complexity of the model, we have increased the number of MCMC iterations and the burn-in period per chain):
+Finally, the competing risks joint model is fitted with the following call to `jm()` (due to the complexity of the model, we have increased the number of MCMC iterations and the burn-in period per chain). Also, because relatively few patients received a transplantation, we specify a Weibull baseline hazard function for this competing event, and the default penalized B-spline approximation for death:
 ```{r, "joint model"}
 jFit_CR <- jm(CoxFit_CR, list(fm1, fm2), time_var = "year", 
               functional_forms = CR_forms, 
+              baseline_hazard = c("weibull", NA),
               n_iter = 25000L, n_burnin = 5000L, n_thin = 5L)
 
 summary(jFit_CR)

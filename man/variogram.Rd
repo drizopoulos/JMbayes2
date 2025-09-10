@@ -8,14 +8,13 @@
 }
 
 \usage{
-variogram(y, times, id, compute_var = TRUE)
+variogram(y, times, id)
 }
 
 \arguments{
   \item{y}{a numeric vector of longitudinal responses.}
   \item{times}{a numeric vector of times at which the longitudinal responses were collected.}
   \item{id}{a numeric vector of a factor of subject id numbers.}
-  \item{compute_var}{logical; if \code{TRUE} the variance is also computed.}
 }
 
 \value{

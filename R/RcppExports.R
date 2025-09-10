@@ -25,3 +25,7 @@ hSfun <- function(Data, MCMC) {
     .Call(`_JMbayes2_hSfun`, Data, MCMC)
 }
 
+variogram_cpp <- function(y, times) {
+    .Call(`_JMbayes2_variogram_cpp`, y, times)
+}
+

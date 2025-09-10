@@ -1419,6 +1419,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         for (i in seq_len(n_outcomes)) {
             if (include_outcome) {
                 lm_fit <- lm.fit(X[[i]], y[[i]])$fitted.values
+                attr(y[[i]], "X") <- X[[i]]
                 attr(y[[i]], "lm_fit") <- lm_fit
                 attr(y[[i]], "resd_obs") <- y[[i]] - lm_fit
                 attr(y[[i]], "times") <- times
@@ -1672,23 +1673,25 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 resd_obs <- attr(y, "resd_obs")
                 tt <- attr(y, "times")
                 id <- attr(y, "id")
-                vrgm_DF <- variogram(resd_obs, tt, id, compute_var = FALSE)[[1L]]
-                loess_obs <- loess(diffs2 ~ time_lag, data = data.frame(vrgm_DF))
-                ttt <- seq(min(tt), max(tt), len = 501)
-                vrgm_obs_loess <- predict(loess_obs, data.frame(time_lag = ttt))
-                vrgm_rep_loess <- matrix(0, length(ttt), ncol(out[[j]]))
+                vrgm_DF <- variogram(resd_obs, tt, id)[[1L]]
+                vrgm_obs_loess <-
+                    loess.smooth(vrgm_DF[, "time_lag"], vrgm_DF[, "diffs2"],
+                                 family = "gaussian", degree = 2, span = 0.75)
+                vrgm_rep_loess <- matrix(0, length(vrgm_obs_loess$y), ncol(out[[j]]))
                 for (i in seq_len(ncol(out[[j]]))) {
-                    na_ind <- is.na(out[[j]][, i])
-                    vrgm_DF <-
-                        variogram(out[[j]][!na_ind, i] - lm_fit[!na_ind],
-                                  tt[!na_ind], id[!na_ind], compute_var = FALSE)[[1L]]
-                    loess_rep_i <- loess(diffs2 ~ time_lag,
-                                         data = data.frame(vrgm_DF))
-                    vrgm_rep_loess[, i] <- predict(loess_rep_i, data.frame(time_lag = ttt))
+                    not_na <- !is.na(out[[j]][, i])
+                    vrgm_DF <- variogram(out[[j]][not_na, i] - lm_fit[not_na],
+                                         tt[not_na], id[not_na])[[1L]]
+                    loess_rep_i <-
+                        loess.smooth(vrgm_DF[, "time_lag"], vrgm_DF[, "diffs2"],
+                                     family = "gaussian", degree = 2, span = 0.75)
+                    vrgm_rep_loess[, i] <- loess_rep_i$y
                 }
-                matplot(ttt, vrgm_rep_loess, type = "l", col = "lightgrey", lty = 1,
+                matplot(vrgm_obs_loess$x, vrgm_rep_loess, type = "l",
+                        col = "lightgrey", lty = 1,
+                        ylim = range(vrgm_obs_loess$y, vrgm_rep_loess),
                         xlab = "Time lags", ylab = "Half Squared Differences")
-                lines(ttt, vrgm_obs_loess, lwd = 2)
+                lines(vrgm_obs_loess, lwd = 2)
             }
         }
     } else {

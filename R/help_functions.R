@@ -1722,8 +1722,21 @@ variogram <- function (y, times, id, compute_var = TRUE) {
     vrgm
 }
 
+variogram <- function (y, times, id) {
+    na_ind <- is.na(y) | is.na(times)
+    y <- as.vector(y[!na_ind])
+    times <- as.vector(times[!na_ind])
+    id <- id[!na_ind]
+    id <- match(id, unique(id))
+    svar <- variogram_cpp(split(y, id), split(times, id))
+    colnames(svar) <- c("time_lag", "diffs2")
+    vrgm <- list(svar = svar, sigma2 = NA_real_)
+    class(vrgm) <- "vrgm"
+    vrgm
+}
+
 plot.vrgm <- function (x, smooth = FALSE, bdw = NULL, follow.time = NULL,
-              points = TRUE, ...) {
+                       points = TRUE, ...) {
     if (!inherits(x, "vrgm")) {
         stop("Data must be of class 'vrgm'\n")
     }
