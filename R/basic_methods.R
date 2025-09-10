@@ -1629,7 +1629,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             simulate(object, nsim = nsim, newdata = newdata,
                      process = "longitudinal", include_outcome = TRUE,
                      random_effects = random_effects, seed = seed,
-                     Fforms_fun = Fforms_fun)
+                     Fforms_fun = Fforms_fun, ...)
         }
         yy <- out$outcome
         out <- out[names(out) != "outcome"]
@@ -1697,36 +1697,36 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                         xlab = "Time lags",
                         ylab = expression(sqrt(abs("Standardized Residuals"))))
                 lines(vrgm_obs_loess, lwd = 2)
+            } else {
+                y <- yy[[j]]
+                X <- attr(y, "X")
+                resd_obs <- attr(y, "resd_obs")
+                sigma <- sqrt(sum(resd_obs^2) / (length(y) - ncol(X)))
+                resd_obs <- sqrt(abs(resd_obs / sigma))
+                tt <- attr(y, "times")
+                vrgm_obs_loess <- loess.smooth(tt, resd_obs, family = "gaussian",
+                                               degree = 2, span = 0.75)
+                vrgm_rep_loess <- matrix(0, length(vrgm_obs_loess$y),
+                                         ncol(out[[j]]))
+                for (i in seq_len(ncol(out[[j]]))) {
+                    not_na <- !is.na(out[[j]][, i])
+                    XX <- X[not_na, , drop = FALSE]
+                    YY <- out[[j]][not_na, i]
+                    rr <- lm.fit(XX, YY)$residuals
+                    sigma <- sqrt(sum(rr^2) / (sum(not_na) - ncol(XX)))
+                    rr <- sqrt(abs(rr / sigma))
+                    loess_rep_i <-
+                        loess.smooth(tt[not_na], rr, family = "gaussian",
+                                     degree = 2, span = 0.75)
+                    vrgm_rep_loess[, i] <- loess_rep_i$y
+                }
+                if (is.null(ylim)) ylim <- range(vrgm_obs_loess$y, vrgm_rep_loess)
+                matplot(vrgm_obs_loess$x, vrgm_rep_loess, type = "l",
+                        col = "lightgrey", lty = 1,
+                        ylim = ylim,
+                        xlab = "Time lags", ylab = "Variance function")
+                lines(vrgm_obs_loess, lwd = 2)
             }
-        } else {
-            y <- yy[[j]]
-            X <- attr(y, "X")
-            resd_obs <- attr(y, "resd_obs")
-            sigma <- sqrt(sum(resd_obs^2) / (length(y) - ncol(X)))
-            resd_obs <- sqrt(abs(resd_obs / sigma))
-            tt <- attr(y, "times")
-            vrgm_obs_loess <- loess.smooth(tt, resd_obs, family = "gaussian",
-                                           degree = 2, span = 0.75)
-            vrgm_rep_loess <- matrix(0, length(vrgm_obs_loess$y),
-                                     ncol(out[[j]]))
-            for (i in seq_len(ncol(out[[j]]))) {
-                not_na <- !is.na(out[[j]][, i])
-                XX <- X[not_na, , drop = FALSE]
-                YY <- out[[j]][not_na, i]
-                rr <- lm.fit(XX, YY)$residuals
-                sigma <- sqrt(sum(rr^2) / (sum(not_na) - ncol(XX)))
-                rr <- sqrt(abs(rr / sigma))
-                loess_rep_i <-
-                    loess.smooth(tt[not_na], rr, family = "gaussian",
-                                 degree = 2, span = 0.75)
-                vrgm_rep_loess[, i] <- loess_rep_i$y
-            }
-            if (is.null(ylim)) ylim <- range(vrgm_obs_loess$y, vrgm_rep_loess)
-            matplot(vrgm_obs_loess$x, vrgm_rep_loess, type = "l",
-                    col = "lightgrey", lty = 1,
-                    ylim = ylim,
-                    xlab = "Time lags", ylab = "Variance function")
-            lines(vrgm_obs_loess, lwd = 2)
         }
     } else {
         out <- if (inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
@@ -1751,7 +1751,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         r2 <- quantile(Times, probs = percentiles[2L], na.rm = TRUE)
         x_vals <- seq(0, r2, length.out = 500)
         rep_T <- apply(out$Times, 2L, function (x, x_vals) ecdf(x)(x_vals),
-                        x_vals = x_vals)
+                       x_vals = x_vals)
         ss <- summary(survfit(Surv(Times, event) ~ 1), times = x_vals)
         F0 <- 1 - ss$surv
         F0_low <- 1 - ss$lower
@@ -1769,4 +1769,3 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         text(0.15 * r2, 0.9, bquote(sqrt(MISE) == .(rootMISE)))
     }
 }
-
