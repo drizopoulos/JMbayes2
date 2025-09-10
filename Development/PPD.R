@@ -22,7 +22,7 @@ ppcheck(jointFit, random_effects = "mcmc")
 ppcheck(jointFit, random_effects = "prior", Fforms_fun = FF)
 
 
-ppcheck(jointFit, type = "v")
+ppcheck(jointFit, type = "vario")
 ppcheck(jointFit, type = "v", random_effects = "mcmc")
 ppcheck(jointFit, type = "v", random_effects = "prior", Fforms_fun = FF)
 

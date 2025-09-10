@@ -1694,8 +1694,8 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 matplot(vrgm_obs_loess$x, vrgm_rep_loess, type = "l",
                         col = "lightgrey", lty = 1,
                         ylim = ylim,
-                        xlab = "Time lags",
-                        ylab = expression(sqrt(abs("Standardized Residuals"))))
+                        xlab = "Time Lags",
+                        ylab = "Half Squared Differences")
                 lines(vrgm_obs_loess, lwd = 2)
             } else {
                 y <- yy[[j]]
@@ -1724,7 +1724,8 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 matplot(vrgm_obs_loess$x, vrgm_rep_loess, type = "l",
                         col = "lightgrey", lty = 1,
                         ylim = ylim,
-                        xlab = "Time lags", ylab = "Variance function")
+                        xlab = "Time",
+                        ylab = expression(sqrt(abs("Standardized Residuals"))))
                 lines(vrgm_obs_loess, lwd = 2)
             }
         }
