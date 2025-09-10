@@ -1590,12 +1590,14 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
 
 ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      process = c("longitudinal", "event"),
-                     type = c("ecdf", "variogram"),
+                     type = c("ecdf", "variogram", "variance_function"),
+                     CI_ecdf = c("binomial", "Dvoretzky–Kiefer–Wolfowitz"),
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
-                     Fforms_fun = NULL, ...) {
+                     Fforms_fun = NULL, ylim = NULL, ...) {
     process <- match.arg(process)
     type <- match.arg(type)
+    CI_ecdf <- match.arg(CI_ecdf)
     random_effects <- match.arg(random_effects)
     trapezoid_rule <- function (f, x) {
         sum(0.5 * diff(x) * (f[-length(x)] + f[-1L]))
@@ -1627,7 +1629,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             simulate(object, nsim = nsim, newdata = newdata,
                      process = "longitudinal", include_outcome = TRUE,
                      random_effects = random_effects, seed = seed,
-                     Fforms_fun = Fforms_fun, ...)
+                     Fforms_fun = Fforms_fun)
         }
         yy <- out$outcome
         out <- out[names(out) != "outcome"]
@@ -1643,23 +1645,23 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 rep_y <- apply(out[[j]], 2L, function (x, x_vals) ecdf(x)(x_vals),
                                x_vals = x_vals)
                 F0 <- ecdf(y)
-                # Dvoretzky–Kiefer–Wolfowitz inequality
-                # https://stats.stackexchange.com/questions/181724/confidence-intervals-for-ecdf
-                #xx <- get("x", envir = environment(F0))
-                #ff <- get("y", envir = environment(F0))
-                #eps <- sqrt(log(2 / 0.05) / (2 * length(y)))
-                #F0u <- pmin(ff + eps, 1)
-                #F0l <- pmax(ff - eps, 0)
-                #F0u <- stepfun(xx, c(F0u, 1))(x_vals)
-                #F0l <- stepfun(xx, c(F0l, F0l[length(y)]))(x_vals)
                 F0 <- F0(x_vals)
-                se <- sqrt(F0 * (1 - F0) / length(y))
-                F0u <- pmin(F0 + 1.959964 * se, 1)
-                F0l <- pmax(F0 - 1.959964 * se, 0)
+                if (CI_ecdf == "binomial") {
+                    se <- sqrt(F0 * (1 - F0) / length(y))
+                    F0u <- pmin(F0 + 1.959964 * se, 1)
+                    F0l <- pmax(F0 - 1.959964 * se, 0)
+                } else {
+                    # Dvoretzky–Kiefer–Wolfowitz inequality
+                    # https://stats.stackexchange.com/questions/181724/confidence-intervals-for-ecdf
+                    eps <- sqrt(log(2 / 0.05) / (2 * length(y)))
+                    F0u <- pmin(F0 + eps, 1)
+                    F0l <- pmax(F0 - eps, 0)
+                }
                 MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
+                if (is.null(ylim)) ylim <- c(0, 1)
                 matplot(x_vals, rep_y, type = "s", lty = 1, col = "lightgrey",
                         xlab = object$model_info$var_names$respVars_form[[j]],
-                        ylab = "Empirical CDF", ylim = c(0, 1))
+                        ylab = "Empirical CDF", ylim = ylim)
                 lines(x_vals, F0, lwd = 1.5, type = "s")
                 lines(x_vals, F0l, lwd = 1.5, lty = 2, type = "s")
                 lines(x_vals, F0u, lwd = 1.5, lty = 2, type = "s")
@@ -1667,9 +1669,9 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                        lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.9)
                 rootMISE <- round(sqrt(MISE), 5)
                 text(r1 + 0.15 * (r2 - r1), 0.9, bquote(sqrt(MISE) == .(rootMISE)))
-            } else {
+            } else if (type == "variogram") {
                 y <- yy[[j]]
-                lm_fit <- attr(y, "lm_fit")
+                X <- attr(y, "X")
                 resd_obs <- attr(y, "resd_obs")
                 tt <- attr(y, "times")
                 id <- attr(y, "id")
@@ -1677,22 +1679,54 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 vrgm_obs_loess <-
                     loess.smooth(vrgm_DF[, "time_lag"], vrgm_DF[, "diffs2"],
                                  family = "gaussian", degree = 2, span = 0.75)
-                vrgm_rep_loess <- matrix(0, length(vrgm_obs_loess$y), ncol(out[[j]]))
+                vrgm_rep_loess <- matrix(0, length(vrgm_obs_loess$y),
+                                         ncol(out[[j]]))
                 for (i in seq_len(ncol(out[[j]]))) {
                     not_na <- !is.na(out[[j]][, i])
-                    vrgm_DF <- variogram(out[[j]][not_na, i] - lm_fit[not_na],
-                                         tt[not_na], id[not_na])[[1L]]
+                    rr <- lm.fit(X[not_na, , drop = FALSE], out[[j]][not_na, i])$residuals
+                    vrgm_DF <- variogram(rr, tt[not_na], id[not_na])[[1L]]
                     loess_rep_i <-
                         loess.smooth(vrgm_DF[, "time_lag"], vrgm_DF[, "diffs2"],
                                      family = "gaussian", degree = 2, span = 0.75)
                     vrgm_rep_loess[, i] <- loess_rep_i$y
                 }
+                if (is.null(ylim)) ylim <- range(vrgm_obs_loess$y, vrgm_rep_loess)
                 matplot(vrgm_obs_loess$x, vrgm_rep_loess, type = "l",
                         col = "lightgrey", lty = 1,
-                        ylim = range(vrgm_obs_loess$y, vrgm_rep_loess),
-                        xlab = "Time lags", ylab = "Half Squared Differences")
+                        ylim = ylim,
+                        xlab = "Time lags",
+                        ylab = expression(sqrt(abs("Standardized Residuals"))))
                 lines(vrgm_obs_loess, lwd = 2)
             }
+        } else {
+            y <- yy[[j]]
+            X <- attr(y, "X")
+            resd_obs <- attr(y, "resd_obs")
+            sigma <- sqrt(sum(resd_obs^2) / (length(y) - ncol(X)))
+            resd_obs <- sqrt(abs(resd_obs / sigma))
+            tt <- attr(y, "times")
+            vrgm_obs_loess <- loess.smooth(tt, resd_obs, family = "gaussian",
+                                           degree = 2, span = 0.75)
+            vrgm_rep_loess <- matrix(0, length(vrgm_obs_loess$y),
+                                     ncol(out[[j]]))
+            for (i in seq_len(ncol(out[[j]]))) {
+                not_na <- !is.na(out[[j]][, i])
+                XX <- X[not_na, , drop = FALSE]
+                YY <- out[[j]][not_na, i]
+                rr <- lm.fit(XX, YY)$residuals
+                sigma <- sqrt(sum(rr^2) / (sum(not_na) - ncol(XX)))
+                rr <- sqrt(abs(rr / sigma))
+                loess_rep_i <-
+                    loess.smooth(tt[not_na], rr, family = "gaussian",
+                                 degree = 2, span = 0.75)
+                vrgm_rep_loess[, i] <- loess_rep_i$y
+            }
+            if (is.null(ylim)) ylim <- range(vrgm_obs_loess$y, vrgm_rep_loess)
+            matplot(vrgm_obs_loess$x, vrgm_rep_loess, type = "l",
+                    col = "lightgrey", lty = 1,
+                    ylim = ylim,
+                    xlab = "Time lags", ylab = "Variance function")
+            lines(vrgm_obs_loess, lwd = 2)
         }
     } else {
         out <- if (inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
@@ -1723,8 +1757,9 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         F0_low <- 1 - ss$lower
         F0_upp <- 1 - ss$upper
         MISE <- mean(apply((rep_T - F0)^2, 2L, trapezoid_rule, x = x_vals))
+        if (is.null(ylim)) ylim <- c(0, 1)
         matplot(x_vals, rep_T, type = "s", lty = 1, col = "lightgrey",
-                xlab = "Times", ylab = "Empirical CDF", ylim = c(0, 1))
+                xlab = "Times", ylab = "Empirical CDF", ylim = ylim)
         lines(x_vals, F0, lwd = 1.5, type = "s")
         lines(x_vals, F0_low, lty = 2, lwd = 1.5, type = "s")
         lines(x_vals, F0_upp, lty = 2, lwd = 1.5, type = "s")
