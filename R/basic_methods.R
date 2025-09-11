@@ -1590,8 +1590,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
 
 ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      process = c("longitudinal", "event"),
-                     type = c("ecdf", "variogram", "variance_function"),
-                     CI_ecdf = c("binomial", "Dvoretzky–Kiefer–Wolfowitz"),
+                     type = c("ecdf", "variogram", "variance-function"),
+                     CI_ecdf = c("binomial", "Dvoretzky-Kiefer-Wolfowitz"),
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
                      Fforms_fun = NULL, ylim = NULL, ...) {

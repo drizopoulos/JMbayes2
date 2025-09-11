@@ -23,9 +23,12 @@ ppcheck(jointFit, random_effects = "prior", Fforms_fun = FF)
 
 
 ppcheck(jointFit, type = "vario")
-ppcheck(jointFit, type = "v", random_effects = "mcmc")
-ppcheck(jointFit, type = "v", random_effects = "prior", Fforms_fun = FF)
+ppcheck(jointFit, type = "vario", random_effects = "mcmc")
+ppcheck(jointFit, type = "vario", random_effects = "prior", Fforms_fun = FF)
 
+ppcheck(jointFit, type = "varia")
+ppcheck(jointFit, type = "varia", random_effects = "mcmc")
+ppcheck(jointFit, type = "varia", random_effects = "prior", Fforms_fun = FF)
 
 FF <- function (t, betas, bi, data) {
     sex <- as.numeric(data$sex == "female")
@@ -36,20 +39,10 @@ FF <- function (t, betas, bi, data) {
     cbind(eta)
 }
 
-JMbayes2:::ppcheck(jointFit, process = "event", Fforms_fun = FF)
-JMbayes2:::ppcheck(jointFit, process = "event", Fforms_fun = FF,
+ppcheck(jointFit, process = "event", Fforms_fun = FF)
+ppcheck(jointFit, process = "event", Fforms_fun = FF,
                    random_effects = "prior")
 
-
-JMbayes2:::plot_hazard(jointFit, tmax = 14)
-
-vrgm_obs <- JMbayes2:::variogram(log(pbc2$serBilir), pbc2$year, pbc2$id)
-
-DF_vrgm_obs <- data.frame(diffs = vrgm_obs$svar[, 2L],
-                          times = vrgm_obs$svar[, 1L])
-vrgm_obs_loess <- loess(diffs ~ times, DF_vrgm_obs)
-
-reps <- simulate(jointFit, nsim =)
 
 #############################################################################
 #############################################################################
