@@ -1590,11 +1590,14 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
 
 ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      process = c("longitudinal", "event"),
-                     type = c("ecdf", "variogram", "variance-function"),
+                     type = c("ecdf", "average-evolution", "variance-function",
+                              "variogram"),
                      CI_ecdf = c("binomial", "Dvoretzky-Kiefer-Wolfowitz"),
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
-                     Fforms_fun = NULL, ylim = NULL, ...) {
+                     Fforms_fun = NULL, xlab = NULL, ylab = NULL, ylim = NULL,
+                     col_obs = "black", col_rep = "lightgrey", lty_obs = 1,
+                     lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, ...) {
     process <- match.arg(process)
     type <- match.arg(type)
     CI_ecdf <- match.arg(CI_ecdf)
@@ -1659,74 +1662,63 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 }
                 MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
                 if (is.null(ylim)) ylim <- c(0, 1)
-                matplot(x_vals, rep_y, type = "s", lty = 1, col = "lightgrey",
-                        xlab = object$model_info$var_names$respVars_form[[j]],
+                matplot(x_vals, rep_y, type = "s", lty = lty_rep, lwd = lwd_rep,
+                        col = col_rep, xlab = object$model_info$var_names$respVars_form[[j]],
                         ylab = "Empirical CDF", ylim = ylim)
-                lines(x_vals, F0, lwd = 1.5, type = "s")
-                lines(x_vals, F0l, lwd = 1.5, lty = 2, type = "s")
-                lines(x_vals, F0u, lwd = 1.5, lty = 2, type = "s")
+                lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
+                lines(x_vals, F0l, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
+                lines(x_vals, F0u, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
                 legend("bottomright", c("replicated data", "observed data"),
-                       lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.9)
+                       lty = 1, col = c(col_rep, col_obs), bty = "n", cex = 0.9)
                 rootMISE <- round(sqrt(MISE), 5)
                 text(r1 + 0.15 * (r2 - r1), 0.9, bquote(sqrt(MISE) == .(rootMISE)))
-            } else if (type == "variogram") {
+            } else {
+                gof_fun <- function (y, X, times, id, type) {
+                    if (type == "variogram") {
+                        rr <- lm.fit(X, y)$residuals
+                        variogram(rr, times, id)[[1L]]
+                    } else if (type == "variance-function") {
+                        rr <- lm.fit(X, y)$residuals
+                        sigma <- sqrt(sum(rr^2) / (length(y) - ncol(X)))
+                        rr <- sqrt(abs(rr / sigma))
+                        cbind(times, rr)
+                    } else {
+                        cbind(times, y)
+                    }
+                }
                 y <- yy[[j]]
                 X <- attr(y, "X")
-                resd_obs <- attr(y, "resd_obs")
                 tt <- attr(y, "times")
                 id <- attr(y, "id")
-                vrgm_DF <- variogram(resd_obs, tt, id)[[1L]]
-                vrgm_obs_loess <-
-                    loess.smooth(vrgm_DF[, "time_lag"], vrgm_DF[, "diffs2"],
-                                 family = "gaussian", degree = 2, span = 0.75)
-                vrgm_rep_loess <- matrix(0, length(vrgm_obs_loess$y),
-                                         ncol(out[[j]]))
+                DF <- gof_fun(y, X, tt, id, type)
+                obs_loess <- loess.smooth(DF[, 1L], DF[, 2L], degree = 2,
+                                          span = 0.75, family = "gaussian")
+                rep_loess <- matrix(0, length(obs_loess$y), ncol(out[[j]]))
                 for (i in seq_len(ncol(out[[j]]))) {
                     not_na <- !is.na(out[[j]][, i])
-                    rr <- lm.fit(X[not_na, , drop = FALSE], out[[j]][not_na, i])$residuals
-                    vrgm_DF <- variogram(rr, tt[not_na], id[not_na])[[1L]]
+                    DF <- gof_fun(out[[j]][not_na, i], X[not_na, , drop = FALSE],
+                                  tt[not_na], id[not_na], type)
                     loess_rep_i <-
-                        loess.smooth(vrgm_DF[, "time_lag"], vrgm_DF[, "diffs2"],
-                                     family = "gaussian", degree = 2, span = 0.75)
-                    vrgm_rep_loess[, i] <- loess_rep_i$y
-                }
-                if (is.null(ylim)) ylim <- range(vrgm_obs_loess$y, vrgm_rep_loess)
-                matplot(vrgm_obs_loess$x, vrgm_rep_loess, type = "l",
-                        col = "lightgrey", lty = 1,
-                        ylim = ylim,
-                        xlab = "Time Lags",
-                        ylab = "Half Squared Differences")
-                lines(vrgm_obs_loess, lwd = 2)
-            } else {
-                y <- yy[[j]]
-                X <- attr(y, "X")
-                resd_obs <- attr(y, "resd_obs")
-                sigma <- sqrt(sum(resd_obs^2) / (length(y) - ncol(X)))
-                resd_obs <- sqrt(abs(resd_obs / sigma))
-                tt <- attr(y, "times")
-                vrgm_obs_loess <- loess.smooth(tt, resd_obs, family = "gaussian",
-                                               degree = 2, span = 0.75)
-                vrgm_rep_loess <- matrix(0, length(vrgm_obs_loess$y),
-                                         ncol(out[[j]]))
-                for (i in seq_len(ncol(out[[j]]))) {
-                    not_na <- !is.na(out[[j]][, i])
-                    XX <- X[not_na, , drop = FALSE]
-                    YY <- out[[j]][not_na, i]
-                    rr <- lm.fit(XX, YY)$residuals
-                    sigma <- sqrt(sum(rr^2) / (sum(not_na) - ncol(XX)))
-                    rr <- sqrt(abs(rr / sigma))
-                    loess_rep_i <-
-                        loess.smooth(tt[not_na], rr, family = "gaussian",
+                        loess.smooth(DF[, 1L], DF[, 2L], family = "gaussian",
                                      degree = 2, span = 0.75)
-                    vrgm_rep_loess[, i] <- loess_rep_i$y
+                    rep_loess[, i] <- loess_rep_i$y
                 }
-                if (is.null(ylim)) ylim <- range(vrgm_obs_loess$y, vrgm_rep_loess)
-                matplot(vrgm_obs_loess$x, vrgm_rep_loess, type = "l",
-                        col = "lightgrey", lty = 1,
-                        ylim = ylim,
-                        xlab = "Time",
-                        ylab = expression(sqrt(abs("Standardized Residuals"))))
-                lines(vrgm_obs_loess, lwd = 2)
+                if (is.null(ylim)) ylim <- range(obs_loess$y, rep_loess)
+                if (is.null(xlab)) {
+                    xlab <- switch(type, 'average-evolution' = ,
+                                   'variance-function' = 'Follow-up Time',
+                                   'variogram' = 'Time Lags')
+                }
+                if (is.null(ylab)) {
+                    ylab <-
+                        switch(type, 'average-evolution' = 'Average Evolution',
+                               'variance-function' =  expression(sqrt(abs("Standardized Residuals"))),
+                               'variogram' = 'Half Squared Differences')
+                }
+                matplot(obs_loess$x, rep_loess, type = "l", col = col_rep,
+                        lty = lty_rep, lwd = lwd_rep, ylim = ylim, xlab = xlab,
+                        ylab = ylab)
+                lines(obs_loess, lwd = lwd_obs, lty = lty_obs, col = col_obs)
             }
         }
     } else {
@@ -1759,13 +1751,13 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         F0_upp <- 1 - ss$upper
         MISE <- mean(apply((rep_T - F0)^2, 2L, trapezoid_rule, x = x_vals))
         if (is.null(ylim)) ylim <- c(0, 1)
-        matplot(x_vals, rep_T, type = "s", lty = 1, col = "lightgrey",
-                xlab = "Times", ylab = "Empirical CDF", ylim = ylim)
-        lines(x_vals, F0, lwd = 1.5, type = "s")
-        lines(x_vals, F0_low, lty = 2, lwd = 1.5, type = "s")
-        lines(x_vals, F0_upp, lty = 2, lwd = 1.5, type = "s")
+        matplot(x_vals, rep_T, type = "s", lty = lty_rep, lwd = lwd_rep,
+                col = col_rep, xlab = "Times", ylab = "Empirical CDF", ylim = ylim)
+        lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
+        lines(x_vals, F0_low, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
+        lines(x_vals, F0_upp, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
         legend("bottomright", c("replicated data", "observed data"),
-               lty = 1, col = c("lightgrey", "black"), bty = "n", cex = 0.9)
+               lty = 1, col = c(col_rep, col_obs), bty = "n", cex = 0.9)
         rootMISE <- round(sqrt(MISE), 5)
         text(0.15 * r2, 0.9, bquote(sqrt(MISE) == .(rootMISE)))
     }

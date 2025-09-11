@@ -10,11 +10,13 @@
 \usage{
 ppcheck(object, nsim = 40L, newdata = NULL, seed = 123L,
     process = c("longitudinal", "event"),
-    type = c("ecdf", "variogram", "variance-function"),
+    type = c("ecdf", "average-evolution", "variance-function", "variogram"),
     CI_ecdf = c("binomial", "Dvoretzky-Kiefer-Wolfowitz"),
     outcomes = Inf, percentiles = c(0.025, 0.975),
     random_effects = c("posterior_means", "mcmc", "prior"),
-    Fforms_fun = NULL, ylim = NULL, \dots)
+    Fforms_fun = NULL, xlab = NULL, ylab = NULL, ylim = NULL,
+    col_obs = "black", col_rep = "lightgrey", lty_obs = 1,
+    lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, \dots)
 }
 
 \arguments{
@@ -26,7 +28,8 @@ ppcheck(object, nsim = 40L, newdata = NULL, seed = 123L,
   \item{process}{a character string indicating for which process to do the checks.}
   \item{type}{a character string indicating the type of checks. The default \code{ecdf} compares the
         empirical distribution function of the replicated data with the one of the observed data. For
-        continous longitudinal outcomes, the semi-variogram can also be used.}
+        continous longitudinal outcomes, the average evolution, variance function and the sample
+        variogram can also be used.}
   \item{CI_ecdf}{character string indicating the type of confidence interval for the
         emprical distribution function.}
   \item{outcomes}{a numeric vector of indices indicating for which longitudinal outcomes to do the checks.
@@ -35,7 +38,7 @@ ppcheck(object, nsim = 40L, newdata = NULL, seed = 123L,
         depicting the checks.}
   \item{random_effects}{a character string indicating what to do with the random effects.}
   \item{Fforms_fun}{a function that calculates the functional forms.}
-  \item{ylim}{the \code{ylim} argument for the plot.}
+  \item{xlab, ylab, ylim, col_obs, col_rep, lty_obs, lty_rep, lwd_obs, lwd_rep}{graphical parameters}
   \item{\dots}{extra argument passed to the \code{simualte} method.}
 }
 

@@ -30,6 +30,11 @@ ppcheck(jointFit, type = "varia")
 ppcheck(jointFit, type = "varia", random_effects = "mcmc")
 ppcheck(jointFit, type = "varia", random_effects = "prior", Fforms_fun = FF)
 
+ppcheck(jointFit, type = "avera")
+ppcheck(jointFit, type = "avera", random_effects = "mcmc")
+ppcheck(jointFit, type = "avera", random_effects = "prior", Fforms_fun = FF)
+
+
 FF <- function (t, betas, bi, data) {
     sex <- as.numeric(data$sex == "female")
     NS <- ns(t, k = c(0.9911, 3.9863), B = c(0, 14.10579))
