@@ -1595,7 +1595,8 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      CI_ecdf = c("binomial", "Dvoretzky-Kiefer-Wolfowitz"),
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
-                     Fforms_fun = NULL, xlab = NULL, ylab = NULL, ylim = NULL,
+                     Fforms_fun = NULL, add_legend = TRUE, pos_legend = "bottomright",
+                     xlab = NULL, ylab = NULL, ylim = NULL,
                      col_obs = "black", col_rep = "lightgrey", lty_obs = 1,
                      lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, ...) {
     process <- match.arg(process)
@@ -1668,18 +1669,22 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
                 lines(x_vals, F0l, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
                 lines(x_vals, F0u, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
-                legend("bottomright", c("replicated data", "observed data"),
-                       lty = 1, col = c(col_rep, col_obs), bty = "n", cex = 0.9)
-                rootMISE <- round(sqrt(MISE), 5)
-                text(r1 + 0.15 * (r2 - r1), 0.9, bquote(sqrt(MISE) == .(rootMISE)))
+                if (add_legend) {
+                    legend(pos_legend[1L], c("replicated data", "observed data"),
+                           lty = 1, col = c(col_rep, col_obs), bty = "n", cex = 0.9)
+                    rootMISE <- round(sqrt(MISE), 5)
+                    legend(pos_legend[2L], bquote(sqrt(MISE) == .(rootMISE)),
+                           bty = "n")
+                }
             } else {
                 gof_fun <- function (y, X, times, id, type) {
                     if (type == "variogram") {
-                        rr <- lm.fit(X, y)$residuals
+                        rr <- loess(y ~ times)$residuals
                         variogram(rr, times, id)[[1L]]
                     } else if (type == "variance-function") {
-                        rr <- lm.fit(X, y)$residuals
-                        sigma <- sqrt(sum(rr^2) / (length(y) - ncol(X)))
+                        loess_fit <- loess(y ~ times)
+                        rr <- loess_fit$residuals
+                        sigma <- loess_fit$s
                         rr <- sqrt(abs(rr / sigma))
                         cbind(times, rr)
                     } else {
@@ -1719,6 +1724,11 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                         lty = lty_rep, lwd = lwd_rep, ylim = ylim, xlab = xlab,
                         ylab = ylab)
                 lines(obs_loess, lwd = lwd_obs, lty = lty_obs, col = col_obs)
+                if (add_legend) {
+                    legend(pos_legend, c("replicated data", "observed data"),
+                           lty = 1, col = c(col_rep, col_obs), bty = "n",
+                           cex = 0.9)
+                }
             }
         }
     } else {
@@ -1756,9 +1766,12 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
         lines(x_vals, F0_low, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
         lines(x_vals, F0_upp, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
-        legend("bottomright", c("replicated data", "observed data"),
-               lty = 1, col = c(col_rep, col_obs), bty = "n", cex = 0.9)
-        rootMISE <- round(sqrt(MISE), 5)
-        text(0.15 * r2, 0.9, bquote(sqrt(MISE) == .(rootMISE)))
+        if (add_legend) {
+            legend(pos_legend[1L], c("replicated data", "observed data"),
+                   lty = 1, col = c(col_rep, col_obs), bty = "n", cex = 0.9)
+            rootMISE <- round(sqrt(MISE), 5)
+            legend(pos_legend[2L], bquote(sqrt(MISE) == .(rootMISE)),
+                   bty = "n")
+        }
     }
 }
