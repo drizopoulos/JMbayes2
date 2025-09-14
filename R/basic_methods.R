@@ -1726,7 +1726,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                         ylab = ylab)
                 lines(obs_loess, lwd = lwd_obs, lty = lty_obs, col = col_obs)
                 if (add_legend) {
-                    legend(pos_legend, c("replicated data", "observed data"),
+                    legend(pos_legend[1L], c("replicated data", "observed data"),
                            lty = 1, col = c(col_rep, col_obs), bty = "n",
                            cex = 0.9)
                 }
