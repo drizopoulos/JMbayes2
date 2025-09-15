@@ -23,6 +23,7 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     id_var <- object$model_info$var_names$idVar
     time_var <- object$model_info$var_names$time_var
     Time_var <- object$model_info$var_names$Time_var
+    TTime_var <- if (length(Time_var) > 1) Time_var[2L] else Time_var
     event_var <- object$model_info$var_names$event_var
     if (is.null(newdata[[id_var]]))
         stop("cannot find the '", id_var, "' variable in newdata.", sep = "")
@@ -43,11 +44,11 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     if (!nrow(newdata))
         stop("there are no data on subjects who had an observed event time after Tstart ",
              "and longitudinal measurements before Tstart.")
-    test1 <- newdata[[Time_var]] < Thoriz & newdata[[event_var]] == 1
+    test1 <- newdata[[TTime_var]] < Thoriz & newdata[[event_var]] == 1
     if (!any(test1))
         stop("it seems that there are no events in the interval [Tstart, Thoriz).")
     newdata2 <- newdata
-    newdata2[[Time_var]] <- Tstart
+    newdata2[[TTime_var]] <- Tstart
     newdata2[[event_var]] <- 0
     preds <- predict(object, newdata = newdata2, process = "event",
                      times = Thoriz, return_mcmc = TRUE, ...)
@@ -55,7 +56,7 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     rownames(qi_u_t) <- preds$id
     qi_u_t <- qi_u_t[preds$times > Tstart, , drop = FALSE]
     id <- newdata[[id_var]]
-    Time <- newdata[[Time_var]]
+    Time <- newdata[[TTime_var]]
     event <- newdata[[event_var]]
     f <- factor(id, levels = unique(id))
     Time <- tapply(Time, f, tail, 1L)
@@ -269,6 +270,7 @@ calibration_plot.jm <- function (object, newdata, Tstart, Thoriz = NULL,
     id_var <- object$model_info$var_names$idVar
     time_var <- object$model_info$var_names$time_var
     Time_var <- object$model_info$var_names$Time_var
+    TTime_var <- if (length(Time_var) > 1) Time_var[2L] else Time_var
     event_var <- object$model_info$var_names$event_var
     if (is.null(newdata[[id_var]]))
         stop("cannot find the '", id_var, "' variable in newdata.", sep = "")
@@ -289,7 +291,7 @@ calibration_plot.jm <- function (object, newdata, Tstart, Thoriz = NULL,
     if (!any(test1))
         stop("it seems that there are no events in the interval [Tstart, Thoriz).")
     newdata2 <- newdata
-    newdata2[[Time_var]] <- Tstart
+    newdata2[[TTime_var]] <- Tstart
     newdata2[[event_var]] <- 0
     preds <- predict(object, newdata = newdata2, process = "event",
                      times = Thoriz, ...)
@@ -297,7 +299,7 @@ calibration_plot.jm <- function (object, newdata, Tstart, Thoriz = NULL,
     names(pi_u_t) <- preds$id
     pi_u_t <- pi_u_t[preds$times > Tstart]
     id <- newdata[[id_var]]
-    Time <- newdata[[Time_var]]
+    Time <- newdata[[TTime_var]]
     event <- newdata[[event_var]]
     f <- factor(id, levels = unique(id))
     Time <- tapply(Time, f, tail, 1L)
