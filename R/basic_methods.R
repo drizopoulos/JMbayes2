@@ -1678,14 +1678,21 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                            legend = bquote(sqrt(MISE) == .(rootMISE)))
                 }
             } else {
+                loess.smooth2 <- function (x, y) {
+                    loess.smooth(x, y, degree = 2, span = 0.75,
+                                 family = "gaussian", evaluation = 200)
+                }
                 gof_fun <- function (y, X, times, id, type) {
                     if (type == "variogram") {
-                        rr <- loess(y ~ times)$residuals
+                        ls <- loess.smooth2(times, y)
+                        ind <- findInterval(times, ls$x)
+                        rr <- y - ls$y[ind]
                         variogram(rr, times, id)[[1L]]
                     } else if (type == "variance-function") {
-                        loess_fit <- loess(y ~ times)
-                        rr <- loess_fit$residuals
-                        sigma <- loess_fit$s
+                        ls <- loess.smooth2(times, y)
+                        ind <- findInterval(times, ls$x)
+                        rr <- y - ls$y[ind]
+                        sigma <- sqrt(rr * rr / (length(rr) - 5))
                         rr <- sqrt(abs(rr / sigma))
                         cbind(times, rr)
                     } else {
@@ -1697,16 +1704,13 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 tt <- attr(y, "times")
                 id <- attr(y, "id")
                 DF <- gof_fun(y, X, tt, id, type)
-                obs_loess <- loess.smooth(DF[, 1L], DF[, 2L], degree = 2,
-                                          span = 0.75, family = "gaussian")
+                obs_loess <- loess.smooth2(DF[, 1L], DF[, 2L], degree = 2)
                 rep_loess <- matrix(0, length(obs_loess$y), ncol(out[[j]]))
                 for (i in seq_len(ncol(out[[j]]))) {
                     not_na <- !is.na(out[[j]][, i])
                     DF <- gof_fun(out[[j]][not_na, i], X[not_na, , drop = FALSE],
                                   tt[not_na], id[not_na], type)
-                    loess_rep_i <-
-                        loess.smooth(DF[, 1L], DF[, 2L], family = "gaussian",
-                                     degree = 2, span = 0.75)
+                    loess_rep_i <- loess.smooth2(DF[, 1L], DF[, 2L])
                     rep_loess[, i] <- loess_rep_i$y
                 }
                 if (is.null(ylim)) ylim <- range(obs_loess$y, rep_loess)
