@@ -1692,7 +1692,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                         ls <- loess.smooth2(times, y)
                         ind <- findInterval(times, ls$x)
                         rr <- y - ls$y[ind]
-                        sigma <- sqrt(rr * rr / (length(rr) - 5))
+                        sigma <- sqrt(sum(rr * rr) / (length(rr) - 5.35))
                         rr <- sqrt(abs(rr / sigma))
                         cbind(times, rr)
                     } else {
