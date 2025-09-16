@@ -1704,7 +1704,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 tt <- attr(y, "times")
                 id <- attr(y, "id")
                 DF <- gof_fun(y, X, tt, id, type)
-                obs_loess <- loess.smooth2(DF[, 1L], DF[, 2L], degree = 2)
+                obs_loess <- loess.smooth2(DF[, 1L], DF[, 2L])
                 rep_loess <- matrix(0, length(obs_loess$y), ncol(out[[j]]))
                 for (i in seq_len(ncol(out[[j]]))) {
                     not_na <- !is.na(out[[j]][, i])
