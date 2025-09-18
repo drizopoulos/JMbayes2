@@ -22,15 +22,15 @@ ppcheck(jointFit, random_effects = "mcmc")
 ppcheck(jointFit, random_effects = "prior", Fforms_fun = FF)
 
 
-ppcheck(jointFit, type = "vario")
+ppcheck(jointFit, type = "vario", CI_loess = TRUE)
 ppcheck(jointFit, type = "vario", random_effects = "mcmc")
 ppcheck(jointFit, type = "vario", random_effects = "prior", Fforms_fun = FF)
 
-ppcheck(jointFit, type = "varia")
+ppcheck(jointFit, type = "varia", CI_loess = TRUE)
 ppcheck(jointFit, type = "varia", random_effects = "mcmc")
 ppcheck(jointFit, type = "varia", random_effects = "prior", Fforms_fun = FF)
 
-ppcheck(jointFit, type = "avera")
+ppcheck(jointFit, type = "avera", CI_loess = TRUE)
 ppcheck(jointFit, type = "avera", random_effects = "mcmc")
 ppcheck(jointFit, type = "avera", random_effects = "prior", Fforms_fun = FF)
 
@@ -185,15 +185,21 @@ jointFit3 <- jm(CoxFit, fm3, time_var = "obstime")
 # Posterior Predictive Checks - Longitudinal Outcome
 ppcheck(jointFit1, nsim = 50L)
 ppcheck(jointFit1, nsim = 50L, random_effects = "prior", Fforms_fun = FF)
-ppcheck(jointFit1, nsim = 50L, type = "v")
-
+ppcheck(jointFit1, nsim = 50L, type = "ave")
+ppcheck(jointFit1, nsim = 50L, type = "varia")
+ppcheck(jointFit1, nsim = 50L, type = "vario")
 
 ppcheck(jointFit2, nsim = 50L)
 ppcheck(jointFit2, nsim = 50L, random_effects = "prior", Fforms_fun = FF)
-ppcheck(jointFit2, nsim = 50L, type = "v")
-
+ppcheck(jointFit2, nsim = 50L, type = "ave")
+ppcheck(jointFit2, nsim = 50L, type = "varia")
+ppcheck(jointFit2, nsim = 50L, type = "vario")
 
 ppcheck(jointFit3, nsim = 50L)
+ppcheck(jointFit3, nsim = 50L, random_effects = "prior", Fforms_fun = FF)
+ppcheck(jointFit3, nsim = 50L, type = "ave")
+ppcheck(jointFit3, nsim = 50L, type = "varia")
+ppcheck(jointFit3, nsim = 50L, type = "vario", ylim = c(0, 5000))
 
 
 # Posterior Predictive Checks - Event Outcome
@@ -205,10 +211,10 @@ FF <- function (t, betas, bi, data) {
     cbind(eta)
 }
 
-system.time(JMbayes2:::ppcheck(jointFit1, process = "event", Fforms_fun = FF))
-system.time(JMbayes2:::ppcheck(jointFit2, process = "event", Fforms_fun = FF))
-system.time(JMbayes2:::ppcheck(jointFit3, process = "event", Fforms_fun = FF))
-system.time(JMbayes2:::ppcheck(jointFit3, process = "event", Fforms_fun = FF))
+ppcheck(jointFit1, process = "event", Fforms_fun = FF,
+        pos_legend = c("bottomright", "topright"))
+ppcheck(jointFit2, process = "event", Fforms_fun = FF)
+ppcheck(jointFit3, process = "event", Fforms_fun = FF)
 
 
 CVdats <- create_folds(aids, V = 5, id_var = "patient")

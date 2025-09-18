@@ -1404,7 +1404,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                    "binomial" = rbinom(n, .N, mu),
                    "poisson" = rpois(n, mu),
                    "negative binomial" = rnbinom(n, size = phi, mu = mu),
-                   "beta" = rbeta(n, shape1 = mu * phi, shape2 = phi * (1 - mu)))
+                   "beta" = rbeta(n, shape1 = mu * phi, shape2 = phi * (1 - mu)),
+                   "Gamma" = rgamma(n, shape = phi, scale = mu / phi))
         }
         indices <- sample(nrow(mcmc_betas[[1]]), nsim)
         val <- vector("list", n_outcomes)
@@ -1593,6 +1594,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      type = c("ecdf", "average-evolution", "variance-function",
                               "variogram"),
                      CI_ecdf = c("binomial", "Dvoretzky-Kiefer-Wolfowitz"),
+                     CI_loess = FALSE,
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
                      Fforms_fun = NULL, add_legend = TRUE,
@@ -1705,6 +1707,13 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 id <- attr(y, "id")
                 DF <- gof_fun(y, X, tt, id, type)
                 obs_loess <- loess.smooth2(DF[, 1L], DF[, 2L])
+                if (CI_loess) {
+                    loess_fit <- loess(y ~ x, data.frame(x = DF[, 1L], y = DF[, 2L]))
+                    preds <- predict(loess_fit, data.frame(x = obs_loess$x),
+                                     se = TRUE)
+                    low <- preds$fit + qt(0.025, preds$df) * preds$se.fit
+                    upp <- preds$fit + qt(0.975, preds$df) * preds$se.fit
+                }
                 rep_loess <- matrix(0, length(obs_loess$y), ncol(out[[j]]))
                 for (i in seq_len(ncol(out[[j]]))) {
                     not_na <- !is.na(out[[j]][, i])
@@ -1714,6 +1723,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     rep_loess[, i] <- loess_rep_i$y
                 }
                 if (is.null(ylim)) ylim <- range(obs_loess$y, rep_loess)
+                if (CI_loess) ylim <- range(ylim, low, upp)
                 if (is.null(xlab)) {
                     xlab <- switch(type, 'average-evolution' = ,
                                    'variance-function' = 'Follow-up Time',
@@ -1729,6 +1739,10 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                         lty = lty_rep, lwd = lwd_rep, ylim = ylim, xlab = xlab,
                         ylab = ylab)
                 lines(obs_loess, lwd = lwd_obs, lty = lty_obs, col = col_obs)
+                if (CI_loess) {
+                    lines(obs_loess$x, low, lwd = lwd_obs, lty = 2, col = col_obs)
+                    lines(obs_loess$x, upp, lwd = lwd_obs, lty = 2, col = col_obs)
+                }
                 if (add_legend) {
                     legend(pos_legend[1L], c("replicated data", "observed data"),
                            lty = 1, col = c(col_rep, col_obs), bty = "n",

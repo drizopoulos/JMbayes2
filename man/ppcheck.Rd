@@ -11,7 +11,7 @@
 ppcheck(object, nsim = 40L, newdata = NULL, seed = 123L,
     process = c("longitudinal", "event"),
     type = c("ecdf", "average-evolution", "variance-function", "variogram"),
-    CI_ecdf = c("binomial", "Dvoretzky-Kiefer-Wolfowitz"),
+    CI_ecdf = c("binomial", "Dvoretzky-Kiefer-Wolfowitz"), CI_loess = FALSE,
     outcomes = Inf, percentiles = c(0.025, 0.975),
     random_effects = c("posterior_means", "mcmc", "prior"),
     Fforms_fun = NULL, add_legend = TRUE, pos_legend = c("bottomright", "right"),
@@ -33,6 +33,7 @@ ppcheck(object, nsim = 40L, newdata = NULL, seed = 123L,
         variogram can also be used.}
   \item{CI_ecdf}{character string indicating the type of confidence interval for the
         emprical distribution function.}
+  \item{CI_loess}{logical; if \code{TRUE} a 0.95 confidence interval for the loess curve is plotted.}
   \item{outcomes}{a numeric vector of indices indicating for which longitudinal outcomes to do the checks.
         The deault value \code{Inf} implies checking all longitudinal outcomes.}
   \item{percentiles}{a numeric vector of length two indicating the percentiles of the observed data to use when
