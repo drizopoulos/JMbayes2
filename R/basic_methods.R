@@ -1599,7 +1599,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      random_effects = c("posterior_means", "mcmc", "prior"),
                      Fforms_fun = NULL, add_legend = TRUE,
                      pos_legend = c("bottomright", "right"),
-                     xlab = NULL, ylab = NULL, ylim = NULL,
+                     main = NULL, xlab = NULL, ylab = NULL, ylim = NULL,
                      col_obs = "black", col_rep = "lightgrey", lty_obs = 1,
                      lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, ...) {
     process <- match.arg(process)
@@ -1668,7 +1668,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 if (is.null(ylim)) ylim <- c(0, 1)
                 matplot(x_vals, rep_y, type = "s", lty = lty_rep, lwd = lwd_rep,
                         col = col_rep, xlab = object$model_info$var_names$respVars_form[[j]],
-                        ylab = "Empirical CDF", ylim = ylim)
+                        ylab = "Empirical CDF", ylim = ylim, main = main)
                 lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
                 lines(x_vals, F0l, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
                 lines(x_vals, F0u, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
@@ -1737,7 +1737,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 }
                 matplot(obs_loess$x, rep_loess, type = "l", col = col_rep,
                         lty = lty_rep, lwd = lwd_rep, ylim = ylim, xlab = xlab,
-                        ylab = ylab)
+                        ylab = ylab, main = main)
                 lines(obs_loess, lwd = lwd_obs, lty = lty_obs, col = col_obs)
                 if (CI_loess) {
                     lines(obs_loess$x, low, lwd = lwd_obs, lty = 2, col = col_obs)
@@ -1781,7 +1781,8 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         MISE <- mean(apply((rep_T - F0)^2, 2L, trapezoid_rule, x = x_vals))
         if (is.null(ylim)) ylim <- c(0, 1)
         matplot(x_vals, rep_T, type = "s", lty = lty_rep, lwd = lwd_rep,
-                col = col_rep, xlab = "Times", ylab = "Empirical CDF", ylim = ylim)
+                col = col_rep, xlab = "Times", ylab = "Empirical CDF",
+                ylim = ylim, main = main)
         lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
         lines(x_vals, F0_low, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
         lines(x_vals, F0_upp, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
