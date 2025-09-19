@@ -1599,7 +1599,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      random_effects = c("posterior_means", "mcmc", "prior"),
                      Fforms_fun = NULL, add_legend = TRUE,
                      pos_legend = c("bottomright", "right"),
-                     main = NULL, xlab = NULL, ylab = NULL, ylim = NULL,
+                     main = NULL, xlab = NULL, ylab = NULL,
                      col_obs = "black", col_rep = "lightgrey", lty_obs = 1,
                      lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, ...) {
     process <- match.arg(process)
@@ -1664,7 +1664,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     F0u <- pmin(F0 + eps, 1)
                     F0l <- pmax(F0 - eps, 0)
                 }
-                if (is.null(ylim)) ylim <- c(0, 1)
+                ylim <- c(0, 1)
                 matplot(x_vals, rep_y, type = "s", lty = lty_rep, lwd = lwd_rep,
                         col = col_rep, xlab = object$model_info$var_names$respVars_form[[j]],
                         ylab = "Empirical CDF", ylim = ylim, main = main)
@@ -1672,8 +1672,9 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 lines(x_vals, F0l, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
                 lines(x_vals, F0u, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
                 if (add_legend) {
-                    legend(pos_legend[1L], c("replicated data", "observed data"),
-                           lty = 1, col = c(col_rep, col_obs), bty = "n", cex = 0.9)
+                    legend(pos_legend[1L], c("replicated data", "observed data", "95% CI"),
+                           lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
+                           bty = "n", cex = 0.9)
                     MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
                     rootMISE <- round(sqrt(MISE), 5)
                     legend(pos_legend[2L], bty = "n",
@@ -1722,7 +1723,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     loess_rep_i <- loess.smooth2(DF[, 1L], DF[, 2L])
                     rep_loess[, i] <- loess_rep_i$y
                 }
-                if (is.null(ylim)) ylim <- range(obs_loess$y, rep_loess)
+                ylim <- range(obs_loess$y, rep_loess)
                 if (CI_loess) ylim <- range(ylim, low, upp)
                 if (is.null(xlab)) {
                     xlab <- switch(type, 'average-evolution' = ,
@@ -1744,8 +1745,9 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     lines(obs_loess$x, upp, lwd = lwd_obs, lty = 2, col = col_obs)
                 }
                 if (add_legend) {
-                    legend(pos_legend[1L], c("replicated data", "observed data"),
-                           lty = 1, col = c(col_rep, col_obs), bty = "n",
+                    legend(pos_legend[1L], c("replicated data", "observed data",
+                                             "95% CI"), lty = c(1, 1, 2),
+                           col = c(col_rep, col_obs, col_obs), bty = "n",
                            cex = 0.9)
                     MISE <- mean(apply((rep_loess - obs_loess$y)^2, 2L,
                                        trapezoid_rule, x = obs_loess$x))
@@ -1784,7 +1786,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         F0_low <- 1 - ss$lower
         F0_upp <- 1 - ss$upper
         MISE <- mean(apply((rep_T - F0)^2, 2L, trapezoid_rule, x = x_vals))
-        if (is.null(ylim)) ylim <- c(0, 1)
+        ylim <- c(0, 1)
         matplot(x_vals, rep_T, type = "s", lty = lty_rep, lwd = lwd_rep,
                 col = col_rep, xlab = "Times", ylab = "Empirical CDF",
                 ylim = ylim, main = main)
@@ -1792,8 +1794,9 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         lines(x_vals, F0_low, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
         lines(x_vals, F0_upp, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
         if (add_legend) {
-            legend(pos_legend[1L], c("replicated data", "observed data"),
-                   lty = 1, col = c(col_rep, col_obs), bty = "n", cex = 0.9)
+            legend(pos_legend[1L], c("replicated data", "observed data", "95% CI"),
+                   lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
+                   bty = "n", cex = 0.9)
             rootMISE <- round(sqrt(MISE), 5)
             legend(pos_legend[2L], legend = bquote(sqrt(MISE) == .(rootMISE)),
                    bty = "n")
