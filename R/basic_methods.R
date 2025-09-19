@@ -1664,7 +1664,6 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     F0u <- pmin(F0 + eps, 1)
                     F0l <- pmax(F0 - eps, 0)
                 }
-                MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
                 if (is.null(ylim)) ylim <- c(0, 1)
                 matplot(x_vals, rep_y, type = "s", lty = lty_rep, lwd = lwd_rep,
                         col = col_rep, xlab = object$model_info$var_names$respVars_form[[j]],
@@ -1675,6 +1674,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 if (add_legend) {
                     legend(pos_legend[1L], c("replicated data", "observed data"),
                            lty = 1, col = c(col_rep, col_obs), bty = "n", cex = 0.9)
+                    MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
                     rootMISE <- round(sqrt(MISE), 5)
                     legend(pos_legend[2L], bty = "n",
                            legend = bquote(sqrt(MISE) == .(rootMISE)))
@@ -1732,7 +1732,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 if (is.null(ylab)) {
                     ylab <-
                         switch(type, 'average-evolution' = 'Average Evolution',
-                               'variance-function' =  expression(sqrt(abs("Standardized Residuals"))),
+                               'variance-function' =  expression(sqrt(abs("Std. Residuals"))),
                                'variogram' = 'Half Squared Differences')
                 }
                 matplot(obs_loess$x, rep_loess, type = "l", col = col_rep,
@@ -1747,6 +1747,11 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     legend(pos_legend[1L], c("replicated data", "observed data"),
                            lty = 1, col = c(col_rep, col_obs), bty = "n",
                            cex = 0.9)
+                    MISE <- mean(apply((rep_loess - obs_loess$y)^2, 2L,
+                                       trapezoid_rule, x = obs_loess$x))
+                    rootMISE <- round(sqrt(MISE), 5)
+                    legend(pos_legend[2L], bty = "n",
+                           legend = bquote(sqrt(MISE) == .(rootMISE)))
                 }
             }
         }

@@ -17,7 +17,7 @@ jointFit1 <- jm(CoxFit, fm1, time_var = "year", save_random_effects = TRUE)
 
 jointFit = jointFit1
 # Posterior Predictive Checks - Longitudinal Outcome
-ppcheck(jointFit)
+ppcheck(jointFit, main = "xcfsf")
 ppcheck(jointFit, random_effects = "mcmc")
 ppcheck(jointFit, random_effects = "prior", Fforms_fun = FF)
 
