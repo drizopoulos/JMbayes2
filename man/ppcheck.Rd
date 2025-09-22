@@ -17,7 +17,8 @@ ppcheck(object, nsim = 40L, newdata = NULL, seed = 123L,
     Fforms_fun = NULL, plot = TRUE, add_legend = TRUE,
     pos_legend = c("bottomright", "right"), main = NULL, xlab = NULL,
     ylab = NULL, col_obs = "black", col_rep = "lightgrey", lty_obs = 1,
-    lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, \dots)
+    lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, line_main = NA,
+    cex.main = 1.2, \dots)
 }
 
 \arguments{
@@ -44,8 +45,9 @@ ppcheck(object, nsim = 40L, newdata = NULL, seed = 123L,
         to create the figure.}
   \item{add_legend}{logical; if \code{TRUE} a legend is added.}
   \item{pos_legend}{character string indicating the position of the legend.}
-  \item{main, xlab, ylab, col_obs, col_rep, lty_obs, lty_rep, lwd_obs, lwd_rep}{graphical parameters}
-  \item{\dots}{extra argument passed to the \code{simualte} method.}
+  \item{main, xlab, ylab, col_obs, col_rep, lty_obs, lty_rep, lwd_obs, lwd_rep,
+        line_main, cex.main}{graphical parameters.}
+  \item{\dots}{extra argument passed to \code{plot} method.}
 }
 
 \value{

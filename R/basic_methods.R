@@ -1601,7 +1601,8 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      pos_legend = c("bottomright", "right"),
                      main = NULL, xlab = NULL, ylab = NULL,
                      col_obs = "black", col_rep = "lightgrey", lty_obs = 1,
-                     lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, ...) {
+                     lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, line_main = NA,
+                     cex.main = 1.2, ...) {
     process <- match.arg(process)
     type <- match.arg(type)
     CI_ecdf <- match.arg(CI_ecdf)
@@ -1629,22 +1630,39 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                                        include_outcome = TRUE,
                                        random_effects = random_effects,
                                        seed = seed, nsim = nsim,
-                                       Fforms_fun = Fforms_fun, ...),
+                                       Fforms_fun = Fforms_fun),
                        SIMPLIFY = FALSE)
             bind(sims_per_fold)
         } else {
             simulate(object, nsim = nsim, newdata = newdata,
                      process = "longitudinal", include_outcome = TRUE,
                      random_effects = random_effects, seed = seed,
-                     Fforms_fun = Fforms_fun, ...)
+                     Fforms_fun = Fforms_fun)
         }
         yy <- out$outcome
         out <- out[names(out) != "outcome"]
         n_outcomes <- length(out)
         index <- seq_len(n_outcomes)
         if (outcomes < Inf) index <- index[index %in% outcomes]
-        plot_values <- if (plot) vector("list", length(index))
+        nindex <- length(index)
+        plot_values <- if (plot) vector("list", nindex)
+        if (is.null(xlab)) {
+            if (type == "ecdf") object$model_info$var_names$respVars_form else
+                switch(type, 'average-evolution' = ,
+                       'variance-function' = 'Follow-up Time',
+                       'variogram' = 'Time Lags')
+        }
+        if (is.null(ylab)) {
+            if (type == "ecdf") "Empirical CDF" else
+                switch(type, 'average-evolution' = 'Average Evolution',
+                       'variance-function' =  expression(sqrt(abs("Std. Residuals"))),
+                       'variogram' = 'Half Squared Differences')
+        }
+        xlab <- rep(xlab, length.out = nindex)
+        ylab <- rep(ylab, length.out = nindex)
+        main <- rep(main, length.out = nindex)
         for (j in index) {
+            jj <- match(j, unique(index))
             if (type == "ecdf") {
                 y <- yy[[j]]
                 r1 <- quantile(y, probs = percentiles[1L], na.rm = TRUE)
@@ -1670,8 +1688,9 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 if (plot) {
                     ylim <- c(0, 1)
                     matplot(x_vals, rep_y, type = "s", lty = lty_rep, lwd = lwd_rep,
-                            col = col_rep, xlab = object$model_info$var_names$respVars_form[[j]],
-                            ylab = "Empirical CDF", ylim = ylim, main = main)
+                            col = col_rep, xlab = xlab[jj], ylab = ylab[jj],
+                            ylim = ylim, ...)
+                    title(main = main[jj], line = line_main, cex.main = cex.main)
                     lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
                     lines(x_vals, F0l, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
                     lines(x_vals, F0u, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
@@ -1683,7 +1702,6 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                                legend = bquote(sqrt(MISE) == .(rootMISE)))
                     }
                 } else {
-                    jj <- match(j, unique(index))
                     plot_values[[jj]] <-
                         list(x_vals = x_vals, obs = F0, obs_low = F0l,
                              obs_upp = F0u, rep = rep_y,
@@ -1738,20 +1756,10 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 if (plot) {
                     ylim <- range(obs_loess$y, rep_loess)
                     if (CI_loess) ylim <- range(ylim, low, upp)
-                    if (is.null(xlab)) {
-                        xlab <- switch(type, 'average-evolution' = ,
-                                       'variance-function' = 'Follow-up Time',
-                                       'variogram' = 'Time Lags')
-                    }
-                    if (is.null(ylab)) {
-                        ylab <-
-                            switch(type, 'average-evolution' = 'Average Evolution',
-                                   'variance-function' =  expression(sqrt(abs("Std. Residuals"))),
-                                   'variogram' = 'Half Squared Differences')
-                    }
                     matplot(obs_loess$x, rep_loess, type = "l", col = col_rep,
-                            lty = lty_rep, lwd = lwd_rep, ylim = ylim, xlab = xlab,
-                            ylab = ylab, main = main)
+                            lty = lty_rep, lwd = lwd_rep, ylim = ylim,
+                            xlab = xlab[jj], ylab = ylab[jj], ...)
+                    title(main = main[jj], line = line_main, cex.main = cex.main)
                     lines(obs_loess, lwd = lwd_obs, lty = lty_obs, col = col_obs)
                     if (CI_loess) {
                         lines(obs_loess$x, low, lwd = lwd_obs, lty = 2, col = col_obs)
@@ -1766,7 +1774,6 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                                legend = bquote(sqrt(MISE) == .(rootMISE)))
                     }
                 } else {
-                    jj <- match(j, unique(index))
                     plot_values[[jj]] <-
                         list(x_vals = obs_loess$x, obs = obs_loess$y,
                              obs_low = if (CI_loess) low,
@@ -1783,14 +1790,13 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                        MoreArgs = list(process = "event", include_outcome = TRUE,
                                        Fforms_fun = Fforms_fun,
                                        random_effects = random_effects,
-                                       seed = seed, nsim = nsim, ...),
+                                       seed = seed, nsim = nsim),
                        SIMPLIFY = FALSE)
             bind(sims_per_fold)
         } else {
             simulate(object, nsim = nsim, newdata = newdata,
                      process = "event", seed = seed, include_outcome = TRUE,
-                     random_effects = random_effects, Fforms_fun = Fforms_fun,
-                     ...)
+                     random_effects = random_effects, Fforms_fun = Fforms_fun)
         }
         Times <- out$outcome.Times
         event <- out$outcome.event
@@ -1805,11 +1811,13 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         F0_upp <- 1 - ss$upper
         MISE <- mean(apply((rep_T - F0)^2, 2L, trapezoid_rule, x = x_vals))
         rootMISE <- round(sqrt(MISE), 5)
+        if (is.null(xlab)) xlab <- "Event Times"
+        if (is.null(ylab)) ylab <- "Empirical CDF"
         if (plot) {
             ylim <- c(0, 1)
             matplot(x_vals, rep_T, type = "s", lty = lty_rep, lwd = lwd_rep,
-                    col = col_rep, xlab = "Times", ylab = "Empirical CDF",
-                    ylim = ylim, main = main)
+                    col = col_rep, xlab = xlab, ylab = ylab, ylim = ylim, ...)
+            title(main = main, line = line_main, cex.main = cex.main)
             lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
             lines(x_vals, F0_low, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
             lines(x_vals, F0_upp, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
