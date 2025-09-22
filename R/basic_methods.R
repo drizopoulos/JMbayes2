@@ -1597,7 +1597,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      CI_loess = FALSE,
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
-                     Fforms_fun = NULL, add_legend = TRUE,
+                     Fforms_fun = NULL, plot = TRUE, add_legend = TRUE,
                      pos_legend = c("bottomright", "right"),
                      main = NULL, xlab = NULL, ylab = NULL,
                      col_obs = "black", col_rep = "lightgrey", lty_obs = 1,
@@ -1643,6 +1643,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         n_outcomes <- length(out)
         index <- seq_len(n_outcomes)
         if (outcomes < Inf) index <- index[index %in% outcomes]
+        plot_values <- if (plot) vector("list", length(index))
         for (j in index) {
             if (type == "ecdf") {
                 y <- yy[[j]]
@@ -1664,21 +1665,29 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     F0u <- pmin(F0 + eps, 1)
                     F0l <- pmax(F0 - eps, 0)
                 }
-                ylim <- c(0, 1)
-                matplot(x_vals, rep_y, type = "s", lty = lty_rep, lwd = lwd_rep,
-                        col = col_rep, xlab = object$model_info$var_names$respVars_form[[j]],
-                        ylab = "Empirical CDF", ylim = ylim, main = main)
-                lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
-                lines(x_vals, F0l, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
-                lines(x_vals, F0u, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
-                if (add_legend) {
-                    legend(pos_legend[1L], c("replicated data", "observed data", "95% CI"),
-                           lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
-                           bty = "n", cex = 0.9)
-                    MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
-                    rootMISE <- round(sqrt(MISE), 5)
-                    legend(pos_legend[2L], bty = "n",
-                           legend = bquote(sqrt(MISE) == .(rootMISE)))
+                MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
+                rootMISE <- round(sqrt(MISE), 5)
+                if (plot) {
+                    ylim <- c(0, 1)
+                    matplot(x_vals, rep_y, type = "s", lty = lty_rep, lwd = lwd_rep,
+                            col = col_rep, xlab = object$model_info$var_names$respVars_form[[j]],
+                            ylab = "Empirical CDF", ylim = ylim, main = main)
+                    lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
+                    lines(x_vals, F0l, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
+                    lines(x_vals, F0u, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
+                    if (add_legend) {
+                        legend(pos_legend[1L], c("replicated data", "observed data", "95% CI"),
+                               lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
+                               bty = "n", cex = 0.9)
+                        legend(pos_legend[2L], bty = "n",
+                               legend = bquote(sqrt(MISE) == .(rootMISE)))
+                    }
+                } else {
+                    jj <- match(j, unique(index))
+                    plot_values[[jj]] <-
+                        list(x_vals = x_vals, obs = F0, obs_low = F0l,
+                             obs_upp = F0u, rep = rep_y,
+                             rootMISE = if (add_legend) rootMISE)
                 }
             } else {
                 loess.smooth2 <- function (x, y) {
@@ -1723,37 +1732,46 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     loess_rep_i <- loess.smooth2(DF[, 1L], DF[, 2L])
                     rep_loess[, i] <- loess_rep_i$y
                 }
-                ylim <- range(obs_loess$y, rep_loess)
-                if (CI_loess) ylim <- range(ylim, low, upp)
-                if (is.null(xlab)) {
-                    xlab <- switch(type, 'average-evolution' = ,
-                                   'variance-function' = 'Follow-up Time',
-                                   'variogram' = 'Time Lags')
-                }
-                if (is.null(ylab)) {
-                    ylab <-
-                        switch(type, 'average-evolution' = 'Average Evolution',
-                               'variance-function' =  expression(sqrt(abs("Std. Residuals"))),
-                               'variogram' = 'Half Squared Differences')
-                }
-                matplot(obs_loess$x, rep_loess, type = "l", col = col_rep,
-                        lty = lty_rep, lwd = lwd_rep, ylim = ylim, xlab = xlab,
-                        ylab = ylab, main = main)
-                lines(obs_loess, lwd = lwd_obs, lty = lty_obs, col = col_obs)
-                if (CI_loess) {
-                    lines(obs_loess$x, low, lwd = lwd_obs, lty = 2, col = col_obs)
-                    lines(obs_loess$x, upp, lwd = lwd_obs, lty = 2, col = col_obs)
-                }
-                if (add_legend) {
-                    legend(pos_legend[1L], c("replicated data", "observed data",
-                                             "95% CI"), lty = c(1, 1, 2),
-                           col = c(col_rep, col_obs, col_obs), bty = "n",
-                           cex = 0.9)
-                    MISE <- mean(apply((rep_loess - obs_loess$y)^2, 2L,
-                                       trapezoid_rule, x = obs_loess$x))
-                    rootMISE <- round(sqrt(MISE), 5)
-                    legend(pos_legend[2L], bty = "n",
-                           legend = bquote(sqrt(MISE) == .(rootMISE)))
+                MISE <- mean(apply((rep_loess - obs_loess$y)^2, 2L,
+                                   trapezoid_rule, x = obs_loess$x))
+                rootMISE <- round(sqrt(MISE), 5)
+                if (plot) {
+                    ylim <- range(obs_loess$y, rep_loess)
+                    if (CI_loess) ylim <- range(ylim, low, upp)
+                    if (is.null(xlab)) {
+                        xlab <- switch(type, 'average-evolution' = ,
+                                       'variance-function' = 'Follow-up Time',
+                                       'variogram' = 'Time Lags')
+                    }
+                    if (is.null(ylab)) {
+                        ylab <-
+                            switch(type, 'average-evolution' = 'Average Evolution',
+                                   'variance-function' =  expression(sqrt(abs("Std. Residuals"))),
+                                   'variogram' = 'Half Squared Differences')
+                    }
+                    matplot(obs_loess$x, rep_loess, type = "l", col = col_rep,
+                            lty = lty_rep, lwd = lwd_rep, ylim = ylim, xlab = xlab,
+                            ylab = ylab, main = main)
+                    lines(obs_loess, lwd = lwd_obs, lty = lty_obs, col = col_obs)
+                    if (CI_loess) {
+                        lines(obs_loess$x, low, lwd = lwd_obs, lty = 2, col = col_obs)
+                        lines(obs_loess$x, upp, lwd = lwd_obs, lty = 2, col = col_obs)
+                    }
+                    if (add_legend) {
+                        legend(pos_legend[1L], c("replicated data", "observed data",
+                                                 "95% CI"), lty = c(1, 1, 2),
+                               col = c(col_rep, col_obs, col_obs), bty = "n",
+                               cex = 0.9)
+                        legend(pos_legend[2L], bty = "n",
+                               legend = bquote(sqrt(MISE) == .(rootMISE)))
+                    }
+                } else {
+                    jj <- match(j, unique(index))
+                    plot_values[[jj]] <-
+                        list(x_vals = obs_loess$x, obs = obs_loess$y,
+                             obs_low = if (CI_loess) low,
+                             obs_upp = if (CI_loess) upp, rep = rep_loess,
+                             rootMISE = if (add_legend) rootMISE)
                 }
             }
         }
@@ -1786,20 +1804,28 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         F0_low <- 1 - ss$lower
         F0_upp <- 1 - ss$upper
         MISE <- mean(apply((rep_T - F0)^2, 2L, trapezoid_rule, x = x_vals))
-        ylim <- c(0, 1)
-        matplot(x_vals, rep_T, type = "s", lty = lty_rep, lwd = lwd_rep,
-                col = col_rep, xlab = "Times", ylab = "Empirical CDF",
-                ylim = ylim, main = main)
-        lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
-        lines(x_vals, F0_low, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
-        lines(x_vals, F0_upp, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
-        if (add_legend) {
-            legend(pos_legend[1L], c("replicated data", "observed data", "95% CI"),
-                   lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
-                   bty = "n", cex = 0.9)
-            rootMISE <- round(sqrt(MISE), 5)
-            legend(pos_legend[2L], legend = bquote(sqrt(MISE) == .(rootMISE)),
-                   bty = "n")
+        rootMISE <- round(sqrt(MISE), 5)
+        if (plot) {
+            ylim <- c(0, 1)
+            matplot(x_vals, rep_T, type = "s", lty = lty_rep, lwd = lwd_rep,
+                    col = col_rep, xlab = "Times", ylab = "Empirical CDF",
+                    ylim = ylim, main = main)
+            lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
+            lines(x_vals, F0_low, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
+            lines(x_vals, F0_upp, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
+            if (add_legend) {
+                legend(pos_legend[1L], c("replicated data", "observed data", "95% CI"),
+                       lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
+                       bty = "n", cex = 0.9)
+                legend(pos_legend[2L], legend = bquote(sqrt(MISE) == .(rootMISE)),
+                       bty = "n")
+            }
+        } else {
+            plot_values <-
+                list(x_vals = x_vals, obs = F0, obs_low = F0_low,
+                     obs_upp = F0_upp, rep = rep_T,
+                     rootMISE = if (add_legend) rootMISE)
         }
     }
+    if (!plot) return(plot_values)
 }
