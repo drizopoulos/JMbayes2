@@ -1302,7 +1302,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
             stop("The id variable '", id_var, "' cannot be found in newdata.\n")
         }
         id <- newdata[[id_var]]
-        id <- factor(id, levels = unique(id))
+        id <- id. <- factor(id, levels = unique(id))
         n <- length(unique(id))
         terms_FE <- terms(object)
         frames_FE <- lapply(terms_FE, model.frame.default, data = newdata)
@@ -1338,7 +1338,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         W <- object$model_data$W_h
         strt <- object$model_data$strata
     } else {
-        dataS <- newdata[tapply(row.names(newdata), id, tail, n = 1L), ]
+        dataS <- newdata[tapply(row.names(newdata), id., tail, n = 1L), ]
         terms_event <- terms(object, process = "event")
         frames_event <- model.frame.default(terms_event, data = dataS)
         Surv_Response <- model.response(frames_event)
@@ -1419,10 +1419,6 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         }
         for (i in seq_len(n_outcomes)) {
             if (include_outcome) {
-                lm_fit <- lm.fit(X[[i]], y[[i]])$fitted.values
-                attr(y[[i]], "X") <- X[[i]]
-                attr(y[[i]], "lm_fit") <- lm_fit
-                attr(y[[i]], "resd_obs") <- y[[i]] - lm_fit
                 attr(y[[i]], "times") <- times
                 attr(y[[i]], "id") <- idL_lp[[i]]
             }
@@ -1599,7 +1595,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      random_effects = c("posterior_means", "mcmc", "prior"),
                      Fforms_fun = NULL, plot = TRUE, add_legend = TRUE,
                      pos_legend = c("bottomright", "right"),
-                     main = NULL, xlab = NULL, ylab = NULL,
+                     main = "", xlab = NULL, ylab = NULL,
                      col_obs = "black", col_rep = "lightgrey", lty_obs = 1,
                      lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, line_main = NA,
                      cex.main = 1.2, ...) {
@@ -1611,19 +1607,30 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         sum(0.5 * diff(x) * (f[-length(x)] + f[-1L]))
     }
     bind <- function (sims) {
+        Cbind <- function (x1, x2) {
+            if (is.matrix(x1)) rbind(x1, x2) else c(x1, x2)
+        }
         out <- sims[[1L]]
         for (i in seq_along(sims)[-1L]) {
             out_i <- sims[[i]]
             for (j in seq_along(out)) {
-                out[[j]] <- if (is.matrix(out[[j]]))
-                    rbind(out[[j]], out_i[[j]]) else c(out[[j]], out_i[[j]])
+                if (is.list(out[[j]])) {
+                    for (k in seq_along(out[[j]])) {
+                        tt <- c(attr(out[[j]][[k]], "times"), attr(out_i[[j]][[k]], "times"))
+                        ii <- c(attr(out[[j]][[k]], "id"), attr(out_i[[j]][[k]], "id"))
+                        out[[j]][[k]] <- Cbind(out[[j]][[k]], out_i[[j]][[k]])
+                        attr(out[[j]][[k]], "times") <- tt
+                        attr(out[[j]][[k]], "id") <- ii
+                    }
+                } else out[[j]] <- Cbind(out[[j]], out_i[[j]])
             }
         }
         out
     }
     if (process == "longitudinal") {
-        out <- if (inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
-                   inherits(newdata, 'list')) {
+        list_of_jms <- inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
+            inherits(newdata, 'list')
+        out <- if (list_of_jms) {
             sims_per_fold <-
                 mapply(simulate, object = object, newdata = newdata,
                        MoreArgs = list(process = "longitudinal",
@@ -1647,13 +1654,16 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         nindex <- length(index)
         plot_values <- if (plot) vector("list", nindex)
         if (is.null(xlab)) {
-            if (type == "ecdf") object$model_info$var_names$respVars_form else
+            xlab <- if (type == "ecdf") {
+                    if (list_of_jms) object[[1L]]$model_info$var_names$respVars_form
+                else object$model_info$var_names$respVars_form
+                } else
                 switch(type, 'average-evolution' = ,
                        'variance-function' = 'Follow-up Time',
                        'variogram' = 'Time Lags')
         }
         if (is.null(ylab)) {
-            if (type == "ecdf") "Empirical CDF" else
+            ylab <- if (type == "ecdf") "Empirical CDF" else
                 switch(type, 'average-evolution' = 'Average Evolution',
                        'variance-function' =  expression(sqrt(abs("Std. Residuals"))),
                        'variogram' = 'Half Squared Differences')
@@ -1686,7 +1696,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
                 rootMISE <- round(sqrt(MISE), 5)
                 if (plot) {
-                    ylim <- c(0, 1)
+                    ylim <- c(0, min(1, max(rep_y, F0u) + 0.1))
                     matplot(x_vals, rep_y, type = "s", lty = lty_rep, lwd = lwd_rep,
                             col = col_rep, xlab = xlab[jj], ylab = ylab[jj],
                             ylim = ylim, ...)
@@ -1695,11 +1705,16 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     lines(x_vals, F0l, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
                     lines(x_vals, F0u, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
                     if (add_legend) {
-                        legend(pos_legend[1L], c("replicated data", "observed data", "95% CI"),
-                               lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
-                               bty = "n", cex = 0.9)
-                        legend(pos_legend[2L], bty = "n",
-                               legend = bquote(sqrt(MISE) == .(rootMISE)))
+                        if (!is.na(pos_legend[1L])) {
+                            legend(pos_legend[1L],
+                                   legend = c("replicated data", "observed data", "95% CI"),
+                                   lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
+                                   bty = "n", cex = 0.9)
+                        }
+                        if (!is.na(pos_legend[2L])) {
+                            legend(pos_legend[2L], bty = "n",
+                                   legend = bquote(sqrt(MISE) == .(rootMISE)))
+                        }
                     }
                 } else {
                     plot_values[[jj]] <-
@@ -1712,7 +1727,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     loess.smooth(x, y, degree = 2, span = 0.75,
                                  family = "gaussian", evaluation = 200)
                 }
-                gof_fun <- function (y, X, times, id, type) {
+                gof_fun <- function (y, times, id, type) {
                     if (type == "variogram") {
                         ls <- loess.smooth2(times, y)
                         ind <- findInterval(times, ls$x)
@@ -1733,7 +1748,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 X <- attr(y, "X")
                 tt <- attr(y, "times")
                 id <- attr(y, "id")
-                DF <- gof_fun(y, X, tt, id, type)
+                DF <- gof_fun(y, tt, id, type)
                 obs_loess <- loess.smooth2(DF[, 1L], DF[, 2L])
                 if (CI_loess) {
                     loess_fit <- loess(y ~ x, data.frame(x = DF[, 1L], y = DF[, 2L]))
@@ -1745,8 +1760,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 rep_loess <- matrix(0, length(obs_loess$y), ncol(out[[j]]))
                 for (i in seq_len(ncol(out[[j]]))) {
                     not_na <- !is.na(out[[j]][, i])
-                    DF <- gof_fun(out[[j]][not_na, i], X[not_na, , drop = FALSE],
-                                  tt[not_na], id[not_na], type)
+                    DF <- gof_fun(out[[j]][not_na, i], tt[not_na], id[not_na], type)
                     loess_rep_i <- loess.smooth2(DF[, 1L], DF[, 2L])
                     rep_loess[, i] <- loess_rep_i$y
                 }
@@ -1766,12 +1780,17 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                         lines(obs_loess$x, upp, lwd = lwd_obs, lty = 2, col = col_obs)
                     }
                     if (add_legend) {
-                        legend(pos_legend[1L], c("replicated data", "observed data",
-                                                 "95% CI"), lty = c(1, 1, 2),
-                               col = c(col_rep, col_obs, col_obs), bty = "n",
-                               cex = 0.9)
-                        legend(pos_legend[2L], bty = "n",
-                               legend = bquote(sqrt(MISE) == .(rootMISE)))
+                        if (!is.na(pos_legend[1L])) {
+                            legend(pos_legend[1L],
+                                   legend = c("replicated data", "observed data",
+                                              "95% CI"), lty = c(1, 1, 2),
+                                   col = c(col_rep, col_obs, col_obs), bty = "n",
+                                   cex = 0.9)
+                        }
+                        if (!is.na(pos_legend[2L])) {
+                            legend(pos_legend[2L], bty = "n",
+                                   legend = bquote(sqrt(MISE) == .(rootMISE)))
+                        }
                     }
                 } else {
                     plot_values[[jj]] <-
@@ -1814,7 +1833,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         if (is.null(xlab)) xlab <- "Event Times"
         if (is.null(ylab)) ylab <- "Empirical CDF"
         if (plot) {
-            ylim <- c(0, 1)
+            ylim <- c(0, min(1, max(rep_T, F0_upp) + 0.1))
             matplot(x_vals, rep_T, type = "s", lty = lty_rep, lwd = lwd_rep,
                     col = col_rep, xlab = xlab, ylab = ylab, ylim = ylim, ...)
             title(main = main, line = line_main, cex.main = cex.main)
@@ -1822,11 +1841,16 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             lines(x_vals, F0_low, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
             lines(x_vals, F0_upp, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
             if (add_legend) {
-                legend(pos_legend[1L], c("replicated data", "observed data", "95% CI"),
-                       lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
-                       bty = "n", cex = 0.9)
-                legend(pos_legend[2L], legend = bquote(sqrt(MISE) == .(rootMISE)),
-                       bty = "n")
+                if (!is.na(pos_legend[1L])) {
+                    legend(pos_legend[1L],
+                           legend = c("replicated data", "observed data", "95% CI"),
+                           lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
+                           bty = "n", cex = 0.9)
+                }
+                if (!is.na(pos_legend[2L])) {
+                    legend(pos_legend[2L], bty = "n",
+                           legend = bquote(sqrt(MISE) == .(rootMISE)))
+                }
             }
         } else {
             plot_values <-

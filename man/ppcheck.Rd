@@ -15,7 +15,7 @@ ppcheck(object, nsim = 40L, newdata = NULL, seed = 123L,
     outcomes = Inf, percentiles = c(0.025, 0.975),
     random_effects = c("posterior_means", "mcmc", "prior"),
     Fforms_fun = NULL, plot = TRUE, add_legend = TRUE,
-    pos_legend = c("bottomright", "right"), main = NULL, xlab = NULL,
+    pos_legend = c("bottomright", "right"), main = "", xlab = NULL,
     ylab = NULL, col_obs = "black", col_rep = "lightgrey", lty_obs = 1,
     lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, line_main = NA,
     cex.main = 1.2, \dots)
