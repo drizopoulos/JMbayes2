@@ -871,6 +871,7 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
     attr(out, "times_y") <- components_newdata$times_y
     attr(out, "id") <- components_newdata$id
     attr(out, "process") <- "longitudinal"
+    attr(out, "b_mat") <- b_mat
     out
 }
 
@@ -1096,6 +1097,7 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
     attr(res, "times_y") <- components_newdata$times_y
     attr(res, "id") <- components_newdata$id
     attr(res, "process") <- "event"
+    attr(res, "b_mat") <- components_newdata$mcmc[["b"]]
     res
 }
 

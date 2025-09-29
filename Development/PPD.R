@@ -111,8 +111,10 @@ fit_model <- function (data) {
     data$event <- as.numeric(data$status != "alive")
     data_id <- data[!duplicated(data$id), ]
     CoxFit <- coxph(Surv(years, status2) ~ sex, data = data_id)
-    fm <- lme(log(serBilir) ~ ns(year, k = c(0.9911, 3.9863), B = c(0, 14.10579)) * sex + age, data = data,
-              random = list(id = pdDiag(~ ns(year, k = c(0.9911, 3.9863), B = c(0, 14.10579)))))
+    fm <- lme(log(serBilir) ~ ns(year, k = c(0.9911, 3.9863),
+                                 B = c(0, 14.10579)) * sex + age, data = data,
+              random = list(id = pdDiag(~ ns(year, k = c(0.9911, 3.9863),
+                                             B = c(0, 14.10579)))))
     jointFit <- jm(CoxFit, fm, time_var = "year")
 }
 
@@ -137,8 +139,17 @@ FF <- function (t, betas, bi, data) {
     cbind(eta)
 }
 
-JMbayes2:::ppcheck(Model_folds, newdata = CVdats$testing, process = "event",
-                   Fforms_fun = FF, random_effects = "prior")
+ppcheck(Model_folds, newdata = CVdats$testing,
+        Fforms_fun = FF, random_effects = "prior")
+
+
+prs <- mapply(predict, object = Model_folds, newdata = CVdats$testing,
+              SIMPLIFY = FALSE)
+
+
+ppcheck(Model_folds, newdata = CVdats$testing,
+        random_effects = lapply(prs, function (pr) attr(pr, "b_mat")))
+
 
 dynamic_data <- function (data, t0) {
     data <- data[ave(data$year, data$id, FUN = max) > t0, ]

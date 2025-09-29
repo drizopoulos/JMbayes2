@@ -1434,7 +1434,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                            "posterior_means" = b,
                            "prior" = simulated_RE[, , j])
                 } else {
-                    random_effects
+                    if (length(dim(random_effects)) > 2) random_effects[, , j] else random_effects
                 }
                 FE <- c(X[[i]] %*% betas[[i]])
                 RE <- rowSums(Z[[i]] * bb[idL_lp[[i]], ind_RE[[i]]])
@@ -1602,7 +1602,6 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
     process <- match.arg(process)
     type <- match.arg(type)
     CI_ecdf <- match.arg(CI_ecdf)
-    random_effects <- match.arg(random_effects)
     trapezoid_rule <- function (f, x) {
         sum(0.5 * diff(x) * (f[-length(x)] + f[-1L]))
     }
@@ -1616,8 +1615,10 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             for (j in seq_along(out)) {
                 if (is.list(out[[j]])) {
                     for (k in seq_along(out[[j]])) {
-                        tt <- c(attr(out[[j]][[k]], "times"), attr(out_i[[j]][[k]], "times"))
-                        ii <- c(attr(out[[j]][[k]], "id"), attr(out_i[[j]][[k]], "id"))
+                        tt <- c(attr(out[[j]][[k]], "times"),
+                                attr(out_i[[j]][[k]], "times"))
+                        ii <- c(attr(out[[j]][[k]], "id"),
+                                attr(out_i[[j]][[k]], "id"))
                         out[[j]][[k]] <- Cbind(out[[j]][[k]], out_i[[j]][[k]])
                         attr(out[[j]][[k]], "times") <- tt
                         attr(out[[j]][[k]], "id") <- ii
@@ -1631,14 +1632,21 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         list_of_jms <- inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
             inherits(newdata, 'list')
         out <- if (list_of_jms) {
-            sims_per_fold <-
-                mapply(simulate, object = object, newdata = newdata,
-                       MoreArgs = list(process = "longitudinal",
-                                       include_outcome = TRUE,
-                                       random_effects = random_effects,
-                                       seed = seed, nsim = nsim,
-                                       Fforms_fun = Fforms_fun),
-                       SIMPLIFY = FALSE)
+            sims_per_fold <- if (length(random_effects) == 1 && is.character(random_effects)) {
+                mapply2(simulate, object = object, newdata = newdata,
+                        MoreArgs = list(process = "longitudinal",
+                                        include_outcome = TRUE,
+                                        random_effects = random_effects,
+                                        seed = seed, nsim = nsim,
+                                        Fforms_fun = Fforms_fun))
+            } else {
+                mapply2(simulate, object = object, newdata = newdata,
+                        random_effects = random_effects,
+                        MoreArgs = list(process = "longitudinal",
+                                        include_outcome = TRUE,
+                                        seed = seed, nsim = nsim,
+                                        Fforms_fun = Fforms_fun))
+            }
             bind(sims_per_fold)
         } else {
             simulate(object, nsim = nsim, newdata = newdata,
