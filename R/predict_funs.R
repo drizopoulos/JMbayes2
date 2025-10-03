@@ -710,7 +710,7 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
 
 predict_Long <- function (object, components_newdata, newdata, newdata2, times,
                           all_times, times_per_id, type, type_pred, level,
-                          return_newdata, return_mcmc) {
+                          return_newdata, return_mcmc, return_params_mcmc) {
     # Predictions for newdata
     newdataL <- if (!is.data.frame(newdata)) newdata[["newdataL"]] else newdata
     betas <- components_newdata$mcmc[["betas"]]
@@ -736,7 +736,8 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
     res1 <- list(preds = lapply(out, rowMeans, na.rm = TRUE),
                  low = lapply(out, rowQuantiles, probs = (1 - level) / 2),
                  upp = lapply(out, rowQuantiles, probs = (1 + level) / 2),
-                 mcmc = if (return_mcmc) out)
+                 mcmc = if (return_mcmc) out,
+                 params_mcmc = if (return_params_mcmc) components_newdata$mcmc)
     if (return_newdata) {
         n <- nrow(newdataL)
         preds <- mapply2(fix_NAs_preds, res1$preds, components_newdata$NAs,
@@ -753,6 +754,9 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
         res1 <- cbind(newdataL, as.data.frame(do.call("cbind", l)))
         if (return_mcmc) {
             attr(res1, "mcmc") <- out
+        }
+        if (return_params_mcmc) {
+            attr(res1, "params_mcmc") <- components_newdata$mcmc
         }
     }
     ############################################################################
@@ -871,13 +875,12 @@ predict_Long <- function (object, components_newdata, newdata, newdata2, times,
     attr(out, "times_y") <- components_newdata$times_y
     attr(out, "id") <- components_newdata$id
     attr(out, "process") <- "longitudinal"
-    attr(out, "b_mat") <- b_mat
     out
 }
 
 predict_Event <- function (object, components_newdata, newdata, newdata2,
                            times, times_per_id, level, return_newdata,
-                           return_mcmc) {
+                           return_mcmc, return_params_mcmc) {
     # prepare the data for calculations
     newdataL <- if (!is.data.frame(newdata)) newdata[["newdataL"]] else newdata
     newdataE <- if (!is.data.frame(newdata)) newdata[["newdataE"]] else newdata
@@ -1072,7 +1075,8 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
                 times = newdataE2[[Time_var]],
                 id = newdataE2[[id_var]],
                 "_strata" = if (CR_MS) newdataE2[[".strt"]],
-                mcmc = if (return_mcmc) CIF
+                mcmc = if (return_mcmc) CIF,
+                params_mcmc = if(return_params_mcmc) components_newdata$mcmc
             )
     if (return_newdata) {
         newdataE2[["pred_CIF"]] <- res$pred
@@ -1083,6 +1087,10 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
         if (return_mcmc) {
             attr(res, "mcmc") <- CIF
         }
+        if (return_params_mcmc) {
+            attr(res, "params_mcmc") <- components_newdata$mcmc
+        }
+
     }
     class(res) <- c("predict_jm", class(res))
     attr(res, "id_var") <- object$model_info$var_names$idVar
@@ -1097,7 +1105,6 @@ predict_Event <- function (object, components_newdata, newdata, newdata2,
     attr(res, "times_y") <- components_newdata$times_y
     attr(res, "id") <- components_newdata$id
     attr(res, "process") <- "event"
-    attr(res, "b_mat") <- components_newdata$mcmc[["b"]]
     res
 }
 

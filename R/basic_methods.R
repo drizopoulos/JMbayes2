@@ -605,8 +605,8 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL, times = NULL,
     type <- match.arg(type)
     con <- list(all_times = FALSE, times_per_id = FALSE, level = 0.95,
                 return_newdata = FALSE, use_Y = TRUE, return_mcmc = FALSE,
-                n_samples = 200L, n_mcmc = 55L, parallel = "snow",
-                cores = NULL, seed = 123L)
+                return_params_mcmc = FALSE, n_samples = 200L, n_mcmc = 55L,
+                parallel = "snow", cores = NULL, seed = 123L)
     control <- c(control, list(...))
     namC <- names(con)
     con[(namc <- names(control))] <- control
@@ -704,11 +704,11 @@ predict.jm <- function (object, newdata = NULL, newdata2 = NULL, times = NULL,
     if (process == "longitudinal") {
         predict_Long(object, components_newdata, newdata, newdata2, times,
                      con$all_times, con$times_per_id, type, type_pred, con$level,
-                     con$return_newdata, con$return_mcmc)
+                     con$return_newdata, con$return_mcmc, con$return_params_mcmc)
     } else {
         predict_Event(object, components_newdata, newdata, newdata2, times,
                       con$times_per_id, con$level, con$return_newdata,
-                      con$return_mcmc)
+                      con$return_mcmc, con$return_params_mcmc)
     }
 }
 
@@ -1270,8 +1270,8 @@ predict.jmList <- function (object, weights, newdata = NULL, newdata2 = NULL,
 simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                          process = c("longitudinal", "event"),
                          random_effects = c("posterior_means", "mcmc", "prior"),
-                         Fforms_fun = NULL, include_outcome = FALSE,
-                         tol = 0.001, iter = 100L, ...) {
+                         params_mcmc = NULL, Fforms_fun = NULL,
+                         include_outcome = FALSE, tol = 0.001, iter = 100L, ...) {
     if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
         runif(1L)
     if (is.null(seed))
@@ -1593,8 +1593,8 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      CI_loess = FALSE,
                      outcomes = Inf, percentiles = c(0.025, 0.975),
                      random_effects = c("posterior_means", "mcmc", "prior"),
-                     Fforms_fun = NULL, plot = TRUE, add_legend = TRUE,
-                     pos_legend = c("bottomright", "right"),
+                     params_mcmc = NULL, Fforms_fun = NULL, plot = TRUE,
+                     add_legend = TRUE, pos_legend = c("bottomright", "right"),
                      main = "", xlab = NULL, ylab = NULL,
                      col_obs = "black", col_rep = "lightgrey", lty_obs = 1,
                      lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, line_main = NA,

@@ -1,7 +1,7 @@
 \name{ppcheck}
 \alias{ppcheck}
 
-\title{ Posterio Predictive Checks for Joint Models}
+\title{Posterior Predictive Checks for Joint Models}
 
 \description{
   It computes various posterior predictive checks for joint models.
@@ -14,7 +14,7 @@ ppcheck(object, nsim = 40L, newdata = NULL, seed = 123L,
     CI_ecdf = c("binomial", "Dvoretzky-Kiefer-Wolfowitz"), CI_loess = FALSE,
     outcomes = Inf, percentiles = c(0.025, 0.975),
     random_effects = c("posterior_means", "mcmc", "prior"),
-    Fforms_fun = NULL, plot = TRUE, add_legend = TRUE,
+    params_mcmc = NULL, Fforms_fun = NULL, plot = TRUE, add_legend = TRUE,
     pos_legend = c("bottomright", "right"), main = "", xlab = NULL,
     ylab = NULL, col_obs = "black", col_rep = "lightgrey", lty_obs = 1,
     lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, line_main = NA,
@@ -40,6 +40,7 @@ ppcheck(object, nsim = 40L, newdata = NULL, seed = 123L,
   \item{percentiles}{a numeric vector of length two indicating the percentiles of the observed data to use when
         depicting the checks.}
   \item{random_effects}{a character string indicating what to do with the random effects.}
+  \item{params_mcmc}{a list with an MCMC sample of the model parameters.}
   \item{Fforms_fun}{a function that calculates the functional forms.}
   \item{plot}{logical; if \code{TRUE} a plot is produced, otherwise the function returns a list with the values
         to create the figure.}
