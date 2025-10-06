@@ -10,9 +10,11 @@ CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
 # a linear mixed model for log serum bilirubin
 fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
            random = list(id = pdDiag(~ ns(year, 3))))
+fm2 <- mixed_model(ascites ~ year, data = pbc2, random = ~ year | id,
+                   family = binomial())
 
 # the joint model
-jointFit1 <- jm(CoxFit, fm1, time_var = "year", save_random_effects = TRUE)
+jointFit1 <- jm(CoxFit, list(fm1, fm2), time_var = "year", save_random_effects = TRUE)
 
 
 jointFit = jointFit1

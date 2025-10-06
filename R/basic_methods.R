@@ -1362,38 +1362,60 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
     }
     # MCMC results
     ncz <- sum(sapply(Z, ncol))
-    ind_betas <- grep("betas", names(object$statistics$Mean), fixed = TRUE)
-    mcmc_betas <- object$mcmc[ind_betas]
-    mcmc_betas[] <- lapply(mcmc_betas, function (x) do.call('rbind', x))
-    mcmc_sigmas <- matrix(0.0, nrow(mcmc_betas[[1]]), n_outcomes)
-    if (any(has_sigmas)) mcmc_sigmas[, has_sigmas] <- do.call('rbind', object$mcmc$sigmas)
-    mcmc_bs_gammas <- do.call('rbind', object$mcmc$bs_gammas)
-    has_gammas <- !is.null(object$mcmc$gammas)
-    if (has_gammas) mcmc_gammas <- do.call('rbind', object$mcmc$gammas)
-    mcmc_W_std_gammas <- do.call('rbind', object$mcmc$W_std_gammas)
-    mcmc_alphas <- do.call('rbind', object$mcmc$alphas)
-    mcmc_Wlong_std_alphas <- do.call('rbind', object$mcmc$Wlong_std_alphas)
-    # random effects
-    b <- ranef(object)
-    if (length(random_effects) == 1L && random_effects == "mcmc") {
-        mcmc_RE <- dim(object$mcmc[["b"]][[1L]])[3L] > 1L
-        if (mcmc_RE) {
-            mcmc_b <- abind::abind(object$mcmc[["b"]])
-        } else {
-            stop("refit the model using 'jm(..., save_random_effects = TRUE)'.\n")
+    if (is.null(params_mcmc)) {
+        ind_betas <- grep("betas", names(object$statistics$Mean), fixed = TRUE)
+        mcmc_betas <- object$mcmc[ind_betas]
+        mcmc_betas[] <- lapply(mcmc_betas, function (x) do.call('rbind', x))
+        mcmc_sigmas <- matrix(0.0, nrow(mcmc_betas[[1]]), n_outcomes)
+        if (any(has_sigmas)) mcmc_sigmas[, has_sigmas] <- do.call('rbind', object$mcmc$sigmas)
+        mcmc_bs_gammas <- do.call('rbind', object$mcmc$bs_gammas)
+        has_gammas <- !is.null(object$mcmc$gammas)
+        if (has_gammas) mcmc_gammas <- do.call('rbind', object$mcmc$gammas)
+        mcmc_W_std_gammas <- do.call('rbind', object$mcmc$W_std_gammas)
+        mcmc_alphas <- do.call('rbind', object$mcmc$alphas)
+        mcmc_Wlong_std_alphas <- do.call('rbind', object$mcmc$Wlong_std_alphas)
+        b <- ranef(object)
+        if (length(random_effects) == 1L && random_effects == "mcmc") {
+            mcmc_RE <- dim(object$mcmc[["b"]][[1L]])[3L] > 1L
+            if (mcmc_RE) {
+                mcmc_b <- abind::abind(object$mcmc[["b"]])
+            } else {
+                stop("refit the model using 'jm(..., save_random_effects = TRUE)'.\n")
+            }
         }
-    }
-    get_D <- function (x, n) {
-        m <- matrix(0.0, n, n)
-        m[lower.tri(m, TRUE)] <- x
-        m <- m + t(m)
-        diag(m) <- diag(m) * 0.5
-        m
-    }
-    xx <- do.call('rbind', object$mcmc$D)
-    mcmc_D <- array(0.0, c(ncz, ncz, nrow(xx)))
-    for (m in seq_len(nrow(mcmc_betas[[1L]]))) {
-        mcmc_D[, , m] <- get_D(xx[m, ], ncz)
+        get_D <- function (x, n) {
+            m <- matrix(0.0, n, n)
+            m[lower.tri(m, TRUE)] <- x
+            m <- m + t(m)
+            diag(m) <- diag(m) * 0.5
+            m
+        }
+        xx <- do.call('rbind', object$mcmc$D)
+        mcmc_D <- array(0.0, c(ncz, ncz, nrow(xx)))
+        for (m in seq_len(nrow(mcmc_betas[[1L]]))) {
+            mcmc_D[, , m] <- get_D(xx[m, ], ncz)
+        }
+    } else {
+        mcmc_betas <- params_mcmc[['betas']]
+        mcmc_sigmas <- params_mcmc[['sigmas']]
+        mcmc_bs_gammas <- params_mcmc[['bs_gammas']]
+        mcmc_gammas <- params_mcmc[['gammas']]
+        mcmc_W_std_gammas <- params_mcmc[['W_std_gammas']]
+        mcmc_alphas <- params_mcmc[['alphas']]
+        mcmc_Wlong_std_alphas <- params_mcmc[['Wlong_std_alphas']]
+        mcmc_b <- params_mcmc[['b']]
+        mcmc_D <- params_mcmc[['D']]
+        if (nsim > dim(mcmc_b)[3L]) {
+            warning("'nsim' is greater than the available MCMC sample size. ",
+                    "It is set to ", dim(mcmc_b)[3L], ".\n")
+            nsim <- dim(mcmc_b)[3L]
+        }
+        if (length(random_effects) == 1L && is.character(random_effects) &&
+            random_effects == "posterior_means") {
+            stop("'random_effects' cannot be set to 'posterior_means' ",
+                 "when 'params_mcmc' is not NULL.\nYou will need to include ",
+                 "the MCMC sample of random effects in the 'params_mcmc' list.\n")
+        }
     }
     # simulate outcome vectors
     if (process == "longitudinal") {
@@ -1632,7 +1654,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         list_of_jms <- inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
             inherits(newdata, 'list')
         out <- if (list_of_jms) {
-            sims_per_fold <- if (length(random_effects) == 1 && is.character(random_effects)) {
+            sims_per_fold <- if (is.null(params_mcmc)) {
                 mapply2(simulate, object = object, newdata = newdata,
                         MoreArgs = list(process = "longitudinal",
                                         include_outcome = TRUE,
@@ -1641,9 +1663,10 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                                         Fforms_fun = Fforms_fun))
             } else {
                 mapply2(simulate, object = object, newdata = newdata,
-                        random_effects = random_effects,
+                        params_mcmc = params_mcmc,
                         MoreArgs = list(process = "longitudinal",
                                         include_outcome = TRUE,
+                                        random_effects = random_effects,
                                         seed = seed, nsim = nsim,
                                         Fforms_fun = Fforms_fun))
             }
@@ -1651,8 +1674,8 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         } else {
             simulate(object, nsim = nsim, newdata = newdata,
                      process = "longitudinal", include_outcome = TRUE,
-                     random_effects = random_effects, seed = seed,
-                     Fforms_fun = Fforms_fun)
+                     random_effects = random_effects, params_mcmc = params_mcmc,
+                     seed = seed, Fforms_fun = Fforms_fun)
         }
         yy <- out$outcome
         out <- out[names(out) != "outcome"]
@@ -1812,18 +1835,28 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
     } else {
         out <- if (inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
                    inherits(newdata, 'list')) {
-            sims_per_fold <-
-                mapply(simulate, object = object, newdata = newdata,
-                       MoreArgs = list(process = "event", include_outcome = TRUE,
-                                       Fforms_fun = Fforms_fun,
-                                       random_effects = random_effects,
-                                       seed = seed, nsim = nsim),
-                       SIMPLIFY = FALSE)
+            sims_per_fold <- if (is.null(params_mcmc)) {
+                mapply2(simulate, object = object, newdata = newdata,
+                        MoreArgs = list(process = "event",
+                                        include_outcome = TRUE,
+                                        Fforms_fun = Fforms_fun,
+                                        random_effects = random_effects,
+                                        seed = seed, nsim = nsim))
+            } else {
+                mapply2(simulate, object = object, newdata = newdata,
+                        params_mcmc = params_mcmc,
+                        MoreArgs = list(process = "event",
+                                        include_outcome = TRUE,
+                                        Fforms_fun = Fforms_fun,
+                                        random_effects = random_effects,
+                                        seed = seed, nsim = nsim))
+            }
             bind(sims_per_fold)
         } else {
             simulate(object, nsim = nsim, newdata = newdata,
                      process = "event", seed = seed, include_outcome = TRUE,
-                     random_effects = random_effects, Fforms_fun = Fforms_fun)
+                     random_effects = random_effects, params_mcmc = params_mcmc,
+                     Fforms_fun = Fforms_fun)
         }
         Times <- out$outcome.Times
         event <- out$outcome.event
