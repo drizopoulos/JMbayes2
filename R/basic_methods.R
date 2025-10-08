@@ -1456,10 +1456,12 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                            "posterior_means" = b,
                            "prior" = simulated_RE[, , j])
                 } else {
-                    if (length(dim(random_effects)) > 2) random_effects[, , j] else random_effects
+                    if (length(dim(random_effects)) > 2)
+                        random_effects[, , j] else random_effects
                 }
                 FE <- c(X[[i]] %*% betas[[i]])
-                RE <- rowSums(Z[[i]] * bb[idL_lp[[i]], ind_RE[[i]]])
+                if (!is.matrix(bb)) bb <- rbind(bb)
+                RE <- rowSums(Z[[i]] * bb[idL_lp[[i]], ind_RE[[i]], drop = FALSE])
                 eta <- FE + RE
                 mu <- families[[i]]$linkinv(eta)
                 if (families[[i]][['family']] == "binomial") {

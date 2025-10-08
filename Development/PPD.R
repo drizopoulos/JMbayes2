@@ -51,8 +51,7 @@ ppcheck(jointFit, process = "event", Fforms_fun = FF,
                    random_effects = "prior")
 
 
-ND <- pbc2[pbc2$years >= 5 & pbc2$status2 == 0, ]
-ND <- ND[ND$year <= 5, ]
+ND <- pbc2[pbc2$id == 2, ]
 prs <- predict(jointFit, newdata = ND, return_params_mcmc = TRUE)
 str(prs$params_mcmc)
 
