@@ -302,6 +302,18 @@ coef.jm <- function (object, ...) {
              "association" = object$statistics$Mean[["alphas"]])
 }
 
+coef.summary.jm <- function (object, process = c("longitudinal", "event"), ...) {
+    process <- match.arg(process)
+    if (process == "event") {
+        object[['Survival']]
+    } else {
+        ind <- grep("Outcome", names(object), fixed = TRUE)
+        out <- object[ind]
+        names(out) <- object[['respVars']]
+        out
+    }
+}
+
 fixef.jm <- function(object, outcome = Inf, ...) {
     if (!is.numeric(outcome) || outcome < 0) {
         stop("'outcome' should be a positive integer.")
@@ -334,6 +346,22 @@ ranef.jm <- function(object, outcome = Inf, post_vars = FALSE, ...) {
             attr(out, "post_vars") <-
             object$statistics$post_vars[ind, ind, , drop = FALSE]
     }
+    out
+}
+
+fitted.jm <- function (object, ...) {
+    fits <- function (X, betas, Z, b, id, ind_RE) {
+        FE <- c(X %*% betas)
+        RE <- rowSums(Z * b[id, ind_RE, drop = FALSE])
+        FE + RE
+    }
+    means <- object$statistics$Mean
+    ind <- grep("betas", names(means), fixed = TRUE)
+    out <-
+        mapply2(fits, X = object$model_data[['X']], betas = means[ind],
+                Z = object$model_data[['Z']], id = object$model_data$idL_lp,
+                ind_RE = object$model_data$ind_RE, MoreArgs = list(b = means[['b']]))
+    names(out) <- unlist(object$model_info$var_names$respVars)
     out
 }
 

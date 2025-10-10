@@ -7,7 +7,7 @@ export(area, calibration_metrics, calibration_plot, cumuplot, coef, compare_jm,
 
 import(Rcpp)
 importFrom("utils", "glob2rx", "tail", "head", "combn")
-importFrom("stats", "coef", "terms", "model.frame", "model.frame.default",
+importFrom("stats", "coef", "fitted", "terms", "model.frame", "model.frame.default",
            "model.matrix", "model.matrix.default", "model.weights", "family",
            "lm.fit", "sd", "ar", "var", "vcov", "optim", "delete.response",
            "model.response", "rnorm", "quantile", "runif", "rlnorm", "cov2cor",
@@ -46,7 +46,9 @@ S3method(ggdensityplot, jm)
 S3method(print, jm)
 S3method(summary, jm)
 S3method(print, summary.jm)
+S3method(coef, summary.jm)
 S3method(coef, jm)
+S3method(fitted, jm)
 S3method(fixef, jm)
 S3method(ranef, jm)
 S3method(terms, jm)

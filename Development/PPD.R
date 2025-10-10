@@ -14,7 +14,7 @@ fm2 <- mixed_model(ascites ~ year, data = pbc2, random = ~ year | id,
                    family = binomial())
 
 # the joint model
-jointFit1 <- jm(CoxFit, list(fm1, fm2), time_var = "year", save_random_effects = TRUE)
+jointFit1 <- jm(CoxFit, list(fm1), time_var = "year", save_random_effects = TRUE)
 
 
 jointFit = jointFit1
