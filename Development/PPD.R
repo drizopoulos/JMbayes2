@@ -392,16 +392,18 @@ MISE_perid <- function (obs, reps, id, times, t0, Dt) {
         F_reps_vario <-
             mapply(smooth, y = split(reps_vario[, 2L], id_long),
                    x = split(reps_vario[, 1L], id_long), SIMPLIFY = FALSE)
-        MISE[, m] <- mapply(mise, obs = F_obs_ave, rep = F_reps_ave,
-                            MoreArgs = list(t0 = t0, Dt = Dt, type = "average")) +
-            200 * mapply(mise, obs = F_obs_vario, rep = F_reps_vario,
-                   MoreArgs = list(t0 = t0, Dt = Dt, type = "variogram"))
+        mise_ave <- mapply(mise, obs = F_obs_ave, rep = F_reps_ave,
+                           MoreArgs = list(t0 = t0, Dt = Dt, type = "average"))
+        mise_vario <- mapply(mise, obs = F_obs_vario, rep = F_reps_vario,
+                             MoreArgs = list(t0 = t0, Dt = Dt, type = "variogram"))
+        MISE[, m] <- c(scale(mise_ave)) + c(scale(mise_vario))
+
     }
     rowMeans(MISE)
 }
 
-t0 <- 6
-Dt <- 2
+t0 <- 7.5
+Dt <- 200
 ND <- pbc2[ave(pbc2$year, pbc2$id, FUN = max) > t0, ]
 ND$id <- match(ND$id, unique(ND$id))
 ND_before <- ND[ND$year <= t0, ]
@@ -429,13 +431,12 @@ MISEs2 <- MISE_perid(sims2$outcome[[1]], sims2[[1L]], ND_before$id,
                      ND_before$year, t0, Dt)
 
 
-ppcheck(jointFit1, nsim = 500L, newdata = ND_before[ND_before$id == 4, ],
-        random_effects = "mcmc", params_mcmc = prs1$params_mcmc,
-        type = "average", CI_loess = TRUE)
-ppcheck(jointFit2, nsim = 500L, newdata = ND_before[ND_before$id == 4, ],
-        random_effects = "mcmc", params_mcmc = prs2$params_mcmc,
-        type = "average", CI_loess = TRUE)
-
+#ppcheck(jointFit1, nsim = 200L, newdata = ND_before,
+#        random_effects = "mcmc", params_mcmc = prs1$newdata$params_mcmc,
+#        type = "average", CI_loess = TRUE)
+#ppcheck(jointFit2, nsim = 200L, newdata = ND_before,
+#        random_effects = "mcmc", params_mcmc = prs2$newdata$params_mcmc,
+#        type = "average", CI_loess = TRUE)
 
 
 out <- data.frame(
