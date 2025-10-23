@@ -71,7 +71,7 @@ sim_fun <- function (n = 300) {
     DF <- DF[DF$time <= DF$Time, ]
     # create dropout
     create_dropout <- function (yy) {
-        check <- which(yy < -3.5)[1L]
+        check <- which(yy < -4)[1L]
         if (!is.na(check) && check < length(yy))
             yy[seq(check + 1, length(yy))] <- NA_real_
         yy
@@ -104,33 +104,57 @@ pred_dat$sample_means2 <- predict(loess(y2 ~ time, data = DF), newdata = pred_da
 
 
 # GEE
-gee_fit <- geeglm(y ~ sex * time, data = DF, id = id,
+gee_fit <- geeglm(y ~ sex * poly(time, 2), data = DF, id = id,
                   family = gaussian(), corstr = "independence")
 pred_dat$gee_preds <- predict(gee_fit, newdata = pred_dat)
-gee_fit2 <- geeglm(y2 ~ sex * time, data = DF, id = id,
+gee_fit2 <- geeglm(y2 ~ sex * poly(time, 2), data = DF, id = id,
                    family = gaussian(), corstr = "independence")
 pred_dat$gee_preds2 <- predict(gee_fit2, newdata = pred_dat)
 
 
+Cox_fit2 <- coxph(Surv(Time2, event2) ~ sex, data = DF_id)
+jm_fit2 <- jm(Cox_fit2, lme_fit2, time_var = "time")
+jm_object <- jm_fit2
+FF <- function (t, betas, bi, data) {
+    sex <- as.numeric(data$sex == "female")
+    coefs <- list(alpha = c(1.50226707557132, 2.09986103038462),
+                  norm2 = c(1, 1902, 2832.05429710383, 4886.4372564099))
+    Poly <- poly(t, degree = 2, coefs = coefs)
+    X <- cbind(1, sex, Poly, Poly * sex)
+    Z <- cbind(1, Poly)
+    eta <- c(X %*% betas[[1]]) + rowSums(Z * bi)
+    cbind(eta)
+}
+
+sims <- simulate(jm_object, nsim = 10L, process = "event", Fforms_fun = FF)
+
+lme_object = lme_fit2
+dropouts <- DF[DF$event2 == 0 & DF$Time2 < 8, ]
+i = 1
+dropouts$Time2 <- sims$Times[dropouts$id, i]
+
+
 # LME
-alive_preds_lme <- function (object, correct = FALSE) {
+alive_preds_lme <- function (lme_object, correct = FALSE) {
     if (correct) {
-        X <- model.matrix(delete.response(terms(object)), DF)
-        fits <- fitted(object)
-        fits[is.na(fits)] <- predict(object, newdata = DF[is.na(fits), ])
+        X <- model.matrix(delete.response(terms(lme_object)), DF)
+        fits <- fitted(lme_object)
+        fits[is.na(fits)] <- predict(lme_object, newdata = DF[is.na(fits), ])
         betas_alive <- solve(crossprod(X), crossprod(X, fits))
     } else {
-        X <- model.matrix(terms(object), model.frame(terms(object), DF))
-        fits <- fitted(object)
+        X <- model.matrix(terms(lme_object), model.frame(terms(lme_object), DF))
+        fits <- fitted(lme_object)
         fits <- fits[!is.na(fits)]
         betas_alive <- solve(crossprod(X), crossprod(X, fits))
     }
-    X_pred <- model.matrix(delete.response(terms(object)), pred_dat)
+    X_pred <- model.matrix(delete.response(terms(lme_object)), pred_dat)
     c(X_pred %*% betas_alive)
 }
-lme_fit <- lme(y ~ sex * time, data = DF, random = ~ time | id)
+lme_fit <- lme(y ~ sex * poly(time, 2), data = DF,
+               random = list(id = pdDiag(~ poly(time, 2))))
 pred_dat$lme_preds <- alive_preds_lme(lme_fit)
-lme_fit2 <- lme(y2 ~ sex * time, data = DF, random = ~ time | id, na.action = na.exclude)
+lme_fit2 <- lme(y2 ~ sex * poly(time, 2), data = DF, na.action = na.exclude,
+                random = list(id = pdDiag(~ poly(time, 2))))
 pred_dat$lme_preds2 <- alive_preds_lme(lme_fit2)
 pred_dat$lme_preds3 <- alive_preds_lme(lme_fit2, correct = TRUE)
 
@@ -163,7 +187,7 @@ betas_alive <- solve(crossprod(X), crossprod(X, fitted(jm_fit)[[1]]))
 X_pred <- model.matrix(delete.response(terms(jm_fit)[[1]]), pred_dat)
 pred_dat$jm_preds <- c(X_pred %*% betas_alive)
 ##
-Cox_fit2 <- coxph(Surv(Time, event) ~ sex, data = DF_id)
+Cox_fit2 <- coxph(Surv(Time2, event2) ~ sex, data = DF_id)
 jm_fit2 <- jm(Cox_fit2, lme_fit2, time_var = "time")
 DF$fitted_jm2[!is.na(DF$y2)] <- fitted(jm_fit2)[[1]]
 X <- jm_fit2$model_data$X[[1]]

@@ -1344,8 +1344,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         y <- lapply(y, function (yy) {
             if (is.factor(yy)) as.numeric(yy != levels(yy)[1L]) else yy
         })
-        X <- lapply(frames_FE, model.matrix.default, data = newdata)
-        Z <- lapply(frames_RE, model.matrix.default, data = newdata)
+        X <- mapply2(model.matrix.default, terms_FE, frames_FE)
+        Z <- mapply2(model.matrix.default, terms_RE, frames_RE)
         unq_id <- unique(id)
         id <- mapply2(exclude_NAs, NAs_FE, NAs_RE, MoreArgs = list(id = id))
         id[] <- lapply(id, match, table = unq_id)
@@ -1489,7 +1489,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                 }
                 FE <- c(X[[i]] %*% betas[[i]])
                 if (!is.matrix(bb)) bb <- rbind(bb)
-                RE <- rowSums(Z[[i]] * bb[idL_lp[[i]], ind_RE[[i]], drop = FALSE])
+                RE <- rowSums(Z[[i]] * bb[idL_lp[[i]], ind_RE[[i]]])
                 eta <- FE + RE
                 mu <- families[[i]]$linkinv(eta)
                 if (families[[i]][['family']] == "binomial") {
