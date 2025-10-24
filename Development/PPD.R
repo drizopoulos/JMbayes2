@@ -321,11 +321,75 @@ fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
            random = list(id = pdDiag(~ ns(year, 3))))
 fm2 <- lme(log(serBilir) ~ poly(year, 2) * sex, data = pbc2,
            random = list(id = pdDiag(~ poly(year, 2))))
+fm3 <- lme(log(serBilir) ~ ns(year, 3), data = pbc2,
+           random = list(id = pdDiag(~ ns(year, 3))))
 
 
 # the joint model
-jointFit1 <- jm(CoxFit, list(fm1), time_var = "year", save_random_effects = TRUE)
-jointFit2 <- jm(CoxFit, list(fm2), time_var = "year", save_random_effects = TRUE)
+jointFit1 <- jm(CoxFit, fm1, time_var = "year")
+jointFit2 <- jm(CoxFit, fm2, time_var = "year")
+jointFit3 <- jm(CoxFit, fm3, time_var = "year")
+
+Models <- list(jointFit1, jointFit2, jointFit3)
+T0 <- 7.5
+Data <- pbc2[ave(pbc2$year, pbc2$id, FUN = max) > T0, ]
+Data_after <- Data[Data$year > T0, ]
+OptModel <- opt_model(Models, Data, T0, cores = 3L)
+mises <- do.call('cbind', lapply(OptModel, function (x) x[[1L]]))
+best_model <- apply(mises, 1L, which.min)
+Preds <- do.call('cbind', lapply(OptModel, function (x) x$Preds$newdata2$preds[[1L]]))
+Obs <- log(Data_after$serBilir)
+id <- match(Data_after$id, unique(Data_after$id))
+
+colMeans((Preds - Obs)^2)
+mean((Preds[cbind(seq_along(id), best_model[id])] - Obs)^2)
+
+#############################################################################
+#############################################################################
+
+CoxFit <- coxph(Surv(Time, death) ~ treat, data = prothros)
+
+# a linear mixed model for log serum bilirubin
+fm1 <- lme(pro ~ time, data = prothro, random = ~ time | id)
+fm2 <- lme(pro ~ ns(time, 3), data = prothro,
+           random = list(id = pdDiag(~ poly(time, 3))))
+fm3 <- lme(pro ~ poly(time, 2), data = prothro,
+           random = list(id = pdDiag(~ poly(time, 2))))
+
+jointFit1 <- jm(CoxFit, fm1, time_var = "time")
+jointFit2 <- jm(CoxFit, fm2, time_var = "time")
+jointFit3 <- jm(CoxFit, fm3, time_var = "time")
+
+Models <- list(jointFit1, jointFit2, jointFit3)
+T0 <- 4
+Data <- prothro[ave(prothro$time, prothro$id, FUN = max) > T0, ]
+Data_after <- Data[Data$time > T0, ]
+OptModel <- opt_model(Models, Data, T0, cores = 3L)
+mises <- do.call('cbind', lapply(OptModel, function (x) x[[1L]]))
+best_model <- apply(mises, 1L, which.min)
+Preds <- do.call('cbind', lapply(OptModel, function (x) x$Preds$newdata2$preds[[1L]]))
+Obs <- Data_after$pro
+id <- match(Data_after$id, unique(Data_after$id))
+
+colMeans((Preds - Obs)^2)
+mean((Preds[cbind(seq_along(id), best_model[id])] - Obs)^2)
+
+pp <- predict(jointFit3, newdata = Data[Data$time < T0, ], newdata2 = Data_after,
+              return_params_mcmc = TRUE)
+ppcheck(jointFit3, newdata = Data[Data$time < T0, ], type = "ave",
+        random_effects = "mcmc", params_mcmc = pp$newdata$params_mcmc)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 MISE_perid <- function (obs, reps, id, times, t0, Dt) {
@@ -402,7 +466,7 @@ MISE_perid <- function (obs, reps, id, times, t0, Dt) {
     rowMeans(MISE)
 }
 
-t0 <- 7.5
+t0 <- 8.5
 Dt <- 200
 ND <- pbc2[ave(pbc2$year, pbc2$id, FUN = max) > t0, ]
 ND$id <- match(ND$id, unique(ND$id))
