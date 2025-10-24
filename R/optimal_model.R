@@ -101,8 +101,7 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
                        x = split(reps_vario[, 1L], id_long), SIMPLIFY = FALSE)
             mise_ave <- mapply(mise, obs = F_obs_ave, rep = F_reps_ave)
             mise_vario <- mapply(mise, obs = F_obs_vario, rep = F_reps_vario)
-            MISE[, m] <- mise_ave#c(scale(mise_ave)) + c(scale(mise_vario))
-
+            MISE[, m] <- c(scale(mise_ave)) + c(scale(mise_vario))
         }
         rowMeans(MISE)
     }
