@@ -14,13 +14,13 @@ importFrom("stats", "coef", "fitted", "terms", "model.frame", "model.frame.defau
            "as.formula", "gaussian", ".getXlevels", "makepredictcall", "plogis",
            "reformulate", "predict", "pnorm", "ave", "median", "density",
            "simulate", "rbinom", "rpois", "rt", "rbeta", "ecdf", "rnbinom",
-           "loess.smooth", "smooth.spline", "loess", "qt", "rgamma")
+           "loess.smooth", "smooth.spline", "loess", "qt", "rgamma", "approx")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
            "clusterSetRNGStream", "makePSOCKcluster", "mclapply")
 importFrom("parallelly", "availableCores")
 importFrom("nlme", "fixef", "ranef", "pdMatrix")
 importFrom("GLMMadaptive", "effectPlotData")
-importFrom("survival", "coxph", "untangle.specials", "strata", "survfit", "Surv")
+importFrom("survival", "concordance", "coxph", "untangle.specials", "strata", "survfit", "Surv")
 importFrom("splines", "splineDesign", "ns")
 importFrom("coda", "as.mcmc.list", "as.mcmc", "traceplot", "densplot",
            "gelman.diag", "cumuplot")
