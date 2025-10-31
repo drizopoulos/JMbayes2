@@ -1996,7 +1996,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         fams <- !fams %in% c("binomial", "poisson", "negative binomial")
         form <- vector("character", length(fams))
         for (j in seq_along(fams)) {
-            form[j] <- paste0("Y", j)
+            form[j] <- paste0("Y", j) #if (fams[j]) paste0("nsk(Y", j, ", 3)") else paste0("Y", j)
         }
         form <- paste(form, collapse = " + ")
         form <- as.formula(paste("Surv(Time, event) ~", form))
@@ -2012,7 +2012,6 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             Cs <- numeric(length(unq_eventTimes))
             for (i in seq_along(unq_eventTimes)) {
                 t0 <- unq_eventTimes[i]
-                ind <- Time > t0
                 DF <- data.frame(Time = Time, event = event)
                 for (j in seq_len(n_outcomes)) {
                     DF[[paste0("Y", j)]] <-
@@ -2020,7 +2019,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                                MoreArgs = list(t0 = t0))
                 }
                 Cs[i] <-
-                    concordance(coxph(form, data = DF[DF$Time > t0, ]))$concordance
+                    concordance(coxph(form, data = DF[DF$Time >= t0, ]))$concordance
             }
             cbind(unq_eventTimes, Cs)
         }
@@ -2031,7 +2030,8 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         C <- association(Time, event, Y, times, id)
         Obs <- loess.smooth2(C[, 1L], C[, 2L])
         if (CI_loess) {
-            loess_fit <- loess(y ~ x, data.frame(x = C[, 1L], y = C[, 2L]))
+            loess_fit <-
+                loess(y ~ x, data.frame(x = C[, 1L], y = C[, 2L]))
             preds <- predict(loess_fit, data.frame(x = Obs$x), se = TRUE)
             low <- preds$fit + qt(0.025, preds$df) * preds$se.fit
             upp <- preds$fit + qt(0.975, preds$df) * preds$se.fit
