@@ -1996,7 +1996,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         fams <- !fams %in% c("binomial", "poisson", "negative binomial")
         form <- vector("character", length(fams))
         for (j in seq_along(fams)) {
-            form[j] <- if (fams[j]) paste0("nsk(Y", j, ", 3)") else paste0("Y", j)
+            form[j] <- paste0("Y", j)
         }
         form <- paste(form, collapse = " + ")
         form <- as.formula(paste("Surv(Time, event) ~", form))
@@ -2005,7 +2005,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             YY <- mapply2(split, Y, id)
             ttimes <- mapply2(split, times, id)
             unq_eventTimes <- c(0, sort(unique(Time[event == 1])))
-            unq_eventTimes <- unq_eventTimes[unq_eventTimes < quantile(unq_eventTimes, 0.95)]
+            unq_eventTimes <- unq_eventTimes[unq_eventTimes < quantile(unq_eventTimes, 0.9)]
             f <- function (y, t, t0) {
                 if (all(t > t0)) NA else y[max(which((t - t0) <= 0))]
             }
