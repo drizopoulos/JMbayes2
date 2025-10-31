@@ -9,7 +9,7 @@
 
 \usage{
 ppcheck(object, nsim = 40L, newdata = NULL, seed = 123L,
-    process = c("longitudinal", "event"),
+    process = c("longitudinal", "event", "joint"),
     type = c("ecdf", "average-evolution", "variance-function", "variogram"),
     CI_ecdf = c("binomial", "Dvoretzky-Kiefer-Wolfowitz"), CI_loess = FALSE,
     outcomes = Inf, percentiles = c(0.025, 0.975),

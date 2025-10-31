@@ -614,7 +614,8 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         zero_ind_Z = zero_ind_Z, time_window = time_window,
         recurrent = !isFALSE(recurrent),
         ind_RE_patt = ind_RE_patt, ind_FE_patt = ind_FE_patt,
-        id_patt = id_patt, callS = Surv_object$call
+        id_patt = id_patt, callS = Surv_object$call,
+        NAs_FE = NAs_FE_dataL, NAs_RE = NAs_RE_dataL
     )
     ############################################################################
     ############################################################################

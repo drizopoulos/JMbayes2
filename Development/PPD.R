@@ -14,8 +14,8 @@ fm2 <- mixed_model(ascites ~ year, data = pbc2, random = ~ year | id,
                    family = binomial())
 
 # the joint model
-jointFit1 <- jm(CoxFit, list(fm1), time_var = "year", save_random_effects = TRUE)
-
+jointFit1 <- jm(CoxFit, list(fm1, fm2), time_var = "year",
+                save_random_effects = TRUE)
 
 jointFit = jointFit1
 # Posterior Predictive Checks - Longitudinal Outcome
@@ -42,13 +42,68 @@ FF <- function (t, betas, bi, data) {
     NS <- ns(t, k = c(0.9911, 3.9863), B = c(0, 14.10579))
     X <- cbind(1, NS, sex, NS * sex)
     Z <- cbind(1, NS)
-    eta <- c(X %*% betas[[1]]) + rowSums(Z * bi)
-    cbind(eta)
+    eta <- c(X %*% betas[[1]]) + rowSums(Z * bi[, 1:4])
+    X2 <- Z2 <- cbind(1, t)
+    eta2 <- c(X2 %*% betas[[2]]) + rowSums(Z2 * bi[, 5:6])
+    cbind(eta, eta2)
 }
 
 ppcheck(jointFit, process = "event", Fforms_fun = FF)
 ppcheck(jointFit, process = "event", Fforms_fun = FF,
                    random_effects = "prior")
+
+
+simY <- simulate(jointFit, nsim = 40, include_outcome = TRUE,
+                 random_effects = "mcmc")
+simT <- simulate(jointFit, nsim = 40, include_outcome = TRUE,
+                 random_effects = "mcmc", process = "event", Fforms_fun = FF)
+
+##
+repY <- simY$`log(serBilir)`
+Y <- simY$outcome[[1]]
+id <- attr(Y, "id")
+repT <- simT$Times
+repE <- simT$event
+Time <- simT$outcome.Times
+event <- simT$outcome.event
+
+association <- function (Time, event, Y, id) {
+    Time <- Time[id]
+    event <- event[id]
+    unq_eventTimes <- c(0, sort(unique(Time[event == 1])))
+    unq_eventTimes <- unq_eventTimes[unq_eventTimes < quantile(unq_eventTimes, 0.95)]
+    f <- function (x) x[length(x)]
+    Cs <- numeric(length(unq_eventTimes))
+    for (i in seq_along(unq_eventTimes)) {
+        t0 <- unq_eventTimes[i]
+        ind <- Time > t0
+        id_i <- id[ind]
+        Time_i <- tapply(Time[ind], id_i, FUN = f)
+        event_i <- tapply(event[ind], id_i, FUN = f)
+        Y_i <- tapply(Y[ind], id_i, FUN = f)
+        DF <- data.frame(Time = Time_i, event = event_i, Y = Y_i)
+        Cs[i] <- concordance(coxph(Surv(Time, event) ~ nsk(Y, 3), DF))$concordance
+    }
+    cbind(unq_eventTimes, Cs)
+}
+
+loess.smooth2 <- function (x, y) {
+    loess.smooth(x, y, degree = 2, span = 0.75,
+                 family = "gaussian", evaluation = 200)
+}
+C <- association(Time, event, Y, id)
+Obs <- loess.smooth2(C[, 1L], C[, 2L])
+Rep <- vector("list", ncol(repY))
+for (i in seq_along(Rep)) {
+    C_i <- association(repT[, i], repE[, i], repY[, i], id)
+    Rep[[i]] <- loess.smooth2(C_i[, 1L], C_i[, 2L])
+}
+plot(c(0, 12), c(0.5, 1), type = "n", xlab = "Event Times", ylab = "concordance")
+for (i in seq_along(Rep)) {
+    lines(Rep[[i]], col = "lightgrey")
+}
+lines(Obs, col = "black", lwd = 1.5)
+
 
 
 ND <- pbc2[pbc2$id == 2, ]
@@ -351,7 +406,6 @@ mean((rowSums(weights[id, ] * Preds) - Obs)^2)
 
 CoxFit <- coxph(Surv(Time, death) ~ treat, data = prothros)
 
-# a linear mixed model for log serum bilirubin
 fm1 <- lme(pro ~ time, data = prothro, random = ~ time | id)
 fm2 <- lme(pro ~ ns(time, 3), data = prothro,
            random = list(id = pdDiag(~ ns(time, 3))))
@@ -385,6 +439,36 @@ ppcheck(jointFit3, newdata = Data[Data$time < T0, ], type = "ave",
         random_effects = "mcmc", params_mcmc = pp$newdata$params_mcmc)
 
 
+#############################################################################
+#############################################################################
+
+CoxFit <- coxph(Surv(Time, death) ~ gender, data = aids.id)
+
+fm1 <- lme(CD4 ~ obstime * gender, data = aids, random = ~ obstime | patient)
+fm2 <- lme(CD4 ~ ns(obstime, 3) * gender, data = aids,
+           random = list(patient = pdDiag(~ ns(obstime, 3))))
+fm3 <- lme(CD4 ~ poly(obstime, 2) * gender, data = aids,
+           random = list(patient = pdDiag(~ poly(obstime, 2))))
+
+jointFit1 <- jm(CoxFit, fm1, time_var = "obstime")
+jointFit2 <- jm(CoxFit, fm2, time_var = "obstime")
+jointFit3 <- jm(CoxFit, fm3, time_var = "obstime")
+
+Models <- list(jointFit1, jointFit2, jointFit3)
+T0 <- 8
+Data <- aids[ave(aids$obstime, aids$patient, FUN = max) > T0, ]
+Data_after <- Data[Data$obstime > T0, ]
+OptModel <- opt_model(Models, Data, T0, cores = 1L)
+mises <- do.call('cbind', lapply(OptModel, function (x) x[[1L]]))
+best_model <- apply(mises, 1L, which.min)
+Preds <- do.call('cbind', lapply(OptModel, function (x) x$Preds$newdata2$preds[[1L]]))
+Obs <- Data_after$CD4
+id <- match(Data_after$patient, unique(Data_after$patient))
+
+colMeans((Preds - Obs)^2)
+mean((Preds[cbind(seq_along(id), best_model[id])] - Obs)^2)
+weights <- t(apply(mises, 1L, function (x) exp(x) / sum(exp(x))))
+mean((rowSums(weights[id, ] * Preds) - Obs)^2)
 
 
 

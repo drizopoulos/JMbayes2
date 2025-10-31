@@ -1,20 +1,3 @@
-#if (FALSE) {
-#    library("JMbayes2")
-#    pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
-#    pbc2$status2 <- as.numeric(pbc2$status != 'alive')
-#    CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
-#    fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
-#               random = list(id = pdDiag(~ ns(year, 3))))
-#    fm2 <- lme(log(serBilir) ~ poly(year, 2) * sex, data = pbc2,
-#               random = list(id = pdDiag(~ poly(year, 2))))
-#    jointFit1 <- jm(CoxFit, list(fm1), time_var = "year")
-#    jointFit2 <- jm(CoxFit, list(fm2), time_var = "year")
-#    #####
-#    models = list(jointFit1, jointFit2)
-#    t0 = 8.5
-#    newdata = pbc2[ave(pbc2$year, pbc2$id, FUN = max) > t0, ]
-#}
-
 opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
     if (!all(sapply(models, function (obj) inherits(obj, "jm")))) {
         stop("all objects in 'models' must inherit from class 'jm'.\n")
@@ -80,7 +63,8 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
         F_obs_ave <- mapply(smooth, y = split(Obs_ave[, 2L], id),
                             x = split(Obs_ave[, 1L], id), SIMPLIFY = FALSE)
         ni <- tapply(id, id, length)
-        id_long <- rep(unique(id), sapply(ni, function (n) ncol(combn(n, 2))))
+        id_long <- rep(unique(id), sapply(ni, function (n) if (n < 2) 1 else
+            ncol(combn(n, 2))))
         F_obs_vario <- mapply(smooth, y = split(Obs_vario[, 2L], id_long),
                               x = split(Obs_vario[, 1L], id_long),
                               SIMPLIFY = FALSE)
@@ -101,7 +85,7 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
                        x = split(reps_vario[, 1L], id_long), SIMPLIFY = FALSE)
             mise_ave <- mapply(mise, obs = F_obs_ave, rep = F_reps_ave)
             mise_vario <- mapply(mise, obs = F_obs_vario, rep = F_reps_vario)
-            MISE[, m] <- c(scale(mise_ave)) + c(scale(mise_vario))
+            MISE[, m] <- mise_vario #c(scale(mise_ave)) + c(scale(mise_vario))
         }
         rowMeans(MISE)
     }

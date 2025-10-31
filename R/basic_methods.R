@@ -1324,6 +1324,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         Z <- object$model_data$Z
         idL_lp <- object$model_data$idL_lp
         times <- object$model_data$dataL[[object$model_info$var_names$time_var]]
+        times <- mapply2(exclude_NAs, object$model_info$NAs_FE,
+                         object$model_info$NAs_RE, MoreArgs = list(id = times))
     } else {
         id_var <- object$model_info$var_names$idVar
         if (is.null(id_var)) {
@@ -1351,6 +1353,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         id[] <- lapply(id, match, table = unq_id)
         idL_lp <- lapply(id, function (x) match(x, unique(x)))
         times <- newdata[[object$model_info$var_names$time_var]]
+        times <- mapply2(exclude_NAs, NAs_FE, NAs_RE,
+                         MoreArgs = list(id = times))
     }
     n_outcomes <- length(idL_lp)
     families <- object$model_info$families
@@ -1469,7 +1473,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         }
         for (i in seq_len(n_outcomes)) {
             if (include_outcome) {
-                attr(y[[i]], "times") <- times
+                attr(y[[i]], "times") <- times[[i]]
                 attr(y[[i]], "id") <- idL_lp[[i]]
             }
             rep_y <- matrix(0.0, nrow(X[[i]]), nsim)
@@ -1509,7 +1513,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                          random_effects = simulated_RE, Fforms_fun = Fforms_fun)
             for (i in seq_len(n_outcomes)) {
                 for (j in seq_len(ncol(val[[i]]))) {
-                    na_ind <- times > outT$Times[idL_lp[[i]], j]
+                    na_ind <- times[[i]] > outT$Times[idL_lp[[i]], j]
                     val[[i]][na_ind, j] <- NA_real_
                 }
             }
@@ -1638,7 +1642,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
 }
 
 ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
-                     process = c("longitudinal", "event"),
+                     process = c("longitudinal", "event", "joint"),
                      type = c("ecdf", "average-evolution", "variance-function",
                               "variogram"),
                      CI_ecdf = c("binomial", "Dvoretzky-Kiefer-Wolfowitz"),
@@ -1862,7 +1866,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 }
             }
         }
-    } else {
+    } else if (process == "event") {
         out <- if (inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
                    inherits(newdata, 'list')) {
             sims_per_fold <- if (is.null(params_mcmc)) {
@@ -1928,6 +1932,140 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 list(x_vals = x_vals, obs = F0, obs_low = F0_low,
                      obs_upp = F0_upp, rep = rep_T,
                      rootMISE = if (add_legend) rootMISE)
+        }
+    } else {
+        list_of_jms <- inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
+            inherits(newdata, 'list')
+        outY <- if (list_of_jms) {
+            sims_per_fold <- if (is.null(params_mcmc)) {
+                mapply2(simulate, object = object, newdata = newdata,
+                        MoreArgs = list(process = "longitudinal",
+                                        include_outcome = TRUE,
+                                        random_effects = random_effects,
+                                        seed = seed, nsim = nsim,
+                                        Fforms_fun = Fforms_fun))
+            } else {
+                mapply2(simulate, object = object, newdata = newdata,
+                        params_mcmc = params_mcmc,
+                        MoreArgs = list(process = "longitudinal",
+                                        include_outcome = TRUE,
+                                        random_effects = random_effects,
+                                        seed = seed, nsim = nsim,
+                                        Fforms_fun = Fforms_fun))
+            }
+            bind(sims_per_fold)
+        } else {
+            simulate(object, nsim = nsim, newdata = newdata,
+                     process = "longitudinal", include_outcome = TRUE,
+                     random_effects = random_effects, params_mcmc = params_mcmc,
+                     seed = seed, Fforms_fun = Fforms_fun)
+        }
+        outT <- if (inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
+                   inherits(newdata, 'list')) {
+            sims_per_fold <- if (is.null(params_mcmc)) {
+                mapply2(simulate, object = object, newdata = newdata,
+                        MoreArgs = list(process = "event",
+                                        include_outcome = TRUE,
+                                        Fforms_fun = Fforms_fun,
+                                        random_effects = random_effects,
+                                        seed = seed, nsim = nsim))
+            } else {
+                mapply2(simulate, object = object, newdata = newdata,
+                        params_mcmc = params_mcmc,
+                        MoreArgs = list(process = "event",
+                                        include_outcome = TRUE,
+                                        Fforms_fun = Fforms_fun,
+                                        random_effects = random_effects,
+                                        seed = seed, nsim = nsim))
+            }
+            bind(sims_per_fold)
+        } else {
+            simulate(object, nsim = nsim, newdata = newdata,
+                     process = "event", seed = seed, include_outcome = TRUE,
+                     random_effects = random_effects, params_mcmc = params_mcmc,
+                     Fforms_fun = Fforms_fun)
+        }
+        Y <- outY$outcome
+        id <- lapply(Y, function (x) attr(x, "id"))
+        times <- lapply(Y, function (x) attr(x, "times"))
+        outY <- outY[names(outY) != "outcome"]
+        Time <- outT$outcome.Times
+        event <- outT$outcome.event
+        outT <- outT[names(outT) != "outcome"]
+        fams <- sapply(object$model_info$families, "[[", "family")
+        fams <- !fams %in% c("binomial", "poisson", "negative binomial")
+        form <- vector("character", length(fams))
+        for (j in seq_along(fams)) {
+            form[j] <- if (fams[j]) paste0("nsk(Y", j, ", 3)") else paste0("Y", j)
+        }
+        form <- paste(form, collapse = " + ")
+        form <- as.formula(paste("Surv(Time, event) ~", form))
+        association <- function (Time, event, Y, times, id) {
+            n_outcomes <- length(Y)
+            YY <- mapply2(split, Y, id)
+            ttimes <- mapply2(split, times, id)
+            unq_eventTimes <- c(0, sort(unique(Time[event == 1])))
+            unq_eventTimes <- unq_eventTimes[unq_eventTimes < quantile(unq_eventTimes, 0.95)]
+            f <- function (y, t, t0) {
+                if (all(t > t0)) NA else y[max(which((t - t0) <= 0))]
+            }
+            Cs <- numeric(length(unq_eventTimes))
+            for (i in seq_along(unq_eventTimes)) {
+                t0 <- unq_eventTimes[i]
+                ind <- Time > t0
+                DF <- data.frame(Time = Time, event = event)
+                for (j in seq_len(n_outcomes)) {
+                    DF[[paste0("Y", j)]] <-
+                        mapply(f, y = YY[[j]], t = ttimes[[j]],
+                               MoreArgs = list(t0 = t0))
+                }
+                Cs[i] <-
+                    concordance(coxph(form, data = DF[DF$Time > t0, ]))$concordance
+            }
+            cbind(unq_eventTimes, Cs)
+        }
+        loess.smooth2 <- function (x, y) {
+            loess.smooth(x, y, degree = 2, span = 0.75,
+                         family = "gaussian", evaluation = 200)
+        }
+        C <- association(Time, event, Y, times, id)
+        Obs <- loess.smooth2(C[, 1L], C[, 2L])
+        if (CI_loess) {
+            loess_fit <- loess(y ~ x, data.frame(x = C[, 1L], y = C[, 2L]))
+            preds <- predict(loess_fit, data.frame(x = Obs$x), se = TRUE)
+            low <- preds$fit + qt(0.025, preds$df) * preds$se.fit
+            upp <- preds$fit + qt(0.975, preds$df) * preds$se.fit
+        }
+        Rep <- vector("list", ncol(outY[[1L]]))
+        for (i in seq_along(Rep)) {
+            C_i <- association(outT$Times[, i], outT$event[, i],
+                               lapply(outY, function (m) m[, i]),
+                               times, id)
+            Rep[[i]] <- loess.smooth2(C_i[, 1L], C_i[, 2L])
+        }
+        if (plot) {
+            if (is.null(xlab)) xlab <- "Event Times"
+            if (is.null(ylab)) ylab <- "Concordance"
+            rx <- range(c(sapply(Rep, function (loe) loe$x), Obs$x))
+            ry <- range(c(sapply(Rep, function (loe) loe$y), Obs$y))
+            if (CI_loess) {
+                ry <- range(ry, low, upp)
+            }
+            plot(rx, ry, type = "n", xlab = xlab, ylab = ylab, main = main)
+            for (i in seq_along(Rep)) {
+                lines(Rep[[i]], col = col_rep, lty = lty_rep, lwd = lwd_rep)
+            }
+            lines(Obs, col = col_obs, lty = lty_obs, lwd = lwd_obs)
+            if (CI_loess) {
+                lines(Obs$x, low, lwd = lwd_obs, lty = 2, col = col_obs)
+                lines(Obs$x, upp, lwd = lwd_obs, lty = 2, col = col_obs)
+            }
+        } else {
+            plot_values <-
+                list(x_vals = Obs$x, obs = Obs$y,
+                     obs_low = if (CI_loess) low,
+                     obs_upp = if (CI_loess) upp, rep = Rep,
+                     rootMISE = if (add_legend) NA)
         }
     }
     if (!plot) return(plot_values)
