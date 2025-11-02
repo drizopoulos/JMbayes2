@@ -73,7 +73,7 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
         }
         n <- length(unique(id))
         M <- ncol(reps)
-        MISE <- matrix(0.0, n, M)
+        MISE_ave <- MISE_vario <- matrix(0.0, n, M)
         for (m in seq_len(M)) {
             reps_ave <- gof_fun(reps[, m], times, id, "average")
             reps_vario <- gof_fun(reps[, m], times, id, "variogram")
@@ -83,11 +83,10 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
             F_reps_vario <-
                 mapply(smooth, y = split(reps_vario[, 2L], id_long),
                        x = split(reps_vario[, 1L], id_long), SIMPLIFY = FALSE)
-            mise_ave <- mapply(mise, obs = F_obs_ave, rep = F_reps_ave)
-            mise_vario <- mapply(mise, obs = F_obs_vario, rep = F_reps_vario)
-            MISE[, m] <- mise_vario #c(scale(mise_ave)) + c(scale(mise_vario))
+            MISE_ave[, m] <- mapply(mise, obs = F_obs_ave, rep = F_reps_ave)
+            MISE_vario[, m] <- mapply(mise, obs = F_obs_vario, rep = F_reps_vario)
         }
-        rowMeans(MISE)
+        list(MISE_ave = MISE_ave, MISE_vario = MISE_vario)
     }
     MISE_model <- function (object) {
         prs <- predict(object, newdata = ND_before, newdata2 = ND_after,
@@ -97,15 +96,18 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
                           params_mcmc = prs$newdata$params_mcmc)
         n_outcomes <- length(sims[["outcome"]])
         id <- attr(sims$outcome[[1]], "id")
-        MISEs <- matrix(0, length(unique(id)), n_outcomes)
-        colnames(MISEs) <- names(sims)[seq_len(n_outcomes)]
+        MISEs_ave <- MISEs_vario <- array(0, c(length(unique(id)), 200L, n_outcomes))
+        dimnames(MISEs_ave) <- dimnames(MISEs_vario) <-
+            list(unique(newdata[[id_var]]), colnames(sims[[1]]),
+                 names(sims)[seq_len(n_outcomes)])
         for (m in seq_len(n_outcomes)) {
             outcome <- sims$outcome[[m]]
-            MISEs[, m] <-
-                MISE_perid(outcome, sims[[m]], attr(outcome, "id"),
-                           attr(outcome, "times"))
+            mises <- MISE_perid(outcome, sims[[m]], attr(outcome, "id"),
+                                attr(outcome, "times"))
+            MISEs_ave[, , m] <- mises$MISE_ave
+            MISEs_vario[, , m] <- mises$MISE_vario
         }
-        list(MISEs = MISEs, Preds = prs)
+        list(MISEs_ave = MISEs_ave, MISEs_vario = MISEs_vario, Preds = prs)
     }
     ###
     if (cores > 1L && length(models) > 1L) {
@@ -128,8 +130,31 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
     } else {
         out <- lapply(models, MISE_model)
     }
-    out[] <- lapply(out, function (x, ids) {rownames(x[[1L]]) <- ids; x},
-                    ids = unique(newdata[[id_var]]))
+    out <- lapply(out, function (x) {
+        x$std_MISEs_ave <- x$MISEs_ave
+        x$std_MISEs_vario <- x$MISEs_vario
+        x
+    })
+    n_outcomes <- dim(out[[1]][["MISEs_ave"]])[3L]
+    for (m in seq_len(n_outcomes)) {
+        vals <- do.call("c", lapply(out, function (x) x$MISEs_ave[, , m]))
+        out[] <- lapply(out, function (x) {
+            x$std_MISEs_ave[, , m] <- (x$MISEs_ave - mean(vals)) / sd(vals)
+            x
+        })
+        vals <- do.call("c", lapply(out, function (x) x$MISEs_vario[, , m]))
+        out[] <- lapply(out, function (x) {
+            x$std_MISEs_vario[, , m] <- (x$MISEs_vario - mean(vals)) / sd(vals)
+            x
+        })
+    }
+    out[] <- lapply(out, function (x) {
+        x$MISEs_ave <- apply(x$MISEs_ave, c(1, 3), mean, na.rm = TRUE)
+        x$MISEs_vario <- apply(x$MISEs_vario, c(1, 3), mean, na.rm = TRUE)
+        x$std_MISEs_ave <- apply(x$std_MISEs_ave, c(1, 3), mean, na.rm = TRUE)
+        x$std_MISEs_vario <- apply(x$std_MISEs_vario, c(1, 3), mean, na.rm = TRUE)
+        x
+    })
     out
 }
 
