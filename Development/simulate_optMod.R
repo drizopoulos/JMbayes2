@@ -247,12 +247,16 @@ T0 <- 3
 Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
 Data$Time <- T0; Data$event <- 0
 Data_after <- Data[Data$time > T0, ]
-Preds <- local({
+preds <- local({
     Data <- Data[Data$time <= T0, ]
     lapply(Models, predict, newdata = Data, newdata2 = Data_after)
 })
-Preds <- do.call('cbind', lapply(Preds, function (x) x$newdata2$preds[[1L]]))
+Preds <- do.call('cbind', lapply(preds, function (x) x$newdata$preds[[1L]]))
+Obs <- Data$y[Data$time <= T0]
+colMeans((Preds - Obs)^2)
+Preds <- do.call('cbind', lapply(preds, function (x) x$newdata2$preds[[1L]]))
 Obs <- Data_after$y
+colMeans((Preds - Obs)^2)
 best_model <- which.min(colMeans((Preds - Obs)^2))
 
 OptModel <- opt_model(Models, Data, T0, cores = 3L)
@@ -271,16 +275,16 @@ weights <- t(apply(1/mises, 1L, function (x) exp(x) / sum(exp(x))))
 mean((rowSums(weights[id, ] * Preds) - Obs)^2, na.rm = TRUE)
 
 
-prs1 <- predict(jointFit1, newdata = Data, return_params_mcmc = TRUE)
-prs2 <- predict(jointFit2, newdata = Data, return_params_mcmc = TRUE)
-prs3 <- predict(jointFit3, newdata = Data, return_params_mcmc = TRUE)
-ppcheck(jointFit1, nsim = 200L, newdata = Data, random_effects = "mcmc",
+prs1 <- predict(jointFit1, newdata = Data[Data$time <= T0, ], return_params_mcmc = TRUE)
+prs2 <- predict(jointFit2, newdata = Data[Data$time <= T0, ], return_params_mcmc = TRUE)
+prs3 <- predict(jointFit3, newdata = Data[Data$time <= T0, ], return_params_mcmc = TRUE)
+ppcheck(jointFit1, nsim = 200L, newdata = Data[Data$time <= T0, ], random_effects = "mcmc",
         params_mcmc = prs1$params_mcmc, type = "average",
         main = c("jointFit1"), pos_legend = c(NA, "left"))
-ppcheck(jointFit2, nsim = 200L, newdata = Data, random_effects = "mcmc",
+ppcheck(jointFit2, nsim = 200L, newdata = Data[Data$time <= T0, ], random_effects = "mcmc",
         params_mcmc = prs2$params_mcmc, type = "average",
         main = c("jointFit2"), pos_legend = c(NA, "left"))
-ppcheck(jointFit3, nsim = 200L, newdata = Data, random_effects = "mcmc",
+ppcheck(jointFit3, nsim = 200L, newdata = Data[Data$time <= T0, ], random_effects = "mcmc",
         params_mcmc = prs3$params_mcmc, type = "average",
         main = c("jointFit3"), pos_legend = c(NA, "left"))
 
