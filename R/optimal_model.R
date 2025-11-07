@@ -28,40 +28,34 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
             sum(0.5 * diff(x) * (f[-length(x)] + f[-1L]))
         }
         loess.smooth2 <- function (x, y) {
-            loess.smooth(x, y, degree = 2, span = 0.75,
-                         family = "gaussian", evaluation = 200)
+            loess.smooth(x, y, span = 0.75, degree = 2, family = "gaussian", evaluation = 200)
         }
         smooth <- function (x, y) {
             n <- length(x)
-            if (n > 5) {
+            if (n >= 4) {
                 loess.smooth2(x, y)
-            } else if (n > 1 && n <= 5) {
-                approx(x, y)
+            } else if (n > 1 && n < 4) {
+                spline(x, y)
             } else {
                 list(x = NA_real_, y = NA_real_)
             }
         }
         gof_fun <- function (y, times, id, type) {
             if (type == "variogram") {
-                ls <- loess.smooth2(times, y)
+                ls <- smooth(times, y)
                 ind <- findInterval(times, ls$x)
                 rr <- y - ls$y[ind]
                 variogram(rr, times, id)[[1L]]
-            } else if (type == "variance-function") {
-                ls <- loess.smooth2(times, y)
-                ind <- findInterval(times, ls$x)
-                rr <- y - ls$y[ind]
-                sigma <- sqrt(sum(rr * rr) / (length(rr) - 5.35))
-                rr <- sqrt(abs(rr / sigma))
-                cbind(times, rr)
             } else {
                 cbind(times, y)
             }
         }
         Obs_ave <- gof_fun(obs, times, id, "average")
         Obs_vario <- gof_fun(obs, times, id, "variogram")
+        G_obs_ave <- smooth(Obs_ave[, 1L], Obs_ave[, 2L])
         F_obs_ave <- mapply(smooth, y = split(Obs_ave[, 2L], id),
                             x = split(Obs_ave[, 1L], id), SIMPLIFY = FALSE)
+        G_obs_vario <- smooth(Obs_vario[, 1L], Obs_vario[, 2L])
         ni <- tapply(id, id, length)
         id_long <- rep(unique(id), sapply(ni, function (n) if (n < 2) 1 else
             ncol(combn(n, 2))))
@@ -73,20 +67,26 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
         }
         n <- length(unique(id))
         M <- ncol(reps)
+        MISE_mod_ave <- MISE_mod_vario <- numeric(M)
         MISE_ave <- MISE_vario <- matrix(0.0, n, M)
         for (m in seq_len(M)) {
             reps_ave <- gof_fun(reps[, m], times, id, "average")
             reps_vario <- gof_fun(reps[, m], times, id, "variogram")
+            G_reps_ave <- smooth(reps_ave[, 1L], reps_ave[, 2L])
             F_reps_ave <-
                 mapply(smooth, y = split(reps_ave[, 2L], id),
                        x = split(reps_ave[, 1L], id), SIMPLIFY = FALSE)
+            G_reps_vario <- smooth(reps_vario[, 1L], reps_vario[, 2L])
             F_reps_vario <-
                 mapply(smooth, y = split(reps_vario[, 2L], id_long),
                        x = split(reps_vario[, 1L], id_long), SIMPLIFY = FALSE)
+            MISE_mod_ave[m] <- mise(G_obs_ave, G_reps_ave)
             MISE_ave[, m] <- mapply(mise, obs = F_obs_ave, rep = F_reps_ave)
+            MISE_mod_vario[m] <- mise(G_obs_vario, G_reps_vario)
             MISE_vario[, m] <- mapply(mise, obs = F_obs_vario, rep = F_reps_vario)
         }
-        list(MISE_ave = MISE_ave, MISE_vario = MISE_vario)
+        list(MISE_ave = MISE_ave, MISE_vario = MISE_vario,
+             MISE_mod_ave = MISE_mod_ave, MISE_mod_vario = MISE_mod_vario)
     }
     MISE_model <- function (object) {
         prs <- predict(object, newdata = ND_before, newdata2 = ND_after,
@@ -96,6 +96,7 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
                           params_mcmc = prs$newdata$params_mcmc)
         n_outcomes <- length(sims[["outcome"]])
         id <- attr(sims$outcome[[1]], "id")
+        MISE_mod_ave <- MISE_mod_vario <- matrix(0.0, 200L, n_outcomes)
         MISEs_ave <- MISEs_vario <- array(0, c(length(unique(id)), 200L, n_outcomes))
         dimnames(MISEs_ave) <- dimnames(MISEs_vario) <-
             list(unique(newdata[[id_var]]), colnames(sims[[1]]),
@@ -104,10 +105,13 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
             outcome <- sims$outcome[[m]]
             mises <- MISE_perid(outcome, sims[[m]], attr(outcome, "id"),
                                 attr(outcome, "times"))
+            MISE_mod_ave[, m] <- mises$MISE_mod_ave
             MISEs_ave[, , m] <- mises$MISE_ave
+            MISE_mod_vario[, m] <- mises$MISE_mod_vario
             MISEs_vario[, , m] <- mises$MISE_vario
         }
-        list(MISEs_ave = MISEs_ave, MISEs_vario = MISEs_vario, Preds = prs)
+        list(MISEs_ave = MISEs_ave, MISEs_vario = MISEs_vario, Preds = prs,
+             MISE_mod_ave = MISE_mod_ave, MISE_mod_vario = MISE_mod_vario)
     }
     ###
     if (cores > 1L && length(models) > 1L) {
@@ -149,9 +153,11 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
         })
     }
     out[] <- lapply(out, function (x) {
+        x$MISE_mod_ave <- colMeans(x$MISE_mod_ave, na.rm = TRUE)
         x$MISEs_ave <- apply(x$MISEs_ave, c(1, 3), mean, na.rm = TRUE)
-        x$MISEs_vario <- apply(x$MISEs_vario, c(1, 3), mean, na.rm = TRUE)
         x$std_MISEs_ave <- apply(x$std_MISEs_ave, c(1, 3), mean, na.rm = TRUE)
+        x$MISE_mod_vario <- colMeans(x$MISE_mod_vario, na.rm = TRUE)
+        x$MISEs_vario <- apply(x$MISEs_vario, c(1, 3), mean, na.rm = TRUE)
         x$std_MISEs_vario <- apply(x$std_MISEs_vario, c(1, 3), mean, na.rm = TRUE)
         x
     })
