@@ -1986,6 +1986,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      Fforms_fun = Fforms_fun)
         }
         Y <- outY$outcome
+        n_outcomes <- length(Y)
         id <- lapply(Y, function (x) attr(x, "id"))
         times <- lapply(Y, function (x) attr(x, "times"))
         outY <- outY[names(outY) != "outcome"]
@@ -2000,6 +2001,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         }
         form <- paste(form, collapse = " + ")
         form <- as.formula(paste("Surv(Time, event) ~", form))
+        form <- Surv(Time, event) ~ Y
         association <- function (Time, event, Y, times, id) {
             n_outcomes <- length(Y)
             YY <- mapply2(split, Y, id)
@@ -2009,56 +2011,66 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             f <- function (y, t, t0) {
                 if (all(t > t0)) NA else y[max(which((t - t0) <= 0))]
             }
-            Cs <- numeric(length(unq_eventTimes))
+            Cs <- matrix(0, length(unq_eventTimes), n_outcomes)
             for (i in seq_along(unq_eventTimes)) {
                 t0 <- unq_eventTimes[i]
                 DF <- data.frame(Time = Time, event = event)
                 for (j in seq_len(n_outcomes)) {
-                    DF[[paste0("Y", j)]] <-
+                    DF[["Y"]] <-
                         mapply(f, y = YY[[j]], t = ttimes[[j]],
                                MoreArgs = list(t0 = t0))
+                    Cs[i, j] <- concordance(form, data = DF[DF$Time >= t0, ],
+                                         reverse = TRUE)$concordance
                 }
-                Cs[i] <-
-                    concordance(coxph(form, data = DF[DF$Time >= t0, ]))$concordance
             }
-            cbind(unq_eventTimes, Cs)
+            lapply(seq_len(n_outcomes), function (j)
+                cbind(unq_eventTimes, C = Cs[, j]))
         }
         loess.smooth2 <- function (x, y) {
-            loess.smooth(x, y, degree = 2, span = 0.75,
+            loess.smooth(x, y, degree = 1, span = 0.75,
                          family = "gaussian", evaluation = 200)
         }
         C <- association(Time, event, Y, times, id)
-        Obs <- loess.smooth2(C[, 1L], C[, 2L])
+        Obs <- mapply2(loess.smooth2, x = lapply(C, function (c) c[, 1L]),
+                       y = lapply(C, function (c) c[, 2L]))
         if (CI_loess) {
-            loess_fit <-
-                loess(y ~ x, data.frame(x = C[, 1L], y = C[, 2L]))
-            preds <- predict(loess_fit, data.frame(x = Obs$x), se = TRUE)
-            low <- preds$fit + qt(0.025, preds$df) * preds$se.fit
-            upp <- preds$fit + qt(0.975, preds$df) * preds$se.fit
+            low <- upp <- vector("list", n_outcomes)
+            for (j in seq_len(n_outcomes)) {
+                loess_fit <-
+                    loess(y ~ x, degree = 1L, data.frame(x = C[[j]][, 1L],
+                                                         y = C[[j]][, 2L]))
+                preds <- predict(loess_fit, data.frame(x = Obs[[j]]$x), se = TRUE)
+                low[[j]] <- preds$fit + qt(0.025, preds$df) * preds$se.fit
+                upp[[j]] <- preds$fit + qt(0.975, preds$df) * preds$se.fit
+            }
         }
         Rep <- vector("list", ncol(outY[[1L]]))
-        for (i in seq_along(Rep)) {
-            C_i <- association(outT$Times[, i], outT$event[, i],
-                               lapply(outY, function (m) m[, i]),
+        for (m in seq_along(Rep)) {
+            C_m <- association(outT$Times[, m], outT$event[, m],
+                               lapply(outY, function (y) y[, m]),
                                times, id)
-            Rep[[i]] <- loess.smooth2(C_i[, 1L], C_i[, 2L])
+            Rep[[m]] <-
+                mapply2(loess.smooth2, x = lapply(C_m, function (c) c[, 1L]),
+                        y = lapply(C_m, function (c) c[, 2L]))
         }
         if (plot) {
             if (is.null(xlab)) xlab <- "Event Times"
             if (is.null(ylab)) ylab <- "Concordance"
-            rx <- range(c(sapply(Rep, function (loe) loe$x), Obs$x))
-            ry <- range(c(sapply(Rep, function (loe) loe$y), Obs$y))
-            if (CI_loess) {
-                ry <- range(ry, low, upp)
-            }
-            plot(rx, ry, type = "n", xlab = xlab, ylab = ylab, main = main)
-            for (i in seq_along(Rep)) {
-                lines(Rep[[i]], col = col_rep, lty = lty_rep, lwd = lwd_rep)
-            }
-            lines(Obs, col = col_obs, lty = lty_obs, lwd = lwd_obs)
-            if (CI_loess) {
-                lines(Obs$x, low, lwd = lwd_obs, lty = 2, col = col_obs)
-                lines(Obs$x, upp, lwd = lwd_obs, lty = 2, col = col_obs)
+            for (j in seq_len(n_outcomes)) {
+                rx <- range(c(sapply(Rep, function (loe) loe[[j]]$x), Obs[[j]]$x))
+                ry <- range(c(sapply(Rep, function (loe) loe[[j]]$y), Obs[[j]]$y))
+                if (CI_loess) {
+                    ry <- range(ry, low[[j]], upp[[j]])
+                }
+                plot(rx, ry, type = "n", xlab = xlab, ylab = ylab, main = main)
+                for (i in seq_along(Rep)) {
+                    lines(Rep[[i]][[j]], col = col_rep, lty = lty_rep, lwd = lwd_rep)
+                }
+                lines(Obs[[j]], col = col_obs, lty = lty_obs, lwd = lwd_obs)
+                if (CI_loess) {
+                    lines(Obs[[j]]$x, low[[j]], lwd = lwd_obs, lty = 2, col = col_obs)
+                    lines(Obs[[j]]$x, upp[[j]], lwd = lwd_obs, lty = 2, col = col_obs)
+                }
             }
         } else {
             plot_values <-
