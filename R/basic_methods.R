@@ -1987,6 +1987,9 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         }
         Y <- outY$outcome
         n_outcomes <- length(Y)
+        index <- seq_len(n_outcomes)
+        if (outcomes < Inf) index <- index[index %in% outcomes]
+        nindex <- length(index)
         id <- lapply(Y, function (x) attr(x, "id"))
         times <- lapply(Y, function (x) attr(x, "times"))
         outY <- outY[names(outY) != "outcome"]
@@ -2056,25 +2059,30 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         if (plot) {
             if (is.null(xlab)) xlab <- "Event Times"
             if (is.null(ylab)) ylab <- "Concordance"
-            for (j in seq_len(n_outcomes)) {
-                rx <- range(c(sapply(Rep, function (loe) loe[[j]]$x), Obs[[j]]$x))
-                ry <- range(c(sapply(Rep, function (loe) loe[[j]]$y), Obs[[j]]$y))
+            xlab <- rep(xlab, length.out = nindex)
+            ylab <- rep(ylab, length.out = nindex)
+            main <- rep(main, length.out = nindex)
+            for (j in index) {
+                jj <- match(j, unique(index))
+                rx <- range(c(sapply(Rep, function (loe) loe[[jj]]$x), Obs[[jj]]$x))
+                ry <- range(c(sapply(Rep, function (loe) loe[[jj]]$y), Obs[[jj]]$y))
                 if (CI_loess) {
-                    ry <- range(ry, low[[j]], upp[[j]])
+                    ry <- range(ry, low[[jj]], upp[[jj]])
                 }
-                plot(rx, ry, type = "n", xlab = xlab, ylab = ylab, main = main)
+                plot(rx, ry, type = "n", xlab = xlab[jj], ylab = ylab[jj],
+                     main = main[jj])
                 for (i in seq_along(Rep)) {
-                    lines(Rep[[i]][[j]], col = col_rep, lty = lty_rep, lwd = lwd_rep)
+                    lines(Rep[[i]][[jj]], col = col_rep, lty = lty_rep, lwd = lwd_rep)
                 }
                 lines(Obs[[j]], col = col_obs, lty = lty_obs, lwd = lwd_obs)
                 if (CI_loess) {
-                    lines(Obs[[j]]$x, low[[j]], lwd = lwd_obs, lty = 2, col = col_obs)
-                    lines(Obs[[j]]$x, upp[[j]], lwd = lwd_obs, lty = 2, col = col_obs)
+                    lines(Obs[[jj]]$x, low[[jj]], lwd = lwd_obs, lty = 2, col = col_obs)
+                    lines(Obs[[jj]]$x, upp[[jj]], lwd = lwd_obs, lty = 2, col = col_obs)
                 }
             }
         } else {
             plot_values <-
-                list(x_vals = Obs$x, obs = Obs$y,
+                list(x_vals = Obs, obs = Obs,
                      obs_low = if (CI_loess) low,
                      obs_upp = if (CI_loess) upp, rep = Rep,
                      rootMISE = if (add_legend) NA)
