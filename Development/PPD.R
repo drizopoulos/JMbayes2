@@ -52,7 +52,7 @@ ppcheck(jointFit, process = "event", Fforms_fun = FF)
 ppcheck(jointFit, process = "event", Fforms_fun = FF,
                    random_effects = "prior")
 
-ppcheck(jointFit, process = "joint", Fforms_fun = FF)
+ppcheck(jointFit, process = "joint", Fforms_fun = FF, outcomes = 2)
 
 
 simY <- simulate(jointFit, nsim = 40, include_outcome = TRUE,

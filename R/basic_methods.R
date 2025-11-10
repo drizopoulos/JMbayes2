@@ -2063,21 +2063,21 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             ylab <- rep(ylab, length.out = nindex)
             main <- rep(main, length.out = nindex)
             for (j in index) {
-                jj <- match(j, unique(index))
-                rx <- range(c(sapply(Rep, function (loe) loe[[jj]]$x), Obs[[jj]]$x))
-                ry <- range(c(sapply(Rep, function (loe) loe[[jj]]$y), Obs[[jj]]$y))
+                jj <- match(j, index)
+                rx <- range(c(sapply(Rep, function (loe) loe[[j]]$x), Obs[[j]]$x))
+                ry <- range(c(sapply(Rep, function (loe) loe[[j]]$y), Obs[[j]]$y))
                 if (CI_loess) {
-                    ry <- range(ry, low[[jj]], upp[[jj]])
+                    ry <- range(ry, low[[j]], upp[[j]])
                 }
                 plot(rx, ry, type = "n", xlab = xlab[jj], ylab = ylab[jj],
                      main = main[jj])
                 for (i in seq_along(Rep)) {
-                    lines(Rep[[i]][[jj]], col = col_rep, lty = lty_rep, lwd = lwd_rep)
+                    lines(Rep[[i]][[j]], col = col_rep, lty = lty_rep, lwd = lwd_rep)
                 }
                 lines(Obs[[jj]], col = col_obs, lty = lty_obs, lwd = lwd_obs)
                 if (CI_loess) {
-                    lines(Obs[[jj]]$x, low[[jj]], lwd = lwd_obs, lty = 2, col = col_obs)
-                    lines(Obs[[jj]]$x, upp[[jj]], lwd = lwd_obs, lty = 2, col = col_obs)
+                    lines(Obs[[j]]$x, low[[j]], lwd = lwd_obs, lty = 2, col = col_obs)
+                    lines(Obs[[j]]$x, upp[[j]], lwd = lwd_obs, lty = 2, col = col_obs)
                 }
             }
         } else {
