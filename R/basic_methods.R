@@ -2074,7 +2074,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 for (i in seq_along(Rep)) {
                     lines(Rep[[i]][[jj]], col = col_rep, lty = lty_rep, lwd = lwd_rep)
                 }
-                lines(Obs[[j]], col = col_obs, lty = lty_obs, lwd = lwd_obs)
+                lines(Obs[[jj]], col = col_obs, lty = lty_obs, lwd = lwd_obs)
                 if (CI_loess) {
                     lines(Obs[[jj]]$x, low[[jj]], lwd = lwd_obs, lty = 2, col = col_obs)
                     lines(Obs[[jj]]$x, upp[[jj]], lwd = lwd_obs, lty = 2, col = col_obs)
