@@ -1010,36 +1010,38 @@ rc_setup <- function(rc_data, trm_data,
                      nameStrata = "strata", nameStatus = "status") {
   # warnings
   rc_bol <- c(idVar, statusVar, startVar, stopVar) %in% names(rc_data)
-  if(any(!rc_bol)) {
-    stop(paste0("\nThe variable '", c(idVar, statusVar, startVar, stopVar)[!rc_bol],
+  if (any(!rc_bol)) {
+    stop(paste0("The variable '", c(idVar, statusVar, startVar, stopVar)[!rc_bol],
                 "' is not present in 'rc_data' dataset."))
   }
   trm_bol <- c(idVar, statusVar, stopVar) %in% names(trm_data)
-  if(any(!trm_bol)) {
-    stop(paste0("\nThe variable '", c(idVar, statusVar, stopVar)[!trm_bol],
+  if (any(!trm_bol)) {
+    stop(paste0("The variable '", c(idVar, statusVar, stopVar)[!trm_bol],
                 "' is not present in 'trm_data' dataset."))
   }
-  if(!setequal(rc_data[[idVar]],  trm_data[[idVar]])) {
+  if (!setequal(rc_data[[idVar]], trm_data[[idVar]])) {
     stop("The groups/subjects in both datasets do not seem to match.")
   }
-  if(any(rc_data[[startVar]] > rc_data[[stopVar]])) {
-    stop(paste0("'", stopVar, "' cannot be smaller than '", startVar," in the recurring event data.'"))
+  if (any(rc_data[[startVar]] > rc_data[[stopVar]])) {
+    stop(paste0("'", stopVar, "' cannot be smaller than '", startVar,
+                "' in the recurring event data."))
   }
-  rc_data <- rc_data[order(rc_data[[idVar]], rc_data[[startVar]]), ]
+  rc_data  <- rc_data[order(rc_data[[idVar]], rc_data[[startVar]]), ]
   trm_data <- trm_data[order(trm_data[[idVar]]), ]
-  if(any(rc_data[[stopVar]] > trm_data[[stopVar]][rc_data[[idVar]]])) {
-    stop(paste0("'", stopVar, "' in the recurring event data cannot be larger than '", stopVar," in the terminal event data.'"))
+  id_match <- match(rc_data[[idVar]], trm_data[[idVar]])
+  if (any(rc_data[[stopVar]] > trm_data[[stopVar]][id_match])) {
+    stop(paste0("'", stopVar, "' in the recurring event data cannot be larger than '", 
+                stopVar,"' in the terminal event data."))
   }
   # create new dataset
   ## CR dataset
   n <- nrow(trm_data)
   unqLevs <- unique(trm_data[[statusVar]])
   unqLevs <- unqLevs[unqLevs != trm_censLevel]
-  status <- trm_data[[statusVar]] != trm_censLevel
   dataOut1 <- trm_data[rep(seq_len(n), each = length(unqLevs)), , drop = FALSE]
   dataOut1[[nameStrata]] <- rep(unqLevs, times = n)
   dataOut1[[nameStatus]] <- as.numeric(dataOut1[[statusVar]] == dataOut1[[nameStrata]])
-  dataOut1[[startVar]] <- 0
+  dataOut1[[startVar]] <- 0L
   dataOut1[[nameStrata]] <- paste0("T", dataOut1[[nameStrata]])
   ## Rec dataset
   dataOut2 <- rc_data
@@ -1048,7 +1050,9 @@ rc_setup <- function(rc_data, trm_data,
   ## combine the 2 datasets
   dataOut <- rbind(dataOut1, dataOut2)
   dataOut[[nameStrata]] <- as.factor(dataOut[[nameStrata]]) # automatically assigns "R" as reference level based on the alphabetical order of the levels
-  dataOut <- dataOut[order(dataOut[[idVar]], dataOut[[nameStrata]], dataOut[[startVar]]), ]
+  dataOut <- dataOut[order(dataOut[[idVar]], 
+                           dataOut[[nameStrata]], 
+                           dataOut[[startVar]]), ]
   rownames(dataOut) <- seq_len(nrow(dataOut))
   dataOut
 }
