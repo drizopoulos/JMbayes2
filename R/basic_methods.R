@@ -1048,6 +1048,21 @@ rc_setup <- function(rc_data, trm_data,
   dataOut2[[nameStrata]] <- "R"
   dataOut2[[nameStatus]] <- dataOut2[[statusVar]]
   ## combine the 2 datasets
+  common_names <- union(names(dataOut1), names(dataOut2))
+  miss1 <- setdiff(common_names, names(dataOut1))
+  miss2 <- setdiff(common_names, names(dataOut2))
+  if (length(miss1)) {
+    warning("The following variables were missing in the 'trm_data' and were created as NA: ",
+            paste(miss1, collapse = ", "), ".")
+  }
+  if (length(miss2)) {
+    warning("The following variables were missing in the 'rc_data' and were created as NA: ",
+            paste(miss2, collapse = ", "), ".")
+  }
+  dataOut1[miss1] <- NA # add missing vars as NA
+  dataOut2[miss2] <- NA
+  dataOut1 <- dataOut1[common_names] # reorder columns in the same order
+  dataOut2 <- dataOut2[common_names]
   dataOut <- rbind(dataOut1, dataOut2)
   dataOut[[nameStrata]] <- as.factor(dataOut[[nameStrata]]) # automatically assigns "R" as reference level based on the alphabetical order of the levels
   dataOut <- dataOut[order(dataOut[[idVar]], 
