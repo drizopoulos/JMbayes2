@@ -1010,32 +1010,34 @@ rc_setup <- function(rc_data, trm_data,
                      nameStrata = "strata", nameStatus = "status") {
   # warnings
   rc_bol <- c(idVar, statusVar, startVar, stopVar) %in% names(rc_data)
-  if(any(!rc_bol)) {
-    stop(paste0("\nThe variable '", c(idVar, statusVar, startVar, stopVar)[!rc_bol],
+  if (any(!rc_bol)) {
+    stop(paste0("The variable '", c(idVar, statusVar, startVar, stopVar)[!rc_bol],
                 "' is not present in 'rc_data' dataset."))
   }
   trm_bol <- c(idVar, statusVar, stopVar) %in% names(trm_data)
-  if(any(!trm_bol)) {
-    stop(paste0("\nThe variable '", c(idVar, statusVar, stopVar)[!trm_bol],
+  if (any(!trm_bol)) {
+    stop(paste0("The variable '", c(idVar, statusVar, stopVar)[!trm_bol],
                 "' is not present in 'trm_data' dataset."))
   }
-  if(!setequal(rc_data[[idVar]],  trm_data[[idVar]])) {
+  if (!setequal(rc_data[[idVar]], trm_data[[idVar]])) {
     stop("The groups/subjects in both datasets do not seem to match.")
   }
-  if(any(rc_data[[startVar]] > rc_data[[stopVar]])) {
-    stop(paste0("'", stopVar, "' cannot be smaller than '", startVar," in the recurring event data.'"))
+  if (any(rc_data[[startVar]] > rc_data[[stopVar]])) {
+    stop(paste0("'", stopVar, "' cannot be smaller than '", startVar,
+                "' in the recurring event data."))
   }
-  rc_data <- rc_data[order(rc_data[[idVar]], rc_data[[startVar]]), ]
+  rc_data  <- rc_data[order(rc_data[[idVar]], rc_data[[startVar]]), ]
   trm_data <- trm_data[order(trm_data[[idVar]]), ]
-  if(any(rc_data[[stopVar]] > trm_data[[stopVar]][rc_data[[idVar]]])) {
-    stop(paste0("'", stopVar, "' in the recurring event data cannot be larger than '", stopVar," in the terminal event data.'"))
+  id_match <- match(rc_data[[idVar]], trm_data[[idVar]])
+  if (any(rc_data[[stopVar]] > trm_data[[stopVar]][id_match])) {
+    stop(paste0("'", stopVar, "' in the recurring event data cannot be larger than '", 
+                stopVar,"' in the terminal event data."))
   }
   # create new dataset
   ## CR dataset
   n <- nrow(trm_data)
   unqLevs <- unique(trm_data[[statusVar]])
   unqLevs <- unqLevs[unqLevs != trm_censLevel]
-  status <- trm_data[[statusVar]] != trm_censLevel
   dataOut1 <- trm_data[rep(seq_len(n), each = length(unqLevs)), , drop = FALSE]
   dataOut1[[nameStrata]] <- rep(unqLevs, times = n)
   dataOut1[[nameStatus]] <- as.numeric(dataOut1[[statusVar]] == dataOut1[[nameStrata]])
@@ -1044,11 +1046,42 @@ rc_setup <- function(rc_data, trm_data,
   ## Rec dataset
   dataOut2 <- rc_data
   dataOut2[[nameStrata]] <- "R"
-  dataOut2[[nameStatus]] <- dataOut2[[statusVar]]
+  dataOut2[[nameStatus]] <- as.numeric(dataOut2[[statusVar]])
   ## combine the 2 datasets
+  names1 <- names(dataOut1)
+  names2 <- names(dataOut2)
+  common_names <- intersect(names1, names2)
+  miss1 <- setdiff(names2, names1)
+  miss2 <- setdiff(names1, names2)
+  if (length(miss1)) {
+    warning("The following variables were missing in the 'trm_data' and were created as NA: ",
+            paste(miss1, collapse = ", "), ".")
+    dataOut1[miss1] <- NA # add missing vars as NA
+  }
+  if (length(miss2)) {
+    warning("The following variables were missing in the 'rc_data' and were created as NA: ",
+            paste(miss2, collapse = ", "), ".")
+    dataOut2[miss2] <- NA
+  }
+  class1 <- sapply(dataOut1[common_names], class)
+  class2 <- sapply(dataOut2[common_names], class)
+  conflict_names <- common_names[class1 != class2]
+  if (length(conflict_names)) {
+    warning("The following variables had the same name but different classes and were renamed: ",
+            paste(conflict_names, collapse = ", "), ".")
+    names(dataOut1)[match(conflict_names, names(dataOut1))] <- paste0(conflict_names, 
+                                                                      "_trm") # rename vars that are in BOTH and have different class
+    names(dataOut2)[match(conflict_names, names(dataOut2))] <- paste0(conflict_names, 
+                                                                      "_rc")
+    dataOut1[paste0(conflict_names, "_rc")] <- NA
+    dataOut2[paste0(conflict_names, "_trm")] <- NA
+  }
+  dataOut2 <- dataOut2[names(dataOut1)] # reorder columns in the same order
   dataOut <- rbind(dataOut1, dataOut2)
   dataOut[[nameStrata]] <- as.factor(dataOut[[nameStrata]]) # automatically assigns "R" as reference level based on the alphabetical order of the levels
-  dataOut <- dataOut[order(dataOut[[idVar]], dataOut[[nameStrata]], dataOut[[startVar]]), ]
+  dataOut <- dataOut[order(dataOut[[idVar]], 
+                           dataOut[[nameStrata]], 
+                           dataOut[[startVar]]), ]
   rownames(dataOut) <- seq_len(nrow(dataOut))
   dataOut
 }
