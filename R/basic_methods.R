@@ -1816,7 +1816,9 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 DF <- gof_fun(y, tt, id, type)
                 obs_loess <- loess.smooth2(DF[, 1L], DF[, 2L])
                 if (CI_loess) {
-                    loess_fit <- loess(y ~ x, data.frame(x = DF[, 1L], y = DF[, 2L]))
+                    loess_fit <-
+                        loess(y ~ x, data.frame(x = DF[, 1L], y = DF[, 2L]),
+                              defree = 2, span = 0.75, family = "gaussian")
                     preds <- predict(loess_fit, data.frame(x = obs_loess$x),
                                      se = TRUE)
                     low <- preds$fit + qt(0.025, preds$df) * preds$se.fit
@@ -2040,8 +2042,8 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             low <- upp <- vector("list", n_outcomes)
             for (j in seq_len(n_outcomes)) {
                 loess_fit <-
-                    loess(y ~ x, degree = 1L, data.frame(x = C[[j]][, 1L],
-                                                         y = C[[j]][, 2L]))
+                    loess(y ~ x, data = data.frame(x = C[[j]][, 1L], y = C[[j]][, 2L]),
+                          degree = 1L, span = 0.75, family = "gaussian")
                 preds <- predict(loess_fit, data.frame(x = Obs[[j]]$x), se = TRUE)
                 low[[j]] <- preds$fit + qt(0.025, preds$df) * preds$se.fit
                 upp[[j]] <- preds$fit + qt(0.975, preds$df) * preds$se.fit
@@ -2049,7 +2051,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         }
         Rep <- vector("list", ncol(outY[[1L]]))
         for (m in seq_along(Rep)) {
-            C_m <- association(outT$Times[, m], outT$event[, m],
+            C_m <- association(outT$Times[, m], event, #outT$event[, m],
                                lapply(outY, function (y) y[, m]),
                                times, id)
             Rep[[m]] <-

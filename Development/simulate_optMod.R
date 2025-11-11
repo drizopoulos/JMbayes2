@@ -1,7 +1,7 @@
 library("JMbayes2")
 source("./R/optimal_model.R")
 
-sim_fun1 <- function (n = 100) {
+sim_fun1 <- function (n = 50) {
     K <- 15 # number of measurements per subject
     t_max <- 8 # maximum follow-up time
     # we construct a data frame with the design:
@@ -72,7 +72,7 @@ sim_fun1 <- function (n = 100) {
     DF <- DF[DF$time <= DF$Time, ]
 }
 
-sim_fun2 <- function (n = 100) {
+sim_fun2 <- function (n = 50) {
     K <- 15 # number of measurements per subject
     t_max <- 8 # maximum follow-up time
     # we construct a data frame with the design:
@@ -145,7 +145,7 @@ sim_fun2 <- function (n = 100) {
     DF <- DF[DF$time <= DF$Time, ]
 }
 
-sim_fun3 <- function (n = 100) {
+sim_fun3 <- function (n = 200) {
     K <- 15 # number of measurements per subject
     t_max <- 8 # maximum follow-up time
     # we construct a data frame with the design:
@@ -243,7 +243,7 @@ jointFit2 <- jm(CoxFit, fm2, time_var = "time")
 jointFit3 <- jm(CoxFit, fm3, time_var = "time")
 Models <- list(jointFit1, jointFit2, jointFit3)
 
-T0 <- 3
+T0 <- 2
 Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
 Data$Time <- T0; Data$event <- 0
 Data_after <- Data[Data$time > T0, ]
@@ -255,9 +255,14 @@ Preds <- do.call('cbind', lapply(preds, function (x) x$newdata$preds[[1L]]))
 Obs <- Data$y[Data$time <= T0]
 colMeans((Preds - Obs)^2)
 Preds <- do.call('cbind', lapply(preds, function (x) x$newdata2$preds[[1L]]))
+ff <- function (x) {
+    nx <- length(x)
+    if (nx > 1L) rep(c(1, 0), c(1, nx - 1)) else 1
+}
+ind_first <- as.logical(with(Data_after, ave(time, id, FUN = ff)))
 Obs <- Data_after$y
-colMeans((Preds - Obs)^2)
-best_model <- which.min(colMeans((Preds - Obs)^2))
+colMeans((Preds[ind_first, ] - Obs[ind_first])^2)
+best_model <- which.min(colMeans((Preds - Obs)[ind_first, ]^2))
 
 OptModel <- opt_model(Models, Data, T0, cores = 3L)
 sapply(OptModel, function (x) sqrt(x$MISE_mod_ave))
@@ -269,10 +274,11 @@ Preds <- do.call('cbind', lapply(OptModel, function (x) x$Preds$newdata2$preds[[
 Obs <- Data_after$y
 id <- match(Data_after$id, unique(Data_after$id))
 
-colMeans((Preds - Obs)^2)[best_model]
-mean((Preds[cbind(seq_along(id), best_model_id[id])] - Obs)^2)
+colMeans((Preds - Obs)[ind_first, ]^2)
+colMeans((Preds - Obs)[ind_first, ]^2)[best_model]
+mean((Preds[cbind(seq_along(id), best_model_id[id])] - Obs)[ind_first]^2)
 weights <- t(apply(1/mises, 1L, function (x) exp(x) / sum(exp(x))))
-mean((rowSums(weights[id, ] * Preds) - Obs)^2, na.rm = TRUE)
+mean((rowSums(weights[id, ] * Preds) - Obs)[ind_first]^2, na.rm = TRUE)
 
 
 prs1 <- predict(jointFit1, newdata = Data[Data$time <= T0, ], return_params_mcmc = TRUE)

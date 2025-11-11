@@ -28,7 +28,8 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
             sum(0.5 * diff(x) * (f[-length(x)] + f[-1L]))
         }
         loess.smooth2 <- function (x, y) {
-            loess.smooth(x, y, span = 0.75, degree = 2, family = "gaussian", evaluation = 200)
+            loess.smooth(x, y, span = 0.75, degree = 1,
+                         family = "gaussian", evaluation = 200)
         }
         smooth <- function (x, y) {
             n <- length(x)
