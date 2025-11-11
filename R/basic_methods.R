@@ -1041,28 +1041,42 @@ rc_setup <- function(rc_data, trm_data,
   dataOut1 <- trm_data[rep(seq_len(n), each = length(unqLevs)), , drop = FALSE]
   dataOut1[[nameStrata]] <- rep(unqLevs, times = n)
   dataOut1[[nameStatus]] <- as.numeric(dataOut1[[statusVar]] == dataOut1[[nameStrata]])
-  dataOut1[[startVar]] <- 0L
+  dataOut1[[startVar]] <- 0
   dataOut1[[nameStrata]] <- paste0("T", dataOut1[[nameStrata]])
   ## Rec dataset
   dataOut2 <- rc_data
   dataOut2[[nameStrata]] <- "R"
-  dataOut2[[nameStatus]] <- dataOut2[[statusVar]]
+  dataOut2[[nameStatus]] <- as.numeric(dataOut2[[statusVar]])
   ## combine the 2 datasets
-  common_names <- union(names(dataOut1), names(dataOut2))
-  miss1 <- setdiff(common_names, names(dataOut1))
-  miss2 <- setdiff(common_names, names(dataOut2))
+  names1 <- names(dataOut1)
+  names2 <- names(dataOut2)
+  common_names <- intersect(names1, names2)
+  miss1 <- setdiff(names2, names1)
+  miss2 <- setdiff(names1, names2)
   if (length(miss1)) {
     warning("The following variables were missing in the 'trm_data' and were created as NA: ",
             paste(miss1, collapse = ", "), ".")
+    dataOut1[miss1] <- NA # add missing vars as NA
   }
   if (length(miss2)) {
     warning("The following variables were missing in the 'rc_data' and were created as NA: ",
             paste(miss2, collapse = ", "), ".")
+    dataOut2[miss2] <- NA
   }
-  dataOut1[miss1] <- NA # add missing vars as NA
-  dataOut2[miss2] <- NA
-  dataOut1 <- dataOut1[common_names] # reorder columns in the same order
-  dataOut2 <- dataOut2[common_names]
+  class1 <- sapply(dataOut1[common_names], class)
+  class2 <- sapply(dataOut2[common_names], class)
+  conflict_names <- common_names[class1 != class2]
+  if (length(conflict_names)) {
+    warning("The following variables had the same name but different classes and were renamed: ",
+            paste(conflict_names, collapse = ", "), ".")
+    names(dataOut1)[match(conflict_names, names(dataOut1))] <- paste0(conflict_names, 
+                                                                      "_trm") # rename vars that are in BOTH and have different class
+    names(dataOut2)[match(conflict_names, names(dataOut2))] <- paste0(conflict_names, 
+                                                                      "_rc")
+    dataOut1[paste0(conflict_names, "_rc")] <- NA
+    dataOut2[paste0(conflict_names, "_trm")] <- NA
+  }
+  dataOut2 <- dataOut2[names(dataOut1)] # reorder columns in the same order
   dataOut <- rbind(dataOut1, dataOut2)
   dataOut[[nameStrata]] <- as.factor(dataOut[[nameStrata]]) # automatically assigns "R" as reference level based on the alphabetical order of the levels
   dataOut <- dataOut[order(dataOut[[idVar]], 
