@@ -1332,7 +1332,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                          process = c("longitudinal", "event"),
                          random_effects = c("posterior_means", "mcmc", "prior"),
                          params_mcmc = NULL, Fforms_fun = NULL,
-                         include_outcome = FALSE, tol = 0.001, iter = 100L, ...) {
+                         include_outcome = FALSE, return_random_effects = FALSE,
+                         tol = 0.001, iter = 100L, ...) {
     if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
         runif(1L)
     if (is.null(seed))
@@ -1509,6 +1510,9 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                 attr(y[[i]], "times") <- times[[i]]
                 attr(y[[i]], "id") <- idL_lp[[i]]
             }
+            if (return_random_effects) {
+                out_RE <- array(0.0, c(n, ncz, nsim))
+            }
             rep_y <- matrix(0.0, nrow(X[[i]]), nsim)
             for (j in seq_len(nsim)) {
                 # parameters
@@ -1523,6 +1527,9 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                 } else {
                     if (length(dim(random_effects)) > 2)
                         random_effects[, , j] else random_effects
+                }
+                if (return_random_effects) {
+                    out_RE[, , j] <- bb
                 }
                 FE <- c(X[[i]] %*% betas[[i]])
                 if (!is.matrix(bb)) bb <- rbind(bb)
@@ -1539,6 +1546,9 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
             }
             colnames(rep_y) <- paste0("sim_", seq_len(nsim))
             val[[i]] <- rep_y
+            if (return_random_effects) {
+                attr(val[[i]], "RE") <- out_RE
+            }
         }
         if (length(random_effects) == 1L && random_effects == "prior") {
             outT <- simulate(object, nsim = nsim, newdata = newdata,
@@ -1977,6 +1987,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                         MoreArgs = list(process = "longitudinal",
                                         include_outcome = TRUE,
                                         random_effects = random_effects,
+                                        return_random_effects = TRUE,
                                         seed = seed, nsim = nsim,
                                         Fforms_fun = Fforms_fun))
             } else {
@@ -1985,6 +1996,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                         MoreArgs = list(process = "longitudinal",
                                         include_outcome = TRUE,
                                         random_effects = random_effects,
+                                        return_random_effects = TRUE,
                                         seed = seed, nsim = nsim,
                                         Fforms_fun = Fforms_fun))
             }
@@ -1993,6 +2005,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             simulate(object, nsim = nsim, newdata = newdata,
                      process = "longitudinal", include_outcome = TRUE,
                      random_effects = random_effects, params_mcmc = params_mcmc,
+                     return_random_effects = TRUE,
                      seed = seed, Fforms_fun = Fforms_fun)
         }
         outT <- if (inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
@@ -2002,7 +2015,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                         MoreArgs = list(process = "event",
                                         include_outcome = TRUE,
                                         Fforms_fun = Fforms_fun,
-                                        random_effects = random_effects,
+                                        random_effects = attr(outY[[1L]], "RE"),
                                         seed = seed, nsim = nsim))
             } else {
                 mapply2(simulate, object = object, newdata = newdata,
@@ -2010,15 +2023,15 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                         MoreArgs = list(process = "event",
                                         include_outcome = TRUE,
                                         Fforms_fun = Fforms_fun,
-                                        random_effects = random_effects,
+                                        random_effects = attr(outY[[1L]], "RE"),
                                         seed = seed, nsim = nsim))
             }
             bind(sims_per_fold)
         } else {
             simulate(object, nsim = nsim, newdata = newdata,
                      process = "event", seed = seed, include_outcome = TRUE,
-                     random_effects = random_effects, params_mcmc = params_mcmc,
-                     Fforms_fun = Fforms_fun)
+                     random_effects = attr(outY[[1L]], "RE"),
+                     params_mcmc = params_mcmc, Fforms_fun = Fforms_fun)
         }
         Y <- outY$outcome
         n_outcomes <- length(Y)
@@ -2031,16 +2044,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         Time <- outT$outcome.Times
         event <- outT$outcome.event
         outT <- outT[names(outT) != "outcome"]
-        fams <- sapply(object$model_info$families, "[[", "family")
-        fams <- !fams %in% c("binomial", "poisson", "negative binomial")
-        form <- vector("character", length(fams))
-        for (j in seq_along(fams)) {
-            form[j] <- if (fams[j]) paste0("nsk(Y", j, ", 3)") else paste0("Y", j)
-        }
-        form <- paste(form, collapse = " + ")
-        form <- as.formula(paste("Surv(Time, event) ~", form))
-        form <- Surv(Time, event) ~ Y
-        association <- function (Time, event, Y, times, id) {
+        association <- function (Time, event, Y, times, id, Uno = FALSE) {
             n_outcomes <- length(Y)
             YY <- mapply2(split, Y, id)
             ttimes <- mapply2(split, times, id)
@@ -2049,6 +2053,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             f <- function (y, t, t0) {
                 if (all(t > t0)) NA else y[max(which((t - t0) <= 0))]
             }
+            SS_all <- Surv(Time, event)
             Cs <- matrix(0, length(unq_eventTimes), n_outcomes)
             for (i in seq_along(unq_eventTimes)) {
                 t0 <- unq_eventTimes[i]
@@ -2058,13 +2063,16 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                         mapply(f, y = YY[[j]], t = ttimes[[j]],
                                MoreArgs = list(t0 = t0))
                     DF_i <- DF[DF$Time >= t0, ]
+                    DF_i$lp <- coxph(Surv(Time, event) ~ Y, data = DF_i)$linear.predictors
                     SS <- with(DF_i, Surv(Time, event))
-                    #Cs[i, j] <- concordance(form, data = DF[DF$Time >= t0, ],
-                    #                     reverse = TRUE)$concordance
-                    Cs[i, j] <- survAUC::UnoC(SS, SS, DF_i$Y)
+                    Cs[i, j] <- if (Uno) {
+                        survAUC::UnoC(SS_all, SS, DF_i$lp)
+                    } else {
+                        concordance(Surv(Time, event) ~ lp, data = DF_i,
+                                    reverse = TRUE)$concordance
+                    }
                 }
             }
-            Cs <- apply(Cs, 2L, function (x) if (mean(x) < 0.48) 1 - x else x)
             lapply(seq_len(n_outcomes), function (j)
                 cbind(unq_eventTimes, C = Cs[, j]))
         }
@@ -2072,7 +2080,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             loess.smooth(x, y, degree = 1, span = 0.75,
                          family = "gaussian", evaluation = 200)
         }
-        C <- association(Time, event, Y, times, id)
+        C <- association(Time, event, Y, times, id, TRUE)
         Obs <- mapply2(loess.smooth2, x = lapply(C, function (c) c[, 1L]),
                        y = lapply(C, function (c) c[, 2L]))
         if (CI_loess) {
@@ -2088,7 +2096,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         }
         Rep <- vector("list", ncol(outY[[1L]]))
         for (m in seq_along(Rep)) {
-            C_m <- association(outT$Times[, m], event, #outT$event[, m],
+            C_m <- association(outT$Times[, m], outT$event[, m],
                                lapply(outY, function (y) y[, m]),
                                times, id)
             Rep[[m]] <-
