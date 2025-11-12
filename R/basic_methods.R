@@ -1030,7 +1030,7 @@ rc_setup <- function(rc_data, trm_data,
   trm_data <- trm_data[order(trm_data[[idVar]]), ]
   id_match <- match(rc_data[[idVar]], trm_data[[idVar]])
   if (any(rc_data[[stopVar]] > trm_data[[stopVar]][id_match])) {
-    stop(paste0("'", stopVar, "' in the recurring event data cannot be larger than '", 
+    stop(paste0("'", stopVar, "' in the recurring event data cannot be larger than '",
                 stopVar,"' in the terminal event data."))
   }
   # create new dataset
@@ -1069,9 +1069,9 @@ rc_setup <- function(rc_data, trm_data,
   if (length(conflict_names)) {
     warning("The following variables had the same name but different classes and were renamed: ",
             paste(conflict_names, collapse = ", "), ".")
-    names(dataOut1)[match(conflict_names, names(dataOut1))] <- paste0(conflict_names, 
+    names(dataOut1)[match(conflict_names, names(dataOut1))] <- paste0(conflict_names,
                                                                       "_trm") # rename vars that are in BOTH and have different class
-    names(dataOut2)[match(conflict_names, names(dataOut2))] <- paste0(conflict_names, 
+    names(dataOut2)[match(conflict_names, names(dataOut2))] <- paste0(conflict_names,
                                                                       "_rc")
     dataOut1[paste0(conflict_names, "_rc")] <- NA
     dataOut2[paste0(conflict_names, "_trm")] <- NA
@@ -1079,8 +1079,8 @@ rc_setup <- function(rc_data, trm_data,
   dataOut2 <- dataOut2[names(dataOut1)] # reorder columns in the same order
   dataOut <- rbind(dataOut1, dataOut2)
   dataOut[[nameStrata]] <- as.factor(dataOut[[nameStrata]]) # automatically assigns "R" as reference level based on the alphabetical order of the levels
-  dataOut <- dataOut[order(dataOut[[idVar]], 
-                           dataOut[[nameStrata]], 
+  dataOut <- dataOut[order(dataOut[[idVar]],
+                           dataOut[[nameStrata]],
                            dataOut[[startVar]]), ]
   rownames(dataOut) <- seq_len(nrow(dataOut))
   dataOut
@@ -2057,10 +2057,14 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     DF[["Y"]] <-
                         mapply(f, y = YY[[j]], t = ttimes[[j]],
                                MoreArgs = list(t0 = t0))
-                    Cs[i, j] <- concordance(form, data = DF[DF$Time >= t0, ],
-                                         reverse = TRUE)$concordance
+                    DF_i <- DF[DF$Time >= t0, ]
+                    SS <- with(DF_i, Surv(Time, event))
+                    #Cs[i, j] <- concordance(form, data = DF[DF$Time >= t0, ],
+                    #                     reverse = TRUE)$concordance
+                    Cs[i, j] <- survAUC::UnoC(SS, SS, DF_i$Y)
                 }
             }
+            Cs <- apply(Cs, 2L, function (x) if (mean(x) < 0.48) 1 - x else x)
             lapply(seq_len(n_outcomes), function (j)
                 cbind(unq_eventTimes, C = Cs[, j]))
         }

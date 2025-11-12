@@ -14,7 +14,7 @@ Description: Fit joint models for longitudinal and time-to-event data under the 
 Suggests: lattice, knitr, rmarkdown, pkgdown
 Encoding: UTF-8
 Depends: survival, nlme, GLMMadaptive, splines
-Imports: coda, Rcpp, parallel, parallelly, matrixStats, ggplot2, gridExtra, abind, MASS
+Imports: coda, Rcpp, parallel, parallelly, matrixStats, ggplot2, gridExtra, abind, MASS, survAUC
 LinkingTo: Rcpp, RcppArmadillo
 LazyLoad: yes
 LazyData: yes

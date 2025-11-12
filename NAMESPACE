@@ -20,7 +20,9 @@ importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
 importFrom("parallelly", "availableCores")
 importFrom("nlme", "fixef", "ranef", "pdMatrix")
 importFrom("GLMMadaptive", "effectPlotData")
-importFrom("survival", "concordance", "coxph", "untangle.specials", "strata", "survfit", "Surv")
+importFrom("survival", "concordance", "coxph", "untangle.specials", "strata",
+           "survfit", "Surv")
+importFrom("survAUC", "UnoC")
 importFrom("splines", "splineDesign", "ns")
 importFrom("coda", "as.mcmc.list", "as.mcmc", "traceplot", "densplot",
            "gelman.diag", "cumuplot")
