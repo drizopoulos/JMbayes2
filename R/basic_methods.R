@@ -1939,43 +1939,58 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         Times <- out$outcome.Times
         event <- out$outcome.event
         out <- out[names(out) != "outcome"]
-        r2 <- quantile(Times, probs = percentiles[2L], na.rm = TRUE)
-        x_vals <- seq(0, r2, length.out = 500)
-        rep_T <- apply(out$Times, 2L, function (x, x_vals) ecdf(x)(x_vals),
-                       x_vals = x_vals)
-        ss <- summary(survfit(Surv(Times, event) ~ 1), times = x_vals)
-        F0 <- 1 - ss$surv
-        F0_low <- 1 - ss$lower
-        F0_upp <- 1 - ss$upper
-        MISE <- mean(apply((rep_T - F0)^2, 2L, trapezoid_rule, x = x_vals))
-        rootMISE <- round(sqrt(MISE), 5)
-        if (is.null(xlab)) xlab <- "Event Times"
-        if (is.null(ylab)) ylab <- "Empirical CDF"
-        if (plot) {
-            ylim <- c(0, min(1, max(rep_T, F0_upp) + 0.1))
-            matplot(x_vals, rep_T, type = "s", lty = lty_rep, lwd = lwd_rep,
-                    col = col_rep, xlab = xlab, ylab = ylab, ylim = ylim, ...)
-            title(main = main, line = line_main, cex.main = cex.main)
-            lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
-            lines(x_vals, F0_low, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
-            lines(x_vals, F0_upp, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
-            if (add_legend) {
-                if (!is.na(pos_legend[1L])) {
-                    legend(pos_legend[1L],
-                           legend = c("replicated data", "observed data", "95% CI"),
-                           lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
-                           bty = "n", cex = 0.9)
+        if (type == "ecdf") {
+            r2 <- quantile(Times, probs = percentiles[2L], na.rm = TRUE)
+            x_vals <- seq(0, r2, length.out = 500)
+            rep_T <- apply(out$Times, 2L, function (x, x_vals) ecdf(x)(x_vals),
+                           x_vals = x_vals)
+            ss <- summary(survfit(Surv(Times, event) ~ 1), times = x_vals)
+            F0 <- 1 - ss$surv
+            F0_low <- 1 - ss$lower
+            F0_upp <- 1 - ss$upper
+            MISE <- mean(apply((rep_T - F0)^2, 2L, trapezoid_rule, x = x_vals))
+            rootMISE <- round(sqrt(MISE), 5)
+            if (is.null(xlab)) xlab <- "Event Times"
+            if (is.null(ylab)) ylab <- "Empirical CDF"
+            if (plot) {
+                ylim <- c(0, min(1, max(rep_T, F0_upp) + 0.1))
+                matplot(x_vals, rep_T, type = "s", lty = lty_rep, lwd = lwd_rep,
+                        col = col_rep, xlab = xlab, ylab = ylab, ylim = ylim, ...)
+                title(main = main, line = line_main, cex.main = cex.main)
+                lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
+                lines(x_vals, F0_low, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
+                lines(x_vals, F0_upp, type = "s", lwd = lwd_obs, lty = 2, col = col_obs)
+                if (add_legend) {
+                    if (!is.na(pos_legend[1L])) {
+                        legend(pos_legend[1L],
+                               legend = c("replicated data", "observed data", "95% CI"),
+                               lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
+                               bty = "n", cex = 0.9)
+                    }
+                    if (!is.na(pos_legend[2L])) {
+                        legend(pos_legend[2L], bty = "n",
+                               legend = bquote(sqrt(MISE) == .(rootMISE)))
+                    }
                 }
-                if (!is.na(pos_legend[2L])) {
-                    legend(pos_legend[2L], bty = "n",
-                           legend = bquote(sqrt(MISE) == .(rootMISE)))
-                }
+            } else {
+                plot_values <-
+                    list(x_vals = x_vals, obs = F0, obs_low = F0_low,
+                         obs_upp = F0_upp, rep = rep_T,
+                         rootMISE = if (add_legend) rootMISE)
             }
         } else {
-            plot_values <-
-                list(x_vals = x_vals, obs = F0, obs_low = F0_low,
-                     obs_upp = F0_upp, rep = rep_T,
-                     rootMISE = if (add_legend) rootMISE)
+            DD <- data.frame(event = event)
+            DD$S <- mapply(function (sims, times) 1 - ecdf(sims)(times),
+                           sims = split(out$Times, row(out$Times)),
+                           times = Times)
+            KM <- survfit(Surv(S, event) ~ 1, data = DD)
+            plot(KM, xlab = "empirical survival function at event times",
+                 ylab = "Pr(S > t)")
+            xx <- seq(0, 1, length.out = 101)
+            lines(xx, 1 - xx, lwd = 2, col = "red")
+            legend("bottomleft", c("Kaplan-Meier transformed values",
+                                   "survival function uniform"),
+                   lty = 1, lwd = 2, col = c(1, 2), bty = "n")
         }
     } else {
         list_of_jms <- inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
@@ -2052,7 +2067,6 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             f <- function (y, t, t0) {
                 if (all(t > t0)) NA else y[max(which((t - t0) <= 0))]
             }
-            SS_all <- Surv(Time, event)
             Cs <- matrix(0, length(unq_eventTimes), n_outcomes)
             for (i in seq_along(unq_eventTimes)) {
                 t0 <- unq_eventTimes[i]
@@ -2061,14 +2075,12 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     DF[["Y"]] <-
                         mapply(f, y = YY[[j]], t = ttimes[[j]],
                                MoreArgs = list(t0 = t0))
-                    DF_i <- DF[DF$Time >= t0, ]
-                    DF_i$lp <- coxph(Surv(Time, event) ~ Y, data = DF_i)$linear.predictors
-                    SS <- with(DF_i, Surv(Time, event))
+                    DF$lp <- coxph(Surv(Time, event) ~ Y, data = DF)$linear.predictors
                     Cs[i, j] <- if (Uno) {
-                        survC1::Est.Cval(data.matrix(DF_i[-3]),
+                        survC1::Est.Cval(cbind(Time, event, DF$lp),
                                          max(Time) - 0.001, nofit = TRUE)$Dhat
                     } else {
-                        concordance(Surv(Time, event) ~ lp, data = DF_i,
+                        concordance(Surv(Time, event) ~ lp, data = DF,
                                     reverse = TRUE)$concordance
                     }
                 }
