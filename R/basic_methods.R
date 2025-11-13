@@ -1660,7 +1660,6 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
             } else {
                 random_effects[, , j]
             }
-
             bs_gammas <- mcmc_bs_gammas[jj, ]
             if (has_gammas) gammas <- mcmc_gammas[jj, ]
             alphas <- mcmc_alphas[jj, ]
@@ -2066,7 +2065,8 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     DF_i$lp <- coxph(Surv(Time, event) ~ Y, data = DF_i)$linear.predictors
                     SS <- with(DF_i, Surv(Time, event))
                     Cs[i, j] <- if (Uno) {
-                        survAUC::UnoC(SS_all, SS, DF_i$lp)
+                        survC1::Est.Cval(data.matrix(DF_i[-3]),
+                                         max(Time) - 0.001, nofit = TRUE)$Dhat
                     } else {
                         concordance(Surv(Time, event) ~ lp, data = DF_i,
                                     reverse = TRUE)$concordance

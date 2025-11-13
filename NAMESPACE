@@ -22,7 +22,7 @@ importFrom("nlme", "fixef", "ranef", "pdMatrix")
 importFrom("GLMMadaptive", "effectPlotData")
 importFrom("survival", "concordance", "coxph", "untangle.specials", "strata",
            "survfit", "Surv")
-importFrom("survAUC", "UnoC")
+importFrom("survC1", "Est.Cval")
 importFrom("splines", "splineDesign", "ns")
 importFrom("coda", "as.mcmc.list", "as.mcmc", "traceplot", "densplot",
            "gelman.diag", "cumuplot")
