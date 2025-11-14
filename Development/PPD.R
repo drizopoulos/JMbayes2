@@ -148,6 +148,7 @@ FF <- function (t, betas, bi, data) {
 }
 
 JMbayes2:::ppcheck(jointFit1, process = "event", Fforms_fun = FF)
+JMbayes2:::ppcheck(jointFit1, process = "event", Fforms_fun = FF, type = "a")
 JMbayes2:::ppcheck(jointFit2, process = "event", Fforms_fun = FF)
 
 JMbayes2:::plot_hazard(jointFit1, tmax = 14)

@@ -1983,9 +1983,10 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             DD$S <- mapply(function (sims, times) 1 - ecdf(sims)(times),
                            sims = split(out$Times, row(out$Times)),
                            times = Times)
+            #DD$S <- 1 - ecdf(c(out$Times))(Times)
             KM <- survfit(Surv(S, event) ~ 1, data = DD)
             plot(KM, xlab = "empirical survival function at event times",
-                 ylab = "Pr(S > t)")
+                 ylab = "Pr(S > t)", main = main)
             xx <- seq(0, 1, length.out = 101)
             lines(xx, 1 - xx, lwd = 2, col = "red")
             legend("bottomleft", c("Kaplan-Meier transformed values",
@@ -2058,6 +2059,16 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
         Time <- outT$outcome.Times
         event <- outT$outcome.event
         outT <- outT[names(outT) != "outcome"]
+        for (j in seq_len(n_outcomes)) {
+            id_j <- id[[j]]
+            times_j <- times[[j]]
+            f <- function (t, T) {t[t > T] <- NA; t}
+            for (m in seq_len(ncol(outT$Times))) {
+                nas <- is.na(unlist(mapply2(f, t = split(times_j, id_j),
+                                            T = outT$Times[, m])))
+                outY[[j]][nas, m] <- NA_real_
+            }
+        }
         association <- function (Time, event, Y, times, id, Uno = FALSE) {
             n_outcomes <- length(Y)
             YY <- mapply2(split, Y, id)
@@ -2065,19 +2076,20 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             unq_eventTimes <- c(0, sort(unique(Time[event == 1])))
             unq_eventTimes <- unq_eventTimes[unq_eventTimes < quantile(unq_eventTimes, 0.95)]
             f <- function (y, t, t0) {
-                if (all(t > t0)) NA else y[max(which((t - t0) <= 0))]
+                if (all(t > t0)) NA else y[max(which((t - t0) <= 0), na.rm = TRUE)]
             }
             Cs <- matrix(0, length(unq_eventTimes), n_outcomes)
             for (i in seq_along(unq_eventTimes)) {
                 t0 <- unq_eventTimes[i]
-                DF <- data.frame(Time = Time, event = event)
                 for (j in seq_len(n_outcomes)) {
+                    DF <- data.frame(Time = Time, event = event)
                     DF[["Y"]] <-
                         mapply(f, y = YY[[j]], t = ttimes[[j]],
                                MoreArgs = list(t0 = t0))
+                    DF <- DF[!is.na(DF[["Y"]]), ]
                     DF$lp <- coxph(Surv(Time, event) ~ Y, data = DF)$linear.predictors
                     Cs[i, j] <- if (Uno) {
-                        survC1::Est.Cval(cbind(Time, event, DF$lp),
+                        survC1::Est.Cval(cbind(DF$Time, DF$event, DF$lp),
                                          max(Time) - 0.001, nofit = TRUE)$Dhat
                     } else {
                         concordance(Surv(Time, event) ~ lp, data = DF,
