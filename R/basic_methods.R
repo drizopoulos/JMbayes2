@@ -1980,13 +1980,12 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             }
         } else {
             DD <- data.frame(event = event)
-            DD$S <- mapply(function (sims, times) 1 - ecdf(sims)(times),
+            DD$S <- mapply(function (sims, times) ecdf(sims)(times),
                            sims = split(out$Times, row(out$Times)),
                            times = Times)
-            #DD$S <- 1 - ecdf(c(out$Times))(Times)
             KM <- survfit(Surv(S, event) ~ 1, data = DD)
-            plot(KM, xlab = "empirical survival function at event times",
-                 ylab = "Pr(S > t)", main = main)
+            plot(KM, xlab = "empirical CDF at event times",
+                 ylab = "Pr(U > t)", main = main)
             xx <- seq(0, 1, length.out = 101)
             lines(xx, 1 - xx, lwd = 2, col = "red")
             legend("bottomleft", c("Kaplan-Meier transformed values",
@@ -2127,6 +2126,14 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 mapply2(loess.smooth2, x = lapply(C_m, function (c) c[, 1L]),
                         y = lapply(C_m, function (c) c[, 2L]))
         }
+        MISE <- numeric(n_outcomes)
+        for (j in seq_len(n_outcomes)) {
+            Obs_j <- Obs[[j]]
+            Rep_j <- lapply(Rep, function (x) x[[j]])
+            MISE[j] <- mean(sapply(Rep_j, function (r, o)
+                trapezoid_rule((r$y - o$y)^2, o$x), o = Obs_j))
+        }
+        rootMISE <- round(sqrt(MISE), 5)
         if (plot) {
             if (is.null(xlab)) xlab <- "Event Times"
             if (is.null(ylab)) ylab <- "Concordance"
@@ -2149,6 +2156,18 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 if (CI_loess) {
                     lines(Obs[[j]]$x, low[[j]], lwd = lwd_obs, lty = 2, col = col_obs)
                     lines(Obs[[j]]$x, upp[[j]], lwd = lwd_obs, lty = 2, col = col_obs)
+                }
+                if (add_legend) {
+                    if (!is.na(pos_legend[1L])) {
+                        legend(pos_legend[1L],
+                               legend = c("replicated data", "observed data", "95% CI"),
+                               lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
+                               bty = "n", cex = 0.9)
+                    }
+                    if (!is.na(pos_legend[2L])) {
+                        legend(pos_legend[2L], bty = "n",
+                               legend = bquote(sqrt(MISE) == .(rootMISE[j])))
+                    }
                 }
             }
         } else {
