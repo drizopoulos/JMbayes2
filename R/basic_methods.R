@@ -2004,11 +2004,11 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                            times = Times)
             KM <- survfit(Surv(S, event) ~ 1, data = DD)
             plot(KM, xlab = "empirical CDF at event times",
-                 ylab = "Pr(U > t)", main = main)
+                 ylab = "Pr(U <= u)", main = main, fun = "event")
             xx <- seq(0, 1, length.out = 101)
-            lines(xx, 1 - xx, lwd = 2, col = "red")
-            legend("bottomleft", c("Kaplan-Meier transformed values",
-                                   "survival function uniform"),
+            lines(xx, xx, lwd = 2, col = "red")
+            legend("topleft", c("Kaplan-Meier transformed values",
+                                   "CDF uniform"),
                    lty = 1, lwd = 2, col = c(1, 2), bty = "n")
         }
     } else {
@@ -2162,7 +2162,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             for (j in index) {
                 jj <- match(j, index)
                 rx <- range(c(sapply(Rep, function (loe) loe[[j]]$x), Obs[[j]]$x))
-                ry <- range(c(sapply(Rep, function (loe) loe[[j]]$y), Obs[[j]]$y))
+                ry <- range(1, c(sapply(Rep, function (loe) loe[[j]]$y), Obs[[j]]$y))
                 if (CI_loess) {
                     ry <- range(ry, low[[j]], upp[[j]])
                 }
