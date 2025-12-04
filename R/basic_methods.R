@@ -2162,7 +2162,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             for (j in index) {
                 jj <- match(j, index)
                 rx <- range(c(sapply(Rep, function (loe) loe[[j]]$x), Obs[[j]]$x))
-                ry <- range(1, c(sapply(Rep, function (loe) loe[[j]]$y), Obs[[j]]$y))
+                ry <- range(c(sapply(Rep, function (loe) loe[[j]]$y), Obs[[j]]$y))
                 if (CI_loess) {
                     ry <- range(ry, low[[j]], upp[[j]])
                 }
