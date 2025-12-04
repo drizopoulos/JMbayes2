@@ -17,7 +17,7 @@ different type (e.g., continuous, dichotomous, ordinal, counts), and
 assuming different distributions, i.e., Gaussian, Student’s-t, Gamma,
 Beta, unit Lindley, censored Normal, Binomial, Poisson, Negative
 Binomial, and Beta-Binomial. For the event time process, right, left and
-interval censored data can be handled, while competing risks, multi-sate 
+interval censored data can be handled, while competing risks, multi-state 
 and recurrent-event processes are also covered..
 
 **JMbayes2** fits joint models using Markov chain Monte Carlo algorithms
