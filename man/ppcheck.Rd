@@ -10,7 +10,7 @@
 \usage{
 ppcheck(object, nsim = 40L, newdata = NULL, seed = 123L,
     process = c("longitudinal", "event", "joint"),
-    type = c("ecdf", "average-evolution", "variance-function", "variogram"),
+    type = c("ecdf", "average-evolution", "variance-function", "variogram", "surv-uniform"),
     CI_ecdf = c("none", "binomial", "Dvoretzky-Kiefer-Wolfowitz"), CI_loess = FALSE,
     outcomes = Inf, percentiles = c(0.025, 0.975),
     random_effects = c("posterior_means", "mcmc", "prior"),
