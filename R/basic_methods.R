@@ -1900,11 +1900,18 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     }
                     if (add_legend) {
                         if (!is.na(pos_legend[1L])) {
-                            legend(pos_legend[1L],
-                                   legend = c("replicated data", "observed data",
-                                              "95% CI"), lty = c(1, 1, 2),
-                                   col = c(col_rep, col_obs, col_obs), bty = "n",
-                                   cex = 0.9)
+                            if (CI_loess) {
+                                legend(pos_legend[1L],
+                                       legend = c("replicated data", "observed data",
+                                                  "95% CI"), lty = c(1, 1, 2),
+                                       col = c(col_rep, col_obs, col_obs), bty = "n",
+                                       cex = 0.9)
+                            } else {
+                                legend(pos_legend[1L],
+                                       legend = c("replicated data", "observed data"),
+                                       lty = c(1, 1), col = c(col_rep, col_obs),
+                                       bty = "n", cex = 0.9)
+                            }
                         }
                         if (!is.na(pos_legend[2L])) {
                             legend(pos_legend[2L], bty = "n",
@@ -2178,10 +2185,17 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 }
                 if (add_legend) {
                     if (!is.na(pos_legend[1L])) {
-                        legend(pos_legend[1L],
-                               legend = c("replicated data", "observed data", "95% CI"),
-                               lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
-                               bty = "n", cex = 0.9)
+                        if (CI_loess) {
+                            legend(pos_legend[1L],
+                                   legend = c("replicated data", "observed data", "95% CI"),
+                                   lty = c(1, 1, 2), col = c(col_rep, col_obs, col_obs),
+                                   bty = "n", cex = 0.9)
+                        } else {
+                            legend(pos_legend[1L],
+                                   legend = c("replicated data", "observed data"),
+                                   lty = c(1, 1), col = c(col_rep, col_obs),
+                                   bty = "n", cex = 0.9)
+                        }
                     }
                     if (!is.na(pos_legend[2L])) {
                         legend(pos_legend[2L], bty = "n",
