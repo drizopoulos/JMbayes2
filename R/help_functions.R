@@ -1268,15 +1268,13 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
           if (is.null(time_window_i)) {
             t2 <- lapply(time, function(t) rep(0, length(t)))
           } else {
-            #t2 <- lapply(time, function (t) t - time_window_i)
-            t2 <- lapply(time, function (t) pmax(t - time_window_i, 0)) #?? we shift back but not before zero
+            t2 <- lapply(time, function (t) pmax(t - time_window_i, 0))
           }
         } else {
           if (is.null(time_window_i)) {
             t2 <- rep(0, length(time))
           } else {
-            #t2 <- time - time_window_i
-            t2 <- pmax(time - time_window_i, 0) #?? we shift back but not before zero
+            t2 <- pmax(time - time_window_i, 0)
           }
         }
         e <- c(mapply("-", t1, t2))
