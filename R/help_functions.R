@@ -178,7 +178,7 @@ extract_functional_forms <- function (Form, nam, data) {
     M <- model.matrix(tr, mF)
     cnams <- colnames(M)
     possible_forms <- c("value(", "slope(", "area(", "velocity(",
-                        "acceleration(", "coefs(", "change(") #!! new
+                        "acceleration(", "coefs(", "Delta(") #!! new
     possible_forms <- paste0(possible_forms, nam)
     ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
     M <- M[, cnams %in% cnams[unique(ind)], drop = FALSE]
@@ -458,7 +458,7 @@ area <- function (x, time_window = NULL) {
     attributes(out) <- c(attributes(out), temp)
     out
 }
-change <- function (x, time_window = NULL, standardise = TRUE) { #!! new
+Delta <- function (x, time_window = NULL, standardise = TRUE) { #!! new
   out <- rep(1, NROW(x))
   temp <- list(time_window = time_window, standardise = standardise)
   attributes(out) <- c(attributes(out), temp)
@@ -627,7 +627,7 @@ extractFuns_FunForms <- function (Form, nam, data) {
     M <- model.matrix(tr, mF)
     cnams <- colnames(M)
     possible_forms <- c("value(", "slope(", "area(", "velocity(",
-                        "acceleration(", "coefs(", "change(") #!! new
+                        "acceleration(", "coefs(", "Delta(") #!! new
     possible_forms <- paste0(possible_forms, nam)
     ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
     M <- M[1, cnams %in% cnams[unique(ind)], drop = FALSE]
@@ -972,9 +972,9 @@ construct_Umat <- function (fForms, dataS) {
     ind_velocity <- grep("velocity(", cnams, fixed = TRUE)
     ind_acceleration <- grep("acceleration(", cnams, fixed = TRUE)
     ind_coefs <- grep("coefs(", cnams, fixed = TRUE)
-    ind_change <- grep("change(", cnams, fixed = TRUE) #!! new
+    ind_Delta <- grep("Delta(", cnams, fixed = TRUE) #!! new
     ind <- unique(c(ind_value, ind_slope, ind_area, ind_velocity,
-                    ind_acceleration, ind_coefs, ind_change)) #!! new
+                    ind_acceleration, ind_coefs, ind_Delta)) #!! new
     m[, cnams %in% cnams[ind], drop = FALSE]
 }
 
@@ -1257,7 +1257,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         }
         out
     }
-    degn_matr_chg <- function (time, terms, Xbar, time_window, standardise) { #!! new
+    degn_matr_dlt <- function (time, terms, Xbar, time_window, standardise) { #!! new
       K <- length(terms)
       out <- vector("list", K)
       for (i in seq_len(K)) {
@@ -1397,7 +1397,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                 "velocity" = degn_matr_slp(time, terms, Xbar, eps, direction),
                 "acceleration" = degn_matr_acc(time, terms, Xbar),
                 "area" = degn_matr_area(time, terms, Xbar, time_window),
-                "change" = degn_matr_chg(time, terms, Xbar, time_window, standardise)) #!! new
+                "Delta" = degn_matr_dlt(time, terms, Xbar, time_window, standardise)) #!! new
     out <- lapply(seq_along(Fun_Forms), function (i)
         lapply(out[Fun_Forms[[i]]], "[[", i))
     names(out) <- names(Fun_Forms)

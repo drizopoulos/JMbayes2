@@ -7,23 +7,23 @@ fform1 <- list("log(serBilir)" = ~ value(log(serBilir)))
 jm1 <- jm(fCox1, fm1, time_var = "year", data = pbc2.id,
           functional_forms = fform1)
 
-fform2 <- list("log(serBilir)" = ~ change(log(serBilir), time_window = NULL, standardise = TRUE))
+fform2 <- list("log(serBilir)" = ~ Delta(log(serBilir), time_window = NULL, standardise = TRUE))
 jm2 <- jm(fCox1, fm1, time_var = "year", data = pbc2.id, 
           functional_forms = fform2)
 
-fform3 <- list("log(serBilir)" = ~ change(log(serBilir), time_window = NULL, standardise = FALSE))
+fform3 <- list("log(serBilir)" = ~ Delta(log(serBilir), time_window = NULL, standardise = FALSE))
 jm3 <- jm(fCox1, fm1, time_var = "year", data = pbc2.id, 
           functional_forms = fform3)
 
-fform4 <- list("log(serBilir)" = ~ change(log(serBilir), time_window = 1, standardise = TRUE))
+fform4 <- list("log(serBilir)" = ~ Delta(log(serBilir), time_window = 1, standardise = TRUE))
 jm4 <- jm(fCox1, fm1, time_var = "year", data = pbc2.id, 
           functional_forms = fform4)
 
-fform5 <- list("log(serBilir)" = ~ change(log(serBilir), time_window = 2, standardise = FALSE))
+fform5 <- list("log(serBilir)" = ~ Delta(log(serBilir), time_window = 2, standardise = FALSE))
 jm5 <- jm(fCox1, fm1, time_var = "year", data = pbc2.id, 
           functional_forms = fform5)
 
-fform6 <- list("log(serBilir)" = ~ change(log(serBilir), time_window = 2, standardise = FALSE) + area(log(serBilir), time_window = 2))
+fform6 <- list("log(serBilir)" = ~ Delta(log(serBilir), time_window = 2, standardise = FALSE) + area(log(serBilir), time_window = 2))
 jm6 <- jm(fCox1, fm1, time_var = "year", data = pbc2.id, 
           functional_forms = fform6)
 

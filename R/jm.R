@@ -450,7 +450,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     collapsed_functional_forms <-
         lapply(collapsed_functional_forms, function (nam) {
             nn <- c("value", "slope", "area", "velocity", "acceleration",
-                    "coefs", "change") #!! new
+                    "coefs", "Delta") #!! new
             names(unlist(sapply(nn, grep, x = nam, fixed = TRUE,
                                 simplify = FALSE)))
         })
