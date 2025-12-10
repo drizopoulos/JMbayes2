@@ -6,6 +6,7 @@
 \alias{velocity}
 \alias{acceleration}
 \alias{coefs}
+\alias{change}
 \alias{vexpit}
 \alias{Dexpit}
 \alias{vexp}
@@ -40,6 +41,7 @@ slope(x, eps = 0.001, direction = "both")
 velocity(x, eps = 0.001, direction = "both")
 acceleration(x)
 area(x, time_window = NULL)
+change(x, time_window = Inf, standardise = TRUE)
 
 vexpit(x)
 Dexpit(x)
@@ -184,7 +186,12 @@ tv(x, knots = NULL, ord = 2L)
 \item{eps}{numeric scalar denoting the step-size for the finite difference approximation.}
 \item{direction}{character string for the direction of the numerical derivative, options are \code{"both"},
 and \code{"backward"}.}
-\item{time_window}{numeric scalar denoting the lower limit for calculating the integral.}
+\item{time_window}{numeric scalar controlling the time window used by the \code{change()} and \code{area()}
+functional forms. For \code{area()}, \code{time_window} specifies the lower limit of the interval over which
+the integral is evaluated. For \code{change()}, \code{time_window} specifies the length of the time interval
+(i.e., the contrast between t and t - \code{time_window}) over which the finite difference is computed; when set to \code{NULL} (the default), the contrast is taken between the current time and time 0.}
+\item{standardise}{\code{logical}; controls whether the \code{change()} functional form returns a rate or a raw contrast. If \code{TRUE}, the difference between the values at the two time points is divided by the time distance between them, yielding a change per unit time. If \code{FALSE}, \code{change()} returns the raw difference over the specified time window. Defaults to \code{TRUE}.}
+
 \item{\dots}{arguments passed to \code{control}.}
 }
 

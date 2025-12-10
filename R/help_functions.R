@@ -178,7 +178,7 @@ extract_functional_forms <- function (Form, nam, data) {
     M <- model.matrix(tr, mF)
     cnams <- colnames(M)
     possible_forms <- c("value(", "slope(", "area(", "velocity(",
-                        "acceleration(", "coefs(")
+                        "acceleration(", "coefs(", "change(") #!! new
     possible_forms <- paste0(possible_forms, nam)
     ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
     M <- M[, cnams %in% cnams[unique(ind)], drop = FALSE]
@@ -376,10 +376,12 @@ extract_attributes <- function (form, data) {
     direction <- lapply(mf, function (v, name) attr(v, name), name = "direction")
     zero_ind <- lapply(mf, function (v, name) attr(v, name), name = "zero_ind")
     time_window <- lapply(mf, function (v, name) attr(v, name), name = "time_window")
+    standardise <- lapply(mf, function (v, name) attr(v, name), name = "standardise") #!! new
     list(eps = eps[!sapply(eps, is.null)],
          direction = direction[!sapply(direction, is.null)],
          zero_ind = zero_ind[!sapply(zero_ind, is.null)],
-         time_window = time_window[!sapply(time_window, is.null)])
+         time_window = time_window[!sapply(time_window, is.null)],
+         standardise = standardise[!sapply(standardise, is.null)]) #!! new
 }
 
 extract_D <- function (object) {
@@ -456,7 +458,12 @@ area <- function (x, time_window = NULL) {
     attributes(out) <- c(attributes(out), temp)
     out
 }
-
+change <- function (x, time_window = NULL, standardise = TRUE) { #!! new
+  out <- rep(1, NROW(x))
+  temp <- list(time_window = time_window, standardise = standardise)
+  attributes(out) <- c(attributes(out), temp)
+  out
+}
 
 create_HC_X <- function(x, z, id, terms, data) {
     check_tv <- function (x, id) {
@@ -620,7 +627,7 @@ extractFuns_FunForms <- function (Form, nam, data) {
     M <- model.matrix(tr, mF)
     cnams <- colnames(M)
     possible_forms <- c("value(", "slope(", "area(", "velocity(",
-                        "acceleration(", "coefs(")
+                        "acceleration(", "coefs(", "change(") #!! new
     possible_forms <- paste0(possible_forms, nam)
     ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
     M <- M[1, cnams %in% cnams[unique(ind)], drop = FALSE]
@@ -965,8 +972,9 @@ construct_Umat <- function (fForms, dataS) {
     ind_velocity <- grep("velocity(", cnams, fixed = TRUE)
     ind_acceleration <- grep("acceleration(", cnams, fixed = TRUE)
     ind_coefs <- grep("coefs(", cnams, fixed = TRUE)
+    ind_change <- grep("change(", cnams, fixed = TRUE) #!! new
     ind <- unique(c(ind_value, ind_slope, ind_area, ind_velocity,
-                    ind_acceleration, ind_coefs))
+                    ind_acceleration, ind_coefs, ind_change)) #!! new
     m[, cnams %in% cnams[ind], drop = FALSE]
 }
 
@@ -1183,7 +1191,8 @@ LongData_HazardModel <- function (times_to_fill, data, times_data, ids,
 
 design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                                               idT, Fun_Forms, Xbar = NULL, eps,
-                                              direction, zero_ind = NULL, time_window) {
+                                              direction, zero_ind = NULL, 
+                                              time_window, standardise) { #!! new
     data[] <- lapply(data, function (x) locf(locf(x), fromLast = TRUE))
     desgn_matr <- function (time, terms, Xbar, zero_ind) {
         D <- LongData_HazardModel(time, data, data[[timeVar]],
@@ -1247,6 +1256,53 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
             out[[i]] <- (X1 - X2) / e
         }
         out
+    }
+    degn_matr_chg <- function (time, terms, Xbar, time_window, standardise) { #!! new
+      K <- length(terms)
+      out <- vector("list", K)
+      for (i in seq_len(K)) {
+        time_window_i <- if (length(time_window[[i]])) time_window[[i]][[1L]] else NULL
+        standardise_i <- if (length(standardise[[i]])) standardise[[i]][[1L]] else TRUE
+        t1 <- time
+        if (is.list(time)) {
+          if (is.null(time_window_i)) {
+            t2 <- lapply(time, function(t) rep(0, length(t)))
+          } else {
+            #t2 <- lapply(time, function (t) t - time_window_i)
+            t2 <- lapply(time, function (t) pmax(t - time_window_i, 0)) #?? we shift back but not before zero
+          }
+        } else {
+          if (is.null(time_window_i)) {
+            t2 <- rep(0, length(time))
+          } else {
+            #t2 <- time - time_window_i
+            t2 <- pmax(time - time_window_i, 0) #?? we shift back but not before zero
+          }
+        }
+        e <- c(mapply("-", t1, t2))
+        if (!standardise_i) {
+          e[] <- 1
+        } else {
+          e[e == 0] <- 1 # guard against division by zero, 0/0 -> 0/1=0
+        }
+        terms_i <- terms[[i]]
+        D1 <- LongData_HazardModel(t1, data, data[[timeVar]],
+                                   data[[idVar]], timeVar,
+                                   match(idT, unique(idT)))
+        mf1 <- model.frame.default(terms_i, data = D1)
+        X1 <- model.matrix.default(terms_i, mf1)
+        D2 <- LongData_HazardModel(t2, data, data[[timeVar]],
+                                   data[[idVar]], timeVar,
+                                   match(idT, unique(idT)))
+        mf2 <- model.frame.default(terms_i, data = D2)
+        X2 <- model.matrix.default(terms_i, mf2)
+        if (!is.null(Xbar)) {
+          X1 <- X1 - rep(Xbar[[i]], each = nrow(X1))
+          X2 <- X2 - rep(Xbar[[i]], each = nrow(X2))
+        }
+        out[[i]] <- (X1 - X2) / e
+      }
+      out
     }
     degn_matr_acc <- function (time, terms, Xbar) {
         K <- length(terms)
@@ -1340,7 +1396,8 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                 "slope" = degn_matr_slp(time, terms, Xbar, eps, direction),
                 "velocity" = degn_matr_slp(time, terms, Xbar, eps, direction),
                 "acceleration" = degn_matr_acc(time, terms, Xbar),
-                "area" = degn_matr_area(time, terms, Xbar, time_window))
+                "area" = degn_matr_area(time, terms, Xbar, time_window),
+                "change" = degn_matr_chg(time, terms, Xbar, time_window, standardise)) #!! new
     out <- lapply(seq_along(Fun_Forms), function (i)
         lapply(out[Fun_Forms[[i]]], "[[", i))
     names(out) <- names(Fun_Forms)
