@@ -264,12 +264,12 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
     X_H <- design_matrices_functional_forms(st, terms_FE_noResp,
                                             dataL, time_var, idVar, idT,
                                             collapsed_functional_forms, Xbar,
-                                            eps, direction, zero_ind_X, 
+                                            eps, direction, zero_ind_X,
                                             time_window, standardise) #!! new
     Z_H <- design_matrices_functional_forms(st, terms_RE,
                                             dataL, time_var, idVar, idT,
                                             collapsed_functional_forms, NULL,
-                                            eps, direction, zero_ind_Z, 
+                                            eps, direction, zero_ind_Z,
                                             time_window, standardise) #!! new
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
     if (length(which_event)) {
@@ -287,12 +287,12 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
         X_h <- design_matrices_functional_forms(Time_right, terms_FE_noResp,
                                                 dataL, time_var, idVar, idT,
                                                 collapsed_functional_forms, Xbar,
-                                                eps, direction, zero_ind_X, 
+                                                eps, direction, zero_ind_X,
                                                 time_window, standardise) #!! new
         Z_h <- design_matrices_functional_forms(Time_right, terms_RE,
                                                 dataL, time_var, idVar, idT,
                                                 collapsed_functional_forms, NULL,
-                                                eps, direction, zero_ind_Z, 
+                                                eps, direction, zero_ind_Z,
                                                 time_window, standardise) #!! new
         U_h <- lapply(functional_forms, construct_Umat, dataS = dataS_h)
     } else {
@@ -313,12 +313,12 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
         X_H2 <- design_matrices_functional_forms(st, terms_FE_noResp,
                                                  dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, Xbar,
-                                                 eps, direction, zero_ind_X, 
+                                                 eps, direction, zero_ind_X,
                                                  time_window, standardise) #!! new
         Z_H2 <- design_matrices_functional_forms(st, terms_RE,
                                                  dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, NULL,
-                                                 eps, direction, zero_ind_X, 
+                                                 eps, direction, zero_ind_X,
                                                  time_window, standardise) #!! new
         U_H2 <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
     } else {
@@ -454,6 +454,7 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
     zero_ind_X <- object$model_info$zero_ind_X
     zero_ind_Z <- object$model_info$zero_ind_Z
     time_window <- object$model_info$time_window
+    standardise <- object$model_info$standardise
 
     # Design matrices
     strata_H <- if (object$model_info$CR_MS) {
@@ -506,12 +507,12 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
         X_h <- design_matrices_functional_forms(split(st0, row(st0)), terms_FE_noResp,
                                                 dataL, time_var, idVar, index2,
                                                 collapsed_functional_forms, Xbar,
-                                                eps, direction, zero_ind_X, 
+                                                eps, direction, zero_ind_X,
                                                 time_window, standardise) #!! new
         Z_h <- design_matrices_functional_forms(split(st0, row(st0)), terms_RE,
                                                 dataL, time_var, idVar, index2,
                                                 collapsed_functional_forms, NULL,
-                                                eps, direction, zero_ind_Z, 
+                                                eps, direction, zero_ind_Z,
                                                 time_window, standardise) #!! new
         U_h <- lapply(functional_forms, construct_Umat, dataS = dataS_h)
     } else {
@@ -534,13 +535,13 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
                                                  dataL, time_var, idVar,
                                                  rep(index2, each = control$GK_k),
                                                  collapsed_functional_forms, Xbar,
-                                                 eps, direction, zero_ind_X, 
+                                                 eps, direction, zero_ind_X,
                                                  time_window, standardise) #!! new
         Z_H2 <- design_matrices_functional_forms(split(st2, row(st2)), terms_RE,
                                                  dataL, time_var, idVar,
                                                  rep(index2, each = control$GK_k),
                                                  collapsed_functional_forms, NULL,
-                                                 eps, direction, zero_ind_Z, 
+                                                 eps, direction, zero_ind_Z,
                                                  time_window, standardise) #!! new
         U_H2 <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
     } else {
