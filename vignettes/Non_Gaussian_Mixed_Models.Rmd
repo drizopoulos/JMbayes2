@@ -404,7 +404,7 @@ The corresponding joint model is the fitted using the following syntax:
 DF_id <- DF[!duplicated(DF$id), ]
 Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
 NB_MixMod <- mixed_model(y ~ sex * time, random = ~ time | id, data = DF,
-                         family = negative.binomial())
+                         family = GLMMadaptive::negative.binomial())
 
 jointFit <- jm(Cox_fit, NB_MixMod, time_var = "time")
 summary(jointFit)

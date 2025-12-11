@@ -458,7 +458,7 @@ area <- function (x, time_window = NULL) {
     attributes(out) <- c(attributes(out), temp)
     out
 }
-Delta <- function (x, time_window = NULL, standardise = TRUE) { #!! new
+Delta <- function (x, time_window = NULL, standardise = FALSE) { #!! new
   out <- rep(1, NROW(x))
   temp <- list(time_window = time_window, standardise = standardise)
   attributes(out) <- c(attributes(out), temp)
@@ -1191,7 +1191,7 @@ LongData_HazardModel <- function (times_to_fill, data, times_data, ids,
 
 design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                                               idT, Fun_Forms, Xbar = NULL, eps,
-                                              direction, zero_ind = NULL, 
+                                              direction, zero_ind = NULL,
                                               time_window, standardise) { #!! new
     data[] <- lapply(data, function (x) locf(locf(x), fromLast = TRUE))
     desgn_matr <- function (time, terms, Xbar, zero_ind) {
@@ -1280,9 +1280,10 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         e <- c(mapply("-", t1, t2))
         if (!standardise_i) {
           e[] <- 1
-        } else {
-          e[e == 0] <- 1 # guard against division by zero, 0/0 -> 0/1=0
         }
+        #else {
+        #  e[e == 0] <- 1 # guard against division by zero, 0/0 -> 0/1=0
+        #}
         terms_i <- terms[[i]]
         D1 <- LongData_HazardModel(t1, data, data[[timeVar]],
                                    data[[idVar]], timeVar,
