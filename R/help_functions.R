@@ -1280,10 +1280,9 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         e <- c(mapply("-", t1, t2))
         if (!standardise_i) {
           e[] <- 1
+        } else {
+          e[e == 0] <- 1 # guard against division by zero, 0/0 -> 0/1=0
         }
-        #else {
-        #  e[e == 0] <- 1 # guard against division by zero, 0/0 -> 0/1=0
-        #}
         terms_i <- terms[[i]]
         D1 <- LongData_HazardModel(t1, data, data[[timeVar]],
                                    data[[idVar]], timeVar,
