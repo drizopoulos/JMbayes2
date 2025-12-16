@@ -2011,12 +2011,14 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                            times = Times)
             KM <- survfit(Surv(S, event) ~ 1, data = DD)
             plot(KM, xlab = "empirical CDF at event times",
-                 ylab = "Pr(U <= u)", main = main, fun = "event")
+                 ylab = "Pr(U <= u)", main = main, fun = "event", ...)
             xx <- seq(0, 1, length.out = 101)
             lines(xx, xx, lwd = 2, col = "red")
-            legend("topleft", c("Kaplan-Meier transformed values",
-                                   "CDF uniform"),
-                   lty = 1, lwd = 2, col = c(1, 2), bty = "n")
+            if (add_legend) {
+                legend("topleft", c("Kaplan-Meier transformed values",
+                                    "CDF uniform"),
+                       lty = 1, lwd = 2, col = c(1, 2), bty = "n")
+            }
         }
     } else {
         list_of_jms <- inherits(object, 'list') && inherits(object[[1L]], 'jm') &&
@@ -2174,7 +2176,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     ry <- range(ry, low[[j]], upp[[j]])
                 }
                 plot(rx, ry, type = "n", xlab = xlab[jj], ylab = ylab[jj],
-                     main = main[jj])
+                     main = main[jj], ...)
                 for (i in seq_along(Rep)) {
                     lines(Rep[[i]][[j]], col = col_rep, lty = lty_rep, lwd = lwd_rep)
                 }
