@@ -578,7 +578,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                                                  collapsed_functional_forms, Xbar,
                                                  eps, direction, zero_ind_X, 
                                                  time_window, standardise, 
-                                                 IE_time) #!! new #?? check if for interval censoring this works the same way
+                                                 IE_time) #!! new
         Z_H2 <- design_matrices_functional_forms(st2, terms_RE,
                                                  dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, NULL,
