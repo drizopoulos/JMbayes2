@@ -1327,13 +1327,13 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         t1 <- time_i #!! new
         if (is.list(time_i)) { #!! new
           if (is.null(time_window_i)) {
-            t2 <- lapply(time_i, numeric) #!! new
+            t2 <- lapply(time_i, function(t) numeric(length(t))) #!! new
           } else {
             t2 <- lapply(time_i, function (t) pmax(t - time_window_i, 0)) #!! new
           }
         } else {
           if (is.null(time_window_i)) {
-            t2 <- rep(0, length(time_i)) #!! new
+            t2 <- numeric(length(time_i)) #!! new
           } else {
             t2 <- pmax(time_i - time_window_i, 0) #!! new
           }
