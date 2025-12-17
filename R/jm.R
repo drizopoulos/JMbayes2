@@ -331,7 +331,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         }
     }
 
-    # extract weights if present, otherwise set wegiht equal to one for all subjects
+    # extract weights if present, otherwise set weight equal to one for all subjects
     indx <- match("weights", names(Surv_object$call), nomatch = 0)
     weights <- if (indx) {
         if (is.null(Surv_object$model)) {
@@ -450,7 +450,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     collapsed_functional_forms <-
         lapply(collapsed_functional_forms, function (nam) {
             nn <- c("value", "slope", "area", "velocity", "acceleration",
-                    "coefs", "Delta") #!! new
+                    "coefs", "Delta")
             names(unlist(sapply(nn, grep, x = nam, fixed = TRUE,
                                 simplify = FALSE)))
         })
@@ -495,17 +495,41 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     zero_ind_X <- lapply(zero_ind, function (x) if (length(x)) x[[1]][["X"]] else x)
     zero_ind_Z <- lapply(zero_ind, function (x) if (length(x)) x[[1]][["Z"]] else x)
     time_window <- lapply(attr, "[[", 4L)
-    standardise <- lapply(attr, "[[", 5L) #!! new
+    standardise <- lapply(attr, "[[", 5L)
+    IE_time <- IE_time2 <- lapply(attr, "[[", 6L) #!! new
+    if(any(lengths(IE_time))) { #!! new
+      bool <- vapply(IE_time, function(x)
+        all(vapply(x, function(x_i) identical(x_i, x[[1]]), logical(1))), 
+        logical(1))
+      if (any(!bool)) {
+        bad <- names(IE_time)[!bool]
+        msg <- "Inconsistent 'IE_time' variable detected within in the following outcome(s): "
+        stop(paste0(msg, paste(bad, collapse = ", ")), ".")
+      }
+      remove(bool)
+      IE_time <- lapply(IE_time, function(x) if (length(x)) x[[1L]] else x)
+      if (!all(vapply(IE_time, function(x) is.character(x) || !length(x), logical(1)))) {
+        stop("'IE_time' must be a character string.")
+      }
+      missing_IE_time <- setdiff(unlist(IE_time), colnames(dataS))
+      if (length(missing_IE_time)) {
+        stop("Cannot extract the IE_time variable(s) from the dataset used to ",
+             "fit the survival model. Please include the following variable(s)",
+             " in the dataset: ", paste(missing_IE_time, collapse = ", "), ".")
+      }
+      remove(missing_IE_time)
+    }
+    IE_time <- lapply(IE_time, function(v) if (length(v)) dataS[[v]] else v) #!! new
     X_H <- design_matrices_functional_forms(st, terms_FE_noResp,
                                             dataL, time_var, idVar, idT,
                                             collapsed_functional_forms, Xbar,
                                             eps, direction, zero_ind_X, 
-                                            time_window, standardise) #!! new
+                                            time_window, standardise, IE_time) #!! new
     Z_H <- design_matrices_functional_forms(st, terms_RE,
                                             dataL, time_var, idVar, idT,
                                             collapsed_functional_forms, NULL,
                                             eps, direction, zero_ind_Z, 
-                                            time_window, standardise) #!! new
+                                            time_window, standardise, IE_time) #!! new
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
     if (length(which_event)) {
         W0_h <- if (recurrent == "gap") {
@@ -528,12 +552,12 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                                                 dataL, time_var, idVar, idT,
                                                 collapsed_functional_forms, Xbar,
                                                 eps, direction, zero_ind_X, 
-                                                time_window, standardise) #!! new
+                                                time_window, standardise, IE_time) #!! new
         Z_h <- design_matrices_functional_forms(Time_right, terms_RE,
                                                 dataL, time_var, idVar, idT,
                                                 collapsed_functional_forms, NULL,
                                                 eps, direction, zero_ind_Z, 
-                                                time_window, standardise) #!! new
+                                                time_window, standardise, IE_time) #!! new
         U_h <- lapply(functional_forms, construct_Umat, dataS = dataS_h)
     } else {
         W0_h <- W_h <- matrix(0.0)
@@ -553,12 +577,14 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
                                                  dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, Xbar,
                                                  eps, direction, zero_ind_X, 
-                                                 time_window, standardise) #!! new
+                                                 time_window, standardise, 
+                                                 IE_time) #!! new #?? check if for interval censoring this works the same way
         Z_H2 <- design_matrices_functional_forms(st2, terms_RE,
                                                  dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, NULL,
                                                  eps, direction, zero_ind_Z, 
-                                                 time_window, standardise) #!! new
+                                                 time_window, standardise, 
+                                                 IE_time) #!! new
         U_H2 <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
     } else {
         W0_H2 <- W_H2 <- matrix(0.0)
@@ -619,7 +645,7 @@ jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         Funs_FunForms = lapply(Funs_FunForms, function (x) if (!is.list(x)) list(x) else x),
         eps = eps, direction = direction, zero_ind_X = zero_ind_X,
         zero_ind_Z = zero_ind_Z, time_window = time_window,
-        standardise = standardise, #!! new
+        standardise = standardise, IE_time = IE_time2, #!! new
         recurrent = !isFALSE(recurrent),
         ind_RE_patt = ind_RE_patt, ind_FE_patt = ind_FE_patt,
         id_patt = id_patt, callS = Surv_object$call,

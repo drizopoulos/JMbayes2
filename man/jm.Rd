@@ -35,13 +35,13 @@ jm(Surv_object, Mixed_objects, time_var, recurrent = FALSE,
   base_hazard = NULL, data_Surv = NULL, id_var = NULL,
   priors = NULL, control = NULL, \dots)
 
-value(x)
-coefs(x, zero_ind = NULL)
-slope(x, eps = 0.001, direction = "both")
-velocity(x, eps = 0.001, direction = "both")
-acceleration(x)
-area(x, time_window = NULL)
-Delta(x, time_window = NULL, standardise = FALSE)
+value(x, IE_time = NULL)
+coefs(x, zero_ind = NULL, IE_time = NULL)
+slope(x, eps = 0.001, direction = "both", IE_time = NULL)
+velocity(x, eps = 0.001, direction = "both", IE_time = NULL)
+acceleration(x, IE_time = NULL)
+area(x, time_window = NULL, IE_time = NULL)
+Delta(x, time_window = NULL, standardise = FALSE, IE_time = NULL)
 
 vexpit(x)
 Dexpit(x)
@@ -190,8 +190,8 @@ and \code{"backward"}.}
 functional forms. For \code{area()}, \code{time_window} specifies the lower limit of the interval over which
 the integral is evaluated. For \code{Delta()}, \code{time_window} specifies the length of the time interval
 (i.e., the contrast between t and t - \code{time_window}) over which the finite difference is computed; when set to \code{NULL} (the default), the contrast is taken between the current time and time 0.}
-\item{standardise}{\code{logical}; controls whether the \code{Delta()} functional form returns a rate or a raw contrast. If \code{TRUE}, the difference between the values at the two time points is divided by the time distance between them, yielding a change per unit time. If \code{FALSE}, \code{Delta()} returns the raw difference over the specified time window. Defaults to \code{TRUE}.}
-
+\item{standardise}{\code{logical}; controls whether the \code{Delta()} functional form returns a rate or a raw contrast. If \code{TRUE}, the difference between the values at the two time points is divided by the time distance between them, yielding a change per unit time. If \code{FALSE}, \code{Delta()} returns the raw difference over the specified time window. Defaults to \code{FALSE}.}
+\item{IE_time}{a \code{character} string specifying the name of the intermediate event time variable in the \code{data.frame} used to fit the Cox/AFT survival submodel. For groups/subjects who did not experience the intermediate event, the time should be set to \code{Inf}. The same \code{IE_time} variable should be used when specifying multiple functional forms for the same longitudinal outcome.}
 \item{\dots}{arguments passed to \code{control}.}
 }
 

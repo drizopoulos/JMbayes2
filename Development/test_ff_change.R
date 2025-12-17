@@ -7,6 +7,21 @@ fform1 <- list("log(serBilir)" = ~ value(log(serBilir)))
 jm1 <- jm(fCox1, fm1, time_var = "year", data = pbc2.id,
           functional_forms = fform1)
 
+Surv_object <- fCox1
+Mixed_objects <- fm1
+time_var <- "year"
+data <- pbc2.id
+recurrent <- FALSE
+functional_forms <- fform1
+
+which_independent <- NULL
+base_hazard <- NULL
+data_Surv <- NULL 
+id_var <- NULL
+priors <- NULL
+control <- NULL
+
+
 fform2 <- list("log(serBilir)" = ~ Delta(log(serBilir), time_window = NULL, standardise = TRUE))
 jm2 <- jm(fCox1, fm1, time_var = "year", data = pbc2.id, 
           functional_forms = fform2)
