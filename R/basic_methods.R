@@ -1804,11 +1804,11 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 rootMISE <- round(sqrt(MISE), 5)
                 if (plot) {
                     if (is.null(ylim)) {
-                        ylim <- c(0, min(1, max(rep_y, F0u) + 0.1))
-                    }
+                        yylim <- c(0, min(1, max(rep_y, F0u) + 0.1))
+                    } else yylim <- ylim
                     matplot(x_vals, rep_y, type = "s", lty = lty_rep, lwd = lwd_rep,
                             col = col_rep, xlab = xlab[jj], ylab = ylab[jj],
-                            ylim = ylim, ...)
+                            ylim = yylim, ...)
                     title(main = main[jj], line = line_main, cex.main = cex.main)
                     lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
                     if (CI_ecdf != "none") {
@@ -1890,11 +1890,11 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 rootMISE <- round(sqrt(MISE), 5)
                 if (plot) {
                     if (is.null(ylim)) {
-                        ylim <- range(obs_loess$y, rep_loess)
-                    }
+                        yylim <- range(obs_loess$y, rep_loess)
+                    } else yylim <- ylim
                     if (CI_loess) ylim <- range(ylim, low, upp)
                     matplot(obs_loess$x, rep_loess, type = "l", col = col_rep,
-                            lty = lty_rep, lwd = lwd_rep, ylim = ylim,
+                            lty = lty_rep, lwd = lwd_rep, ylim = yylim,
                             xlab = xlab[jj], ylab = ylab[jj], ...)
                     title(main = main[jj], line = line_main, cex.main = cex.main)
                     lines(obs_loess, lwd = lwd_obs, lty = lty_obs, col = col_obs)
@@ -1975,10 +1975,10 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             if (is.null(ylab)) ylab <- "Empirical CDF"
             if (plot) {
                 if (is.null(ylim)) {
-                    ylim <- c(0, min(1, max(rep_T, F0_upp) + 0.1))
-                }
+                    yylim <- c(0, min(1, max(rep_T, F0_upp) + 0.1))
+                } else yylim <- ylim
                 matplot(x_vals, rep_T, type = "s", lty = lty_rep, lwd = lwd_rep,
-                        col = col_rep, xlab = xlab, ylab = ylab, ylim = ylim, ...)
+                        col = col_rep, xlab = xlab, ylab = ylab, ylim = yylim, ...)
                 title(main = main, line = line_main, cex.main = cex.main)
                 lines(x_vals, F0, type = "s", lwd = lwd_obs, lty = lty_obs, col = col_obs)
                 if (CI_ecdf != "none") {
@@ -2017,7 +2017,8 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                            times = Times)
             KM <- survfit(Surv(S, event) ~ 1, data = DD)
             plot(KM, xlab = "empirical CDF at event times",
-                 ylab = "Pr(U <= u)", main = main, fun = "event", ...)
+                 ylab = "Pr(U <= u)", main = main, fun = "event",
+                 cex.main = cex.main, ...)
             xx <- seq(0, 1, length.out = 101)
             lines(xx, xx, lwd = 2, col = "red")
             if (add_legend) {
@@ -2182,7 +2183,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                     ry <- range(ry, low[[j]], upp[[j]])
                 }
                 plot(rx, ry, type = "n", xlab = xlab[jj], ylab = ylab[jj],
-                     main = main[jj], ...)
+                     main = main[jj], cex.main = cex.main, ...)
                 for (i in seq_along(Rep)) {
                     lines(Rep[[i]][[j]], col = col_rep, lty = lty_rep, lwd = lwd_rep)
                 }
