@@ -1696,7 +1696,7 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                      main = "", xlab = NULL, ylab = NULL,
                      col_obs = "black", col_rep = "lightgrey", lty_obs = 1,
                      lty_rep = 1, lwd_obs = 1.5, lwd_rep = 1, line_main = NA,
-                     cex.main = 1.2, ...) {
+                     cex.main = 1.2, ylim = NULL, ...) {
     process <- match.arg(process)
     type <- match.arg(type)
     CI_ecdf <- match.arg(CI_ecdf)
@@ -1803,7 +1803,9 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                 MISE <- mean(apply((rep_y - F0)^2, 2L, trapezoid_rule, x = x_vals))
                 rootMISE <- round(sqrt(MISE), 5)
                 if (plot) {
-                    ylim <- c(0, min(1, max(rep_y, F0u) + 0.1))
+                    if (is.null(ylim)) {
+                        ylim <- c(0, min(1, max(rep_y, F0u) + 0.1))
+                    }
                     matplot(x_vals, rep_y, type = "s", lty = lty_rep, lwd = lwd_rep,
                             col = col_rep, xlab = xlab[jj], ylab = ylab[jj],
                             ylim = ylim, ...)
@@ -1887,7 +1889,9 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
                                    trapezoid_rule, x = obs_loess$x))
                 rootMISE <- round(sqrt(MISE), 5)
                 if (plot) {
-                    ylim <- range(obs_loess$y, rep_loess)
+                    if (is.null(ylim)) {
+                        ylim <- range(obs_loess$y, rep_loess)
+                    }
                     if (CI_loess) ylim <- range(ylim, low, upp)
                     matplot(obs_loess$x, rep_loess, type = "l", col = col_rep,
                             lty = lty_rep, lwd = lwd_rep, ylim = ylim,
@@ -1970,7 +1974,9 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
             if (is.null(xlab)) xlab <- "Event Times"
             if (is.null(ylab)) ylab <- "Empirical CDF"
             if (plot) {
-                ylim <- c(0, min(1, max(rep_T, F0_upp) + 0.1))
+                if (is.null(ylim)) {
+                    ylim <- c(0, min(1, max(rep_T, F0_upp) + 0.1))
+                }
                 matplot(x_vals, rep_T, type = "s", lty = lty_rep, lwd = lwd_rep,
                         col = col_rep, xlab = xlab, ylab = ylab, ylim = ylim, ...)
                 title(main = main, line = line_main, cex.main = cex.main)
