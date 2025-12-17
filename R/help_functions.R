@@ -1282,7 +1282,6 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                     t1 <- time_i + eps_i #!! new
                     t2 <- time_i - eps_i #!! new
                 }
-              e <- 2 * eps_i
             } else { # "backward"
                 t1 <- time_i #!! new
                 if (is.list(time_i)) { #!! new
@@ -1290,8 +1289,8 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                 } else {
                     t2 <- time_i - eps_i #!! new
                 }
-                e <- eps_i
             }
+            e <- c(mapply("-", t1, t2))
             D1 <- LongData_HazardModel(t1, data, data[[timeVar]],
                                        data[[idVar]], timeVar,
                                        match(idT, unique(idT)))
@@ -1382,7 +1381,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
               t1 <- time_i + 0.001 #!! new
               t2 <- time_i - 0.001 #!! new
             }
-          e <- 2 * 0.001 #!! new
+          e <- c(mapply("-", t1, t2))
           D <- LongData_HazardModel(time_i, data, data[[timeVar]], #!! new
                                     data[[idVar]], timeVar,
                                     match(idT, unique(idT)))
