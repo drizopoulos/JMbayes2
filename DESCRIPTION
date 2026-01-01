@@ -4,7 +4,7 @@ Title: Extended Joint Models for Longitudinal and Time-to-Event Data
 Version: 0.5-99
 Authors@R: c(
     person("Dimitris", "Rizopoulos", email = "d.rizopoulos@erasmusmc.nl", role = c("aut", "cre"), comment = c(ORCID = '0000-0001-9397-0900')),
-    person("Pedro", "Miranda Afonso", email = "p.mirandaafonso@erasmusmc.nl", role = "aut"),
+    person("Pedro", "Miranda-Afonso", email = "p.mirandaafonso@erasmusmc.nl", role = "aut", comment = c(ORCID = '0000-0001-6708-9597')),
     person("Grigorios", "Papageorgiou", email = "papageorgiou.grigorios@gmail.com", role = "aut")
     )
 Maintainer: Dimitris Rizopoulos <d.rizopoulos@erasmusmc.nl>
@@ -20,3 +20,4 @@ LazyLoad: yes
 LazyData: yes
 License: GPL (>= 3)
 URL: https://drizopoulos.github.io/JMbayes2/, https://github.com/drizopoulos/JMbayes2
+RoxygenNote: 7.3.3

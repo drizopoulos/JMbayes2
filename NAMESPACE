@@ -3,7 +3,8 @@ export(area, calibration_metrics, calibration_plot, cumuplot, coef, compare_jm,
        ggdensityplot, ggtraceplot, jm, model.frame, model.matrix, ranef, slope,
        terms, traceplot, tv, tvAUC, tvBrier, tvEPCE, tvROC, value, vexpit,
        Dexpit, vexp, vabs, Dexp, vlog, vlog2, vlog10, vsqrt, poly2, poly3, poly4,
-       velocity, acceleration, coefs, Delta, create_folds, variogram, ppcheck)
+       velocity, acceleration, coefs, Delta, create_folds, variogram, ppcheck, 
+       slicer, consensus)
 
 import(Rcpp)
 importFrom("utils", "glob2rx", "tail", "head", "combn")
@@ -21,7 +22,7 @@ importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
 importFrom("parallelly", "availableCores")
 importFrom("nlme", "fixef", "ranef", "pdMatrix")
 importFrom("GLMMadaptive", "effectPlotData")
-importFrom("survival", "concordance", "coxph", "untangle.specials", "strata",
+importFrom("survival", "concordance", "untangle.specials", "strata",
            "survfit", "Surv")
 importFrom("survC1", "Est.Cval")
 importFrom("splines", "splineDesign", "ns")
@@ -82,8 +83,12 @@ S3method(print, tvBrier)
 S3method(print, tvEPCE)
 S3method(predict, jm)
 S3method(predict, jmList)
-
-
-
-
-
+S3method(print, consensus_jm)
+S3method(jm, default)
+S3method(jm, sliced_coxph)
+S3method(lme, default)
+S3method(lme, sliced_data)
+S3method(coxph, default)
+S3method(coxph, sliced_data)
+S3method(mixed_model, default)
+S3method(mixed_model, sliced_data)

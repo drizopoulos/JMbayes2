@@ -380,5 +380,3 @@ cns_un <- consensus(jm2, parm = c("gammas", "alphas", "betas1", "betas2"),
 cns_vw
 cns_vw$summary$gammas # Mean, StDev, 2.5% , 97.5%, P
 cns_vw$draws$gammas # consensus draws
-### Example 2 ==================================================================
-

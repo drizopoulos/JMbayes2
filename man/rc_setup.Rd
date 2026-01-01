@@ -22,7 +22,7 @@ rc_setup(rc_data, trm_data,
       multiple rows per subject.}
   \item{trm_data}{the data frame containing the terminal-event/competing-risks 
       data with a single row per subject.}
-  \item{idVar}{a character string denoting the name of the variable in
+  \item{idVar}{a character scalar denoting the name of the variable in
       \code{rc_data} and \code{trm_data} that identifies the subject/group.}
   \item{statusVar}{a character string denoting the name of the variable in
       \code{rc_data} and \code{trm_data} that identifies the status variable. 
@@ -46,7 +46,7 @@ rc_setup(rc_data, trm_data,
 }
 
 \author{
-    Pedro Miranda Afonso \email{p.mirandaafonso@erasmusmc.nl}
+    Pedro Miranda-Afonso \email{p.mirandaafonso@erasmusmc.nl}
 }
 
 \keyword{methods}
