@@ -1,6 +1,6 @@
 ---
 title: "Recurrent Events"
-author: "Pedro Miranda Afonso"
+author: "Pedro Miranda-Afonso"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
@@ -45,7 +45,7 @@ dur <- rep(0, s_i)
 # functions
 hzd <- function(t, sigma_t, phi, eta = 0) phi * sigma_t * t^(sigma_t-1)  * exp(eta) # hazard function
 
-# surival times
+# survival times
 ev_start <- sort(runif(s_i, 0, 200))
 ev_stop <- ev_start + dur 
 

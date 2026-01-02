@@ -4,7 +4,7 @@ export(area, calibration_metrics, calibration_plot, cumuplot, coef, compare_jm,
        terms, traceplot, tv, tvAUC, tvBrier, tvEPCE, tvROC, value, vexpit,
        Dexpit, vexp, vabs, Dexp, vlog, vlog2, vlog10, vsqrt, poly2, poly3, poly4,
        velocity, acceleration, coefs, Delta, create_folds, variogram, ppcheck, 
-       slicer, consensus)
+       slicer, consensus, lme, coxph, mixed_model)
 
 import(Rcpp)
 importFrom("utils", "glob2rx", "tail", "head", "combn")

@@ -2225,12 +2225,18 @@ ppcheck <- function (object, nsim = 40L, newdata = NULL, seed = 123L,
 
 # nlme::lme() / survival::coxph() do not dispatch on the class of the `data` argument.
 # We define our own S3 generics that dispatch on `data` (2nd argument),
-# so that lme.sliced_data() / coxph.sliced_data() are used when `data` is `sliced_data`,
-# while lme.data.frame() / coxph.data.frame() are used for `data.frames`
+# so that lme.sliced_data() / mixed_model.sliced_data() / coxph.sliced_data() 
+# are used when `data` is `sliced_data`, while nlme::lme() / 
+# GLMMadaptive::mixed_model() / survival::coxph() are used for `data.frame`
 lme <- function (fixed, data, ...) UseMethod ("lme", data)
 mixed_model <- function (fixed, data, ...) UseMethod ("mixed_model", data)
 coxph <- function (formula, data, ...) UseMethod ("coxph", data)
-jm <- function (Surv_object, Mixed_objects, ...) UseMethod ("jm", Surv_object)
+jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
+                functional_forms = NULL, which_independent = NULL,
+                base_hazard = NULL, data_Surv = NULL, id_var = NULL,
+                priors = NULL, control = NULL, ...) {
+  UseMethod ("jm", Surv_object)
+}
 
 # We cannot implement coxph.data.frame() as a simple forwarder like
 # coxph.data.frame <- function (formula, data, ...) {
@@ -2259,12 +2265,6 @@ lme.default <- function (fixed, data, random, ...) {
 mixed_model.default <- function (fixed, data, random, ...) {
   mc <- match.call(expand.dots = TRUE)
   mc[[1L]] <- quote(GLMMadaptive::mixed_model)
-  eval(mc, parent.frame())
-}
-
-jm.default <- function (Surv_object, Mixed_objects, ...) {
-  mc <- match.call(expand.dots = TRUE)
-  mc[[1L]] <- quote(JMbayes2::jm)
   eval(mc, parent.frame())
 }
 

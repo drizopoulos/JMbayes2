@@ -28,7 +28,7 @@ fitted joint models. The most important of those are included in the
 }
 
 \author{
-Dimitris Rizopoulos, Grigorios Papageorgiou, Pedro Miranda Afonso
+Dimitris Rizopoulos, Grigorios Papageorgiou, Pedro Miranda-Afonso
 
 Maintainer: Dimitris Rizopoulos <d.rizopoulos@erasmusmc.nl>
 }

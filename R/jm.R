@@ -1,8 +1,9 @@
-jm <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
-                functional_forms = NULL, which_independent = NULL,
-                base_hazard = NULL, data_Surv = NULL, id_var = NULL,
-                priors = NULL, control = NULL, ...) {
+jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
+                        functional_forms = NULL, which_independent = NULL,
+                        base_hazard = NULL, data_Surv = NULL, id_var = NULL,
+                        priors = NULL, control = NULL, ...) {
     call <- match.call()
+    call[[1L]] <- quote(JMbayes2::jm) # To ensure update() can refit
     # control argument:
     # - GK_k: number of quadrature points for the Gauss Kronrod rule; options 15 and 7
     # - Bsplines_degree: the degree of the splines in each basis; default quadratic splines

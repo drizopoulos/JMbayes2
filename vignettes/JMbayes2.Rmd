@@ -80,7 +80,7 @@ To illustrate how the `functional_forms` argument can be used to specify these f
 ```{r}
 fForms <- list(
   "log(serBilir)" = ~ slope(log(serBilir)) + slope(log(serBilir)):sex,
-  "prothrombin" = ~ area(prothrombin)
+  "prothrombin"   = ~ JMbayes2::area(prothrombin)
 )
 
 jointFit3 <- update(jointFit2, functional_forms = fForms)
