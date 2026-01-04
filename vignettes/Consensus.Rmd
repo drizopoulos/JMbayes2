@@ -53,8 +53,11 @@ In *JMbayes2* we provide the following consensus strategies:
 For illustration, we use the [`pbc2`](https://www.rdocumentation.org/packages/JMbayes2/versions/0.5-7/topics/pbc2) and `pbc2.id` datasets available in *JMbayes2*. These data are relatively small and can be analyzed with a standard full-data joint model; therefore, they do not require split-and-consensus methods. We use them here only to provide a reproducible example and to demonstrate the workflow.
 
 We present two common use cases:
-1. **Speeding posterior sampling** (Example 1)  by splitting the data into subsamples and fitting in parallel on a single machine.
-2. **Partitioned fitting** (Example 2) when the full dataset cannot be analyzed in a single run (e.g., multi-center settings where data cannot be pooled, or single-machine memory limitations). Each data partition is fitted one-at-a-time, and only the fitted objects are shared.
+
+  1. **Speeding posterior sampling** (Example 1)  by splitting the data into subsamples and fitting in parallel on a single machine.
+
+  2. **Partitioned fitting** (Example 2) when the full dataset cannot be analyzed in a single run (e.g., 
+multi-center settings where data cannot be pooled, or single-machine memory limitations). Each data partition is fitted one-at-a-time, and only the fitted objects are shared.
 
 Although we illustrate the approach with a simple joint model (one longitudinal outcome and one time-to-event outcomes), the same workflow is available for all models supported by *JMbayes2*; users only need to update the model formulation in the code below.
 
