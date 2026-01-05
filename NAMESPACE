@@ -3,7 +3,7 @@ export(area, calibration_metrics, calibration_plot, cumuplot, coef, compare_jm,
        ggdensityplot, ggtraceplot, jm, model.frame, model.matrix, ranef, slope,
        terms, traceplot, tv, tvAUC, tvBrier, tvEPCE, tvROC, value, vexpit,
        Dexpit, vexp, vabs, Dexp, vlog, vlog2, vlog10, vsqrt, poly2, poly3, poly4,
-       velocity, acceleration, coefs, Delta, create_folds, variogram, ppcheck, 
+       velocity, acceleration, coefs, Delta, create_folds, variogram, ppcheck,
        slicer, consensus, lme, coxph, mixed_model)
 
 import(Rcpp)
@@ -20,10 +20,10 @@ importFrom("stats", "coef", "fitted", "terms", "model.frame", "model.frame.defau
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
            "clusterSetRNGStream", "makePSOCKcluster", "mclapply")
 importFrom("parallelly", "availableCores")
-importFrom("nlme", "fixef", "ranef", "pdMatrix")
+importFrom("nlme", "fixef", "ranef", "pdMatrix", "lme")
 importFrom("GLMMadaptive", "effectPlotData")
 importFrom("survival", "concordance", "untangle.specials", "strata",
-           "survfit", "Surv")
+           "survfit", "Surv", "coxph")
 importFrom("survC1", "Est.Cval")
 importFrom("splines", "splineDesign", "ns")
 importFrom("coda", "as.mcmc.list", "as.mcmc", "traceplot", "densplot",
@@ -36,6 +36,7 @@ importFrom("matrixStats", "rowQuantiles", "colVars", "colLogSumExps",
            "colCumsums")
 importFrom("abind", "abind")
 importFrom("MASS", "mvrnorm")
+importFrom("GLMMadaptive", "mixed_model")
 importFrom("graphics", "abline", "axis", "box", "lines", "mtext", "par",
            "polygon", "title", "plot", "points", "legend", "matplot", "text")
 

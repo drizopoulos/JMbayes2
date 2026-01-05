@@ -1,5 +1,5 @@
 ---
-title: "Scaling/Federating Joint Models with Consensus Monte Carlo"
+title: "Fitting Joint Models in Big Datasets with Consensus Monte Carlo"
 author: "Pedro Miranda-Afonso"
 date: "`r Sys.Date()`"
 output:
@@ -25,8 +25,7 @@ Applying Bayesian joint models to large datasets, such as patient registries, ca
 
 This vignette describes a practical split-and-consensus strategy that (i) divides the data into independent subject-level subsamples, (ii) fits the same joint model on each subsample in parallel, and (iii) combines the resulting MCMC draws into a consensus posterior distribution that serves as a scalable proxy for the full-data posterior. In practice, this can substantially reduce wall-clock time and enables workflows in which model fitting is carried out across multiple computing nodes or centers.
 
-The resulting consensus distribution is an approximation to the full-data posterior (i.e., it is not guaranteed to be exact). For this reason, we recommend using split-and-consensus methods only when fitting the joint model to the full dataset in a single run is not feasible. A detailed description of the methodology and practical recommendations is provided in https://doi.org/10.48550/arXiv.2310.03351.
-
+The resulting consensus distribution is an approximation to the full-data posterior (i.e., it is not guaranteed to be exact). For this reason, we recommend using split-and-consensus methods only when fitting the joint model to the full dataset in a single run is not feasible. A detailed description of the methodology and practical recommendations is provided in [this paper](https://doi.org/10.48550/arXiv.2310.03351).
 
 ## Methods
 
@@ -71,9 +70,8 @@ pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
 ### Example 1: Speeding posterior sampling (parallel fitting)
 
 ```{r example1}
-
 # 1. Load the package
-library(JMbayes2)
+library("JMbayes2")
 
 # 2. Split the dataset into `n_slices` subsamples
 data_slc <- slicer(n_slices  = 2, # target number of data subsamples
@@ -109,7 +107,6 @@ cons_fit <- consensus(jm_fit, # list with joint models (class `sliced_jm`)
                       method = "var_weight", # consensus algorithm
                       seed   = 123L) # seed for reproducibility
 cons_fit
-
 ```
 
 
@@ -121,7 +118,7 @@ This example uses a “Center A" and "Center B” framing to mimic a multi-cente
 ```{r example2}
 
 # 1. Load the package
-library(JMbayes2)
+library("JMbayes2")
 
 # 2. Prepare the data
 data_slc <- slicer(n_slices  = 2, # target number of data subsamples

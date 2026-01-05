@@ -38,7 +38,7 @@ Note that each patient is now represented by two rows (we have two possible caus
 ## Fit models
 For the event process, we specify cause-specific relative risk models. Using dataset `pbc2.idCR`, we fit the corresponding cause-specific Cox regressions by including the interaction terms of age and treatment with variable `CR`, which is treated as a stratification variable using the `strata()` function:
 ```{r, "CR Cox model"}
-CoxFit_CR <- coxph(Surv(years, status2) ~ (age + drug) * strata(CR),
+CoxFit_CR <- coxph(Surv(years, status2) ~ (age + drug):strata(CR),
                      data = pbc2.idCR)
 ```
 
