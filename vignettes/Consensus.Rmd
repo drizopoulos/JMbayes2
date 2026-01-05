@@ -70,32 +70,29 @@ pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
 ### Example 1: Speeding posterior sampling (parallel fitting)
 
 ```{r example1}
-# 1. Load the package
-library("JMbayes2")
-
-# 2. Split the dataset into `n_slices` subsamples
+# 1. Split the dataset into `n_slices` subsamples
 data_slc <- slicer(n_slices  = 2, # target number of data subsamples
                    id_var    = "id",  # clustering variable
                    data_long = pbc2, # longitudinal dataset
                    data_surv = pbc2.id, # survival dataset
                    seed      = 123L) # seed for reproducibility
 
-# 3. Specify the number of available cores
+# 2. Specify the number of available cores
 n_cores <- max(1L, parallelly::availableCores(omit = 1L))
 
-# 4. Fit the longitudinal and survival submodels on each subsample
-## 4.1 Fit a linear mixed-effects model 
+# 3. Fit the longitudinal and survival submodels on each subsample
+## 3.1 Fit a linear mixed-effects model 
 lme_fit <- lme(data   = data_slc$long, # list with partitioned longitudinal dataset (class `sliced_data`)
                fixed  = log(serBilir) ~ year * sex, # fixed-effects formula  
                random = ~ year | id, # random-effects formula describing 
                cores  = n_cores) # number of available cores
 
-## 4.2 Fit a proportional-hazards model
+## 3.2 Fit a proportional-hazards model
 ph_fit <- coxph(data    = data_slc$surv, # list with partitioned survival dataset (class `sliced_data`)
                 formula = Surv(years, status2) ~ sex, # model formula
                 cores   = n_cores) # number of available cores
 
-# 5. Fit joint model(s) on each subsample
+# 4. Fit joint model(s) on each subsample
 jm_fit <- jm(Surv_object   = ph_fit, # list with survival submodels (class `sliced_coxph`)
              Mixed_objects = lme_fit, # list with longitudinal submodels (class `sliced_lme`)
              time_var      = "year", # time variable in the longitudinal submodel
@@ -116,11 +113,7 @@ This example uses a “Center A" and "Center B” framing to mimic a multi-cente
 
 
 ```{r example2}
-
-# 1. Load the package
-library("JMbayes2")
-
-# 2. Prepare the data
+# 1. Prepare the data
 data_slc <- slicer(n_slices  = 2, # target number of data subsamples
                    id_var    = "id",  # clustering variable
                    data_long = pbc2, # longitudinal dataset
@@ -131,40 +124,40 @@ data.A <- list(long = data_slc$long[[1]], # data from Center A
 data.B <- list(long = data_slc$long[[2]], # data from Center B
                surv = data_slc$surv[[2]]) 
 
-# 4. Fit the longitudinal and survival submodels on each subsample
+# 2. Fit the longitudinal and survival submodels on each subsample
 ## On Center A
-## 4.1.A Fit the linear mixed-effects model 
+## 2.1.A Fit the linear mixed-effects model 
 lme_fit.A <- lme(data   = data.A$long, # list with partitioned longitudinal dataset (class `sliced_data`)
                  fixed  = log(serBilir) ~ year * sex, # fixed-effects formula  
                  random = ~ year | id) # random-effects formula describing 
 
-## 4.2.A Fit the proportional-hazards model
+## 2.2.A Fit the proportional-hazards model
 ph_fit.A <- coxph(data    = data.A$surv, # list with partitioned survival dataset (class `sliced_data`)
                   formula = Surv(years, status2) ~ sex) # model formula
 
-# 4.3.A Fit the joint model
+# 2.3.A Fit the joint model
 jm_fit.A <- jm(Surv_object   = ph_fit.A, # list with survival submodels (class `sliced_coxph`)
                Mixed_objects = lme_fit.A, # list with longitudinal submodels (class `sliced_lme` or `MixMod`)
                time_var      = "year") # time variable in the longitudinal submodel
 jm_fit.A$model_data <- NULL # remove the datasets
 
 ## On Center B
-## 4.1.B Fit the linear mixed-effects model 
+## 2.1.B Fit the linear mixed-effects model 
 lme_fit.B <- lme(data   = data.B$long, # longitudinal dataset (class `data.frame`)
                  fixed  = log(serBilir) ~ year * sex, # fixed-effects formula  
                  random = ~ year | id) # random-effects formula describing 
 
-## 4.2.B Fit the proportional-hazards model
+## 2.2.B Fit the proportional-hazards model
 ph_fit.B <- coxph(data    = data.B$surv, # survival dataset (class `data.frame`)
                   formula = Surv(years, status2) ~ sex) # model formula
 
-# 4.3.B Fit the joint model
+# 2.3.B Fit the joint model
 jm_fit.B <- jm(Surv_object   = ph_fit.B, # survival submodels (class `coxph`)
                Mixed_objects = lme_fit.B, # longitudinal submodels (class `lme` or `MixMod`)
                time_var      = "year") # time variable in the longitudinal submodel
 jm_fit.B$model_data <- NULL # remove the datasets
 
-# 5. Obtain consensus posterior estimates
+# 3. Obtain consensus posterior estimates
 fits <- list(jm_fit.A, jm_fit.B)
 class(fits) <- c("sliced_jm", class(fits)) # consensus() expects the class `sliced_jm`
 
@@ -173,5 +166,4 @@ cons_fit2 <- consensus(fits, # list with joint models (class `sliced_jm`)
                        method = "var_weight", # consensus algorithm
                        seed   = 123L) # seed for reproducibility
 cons_fit2
-
 ```
