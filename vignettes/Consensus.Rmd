@@ -60,17 +60,11 @@ multi-center settings where data cannot be pooled, or single-machine memory limi
 
 Although we illustrate the approach with a simple joint model (one longitudinal outcome and one time-to-event outcomes), the same workflow is available for all models supported by *JMbayes2*; users only need to update the model formulation in the code below.
 
-```{r data}
-data("pbc2", package = "JMbayes2")
-data("pbc2.id", package = "JMbayes2")
-pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
-```
-
-
 ### Example 1: Speeding posterior sampling (parallel fitting)
 
 ```{r example1}
 # 1. Split the dataset into `n_slices` subsamples
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive') # composite event indicator (1 = death or transplantation, 0 = otherwise)
 data_slc <- slicer(n_slices  = 2, # target number of data subsamples
                    id_var    = "id",  # clustering variable
                    data_long = pbc2, # longitudinal dataset
@@ -114,6 +108,7 @@ This example uses a “Center A" and "Center B” framing to mimic a multi-cente
 
 ```{r example2}
 # 1. Prepare the data
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive') # composite event indicator (1 = death or transplantation, 0 = otherwise)
 data_slc <- slicer(n_slices  = 2, # target number of data subsamples
                    id_var    = "id",  # clustering variable
                    data_long = pbc2, # longitudinal dataset
