@@ -1,12 +1,12 @@
 ---
-title: "Fitting Joint Models in Big Datasets with Consensus Monte Carlo"
+title: "Fitting Joint Models to Big Datasets with Consensus Monte Carlo"
 author: "Pedro Miranda-Afonso"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Scaling/Federating Joint Models with Consensus Monte Carlo}
+  %\VignetteIndexEntry{Fitting Joint Models to Big Datasets with Consensus Monte Carlo}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
