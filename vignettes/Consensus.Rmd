@@ -25,7 +25,7 @@ Applying Bayesian joint models to large datasets, such as patient registries, ca
 
 This vignette describes a practical split-and-consensus strategy that (i) divides the data into independent subject-level subsamples, (ii) fits the same joint model on each subsample in parallel, and (iii) combines the resulting MCMC draws into a consensus posterior distribution that serves as a scalable proxy for the full-data posterior. In practice, this can substantially reduce wall-clock time and enables workflows in which model fitting is carried out across multiple computing nodes or centers.
 
-The resulting consensus distribution is an approximation to the full-data posterior (i.e., it is not guaranteed to be exact). For this reason, we recommend using split-and-consensus methods only when fitting the joint model to the full dataset in a single run is not feasible. A detailed description of the methodology and practical recommendations is provided in [this paper](https://doi.org/10.48550/arXiv.2310.03351).
+The resulting consensus distribution is an approximation to the full-data posterior (i.e., it is not guaranteed to be exact). For this reason, we recommend using split-and-consensus methods only when fitting the joint model to the full dataset in a single run is not feasible. A detailed description of the methodology and practical recommendations are provided in [this paper](https://doi.org/10.48550/arXiv.2310.03351).
 
 ## Methods
 
@@ -42,14 +42,14 @@ p(\theta, b\mid y, t, \delta)\propto p(\theta, b) \prod^S_{s=1}p(y^{(s)}, t^{(s)
 
 In pratice, we run independent MCMC on each subsample and then combine the draws to obtain a consensus approximation, \(\tilde{p}(\theta, b\mid y, t, \delta\), which serves as a proxy for the full posterior. 
 
-In *JMbayes2* we provide the following consensus strategies:
+In **JMbayes2** we provide the following consensus strategies:
 - Union: pools (concatenates) the draws from all subposteriors, treating them as one combined sample.
 - Equal-weighted consensus: forms an iteration-wise consensus draw by taking the simple average across subposterior draws.
 - Variance/Precision-weighted consensus: forms an iteration-wise consensus draw using inverse-variance (precision) weights computed per parameter, so subsamples with lower posterior variance contribute more to that parameter’s consensus.
 
 ## Examples
 
-For illustration, we use the [`pbc2`](https://www.rdocumentation.org/packages/JMbayes2/versions/0.5-7/topics/pbc2) and `pbc2.id` datasets available in *JMbayes2*. These data are relatively small and can be analyzed with a standard full-data joint model; therefore, they do not require split-and-consensus methods. We use them here only to provide a reproducible example and to demonstrate the workflow.
+For illustration, we use the [`pbc2`](https://www.rdocumentation.org/packages/JMbayes2/versions/0.5-7/topics/pbc2) and `pbc2.id` datasets available in **JMbayes2**. These data are relatively small and can be analyzed with a standard full-data joint model; therefore, they do not require split-and-consensus methods. We use them here only to provide a reproducible example and to demonstrate the workflow.
 
 We present two common use cases:
 

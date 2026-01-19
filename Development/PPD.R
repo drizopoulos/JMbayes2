@@ -2,6 +2,55 @@ remotes::install_github("drizopoulos/jmbayes2")
 library("JMbayes2")
 library("rbenchmark")
 
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
+pbc2$status2 <- as.numeric(pbc2$status != 'alive')
+CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
+fm1 <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
+fm2 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
+           random = list(id = pdDiag(~ ns(year, 3))))
+jointFit1 <- jm(CoxFit, fm1, time_var = "year", save_random_effects = TRUE)
+jointFit2 <- jm(CoxFit, fm2, time_var = "year")
+
+FF <- function (t, betas, bi, data) {
+    sex <- as.numeric(data$sex == "female")
+    X <- cbind(1, t, sex, t * sex)
+    Z <- cbind(1, t)
+    eta <- c(X %*% betas[[1]]) + rowSums(Z * bi)
+    cbind(eta)
+}
+FF2 <- function (t, betas, bi, data) {
+    sex <- as.numeric(data$sex == "female")
+    NS <- ns(t, k = c(0.9911, 3.9863), B = c(0, 14.10579))
+    X <- cbind(1, NS, sex, NS * sex)
+    Z <- cbind(1, NS)
+    eta <- c(X %*% betas[[1]]) + rowSums(Z * bi)
+    cbind(eta)
+}
+
+ppcheck(jointFit1, random_effects = "prior", type = "varia", Fforms_fun = FF)
+ppcheck(jointFit2, random_effects = "prior", type = "varia", Fforms_fun = FF2)
+
+ppcheck(jointFit1, random_effects = "prior", type = "vario", Fforms_fun = FF)
+ppcheck(jointFit2, random_effects = "prior", type = "vario", Fforms_fun = FF2)
+
+###
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Cox model for the composite event death or transplantation
 pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
 pbc2$status2 <- as.numeric(pbc2$status != 'alive')
@@ -14,8 +63,7 @@ fm2 <- mixed_model(ascites ~ year, data = pbc2, random = ~ year | id,
                    family = binomial())
 
 # the joint model
-jointFit1 <- jm(CoxFit, list(fm1, fm2), time_var = "year",
-                save_random_effects = TRUE)
+jointFit1 <- jm(CoxFit, fm1, time_var = "year")
 
 jointFit = jointFit1
 # Posterior Predictive Checks - Longitudinal Outcome
@@ -36,6 +84,15 @@ ppcheck(jointFit, type = "avera", CI_loess = TRUE)
 ppcheck(jointFit, type = "avera", random_effects = "mcmc")
 ppcheck(jointFit, type = "avera", random_effects = "prior", Fforms_fun = FF)
 
+
+FF <- function (t, betas, bi, data) {
+    sex <- as.numeric(data$sex == "female")
+    NS <- ns(t, k = c(0.9911, 3.9863), B = c(0, 14.10579))
+    X <- cbind(1, NS, sex, NS * sex)
+    Z <- cbind(1, NS)
+    eta <- c(X %*% betas[[1]]) + rowSums(Z * bi)
+    cbind(eta)
+}
 
 FF <- function (t, betas, bi, data) {
     sex <- as.numeric(data$sex == "female")

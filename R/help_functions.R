@@ -464,15 +464,15 @@ acceleration <- function (x, IE_time = NULL) { #!! new
   attributes(out) <- c(attributes(out), temp)
   out
 }
-area <- function (x, time_window = NULL, IE_time = NULL) { #!! new 
+area <- function (x, time_window = NULL, IE_time = NULL) { #!! new
     out <- rep(1, NROW(x))
     temp <- list(time_window = time_window, IE_time = IE_time)
     attributes(out) <- c(attributes(out), temp)
     out
 }
-Delta <- function (x, time_window = NULL, standardise = FALSE, IE_time = NULL) { #!! new
+Delta <- function (x, time_window = NULL, standardise = TRUE, IE_time = NULL) { #!! new
   out <- rep(1, NROW(x))
-  temp <- list(time_window = time_window, standardise = standardise, 
+  temp <- list(time_window = time_window, standardise = standardise,
                IE_time = IE_time)
   attributes(out) <- c(attributes(out), temp)
   out
@@ -1202,6 +1202,9 @@ LongData_HazardModel <- function (times_to_fill, data, times_data, ids,
     data
 }
 
+# time = st; terms = terms_FE_noResp; data = dataL; timeVar = time_var
+# Fun_Forms = collapsed_functional_forms
+
 design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
                                               idT, Fun_Forms, Xbar = NULL, eps,
                                               direction, zero_ind = NULL,
@@ -1269,7 +1272,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
               if (is.list(time_i)) {
                 time_i <- lapply(time_i, pmin, IE_time[[i]])
               } else {
-                time_i <- pmin(time_i, IE_time[[i]])          
+                time_i <- pmin(time_i, IE_time[[i]])
               }
             }
             # Both: f'(t) = (f(t + eps) - f(t - eps)) / (2 * eps)
@@ -1309,7 +1312,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         }
         out
     }
-    degn_matr_dlt <- function (time, terms, Xbar, time_window, standardise, 
+    degn_matr_dlt <- function (time, terms, Xbar, time_window, standardise,
                                IE_time) { #!! new
       K <- length(terms)
       out <- vector("list", K)
@@ -1321,24 +1324,30 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
           if (is.list(time_i)) {
             time_i <- lapply(time_i, pmin, IE_time[[i]])
           } else {
-            time_i <- pmin(time_i, IE_time[[i]])          
+            time_i <- pmin(time_i, IE_time[[i]])
           }
         }
         t1 <- time_i #!! new
         if (is.list(time_i)) { #!! new
           if (is.null(time_window_i)) {
-            t2 <- lapply(time_i, function(t) numeric(length(t))) #!! new
+            t2 <- lapply(time_i, function (t) numeric(length(t))) #!! new
           } else {
             t2 <- lapply(time_i, function (t) pmax(t - time_window_i, 0)) #!! new
           }
         } else {
           if (is.null(time_window_i)) {
-            t2 <- numeric(length(time_i)) #!! new
+            t2 <- 0 * t1 #!! new
           } else {
             t2 <- pmax(time_i - time_window_i, 0) #!! new
           }
         }
-        e <- c(mapply("-", t1, t2))
+        e <- if (is.list(time_i)) {
+            c(mapply("-", t1, t2))
+        } else if (is.matrix(time_i)) {
+            c(t(t1)) - c(t(t2))
+        } else {
+            t1 - t2
+        }
         if (!standardise_i) {
           e[] <- 1
         } else {
@@ -1371,7 +1380,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
             if (is.list(time_i)) {
               time_i <- lapply(time_i, pmin, IE_time[[i]])
             } else {
-              time_i <- pmin(time_i, IE_time[[i]])                
+              time_i <- pmin(time_i, IE_time[[i]])
             }
           }
           if (is.list(time_i)) { #!! new
@@ -1402,7 +1411,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
               X1 <- X1 - rep(Xbar[[i]], each = nrow(X1))
               X2 <- X2 - rep(Xbar[[i]], each = nrow(X2))
           }
-          # f''(t) = (f(t + eps) - 2 * f(t) + f(t - eps)) / eps^2, eps = e / 2 
+          # f''(t) = (f(t + eps) - 2 * f(t) + f(t - eps)) / eps^2, eps = e / 2
           out[[i]] <- (X1 - 2 * X + X2) / (e * e * 0.25)
         }
         out
@@ -1422,7 +1431,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         # \approx (t+ - t-)/2 * \sum_j wk_j * f((t+ - t-)/2 * sk_j + (t- + t+)/2),
         # here t- = 0 and t+ = x, so (t+ - t-)/2 = P = x/2,
         # = P * \sum_j wk_j * f(P * (sk_j + 1))
-        P <- unname(x * 0.5) 
+        P <- unname(x * 0.5)
         sk <- outer(P, sk + 1) # t_j = P * (sk_j + 1) maps nodes from [-1, 1] to [0, x]
         # We divide by x to obtain the average over [0, x], i.e. (1/x) * \int_0^x f(t) dt
         # then the quadrature prefactor becomes (P/x) = (x/2)/x = 1/2, so
@@ -1437,7 +1446,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         P  <- 0.5 * L # = (t+ - t-)/2 = (x - (x - L))/2 = L/2
         M  <- x - P # = (t+ + t-)/2 = (x + (x - L))/2 = x - L/2
         sk <- outer(P, sk) + M
-        # As above, for the average over any interval [t-, t+], 
+        # As above, for the average over any interval [t-, t+],
         # (1/L) * \int_{t-}^{t+} f(t) dt has the constant prefactor (P/L) = (L/2)/L = 1/2
         #P <- unname(c(x - x + time_window) / 2) #?? to delete
         #sk <- outer(P, sk) + (c(x + x - time_window) / 2) #?? to delete
@@ -1453,12 +1462,12 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
       out <- vector("list", K)
       for (i in seq_len(K)) {
         time_window_i <- if (length(time_window[[i]])) time_window[[i]][[1L]] else NULL
-        time_i <- time #!! new 
+        time_i <- time #!! new
         if (length(IE_time[[i]])) { #!! new
           if (is.list(time_i)) {
             time_i <- lapply(time_i, pmin, IE_time[[i]])
           } else {
-            time_i <- pmin(time_i, IE_time[[i]])                
+            time_i <- pmin(time_i, IE_time[[i]])
           }
         }
         if (!is.list(time_i)) {
@@ -1477,7 +1486,7 @@ design_matrices_functional_forms <- function (time, terms, data, timeVar, idVar,
         }
       out
       }
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     out <- list("value" = desgn_matr(time, terms, Xbar, NULL, IE_time), #!! new
                 "coefs" = desgn_matr(time, terms, Xbar, zero_ind, IE_time), #!! new
                 "slope" = degn_matr_slp(time, terms, Xbar, eps, direction, IE_time), #!! new

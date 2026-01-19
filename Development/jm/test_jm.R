@@ -21,7 +21,8 @@ Rcpp::sourceCpp('src/mcmc_fit.cpp')
 
 fm1 <- lme(log(serBilir) ~ ns(year, 2, B = c(0, 15)) * sex, data = pbc2,
            random = list(id = pdDiag(form = ~ ns(year, 2, B = c(0, 15)))))
-Cox <- coxph(Surv(years, status2) ~ age + strata(sex), data = pbc2.id)
+fm1 <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
+Cox <- coxph(Surv(years, status2) ~ age, data = pbc2.id)
 
 jmFit <- jm(Cox, fm1, time_var = "year", base_hazard = c("Weibull", NA))
 
@@ -72,7 +73,7 @@ jointFit3 <- jm(Cox, fm1, time_var = "obstime")
 Surv_object = Cox
 Mixed_objects = fm1
 time_var = 'year'
-functional_forms = NULL#fForms
+functional_forms = ~ Delta(log(serBilir), standardise = TRUE)
 which_independent = NULL
 recurrent = FALSE
 data_Surv = NULL

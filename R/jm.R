@@ -498,9 +498,9 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     time_window <- lapply(attr, "[[", 4L)
     standardise <- lapply(attr, "[[", 5L)
     IE_time <- IE_time2 <- lapply(attr, "[[", 6L) #!! new
-    if(any(lengths(IE_time))) { #!! new
+    if (any(lengths(IE_time))) { #!! new
       bool <- vapply(IE_time, function(x)
-        all(vapply(x, function(x_i) identical(x_i, x[[1]]), logical(1))), 
+        all(vapply(x, function(x_i) identical(x_i, x[[1]]), logical(1))),
         logical(1))
       if (any(!bool)) {
         bad <- names(IE_time)[!bool]
@@ -524,12 +524,12 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     X_H <- design_matrices_functional_forms(st, terms_FE_noResp,
                                             dataL, time_var, idVar, idT,
                                             collapsed_functional_forms, Xbar,
-                                            eps, direction, zero_ind_X, 
+                                            eps, direction, zero_ind_X,
                                             time_window, standardise, IE_time) #!! new
     Z_H <- design_matrices_functional_forms(st, terms_RE,
                                             dataL, time_var, idVar, idT,
                                             collapsed_functional_forms, NULL,
-                                            eps, direction, zero_ind_Z, 
+                                            eps, direction, zero_ind_Z,
                                             time_window, standardise, IE_time) #!! new
     U_H <- lapply(functional_forms, construct_Umat, dataS = dataS_H)
     if (length(which_event)) {
@@ -552,12 +552,12 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         X_h <- design_matrices_functional_forms(Time_right, terms_FE_noResp,
                                                 dataL, time_var, idVar, idT,
                                                 collapsed_functional_forms, Xbar,
-                                                eps, direction, zero_ind_X, 
+                                                eps, direction, zero_ind_X,
                                                 time_window, standardise, IE_time) #!! new
         Z_h <- design_matrices_functional_forms(Time_right, terms_RE,
                                                 dataL, time_var, idVar, idT,
                                                 collapsed_functional_forms, NULL,
-                                                eps, direction, zero_ind_Z, 
+                                                eps, direction, zero_ind_Z,
                                                 time_window, standardise, IE_time) #!! new
         U_h <- lapply(functional_forms, construct_Umat, dataS = dataS_h)
     } else {
@@ -577,14 +577,14 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         X_H2 <- design_matrices_functional_forms(st2, terms_FE_noResp,
                                                  dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, Xbar,
-                                                 eps, direction, zero_ind_X, 
-                                                 time_window, standardise, 
+                                                 eps, direction, zero_ind_X,
+                                                 time_window, standardise,
                                                  IE_time) #!! new
         Z_H2 <- design_matrices_functional_forms(st2, terms_RE,
                                                  dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, NULL,
-                                                 eps, direction, zero_ind_Z, 
-                                                 time_window, standardise, 
+                                                 eps, direction, zero_ind_Z,
+                                                 time_window, standardise,
                                                  IE_time) #!! new
         U_H2 <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
     } else {

@@ -1,0 +1,138 @@
+---
+title: "Posterior Predictive Checks"
+author: "Dimitris Rizopoulos"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Posterior Predictive Checks}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+\newcommand{\bfalpha}{\boldsymbol{\alpha}}
+\newcommand{\bfbeta}{\boldsymbol{\beta}}
+\newcommand{\bfpsi}{\boldsymbol{\psi}}
+\newcommand{\bfgamma}{\boldsymbol{\gamma}}
+\newcommand{\bftheta}{\boldsymbol{\theta}}
+\newcommand{\bflambda}{\boldsymbol{\lambda}}
+\newcommand{\bfdelta}{\boldsymbol{\delta}}
+\newcommand{\bfDelta}{\boldsymbol{\Delta}}
+
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bt}{\mathbf{t}}
+\newcommand{\br}{\mathbf{r}}
+\newcommand{\bs}{\mathbf{s}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\bw}{\mathbf{w}}
+\newcommand{\bv}{\mathbf{v}}
+\newcommand{\bb}{\mathbf{b}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\dd}{{\sf d}}
+
+\newcommand{\bY}{\mathbf{Y}}
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\bT}{\mathbf{T}}
+\newcommand{\bD}{\mathbf{D}}
+\newcommand{\bK}{\mathbf{K}}
+\newcommand{\bO}{\mathbf{O}}
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("JMbayes2")
+```
+
+## Goodness-of-Fit Checks for Joint Models
+To investigate the fit of a joint model to the training dataset $\mathcal D_n$, we compare simulated longitudinal measurements $\by_i^{\sf rep}$ and event times $T_i^{\sf *rep}$ from the fitted model with the observed data $\mathcal D_n$. Ideally, we expect that realizations from the fitted model are in close agreement with the observed data. This framework supports multiple settings, including checks for existing subjects, new subjects with only covariates, dynamic prediction at intermediate follow-up times, and cross-validated assessment. For the longitudinal component, goodness-of-fit is assessed through the mean, variance, and correlation structure, while the survival component is evaluated using empirical cumulative distributions and probability integral transforms. The association between processes is examined using time-dependent concordance statistics. A detailed presentation of this framework is given in [Rizopoulos, Taylor and Kardys (2026)](https://www.drizopoulos.com/).
+
+## Posterior-Posterior Predictive Checks
+```{r, 'jointFit1'}
+CoxFit <- coxph(Surv(Time, death) ~ treat, data = prothros)
+
+fm1 <- lme(pro ~ time * treat, data = prothro, random = ~ time | id)
+
+jointFit1 <- jm(CoxFit, fm1, time_var = "time", save_random_effects = TRUE)
+```
+
+```{r, 'Joint1-Long-eCDF', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+ppcheck(jointFit1, random_effects = "mcmc", type = "ecdf")
+```
+
+```{r, 'Joint1-Long-mean', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+ppcheck(jointFit1, random_effects = "mcmc", type = "average")
+```
+
+```{r, 'Joint1-Long-variance', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+ppcheck(jointFit1, random_effects = "mcmc", type = "variance")
+```
+
+```{r, 'Joint1-Long-variogram', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+ppcheck(jointFit1, random_effects = "mcmc", type = "variogram")
+```
+
+```{r, 'Joint1-FFform', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+FF1 <- function (t, betas, bi, data) {
+    treat <- as.numeric(data$treat == "prednisone")
+    X <- cbind(1, t, treat, t * treat)
+    Z <- cbind(1, t)
+    eta <- c(X %*% betas[[1]]) + rowSums(Z * bi)
+    cbind(eta)
+}
+```
+
+```{r, 'Joint1-Surv-eCDF', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+ppcheck(jointFit1, random_effects = "mcmc", process = "event", Fforms_fun = FF1,
+        type = "ecdf")
+```
+
+```{r, 'Joint1-Surv-ProbInt', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+ppcheck(jointFit1, random_effects = "mcmc", process = "event", Fforms_fun = FF1,
+        type = "surv-uniform")
+```
+
+```{r, 'Joint1-joint', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+ppcheck(jointFit1, random_effects = "mcmc", process = "joint", Fforms_fun = FF1)
+```
+
+## Posterior-Prior Predictive Checks
+
+```{r, 'jointFit2'}
+fm2 <- lme(pro ~ ns(time, 3) * treat, data = prothro, 
+           random = list(id = pdDiag(~ ns(time, 3))))
+
+jointFit2 <- jm(CoxFit, fm2, time_var = "time")
+```
+
+```{r, 'Joint2-FFform', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+FF2 <- function (t, betas, bi, data) {
+    treat <- as.numeric(data$treat == "prednisone")
+    NS <- ns(t, k = c(0.4928, 2.1547), B = c(0, 11.1078))
+    X <- cbind(1, NS, treat, NS * treat)
+    Z <- cbind(1, NS)
+    eta <- c(X %*% betas[[1]]) + rowSums(Z * bi)
+    cbind(eta)
+}
+```
+
+```{r, 'Joint2-Long', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+ppcheck(jointFit2, random_effects = "prior", type = "ecdf", Fforms_fun = FF2)
+ppcheck(jointFit2, random_effects = "prior", type = "average", Fforms_fun = FF2)
+ppcheck(jointFit2, random_effects = "prior", type = "variance", Fforms_fun = FF2)
+ppcheck(jointFit2, random_effects = "prior", type = "variogram", Fforms_fun = FF2)
+```
+
+```{r, 'Joint2-Surv', fig.align = "center", fig.width = 8.5, fig.height = 7.5}
+ppcheck(jointFit2, random_effects = "prior", process = "event", Fforms_fun = FF2,
+        type = "ecdf")
+ppcheck(jointFit2, random_effects = "prior", process = "event", Fforms_fun = FF2,
+        type = "surv-uniform")
+```
+
+## Dynamic-Posterior-Posterior Predictive Checks
+
+## Cross-Validated Checks
