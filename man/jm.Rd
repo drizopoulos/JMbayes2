@@ -41,7 +41,7 @@ slope(x, eps = 0.001, direction = "both", IE_time = NULL)
 velocity(x, eps = 0.001, direction = "both", IE_time = NULL)
 acceleration(x, IE_time = NULL)
 area(x, time_window = NULL, IE_time = NULL)
-Delta(x, time_window = NULL, standardise = FALSE, IE_time = NULL)
+Delta(x, time_window = NULL, standardise = TRUE, IE_time = NULL)
 
 vexpit(x)
 Dexpit(x)
