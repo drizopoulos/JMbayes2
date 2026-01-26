@@ -406,7 +406,7 @@ ggtraceplot <- function (object, ...) UseMethod("ggtraceplot")
 ggtraceplot.jm <- function(object,
                            parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                     "tau_bs_gammas", "gammas", "alphas"),
-                           size = 1, alpha = 0.8,
+                           linewidth = 1, alpha = 0.8,
                            theme = c('standard', 'catalog', 'metro',
                                      'pastel', 'beach', 'moonlight', 'goo',
                                      'sunset', 'custom'), grid = FALSE,
@@ -430,7 +430,7 @@ ggtraceplot.jm <- function(object,
       if (n_chains == 3 | !is.null(custom_theme)) {
         gplots[[i]] <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
           geom_line(aes(x = iteration, y = value, color = chain),
-                    size = size, alpha = alpha) +
+                    linewidth = linewidth, alpha = alpha) +
           ggtitle(paste('Traceplot of ', unique(ggdata$parm)[i])) +
           theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
           scale_color_manual(values = ggcolthemes[[coltheme]]) +
@@ -438,7 +438,7 @@ ggtraceplot.jm <- function(object,
       } else {
         gplots[[i]] <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
           geom_line(aes(x = iteration, y = value, color = chain),
-                    size = size, alpha = alpha) +
+                    linewidth = linewidth, alpha = alpha) +
           ggtitle(paste('Traceplot of ', unique(ggdata$parm)[i])) +
           theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
           guides(color = guide_legend(override.aes = list(alpha = 1)))
@@ -450,7 +450,7 @@ ggtraceplot.jm <- function(object,
       if (n_chains == 3 | !is.null(custom_theme)) {
         g <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
           geom_line(aes(x = iteration, y = value, color = chain),
-                    size = size, alpha = alpha) +
+                    linewidth = linewidth, alpha = alpha) +
           ggtitle(paste('Traceplot of ', unique(ggdata$parm)[i])) +
           theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
           scale_color_manual(values = ggcolthemes[[coltheme]]) +
@@ -459,7 +459,7 @@ ggtraceplot.jm <- function(object,
       } else {
         g <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
           geom_line(aes(x = iteration, y = value, color = chain),
-                    size = size, alpha = alpha) +
+                    linewidth = linewidth, alpha = alpha) +
           ggtitle(paste('Traceplot of ', unique(ggdata$parm)[i])) +
           theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
           guides(color = guide_legend(override.aes = list(alpha = 1)))
@@ -474,7 +474,7 @@ ggdensityplot <- function (object, ...) UseMethod("ggdensityplot")
 ggdensityplot.jm <- function(object,
                       parm = c("all", "betas", "sigmas", "D", "bs_gammas",
                                "tau_bs_gammas", "gammas", "alphas"),
-                      size = 1, alpha = 0.6,
+                      linewidth = 1, alpha = 0.6,
                       theme = c('standard', 'catalog', 'metro',
                                 'pastel', 'beach', 'moonlight', 'goo',
                                 'sunset', 'custom'), grid = FALSE,
@@ -498,7 +498,7 @@ ggdensityplot.jm <- function(object,
           if (n_chains == 3 | !is.null(custom_theme)) {
             gplots[[i]] <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
               geom_density(aes(x = value, color = chain, fill = chain),
-                           size = size, alpha = alpha) +
+                           linewidth = linewidth, alpha = alpha) +
               ggtitle(paste('Density plot of ', unique(ggdata$parm)[i])) +
               theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
               scale_color_manual(values = ggcolthemes[[coltheme]]) +
@@ -507,7 +507,7 @@ ggdensityplot.jm <- function(object,
           } else {
             gplots[[i]] <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
               geom_density(aes(x = value, color = chain, fill = chain),
-                           size = size, alpha = alpha) +
+                           linewidth = linewidth, alpha = alpha) +
               ggtitle(paste('Density plot of ', unique(ggdata$parm)[i])) +
               theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
               guides(color = guide_legend(override.aes = list(alpha = 1)))
@@ -519,7 +519,7 @@ ggdensityplot.jm <- function(object,
           if (n_chains == 3 | !is.null(custom_theme)) {
             g <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
               geom_density(aes(x = value, color = chain, fill = chain),
-                           size = size, alpha = alpha) +
+                           linewidth = linewidth, alpha = alpha) +
               ggtitle(paste('Density plot of ', unique(ggdata$parm)[i])) +
               theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
               scale_color_manual(values = ggcolthemes[[coltheme]]) +
@@ -529,7 +529,7 @@ ggdensityplot.jm <- function(object,
           } else {
             g <- ggplot(ggdata[ggdata$parm %in% unique(ggdata$parm)[i], ]) +
               geom_density(aes(x = value, color = chain, fill = chain),
-                           size = size, alpha = alpha) +
+                           linewidth = linewidth, alpha = alpha) +
               ggtitle(paste('Density plot of ', unique(ggdata$parm)[i])) +
               theme_bw() + theme(plot.title = element_text(hjust=0.5)) +
               guides(color = guide_legend(override.aes = list(alpha = 1)))

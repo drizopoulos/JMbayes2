@@ -34,7 +34,7 @@ ggtraceplot(object, \dots)
 \method{ggtraceplot}{jm}(object,
   parm = c("all", "betas", "sigmas", "D", "bs_gammas",
            "tau_bs_gammas", "gammas", "alphas"),
-  size = 1, alpha = 0.8,
+  linewidth = 1, alpha = 0.8,
   theme = c('standard', 'catalog', 'metro',
                 'pastel', 'beach', 'moonlight', 'goo', 'sunset', 'custom'),
   grid = FALSE, gridrows = 3, gridcols = 1, custom_theme = NULL, \dots)
@@ -56,7 +56,7 @@ ggdensityplot(object, \dots)
 \method{ggdensityplot}{jm}(object,
   parm = c("all", "betas", "sigmas", "D", "bs_gammas",
            "tau_bs_gammas", "gammas", "alphas"),
-  size = 1, alpha = 0.6,
+  linewidth = 1, alpha = 0.6,
   theme = c('standard', 'catalog', 'metro', 'pastel',
                 'beach', 'moonlight', 'goo', 'sunset', 'custom'),
   grid = FALSE, gridrows = 3, gridcols = 1, custom_theme = NULL, \dots)

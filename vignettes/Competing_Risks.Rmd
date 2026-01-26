@@ -62,7 +62,7 @@ Finally, the competing risks joint model is fitted with the following call to `j
 ```{r, "joint model"}
 jFit_CR <- jm(CoxFit_CR, list(fm1, fm2), time_var = "year", 
               functional_forms = CR_forms, 
-              baseline_hazard = c("weibull", NA),
+              base_hazard = c("weibull", NA),
               n_iter = 25000L, n_burnin = 5000L, n_thin = 5L)
 
 summary(jFit_CR)
