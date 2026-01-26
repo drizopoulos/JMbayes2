@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-91</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,9 +51,11 @@
 <li><a class="dropdown-item" href="../articles/Baseline_Hazard.html">Baseline Hazard Function</a></li>
     <li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
     <li><a class="dropdown-item" href="../articles/Competing_Risks.html">Competing Risks</a></li>
+    <li><a class="dropdown-item" href="../articles/Consensus.html">Fitting Joint Models to Big Datasets with Consensus Monte Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a></li>
     <li><a class="dropdown-item" href="../articles/Multi_State_Processes.html">Multi-State Processes</a></li>
     <li><a class="dropdown-item" href="../articles/Non_Gaussian_Mixed_Models.html">Non-Gaussian Mixed Models</a></li>
+    <li><a class="dropdown-item" href="../articles/Posterior_Predictive_Checks.html">Posterior Predictive Checks</a></li>
     <li><a class="dropdown-item" href="../articles/Recurring_Events.html">Recurrent Events</a></li>
     <li><a class="dropdown-item" href="../articles/Super_Learning.html">Combined Dynamic Predictions via Super Learning</a></li>
     <li><a class="dropdown-item" href="../articles/Time_Varying_Effects.html">Time Varying Effects</a></li>
@@ -83,7 +85,7 @@
                         <h4 data-toc-skip class="author">Grigorios
 Papageorgiou</h4>
             
-            <h4 data-toc-skip class="date">2025-08-23</h4>
+            <h4 data-toc-skip class="date">2026-01-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Multi_State_Processes.Rmd" class="external-link"><code>vignettes/Multi_State_Processes.Rmd</code></a></small>
       <div class="d-none name"><code>Multi_State_Processes.Rmd</code></div>
@@ -112,7 +114,7 @@ states.</p>
 <p>First, we will simulate data from a joint model with a single linear
 mixed effects model and a multi-state process with three possible
 states. The multi-state process can be visualized as:
-<img src="Multi_State_Processes_files/figure-html/ms_figure-1.png" width="700"></p>
+<img src="Multi_State_Processes_files/figure-html/ms_figure-1.png" class="r-plt" alt="" width="700"></p>
 <p>where all subjects start from the state “Healthy” and then can
 transition to either state “Illness” and then state “Death” or directly
 to state “Death.” In this case, states “Healthy” and “Illness” are
@@ -236,10 +238,10 @@ to.</p>
 </h3>
 <p>When the data in the appropriate format are available, fitting the
 model is very straightforward. First we fit a linear mixed model using
-the <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme()</a></code> function from package <strong>nlme</strong>:</p>
+the <code><a href="../reference/sliced_model_generics.html">lme()</a></code> function from package <strong>nlme</strong>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixedmodel</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">df_long2</span><span class="op">)</span></span></code></pre></div>
-<p>Then, we fit a multi-state model using function <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph()</a></code>
+<code class="sourceCode R"><span><span class="va">mixedmodel</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">lme</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">time</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">time</span> <span class="op">|</span> <span class="va">id</span>, data <span class="op">=</span> <span class="va">df_long2</span><span class="op">)</span></span></code></pre></div>
+<p>Then, we fit a multi-state model using function <code><a href="../reference/sliced_model_generics.html">coxph()</a></code>
 from package <strong>survival</strong>, making sure we use the counting
 process specification and that we add <code>strata(transition)</code> to
 stratify by the transition indicator variable in the dataset.
@@ -247,7 +249,7 @@ Furthermore, we add an interaction between covariate <code>X</code> and
 each transition to allow the effect of this covariate to vary across
 transitions.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">msmodel</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">Tstart</span>, <span class="va">Tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata</a></span><span class="op">(</span><span class="va">transition</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">df_surv</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">msmodel</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">Tstart</span>, <span class="va">Tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata</a></span><span class="op">(</span><span class="va">transition</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">df_surv</span><span class="op">)</span></span></code></pre></div>
 <p>Finally, to fit the joint model, we simply run:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">jm_ms_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">msmodel</span>, <span class="va">mixedmodel</span>, time_var <span class="op">=</span> <span class="st">"time"</span>, n_iter <span class="op">=</span> <span class="fl">5000L</span>,</span>
@@ -256,8 +258,9 @@ transitions.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jm_ms_model</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
-<span><span class="co">#&gt; jm(Surv_object = msmodel, Mixed_objects = mixedmodel, time_var = "time", </span></span>
-<span><span class="co">#&gt;     functional_forms = ~value(y):strata(transition), n_iter = 5000L)</span></span>
+<span><span class="co">#&gt; JMbayes2::jm(Surv_object = msmodel, Mixed_objects = mixedmodel, </span></span>
+<span><span class="co">#&gt;     time_var = "time", functional_forms = ~value(y):strata(transition), </span></span>
+<span><span class="co">#&gt;     n_iter = 5000L)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
 <span><span class="co">#&gt; Number of Groups: 1500       Number of events: 1784 (45.8%)</span></span>
@@ -301,7 +304,7 @@ transitions.</p>
 <span><span class="co">#&gt; iterations per chain: 5000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 4.4 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 4.6 min</span></span></code></pre></div>
 <p>which differs from a default call to <code><a href="../reference/jm.html">jm()</a></code> by the
 addition of the <code>functional_forms</code> argument specifying that
 we want an “interaction” between the marker’s value and each transition,
@@ -316,11 +319,11 @@ longitudinal marker and each transition.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
+  <p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda-Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

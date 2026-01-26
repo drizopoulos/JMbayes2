@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 library("JMbayes2")
 ```
 
-# Competing Risks
+# Joint Models with Competing Risks
 ## Prepare data
 The first step in fitting a joint model for competing events in **JMbayes2** is to prepare the data for the event process. If there are $K$ competing events, each subject must have $K$ rows, one for each possible cause. The observed event time $T_i$ of each subject is repeated $K$ times, and there are two indicator variables, namely one identifying the cause and one indicating whether the corresponding event type is the one that occurred. Standard survival datasets that include a single row
 per patient can be easily transformed to the competing risks long format using the function `crisk_setup()`. This function accepts as main arguments the survival data in the standard format with a single row per patient, the name of the status variable, and the level in this status variable that corresponds to censoring. We illustrate the use of this function in the PBC data, where we treat as competing risks transplantation and death:

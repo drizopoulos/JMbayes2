@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-91</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,9 +51,11 @@
 <li><a class="dropdown-item" href="../articles/Baseline_Hazard.html">Baseline Hazard Function</a></li>
     <li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
     <li><a class="dropdown-item" href="../articles/Competing_Risks.html">Competing Risks</a></li>
+    <li><a class="dropdown-item" href="../articles/Consensus.html">Fitting Joint Models to Big Datasets with Consensus Monte Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a></li>
     <li><a class="dropdown-item" href="../articles/Multi_State_Processes.html">Multi-State Processes</a></li>
     <li><a class="dropdown-item" href="../articles/Non_Gaussian_Mixed_Models.html">Non-Gaussian Mixed Models</a></li>
+    <li><a class="dropdown-item" href="../articles/Posterior_Predictive_Checks.html">Posterior Predictive Checks</a></li>
     <li><a class="dropdown-item" href="../articles/Recurring_Events.html">Recurrent Events</a></li>
     <li><a class="dropdown-item" href="../articles/Super_Learning.html">Combined Dynamic Predictions via Super Learning</a></li>
     <li><a class="dropdown-item" href="../articles/Time_Varying_Effects.html">Time Varying Effects</a></li>
@@ -83,7 +85,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-08-23</h4>
+            <h4 data-toc-skip class="date">2026-01-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Dynamic_Predictions.Rmd" class="external-link"><code>vignettes/Dynamic_Predictions.Rmd</code></a></small>
       <div class="d-none name"><code>Dynamic_Predictions.Rmd</code></div>
@@ -147,13 +149,13 @@ subject-specific time effects using natural cubic splines. For
 <code>ascites</code>, we postulate linear subject-specific profiles for
 the log odds. The code is:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
+<code class="sourceCode R"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">lme</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
 <span>           random <span class="op">=</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">|</span> <span class="va">id</span>, control <span class="op">=</span> <span class="fu">lmeControl</span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
+<span><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">lme</a></span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
 <span>           random <span class="op">=</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">|</span> <span class="va">id</span>, control <span class="op">=</span> <span class="fu">lmeControl</span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu">mixed_model</span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
+<span><span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">mixed_model</a></span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
 <span>                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Following, we fit the Cox model for the time to either
 transplantation or death. The first line defines the composite event
@@ -162,7 +164,7 @@ included the baseline covariates <code>drug</code> and <code>age</code>.
 The code is:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span></span>
-<span><span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">coxph</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span></code></pre></div>
 <p>The joint model is fitted with the following call to
 <code><a href="../reference/jm.html">jm()</a></code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -209,7 +211,7 @@ predictions. With the following code, we do that for the first
 longitudinal outcome:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong1</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-6-1.png" width="816" style="display: block; margin: auto;"></p>
+<p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 <p>When we want to calculate predictions for other future time points,
 we can accordingly specify the <code>times</code> argument. In the
 following example, we calculate predictions from time <code>t0</code> to
@@ -224,7 +226,7 @@ patient (i.e., Patient 93). This is achieved by suitably specifying the
 <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, outcomes <span class="op">=</span> <span class="fl">2</span>, subject <span class="op">=</span> <span class="fl">93</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-8-1.png" width="816" style="display: block; margin: auto;"></p>
+<p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 <p>We continue with the predictions for the event outcome. To let
 <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> know that we want the cumulative risk
 probabilities, we specify <code>process = "event"</code>:</p>
@@ -238,7 +240,7 @@ longitudinal and survival outcomes combined, we provide both objects to
 the <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predLong2</span>, <span class="va">predSurv</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-10-1.png" width="816" style="display: block; margin: auto;"></p>
+<p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 <p>Again, by default, the plot is for the predictions of the first
 subject (i.e., Patient 25) and the first longitudinal outcome (i.e.,
 <code>log(serBilir)</code>). However, the <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method has
@@ -276,7 +278,7 @@ labels for the three longitudinal outcomes.</p>
 <span>     fill_CI_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#F25C7880"</span>, <span class="st">"#D973B580"</span>, <span class="st">"#F2832280"</span><span class="op">)</span>,</span>
 <span>     fill_CI_event <span class="op">=</span> <span class="st">"#F7F7FF80"</span>,</span>
 <span>     pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.9</span>, <span class="fl">1.9</span>, <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-12-1.png" width="816" style="display: block; margin: auto;"></p>
+<p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="predictive-accuracy">Predictive accuracy<a class="anchor" aria-label="anchor" href="#predictive-accuracy"></a>
@@ -369,7 +371,7 @@ to <code><a href="../reference/accuracy.html">tvROC()</a></code>:</p>
 right maximizes the <a href="https://en.wikipedia.org/wiki/Youden%27s_J_statistic" class="external-link">Youden’s
 index</a>. To depict the ROC curve, we use the corresponding
 <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method:
-<img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-14-1.png" width="816" style="display: block; margin: auto;"></p>
+<img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 <p>The area under the ROC curve is calculated with the
 <code><a href="../reference/accuracy.html">tvAUC()</a></code> function:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -392,7 +394,7 @@ for Cox regression models for right censored data. We compare the added
 value of using the longitudinal data compared to only using the baseline
 value of the markers,</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">baseline_Cox</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">+</span> </span>
+<code class="sourceCode R"><span><span class="va">baseline_Cox</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">coxph</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>                          <span class="va">prothrombin</span> <span class="op">+</span> <span class="va">ascites</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/accuracy.html">tvAUC</a></span><span class="op">(</span><span class="va">baseline_Cox</span>, newdata <span class="op">=</span> <span class="va">pbc2.id</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -406,7 +408,7 @@ value of the markers,</p>
 plot:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/accuracy.html">calibration_plot</a></span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="va">t0</span>, Dt <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-17-1.png" width="816" style="display: block; margin: auto;"></p>
+<p><img src="Dynamic_Predictions_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 <p>The syntax of the <code><a href="../reference/accuracy.html">calibration_plot()</a></code> function is almost
 identical to that of <code><a href="../reference/accuracy.html">tvROC()</a></code>. The kernel density estimation
 is of the estimated probabilities <span class="math inline">\pi_j(t +
@@ -548,16 +550,16 @@ is the fitted joint model we wish to internally validate.</p>
 <span>    <span class="va">data</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">"alive"</span><span class="op">)</span></span>
 <span>    <span class="va">data_id</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span></span>
 <span>    <span class="co"># mixed-effects models</span></span>
-<span>    <span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">data</span>,</span>
+<span>    <span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">lme</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>               random <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/pdDiag.html" class="external-link">pdDiag</a></span><span class="op">(</span>form <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, </span>
 <span>               control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lmeControl.html" class="external-link">lmeControl</a></span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">data</span>,</span>
+<span>    <span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">lme</a></span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>               random <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/pdDiag.html" class="external-link">pdDiag</a></span><span class="op">(</span>form <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, </span>
 <span>               control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lmeControl.html" class="external-link">lmeControl</a></span><span class="op">(</span>opt <span class="op">=</span> <span class="st">'optim'</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model</a></span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">data</span>,</span>
+<span>    <span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">mixed_model</a></span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>                       random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="co"># Cox model</span></span>
-<span>    <span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">years</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">data_id</span><span class="op">)</span></span>
+<span>    <span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">years</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span> <span class="op">+</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">data_id</span><span class="op">)</span></span>
 <span>    <span class="co"># joint model</span></span>
 <span>    <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
@@ -723,11 +725,11 @@ i.e.,</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
+  <p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda-Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

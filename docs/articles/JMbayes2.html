@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-91</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,9 +51,11 @@
 <li><a class="dropdown-item" href="../articles/Baseline_Hazard.html">Baseline Hazard Function</a></li>
     <li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
     <li><a class="dropdown-item" href="../articles/Competing_Risks.html">Competing Risks</a></li>
+    <li><a class="dropdown-item" href="../articles/Consensus.html">Fitting Joint Models to Big Datasets with Consensus Monte Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a></li>
     <li><a class="dropdown-item" href="../articles/Multi_State_Processes.html">Multi-State Processes</a></li>
     <li><a class="dropdown-item" href="../articles/Non_Gaussian_Mixed_Models.html">Non-Gaussian Mixed Models</a></li>
+    <li><a class="dropdown-item" href="../articles/Posterior_Predictive_Checks.html">Posterior Predictive Checks</a></li>
     <li><a class="dropdown-item" href="../articles/Recurring_Events.html">Recurrent Events</a></li>
     <li><a class="dropdown-item" href="../articles/Super_Learning.html">Combined Dynamic Predictions via Super Learning</a></li>
     <li><a class="dropdown-item" href="../articles/Time_Varying_Effects.html">Time Varying Effects</a></li>
@@ -83,7 +85,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-08-23</h4>
+            <h4 data-toc-skip class="date">2026-01-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/JMbayes2.Rmd" class="external-link"><code>vignettes/JMbayes2.Rmd</code></a></small>
       <div class="d-none name"><code>JMbayes2.Rmd</code></div>
@@ -99,10 +101,10 @@ Rizopoulos</h4>
 </h3>
 <p>The function that fits joint models in <strong>JMbayes2</strong> is
 called <code><a href="../reference/jm.html">jm()</a></code>. It has three required arguments,
-<code>Surv_object</code> a Cox model fitted by <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph()</a></code> or
+<code>Surv_object</code> a Cox model fitted by <code><a href="../reference/sliced_model_generics.html">coxph()</a></code> or
 an Accelerated Failure time model fitted by <code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survreg()</a></code>,
 <code>Mixed_objects</code> a single or a list of mixed models fitted
-either by the <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme()</a></code> or <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code>
+either by the <code><a href="../reference/sliced_model_generics.html">lme()</a></code> or <code><a href="../reference/sliced_model_generics.html">mixed_model()</a></code>
 functions, and <code>time_var</code> a character string indicating the
 name of the time variable in the specification of the mixed-effects
 models. We will illustrate the basic use of the package in the PBC
@@ -110,16 +112,16 @@ dataset. We start by fitting a Cox model for the composite event
 transplantation or death, including sex as a baseline covariate:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">status</span> <span class="op">!=</span> <span class="st">'alive'</span><span class="op">)</span></span>
-<span><span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span></span></code></pre></div>
 <p>We aim to assess the strength of the association between the risk of
 the composite event and the serum bilirubin levels collected during
 follow-up. We will describe the patient-specific profiles over time for
 this biomarker using a linear mixed model, with fixed effects, time,
 sex, and their interaction, and as random effects, random intercepts,
-and random slopes. The syntax to fit this model with <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme()</a></code>
+and random slopes. The syntax to fit this model with <code><a href="../reference/sliced_model_generics.html">lme()</a></code>
 is:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">lme</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span></code></pre></div>
 <p>The joint model that links the survival and longitudinal submodels is
 fitted with the following call to the <code><a href="../reference/jm.html">jm()</a></code> function:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -127,7 +129,7 @@ fitted with the following call to the <code><a href="../reference/jm.html">jm()<
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jointFit1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
-<span><span class="co">#&gt; jm(Surv_object = CoxFit, Mixed_objects = fm1, time_var = "year")</span></span>
+<span><span class="co">#&gt; JMbayes2::jm(Surv_object = CoxFit, Mixed_objects = fm1, time_var = "year")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
 <span><span class="co">#&gt; Number of Groups: 312        Number of events: 169 (54.2%)</span></span>
@@ -162,7 +164,7 @@ fitted with the following call to the <code><a href="../reference/jm.html">jm()<
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 16 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 18 sec</span></span></code></pre></div>
 <p>The output of the <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method provides some
 descriptive statistics of the sample at hand, followed by some fit
 statistics based on the marginal (random effects are integrated out
@@ -184,12 +186,19 @@ example, the traceplot for the association coefficient
 <code>value(log(serBilir))</code> is produced with the following
 syntax:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/coda_methods.html">ggtraceplot</a></span><span class="op">(</span><span class="va">jointFit1</span>, <span class="st">"alphas"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="JMbayes2_files/figure-html/unnamed-chunk-4-1.png" width="700" style="display: block; margin: auto;"></p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/coda_methods.html">ggtraceplot</a></span><span class="op">(</span><span class="va">jointFit1</span>, <span class="st">"alphas"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `linewidth` instead.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> The deprecated feature was likely used in the <span style="color: #0000BB;">JMbayes2</span> package.</span></span>
+<span><span class="co">#&gt;   Please report the issue at <span style="color: #0000BB; font-style: italic;">&lt;https://github.com/drizopoulos/JMbayes2/issues&gt;</span>.</span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once per session.</span></span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span></code></pre></div>
+<p><img src="JMbayes2_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>and the density plot with the call:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/coda_methods.html">ggdensityplot</a></span><span class="op">(</span><span class="va">jointFit1</span>, <span class="st">"alphas"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="JMbayes2_files/figure-html/unnamed-chunk-5-1.png" width="700" style="display: block; margin: auto;"></p>
+<p><img src="JMbayes2_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <div class="section level4">
 <h4 id="notes">Notes<a class="anchor" aria-label="anchor" href="#notes"></a>
 </h4>
@@ -211,9 +220,9 @@ including the prothrombin time and the log odds of the presence or
 absence of ascites as time-varying covariates in the relative risk model
 for the composite event. Ascites is a dichotomous outcome, and
 therefore, we fit a mixed-effects logistic regression model for it using
-the <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code> function from the
+the <code><a href="../reference/sliced_model_generics.html">mixed_model()</a></code> function from the
 <strong>GLMMadaptive</strong> package. The use of <code>||</code> in the
-<code>random</code> argument of <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model()</a></code> specifies
+<code>random</code> argument of <code><a href="../reference/sliced_model_generics.html">mixed_model()</a></code> specifies
 that the random intercepts and random slopes are assumed uncorrelated.
 In addition, the argument <code>which_independent</code> can be used to
 determine which longitudinal outcomes are to be assumed independent;
@@ -225,8 +234,8 @@ joint model is more complex, we increase the number of MCMC iterations,
 the number of burn-in iterations, and the thinning per chain using the
 corresponding control arguments:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span>
-<span><span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">mixed_model</a></span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
+<code class="sourceCode R"><span><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">lme</a></span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span>
+<span><span class="va">fm3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">mixed_model</a></span><span class="op">(</span><span class="va">ascites</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">sex</span>, data <span class="op">=</span> <span class="va">pbc2</span>,</span>
 <span>                   random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">||</span> <span class="va">id</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">jointFit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span>, <span class="va">fm3</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>,</span>
@@ -235,9 +244,9 @@ corresponding control arguments:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jointFit2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
-<span><span class="co">#&gt; jm(Surv_object = CoxFit, Mixed_objects = list(fm1, fm2, fm3), </span></span>
-<span><span class="co">#&gt;     time_var = "year", which_independent = cbind(1, 2), n_iter = 12000L, </span></span>
-<span><span class="co">#&gt;     n_burnin = 2000L, n_thin = 5L)</span></span>
+<span><span class="co">#&gt; JMbayes2::jm(Surv_object = CoxFit, Mixed_objects = list(fm1, </span></span>
+<span><span class="co">#&gt;     fm2, fm3), time_var = "year", which_independent = cbind(1, </span></span>
+<span><span class="co">#&gt;     2), n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
 <span><span class="co">#&gt; Number of Groups: 312        Number of events: 169 (54.2%)</span></span>
@@ -294,7 +303,7 @@ corresponding control arguments:</p>
 <span><span class="co">#&gt; iterations per chain: 12000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 2000 </span></span>
 <span><span class="co">#&gt; thinning: 5 </span></span>
-<span><span class="co">#&gt; time: 1.9 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 2 min</span></span></code></pre></div>
 <p>The survival submodel output now contains the estimated coefficients
 for <code>value(prothrombin)</code> and <code>value(ascites)</code>, as
 well as parameter estimates for all three longitudinal submodels.</p>
@@ -329,16 +338,16 @@ corresponding syntax to fit this model is:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fForms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="st">"log(serBilir)"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">slope</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/jm.html">slope</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span><span class="op">)</span><span class="op">:</span><span class="va">sex</span>,</span>
-<span>  <span class="st">"prothrombin"</span> <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">area</a></span><span class="op">(</span><span class="va">prothrombin</span><span class="op">)</span></span>
+<span>  <span class="st">"prothrombin"</span>   <span class="op">=</span> <span class="op">~</span> <span class="fu">JMbayes2</span><span class="fu">::</span><span class="fu"><a href="../reference/jm.html">area</a></span><span class="op">(</span><span class="va">prothrombin</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">jointFit3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">jointFit2</span>, functional_forms <span class="op">=</span> <span class="va">fForms</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jointFit3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
-<span><span class="co">#&gt; jm(Surv_object = CoxFit, Mixed_objects = list(fm1, fm2, fm3), </span></span>
-<span><span class="co">#&gt;     time_var = "year", functional_forms = fForms, which_independent = cbind(1, </span></span>
-<span><span class="co">#&gt;         2), n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)</span></span>
+<span><span class="co">#&gt; JMbayes2::jm(Surv_object = CoxFit, Mixed_objects = list(fm1, </span></span>
+<span><span class="co">#&gt;     fm2, fm3), time_var = "year", functional_forms = fForms, </span></span>
+<span><span class="co">#&gt;     which_independent = cbind(1, 2), n_iter = 12000L, n_burnin = 2000L, ...</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
 <span><span class="co">#&gt; Number of Groups: 312        Number of events: 169 (54.2%)</span></span>
@@ -366,7 +375,7 @@ corresponding syntax to fit this model is:</p>
 <span><span class="co">#&gt; sexfemale                       0.3595 0.9644  -1.3670 2.3829 0.7557 1.0662</span></span>
 <span><span class="co">#&gt; slope(log(serBilir))            4.3938 2.5197  -0.0624 9.5851 0.0577 1.1294</span></span>
 <span><span class="co">#&gt; slope(log(serBilir)):sexfemale -4.3880 3.0045 -11.1525 0.5844 0.1020 1.1396</span></span>
-<span><span class="co">#&gt; area(prothrombin)              -0.4097 0.3097  -0.9998 0.1627 0.1957 1.3476</span></span>
+<span><span class="co">#&gt; JMbayes2::area(prothrombin)    -0.4097 0.3097  -0.9998 0.1627 0.1957 1.3476</span></span>
 <span><span class="co">#&gt; value(ascites)                  1.0639 0.2373   0.6257 1.5698 0.0000 1.3015</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)</span></span>
@@ -396,7 +405,7 @@ corresponding syntax to fit this model is:</p>
 <span><span class="co">#&gt; iterations per chain: 12000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 2000 </span></span>
 <span><span class="co">#&gt; thinning: 5 </span></span>
-<span><span class="co">#&gt; time: 2 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 2.1 min</span></span></code></pre></div>
 <p>As seen above, the <code>functional_forms</code> argument is a named
 list with elements corresponding to the longitudinal outcomes. If a
 longitudinal outcome is not specified in this list, then the default
@@ -427,7 +436,7 @@ longitudinal outcomes in the relative risk model):</p>
 <span><span class="co">#&gt; gammas.Mean                                   0.3594950 -0.5053443</span></span>
 <span><span class="co">#&gt; association.slope(log(serBilir))              4.3938467  2.0175752</span></span>
 <span><span class="co">#&gt; association.slope(log(serBilir)):sexfemale   -4.3879624 -0.8996426</span></span>
-<span><span class="co">#&gt; association.area(prothrombin)                -0.4096893 -0.1321933</span></span>
+<span><span class="co">#&gt; association.JMbayes2::area(prothrombin)      -0.4096893 -0.1321933</span></span>
 <span><span class="co">#&gt; association.value(ascites)                    1.0639313  0.8572684</span></span></code></pre></div>
 <p>Apart from the Horseshoe prior, the ridge prior is also provided.</p>
 </div>
@@ -439,11 +448,11 @@ longitudinal outcomes in the relative risk model):</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
+  <p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda-Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

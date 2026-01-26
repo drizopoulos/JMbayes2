@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-91</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,9 +51,11 @@
 <li><a class="dropdown-item" href="../articles/Baseline_Hazard.html">Baseline Hazard Function</a></li>
     <li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
     <li><a class="dropdown-item" href="../articles/Competing_Risks.html">Competing Risks</a></li>
+    <li><a class="dropdown-item" href="../articles/Consensus.html">Fitting Joint Models to Big Datasets with Consensus Monte Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a></li>
     <li><a class="dropdown-item" href="../articles/Multi_State_Processes.html">Multi-State Processes</a></li>
     <li><a class="dropdown-item" href="../articles/Non_Gaussian_Mixed_Models.html">Non-Gaussian Mixed Models</a></li>
+    <li><a class="dropdown-item" href="../articles/Posterior_Predictive_Checks.html">Posterior Predictive Checks</a></li>
     <li><a class="dropdown-item" href="../articles/Recurring_Events.html">Recurrent Events</a></li>
     <li><a class="dropdown-item" href="../articles/Super_Learning.html">Combined Dynamic Predictions via Super Learning</a></li>
     <li><a class="dropdown-item" href="../articles/Time_Varying_Effects.html">Time Varying Effects</a></li>
@@ -83,7 +85,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-08-23</h4>
+            <h4 data-toc-skip class="date">2026-01-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Competing_Risks.Rmd" class="external-link"><code>vignettes/Competing_Risks.Rmd</code></a></small>
       <div class="d-none name"><code>Competing_Risks.Rmd</code></div>
@@ -147,16 +149,16 @@ cause-specific Cox regressions by including the interaction terms of age
 and treatment with variable <code>CR</code>, which is treated as a
 stratification variable using the <code>strata()</code> function:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CoxFit_CR</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="op">(</span><span class="va">age</span> <span class="op">+</span> <span class="va">drug</span><span class="op">)</span> <span class="op">*</span> <span class="fu">strata</span><span class="op">(</span><span class="va">CR</span><span class="op">)</span>,</span>
+<code class="sourceCode R"><span><span class="va">CoxFit_CR</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">coxph</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">years</span>, <span class="va">status2</span><span class="op">)</span> <span class="op">~</span> <span class="op">(</span><span class="va">age</span> <span class="op">+</span> <span class="va">drug</span><span class="op">)</span><span class="op">:</span><span class="fu">strata</span><span class="op">(</span><span class="va">CR</span><span class="op">)</span>,</span>
 <span>                     data <span class="op">=</span> <span class="va">pbc2.idCR</span><span class="op">)</span></span></code></pre></div>
 <p>We include two longitudinal outcomes for the longitudinal process:
 serum bilirubin and the prothrombin time. For the former, we use
 quadratic orthogonal polynomials in the fixed- and random-effects parts,
 and for the latter, linear evolutions:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">pbc2</span>, </span>
+<code class="sourceCode R"><span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">lme</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">pbc2</span>, </span>
 <span>           random <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly</a></span><span class="op">(</span><span class="va">year</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span>
-<span><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">fm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">lme</a></span><span class="op">(</span><span class="va">prothrombin</span> <span class="op">~</span> <span class="va">year</span> <span class="op">*</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">pbc2</span>, random <span class="op">=</span> <span class="op">~</span> <span class="va">year</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span></span></code></pre></div>
 <p>To specify that each longitudinal outcome has a separate association
 coefficient per competing risk, we define the corresponding functional
 forms:</p>
@@ -168,18 +170,24 @@ forms:</p>
 <p>Finally, the competing risks joint model is fitted with the following
 call to <code><a href="../reference/jm.html">jm()</a></code> (due to the complexity of the model, we have
 increased the number of MCMC iterations and the burn-in period per
-chain):</p>
+chain). Also, because relatively few patients received a
+transplantation, we specify a Weibull baseline hazard function for this
+competing event, and the default penalized B-spline approximation for
+death:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">jFit_CR</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit_CR</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fm1</span>, <span class="va">fm2</span><span class="op">)</span>, time_var <span class="op">=</span> <span class="st">"year"</span>, </span>
 <span>              functional_forms <span class="op">=</span> <span class="va">CR_forms</span>, </span>
+<span>              baseline_hazard <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"weibull"</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
 <span>              n_iter <span class="op">=</span> <span class="fl">25000L</span>, n_burnin <span class="op">=</span> <span class="fl">5000L</span>, n_thin <span class="op">=</span> <span class="fl">5L</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in jm.default(CoxFit_CR, list(fm1, fm2), time_var = "year",</span></span>
+<span><span class="co">#&gt; functional_forms = CR_forms, : unknown names in control: baseline_hazard</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jFit_CR</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
-<span><span class="co">#&gt; jm(Surv_object = CoxFit_CR, Mixed_objects = list(fm1, fm2), time_var = "year", </span></span>
-<span><span class="co">#&gt;     functional_forms = CR_forms, n_iter = 25000L, n_burnin = 5000L, </span></span>
-<span><span class="co">#&gt;     n_thin = 5L)</span></span>
+<span><span class="co">#&gt; JMbayes2::jm(Surv_object = CoxFit_CR, Mixed_objects = list(fm1, </span></span>
+<span><span class="co">#&gt;     fm2), time_var = "year", functional_forms = CR_forms, baseline_hazard = c("weibull", </span></span>
+<span><span class="co">#&gt;     NA), n_iter = 25000L, n_burnin = 5000L, n_thin = 5L)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
 <span><span class="co">#&gt; Number of Groups: 312        Number of events: 169 (27.1%)</span></span>
@@ -188,62 +196,62 @@ chain):</p>
 <span><span class="co">#&gt;   prothrombin: 1945</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    10813.89 11466.26 -6444.559</span></span>
-<span><span class="co">#&gt; conditional 15750.73 15437.04 -8238.648</span></span>
+<span><span class="co">#&gt; marginal    10824.49 11528.31 -6753.594</span></span>
+<span><span class="co">#&gt; conditional 15751.80 15442.25 -8231.393</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                                              </span></span>
 <span><span class="co">#&gt;        StdDev    Corr                        </span></span>
-<span><span class="co">#&gt; (Intr) 1.3444  (Intr)  p(,2)1  p(,2)2  (Intr)</span></span>
-<span><span class="co">#&gt; p(,2)1 23.2294 0.7027                        </span></span>
-<span><span class="co">#&gt; p(,2)2 12.3415 -0.2648 -0.1463               </span></span>
-<span><span class="co">#&gt; (Intr) 0.7859  0.6353  0.4396  -0.3296       </span></span>
-<span><span class="co">#&gt; year   0.3274  0.4330  0.3402  -0.0527 0.0339</span></span>
+<span><span class="co">#&gt; (Intr) 1.3404  (Intr)  p(,2)1  p(,2)2  (Intr)</span></span>
+<span><span class="co">#&gt; p(,2)1 23.0867 0.6987                        </span></span>
+<span><span class="co">#&gt; p(,2)2 12.4129 -0.2690 -0.1464               </span></span>
+<span><span class="co">#&gt; (Intr) 0.7873  0.6343  0.4354  -0.3299       </span></span>
+<span><span class="co">#&gt; year   0.3269  0.4310  0.3351  -0.0589 0.0307</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival Outcome:</span></span>
-<span><span class="co">#&gt;                                        Mean  StDev    2.5%   97.5%      P</span></span>
-<span><span class="co">#&gt; age                                 -0.0750 0.0245 -0.1247 -0.0286 0.0007</span></span>
-<span><span class="co">#&gt; drugD-penicil                       -0.2699 0.4003 -1.0821  0.5001 0.4993</span></span>
-<span><span class="co">#&gt; age:strata(CR)dead                   0.1376 0.0240  0.0922  0.1868 0.0000</span></span>
-<span><span class="co">#&gt; drugD-penicil:strata(CR)dead         0.2650 0.4329 -0.5594  1.1367 0.5497</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):CRtransplanted  1.0270 0.2180  0.6150  1.4722 0.0000</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):CRdead          1.4521 0.1138  1.2378  1.6872 0.0000</span></span>
-<span><span class="co">#&gt; value(prothrombin):CRtransplanted    0.1003 0.1408 -0.1837  0.3599 0.5048</span></span>
-<span><span class="co">#&gt; value(prothrombin):CRdead            0.1444 0.0481  0.0448  0.2306 0.0092</span></span>
-<span><span class="co">#&gt;                                       Rhat</span></span>
-<span><span class="co">#&gt; age                                 1.0533</span></span>
-<span><span class="co">#&gt; drugD-penicil                       1.0394</span></span>
-<span><span class="co">#&gt; age:strata(CR)dead                  1.0885</span></span>
-<span><span class="co">#&gt; drugD-penicil:strata(CR)dead        1.0407</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):CRtransplanted 1.0082</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):CRdead         1.0180</span></span>
-<span><span class="co">#&gt; value(prothrombin):CRtransplanted   1.0679</span></span>
-<span><span class="co">#&gt; value(prothrombin):CRdead           1.0233</span></span>
+<span><span class="co">#&gt;                                         Mean  StDev    2.5%   97.5%      P</span></span>
+<span><span class="co">#&gt; age:strata(CR)transplanted           -0.0711 0.0299 -0.1299 -0.0137 0.0130</span></span>
+<span><span class="co">#&gt; age:strata(CR)dead                    0.0632 0.0100  0.0435  0.0832 0.0000</span></span>
+<span><span class="co">#&gt; drugD-penicil:strata(CR)transplanted -0.2895 0.4166 -1.1253  0.5072 0.4852</span></span>
+<span><span class="co">#&gt; drugD-penicil:strata(CR)dead         -0.0067 0.1873 -0.3681  0.3639 0.9710</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):CRtransplanted   1.0296 0.2206  0.6229  1.4844 0.0000</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):CRdead           1.4560 0.1169  1.2343  1.6939 0.0000</span></span>
+<span><span class="co">#&gt; value(prothrombin):CRtransplanted     0.1262 0.1519 -0.1746  0.4012 0.4428</span></span>
+<span><span class="co">#&gt; value(prothrombin):CRdead             0.1387 0.0509  0.0280  0.2304 0.0125</span></span>
+<span><span class="co">#&gt;                                        Rhat</span></span>
+<span><span class="co">#&gt; age:strata(CR)transplanted           1.0261</span></span>
+<span><span class="co">#&gt; age:strata(CR)dead                   1.0144</span></span>
+<span><span class="co">#&gt; drugD-penicil:strata(CR)transplanted 1.0149</span></span>
+<span><span class="co">#&gt; drugD-penicil:strata(CR)dead         1.0015</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):CRtransplanted  1.0172</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):CRdead          1.0224</span></span>
+<span><span class="co">#&gt; value(prothrombin):CRtransplanted    1.3322</span></span>
+<span><span class="co">#&gt; value(prothrombin):CRdead            1.0244</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev     2.5%   97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)     1.1970 0.1139   0.9742  1.4210 0.0000 1.0008</span></span>
-<span><span class="co">#&gt; poly(year, 2)1 27.8727 2.9854  22.0478 33.9114 0.0000 1.0112</span></span>
-<span><span class="co">#&gt; poly(year, 2)2  1.2406 1.7122  -2.1576  4.5335 0.4642 1.0083</span></span>
-<span><span class="co">#&gt; drugD-penicil  -0.1908 0.1581  -0.4991  0.1205 0.2217 1.0003</span></span>
-<span><span class="co">#&gt; p(,2)1         -3.1948 3.5724 -10.1371  3.7562 0.3732 1.0021</span></span>
-<span><span class="co">#&gt; p(,2)2         -1.0633 2.1598  -5.2556  3.2097 0.6105 1.0025</span></span>
-<span><span class="co">#&gt; sigma           0.3023 0.0062   0.2903  0.3147 0.0000 1.0001</span></span>
+<span><span class="co">#&gt; (Intercept)     1.1949 0.1139   0.9710  1.4193 0.0000 0.9998</span></span>
+<span><span class="co">#&gt; poly(year, 2)1 27.7281 3.0802  21.9088 34.1392 0.0000 1.0096</span></span>
+<span><span class="co">#&gt; poly(year, 2)2  1.1796 1.7760  -2.3127  4.6065 0.5030 1.0031</span></span>
+<span><span class="co">#&gt; drugD-penicil  -0.1902 0.1578  -0.5039  0.1232 0.2262 1.0001</span></span>
+<span><span class="co">#&gt; p(,2)1         -3.2070 3.6367 -10.4855  3.8662 0.3783 1.0031</span></span>
+<span><span class="co">#&gt; p(,2)2         -1.0882 2.1796  -5.2804  3.1996 0.6177 1.0027</span></span>
+<span><span class="co">#&gt; sigma           0.3023 0.0062   0.2903  0.3147 0.0000 1.0008</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal Outcome: prothrombin (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                       Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)        10.6336 0.0832 10.4737 10.7987 0.0000 1.0013</span></span>
-<span><span class="co">#&gt; year                0.2944 0.0396  0.2170  0.3737 0.0000 1.0014</span></span>
-<span><span class="co">#&gt; drugD-penicil      -0.0970 0.1170 -0.3266  0.1296 0.4068 1.0004</span></span>
-<span><span class="co">#&gt; year:drugD-penicil -0.0234 0.0520 -0.1257  0.0786 0.6572 1.0000</span></span>
-<span><span class="co">#&gt; sigma               1.0554 0.0203  1.0166  1.0967 0.0000 1.0012</span></span>
+<span><span class="co">#&gt; (Intercept)        10.6331 0.0829 10.4704 10.7984 0.0000 1.0029</span></span>
+<span><span class="co">#&gt; year                0.2944 0.0395  0.2178  0.3719 0.0000 1.0029</span></span>
+<span><span class="co">#&gt; drugD-penicil      -0.0954 0.1165 -0.3215  0.1299 0.4148 1.0007</span></span>
+<span><span class="co">#&gt; year:drugD-penicil -0.0238 0.0518 -0.1261  0.0780 0.6453 1.0005</span></span>
+<span><span class="co">#&gt; sigma               1.0556 0.0204  1.0166  1.0971 0.0000 1.0013</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 25000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 5000 </span></span>
 <span><span class="co">#&gt; thinning: 5 </span></span>
-<span><span class="co">#&gt; time: 6.6 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 7 min</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="dynamic-predictions">Dynamic predictions<a class="anchor" aria-label="anchor" href="#dynamic-predictions"></a>
@@ -292,7 +300,7 @@ predictions:</p>
 <span>     fill_CI_event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#03BF3D4D"</span>, <span class="st">"#FF00004D"</span><span class="op">)</span>, pos_ylab_long <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">11.5</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">8.1</span>, y <span class="op">=</span> <span class="fl">0.45</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">pbc2.idCR</span><span class="op">$</span><span class="va">CR</span><span class="op">)</span>, </span>
 <span>       lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#03BF3D"</span>, <span class="st">"#FF0000"</span><span class="op">)</span>, bty <span class="op">=</span> <span class="st">"n"</span>, cex <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Competing_Risks_files/figure-html/CIFs-1.png" width="816" style="display: block; margin: auto;"></p>
+<p><img src="Competing_Risks_files/figure-html/CIFs-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -302,11 +310,11 @@ predictions:</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
+  <p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda-Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

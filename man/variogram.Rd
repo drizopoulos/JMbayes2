@@ -27,7 +27,7 @@ variogram(y, times, id)
 }
 
 \examples{
-ind <- aids$patient %in% c(1, 2)
+ind <- aids$patient == 2
 yy <- aids$CD4[ind]
 tt <- aids$obstime[ind]
 ids <- aids$patient[ind]

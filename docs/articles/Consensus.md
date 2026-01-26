@@ -1,0 +1,223 @@
+# Fitting Joint Models to Big Datasets with Consensus Monte Carlo
+
+## Introduction
+
+Applying Bayesian joint models to large datasets, such as patient
+registries, can require long computing times that are impractical in
+many research settings. This is particularly challenging during the
+model-building phase, which often involves fitting and comparing
+multiple candidate specifications. In other contexts, the full dataset
+cannot be analyzed in a single run due to local memory limitations or
+governance constraints (e.g., multi-center collaborations where
+individual-level data cannot be shared).
+
+This vignette describes a practical split-and-consensus strategy that
+(i) divides the data into independent subject-level subsamples, (ii)
+fits the same joint model on each subsample in parallel, and (iii)
+combines the resulting MCMC draws into a consensus posterior
+distribution that serves as a scalable proxy for the full-data
+posterior. In practice, this can substantially reduce wall-clock time
+and enables workflows in which model fitting is carried out across
+multiple computing nodes or centers.
+
+The resulting consensus distribution is an approximation to the
+full-data posterior (i.e., it is not guaranteed to be exact). For this
+reason, we recommend using split-and-consensus methods only when fitting
+the joint model to the full dataset in a single run is not feasible. A
+detailed description of the methodology and practical recommendations
+are provided in [this paper](https://doi.org/10.48550/arXiv.2310.03351).
+
+## Methods
+
+Let D = \\(y_i, t_i, \delta_i)\\\_{i=1}^n denote the observed data,
+where y_i represents the longitudinal measurements for subject i, and
+(t_i, \delta_i) denote the event time and event indicator, respectively.
+We randomly partition the subjects into S disjoint subsets
+I_1,\ldots,I_S. The corresponding subsamples are D_s = \\(y_i, t_i,
+\delta_i): i \in I_s\\, s = 1,\ldots,S. All measurements for the same
+subject are assigned to the same subset.
+
+Under the assumption of conditional independence across the subsamples
+given the model parameters \theta, the likelihood factorizes across the
+subsets: p(y, t, \delta \mid \theta, b)=\prod^S\_{s=1}p(y^{(s)},
+t^{(s)},\delta^{(s)}\mid\theta,b^{(s)}), where y^{(s)} = \\y_i: i \in
+I_s\\, t^{(s)} = \\t_i: i \in I_s\\, \delta^{(s)} = \\\delta_i: i \in
+I_s\\, and b^{(s)} = \\b_i: i \in I_s\\. Using the factorization above,
+the posterior distribution can be written as p(\theta, b\mid y, t,
+\delta)\propto p(\theta, b) \prod^S\_{s=1}p(y^{(s)}, t^{(s)},
+\delta^{(s)} \mid \theta, b^{(s)})=\prod^S\_{s=1}p_s(\theta, b^{(s)}
+\mid y^{(s)}, t^{(s)}, \delta^{(s)}).
+
+In pratice, we run independent MCMC on each subsample and then combine
+the draws to obtain a consensus approximation, \tilde{p}(\theta, b\mid
+y, t, \delta, which serves as a proxy for the full posterior.
+
+In **JMbayes2** we provide the following consensus strategies: - Union:
+pools (concatenates) the draws from all subposteriors, treating them as
+one combined sample. - Equal-weighted consensus: forms an iteration-wise
+consensus draw by taking the simple average across subposterior draws. -
+Variance/Precision-weighted consensus: forms an iteration-wise consensus
+draw using inverse-variance (precision) weights computed per parameter,
+so subsamples with lower posterior variance contribute more to that
+parameter’s consensus.
+
+## Examples
+
+For illustration, we use the
+[`pbc2`](https://www.rdocumentation.org/packages/JMbayes2/versions/0.5-7/topics/pbc2)
+and `pbc2.id` datasets available in **JMbayes2**. These data are
+relatively small and can be analyzed with a standard full-data joint
+model; therefore, they do not require split-and-consensus methods. We
+use them here only to provide a reproducible example and to demonstrate
+the workflow.
+
+We present two common use cases:
+
+1.  **Speeding posterior sampling** (Example 1) by splitting the data
+    into subsamples and fitting in parallel on a single machine.
+
+2.  **Partitioned fitting** (Example 2) when the full dataset cannot be
+    analyzed in a single run (e.g., multi-center settings where data
+    cannot be pooled, or single-machine memory limitations). Each data
+    partition is fitted one-at-a-time, and only the fitted objects are
+    shared.
+
+Although we illustrate the approach with a simple joint model (one
+longitudinal outcome and one time-to-event outcomes), the same workflow
+is available for all models supported by *JMbayes2*; users only need to
+update the model formulation in the code below.
+
+### Example 1: Speeding posterior sampling (parallel fitting)
+
+``` r
+# 1. Split the dataset into `n_slices` subsamples
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive') # composite event indicator (1 = death or transplantation, 0 = otherwise)
+data_slc <- slicer(n_slices  = 2, # target number of data subsamples
+                   id_var    = "id",  # clustering variable
+                   data_long = pbc2, # longitudinal dataset
+                   data_surv = pbc2.id, # survival dataset
+                   seed      = 123L) # seed for reproducibility
+
+# 2. Specify the number of available cores
+n_cores <- max(1L, parallelly::availableCores(omit = 1L))
+
+# 3. Fit the longitudinal and survival submodels on each subsample
+## 3.1 Fit a linear mixed-effects model 
+lme_fit <- lme(data   = data_slc$long, # list with partitioned longitudinal dataset (class `sliced_data`)
+               fixed  = log(serBilir) ~ year * sex, # fixed-effects formula  
+               random = ~ year | id, # random-effects formula describing 
+               cores  = n_cores) # number of available cores
+
+## 3.2 Fit a proportional-hazards model
+ph_fit <- coxph(data    = data_slc$surv, # list with partitioned survival dataset (class `sliced_data`)
+                formula = Surv(years, status2) ~ sex, # model formula
+                cores   = n_cores) # number of available cores
+
+# 4. Fit joint model(s) on each subsample
+jm_fit <- jm(Surv_object   = ph_fit, # list with survival submodels (class `sliced_coxph`)
+             Mixed_objects = lme_fit, # list with longitudinal submodels (class `sliced_lme`)
+             time_var      = "year", # time variable in the longitudinal submodel
+             cores         = n_cores) # number of available cores
+
+# 5. Obtain consensus posterior estimates
+cons_fit <- consensus(jm_fit, # list with joint models (class `sliced_jm`)
+                      parm   = c("alphas", "betas1"), # parameters of interest
+                      method = "var_weight", # consensus algorithm
+                      seed   = 123L) # seed for reproducibility
+cons_fit
+#> 
+#> Consensus summary (2 splits)
+#> Method (var_weight): iteration-wise weighted average across splits using inverse-variance weights.
+#> 
+#> Parameter block: alphas (9000 draws)
+#>                        Mean  StDev   2.5%  97.5% P   w_S1   w_S2
+#> value(log(serBilir)) 1.2503 0.0885 1.0817 1.4297 0 0.4261 0.5739
+#> 
+#> Parameter block: betas1 (9000 draws)
+#>                   Mean  StDev    2.5%   97.5%      P   w_S1   w_S2
+#> (Intercept)     0.7235 0.1693  0.3870  1.0565 0.0000 0.6853 0.3147
+#> year            0.2648 0.0381  0.1911  0.3407 0.0000 0.5906 0.4094
+#> sexfemale      -0.2410 0.1844 -0.5961  0.1181 0.1880 0.6668 0.3332
+#> year:sexfemale -0.0875 0.0406 -0.1678 -0.0072 0.0329 0.5706 0.4294
+```
+
+### Example 2: Federated or sequential posterior sampling
+
+This example uses a “Center A” and “Center B” framing to mimic a
+multi-center setting where individual-level data cannot be shared.
+However, the same workflow applies on a single machine when the full
+dataset cannot be analyzed all at once (e.g., due to memory constraints
+or because the data are stored in separate files that cannot be loaded
+simultaneously). In that case, the analyst can fit the model serially on
+each subsample, store the fitted objects, and then combine them.
+
+``` r
+# 1. Prepare the data
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive') # composite event indicator (1 = death or transplantation, 0 = otherwise)
+data_slc <- slicer(n_slices  = 2, # target number of data subsamples
+                   id_var    = "id",  # clustering variable
+                   data_long = pbc2, # longitudinal dataset
+                   data_surv = pbc2.id, # survival dataset
+                   seed      = 123L) # seed for reproducibility
+data.A <- list(long = data_slc$long[[1]], # data from Center A
+               surv = data_slc$surv[[1]]) 
+data.B <- list(long = data_slc$long[[2]], # data from Center B
+               surv = data_slc$surv[[2]]) 
+
+# 2. Fit the longitudinal and survival submodels on each subsample
+## On Center A
+## 2.1.A Fit the linear mixed-effects model 
+lme_fit.A <- lme(data   = data.A$long, # list with partitioned longitudinal dataset (class `sliced_data`)
+                 fixed  = log(serBilir) ~ year * sex, # fixed-effects formula  
+                 random = ~ year | id) # random-effects formula describing 
+
+## 2.2.A Fit the proportional-hazards model
+ph_fit.A <- coxph(data    = data.A$surv, # list with partitioned survival dataset (class `sliced_data`)
+                  formula = Surv(years, status2) ~ sex) # model formula
+
+# 2.3.A Fit the joint model
+jm_fit.A <- jm(Surv_object   = ph_fit.A, # list with survival submodels (class `sliced_coxph`)
+               Mixed_objects = lme_fit.A, # list with longitudinal submodels (class `sliced_lme` or `MixMod`)
+               time_var      = "year") # time variable in the longitudinal submodel
+jm_fit.A$model_data <- NULL # remove the datasets
+
+## On Center B
+## 2.1.B Fit the linear mixed-effects model 
+lme_fit.B <- lme(data   = data.B$long, # longitudinal dataset (class `data.frame`)
+                 fixed  = log(serBilir) ~ year * sex, # fixed-effects formula  
+                 random = ~ year | id) # random-effects formula describing 
+
+## 2.2.B Fit the proportional-hazards model
+ph_fit.B <- coxph(data    = data.B$surv, # survival dataset (class `data.frame`)
+                  formula = Surv(years, status2) ~ sex) # model formula
+
+# 2.3.B Fit the joint model
+jm_fit.B <- jm(Surv_object   = ph_fit.B, # survival submodels (class `coxph`)
+               Mixed_objects = lme_fit.B, # longitudinal submodels (class `lme` or `MixMod`)
+               time_var      = "year") # time variable in the longitudinal submodel
+jm_fit.B$model_data <- NULL # remove the datasets
+
+# 3. Obtain consensus posterior estimates
+fits <- list(jm_fit.A, jm_fit.B)
+class(fits) <- c("sliced_jm", class(fits)) # consensus() expects the class `sliced_jm`
+
+cons_fit2 <- consensus(fits, # list with joint models (class `sliced_jm`)
+                       parm   = c("alphas", "betas1"), # parameters of interest
+                       method = "var_weight", # consensus algorithm
+                       seed   = 123L) # seed for reproducibility
+cons_fit2
+#> 
+#> Consensus summary (2 splits)
+#> Method (var_weight): iteration-wise weighted average across splits using inverse-variance weights.
+#> 
+#> Parameter block: alphas (9000 draws)
+#>                        Mean  StDev   2.5%  97.5% P   w_S1   w_S2
+#> value(log(serBilir)) 1.2503 0.0885 1.0817 1.4297 0 0.4261 0.5739
+#> 
+#> Parameter block: betas1 (9000 draws)
+#>                   Mean  StDev    2.5%   97.5%      P   w_S1   w_S2
+#> (Intercept)     0.7235 0.1693  0.3870  1.0565 0.0000 0.6853 0.3147
+#> year            0.2648 0.0381  0.1911  0.3407 0.0000 0.5906 0.4094
+#> sexfemale      -0.2410 0.1844 -0.5961  0.1181 0.1880 0.6668 0.3332
+#> year:sexfemale -0.0875 0.0406 -0.1678 -0.0072 0.0329 0.5706 0.4294
+```

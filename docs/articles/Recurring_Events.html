@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-91</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,9 +51,11 @@
 <li><a class="dropdown-item" href="../articles/Baseline_Hazard.html">Baseline Hazard Function</a></li>
     <li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
     <li><a class="dropdown-item" href="../articles/Competing_Risks.html">Competing Risks</a></li>
+    <li><a class="dropdown-item" href="../articles/Consensus.html">Fitting Joint Models to Big Datasets with Consensus Monte Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a></li>
     <li><a class="dropdown-item" href="../articles/Multi_State_Processes.html">Multi-State Processes</a></li>
     <li><a class="dropdown-item" href="../articles/Non_Gaussian_Mixed_Models.html">Non-Gaussian Mixed Models</a></li>
+    <li><a class="dropdown-item" href="../articles/Posterior_Predictive_Checks.html">Posterior Predictive Checks</a></li>
     <li><a class="dropdown-item" href="../articles/Recurring_Events.html">Recurrent Events</a></li>
     <li><a class="dropdown-item" href="../articles/Super_Learning.html">Combined Dynamic Predictions via Super Learning</a></li>
     <li><a class="dropdown-item" href="../articles/Time_Varying_Effects.html">Time Varying Effects</a></li>
@@ -80,10 +82,10 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Recurrent Events</h1>
-                        <h4 data-toc-skip class="author">Pedro Miranda
-Afonso</h4>
+                        <h4 data-toc-skip class="author">Pedro
+Miranda-Afonso</h4>
             
-            <h4 data-toc-skip class="date">2025-08-23</h4>
+            <h4 data-toc-skip class="date">2026-01-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Recurring_Events.Rmd" class="external-link"><code>vignettes/Recurring_Events.Rmd</code></a></small>
       <div class="d-none name"><code>Recurring_Events.Rmd</code></div>
@@ -111,7 +113,7 @@ the <em>gap</em> uses the end of the previous event (Figure 1).
 <em>Gap</em> assumes a renewal after each event and resets the time to
 zero.</p>
 <div class="figure" style="text-align: center">
-<img src="Recurring_Events_files/figure-html/timescale-1.png" alt="&lt;b&gt;Figure 1&lt;/b&gt; Visual representation of an hazard function under the gap or calendar timescale. During the follow-up, the subject experienced three events." width="528"><p class="caption">
+<img src="Recurring_Events_files/figure-html/timescale-1.png" class="r-plt" alt="&lt;b&gt;Figure 1&lt;/b&gt; Visual representation of an hazard function under the gap or calendar timescale. During the follow-up, the subject experienced three events." width="528"><p class="caption">
 <b>Figure 1</b> Visual representation of an hazard function under the
 gap or calendar timescale. During the follow-up, the subject experienced
 three events.
@@ -122,7 +124,7 @@ periods in which the subject is not at risk of experiencing the
 recurring event (Figure 2). For example, while a patient is in the
 hospital, they are not at risk of being hospitalized again.</p>
 <div class="figure" style="text-align: center">
-<img src="Recurring_Events_files/figure-html/disc_risk-1.png" alt="&lt;b&gt;Figure 2&lt;/b&gt; Visual representation of an hazard function under the gap or calendar timescale, while accounting for non-risk periods (gray areas). During the follow-up, the subject experienced three events." width="528"><p class="caption">
+<img src="Recurring_Events_files/figure-html/disc_risk-1.png" class="r-plt" alt="&lt;b&gt;Figure 2&lt;/b&gt; Visual representation of an hazard function under the gap or calendar timescale, while accounting for non-risk periods (gray areas). During the follow-up, the subject experienced three events." width="528"><p class="caption">
 <b>Figure 2</b> Visual representation of an hazard function under the
 gap or calendar timescale, while accounting for non-risk periods (gray
 areas). During the follow-up, the subject experienced three events.
@@ -378,7 +380,7 @@ recurrent event.</p>
 <span><span class="co">#&gt; 8  1 3.6251219 4.0375415      0      R</span></span>
 <span><span class="co">#&gt; 9  1 0.0000000 4.0375415      1     T1</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="Recurring_Events_files/figure-html/trf_data3-1.png" alt="&lt;b&gt;Figure 3&lt;/b&gt; Visual representation of the failure-time data during the follow-up for subject 1. The horizontal black line denotes risk periods, while the blue line denotes non-risk periods. 'R' and 'T' represent a recurrent and terminal event, respectively." width="528"><p class="caption">
+<img src="Recurring_Events_files/figure-html/trf_data3-1.png" class="r-plt" alt="&lt;b&gt;Figure 3&lt;/b&gt; Visual representation of the failure-time data during the follow-up for subject 1. The horizontal black line denotes risk periods, while the blue line denotes non-risk periods. 'R' and 'T' represent a recurrent and terminal event, respectively." width="528"><p class="caption">
 <b>Figure 3</b> Visual representation of the failure-time data during
 the follow-up for subject 1. The horizontal black line denotes risk
 periods, while the blue line denotes non-risk periods. ‘R’ and ‘T’
@@ -393,7 +395,7 @@ represent a recurrent and terminal event, respectively.
 first to fit the linear mixed model that describes the longitudinal
 outcome,</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lme_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">lme</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, B <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span>, </span>
+<code class="sourceCode R"><span><span class="va">lme_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">lme</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, B <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span>, </span>
 <span>               random <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/pdDiag.html" class="external-link">pdDiag</a></span><span class="op">(</span>form <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, </span>
 <span>                                                       B <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>               data <span class="op">=</span> <span class="va">lme_data</span>,</span>
@@ -401,7 +403,7 @@ outcome,</p>
 <p>Then, we use the <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code> function to fit a
 stratified Cox model using the transformed data,</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cox_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="op">(</span><span class="va">group</span> <span class="op">+</span> <span class="va">age</span><span class="op">)</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata</a></span><span class="op">(</span><span class="va">strata</span><span class="op">)</span>,</span>
+<code class="sourceCode R"><span><span class="va">cox_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">tstart</span>, <span class="va">tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="op">(</span><span class="va">group</span> <span class="op">+</span> <span class="va">age</span><span class="op">)</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata</a></span><span class="op">(</span><span class="va">strata</span><span class="op">)</span>,</span>
 <span>                 data <span class="op">=</span> <span class="va">cox_data</span><span class="op">)</span></span></code></pre></div>
 <p>These models are then provided as arguments in the <code><a href="../reference/jm.html">jm()</a></code>
 function. The user specifies the desired functional forms for the mixed
@@ -414,8 +416,8 @@ argument specifying the desired timescale,</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jm_fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
-<span><span class="co">#&gt; jm(Surv_object = cox_fit, Mixed_objects = lme_fit, time_var = "time", </span></span>
-<span><span class="co">#&gt;     recurrent = "gap", functional_forms = ~value(y):strata)</span></span>
+<span><span class="co">#&gt; JMbayes2::jm(Surv_object = cox_fit, Mixed_objects = lme_fit, </span></span>
+<span><span class="co">#&gt;     time_var = "time", recurrent = "gap", functional_forms = ~value(y):strata)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
 <span><span class="co">#&gt; Number of Groups: 500        Number of events: 2250 (81.6%)</span></span>
@@ -467,7 +469,7 @@ argument specifying the desired timescale,</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 1.6 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 1.7 min</span></span></code></pre></div>
 <p>One can find the association parameters between the underlying value
 of the longitudinal outcome and the recurrent and terminating event
 processes in the summary output as <code>value(y):strataRec</code>
@@ -492,11 +494,11 @@ frailty standard deviation, <span class="math inline">\sigma_F</span>.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
+  <p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda-Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

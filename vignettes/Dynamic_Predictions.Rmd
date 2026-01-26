@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 library("JMbayes2")
 ```
 
-# Dynamic Predictions
+# Dynamic Predictions from Joint Models
 ## Theory
 Based on the general framework of joint models presented earlier, we are interested in deriving cumulative risk probabilities for a new subject $j$ that has survived up to time point $t$ and has provided longitudinal measurements $\mathcal Y_{kj}(t) = \{ y_{kj}(t_{jl}); 0 \leq t_{jl} \leq t, l = 1, \ldots, n_j, k = 1, \ldots, K\}$, with $K$ denoting the number of longitudinal outcomes. The probabilities of 
 interest are 

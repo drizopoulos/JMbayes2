@@ -3,6 +3,10 @@
 ## Major
 * `jm()` allows for greater flexibility in specifying the baseline hazard function via the control arguments `basis`, `Bsplines_degree`, `base_hazard_segments`, and `timescale_base_hazard`. For example, now piecewise-constant, piecewise-linear, and the Weibull baseline hazard functions are possible. Also, it is possible to extrapolate after the last event time when `basis = "ns"`. 
 
+* The new functional form `Delta(..., time_window)` includes the following quantity in the linear predictor of the survival submodel: {eta_i(t) - eta_i(t - time_window)} / time_window, where eta_i(t) is the linear predictor of the longitudinal submodel calculated at time t. The default is {eta_i(t) - eta_i(0)} / t.
+
+* The new functions `slicer()` and `consensus()` can be used to fit joint models in big datasets using consensus Monte Carlo.
+
 * The new function `ppcheck()` performs posterior predictive checks.
 
 * Functions `tvROC()`, `tvAUC()` and `tvBrier()` now also work for Cox regression models.

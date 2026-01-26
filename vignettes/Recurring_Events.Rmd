@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 library("JMbayes2")
 ```
 
-# Recurrent events
+# Joint Models with Recurrent events
 
 ## Introduction
 

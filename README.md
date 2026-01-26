@@ -2,13 +2,10 @@
 # JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data <img src="man/figures/logo.png" align="right" alt="" width="160" />
 
 <!-- badges: start -->
-
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version-last-release/JMbayes2)](https://cran.r-project.org/package=JMbayes2)
-[![](https://cranlogs.r-pkg.org/badges/grand-total/JMbayes2)](https://cran.r-project.org/package=JMbayes2)
-[![Download
-counter](https://cranlogs.r-pkg.org/badges/JMbayes2)](https://cran.r-project.org/package=JMbayes2)
-[![R build
-status](https://github.com/drizopoulos/JMbayes2/workflows/R-CMD-check/badge.svg)](https://github.com/drizopoulos/JMbayes2/actions)
+[![Downloads](https://cranlogs.r-pkg.org/badges/grand-total/JMbayes2)](https://cran.r-project.org/package=JMbayes2)
+[![Download counter](https://cranlogs.r-pkg.org/badges/JMbayes2)](https://cran.r-project.org/package=JMbayes2)
+[![R build status](https://github.com/drizopoulos/JMbayes2/workflows/R-CMD-check/badge.svg)](https://github.com/drizopoulos/JMbayes2/actions)
 <!-- badges: end -->
 
 The package **JMbayes2** fits joint models for longitudinal and

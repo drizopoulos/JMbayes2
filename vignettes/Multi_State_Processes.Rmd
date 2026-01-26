@@ -20,7 +20,7 @@ library('JMbayes2')
 library('MASS')
 ```
 
-# Multi-state Processes
+# Joint Models with Multi-state Processes
 ## Introduction
 A subject may often transition between multiple states, and we are interested in assessing the association of longitudinal marker(s) with each of these transitions. This vignette illustrates how to achieve this using **JMbayes2**. 
 

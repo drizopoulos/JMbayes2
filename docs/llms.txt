@@ -1,0 +1,203 @@
+# JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data
+
+The package **JMbayes2** fits joint models for longitudinal and
+time-to-event data. It can accommodate multiple longitudinal outcomes of
+different type (e.g., continuous, dichotomous, ordinal, counts), and
+assuming different distributions, i.e., Gaussian, Student’s-t, Gamma,
+Beta, unit Lindley, censored Normal, Binomial, Poisson, Negative
+Binomial, and Beta-Binomial. For the event time process, right, left and
+interval censored data can be handled, while competing risks,
+multi-state and recurrent-event processes are also covered..
+
+**JMbayes2** fits joint models using Markov chain Monte Carlo algorithms
+implemented in C++. Besides the main modeling function, the package also
+provides a number of functions to summarize and visualize the results.
+
+## Installation
+
+**JMbayes2** can be installed from [CRAN](https://cran.r-project.org/):
+
+``` r
+install.packages("JMbayes2")
+```
+
+The development version can be installed from GitHub:
+
+``` r
+# install.packages("remotes")
+remotes::install_github("drizopoulos/jmbayes2")
+```
+
+## Minimal Example
+
+To fit a joint model in **JMbayes2** we first need to fit separately the
+mixed-effects models for the longitudinal outcomes and a Cox or
+accelerated failure time (AFT) model for the event process. The mixed
+models need to be fitted with function
+[`lme()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md)
+from the [**nlme**](https://cran.r-project.org/package=nlme) package or
+function
+[`mixed_model()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md)
+from the
+[**GLMMadaptive**](https://cran.r-project.org/package=GLMMadaptive)
+package. The Cox or AFT model need to be fitted with function
+[`coxph()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md)
+or function `survreg()` from the
+[**survival**](https://cran.r-project.org/package=survival) package. The
+resulting model objects are passed as arguments in the
+[`jm()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+function that fits the corresponding joint model. We illustrate this
+procedure for a joint model with three longitudinal outcomes using the
+PBC dataset:
+
+``` r
+# Cox model for the composite event death or transplantation
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
+CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
+
+# a linear mixed model for log serum bilirubin
+fm1 <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
+
+# a linear mixed model for the prothrombin time
+fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
+
+# a mixed effects logistic regression for ascites
+fm3 <- mixed_model(ascites ~ year + sex, data = pbc2,
+                   random = ~ year | id, family = binomial())
+
+# the joint model that links all sub-models
+jointFit <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year",
+                n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)
+summary(jointFit)
+```
+
+# Package index
+
+## All functions
+
+- [`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`tvAUC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`calibration_plot()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`calibration_metrics()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`tvEPCE()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  : Time-Dependent Predictive Accuracy Measures for Joint Models
+
+- [`aids`](https://drizopoulos.github.io/JMbayes2/reference/aids.md)
+  [`aids.id`](https://drizopoulos.github.io/JMbayes2/reference/aids.md)
+  : Didanosine versus Zalcitabine in HIV Patients
+
+- [`traceplot()`](https://drizopoulos.github.io/JMbayes2/reference/coda_methods.md)
+  [`ggtraceplot()`](https://drizopoulos.github.io/JMbayes2/reference/coda_methods.md)
+  [`gelman_diag()`](https://drizopoulos.github.io/JMbayes2/reference/coda_methods.md)
+  [`densplot()`](https://drizopoulos.github.io/JMbayes2/reference/coda_methods.md)
+  [`ggdensityplot()`](https://drizopoulos.github.io/JMbayes2/reference/coda_methods.md)
+  [`cumuplot()`](https://drizopoulos.github.io/JMbayes2/reference/coda_methods.md)
+  :
+
+  Various Methods for Functions from the *coda* Package
+
+- [`consensus()`](https://drizopoulos.github.io/JMbayes2/reference/consensus.md)
+  : Consensus Combination of Posterior Draws from Joint Model Fits
+
+- [`crisk_setup()`](https://drizopoulos.github.io/JMbayes2/reference/cr_setup.md)
+  : Transform Competing Risks Data in Long Format
+
+- [`jm()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`value()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`coefs()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`slope()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`velocity()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`acceleration()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`area()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`Delta()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`vexpit()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`Dexpit()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`vexp()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`Dexp()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`vabs()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`vlog()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`vlog2()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`vlog10()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`vsqrt()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`poly2()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`poly3()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`poly4()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
+  [`tv()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md) :
+  Joint Models for Longitudinal and Time-to-Event Data
+
+- [`JMbayes2-package`](https://drizopoulos.github.io/JMbayes2/reference/JMbayes2.md)
+  [`JMbayes2`](https://drizopoulos.github.io/JMbayes2/reference/JMbayes2.md)
+  : Extended Joint Models for Longitudinal and Time-to-Event Data
+
+- [`coef()`](https://drizopoulos.github.io/JMbayes2/reference/methods.md)
+  [`fixef()`](https://drizopoulos.github.io/JMbayes2/reference/methods.md)
+  [`ranef()`](https://drizopoulos.github.io/JMbayes2/reference/methods.md)
+  [`terms()`](https://drizopoulos.github.io/JMbayes2/reference/methods.md)
+  [`model.frame()`](https://drizopoulos.github.io/JMbayes2/reference/methods.md)
+  [`model.matrix()`](https://drizopoulos.github.io/JMbayes2/reference/methods.md)
+  [`family()`](https://drizopoulos.github.io/JMbayes2/reference/methods.md)
+  [`compare_jm()`](https://drizopoulos.github.io/JMbayes2/reference/methods.md)
+  : Various Methods for Standard Generics
+
+- [`pbc2`](https://drizopoulos.github.io/JMbayes2/reference/pbc.md)
+  [`pbc2.id`](https://drizopoulos.github.io/JMbayes2/reference/pbc.md) :
+  Mayo Clinic Primary Biliary Cirrhosis Data
+
+- [`ppcheck()`](https://drizopoulos.github.io/JMbayes2/reference/ppcheck.md)
+  : Posterior Predictive Checks for Joint Models
+
+- [`predict(`*`<jm>`*`)`](https://drizopoulos.github.io/JMbayes2/reference/predict.md)
+  [`plot(`*`<predict_jm>`*`)`](https://drizopoulos.github.io/JMbayes2/reference/predict.md)
+  [`predict(`*`<jmList>`*`)`](https://drizopoulos.github.io/JMbayes2/reference/predict.md)
+  : Predictions from Joint Models
+
+- [`prothro`](https://drizopoulos.github.io/JMbayes2/reference/prothro.md)
+  [`prothros`](https://drizopoulos.github.io/JMbayes2/reference/prothro.md)
+  : Prednisone versus Placebo in Liver Cirrhosis Patients
+
+- [`rc_setup()`](https://drizopoulos.github.io/JMbayes2/reference/rc_setup.md)
+  : Combine Recurring and Terminal Event Data in Long Format
+
+- [`lme()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md)
+  [`coxph()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md)
+  [`mixed_model()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md)
+  : Slice-aware model fitting generics
+
+- [`slicer()`](https://drizopoulos.github.io/JMbayes2/reference/slicer.md)
+  : Split Longitudinal and Survival Data into Subject-level Samples
+
+- [`variogram()`](https://drizopoulos.github.io/JMbayes2/reference/variogram.md)
+  : Variogram for Longitudinal Data
+
+# Articles
+
+### All vignettes
+
+- [Baseline Hazard
+  Function](https://drizopoulos.github.io/JMbayes2/articles/Baseline_Hazard.md):
+- [Causal
+  Effects](https://drizopoulos.github.io/JMbayes2/articles/Causal_Effects.md):
+- [Competing
+  Risks](https://drizopoulos.github.io/JMbayes2/articles/Competing_Risks.md):
+- [Fitting Joint Models to Big Datasets with Consensus Monte
+  Carlo](https://drizopoulos.github.io/JMbayes2/articles/Consensus.md):
+- [Dynamic
+  Predictions](https://drizopoulos.github.io/JMbayes2/articles/Dynamic_Predictions.md):
+- [Univariate and Multivariate Joint
+  Models](https://drizopoulos.github.io/JMbayes2/articles/JMbayes2.md):
+- [Multi-State
+  Processes](https://drizopoulos.github.io/JMbayes2/articles/Multi_State_Processes.md):
+- [Non-Gaussian Mixed
+  Models](https://drizopoulos.github.io/JMbayes2/articles/Non_Gaussian_Mixed_Models.md):
+- [Posterior Predictive
+  Checks](https://drizopoulos.github.io/JMbayes2/articles/Posterior_Predictive_Checks.md):
+- [Recurrent
+  Events](https://drizopoulos.github.io/JMbayes2/articles/Recurring_Events.md):
+- [Combined Dynamic Predictions via Super
+  Learning](https://drizopoulos.github.io/JMbayes2/articles/Super_Learning.md):
+- [Time Varying
+  Effects](https://drizopoulos.github.io/JMbayes2/articles/Time_Varying_Effects.md):
+- [Transformation Functions for Functional
+  Forms](https://drizopoulos.github.io/JMbayes2/articles/Transformation_Functions.md):

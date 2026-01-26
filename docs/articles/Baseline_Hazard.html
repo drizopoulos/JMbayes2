@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5-91</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,9 +51,11 @@
 <li><a class="dropdown-item" href="../articles/Baseline_Hazard.html">Baseline Hazard Function</a></li>
     <li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
     <li><a class="dropdown-item" href="../articles/Competing_Risks.html">Competing Risks</a></li>
+    <li><a class="dropdown-item" href="../articles/Consensus.html">Fitting Joint Models to Big Datasets with Consensus Monte Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a></li>
     <li><a class="dropdown-item" href="../articles/Multi_State_Processes.html">Multi-State Processes</a></li>
     <li><a class="dropdown-item" href="../articles/Non_Gaussian_Mixed_Models.html">Non-Gaussian Mixed Models</a></li>
+    <li><a class="dropdown-item" href="../articles/Posterior_Predictive_Checks.html">Posterior Predictive Checks</a></li>
     <li><a class="dropdown-item" href="../articles/Recurring_Events.html">Recurrent Events</a></li>
     <li><a class="dropdown-item" href="../articles/Super_Learning.html">Combined Dynamic Predictions via Super Learning</a></li>
     <li><a class="dropdown-item" href="../articles/Time_Varying_Effects.html">Time Varying Effects</a></li>
@@ -83,7 +85,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2025-08-23</h4>
+            <h4 data-toc-skip class="date">2026-01-23</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Baseline_Hazard.Rmd" class="external-link"><code>vignettes/Baseline_Hazard.Rmd</code></a></small>
       <div class="d-none name"><code>Baseline_Hazard.Rmd</code></div>
@@ -121,10 +123,10 @@ death and the longitudinal measurements of the square root transformed
 CD4 cell counts:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Cox regression</span></span>
-<span><span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">death</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">aids.id</span><span class="op">)</span></span>
+<span><span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">coxph</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">death</span><span class="op">)</span> <span class="op">~</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">aids.id</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># a linear mixed model for sqrt(CD4) cell count</span></span>
-<span><span class="va">fm</span> <span class="op">&lt;-</span> <span class="fu">lme</span><span class="op">(</span><span class="va">CD4</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">obstime</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">aids</span>,</span>
+<span><span class="va">fm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">lme</a></span><span class="op">(</span><span class="va">CD4</span> <span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">obstime</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">drug</span>, data <span class="op">=</span> <span class="va">aids</span>,</span>
 <span>           random <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>patient <span class="op">=</span> <span class="fu">pdDiag</span><span class="op">(</span><span class="op">~</span> <span class="fu">ns</span><span class="op">(</span><span class="va">obstime</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># default baseline hazard</span></span>
@@ -143,7 +145,7 @@ second-order differences are used. The internal function
 estimated baseline hazard function:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">JMbayes2</span><span class="fu">:::</span><span class="fu">plot_hazard</span><span class="op">(</span><span class="va">jointFit1</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Baseline_Hazard_files/figure-html/default%20JM%20-%20estimated%20base%20hazard-1.png" width="816" style="display: block; margin: auto;"></p>
+<p><img src="Baseline_Hazard_files/figure-html/default%20JM%20-%20estimated%20base%20hazard-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 <p>The default specification assumes a B-spline approximation for the
 time variable in its original scale. However, as argued in the <a href="https://search.r-project.org/CRAN/refmans/flexsurv/html/flexsurvspline.html" class="external-link"><strong>flexsurv</strong>
 package</a>, this specification may have the undesirable property that
@@ -156,7 +158,7 @@ using the <code>base_hazard</code> argument:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">jointFit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">jointFit1</span>, base_hazard <span class="op">=</span> <span class="st">"log time, ns"</span><span class="op">)</span></span>
 <span><span class="fu">JMbayes2</span><span class="fu">:::</span><span class="fu">plot_hazard</span><span class="op">(</span><span class="va">jointFit2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Baseline_Hazard_files/figure-html/log%20time-1.png" width="816" style="display: block; margin: auto;"></p>
+<p><img src="Baseline_Hazard_files/figure-html/log%20time-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 <p>Setting <code>base_hazard = "log time, ns"</code> corresponds to
 setting the control arguments <code>timescale_base_hazard = "log"</code>
 and <code>basis = "ns"</code>. Using regular expressions look-up of the
@@ -177,7 +179,7 @@ original scale again):</p>
 <code class="sourceCode R"><span><span class="va">jointFit3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">jointFit1</span>, base_hazard <span class="op">=</span> <span class="st">"piecewise constant"</span>,</span>
 <span>                    base_hazard_segments <span class="op">=</span> <span class="fl">5L</span><span class="op">)</span></span>
 <span><span class="fu">JMbayes2</span><span class="fu">:::</span><span class="fu">plot_hazard</span><span class="op">(</span><span class="va">jointFit3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Baseline_Hazard_files/figure-html/piecewise%20constant-1.png" width="816" style="display: block; margin: auto;"></p>
+<p><img src="Baseline_Hazard_files/figure-html/piecewise%20constant-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="piecewise-linear">Piecewise Linear<a class="anchor" aria-label="anchor" href="#piecewise-linear"></a>
@@ -189,7 +191,7 @@ with three interconnected lines is fitted using the syntax:</p>
 <span>                    base_hazard_segments <span class="op">=</span> <span class="fl">3L</span>, </span>
 <span>                    priors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>penalized_bs_gammas <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">JMbayes2</span><span class="fu">:::</span><span class="fu">plot_hazard</span><span class="op">(</span><span class="va">jointFit4</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Baseline_Hazard_files/figure-html/piecewise%20linear-1.png" width="816" style="display: block; margin: auto;"></p>
+<p><img src="Baseline_Hazard_files/figure-html/piecewise%20linear-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 <p>Via the <code>priors</code> argument, we specified that the <span class="math inline">\gamma</span> coefficients for the piecewise-linear
 baseline hazard should not be penalized. In this case, they have a
 normal prior with a mean zero and variance 10.</p>
@@ -205,14 +207,14 @@ baseline hazard using the call:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">jointFit5</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">jointFit1</span>, base_hazard <span class="op">=</span> <span class="st">"weibull"</span><span class="op">)</span></span>
 <span><span class="fu">JMbayes2</span><span class="fu">:::</span><span class="fu">plot_hazard</span><span class="op">(</span><span class="va">jointFit5</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Baseline_Hazard_files/figure-html/weibull-1.png" width="816" style="display: block; margin: auto;"></p>
+<p><img src="Baseline_Hazard_files/figure-html/weibull-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 <p>This baseline hazard function also allows extrapolating beyond the
 range of observed event times. Actually, extrapolation is possible
 whenever a natural cubic spline basis is used. In the following figure,
 we extrapolate until month 24:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">JMbayes2</span><span class="fu">:::</span><span class="fu">plot_hazard</span><span class="op">(</span><span class="va">jointFit5</span>, tmax <span class="op">=</span> <span class="fl">24</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Baseline_Hazard_files/figure-html/weibull-ext-1.png" width="816" style="display: block; margin: auto;"></p>
+<p><img src="Baseline_Hazard_files/figure-html/weibull-ext-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="stratified-models">Stratified Models<a class="anchor" aria-label="anchor" href="#stratified-models"></a>
@@ -225,13 +227,13 @@ Via the <code>base_hazard</code> we specify that for the ddC group the
 baseline hazard is Weibull, and for the ddI group a penalized natural
 cubic spline for the logarithm of the time variable:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CoxFit2</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">death</span><span class="op">)</span> <span class="op">~</span> <span class="fu">strata</span><span class="op">(</span><span class="va">drug</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">aids.id</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">CoxFit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">coxph</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">Time</span>, <span class="va">death</span><span class="op">)</span> <span class="op">~</span> <span class="fu">strata</span><span class="op">(</span><span class="va">drug</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">aids.id</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">jointFit6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit2</span>, <span class="va">fm</span>, time_var <span class="op">=</span> <span class="st">"obstime"</span>, </span>
 <span>                base_hazard <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"weibull"</span>, <span class="st">"log time, ns"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">JMbayes2</span><span class="fu">:::</span><span class="fu">plot_hazard</span><span class="op">(</span><span class="va">jointFit6</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Baseline_Hazard_files/figure-html/strata-1.png" width="816" style="display: block; margin: auto;"><img src="Baseline_Hazard_files/figure-html/strata-2.png" width="816" style="display: block; margin: auto;"></p>
+<p><img src="Baseline_Hazard_files/figure-html/strata-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"><img src="Baseline_Hazard_files/figure-html/strata-2.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 <p>Specifying an <code>NA</code> element in <code>base_hazard</code>
 will imply that the default baseline hazard function will be used for
 this stratum.</p>
@@ -244,11 +246,11 @@ this stratum.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
+  <p>Developed by <a href="https://www.drizopoulos.com/" class="external-link">Dimitris Rizopoulos</a>, <a href="https://pafonso.com/" class="external-link">Pedro Miranda-Afonso</a>, <a href="https://gregpapageorgiou.com/" class="external-link">Grigorios Papageorgiou</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
