@@ -1376,7 +1376,7 @@ arma::mat variogram_cpp(const arma::field<arma::vec> &y,
                 for (uword k = j + 1; k < n_i; ++k) {
                     double diff = y_i.at(j) - y_i.at(k);
                     diffs_i.at(pos) = 0.5 * diff * diff;
-                    lags_i.at(pos) = abs(times_i.at(j) - times_i.at(k));
+                    lags_i.at(pos) = fabs(times_i.at(j) - times_i.at(k));
                     ++pos;
                 }
             }
