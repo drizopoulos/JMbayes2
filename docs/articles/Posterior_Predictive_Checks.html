@@ -85,7 +85,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2026-01-23</h4>
+            <h4 data-toc-skip class="date">2026-01-28</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Posterior_Predictive_Checks.Rmd" class="external-link"><code>vignettes/Posterior_Predictive_Checks.Rmd</code></a></small>
       <div class="d-none name"><code>Posterior_Predictive_Checks.Rmd</code></div>
@@ -109,7 +109,7 @@ through the mean, variance, and correlation structure, while the
 survival component is evaluated using empirical cumulative distributions
 and probability integral transforms. The association between processes
 is examined using time-dependent concordance statistics. A detailed
-presentation of this framework is given in <a href="https://www.drizopoulos.com/" class="external-link">Rizopoulos, Taylor and Kardys
+presentation of this framework is given in <a href="https://arxiv.org/abs/2601.18598" class="external-link">Rizopoulos, Taylor and Kardys
 (2026)</a>.</p>
 </div>
 <div class="section level2">
@@ -194,10 +194,41 @@ presentation of this framework is given in <a href="https://www.drizopoulos.com/
 <div class="section level2">
 <h2 id="dynamic-posterior-posterior-predictive-checks">Dynamic-Posterior-Posterior Predictive Checks<a class="anchor" aria-label="anchor" href="#dynamic-posterior-posterior-predictive-checks"></a>
 </h2>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">t0</span> <span class="op">&lt;-</span> <span class="fl">3</span></span>
+<span><span class="va">prothro_t0</span> <span class="op">&lt;-</span> <span class="va">prothro</span><span class="op">[</span><span class="va">prothro</span><span class="op">$</span><span class="va">Time</span> <span class="op">&gt;</span> <span class="va">t0</span> <span class="op">&amp;</span> <span class="va">prothro</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;=</span> <span class="va">t0</span>, <span class="op">]</span></span>
+<span><span class="va">prothro_t0</span><span class="op">$</span><span class="va">Time</span> <span class="op">&lt;-</span> <span class="va">t0</span></span>
+<span><span class="va">prothro_t0</span><span class="op">$</span><span class="va">death</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span><span class="va">test_prothro</span> <span class="op">&lt;-</span> <span class="va">prothro</span><span class="op">[</span><span class="va">prothro</span><span class="op">$</span><span class="va">Time</span> <span class="op">&gt;</span> <span class="va">t0</span> <span class="op">&amp;</span> <span class="va">prothro</span><span class="op">$</span><span class="va">time</span> <span class="op">&gt;</span> <span class="va">t0</span>, <span class="op">]</span></span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">jointFit2</span>, newdata <span class="op">=</span> <span class="va">prothro_t0</span>, return_params_mcmc <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/ppcheck.html">ppcheck</a></span><span class="op">(</span><span class="va">jointFit2</span>, random_effects <span class="op">=</span> <span class="st">"mcmc"</span>, type <span class="op">=</span> <span class="st">"average"</span>, </span>
+<span>        newdata <span class="op">=</span> <span class="va">test_prothro</span>, params_mcmc <span class="op">=</span> <span class="va">preds</span><span class="op">$</span><span class="va">params_mcmc</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Posterior_Predictive_Checks_files/figure-html/Joint2-Long-dynamic-1.png" class="r-plt" alt="" width="816" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="cross-validated-checks">Cross-Validated Checks<a class="anchor" aria-label="anchor" href="#cross-validated-checks"></a>
 </h2>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">CVdats</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">create_folds</a></span><span class="op">(</span><span class="va">prothro</span>, V <span class="op">=</span> <span class="fl">5</span>, id_var <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_model</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://drizopoulos.github.io/JMbayes2/">"JMbayes2"</a></span><span class="op">)</span></span>
+<span>    <span class="va">data_id</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">id</span><span class="op">)</span>, <span class="op">]</span></span>
+<span>    <span class="va">CoxFit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">Time</span>, <span class="va">death</span><span class="op">)</span> <span class="op">~</span> <span class="va">treat</span>, data <span class="op">=</span> <span class="va">data_id</span><span class="op">)</span></span>
+<span>    <span class="va">fm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">lme</a></span><span class="op">(</span><span class="va">pro</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">time</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">*</span> <span class="va">treat</span>, data <span class="op">=</span> <span class="va">data</span>, </span>
+<span>           random <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/nlme/man/pdDiag.html" class="external-link">pdDiag</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">time</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="va">fm</span>, time_var <span class="op">=</span> <span class="st">"time"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">5L</span><span class="op">)</span></span>
+<span><span class="va">Models</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parLapply</a></span><span class="op">(</span><span class="va">cl</span>, <span class="va">CVdats</span><span class="op">$</span><span class="va">training</span>, <span class="va">fit_model</span><span class="op">)</span></span>
+<span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/ppcheck.html">ppcheck</a></span><span class="op">(</span><span class="va">Models</span>, type <span class="op">=</span> <span class="st">"variance"</span>, newdata <span class="op">=</span> <span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span>,</span>
+<span>        random_effects <span class="op">=</span> <span class="st">"prior"</span>, Fforms_fun <span class="op">=</span> <span class="va">FF2</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Posterior_Predictive_Checks_files/figure-html/CV_check-1.png" class="r-plt" alt="" width="700"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

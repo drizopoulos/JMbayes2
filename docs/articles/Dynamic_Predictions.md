@@ -1,6 +1,6 @@
 # Dynamic Predictions
 
-## Dynamic Predictions
+## Dynamic Predictions from Joint Models
 
 ### Theory
 

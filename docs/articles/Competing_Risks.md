@@ -1,6 +1,6 @@
 # Competing Risks
 
-## Competing Risks
+## Joint Models with Competing Risks
 
 ### Prepare data
 
@@ -94,16 +94,14 @@ penalized B-spline approximation for death:
 ``` r
 jFit_CR <- jm(CoxFit_CR, list(fm1, fm2), time_var = "year", 
               functional_forms = CR_forms, 
-              baseline_hazard = c("weibull", NA),
+              base_hazard = c("weibull", NA),
               n_iter = 25000L, n_burnin = 5000L, n_thin = 5L)
-#> Warning in jm.default(CoxFit_CR, list(fm1, fm2), time_var = "year",
-#> functional_forms = CR_forms, : unknown names in control: baseline_hazard
 
 summary(jFit_CR)
 #> 
 #> Call:
 #> JMbayes2::jm(Surv_object = CoxFit_CR, Mixed_objects = list(fm1, 
-#>     fm2), time_var = "year", functional_forms = CR_forms, baseline_hazard = c("weibull", 
+#>     fm2), time_var = "year", functional_forms = CR_forms, base_hazard = c("weibull", 
 #>     NA), n_iter = 25000L, n_burnin = 5000L, n_thin = 5L)
 #> 
 #> Data Descriptives:
@@ -113,62 +111,62 @@ summary(jFit_CR)
 #>   prothrombin: 1945
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    10824.49 11528.31 -6753.594
-#> conditional 15751.80 15442.25 -8231.393
+#> marginal    10826.05 11552.64 -6915.799
+#> conditional 15753.47 15441.05 -8229.663
 #> 
 #> Random-effects covariance matrix:
 #>                                              
 #>        StdDev    Corr                        
-#> (Intr) 1.3404  (Intr)  p(,2)1  p(,2)2  (Intr)
-#> p(,2)1 23.0867 0.6987                        
-#> p(,2)2 12.4129 -0.2690 -0.1464               
-#> (Intr) 0.7873  0.6343  0.4354  -0.3299       
-#> year   0.3269  0.4310  0.3351  -0.0589 0.0307
+#> (Intr) 1.3413  (Intr)  p(,2)1  p(,2)2  (Intr)
+#> p(,2)1 23.0242 0.7078                        
+#> p(,2)2 12.3462 -0.2624 -0.1501               
+#> (Intr) 0.7850  0.6336  0.4416  -0.3343       
+#> year   0.3251  0.4292  0.3369  -0.0495 0.0398
 #> 
 #> Survival Outcome:
 #>                                         Mean  StDev    2.5%   97.5%      P
-#> age:strata(CR)transplanted           -0.0711 0.0299 -0.1299 -0.0137 0.0130
-#> age:strata(CR)dead                    0.0632 0.0100  0.0435  0.0832 0.0000
-#> drugD-penicil:strata(CR)transplanted -0.2895 0.4166 -1.1253  0.5072 0.4852
-#> drugD-penicil:strata(CR)dead         -0.0067 0.1873 -0.3681  0.3639 0.9710
-#> value(log(serBilir)):CRtransplanted   1.0296 0.2206  0.6229  1.4844 0.0000
-#> value(log(serBilir)):CRdead           1.4560 0.1169  1.2343  1.6939 0.0000
-#> value(prothrombin):CRtransplanted     0.1262 0.1519 -0.1746  0.4012 0.4428
-#> value(prothrombin):CRdead             0.1387 0.0509  0.0280  0.2304 0.0125
+#> age:strata(CR)transplanted           -0.0786 0.0253 -0.1301 -0.0315 0.0007
+#> age:strata(CR)dead                    0.0656 0.0099  0.0468  0.0857 0.0000
+#> drugD-penicil:strata(CR)transplanted -0.3134 0.3902 -1.1019  0.4500 0.4107
+#> drugD-penicil:strata(CR)dead          0.0073 0.1883 -0.3626  0.3763 0.9802
+#> value(log(serBilir)):CRtransplanted   1.0878 0.2153  0.6830  1.5252 0.0000
+#> value(log(serBilir)):CRdead           1.4680 0.1194  1.2463  1.7156 0.0000
+#> value(prothrombin):CRtransplanted    -0.1225 0.1649 -0.4453  0.2001 0.4632
+#> value(prothrombin):CRdead             0.1527 0.0463  0.0562  0.2392 0.0050
 #>                                        Rhat
-#> age:strata(CR)transplanted           1.0261
-#> age:strata(CR)dead                   1.0144
-#> drugD-penicil:strata(CR)transplanted 1.0149
-#> drugD-penicil:strata(CR)dead         1.0015
-#> value(log(serBilir)):CRtransplanted  1.0172
-#> value(log(serBilir)):CRdead          1.0224
-#> value(prothrombin):CRtransplanted    1.3322
-#> value(prothrombin):CRdead            1.0244
+#> age:strata(CR)transplanted           1.0301
+#> age:strata(CR)dead                   1.0068
+#> drugD-penicil:strata(CR)transplanted 1.0102
+#> drugD-penicil:strata(CR)dead         1.0032
+#> value(log(serBilir)):CRtransplanted  1.0054
+#> value(log(serBilir)):CRdead          1.0186
+#> value(prothrombin):CRtransplanted    1.0732
+#> value(prothrombin):CRdead            1.0176
 #> 
 #> Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev     2.5%   97.5%      P   Rhat
-#> (Intercept)     1.1949 0.1139   0.9710  1.4193 0.0000 0.9998
-#> poly(year, 2)1 27.7281 3.0802  21.9088 34.1392 0.0000 1.0096
-#> poly(year, 2)2  1.1796 1.7760  -2.3127  4.6065 0.5030 1.0031
-#> drugD-penicil  -0.1902 0.1578  -0.5039  0.1232 0.2262 1.0001
-#> p(,2)1         -3.2070 3.6367 -10.4855  3.8662 0.3783 1.0031
-#> p(,2)2         -1.0882 2.1796  -5.2804  3.1996 0.6177 1.0027
-#> sigma           0.3023 0.0062   0.2903  0.3147 0.0000 1.0008
+#> (Intercept)     1.2023 0.1139   0.9797  1.4258 0.0000 1.0035
+#> poly(year, 2)1 28.0606 3.0382  22.3560 34.2529 0.0000 1.0125
+#> poly(year, 2)2  1.2012 1.7767  -2.2584  4.7177 0.4997 1.0075
+#> drugD-penicil  -0.1957 0.1576  -0.5046  0.1079 0.2195 1.0002
+#> p(,2)1         -3.4221 3.6144 -10.6940  3.5380 0.3425 1.0004
+#> p(,2)2         -1.1121 2.1833  -5.4202  3.1215 0.6052 1.0012
+#> sigma           0.3025 0.0062   0.2906  0.3151 0.0000 0.9999
 #> 
 #> Longitudinal Outcome: prothrombin (family = gaussian, link = identity)
 #>                       Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)        10.6331 0.0829 10.4704 10.7984 0.0000 1.0029
-#> year                0.2944 0.0395  0.2178  0.3719 0.0000 1.0029
-#> drugD-penicil      -0.0954 0.1165 -0.3215  0.1299 0.4148 1.0007
-#> year:drugD-penicil -0.0238 0.0518 -0.1261  0.0780 0.6453 1.0005
-#> sigma               1.0556 0.0204  1.0166  1.0971 0.0000 1.0013
+#> (Intercept)        10.6399 0.0838 10.4751 10.8046 0.0000 1.0016
+#> year                0.2895 0.0394  0.2132  0.3689 0.0000 1.0098
+#> drugD-penicil      -0.1000 0.1174 -0.3279  0.1304 0.3962 1.0003
+#> year:drugD-penicil -0.0205 0.0518 -0.1236  0.0799 0.6977 1.0003
+#> sigma               1.0550 0.0204  1.0157  1.0957 0.0000 1.0014
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 25000 
 #> burn-in per chain: 5000 
 #> thinning: 5 
-#> time: 7 min
+#> time: 5.3 min
 ```
 
 ### Dynamic predictions

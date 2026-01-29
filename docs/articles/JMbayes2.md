@@ -83,7 +83,7 @@ summary(jointFit1)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 18 sec
+#> time: 17 sec
 ```
 
 The output of the [`summary()`](https://rdrr.io/r/base/summary.html)
@@ -112,13 +112,6 @@ example, the traceplot for the association coefficient
 
 ``` r
 ggtraceplot(jointFit1, "alphas")
-#> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-#> ℹ Please use `linewidth` instead.
-#> ℹ The deprecated feature was likely used in the JMbayes2 package.
-#>   Please report the issue at <https://github.com/drizopoulos/JMbayes2/issues>.
-#> This warning is displayed once per session.
-#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-#> generated.
 ```
 
 ![](JMbayes2_files/figure-html/unnamed-chunk-4-1.png)
@@ -235,7 +228,7 @@ summary(jointFit2)
 #> iterations per chain: 12000 
 #> burn-in per chain: 2000 
 #> thinning: 5 
-#> time: 2 min
+#> time: 1.9 min
 ```
 
 The survival submodel output now contains the estimated coefficients for
@@ -341,7 +334,7 @@ summary(jointFit3)
 #> iterations per chain: 12000 
 #> burn-in per chain: 2000 
 #> thinning: 5 
-#> time: 2.1 min
+#> time: 2 min
 ```
 
 As seen above, the `functional_forms` argument is a named list with

@@ -1,6 +1,6 @@
 # Baseline Hazard Function
 
-## Baseline Hazard Function
+## Baseline Hazard Function Specifications
 
 ### Penalized B-splines
 

@@ -16,7 +16,7 @@ evaluated using empirical cumulative distributions and probability
 integral transforms. The association between processes is examined using
 time-dependent concordance statistics. A detailed presentation of this
 framework is given in [Rizopoulos, Taylor and Kardys
-(2026)](https://www.drizopoulos.com/).
+(2026)](https://arxiv.org/abs/2601.18598).
 
 ## Posterior-Posterior Predictive Checks
 
@@ -142,4 +142,49 @@ ppcheck(jointFit2, random_effects = "prior", process = "event", Fforms_fun = FF2
 
 ## Dynamic-Posterior-Posterior Predictive Checks
 
+``` r
+t0 <- 3
+prothro_t0 <- prothro[prothro$Time > t0 & prothro$time <= t0, ]
+prothro_t0$Time <- t0
+prothro_t0$death <- 0
+test_prothro <- prothro[prothro$Time > t0 & prothro$time > t0, ]
+```
+
+``` r
+preds <- predict(jointFit2, newdata = prothro_t0, return_params_mcmc = TRUE)
+```
+
+``` r
+ppcheck(jointFit2, random_effects = "mcmc", type = "average", 
+        newdata = test_prothro, params_mcmc = preds$params_mcmc)
+```
+
+![](Posterior_Predictive_Checks_files/figure-html/Joint2-Long-dynamic-1.png)
+
 ## Cross-Validated Checks
+
+``` r
+CVdats <- create_folds(prothro, V = 5, id_var = "id")
+```
+
+``` r
+fit_model <- function (data) {
+    library("JMbayes2")
+    data_id <- data[!duplicated(data$id), ]
+    CoxFit <- coxph(Surv(Time, death) ~ treat, data = data_id)
+    fm <- lme(pro ~ ns(time, 3) * treat, data = data, 
+           random = list(id = pdDiag(~ ns(time, 3))))
+    jm(CoxFit, fm, time_var = "time")
+}
+
+cl <- parallel::makeCluster(5L)
+Models <- parallel::parLapply(cl, CVdats$training, fit_model)
+parallel::stopCluster(cl)
+```
+
+``` r
+ppcheck(Models, type = "variance", newdata = CVdats$testing,
+        random_effects = "prior", Fforms_fun = FF2)
+```
+
+![](Posterior_Predictive_Checks_files/figure-html/CV_check-1.png)

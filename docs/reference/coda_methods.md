@@ -18,7 +18,7 @@ ggtraceplot(object, ...)
 ggtraceplot(object,
   parm = c("all", "betas", "sigmas", "D", "bs_gammas",
            "tau_bs_gammas", "gammas", "alphas"),
-  size = 1, alpha = 0.8,
+  linewidth = 1, alpha = 0.8,
   theme = c('standard', 'catalog', 'metro',
                 'pastel', 'beach', 'moonlight', 'goo', 'sunset', 'custom'),
   grid = FALSE, gridrows = 3, gridcols = 1, custom_theme = NULL, ...)
@@ -43,7 +43,7 @@ ggdensityplot(object, ...)
 ggdensityplot(object,
   parm = c("all", "betas", "sigmas", "D", "bs_gammas",
            "tau_bs_gammas", "gammas", "alphas"),
-  size = 1, alpha = 0.6,
+  linewidth = 1, alpha = 0.6,
   theme = c('standard', 'catalog', 'metro', 'pastel',
                 'beach', 'moonlight', 'goo', 'sunset', 'custom'),
   grid = FALSE, gridrows = 3, gridcols = 1, custom_theme = NULL, ...)
@@ -68,7 +68,7 @@ cumuplot(object,
   plot. Possible options are `'all'`, `'betas'`, `'alphas'`, `'sigmas'`,
   `'D'`, `'bs_gammas'`, `'tau_bs_gammas'`, or `'gammas'`.  
 
-- size:
+- linewidth:
 
   the width of the traceplot line in mm. Defaults to 1.
 
@@ -197,10 +197,6 @@ cumuplot(fit_jm, parm = "betas")
 
 # trace plot for the fixed effects in the linear mixed submodels
 ggtraceplot(fit_jm, parm = "betas")
-#> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-#> ℹ Please use `linewidth` instead.
-#> ℹ The deprecated feature was likely used in the JMbayes2 package.
-#>   Please report the issue at <https://github.com/drizopoulos/JMbayes2/issues>.
 
 
 

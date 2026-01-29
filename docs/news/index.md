@@ -18,6 +18,13 @@
   the linear predictor of the longitudinal submodel calculated at
   time t. The default is {eta_i(t) - eta_i(0)} / t.
 
+- The new functions
+  [`slicer()`](https://drizopoulos.github.io/JMbayes2/reference/slicer.md)
+  and
+  [`consensus()`](https://drizopoulos.github.io/JMbayes2/reference/consensus.md)
+  can be used to fit joint models in big datasets using consensus Monte
+  Carlo.
+
 - The new function
   [`ppcheck()`](https://drizopoulos.github.io/JMbayes2/reference/ppcheck.md)
   performs posterior predictive checks.

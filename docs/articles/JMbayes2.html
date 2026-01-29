@@ -85,7 +85,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2026-01-23</h4>
+            <h4 data-toc-skip class="date">2026-01-28</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/JMbayes2.Rmd" class="external-link"><code>vignettes/JMbayes2.Rmd</code></a></small>
       <div class="d-none name"><code>JMbayes2.Rmd</code></div>
@@ -164,7 +164,7 @@ fitted with the following call to the <code><a href="../reference/jm.html">jm()<
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 18 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 17 sec</span></span></code></pre></div>
 <p>The output of the <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method provides some
 descriptive statistics of the sample at hand, followed by some fit
 statistics based on the marginal (random effects are integrated out
@@ -186,14 +186,7 @@ example, the traceplot for the association coefficient
 <code>value(log(serBilir))</code> is produced with the following
 syntax:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/coda_methods.html">ggtraceplot</a></span><span class="op">(</span><span class="va">jointFit1</span>, <span class="st">"alphas"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `linewidth` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> The deprecated feature was likely used in the <span style="color: #0000BB;">JMbayes2</span> package.</span></span>
-<span><span class="co">#&gt;   Please report the issue at <span style="color: #0000BB; font-style: italic;">&lt;https://github.com/drizopoulos/JMbayes2/issues&gt;</span>.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once per session.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/coda_methods.html">ggtraceplot</a></span><span class="op">(</span><span class="va">jointFit1</span>, <span class="st">"alphas"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="JMbayes2_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="" width="700" style="display: block; margin: auto;"></p>
 <p>and the density plot with the call:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -303,7 +296,7 @@ corresponding control arguments:</p>
 <span><span class="co">#&gt; iterations per chain: 12000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 2000 </span></span>
 <span><span class="co">#&gt; thinning: 5 </span></span>
-<span><span class="co">#&gt; time: 2 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 1.9 min</span></span></code></pre></div>
 <p>The survival submodel output now contains the estimated coefficients
 for <code>value(prothrombin)</code> and <code>value(ascites)</code>, as
 well as parameter estimates for all three longitudinal submodels.</p>
@@ -405,7 +398,7 @@ corresponding syntax to fit this model is:</p>
 <span><span class="co">#&gt; iterations per chain: 12000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 2000 </span></span>
 <span><span class="co">#&gt; thinning: 5 </span></span>
-<span><span class="co">#&gt; time: 2.1 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 2 min</span></span></code></pre></div>
 <p>As seen above, the <code>functional_forms</code> argument is a named
 list with elements corresponding to the longitudinal outcomes. If a
 longitudinal outcome is not specified in this list, then the default

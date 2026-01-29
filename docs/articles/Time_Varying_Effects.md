@@ -158,7 +158,7 @@ summary(jointFit2)
 #> iterations per chain: 6500 
 #> burn-in per chain: 2500 
 #> thinning: 1 
-#> time: 39 sec
+#> time: 36 sec
 ```
 
 The spline coefficients do not have a straightforward interpretation.
