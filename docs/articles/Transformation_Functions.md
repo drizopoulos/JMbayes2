@@ -142,7 +142,7 @@ summary(jointFit2)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 18 sec
+#> time: 17 sec
 ```
 
 Other available functions to use in the definition of the

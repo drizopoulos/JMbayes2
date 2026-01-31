@@ -82,7 +82,7 @@ summary(jointFit1)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 18 sec
+#> time: 19 sec
 ```
 
 To specify that the association of serum bilirubin may change over time,
@@ -158,7 +158,7 @@ summary(jointFit2)
 #> iterations per chain: 6500 
 #> burn-in per chain: 2500 
 #> thinning: 1 
-#> time: 36 sec
+#> time: 37 sec
 ```
 
 The spline coefficients do not have a straightforward interpretation.

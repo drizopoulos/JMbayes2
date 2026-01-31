@@ -170,7 +170,7 @@ summary(jointFit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 22 sec
+#> time: 20 sec
 ```
 
 [Back to top](#top)
@@ -322,7 +322,7 @@ summary(jointFit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 17 sec
+#> time: 15 sec
 ```
 
 ### Students’s-t mixed models
@@ -612,7 +612,7 @@ summary(jointFit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 28 sec
+#> time: 27 sec
 ```
 
 [Back to top](#top)

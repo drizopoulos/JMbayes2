@@ -7,15 +7,18 @@
 **JMbayes2** also provides the capability to fit joint models with a
 recurrent event process, possibly combined with a terminating event.
 Recurrent events are correlated events that may occur more than once
-over the follow-up period for a given subject. Our current
-implementation allows for multiple longitudinal markers with different
-distributions and various functional forms to link these markers with
-the risk of recurrent and terminal events. Furthermore, it enables the
-risk intervals to be defined in terms of the *gap* or *calendar*
-timescales. The two timescales use a different zero-time reference. The
-*calendar* uses the study entry, while the *gap* uses the end of the
-previous event (Figure 1). *Gap* assumes a renewal after each event and
-resets the time to zero.
+over the follow-up period for a given subject. For a real-data
+application of this framework, see [Miranda-Afonso et
+al. (2025)](https://doi:10.1002/sim.70057).
+
+Our current implementation allows for multiple longitudinal markers with
+different distributions and various functional forms to link these
+markers with the risk of recurrent and terminal events. Furthermore, it
+enables the risk intervals to be defined in terms of the *gap* or
+*calendar* timescales. The two timescales use a different zero-time
+reference. The *calendar* uses the study entry, while the *gap* uses the
+end of the previous event (Figure 1). *Gap* assumes a renewal after each
+event and resets the time to zero.
 
 ![\<b\>Figure 1\</b\> Visual representation of an hazard function under
 the gap or calendar timescale. During the follow-up, the subject

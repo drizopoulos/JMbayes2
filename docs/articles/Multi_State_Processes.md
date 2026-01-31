@@ -224,7 +224,7 @@ summary(jm_ms_model)
 #> iterations per chain: 5000 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 4.4 min
+#> time: 4.3 min
 ```
 
 which differs from a default call to

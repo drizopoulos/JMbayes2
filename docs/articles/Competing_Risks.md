@@ -166,7 +166,7 @@ summary(jFit_CR)
 #> iterations per chain: 25000 
 #> burn-in per chain: 5000 
 #> thinning: 5 
-#> time: 5.3 min
+#> time: 5.2 min
 ```
 
 ### Dynamic predictions

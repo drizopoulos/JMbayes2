@@ -779,7 +779,7 @@ summary(joint_model_fit_2)
 #> iterations per chain: 11000 
 #> burn-in per chain: 1000 
 #> thinning: 1 
-#> time: 1.4 min
+#> time: 1.3 min
 traceplot(joint_model_fit_2)
 
 
