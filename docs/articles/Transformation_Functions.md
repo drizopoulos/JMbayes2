@@ -99,7 +99,7 @@ situations, we may want to transform the subject-specific linear
 predictor back to the scale of the outcome. To achieve this, we can use
 a transformation function. Continuing on the previous example, we update
 `jointFit1` by now linking the expit transformation of the linear
-predictor (i.e., \mbox{expit}(x) = \exp(x) / \\1 + \exp(x)\\) with the
+predictor (i.e., {\sf expit}(x) = \exp(x) / \\1 + \exp(x)\\) with the
 risk of an event. This is done using the
 [`vexpit()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
 function:
@@ -142,7 +142,7 @@ summary(jointFit2)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 17 sec
+#> time: 18 sec
 ```
 
 Other available functions to use in the definition of the
@@ -159,7 +159,7 @@ predictor, we also have the
 [`Dexpit()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md) and
 [`Dexp()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
 functions available. As an example, we extend `jointFit2` by including
-the derivative of the \mbox{expit}() transformation:
+the derivative of the {\sf expit}() transformation:
 
 ``` r
 forms <- ~ vexpit(value(hepatomegaly)) + Dexpit(slope(hepatomegaly))
@@ -205,15 +205,15 @@ summary(jointFit3)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 20 sec
+#> time: 21 sec
 ```
 
 The call to `Dexpit(slope(hepatomegaly))` is internally transformed to
 `Dexpit(value(hepatomegaly)):slope(hepatomegaly)`, which calculates the
-derivative of the \mbox{expit}() evaluated at the linear predictor times
+derivative of the {\sf expit}() evaluated at the linear predictor times
 the derivative of the linear predictor. This is because \frac{d}{dt}
-\mbox{expit}\\\eta(t)\\ = \mbox{expit}\\\eta(t)\\ \\ \Bigl \[ 1 -
-\mbox{expit}\\\eta(t)\\ \Bigr \] \times \frac{d}{dt}\eta(t)
+{\sf expit}\\\eta(t)\\ = {\sf expit}\\\eta(t)\\ \\ \Bigl \[ 1 - {\sf
+expit}\\\eta(t)\\ \Bigr \] \times \frac{d}{dt}\eta(t)
 
 ### The Slope functional form
 

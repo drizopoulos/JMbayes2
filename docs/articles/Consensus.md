@@ -1,4 +1,4 @@
-# Fitting Joint Models to Big Datasets with Consensus Monte Carlo
+# Handling Large Datasets with Consensus Monte Carlo
 
 ## Introduction
 

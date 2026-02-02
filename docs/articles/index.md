@@ -8,7 +8,7 @@
   Effects](https://drizopoulos.github.io/JMbayes2/articles/Causal_Effects.md):
 - [Competing
   Risks](https://drizopoulos.github.io/JMbayes2/articles/Competing_Risks.md):
-- [Fitting Joint Models to Big Datasets with Consensus Monte
+- [Handling Large Datasets with Consensus Monte
   Carlo](https://drizopoulos.github.io/JMbayes2/articles/Consensus.md):
 - [Dynamic
   Predictions](https://drizopoulos.github.io/JMbayes2/articles/Dynamic_Predictions.md):

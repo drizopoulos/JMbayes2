@@ -55,7 +55,7 @@ D <- matrix(c(1.0, 0.2, 0.2, 0.3), 2, 2)
 b <- MASS::mvrnorm(N, mu = c(0, 0), Sigma = D)
 
 # Simulate longitudinal data
-df_long <- do.call(rbind, lapply(1:N, function(i) {
+df_long <- do.call('rbind', lapply(1:N, function (i) {
     obs_times <- sort(c(0, runif(n_per - 1, 0, 18)))
     XX <- cbind(1, obs_times)
     eta <- XX %*% beta + XX %*% b[i, ]
@@ -71,24 +71,24 @@ gamma <- c(0.5, -0.3, 0.7) # different for each transition
 Ctimes <- runif(N, 7, 10)
 
 # Longitudinal trajectory function
-yfun <- function(b_i, t) beta[1] + b_i[1] + (beta[2] + b_i[2]) * t
+yfun <- function (b_i, t) beta[1] + b_i[1] + (beta[2] + b_i[2]) * t
 
 # Simulate event time via inverse transform
-sim_time <- function(shape, scale, alpha, gamma, X, b_i, tmax = 20) {
+sim_time <- function (shape, scale, alpha, gamma, X, b_i, tmax = 20) {
     U <- runif(1)
-    cumhaz <- function(t) {
-        integrate(function(s) {
+    cumhaz <- function (t) {
+        integrate(function (s) {
             h0 <- shape * scale * (scale * s)^(shape - 1)
             h0 * exp(alpha * yfun(b_i, s) + gamma * X)
         }, 0, t)$value
     }
-    f <- function(t) cumhaz(t) + log(U)
+    f <- function (t) cumhaz(t) + log(U)
     out <- try(uniroot(f, c(1e-5, tmax))$root, silent = TRUE)
     if (inherits(out, "try-error")) Inf else out
 }
 
 # Simulate multi-state transitions
-df_surv <- do.call(rbind, lapply(1:N, function(i) {
+df_surv <- do.call(rbind, lapply(1:N, function (i) {
     b_i <- b[i, ]; X_i <- X[i]; C <- Ctimes[i]
     T01 <- sim_time(weib_shape[1], weib_scale[1], alpha[1], gamma[1], X_i, b_i)
     T02 <- sim_time(weib_shape[2], weib_scale[2], alpha[2], gamma[2], X_i, b_i)
@@ -118,6 +118,7 @@ df_surv <- do.call(rbind, lapply(1:N, function(i) {
 df_long2 <- merge(df_long, df_surv[, c("id", "Tstop")], by = c("id"))
 df_long2 <- df_long2[!duplicated(df_long2, by = c('id', 'time')), ]
 df_long2 <- df_long2[df_long2$time <= df_long2$Tstop, ]
+df_surv$transition <- factor(df_surv$transition)
 ```
 
 The data for the multi-state process need to be in the appropriate long
@@ -166,21 +167,23 @@ interaction between covariate `X` and each transition to allow the
 effect of this covariate to vary across transitions.
 
 ``` r
-msmodel <- coxph(Surv(Tstart, Tstop, status) ~ X:strata(transition), data = df_surv)
+msmodel <- coxph(Surv(Tstart, Tstop, status) ~ X:strata(transition), 
+                 data = df_surv)
 ```
 
 Finally, to fit the joint model, we simply run:
 
 ``` r
-jm_ms_model <- jm(msmodel, mixedmodel, time_var = "time", n_iter = 5000L,
-                  functional_forms = ~ value(y):strata(transition))
+jm_ms_model <- 
+    jm(msmodel, mixedmodel, time_var = "time", base_hazard = rep("weibull", 3), 
+       functional_forms = ~ value(y):transition, n_iter = 6000L, n_burnin = 1500L)
 
 summary(jm_ms_model)
 #> 
 #> Call:
 #> JMbayes2::jm(Surv_object = msmodel, Mixed_objects = mixedmodel, 
-#>     time_var = "time", functional_forms = ~value(y):strata(transition), 
-#>     n_iter = 5000L)
+#>     time_var = "time", functional_forms = ~value(y):transition, 
+#>     base_hazard = rep("weibull", 3), n_iter = 6000L, n_burnin = 1500L)
 #> 
 #> Data Descriptives:
 #> Number of Groups: 1500       Number of events: 1784 (45.8%)
@@ -188,43 +191,36 @@ summary(jm_ms_model)
 #>   y: 11573
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    46878.89 46819.94 -23410.00
-#> conditional 49735.76 48815.58 -25551.82
+#> marginal    46922.50 46862.53 -23431.28
+#> conditional 49794.51 48872.06 -25601.23
 #> 
 #> Random-effects covariance matrix:
 #>                     
 #>        StdDev   Corr
-#> (Intr) 1.0559 (Intr)
-#> time   0.5624 0.2185
+#> (Intr) 1.0577 (Intr)
+#> time   0.5611 0.2092
 #> 
 #> Survival Outcome:
-#>                                            Mean  StDev    2.5%  97.5%     P
-#> X:strata(transition)transition=1         0.4802 0.1091  0.2696 0.7001 0.000
-#> X:strata(transition)transition=2        -0.2421 0.1541 -0.5442 0.0593 0.115
-#> X:strata(transition)transition=3         0.6566 0.0821  0.4999 0.8175 0.000
-#> value(y):strata(transition)transition=1  0.5593 0.0227  0.5173 0.6044 0.000
-#> value(y):strata(transition)transition=2  0.3224 0.0422  0.2342 0.4012 0.000
-#> value(y):strata(transition)transition=3  0.2993 0.0185  0.2653 0.3394 0.000
-#>                                           Rhat
-#> X:strata(transition)transition=1        1.0070
-#> X:strata(transition)transition=2        1.0160
-#> X:strata(transition)transition=3        1.0349
-#> value(y):strata(transition)transition=1 1.0534
-#> value(y):strata(transition)transition=2 1.0910
-#> value(y):strata(transition)transition=3 1.2216
+#>                          Mean  StDev    2.5%  97.5%      P   Rhat
+#> X:strata(transition)1  0.4395 0.0680  0.3060 0.5771 0.0000 1.0304
+#> X:strata(transition)2 -0.2348 0.1386 -0.5100 0.0220 0.0793 1.0025
+#> X:strata(transition)3  0.5705 0.0805  0.4144 0.7262 0.0000 1.0086
+#> value(y):transition1   0.5283 0.0211  0.4891 0.5707 0.0000 1.2283
+#> value(y):transition2   0.3143 0.0408  0.2347 0.3926 0.0000 1.0495
+#> value(y):transition3   0.2668 0.0201  0.2261 0.3063 0.0000 1.0239
 #> 
 #> Longitudinal Outcome: y (family = gaussian, link = identity)
 #>                Mean  StDev    2.5%   97.5% P   Rhat
-#> (Intercept)  5.0100 0.0309  4.9507  5.0713 0 0.9998
-#> time        -0.1051 0.0167 -0.1377 -0.0726 0 1.0054
-#> sigma        0.9313 0.0071  0.9174  0.9450 0 1.0004
+#> (Intercept)  5.0059 0.0313  4.9455  5.0670 0 1.0015
+#> time        -0.1070 0.0165 -0.1389 -0.0740 0 1.0014
+#> sigma        0.9306 0.0071  0.9170  0.9445 0 1.0004
 #> 
 #> MCMC summary:
 #> chains: 3 
-#> iterations per chain: 5000 
-#> burn-in per chain: 500 
+#> iterations per chain: 6000 
+#> burn-in per chain: 1500 
 #> thinning: 1 
-#> time: 4.3 min
+#> time: 1.7 min
 ```
 
 which differs from a default call to
@@ -232,4 +228,5 @@ which differs from a default call to
 addition of the `functional_forms` argument specifying that we want an
 “interaction” between the marker’s value and each transition, which
 translates into a separate association parameter for the longitudinal
-marker and each transition.
+marker and each transition, and that we assume a Weibull baseline hazard
+function per transition by specifying the `base_hazard` argument.

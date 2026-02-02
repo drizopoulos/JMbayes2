@@ -11,6 +11,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+\newcommand{\expit}{{\sf expit}}
+
+
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -44,7 +47,7 @@ summary(jointFit1)
 In the output, this is named `value(hepatomegaly)` to denote that the current value functional form is used. That is, we assume that the risk at a specific time $t$ is associated with the value of the linear predictor of the longitudinal outcome at the same time point $t$. In this case, the subject-specific linear predictor denotes the log odds of experiencing hepatomegaly at time $t$.
 
 ## Transformation functions
-The fact that the default version of the current value functional form is on the linear predictor scale of the mixed model may be problematic to interpret when this linear predictor is connected with a nonlinear link function to the mean of the longitudinal outcome. In these situations, we may want to transform the subject-specific linear predictor back to the scale of the outcome. To achieve this, we can use a transformation function. Continuing on the previous example, we update `jointFit1` by now linking the expit transformation of the linear predictor (i.e., $\mbox{expit}(x) = \exp(x) / \{1 + \exp(x)\}$) with the risk of an event. This is done using the `vexpit()` function:
+The fact that the default version of the current value functional form is on the linear predictor scale of the mixed model may be problematic to interpret when this linear predictor is connected with a nonlinear link function to the mean of the longitudinal outcome. In these situations, we may want to transform the subject-specific linear predictor back to the scale of the outcome. To achieve this, we can use a transformation function. Continuing on the previous example, we update `jointFit1` by now linking the expit transformation of the linear predictor (i.e., $\expit(x) = \exp(x) / \{1 + \exp(x)\}$) with the risk of an event. This is done using the `vexpit()` function:
 ```{r}
 jointFit2 <- update(jointFit1, functional_forms = ~ vexpit(value(hepatomegaly)))
 summary(jointFit2)
@@ -52,14 +55,14 @@ summary(jointFit2)
 
 Other available functions to use in the definition of the `functional_forms` argument are `vexp()` to calculate the exponent, `vlog()` to calculate the natural logarithm, and `vsqrt()` to calculate the square root.
 
-If we want to include the time-varying slope of the transformed linear predictor, we also have the `Dexpit()` and `Dexp()` functions available. As an example, we extend `jointFit2` by including the derivative of the $\mbox{expit}()$ transformation:
+If we want to include the time-varying slope of the transformed linear predictor, we also have the `Dexpit()` and `Dexp()` functions available. As an example, we extend `jointFit2` by including the derivative of the $\expit()$ transformation:
 ```{r}
 forms <- ~ vexpit(value(hepatomegaly)) + Dexpit(slope(hepatomegaly))
 jointFit3 <- update(jointFit1, functional_forms = forms)
 summary(jointFit3)
 ```
 
-The call to `Dexpit(slope(hepatomegaly))` is internally transformed to `Dexpit(value(hepatomegaly)):slope(hepatomegaly)`, which calculates the derivative of the $\mbox{expit}()$ evaluated at the linear predictor times the derivative of the linear predictor. This is because $$\frac{d}{dt} \mbox{expit}\{\eta(t)\} = \mbox{expit}\{\eta(t)\} \, \Bigl [ 1 - \mbox{expit}\{\eta(t)\} \Bigr ] \times \frac{d}{dt}\eta(t)$$
+The call to `Dexpit(slope(hepatomegaly))` is internally transformed to `Dexpit(value(hepatomegaly)):slope(hepatomegaly)`, which calculates the derivative of the $\expit()$ evaluated at the linear predictor times the derivative of the linear predictor. This is because $$\frac{d}{dt} \expit\{\eta(t)\} = \expit\{\eta(t)\} \, \Bigl [ 1 - \expit\{\eta(t)\} \Bigr ] \times \frac{d}{dt}\eta(t)$$
 
 ## The Slope functional form
 As we have seen in previous examples, the `slope()` function is used to specify the slope functional form $d \eta(t)/dt$. According to the [definition of the derivative](https://en.wikipedia.org/wiki/Derivative#Rigorous_definition), this corresponds to the change in the longitudinal profile $\{\eta(t + \varepsilon) - \eta(t)\}/ \varepsilon$ as $\varepsilon$ approaches zero. However, the interpretation of this term may be challenging in some settings. A possible alternative would be to increase the value of $\varepsilon$, e.g., $\varepsilon = 1$. For example, if the time scale is years, this would quantify the change of the longitudinal profile in the last year before $t$.

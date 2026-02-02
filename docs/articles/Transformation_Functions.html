@@ -51,7 +51,7 @@
 <li><a class="dropdown-item" href="../articles/Baseline_Hazard.html">Baseline Hazard Function</a></li>
     <li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
     <li><a class="dropdown-item" href="../articles/Competing_Risks.html">Competing Risks</a></li>
-    <li><a class="dropdown-item" href="../articles/Consensus.html">Fitting Joint Models to Big Datasets with Consensus Monte Carlo</a></li>
+    <li><a class="dropdown-item" href="../articles/Consensus.html">Handling Large Datasets with Consensus Monte Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a></li>
     <li><a class="dropdown-item" href="../articles/Multi_State_Processes.html">Multi-State Processes</a></li>
     <li><a class="dropdown-item" href="../articles/Non_Gaussian_Mixed_Models.html">Non-Gaussian Mixed Models</a></li>
@@ -85,7 +85,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2026-01-30</h4>
+            <h4 data-toc-skip class="date">2026-02-02</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Transformation_Functions.Rmd" class="external-link"><code>vignettes/Transformation_Functions.Rmd</code></a></small>
       <div class="d-none name"><code>Transformation_Functions.Rmd</code></div>
@@ -180,7 +180,7 @@ these situations, we may want to transform the subject-specific linear
 predictor back to the scale of the outcome. To achieve this, we can use
 a transformation function. Continuing on the previous example, we update
 <code>jointFit1</code> by now linking the expit transformation of the
-linear predictor (i.e., <span class="math inline">\mbox{expit}(x) =
+linear predictor (i.e., <span class="math inline">{\sf expit}(x) =
 \exp(x) / \{1 + \exp(x)\}</span>) with the risk of an event. This is
 done using the <code><a href="../reference/jm.html">vexpit()</a></code> function:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -221,7 +221,7 @@ done using the <code><a href="../reference/jm.html">vexpit()</a></code> function
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 17 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 18 sec</span></span></code></pre></div>
 <p>Other available functions to use in the definition of the
 <code>functional_forms</code> argument are <code><a href="../reference/jm.html">vexp()</a></code> to
 calculate the exponent, <code><a href="../reference/jm.html">vlog()</a></code> to calculate the natural
@@ -229,7 +229,7 @@ logarithm, and <code><a href="../reference/jm.html">vsqrt()</a></code> to calcul
 <p>If we want to include the time-varying slope of the transformed
 linear predictor, we also have the <code><a href="../reference/jm.html">Dexpit()</a></code> and
 <code><a href="../reference/jm.html">Dexp()</a></code> functions available. As an example, we extend
-<code>jointFit2</code> by including the derivative of the <span class="math inline">\mbox{expit}()</span> transformation:</p>
+<code>jointFit2</code> by including the derivative of the <span class="math inline">{\sf expit}()</span> transformation:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">forms</span> <span class="op">&lt;-</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">vexpit</a></span><span class="op">(</span><span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">hepatomegaly</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/jm.html">Dexpit</a></span><span class="op">(</span><span class="fu"><a href="../reference/jm.html">slope</a></span><span class="op">(</span><span class="va">hepatomegaly</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">jointFit3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">jointFit1</span>, functional_forms <span class="op">=</span> <span class="va">forms</span><span class="op">)</span></span>
@@ -274,15 +274,15 @@ linear predictor, we also have the <code><a href="../reference/jm.html">Dexpit()
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 20 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 21 sec</span></span></code></pre></div>
 <p>The call to <code>Dexpit(slope(hepatomegaly))</code> is internally
 transformed to
 <code>Dexpit(value(hepatomegaly)):slope(hepatomegaly)</code>, which
-calculates the derivative of the <span class="math inline">\mbox{expit}()</span> evaluated at the linear
-predictor times the derivative of the linear predictor. This is because
-<span class="math display">\frac{d}{dt} \mbox{expit}\{\eta(t)\} =
-\mbox{expit}\{\eta(t)\} \, \Bigl [ 1 - \mbox{expit}\{\eta(t)\} \Bigr ]
-\times \frac{d}{dt}\eta(t)</span></p>
+calculates the derivative of the <span class="math inline">{\sf
+expit}()</span> evaluated at the linear predictor times the derivative
+of the linear predictor. This is because <span class="math display">\frac{d}{dt} {\sf expit}\{\eta(t)\} = {\sf
+expit}\{\eta(t)\} \, \Bigl [ 1 - {\sf expit}\{\eta(t)\} \Bigr ] \times
+\frac{d}{dt}\eta(t)</span></p>
 </div>
 <div class="section level3">
 <h3 id="the-slope-functional-form">The Slope functional form<a class="anchor" aria-label="anchor" href="#the-slope-functional-form"></a>

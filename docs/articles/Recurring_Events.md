@@ -9,7 +9,7 @@ recurrent event process, possibly combined with a terminating event.
 Recurrent events are correlated events that may occur more than once
 over the follow-up period for a given subject. For a real-data
 application of this framework, see [Miranda-Afonso et
-al. (2025)](https://doi:10.1002/sim.70057).
+al. (2025)](https://doi.org/10.1002/sim.70057).
 
 Our current implementation allows for multiple longitudinal markers with
 different distributions and various functional forms to link these
@@ -395,7 +395,7 @@ summary(jm_fit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 1.6 min
+#> time: 1.7 min
 ```
 
 One can find the association parameters between the underlying value of
