@@ -190,7 +190,7 @@ and \code{"backward"}.}
 functional forms. For \code{area()}, \code{time_window} specifies the lower limit of the interval over which
 the integral is evaluated. For \code{Delta()}, \code{time_window} specifies the length of the time interval
 (i.e., the contrast between t and t - \code{time_window}) over which the finite difference is computed; when set to \code{NULL} (the default), the contrast is taken between the current time and time 0.}
-\item{standardise}{\code{logical}; controls whether the \code{Delta()} functional form returns a rate or a raw contrast. If \code{TRUE}, the difference between the values at the two time points is divided by the time distance between them, yielding a change per unit time. If \code{FALSE}, \code{Delta()} returns the raw difference over the specified time window. Defaults to \code{FALSE}.}
+\item{standardise}{\code{logical}; controls whether the \code{Delta()} functional form returns a rate or a raw contrast. If \code{TRUE}, the difference between the values at the two time points is divided by the time distance between them, yielding a change per unit time. If \code{FALSE}, \code{Delta()} returns the raw difference over the specified time window. Defaults to \code{TRUE}.}
 \item{IE_time}{a \code{character} string specifying the name of the intermediate event time variable in the \code{data.frame} used to fit the Cox/AFT survival submodel. For groups/subjects who did not experience the intermediate event, the time should be set to \code{Inf}. The same \code{IE_time} variable should be used when specifying multiple functional forms for the same longitudinal outcome.}
 \item{\dots}{arguments passed to \code{control}.}
 }
