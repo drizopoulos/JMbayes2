@@ -1948,4 +1948,10 @@ plot.vrgm <- function (x, smooth = FALSE, bdw = NULL, follow.time = NULL,
     }
 }
 
-
+beta_w_ecost <- function(p, y, a, b) {
+  alpha <- a + 1 - y
+  beta  <- b + y
+  l <- y * p
+  u <- y + (1 - y) * p
+  (beta(alpha, beta) / beta(a, b)) * (pbeta(u, alpha, beta) - pbeta(l, alpha, beta))
+}
