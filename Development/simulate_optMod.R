@@ -2,7 +2,7 @@ library("JMbayes2")
 library("lattice")
 source("./R/optimal_model.R")
 
-sim_fun1 <- function (n = 100) {
+sim_fun1 <- function (n) {
     K <- 30 # number of measurements per subject
     t_max <- 7 # maximum follow-up time
     # we construct a data frame with the design:
@@ -73,7 +73,7 @@ sim_fun1 <- function (n = 100) {
     DF <- DF[DF$time <= DF$Time, ]
 }
 
-sim_fun2 <- function (n = 100) {
+sim_fun2 <- function (n) {
     K <- 30 # number of measurements per subject
     t_max <- 7 # maximum follow-up time
     # we construct a data frame with the design:
@@ -147,7 +147,7 @@ sim_fun2 <- function (n = 100) {
     DF <- DF[DF$time <= DF$Time, ]
 }
 
-sim_fun3 <- function (n = 100) {
+sim_fun3 <- function (n) {
     K <- 30 # number of measurements per subject
     t_max <- 7 # maximum follow-up time
     # we construct a data frame with the design:
@@ -221,33 +221,90 @@ sim_fun3 <- function (n = 100) {
     DF <- DF[DF$time <= DF$Time, ]
 }
 
+create_data <- function (n1, n2, n3) {
+    DF <- do.call('rbind', list(sim_fun1(n1), sim_fun2(n2), sim_fun3(n3)))
+    DF$id <- match(DF$id, unique(DF$id))
+    DF
+}
+fit_models <- function (training) {
+    training_id <- training[!duplicated(training$id), ]
+    CoxFit <- coxph(Surv(Time, event) ~ sex, data = training_id)
+
+    fm1 <- lme(y ~ time * sex, data = training, random = ~ time | id)
+    fm2 <- lme(y ~ sex * ns(time, k = c(2, 4), B = c(0, 7)), data = training,
+               random = list(id = pdDiag(~ ns(time, k = c(2, 4), B = c(0, 7)))))
+    fm3 <- lme(y ~ (time + I(time^2)) * sex, data = training,
+               random = list(id = pdDiag(~ time + I(time^2))))
+    fm4 <- lme(y ~ poly(time, 3), data = training,
+               random = list(id = pdDiag(~ poly(time, 3))))
+
+    jointFit1 <- jm(CoxFit, fm1, time_var = "time")
+    jointFit2 <- jm(CoxFit, fm2, time_var = "time")
+    jointFit3 <- jm(CoxFit, fm3, time_var = "time")
+    jointFit4 <- jm(CoxFit, fm4, time_var = "time")
+
+    list(jointFit1, jointFit2, jointFit3, jointFit4)
+}
+best_model_test <- function (testing, T0, Dt) {
+    Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
+    Data$Time <- T0; Data$event <- 0
+    Data_before <- Data[Data$time <= T0, ]
+    Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
+    preds <- lapply(Models, predict, newdata = Data_before, newdata2 = Data_after)
+    Preds_after <- do.call('cbind', lapply(preds, function (x) x$newdata2$preds[[1L]]))
+    Obs_after <- Data_after$y
+    which.min(colMeans((Preds_after - Obs_after)^2))
+}
+individualized_selection <- function (testing, T0, Dt, best_model) {
+    Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
+    Data$Time <- T0; Data$event <- 0
+    Data_before <- Data[Data$time <= T0, ]
+    Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
+    preds <- lapply(Models, predict, newdata = Data_before, newdata2 = Data_after)
+    Preds <- do.call('cbind', lapply(preds, function (x) x$newdata$preds[[1L]]))
+    Preds <- Preds[Data_before$time > T0 - Dt, ]
+    Obs <- Data$y[Data$time <= T0 & Data$time > T0 - Dt]
+    Preds_after <- do.call('cbind', lapply(preds, function (x) x$newdata2$preds[[1L]]))
+    Obs_after <- Data_after$y
+    Data_before <- Data_before[Data_before$time > T0 - Dt, ]
+
+    oracle <-
+        apply(rowsum((Preds_after - Obs_after)^2, Data_after$id, reorder = FALSE),
+              1L, which.min)
+    id <- match(Data_after$id, unique(Data_after$id))
+    # oracle predictions (per id best model for the after predictions)
+    mse_oracle <- mean((Preds_after[cbind(seq_along(id), oracle[id])] - Obs_after)^2)
+    mse_id <- rowsum((Preds - Obs)^2, Data_before$id, reorder = FALSE) /
+        c(table(match(Data_before$id, unique(Data_before$id))))
+    model_id <- apply(mse_id, 1L, which.min)
+    id <- match(Data_after$id, unique(Data_after$id))
+    mse_best_model <- colMeans((Preds_after - Obs_after)^2)[best_model]
+    # MSE best model per id
+    mse_indv <- mean((Preds_after[cbind(seq_along(id), model_id[id])] - Obs_after)^2)
+    # MSE weighted average MSEs per id
+    weights <- t(apply(1 / mse_id, 1L, function (x) exp(x) / sum(exp(x))))
+    mse_indv_w <- mean((rowSums(weights[id, ] * Preds_after) - Obs_after)^2)
+    c(mse_oracle = mse_oracle, mse_best_model = mse_best_model,
+      mse_indv = mse_indv, mse_indv_w = mse_indv_w)
+}
 
 ################################################################################
 
-training <- do.call('rbind', list(sim_fun1(), sim_fun2(), sim_fun3()))
-training$id <- match(training$id, unique(training$id))
-testing <- do.call('rbind', list(sim_fun1(), sim_fun2(), sim_fun3()))
-testing$id <- match(testing$id, unique(testing$id))
-testing2 <- do.call('rbind', list(sim_fun1(), sim_fun2(), sim_fun3()))
-testing2$id <- match(testing2$id, unique(testing2$id))
+training <- create_data(300, 50, 50)
+testing <- create_data(300, 50, 50)
+testing2 <- create_data(300, 50, 50)
+
+Models <- fit_models(training)
+selected_model <- best_model_test(testing, 2, 1)
+selected_model
+res <- individualized_selection(testing2, 2, 1, selected_model)
+res
+
+################################################################################
+################################################################################
+################################################################################
 
 
-training_id <- training[!duplicated(training$id), ]
-CoxFit <- coxph(Surv(Time, event) ~ sex, data = training_id)
-
-fm1 <- lme(y ~ time * sex, data = training, random = ~ time | id)
-fm2 <- lme(y ~ sex * ns(time, k = c(2, 4), B = c(0, 7)), data = training,
-           random = list(id = pdDiag(~ ns(time, k = c(2, 4), B = c(0, 7)))))
-fm3 <- lme(y ~ poly(time, 2) * sex, data = training,
-           random = list(id = pdDiag(~ poly(time, 2))))
-fm4 <- lme(y ~ poly(time, 3), data = training,
-           random = list(id = pdDiag(~ poly(time, 3))))
-
-jointFit1 <- jm(CoxFit, fm1, time_var = "time")
-jointFit2 <- jm(CoxFit, fm2, time_var = "time")
-jointFit3 <- jm(CoxFit, fm3, time_var = "time")
-jointFit4 <- jm(CoxFit, fm4, time_var = "time")
-Models <- list(jointFit1, jointFit2, jointFit3, jointFit4)
 
 T0 <- 2
 Dt <- 1
@@ -260,11 +317,6 @@ Preds <- do.call('cbind', lapply(preds, function (x) x$newdata$preds[[1L]]))
 Preds <- Preds[Data_before$time > T0 - Dt, ]
 Obs <- Data$y[Data$time <= T0 & Data$time > T0 - Dt]
 best_model_before <- which.min(colMeans((Preds - Obs)^2))
-ff <- function (x) {
-    nx <- length(x)
-    if (nx > 1L) rep(c(1, 0), c(1, nx - 1)) else 1
-}
-ind_first <- as.logical(with(Data_after, ave(time, id, FUN = ff)))
 Preds_after <- do.call('cbind', lapply(preds, function (x) x$newdata2$preds[[1L]]))
 Obs_after <- Data_after$y
 Data_before <- Data_before[Data_before$time > T0 - Dt, ]
