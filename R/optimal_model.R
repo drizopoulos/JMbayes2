@@ -165,7 +165,72 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
     out
 }
 
-
-
+#object = fm4
+#newdata = testing
+#newdata2 = testing2
+IndvPred_lme <- function (object, newdata, newdata2) {
+    if (!inherits(object, "lme") && !inherits(object, "lmeComponents"))
+        stop("Use only with 'lme' or 'lmeComponents' objects.\n")
+    if (inherits(object, "lme")) {
+        TermsX <- object$terms
+        formYz <- formula(object$modelStruct$reStruct[[1]])
+        mfZ <- model.frame(terms(formYz), data = object$data)
+        TermsZ <- attr(mfZ, "terms")
+        id_var <- names(object$modelStruct$reStruct)
+        betas <- fixef(object)
+        sigma <- object$sigma
+        D <- lapply(pdMatrix(object$modelStruct$reStruct), "*", sigma^2)[[1]]
+        V <- vcov(object)
+    } else {
+        TermsX <- object$TermsX
+        TermsZ <- object$TermsZ
+        id_var <- object$idVar
+        betas <- object$betas
+        sigma <- object$sigma
+        D <- object$D
+        V <- object$V
+    }
+    all_vars <- unique(c(all.vars(TermsX), all.vars(TermsZ)))
+    newdata_nomiss <- newdata[complete.cases(newdata[all_vars]), ]
+    mfX_new <- model.frame(TermsX, data = newdata_nomiss)
+    X_new <- model.matrix(TermsX, mfX_new)
+    mfZ_new <- model.frame(TermsZ, data = newdata_nomiss)
+    Z_new <- model.matrix(formYz, mfZ_new)
+    y_new <- model.response(mfX_new, "numeric")
+    if (length(id_var) > 1)
+        stop("the current version of the function only works with a single grouping variable.\n")
+    if (is.null(newdata[[id_var]]))
+        stop("subject id variable not in newdata.")
+    id_nomiss <- match(newdata_nomiss[[id_var]], unique(newdata_nomiss[[id_var]]))
+    n <- length(unique(id_nomiss))
+    modes <- matrix(0, n, ncol(Z_new))
+    post_vars <- DZtVinv <- vector("list", n)
+    for (i in seq_len(n)) {
+        id_i <- id_nomiss == i
+        X_new_id <- X_new[id_i, , drop = FALSE]
+        Z_new_id <- Z_new[id_i, , drop = FALSE]
+        Vi_inv <- solve(Z_new_id %*% tcrossprod(D, Z_new_id) +
+                            sigma^2 * diag(sum(id_i)))
+        DZtVinv[[i]] <- tcrossprod(D, Z_new_id) %*% Vi_inv
+        modes[i, ] <- c(DZtVinv[[i]] %*% (y_new[id_i] - X_new_id %*%
+                                              betas))
+        t1 <- DZtVinv[[i]] %*% Z_new_id %*% D
+        t2 <- DZtVinv[[i]] %*% X_new_id %*% V %*%
+            crossprod(X_new_id, Vi_inv) %*% Z_new_id %*% D
+        post_vars[[i]] <- D - t1 + t2
+    }
+    fitted_y <- c(X_new %*% betas) +
+        rowSums(Z_new * modes[id_nomiss, , drop = FALSE])
+    #####
+    newdata2_nomiss <- newdata2[complete.cases(newdata2[all_vars]), ]
+    mfX_new2 <- model.frame(TermsX, data = newdata2_nomiss)
+    X_new2 <- model.matrix(TermsX, mfX_new2)
+    mfZ_new2 <- model.frame(TermsZ, data = newdata2_nomiss)
+    Z_new2 <- model.matrix(formYz, mfZ_new2)
+    id_nomiss <- match(newdata2_nomiss[[id_var]], unique(newdata_nomiss[[id_var]]))
+    predicted_y <- c(X_new2 %*% betas) +
+        rowSums(Z_new2 * modes[id_nomiss, , drop = FALSE])
+    list(fitted_y = fitted_y, predicted_y = predicted_y)
+}
 
 

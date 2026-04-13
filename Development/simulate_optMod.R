@@ -1,5 +1,6 @@
 library("JMbayes2")
 library("lattice")
+library("matrixStats")
 source("./R/optimal_model.R")
 
 sim_fun1 <- function (n) {
@@ -16,9 +17,9 @@ sim_fun1 <- function (n) {
     X <- model.matrix(~ sex * time, data = DF)
     Z <- model.matrix(~ time, data = DF)
     betas <- c(-2.2, -0.25, 0.24, -0.05) # fixed effects coefficients
-    sigma <- 1.5 # errors' standard deviation
+    sigma <- 1 # errors' standard deviation
     D11 <- 1.0 # variance of random intercepts
-    D22 <- 0.5 # variance of random slopes
+    D22 <- 0.6 # variance of random slopes
     # we simulate random effects
     b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
     # linear predictor
@@ -90,7 +91,7 @@ sim_fun2 <- function (n) {
     sigma <- 1 # errors' standard deviation
     D11 <- 0.7 # variance of random intercepts
     D22 <- 0.5 # variance of random slopes
-    D33 <- 0.1 # variance of quadratic random slopes
+    D33 <- 0.2 # variance of quadratic random slopes
     # we simulate random effects
     b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)),
                rnorm(n, sd = sqrt(D33)))
@@ -164,7 +165,7 @@ sim_fun3 <- function (n) {
     sigma <- 1 # errors' standard deviation
     D11 <- 0.6 # variance of random intercepts
     D22 <- 0.3 # variance of random slopes
-    D33 <- 0.1 # variance of quadratic random slopes
+    D33 <- 0.2 # variance of quadratic random slopes
     # we simulate random effects
     b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)),
                rnorm(n, sd = sqrt(D33)))
@@ -230,28 +231,28 @@ fit_models <- function (training) {
     training_id <- training[!duplicated(training$id), ]
     CoxFit <- coxph(Surv(Time, event) ~ sex, data = training_id)
 
-    fm1 <- lme(y ~ time * sex, data = training, random = ~ time | id)
-    fm2 <- lme(y ~ sex * ns(time, k = c(2, 4), B = c(0, 7)), data = training,
-               random = list(id = pdDiag(~ ns(time, k = c(2, 4), B = c(0, 7)))))
-    fm3 <- lme(y ~ (time + I(time^2)) * sex, data = training,
+    fm1 <- lme(fixed = y ~ time * sex, data = training, random = ~ time | id)
+    fm2 <- lme(fixed = y ~ sex * ns(time, k = c(2, 4), B = c(0, 7)), data = training,
+               random = list(id = pdDiag(form = ~ ns(time, k = c(2, 4), B = c(0, 7)))))
+    fm3 <- lme(fixed = y ~ (time + I(time^2)) * sex, data = training,
                random = list(id = pdDiag(~ time + I(time^2))))
-    fm4 <- lme(y ~ poly(time, 3), data = training,
-               random = list(id = pdDiag(~ poly(time, 3))))
+    fm4 <- lme(fixed = y ~ poly(time, 3), data = training,
+               random = list(id = pdDiag(form = ~ poly(time, 3))))
 
-    jointFit1 <- jm(CoxFit, fm1, time_var = "time")
-    jointFit2 <- jm(CoxFit, fm2, time_var = "time")
-    jointFit3 <- jm(CoxFit, fm3, time_var = "time")
-    jointFit4 <- jm(CoxFit, fm4, time_var = "time")
+    #jointFit1 <- jm(CoxFit, fm1, time_var = "time")
+    #jointFit2 <- jm(CoxFit, fm2, time_var = "time")
+    #jointFit3 <- jm(CoxFit, fm3, time_var = "time")
+    #jointFit4 <- jm(CoxFit, fm4, time_var = "time")
 
-    list(jointFit1, jointFit2, jointFit3, jointFit4)
+    list(fm1, fm2, fm3, fm4)
 }
 best_model_test <- function (testing, T0, Dt) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
     Data$Time <- T0; Data$event <- 0
     Data_before <- Data[Data$time <= T0, ]
     Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
-    preds <- lapply(Models, predict, newdata = Data_before, newdata2 = Data_after)
-    Preds_after <- do.call('cbind', lapply(preds, function (x) x$newdata2$preds[[1L]]))
+    preds <- lapply(Models, IndvPred_lme, newdata = Data_before, newdata2 = Data_after)
+    Preds_after <- do.call('cbind', lapply(preds, function (x) x$predicted_y))
     Obs_after <- Data_after$y
     which.min(colMeans((Preds_after - Obs_after)^2))
 }
@@ -260,45 +261,78 @@ individualized_selection <- function (testing, T0, Dt, best_model) {
     Data$Time <- T0; Data$event <- 0
     Data_before <- Data[Data$time <= T0, ]
     Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
-    preds <- lapply(Models, predict, newdata = Data_before, newdata2 = Data_after)
-    Preds <- do.call('cbind', lapply(preds, function (x) x$newdata$preds[[1L]]))
+    preds <- lapply(Models, IndvPred_lme, newdata = Data_before, newdata2 = Data_after)
+    Preds <- do.call('cbind', lapply(preds, function (x) x$fitted_y))
     Preds <- Preds[Data_before$time > T0 - Dt, ]
     Obs <- Data$y[Data$time <= T0 & Data$time > T0 - Dt]
-    Preds_after <- do.call('cbind', lapply(preds, function (x) x$newdata2$preds[[1L]]))
-    Obs_after <- Data_after$y
     Data_before <- Data_before[Data_before$time > T0 - Dt, ]
-
+    id <- match(Data_before$id, unique(Data_before$id))
+    ####
+    Preds_after <- do.call('cbind', lapply(preds, function (x) x$predicted_y))
+    Obs_after <- Data_after$y
+    id_after <- match(Data_after$id, unique(Data_after$id))
     oracle <-
-        apply(rowsum((Preds_after - Obs_after)^2, Data_after$id, reorder = FALSE),
+        apply(rowsum((Preds_after - Obs_after)^2, id_after, reorder = FALSE),
               1L, which.min)
-    id <- match(Data_after$id, unique(Data_after$id))
     # oracle predictions (per id best model for the after predictions)
-    mse_oracle <- mean((Preds_after[cbind(seq_along(id), oracle[id])] - Obs_after)^2)
-    mse_id <- rowsum((Preds - Obs)^2, Data_before$id, reorder = FALSE) /
-        c(table(match(Data_before$id, unique(Data_before$id))))
-    model_id <- apply(mse_id, 1L, which.min)
-    id <- match(Data_after$id, unique(Data_after$id))
-    mse_best_model <- colMeans((Preds_after - Obs_after)^2)[best_model]
+    mse_oracle <- mean((Preds_after[cbind(seq_along(id_after), oracle[id_after])] - Obs_after)^2)
+    # MSE best model from testing
+    mse_best_model <- mean((Preds_after[, best_model] - Obs_after)^2)
     # MSE best model per id
-    mse_indv <- mean((Preds_after[cbind(seq_along(id), model_id[id])] - Obs_after)^2)
+    mse_id <- rowsum((Preds - Obs)^2, id, reorder = FALSE) / c(table(id))
+    model_id <- apply(mse_id, 1L, which.min)
+    mse_indv <- mean((Preds_after[cbind(seq_along(id_after), model_id[id_after])] - Obs_after)^2)
     # MSE weighted average MSEs per id
-    weights <- t(apply(1 / mse_id, 1L, function (x) exp(x) / sum(exp(x))))
-    mse_indv_w <- mean((rowSums(weights[id, ] * Preds_after) - Obs_after)^2)
+    sigmas <- matrix(sapply(Models, function (x) x$sigma),
+                     nrow(Preds), ncol(Preds), byrow = TRUE)
+    log_w <- rowsum(dnorm(Obs, Preds, sigmas, TRUE), id, reorder = FALSE)
+    weights <- exp(log_w - rowLogSumExps(log_w))
+    mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
     c(mse_oracle = mse_oracle, mse_best_model = mse_best_model,
       mse_indv = mse_indv, mse_indv_w = mse_indv_w)
 }
 
 ################################################################################
+# training 300, 50, 50
+# testing 50, 300, 50
+# testing2 200, 100, 2
 
-training <- create_data(300, 50, 50)
-testing <- create_data(300, 50, 50)
-testing2 <- create_data(300, 50, 50)
+#training <- create_data(10, 10, 430)
+#testing <- create_data(350, 50, 50)
+#testing2 <- create_data(350, 50, 50)
+# xyplot(y ~ time | factor(id), type = "smooth", data = training, layout = c(5, 5),
+#       subset = id %in% sample(151:300, 25))
+#Models <- fit_models(training)
 
-Models <- fit_models(training)
-selected_model <- best_model_test(testing, 2, 1)
-selected_model
-res <- individualized_selection(testing2, 2, 1, selected_model)
-res
+######
+Times <- seq(1.5, 3.5, 0.5)
+Dts <- 1
+settings <- expand.grid(T0 = Times, Dt = Dts)
+M <- 50
+sim_results <- array(0, c(nrow(settings), 4, M))
+for (m in seq_len(M)) {
+    res <- matrix(0, nrow(settings), 4,
+                  dimnames = list(paste0("T0=", sprintf("%.1f", settings$T0),
+                                         ", Dt=", sprintf("%.1f", settings$Dt)),
+                                  c("Orcale", "Best_Model", "Indv", "Weights_Indv")))
+    for (i in seq_len(nrow(res))) {
+        test <- try({
+            training <- create_data(200, 250, 2)
+            testing <- create_data(50, 300, 50)
+            testing2 <- create_data(300, 100, 50)
+            Models <- fit_models(training)
+            selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
+            individualized_selection(testing2, settings$T0[i],
+                                     settings$Dt[i], selected_model)
+        }, silent = TRUE)
+        res[i, ] <- if (!inherits(test, "try-error")) test else rep(NA_real_, 4L)
+    }
+    sim_results[, , m] <- res
+}
+
+Res <- apply(sim_results, 1:2, mean, na.rm = TRUE)
+dimnames(Res) <- dimnames(res)
+Res
 
 ################################################################################
 ################################################################################
