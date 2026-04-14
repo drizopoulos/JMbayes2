@@ -3,8 +3,8 @@ library("lattice")
 library("matrixStats")
 source("./R/optimal_model.R")
 
-sim_fun1 <- function (n) {
-    K <- 30 # number of measurements per subject
+sim_fun1 <- function (n, model = c("mixed", "joint"), K = 30) {
+    model <- match.arg(model)
     t_max <- 7 # maximum follow-up time
     # we construct a data frame with the design:
     # everyone has a baseline measurement, and then measurements at random
@@ -27,55 +27,58 @@ sim_fun1 <- function (n) {
     # we simulate normal longitudinal data
     DF$y <- rnorm(n * K, mean = eta_y, sd = sigma)
 
-    upp_Cens <- 8 # fixed Type I censoring time
-    shape_wb <- 7 # shape Weibull
-    alpha <- 0.8 # association coefficients
-    gammas <- c("(Intercept)" = -9, "sex" = 0.5)
-    W <- model.matrix(~ sex, data = DF[!duplicated(DF$id), ])
-    # linear predictor for the survival model
-    eta_t <- as.vector(W %*% gammas)
-    # to simulate event times we use inverse transform sampling
-    # (https://en.wikipedia.org/wiki/Inverse_transform_sampling). Namely, we want
-    # to find t, such that S(t) = u, where S(.) is the survival function, and u a
-    # number from the Unif(0, 1) distribution. The function below calculates
-    # log(u) - log(S(t)), and for a given u, we want to find t for which it equals
-    # zero. We do that below using the uniroot() function
-    invS <- function (t, i) {
-        # i denotes the subject
-        sex_i <- W[i, 2L]
-        # h() is the hazard function and we assume a Weibull baseline hazard
-        h <- function (s) {
-            X_at_s <- cbind(1, sex_i, s, sex_i * s)
-            Z_at_s <- cbind(1, s)
-            # the linear predictor from the mixed model evaluated at time s
-            f <- as.vector(X_at_s %*% betas +
-                               rowSums(Z_at_s * b[rep(i, nrow(Z_at_s)), ]))
-            exp(log(shape_wb) + (shape_wb - 1) * log(s) + eta_t[i] + f * alpha)
+    if (model != "mixed") {
+        upp_Cens <- 8 # fixed Type I censoring time
+        shape_wb <- 7 # shape Weibull
+        alpha <- 0.8 # association coefficients
+        gammas <- c("(Intercept)" = -9, "sex" = 0.5)
+        W <- model.matrix(~ sex, data = DF[!duplicated(DF$id), ])
+        # linear predictor for the survival model
+        eta_t <- as.vector(W %*% gammas)
+        # to simulate event times we use inverse transform sampling
+        # (https://en.wikipedia.org/wiki/Inverse_transform_sampling). Namely, we want
+        # to find t, such that S(t) = u, where S(.) is the survival function, and u a
+        # number from the Unif(0, 1) distribution. The function below calculates
+        # log(u) - log(S(t)), and for a given u, we want to find t for which it equals
+        # zero. We do that below using the uniroot() function
+        invS <- function (t, i) {
+            # i denotes the subject
+            sex_i <- W[i, 2L]
+            # h() is the hazard function and we assume a Weibull baseline hazard
+            h <- function (s) {
+                X_at_s <- cbind(1, sex_i, s, sex_i * s)
+                Z_at_s <- cbind(1, s)
+                # the linear predictor from the mixed model evaluated at time s
+                f <- as.vector(X_at_s %*% betas +
+                                   rowSums(Z_at_s * b[rep(i, nrow(Z_at_s)), ]))
+                exp(log(shape_wb) + (shape_wb - 1) * log(s) + eta_t[i] + f * alpha)
+            }
+            # -log(S(t)) = H(t), where H(t) is the cumulative hazard function
+            integrate(h, lower = 0, upper = t)$value + log(u[i])
         }
-        # -log(S(t)) = H(t), where H(t) is the cumulative hazard function
-        integrate(h, lower = 0, upper = t)$value + log(u[i])
+        # we simulate the event times
+        u <- runif(n)
+        trueTimes <- numeric(n)
+        for (i in seq_len(n)) {
+            Up <- 100
+            Root <- try(uniroot(invS, interval = c(1e-05, Up), i = i)$root, TRUE)
+            trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
+        }
+        # we use fixed Type I right censoring denoting the end of the trial.
+        Ctimes <- upp_Cens
+        Time <- pmin(trueTimes, Ctimes)
+        event <- as.numeric(trueTimes <= Ctimes) # event indicator
+        # we keep the longitudinal measurements before the event times
+        DF$Time <- Time[DF$id]
+        DF$event <- event[DF$id]
+        DF <- DF[DF$time <= DF$Time, ]
     }
-    # we simulate the event times
-    u <- runif(n)
-    trueTimes <- numeric(n)
-    for (i in seq_len(n)) {
-        Up <- 100
-        Root <- try(uniroot(invS, interval = c(1e-05, Up), i = i)$root, TRUE)
-        trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
-    }
-    # we use fixed Type I right censoring denoting the end of the trial.
-    Ctimes <- upp_Cens
-    Time <- pmin(trueTimes, Ctimes)
-    event <- as.numeric(trueTimes <= Ctimes) # event indicator
-    # we keep the longitudinal measurements before the event times
-    DF$Time <- Time[DF$id]
-    DF$event <- event[DF$id]
     DF$id <- with(DF, ave(id, id, FUN = function (x) sample(1e06, 1) + x))
-    DF <- DF[DF$time <= DF$Time, ]
+    DF
 }
 
-sim_fun2 <- function (n) {
-    K <- 30 # number of measurements per subject
+sim_fun2 <- function (n, model = c("mixed", "joint"), K = 30) {
+    model <- match.arg(model)
     t_max <- 7 # maximum follow-up time
     # we construct a data frame with the design:
     # everyone has a baseline measurement, and then measurements at random
@@ -89,9 +92,9 @@ sim_fun2 <- function (n) {
     Z <- model.matrix(~ nsk(time, 2), data = DF)
     betas <- c(5.2, -0.25, 0.2, 0.1, -0.2, -0.1) # fixed effects coefficients
     sigma <- 1 # errors' standard deviation
-    D11 <- 0.7 # variance of random intercepts
-    D22 <- 0.5 # variance of random slopes
-    D33 <- 0.2 # variance of quadratic random slopes
+    D11 <- 1 # variance of random intercepts
+    D22 <- 0.8 # variance of random slopes
+    D33 <- 0.6 # variance of quadratic random slopes
     # we simulate random effects
     b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)),
                rnorm(n, sd = sqrt(D33)))
@@ -100,56 +103,59 @@ sim_fun2 <- function (n) {
     # we simulate normal longitudinal data
     DF$y <- rnorm(n * K, mean = eta_y, sd = sigma)
 
-    upp_Cens <- 5.1 # fixed Type I censoring time
-    shape_wb <- 7 # shape Weibull
-    alpha <- 0.15 # association coefficients
-    gammas <- c("(Intercept)" = -8, "sex" = 0.5)
-    W <- model.matrix(~ sex, data = DF[!duplicated(DF$id), ])
-    # linear predictor for the survival model
-    eta_t <- as.vector(W %*% gammas)
-    # to simulate event times we use inverse transform sampling
-    # (https://en.wikipedia.org/wiki/Inverse_transform_sampling). Namely, we want
-    # to find t, such that S(t) = u, where S(.) is the survival function, and u a
-    # number from the Unif(0, 1) distribution. The function below calculates
-    # log(u) - log(S(t)), and for a given u, we want to find t for which it equals
-    # zero. We do that below using the uniroot() function
-    invS <- function (t, i) {
-        # i denotes the subject
-        sex_i <- W[i, 2L]
-        # h() is the hazard function and we assume a Weibull baseline hazard
-        h <- function (s) {
-            X_at_s <- cbind(1, sex_i, s, s * s, sex_i * s, sex_i * s * s)
-            Z_at_s <- cbind(1, s, s * s)
-            # the linear predictor from the mixed model evaluated at time s
-            f <- as.vector(X_at_s %*% betas +
-                               rowSums(Z_at_s * b[rep(i, nrow(Z_at_s)), ]))
-            exp(log(shape_wb) + (shape_wb - 1) * log(s) + eta_t[i] + f * alpha)
+    if (model != "mixed") {
+        upp_Cens <- 5.1 # fixed Type I censoring time
+        shape_wb <- 7 # shape Weibull
+        alpha <- 0.15 # association coefficients
+        gammas <- c("(Intercept)" = -8, "sex" = 0.5)
+        W <- model.matrix(~ sex, data = DF[!duplicated(DF$id), ])
+        # linear predictor for the survival model
+        eta_t <- as.vector(W %*% gammas)
+        # to simulate event times we use inverse transform sampling
+        # (https://en.wikipedia.org/wiki/Inverse_transform_sampling). Namely, we want
+        # to find t, such that S(t) = u, where S(.) is the survival function, and u a
+        # number from the Unif(0, 1) distribution. The function below calculates
+        # log(u) - log(S(t)), and for a given u, we want to find t for which it equals
+        # zero. We do that below using the uniroot() function
+        invS <- function (t, i) {
+            # i denotes the subject
+            sex_i <- W[i, 2L]
+            # h() is the hazard function and we assume a Weibull baseline hazard
+            h <- function (s) {
+                X_at_s <- cbind(1, sex_i, s, s * s, sex_i * s, sex_i * s * s)
+                Z_at_s <- cbind(1, s, s * s)
+                # the linear predictor from the mixed model evaluated at time s
+                f <- as.vector(X_at_s %*% betas +
+                                   rowSums(Z_at_s * b[rep(i, nrow(Z_at_s)), ]))
+                exp(log(shape_wb) + (shape_wb - 1) * log(s) + eta_t[i] + f * alpha)
+            }
+            # -log(S(t)) = H(t), where H(t) is the cumulative hazard function
+            integrate(h, lower = 0, upper = t)$value + log(u[i])
         }
-        # -log(S(t)) = H(t), where H(t) is the cumulative hazard function
-        integrate(h, lower = 0, upper = t)$value + log(u[i])
-    }
-    # we simulate the event times
-    u <- runif(n)
-    trueTimes <- numeric(n)
-    for (i in seq_len(n)) {
-        Up <- 100
-        Root <- try(uniroot(invS, interval = c(1e-05, Up), i = i)$root, TRUE)
-        trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
-    }
+        # we simulate the event times
+        u <- runif(n)
+        trueTimes <- numeric(n)
+        for (i in seq_len(n)) {
+            Up <- 100
+            Root <- try(uniroot(invS, interval = c(1e-05, Up), i = i)$root, TRUE)
+            trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
+        }
 
-    # we use fixed Type I right censoring denoting the end of the trial.
-    Ctimes <- upp_Cens
-    Time <- pmin(trueTimes, Ctimes)
-    event <- as.numeric(trueTimes <= Ctimes) # event indicator
-    # we keep the longitudinal measurements before the event times
-    DF$Time <- Time[DF$id]
-    DF$event <- event[DF$id]
+        # we use fixed Type I right censoring denoting the end of the trial.
+        Ctimes <- upp_Cens
+        Time <- pmin(trueTimes, Ctimes)
+        event <- as.numeric(trueTimes <= Ctimes) # event indicator
+        # we keep the longitudinal measurements before the event times
+        DF$Time <- Time[DF$id]
+        DF$event <- event[DF$id]
+        DF <- DF[DF$time <= DF$Time, ]
+    }
     DF$id <- with(DF, ave(id, id, FUN = function (x) sample(1e06, 1) + x))
-    DF <- DF[DF$time <= DF$Time, ]
+    DF
 }
 
-sim_fun3 <- function (n) {
-    K <- 30 # number of measurements per subject
+sim_fun3 <- function (n, model = c("mixed", "joint"), K = 30) {
+    model <- match.arg(model)
     t_max <- 7 # maximum follow-up time
     # we construct a data frame with the design:
     # everyone has a baseline measurement, and then measurements at random
@@ -163,9 +169,9 @@ sim_fun3 <- function (n) {
     Z <- model.matrix(~ time + I(time^2), data = DF)
     betas <- c(5.2, 0.2, 0.1) # fixed effects coefficients
     sigma <- 1 # errors' standard deviation
-    D11 <- 0.6 # variance of random intercepts
-    D22 <- 0.3 # variance of random slopes
-    D33 <- 0.2 # variance of quadratic random slopes
+    D11 <- 1 # variance of random intercepts
+    D22 <- 0.8 # variance of random slopes
+    D33 <- 0.6 # variance of quadratic random slopes
     # we simulate random effects
     b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)),
                rnorm(n, sd = sqrt(D33)))
@@ -174,70 +180,78 @@ sim_fun3 <- function (n) {
     # we simulate normal longitudinal data
     DF$y <- rnorm(n * K, mean = eta_y, sd = sigma)
 
-    upp_Cens <- 5.1 # fixed Type I censoring time
-    shape_wb <- 7 # shape Weibull
-    alpha <- 0.15 # association coefficients
-    gammas <- c("(Intercept)" = -10, "sex" = 0.5)
-    W <- model.matrix(~ sex, data = DF[!duplicated(DF$id), ])
-    # linear predictor for the survival model
-    eta_t <- as.vector(W %*% gammas)
-    # to simulate event times we use inverse transform sampling
-    # (https://en.wikipedia.org/wiki/Inverse_transform_sampling). Namely, we want
-    # to find t, such that S(t) = u, where S(.) is the survival function, and u a
-    # number from the Unif(0, 1) distribution. The function below calculates
-    # log(u) - log(S(t)), and for a given u, we want to find t for which it equals
-    # zero. We do that below using the uniroot() function
-    invS <- function (t, i) {
-        # i denotes the subject
-        sex_i <- W[i, 2L]
-        # h() is the hazard function and we assume a Weibull baseline hazard
-        h <- function (s) {
-            X_at_s <- cbind(1, s, s * s)
-            Z_at_s <- cbind(1, s, s * s)
-            # the linear predictor from the mixed model evaluated at time s
-            f <- as.vector(X_at_s %*% betas +
-                               rowSums(Z_at_s * b[rep(i, nrow(Z_at_s)), ]))
-            exp(log(shape_wb) + (shape_wb - 1) * log(s) + eta_t[i] + f * alpha)
+    if (model != "mixed") {
+        upp_Cens <- 5.1 # fixed Type I censoring time
+        shape_wb <- 7 # shape Weibull
+        alpha <- 0.15 # association coefficients
+        gammas <- c("(Intercept)" = -10, "sex" = 0.5)
+        W <- model.matrix(~ sex, data = DF[!duplicated(DF$id), ])
+        # linear predictor for the survival model
+        eta_t <- as.vector(W %*% gammas)
+        # to simulate event times we use inverse transform sampling
+        # (https://en.wikipedia.org/wiki/Inverse_transform_sampling). Namely, we want
+        # to find t, such that S(t) = u, where S(.) is the survival function, and u a
+        # number from the Unif(0, 1) distribution. The function below calculates
+        # log(u) - log(S(t)), and for a given u, we want to find t for which it equals
+        # zero. We do that below using the uniroot() function
+        invS <- function (t, i) {
+            # i denotes the subject
+            sex_i <- W[i, 2L]
+            # h() is the hazard function and we assume a Weibull baseline hazard
+            h <- function (s) {
+                X_at_s <- cbind(1, s, s * s)
+                Z_at_s <- cbind(1, s, s * s)
+                # the linear predictor from the mixed model evaluated at time s
+                f <- as.vector(X_at_s %*% betas +
+                                   rowSums(Z_at_s * b[rep(i, nrow(Z_at_s)), ]))
+                exp(log(shape_wb) + (shape_wb - 1) * log(s) + eta_t[i] + f * alpha)
+            }
+            # -log(S(t)) = H(t), where H(t) is the cumulative hazard function
+            integrate(h, lower = 0, upper = t)$value + log(u[i])
         }
-        # -log(S(t)) = H(t), where H(t) is the cumulative hazard function
-        integrate(h, lower = 0, upper = t)$value + log(u[i])
-    }
-    # we simulate the event times
-    u <- runif(n)
-    trueTimes <- numeric(n)
-    for (i in seq_len(n)) {
-        Up <- 100
-        Root <- try(uniroot(invS, interval = c(1e-05, Up), i = i)$root, TRUE)
-        trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
-    }
+        # we simulate the event times
+        u <- runif(n)
+        trueTimes <- numeric(n)
+        for (i in seq_len(n)) {
+            Up <- 100
+            Root <- try(uniroot(invS, interval = c(1e-05, Up), i = i)$root, TRUE)
+            trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
+        }
 
-    # we use fixed Type I right censoring denoting the end of the trial.
-    Ctimes <- upp_Cens
-    Time <- pmin(trueTimes, Ctimes)
-    event <- as.numeric(trueTimes <= Ctimes) # event indicator
-    # we keep the longitudinal measurements before the event times
-    DF$Time <- Time[DF$id]
-    DF$event <- event[DF$id]
+        # we use fixed Type I right censoring denoting the end of the trial.
+        Ctimes <- upp_Cens
+        Time <- pmin(trueTimes, Ctimes)
+        event <- as.numeric(trueTimes <= Ctimes) # event indicator
+        # we keep the longitudinal measurements before the event times
+        DF$Time <- Time[DF$id]
+        DF$event <- event[DF$id]
+        DF <- DF[DF$time <= DF$Time, ]
+    }
     DF$id <- with(DF, ave(id, id, FUN = function (x) sample(1e06, 1) + x))
-    DF <- DF[DF$time <= DF$Time, ]
+    DF
 }
 
-create_data <- function (n1, n2, n3) {
-    DF <- do.call('rbind', list(sim_fun1(n1), sim_fun2(n2), sim_fun3(n3)))
+create_data <- function (n1, n2, n3, K = 30) {
+    DF <- do.call('rbind', list(sim_fun1(n1, K = K), sim_fun2(n2, K = K),
+                                sim_fun3(n3, K = K)))
     DF$id <- match(DF$id, unique(DF$id))
     DF
 }
 fit_models <- function (training) {
-    training_id <- training[!duplicated(training$id), ]
-    CoxFit <- coxph(Surv(Time, event) ~ sex, data = training_id)
+    #training_id <- training[!duplicated(training$id), ]
+    #CoxFit <- coxph(Surv(Time, event) ~ sex, data = training_id)
 
-    fm1 <- lme(fixed = y ~ time * sex, data = training, random = ~ time | id)
+    fm1 <- lme(fixed = y ~ time * sex, data = training, random = ~ time | id,
+               control = lmeControl(opt = "optim"))
     fm2 <- lme(fixed = y ~ sex * ns(time, k = c(2, 4), B = c(0, 7)), data = training,
-               random = list(id = pdDiag(form = ~ ns(time, k = c(2, 4), B = c(0, 7)))))
+               random = list(id = pdDiag(form = ~ ns(time, k = c(2, 4), B = c(0, 7)))),
+               control = lmeControl(opt = "optim"))
     fm3 <- lme(fixed = y ~ (time + I(time^2)) * sex, data = training,
-               random = list(id = pdDiag(~ time + I(time^2))))
+               random = list(id = pdDiag(~ time + I(time^2))),
+               control = lmeControl(opt = "optim"))
     fm4 <- lme(fixed = y ~ poly(time, 3), data = training,
-               random = list(id = pdDiag(form = ~ poly(time, 3))))
+               random = list(id = pdDiag(form = ~ poly(time, 3))),
+               control = lmeControl(opt = "optim"))
 
     #jointFit1 <- jm(CoxFit, fm1, time_var = "time")
     #jointFit2 <- jm(CoxFit, fm2, time_var = "time")
@@ -259,25 +273,27 @@ best_model_test <- function (testing, T0, Dt) {
 individualized_selection <- function (testing, T0, Dt, best_model) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
     Data$Time <- T0; Data$event <- 0
-    Data_before <- Data[Data$time <= T0, ]
+    Data_before <- Data[Data$time <= T0 & Data$time > T0 - Dt, ]
     Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
     preds <- lapply(Models, IndvPred_lme, newdata = Data_before, newdata2 = Data_after)
+    ####
     Preds <- do.call('cbind', lapply(preds, function (x) x$fitted_y))
-    Preds <- Preds[Data_before$time > T0 - Dt, ]
-    Obs <- Data$y[Data$time <= T0 & Data$time > T0 - Dt]
-    Data_before <- Data_before[Data_before$time > T0 - Dt, ]
+    ind <- Data_before$time > T0 - Dt
+    Preds <- Preds[ind, ]
+    Data_before <- Data_before[ind, ]
+    Obs <- Data_before$y
     id <- match(Data_before$id, unique(Data_before$id))
     ####
     Preds_after <- do.call('cbind', lapply(preds, function (x) x$predicted_y))
     Obs_after <- Data_after$y
     id_after <- match(Data_after$id, unique(Data_after$id))
+    # oracle predictions (per id best model for the after predictions)
     oracle <-
         apply(rowsum((Preds_after - Obs_after)^2, id_after, reorder = FALSE),
               1L, which.min)
-    # oracle predictions (per id best model for the after predictions)
     mse_oracle <- mean((Preds_after[cbind(seq_along(id_after), oracle[id_after])] - Obs_after)^2)
     # MSE best model from testing
-    mse_best_model <- mean((Preds_after[, best_model] - Obs_after)^2)
+    mse_best_model <- colMeans((Preds_after[, best_model, drop = FALSE] - Obs_after)^2)
     # MSE best model per id
     mse_id <- rowsum((Preds - Obs)^2, id, reorder = FALSE) / c(table(id))
     model_id <- apply(mse_id, 1L, which.min)
@@ -305,27 +321,28 @@ individualized_selection <- function (testing, T0, Dt, best_model) {
 #Models <- fit_models(training)
 
 ######
-Times <- seq(1.5, 3.5, 0.5)
+Times <- seq(1.5, 5.5, 0.5)
 Dts <- 1
 settings <- expand.grid(T0 = Times, Dt = Dts)
-M <- 50
-sim_results <- array(0, c(nrow(settings), 4, M))
+M <- 20
+sim_results <- array(0, c(nrow(settings), 5, M))
 for (m in seq_len(M)) {
-    res <- matrix(0, nrow(settings), 4,
+    res <- matrix(0, nrow(settings), 5,
                   dimnames = list(paste0("T0=", sprintf("%.1f", settings$T0),
                                          ", Dt=", sprintf("%.1f", settings$Dt)),
-                                  c("Orcale", "Best_Model", "Indv", "Weights_Indv")))
+                                  c("Orcale", "Best_Model", "Best_AIC", "Indv", "Weights_Indv")))
     for (i in seq_len(nrow(res))) {
         test <- try({
-            training <- create_data(200, 250, 2)
-            testing <- create_data(50, 300, 50)
-            testing2 <- create_data(300, 100, 50)
+            training <- create_data(2, 450, 2, K = 20)
+            testing <- create_data(2, 150, 2, K = 20)
+            testing2 <- create_data(2, 150, 2, K = 20)
             Models <- fit_models(training)
+            aic_best <- which.min(sapply(Models, AIC))
             selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
             individualized_selection(testing2, settings$T0[i],
-                                     settings$Dt[i], selected_model)
-        }, silent = TRUE)
-        res[i, ] <- if (!inherits(test, "try-error")) test else rep(NA_real_, 4L)
+                                     settings$Dt[i], c(selected_model, aic_best))
+        }, silent = F)
+        res[i, ] <- if (!inherits(test, "try-error")) test else rep(NA_real_, 5L)
     }
     sim_results[, , m] <- res
 }
