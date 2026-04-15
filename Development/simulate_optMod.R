@@ -246,9 +246,9 @@ fit_models <- function (training) {
     fm2 <- lme(fixed = y ~ sex * ns(time, k = c(2, 4), B = c(0, 7)), data = training,
                random = list(id = pdDiag(form = ~ ns(time, k = c(2, 4), B = c(0, 7)))),
                control = lmeControl(opt = "optim"))
-    fm3 <- lme(fixed = y ~ (time + I(time^2)) * sex, data = training,
-               random = list(id = pdDiag(~ time + I(time^2))),
-               control = lmeControl(opt = "optim"))
+    #fm3 <- lme(fixed = y ~ (time + I(time^2)) * sex, data = training,
+    #           random = list(id = pdDiag(~ time + I(time^2))),
+    #           control = lmeControl(opt = "optim"))
     fm4 <- lme(fixed = y ~ poly(time, 3), data = training,
                random = list(id = pdDiag(form = ~ poly(time, 3))),
                control = lmeControl(opt = "optim"))
@@ -258,7 +258,7 @@ fit_models <- function (training) {
     #jointFit3 <- jm(CoxFit, fm3, time_var = "time")
     #jointFit4 <- jm(CoxFit, fm4, time_var = "time")
 
-    list(fm1, fm2, fm3, fm4)
+    list(fm1, fm2, fm4)
 }
 best_model_test <- function (testing, T0, Dt) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
@@ -273,14 +273,11 @@ best_model_test <- function (testing, T0, Dt) {
 individualized_selection <- function (testing, T0, Dt, best_model) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
     Data$Time <- T0; Data$event <- 0
-    Data_before <- Data[Data$time <= T0 & Data$time > T0 - Dt, ]
+    Data_before <- Data[Data$time > T0 - Dt & Data$time <= T0, ]
     Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
     preds <- lapply(Models, IndvPred_lme, newdata = Data_before, newdata2 = Data_after)
     ####
     Preds <- do.call('cbind', lapply(preds, function (x) x$fitted_y))
-    ind <- Data_before$time > T0 - Dt
-    Preds <- Preds[ind, ]
-    Data_before <- Data_before[ind, ]
     Obs <- Data_before$y
     id <- match(Data_before$id, unique(Data_before$id))
     ####
@@ -324,7 +321,7 @@ individualized_selection <- function (testing, T0, Dt, best_model) {
 Times <- seq(1.5, 5.5, 0.5)
 Dts <- 1
 settings <- expand.grid(T0 = Times, Dt = Dts)
-M <- 20
+M <- 10
 sim_results <- array(0, c(nrow(settings), 5, M))
 for (m in seq_len(M)) {
     res <- matrix(0, nrow(settings), 5,
@@ -333,9 +330,9 @@ for (m in seq_len(M)) {
                                   c("Orcale", "Best_Model", "Best_AIC", "Indv", "Weights_Indv")))
     for (i in seq_len(nrow(res))) {
         test <- try({
-            training <- create_data(2, 450, 2, K = 20)
-            testing <- create_data(2, 150, 2, K = 20)
-            testing2 <- create_data(2, 150, 2, K = 20)
+            training <- create_data(2, 450, 2, K = 25)
+            testing <- create_data(200, 2, 250, K = 25)
+            testing2 <- create_data(200, 2, 250, K = 25)
             Models <- fit_models(training)
             aic_best <- which.min(sapply(Models, AIC))
             selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
@@ -347,9 +344,38 @@ for (m in seq_len(M)) {
     sim_results[, , m] <- res
 }
 
+plot_data <- vector("list", M)
+for (m in seq_len(M)) {
+    dd <- sim_results[, -3, m]
+    plot_data[[m]] <- data.frame(
+        MSE = c(dd),
+        T0 = factor(rep(Times, 4), labels = paste("T0 =", Times)),
+        Model = factor(rep(c("Oracle", "Best_in_Test", "Indv", "wIndv"),
+                           each = length(Times)),
+                       levels = c("Oracle", "Best_in_Test", "Indv", "wIndv"))
+    )
+
+}
+plot_data <- do.call('rbind', plot_data)
+bwplot(MSE ~ Model | T0, data = plot_data, as.table = TRUE,
+       scales = list(y = list(relation = "free")),
+       panel = function (...) {
+           panel.bwplot(..., col = "lightgrey", coef = 1.5, pch = "|",
+                        do.out = FALSE)
+       }, par.strip.text = list(cex = 0.8),
+       par.settings = list(box.rectangle = list(fill = "lightgrey"),
+                           box.umbrella = list(lty = 1)))
+
+
 Res <- apply(sim_results, 1:2, mean, na.rm = TRUE)
 dimnames(Res) <- dimnames(res)
 Res
+
+Res <- apply(sim_results, 1:2, sd, na.rm = TRUE)
+dimnames(Res) <- dimnames(res)
+Res
+
+
 
 ################################################################################
 ################################################################################
