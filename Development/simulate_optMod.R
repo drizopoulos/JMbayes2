@@ -88,16 +88,17 @@ sim_fun2 <- function (n, model = c("mixed", "joint"), K = 30) {
                      sex = rep(gl(2, n/2, labels = c("male", "female")), each = K))
 
     # design matrices for the fixed and random effects
-    X <- model.matrix(~ sex * nsk(time, 2), data = DF)
-    Z <- model.matrix(~ nsk(time, 2), data = DF)
-    betas <- c(5.2, -0.25, 0.2, 0.1, -0.2, -0.1) # fixed effects coefficients
+    X <- model.matrix(~ sex * ns(time, k = c(1, 3), B = c(0, 7)), data = DF)
+    Z <- model.matrix(~ ns(time, k = c(1, 3), B = c(0, 7)), data = DF)
+    betas <- c(5.2, -0.25, 0.2, 0.3, 0.5, -0.2, -0.3, -0.5) # fixed effects coefficients
     sigma <- 1 # errors' standard deviation
-    D11 <- 1 # variance of random intercepts
-    D22 <- 0.8 # variance of random slopes
-    D33 <- 0.6 # variance of quadratic random slopes
+    D11 <- 2 # variance of random intercepts
+    D22 <- 1 # variance of random slopes
+    D33 <- 0.8 # variance of quadratic random slopes
+    D44 <- 0.8 # variance of quadratic random slopes
     # we simulate random effects
     b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)),
-               rnorm(n, sd = sqrt(D33)))
+               rnorm(n, sd = sqrt(D33)), rnorm(n, sd = sqrt(D44)))
     # linear predictor
     eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
     # we simulate normal longitudinal data
@@ -169,9 +170,9 @@ sim_fun3 <- function (n, model = c("mixed", "joint"), K = 30) {
     Z <- model.matrix(~ time + I(time^2), data = DF)
     betas <- c(5.2, 0.2, 0.1) # fixed effects coefficients
     sigma <- 1 # errors' standard deviation
-    D11 <- 1 # variance of random intercepts
-    D22 <- 0.8 # variance of random slopes
-    D33 <- 0.6 # variance of quadratic random slopes
+    D11 <- 2 # variance of random intercepts
+    D22 <- 1 # variance of random slopes
+    D33 <- 0.8 # variance of quadratic random slopes
     # we simulate random effects
     b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)),
                rnorm(n, sd = sqrt(D33)))
@@ -243,12 +244,12 @@ fit_models <- function (training) {
 
     fm1 <- lme(fixed = y ~ time * sex, data = training, random = ~ time | id,
                control = lmeControl(opt = "optim"))
-    fm2 <- lme(fixed = y ~ sex * ns(time, k = c(2, 4), B = c(0, 7)), data = training,
-               random = list(id = pdDiag(form = ~ ns(time, k = c(2, 4), B = c(0, 7)))),
+    fm2 <- lme(fixed = y ~ sex * ns(time, k = c(1, 3), B = c(0, 7)), data = training,
+               random = list(id = pdDiag(form = ~ ns(time, k = c(1, 3), B = c(0, 7)))),
                control = lmeControl(opt = "optim"))
-    #fm3 <- lme(fixed = y ~ (time + I(time^2)) * sex, data = training,
-    #           random = list(id = pdDiag(~ time + I(time^2))),
-    #           control = lmeControl(opt = "optim"))
+    fm3 <- lme(fixed = y ~ (time + I(time^2)) * sex, data = training,
+               random = list(id = pdDiag(~ time + I(time^2))),
+               control = lmeControl(opt = "optim"))
     fm4 <- lme(fixed = y ~ poly(time, 3), data = training,
                random = list(id = pdDiag(form = ~ poly(time, 3))),
                control = lmeControl(opt = "optim"))
@@ -258,7 +259,7 @@ fit_models <- function (training) {
     #jointFit3 <- jm(CoxFit, fm3, time_var = "time")
     #jointFit4 <- jm(CoxFit, fm4, time_var = "time")
 
-    list(fm1, fm2, fm4)
+    list(fm1, fm2, fm3, fm4)
 }
 best_model_test <- function (testing, T0, Dt) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
@@ -268,14 +269,23 @@ best_model_test <- function (testing, T0, Dt) {
     preds <- lapply(Models, IndvPred_lme, newdata = Data_before, newdata2 = Data_after)
     Preds_after <- do.call('cbind', lapply(preds, function (x) x$predicted_y))
     Obs_after <- Data_after$y
-    which.min(colMeans((Preds_after - Obs_after)^2))
+    loss <- function (log_w) {
+        log_w <- c(log_w, 0)
+        weights <- exp(log_w - logSumExp(log_w))
+        mean((rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after) - Obs_after)^2)
+    }
+    log_w <- c(optim(rep(0, ncol(Preds_after) - 1L), loss, method = "BFGS")$par, 0)
+    weights <- exp(log_w - logSumExp(log_w))
+    list(best_model = which.min(colMeans((Preds_after - Obs_after)^2)),
+         weights = weights)
 }
-individualized_selection <- function (testing, T0, Dt, best_model) {
+individualized_selection <- function (testing, T0, Dt, best_model, weights) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
     Data$Time <- T0; Data$event <- 0
-    Data_before <- Data[Data$time > T0 - Dt & Data$time <= T0, ]
+    Data_before <- Data[Data$time <= T0, ]
     Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
-    preds <- lapply(Models, IndvPred_lme, newdata = Data_before, newdata2 = Data_after)
+    preds <- lapply(Models, IndvPred_lme, newdata = Data_before,
+                    newdata2 = Data_after)
     ####
     Preds <- do.call('cbind', lapply(preds, function (x) x$fitted_y))
     Obs <- Data_before$y
@@ -292,15 +302,18 @@ individualized_selection <- function (testing, T0, Dt, best_model) {
     # MSE best model from testing
     mse_best_model <- colMeans((Preds_after[, best_model, drop = FALSE] - Obs_after)^2)
     # MSE best model per id
-    mse_id <- rowsum((Preds - Obs)^2, id, reorder = FALSE) / c(table(id))
+    keep <- Data_before$time > T0 - Dt
+    mse_id <- rowsum((Preds[keep, ] - Obs[keep])^2, id[keep], reorder = FALSE)
     model_id <- apply(mse_id, 1L, which.min)
     mse_indv <- mean((Preds_after[cbind(seq_along(id_after), model_id[id_after])] - Obs_after)^2)
     # MSE weighted average MSEs per id
-    sigmas <- matrix(sapply(Models, function (x) x$sigma),
-                     nrow(Preds), ncol(Preds), byrow = TRUE)
-    log_w <- rowsum(dnorm(Obs, Preds, sigmas, TRUE), id, reorder = FALSE)
+    sigmas <- matrix(sapply(Models, "[[", "sigma"), nrow(Preds), ncol(Preds),
+                     byrow = TRUE)
+    log_w <- rowsum(dnorm(Obs[keep], Preds[keep, ], sigmas[keep, ], TRUE), id[keep],
+                    reorder = FALSE)
     weights <- exp(log_w - rowLogSumExps(log_w))
     mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
+    #mse_indv_w <- mean((rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after) - Obs_after)^2)
     c(mse_oracle = mse_oracle, mse_best_model = mse_best_model,
       mse_indv = mse_indv, mse_indv_w = mse_indv_w)
 }
@@ -322,49 +335,48 @@ Times <- seq(1.5, 5.5, 0.5)
 Dts <- 1
 settings <- expand.grid(T0 = Times, Dt = Dts)
 M <- 10
-sim_results <- array(0, c(nrow(settings), 5, M))
+sim_results <- array(NA_real_, c(nrow(settings), 5, M))
+dnams <-
+    list(paste0("T0=", sprintf("%.1f", settings$T0), ", Dt=",
+                sprintf("%.1f", settings$Dt)),
+         c("Orcale", "Best_Model", "Best_AIC", "Indv", "Weights_Indv"))
 for (m in seq_len(M)) {
-    res <- matrix(0, nrow(settings), 5,
-                  dimnames = list(paste0("T0=", sprintf("%.1f", settings$T0),
-                                         ", Dt=", sprintf("%.1f", settings$Dt)),
-                                  c("Orcale", "Best_Model", "Best_AIC", "Indv", "Weights_Indv")))
+    res <- matrix(0, nrow(settings), 5, dimnames = dnams)
+    training <- create_data(300, 50, 50, K = 20)
+    testing <- create_data(50, 300, 50, K = 20)
+    testing2 <- create_data(200, 100, 2, K = 20)
+    Models <- fit_models(training)
+    aic_best <- which.min(sapply(Models, AIC))
     for (i in seq_len(nrow(res))) {
-        test <- try({
-            training <- create_data(2, 450, 2, K = 25)
-            testing <- create_data(200, 2, 250, K = 25)
-            testing2 <- create_data(200, 2, 250, K = 25)
-            Models <- fit_models(training)
-            aic_best <- which.min(sapply(Models, AIC))
-            selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
-            individualized_selection(testing2, settings$T0[i],
-                                     settings$Dt[i], c(selected_model, aic_best))
-        }, silent = F)
-        res[i, ] <- if (!inherits(test, "try-error")) test else rep(NA_real_, 5L)
+        selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
+        res[i, ] <- individualized_selection(testing2, settings$T0[i],settings$Dt[i],
+                                 c(selected_model[[1]], aic_best),
+                                 weights = selected_model[[2]])
     }
     sim_results[, , m] <- res
 }
 
 plot_data <- vector("list", M)
 for (m in seq_len(M)) {
-    dd <- sim_results[, -3, m]
+    dd <- sim_results[, -(3:4), m]
     plot_data[[m]] <- data.frame(
         MSE = c(dd),
-        T0 = factor(rep(Times, 4), labels = paste("T0 =", Times)),
-        Model = factor(rep(c("Oracle", "Best_in_Test", "Indv", "wIndv"),
+        T0 = factor(rep(Times, 3), labels = paste("T0 =", Times)),
+        Model = factor(rep(c("Oracle", "Best_in_Test", "wIndv"),
                            each = length(Times)),
-                       levels = c("Oracle", "Best_in_Test", "Indv", "wIndv"))
+                       levels = c("wIndv", "Best_in_Test", "Oracle"))
     )
-
 }
 plot_data <- do.call('rbind', plot_data)
 bwplot(MSE ~ Model | T0, data = plot_data, as.table = TRUE,
        scales = list(y = list(relation = "free")),
-       panel = function (...) {
-           panel.bwplot(..., col = "lightgrey", coef = 1.5, pch = "|",
-                        do.out = FALSE)
-       }, par.strip.text = list(cex = 0.8),
-       par.settings = list(box.rectangle = list(fill = "lightgrey"),
-                           box.umbrella = list(lty = 1)))
+       prepanel = function (x, y) {
+           stats <- boxplot.stats(y)$stats
+           list(ylim = range(stats))
+       },
+       coef = 1.5, pch = "|", do.out = FALSE, fill = "lightgrey",
+       par.strip.text = list(cex = 0.8),
+       par.settings = list(box.umbrella = list(lty = 1)))
 
 
 Res <- apply(sim_results, 1:2, mean, na.rm = TRUE)
@@ -382,6 +394,12 @@ Res
 ################################################################################
 
 
+#prepanel = function (x, y) {
+#       # Calculate boxplot stats without outliers
+
+#       stats <- boxplot.stats(y)$stats
+#      list(ylim = range(stats))
+# },
 
 T0 <- 2
 Dt <- 1
