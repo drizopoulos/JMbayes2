@@ -88,9 +88,9 @@ sim_fun2 <- function (n, model = c("mixed", "joint"), K = 30) {
                      sex = rep(gl(2, n/2, labels = c("male", "female")), each = K))
 
     # design matrices for the fixed and random effects
-    X <- model.matrix(~ sex * ns(time, k = c(1, 3), B = c(0, 7)), data = DF)
-    Z <- model.matrix(~ ns(time, k = c(1, 3), B = c(0, 7)), data = DF)
-    betas <- c(5.2, -0.25, 0.2, 0.3, 0.5, -0.2, -0.3, -0.5) # fixed effects coefficients
+    X <- model.matrix(~ sex * ns(time, k = c(3, 5), B = c(0, 7)), data = DF)
+    Z <- model.matrix(~ ns(time, k = c(3, 5), B = c(0, 7)), data = DF)
+    betas <- 10 * c(5.2, -0.25, 0.2, 0.3, 0.5, -0.2, -0.3, -0.5) # fixed effects coefficients
     sigma <- 1 # errors' standard deviation
     D11 <- 2 # variance of random intercepts
     D22 <- 1 # variance of random slopes
@@ -168,7 +168,7 @@ sim_fun3 <- function (n, model = c("mixed", "joint"), K = 30) {
     # design matrices for the fixed and random effects
     X <- model.matrix(~ time + I(time^2), data = DF)
     Z <- model.matrix(~ time + I(time^2), data = DF)
-    betas <- c(5.2, 0.2, 0.1) # fixed effects coefficients
+    betas <- 10 * c(5.2, 0.2, 0.1) # fixed effects coefficients
     sigma <- 1 # errors' standard deviation
     D11 <- 2 # variance of random intercepts
     D22 <- 1 # variance of random slopes
@@ -244,11 +244,11 @@ fit_models <- function (training) {
 
     fm1 <- lme(fixed = y ~ time * sex, data = training, random = ~ time | id,
                control = lmeControl(opt = "optim"))
-    fm2 <- lme(fixed = y ~ sex * ns(time, k = c(1, 3), B = c(0, 7)), data = training,
-               random = list(id = pdDiag(form = ~ ns(time, k = c(1, 3), B = c(0, 7)))),
+    fm2 <- lme(fixed = y ~ sex * nsk(time, 3), data = training,
+               random = list(id = pdDiag(form = ~ nsk(time, 3))),
                control = lmeControl(opt = "optim"))
-    fm3 <- lme(fixed = y ~ (time + I(time^2)) * sex, data = training,
-               random = list(id = pdDiag(~ time + I(time^2))),
+    fm3 <- lme(fixed = y ~ poly(time, 2) * sex, data = training,
+               random = list(id = pdDiag(form = ~ poly(time, 2))),
                control = lmeControl(opt = "optim"))
     fm4 <- lme(fixed = y ~ poly(time, 3), data = training,
                random = list(id = pdDiag(form = ~ poly(time, 3))),
@@ -307,13 +307,22 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights) {
     model_id <- apply(mse_id, 1L, which.min)
     mse_indv <- mean((Preds_after[cbind(seq_along(id_after), model_id[id_after])] - Obs_after)^2)
     # MSE weighted average MSEs per id
-    sigmas <- matrix(sapply(Models, "[[", "sigma"), nrow(Preds), ncol(Preds),
-                     byrow = TRUE)
-    log_w <- rowsum(dnorm(Obs[keep], Preds[keep, ], sigmas[keep, ], TRUE), id[keep],
-                    reorder = FALSE)
-    weights <- exp(log_w - rowLogSumExps(log_w))
-    mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
-    #mse_indv_w <- mean((rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after) - Obs_after)^2)
+    #sigmas <- matrix(sapply(Models, "[[", "sigma"), nrow(Preds), ncol(Preds),
+    #                 byrow = TRUE)
+    #log_w <- rowsum(dnorm(Obs[keep], Preds[keep, ], sigmas[keep, ], TRUE), id[keep],
+    #                reorder = FALSE)
+    #weights <- exp(log_w - rowLogSumExps(log_w))
+    #mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
+    #tt <- Data_before$time
+    #obs_vr <- variogram(Obs[keep], tt[keep], id[keep])$svar[, "diffs2"]
+    #pred_vr <- apply(Preds[keep, , drop = FALSE], 2L,
+    #                 function (x) variogram(x, tt[keep], id[keep])$svar[, "diffs2"])
+    #id_vr <- rep(unique(id[keep]), sapply(c(table(id[keep])),
+    #                                      function (ni) ncol(combn(ni, 2))))
+    #log_w <- rowsum(-(obs_vr - pred_vr)^2, id_vr, reorder = FALSE)
+    #weights <- exp(log_w - rowLogSumExps(log_w))
+    #mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
+    mse_indv_w <- mean((rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after) - Obs_after)^2)
     c(mse_oracle = mse_oracle, mse_best_model = mse_best_model,
       mse_indv = mse_indv, mse_indv_w = mse_indv_w)
 }
@@ -334,7 +343,7 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights) {
 Times <- seq(1.5, 5.5, 0.5)
 Dts <- 1
 settings <- expand.grid(T0 = Times, Dt = Dts)
-M <- 10
+M <- 200
 sim_results <- array(NA_real_, c(nrow(settings), 5, M))
 dnams <-
     list(paste0("T0=", sprintf("%.1f", settings$T0), ", Dt=",
@@ -342,9 +351,9 @@ dnams <-
          c("Orcale", "Best_Model", "Best_AIC", "Indv", "Weights_Indv"))
 for (m in seq_len(M)) {
     res <- matrix(0, nrow(settings), 5, dimnames = dnams)
-    training <- create_data(300, 50, 50, K = 20)
-    testing <- create_data(50, 300, 50, K = 20)
-    testing2 <- create_data(200, 100, 2, K = 20)
+    training <- create_data(150, 150, 150, K = 20)
+    testing <- create_data(150, 150, 150, K = 20)
+    testing2 <- create_data(150, 150, 150, K = 20)
     Models <- fit_models(training)
     aic_best <- which.min(sapply(Models, AIC))
     for (i in seq_len(nrow(res))) {
@@ -357,23 +366,20 @@ for (m in seq_len(M)) {
 }
 
 plot_data <- vector("list", M)
+model_nams <- c("Orcale", "Best_Model", "Best_AIC", "Indv", "Weights_Indv")
 for (m in seq_len(M)) {
-    dd <- sim_results[, -(3:4), m]
+    dd <- sim_results[, , m]
     plot_data[[m]] <- data.frame(
         MSE = c(dd),
-        T0 = factor(rep(Times, 3), labels = paste("T0 =", Times)),
-        Model = factor(rep(c("Oracle", "Best_in_Test", "wIndv"),
-                           each = length(Times)),
-                       levels = c("wIndv", "Best_in_Test", "Oracle"))
+        T0 = factor(rep(Times, 5), labels = paste("T0 =", Times)),
+        Model = factor(rep(model_nams, each = length(Times)),
+                       levels = model_nams)
     )
 }
 plot_data <- do.call('rbind', plot_data)
 bwplot(MSE ~ Model | T0, data = plot_data, as.table = TRUE,
+       subset = Model %in% c("Best_Model", "Weights_Indv"),
        scales = list(y = list(relation = "free")),
-       prepanel = function (x, y) {
-           stats <- boxplot.stats(y)$stats
-           list(ylim = range(stats))
-       },
        coef = 1.5, pch = "|", do.out = FALSE, fill = "lightgrey",
        par.strip.text = list(cex = 0.8),
        par.settings = list(box.umbrella = list(lty = 1)))
@@ -455,19 +461,25 @@ JMbayes::IndvPred_lme(fm3, newdata = Data_before[1:4, ], timeVar = "time", times
 Data_before$Preds1 <- Preds[, 1L]
 Data_before$Preds2 <- Preds[, 2L]
 Data_before$Preds3 <- Preds[, 3L]
-xyplot(y + Preds1 + Preds2 + Preds3 ~ time | factor(id), data = Data_before,
-       type = c("p", "l", "l", "l"), distribute.type = TRUE, cex = 0.8, pch = 8,
-       auto.key = TRUE, layout = c(5, 5))
+Data_before$Preds4 <- Preds[, 4L]
+
+xyplot(y + Preds1 + Preds2 + Preds3 + Preds4 ~ time | factor(id), data = Data_before,
+       type = c("p", "l", "l", "l", "l"), distribute.type = TRUE, cex = 0.8, pch = 8,
+       auto.key = TRUE, layout = c(5, 5), subset = id %in% 1:25,
+       scales = list(y = list(relation = "free")))
 
 
 
 Data_after$Preds1 <- Preds_after[, 1L]
 Data_after$Preds2 <- Preds_after[, 2L]
 Data_after$Preds3 <- Preds_after[, 3L]
+Data_after$Preds4 <- Preds_after[, 4L]
 
-xyplot(y + Preds1 + Preds2 + Preds3 ~ time | factor(id), data = Data_after,
-       type = c("p", "l", "l", "l"), distribute.type = TRUE, cex = 0.8, pch = 8,
-       auto.key = TRUE, layout = c(5, 5))
+
+xyplot(y + Preds1 + Preds2 + Preds3 + Preds4 ~ time | factor(id), data = Data_after,
+       type = c("p", "l", "l", "l", "l"), distribute.type = TRUE, cex = 0.8, pch = 8,
+       auto.key = TRUE, layout = c(5, 5), subset = id %in% 1:25,
+       scales = list(y = list(relation = "free")))
 
 Data_before[Data_before$id == 84, ]
 Data_after[Data_after$id == 84, ]
