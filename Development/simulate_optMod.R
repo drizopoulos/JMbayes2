@@ -18,8 +18,8 @@ sim_fun1 <- function (n, model = c("mixed", "joint"), K = 30) {
     Z <- model.matrix(~ time, data = DF)
     betas <- c(-2.2, -0.25, 0.24, -0.05) # fixed effects coefficients
     sigma <- 1 # errors' standard deviation
-    D11 <- 1.0 # variance of random intercepts
-    D22 <- 0.6 # variance of random slopes
+    D11 <- 2 # variance of random intercepts
+    D22 <- 1.5 # variance of random slopes
     # we simulate random effects
     b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
     # linear predictor
@@ -93,9 +93,9 @@ sim_fun2 <- function (n, model = c("mixed", "joint"), K = 30) {
     betas <- 10 * c(5.2, -0.25, 0.2, 0.3, 0.5, -0.2, -0.3, -0.5) # fixed effects coefficients
     sigma <- 1 # errors' standard deviation
     D11 <- 2 # variance of random intercepts
-    D22 <- 1 # variance of random slopes
-    D33 <- 0.8 # variance of quadratic random slopes
-    D44 <- 0.8 # variance of quadratic random slopes
+    D22 <- 2 # variance of random slopes
+    D33 <- 2 # variance of quadratic random slopes
+    D44 <- 2 # variance of quadratic random slopes
     # we simulate random effects
     b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)),
                rnorm(n, sd = sqrt(D33)), rnorm(n, sd = sqrt(D44)))
@@ -171,8 +171,8 @@ sim_fun3 <- function (n, model = c("mixed", "joint"), K = 30) {
     betas <- 10 * c(5.2, 0.2, 0.1) # fixed effects coefficients
     sigma <- 1 # errors' standard deviation
     D11 <- 2 # variance of random intercepts
-    D22 <- 1 # variance of random slopes
-    D33 <- 0.8 # variance of quadratic random slopes
+    D22 <- 2 # variance of random slopes
+    D33 <- 2 # variance of quadratic random slopes
     # we simulate random effects
     b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)),
                rnorm(n, sd = sqrt(D33)))
@@ -302,7 +302,7 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights) {
     # MSE best model from testing
     mse_best_model <- colMeans((Preds_after[, best_model, drop = FALSE] - Obs_after)^2)
     # MSE best model per id
-    keep <- Data_before$time > T0 - Dt
+    keep <- Data_before$time > 0#T0 - Dt
     mse_id <- rowsum((Preds[keep, ] - Obs[keep])^2, id[keep], reorder = FALSE)
     model_id <- apply(mse_id, 1L, which.min)
     mse_indv <- mean((Preds_after[cbind(seq_along(id_after), model_id[id_after])] - Obs_after)^2)
@@ -315,29 +315,44 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights) {
     #mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
     #tt <- Data_before$time
     #obs_vr <- variogram(Obs[keep], tt[keep], id[keep])$svar[, "diffs2"]
-    #pred_vr <- apply(Preds[keep, , drop = FALSE], 2L,
-    #                 function (x) variogram(x, tt[keep], id[keep])$svar[, "diffs2"])
+    #pred_vr <- sapply(Models, fitted_variogram)
     #id_vr <- rep(unique(id[keep]), sapply(c(table(id[keep])),
     #                                      function (ni) ncol(combn(ni, 2))))
-    #log_w <- rowsum(-(obs_vr - pred_vr)^2, id_vr, reorder = FALSE)
+    #log_w <- rowsum(-abs(obs_vr - pred_vr), id_vr, reorder = FALSE)
     #weights <- exp(log_w - rowLogSumExps(log_w))
     #mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
+    sigmas <- matrix(sapply(Models, "[[", "sigma"), nrow(Preds), ncol(Preds),
+                     byrow = TRUE)
+    resids <- (Obs - Preds) / sigmas
+    tt <- Data_before$time
+    id_vr <- rep(unique(id[keep]), sapply(c(table(id[keep])),
+                                          function (ni) ncol(combn(ni, 2))))
+    Coefs <- numeric(length(Models))
+    for (k in seq_along(Models)) {
+        obs_vr <- variogram(resids[keep, k], tt[keep], id[keep])$svar
+        DF_vr <- data.frame(id = id_vr, sqDiff = obs_vr[, 2L], lags = obs_vr[, 1L])
+        #lme_vr <- lme(sqDiff ~ lags, data = DF_vr, random = ~ 1 | id,
+        #              control = lmeControl(opt = 'optim'))
+        #coef(summary(lm(sqDiff ~ lags, data = DF_vr)))
+        #plot(sqDiff ~ lags, data = DF_vr)
+        #abline(lm(sqDiff ~ lags, data = DF_vr), col = "red", lwd = 2)
+        Coefs[k] <-
+            log10(anova(lm(sqDiff ~ lags, data = DF_vr),
+                        lm(sqDiff ~ poly(lags, 2), data = DF_vr))$`Pr(>F)`[2L])
+    }
+    #weights <- exp(Coefs - rowLogSumExps(Coefs))
+    #mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
+    weights <- exp(Coefs - logSumExp(Coefs))
     mse_indv_w <- mean((rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after) - Obs_after)^2)
     c(mse_oracle = mse_oracle, mse_best_model = mse_best_model,
       mse_indv = mse_indv, mse_indv_w = mse_indv_w)
 }
 
 ################################################################################
-# training 300, 50, 50
-# testing 50, 300, 50
-# testing2 200, 100, 2
 
-#training <- create_data(10, 10, 430)
-#testing <- create_data(350, 50, 50)
-#testing2 <- create_data(350, 50, 50)
-# xyplot(y ~ time | factor(id), type = "smooth", data = training, layout = c(5, 5),
-#       subset = id %in% sample(151:300, 25))
-#Models <- fit_models(training)
+# training <- create_data(150, 150, 150, K = 20)
+# testing <- create_data(450, 2, 2, K = 20)
+# testing2 <- create_data(2, 2, 450, K = 20)
 
 ######
 Times <- seq(1.5, 5.5, 0.5)
@@ -352,10 +367,18 @@ dnams <-
 for (m in seq_len(M)) {
     res <- matrix(0, nrow(settings), 5, dimnames = dnams)
     training <- create_data(150, 150, 150, K = 20)
-    testing <- create_data(150, 150, 150, K = 20)
-    testing2 <- create_data(150, 150, 150, K = 20)
+    testing <- create_data(350, 100, 50, K = 20)
+    testing2 <- create_data(25, 25, 400, K = 20)
     Models <- fit_models(training)
     aic_best <- which.min(sapply(Models, AIC))
+    if (FALSE) {
+        i = 9
+        T0 = settings$T0[i]
+        Dt = 1
+        best_model = selected_model[[1]]
+        weights = selected_model[[2]]
+    }
+
     for (i in seq_len(nrow(res))) {
         selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
         res[i, ] <- individualized_selection(testing2, settings$T0[i],settings$Dt[i],
@@ -366,7 +389,7 @@ for (m in seq_len(M)) {
 }
 
 plot_data <- vector("list", M)
-model_nams <- c("Orcale", "Best_Model", "Best_AIC", "Indv", "Weights_Indv")
+model_nams <- c("Oracle", "Best_Model", "Best_AIC", "Indv", "Weights_Indv")
 for (m in seq_len(M)) {
     dd <- sim_results[, , m]
     plot_data[[m]] <- data.frame(
@@ -381,11 +404,11 @@ bwplot(MSE ~ Model | T0, data = plot_data, as.table = TRUE,
        subset = Model %in% c("Best_Model", "Weights_Indv"),
        scales = list(y = list(relation = "free")),
        coef = 1.5, pch = "|", do.out = FALSE, fill = "lightgrey",
-       par.strip.text = list(cex = 0.8),
+       par.strip.text = list(cex = 0.8), ylim = c(0, 25),
        par.settings = list(box.umbrella = list(lty = 1)))
 
 
-Res <- apply(sim_results, 1:2, mean, na.rm = TRUE)
+Res <- apply(sim_results, 1:2, median, na.rm = TRUE)
 dimnames(Res) <- dimnames(res)
 Res
 
@@ -394,18 +417,22 @@ dimnames(Res) <- dimnames(res)
 Res
 
 
+mse_id_before <-
+    rowsum((Preds[keep, ] - Obs[keep])^2, id[keep], reorder = FALSE) /
+    c(table(id[keep]))
+mse_id_after <-
+    rowsum((Preds_after - Obs_after)^2, id_after, reorder = FALSE) /
+    c(table(id_after))
+
+cor(cbind(mse_id_before, mse_id_after))[1:4, 5:8]
+
+
 
 ################################################################################
 ################################################################################
 ################################################################################
 
 
-#prepanel = function (x, y) {
-#       # Calculate boxplot stats without outliers
-
-#       stats <- boxplot.stats(y)$stats
-#      list(ylim = range(stats))
-# },
 
 T0 <- 2
 Dt <- 1
@@ -444,7 +471,10 @@ weights <- t(apply(1 / mse_id, 1L, function (x) exp(x) / sum(exp(x))))
 mean((rowSums(weights[id, ] * Preds_after) - Obs_after)^2)
 
 
-
+prepanel = function (x, y) {
+    stats <- boxplot.stats(y)$stats
+    list(ylim = range(stats))
+}
 
 ni <- c(table(match(Data_before$id, unique(Data_before$id))))
 mse_id_before <- rowsum((Preds - Obs)^2, Data_before$id, reorder = FALSE) / ni
@@ -484,6 +514,35 @@ xyplot(y + Preds1 + Preds2 + Preds3 + Preds4 ~ time | factor(id), data = Data_af
 Data_before[Data_before$id == 84, ]
 Data_after[Data_after$id == 84, ]
 
+
+
+
+fitted_variogram <- function (object) {
+    n <- length(unique(id))
+    X <- model.matrix(terms(object), Data)
+    formYz <- formula(object$modelStruct$reStruct[[1]])
+    mfZ <- model.frame(terms(formYz), data = object$data)
+    TermsZ <- attr(mfZ, "terms")
+    mfZ <- model.frame(TermsZ, data = Data)
+    Z <- model.matrix(TermsZ, mfZ)
+    sigma <- object$sigma
+    D <- lapply(pdMatrix(object$modelStruct$reStruct), "*", sigma^2)[[1]]
+    out <- vector("list", n)
+    for (j in seq_len(n)) {
+        rows <- Data$time > T0 - Dt & Data$time <= T0 & Data$id == j
+        X. <- X[rows, ]
+        Z. <- Z[rows, ]
+        V <- Z. %*% D %*% t(Z.) + diag(sigma, nrow(Z.), nrow(Z.))
+        v <- diag(V)
+        combs <- combn(ncol(V), 2L)
+        vars <- apply(combs, 2L, function (ind) v[ind[1L]] + v[ind[2L]])
+        covs <- apply(combs, 2L, function (ind) V[ind[1L], ind[2L]])
+        X1 <- X.[combs[1L, ], ]
+        X2 <- X.[combs[2L, ], ]
+        out[[j]] <- vars - 2 * covs + c((X1 - X2) %*% fixef(object))^2
+    }
+    0.5 * unlist(out)
+}
 
 ##
 Data <- testing2[ave(testing2$time, testing2$id, FUN = max) > T0, ]

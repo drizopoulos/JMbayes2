@@ -178,10 +178,10 @@ summary.jm <- function (object, ...) {
 print.summary.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) {
     cat("\nCall:\n", printCall(x$call), "\n\n", sep = "")
     cat("Data Descriptives:")
-    cat("\nNumber of Groups: ", x$n, "\t\tNumber of events: ",
+    cat("\nNumber of groups: ", x$n, "\t\tNumber of events: ",
         sum(x$event == 1), " (", round(100 * mean(x$event == 1), 1),
         "%)", sep = "")
-    cat("\nNumber of Observations:")
+    cat("\nNumber of observations:")
     obs <- x$descrpt
     for (i in 1:nrow(obs)) {
         cat("\n  ", row.names(obs)[i], ": ", obs[[1]][i],
@@ -222,11 +222,11 @@ print.summary.jm <- function (x, digits = max(4, getOption("digits") - 4), ...) 
       cat("\nFrailty standard deviation:\n")
       print(round(x[["sigmaF"]], digits))
     }
-    cat("\nSurvival Outcome:\n")
+    cat("\nSurvival outcome:\n")
     print(round(x[["Survival"]], digits))
     n_outcomes <- length(x$families)
     for (i in seq_len(n_outcomes)) {
-        cat("\nLongitudinal Outcome: ", x$respVars[i],
+        cat("\nLongitudinal outcome: ", x$respVars[i],
             " (family = ", x$families[[i]][["family"]],
             ", link = ", x$families[[i]][["link"]],
             ")", "\n", sep = "")
