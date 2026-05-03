@@ -16,7 +16,7 @@ sim_fun1 <- function (n, model = c("mixed", "joint"), K = 30) {
     # design matrices for the fixed and random effects
     X <- model.matrix(~ sex * time, data = DF)
     Z <- model.matrix(~ time, data = DF)
-    betas <- c(-2.2, -0.25, 0.24, -0.05) # fixed effects coefficients
+    betas <- 20 * c(-2.2, -0.25, 0.24, -0.05) # fixed effects coefficients
     sigma <- 1 # errors' standard deviation
     D11 <- 2 # variance of random intercepts
     D22 <- 1.5 # variance of random slopes
@@ -168,7 +168,7 @@ sim_fun3 <- function (n, model = c("mixed", "joint"), K = 30) {
     # design matrices for the fixed and random effects
     X <- model.matrix(~ time + I(time^2), data = DF)
     Z <- model.matrix(~ time + I(time^2), data = DF)
-    betas <- 10 * c(5.2, 0.2, 0.1) # fixed effects coefficients
+    betas <- -10 * c(5.2, 0.2, 0.1) # fixed effects coefficients
     sigma <- 1 # errors' standard deviation
     D11 <- 2 # variance of random intercepts
     D22 <- 2 # variance of random slopes
@@ -327,7 +327,7 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights) {
     tt <- Data_before$time
     id_vr <- rep(unique(id[keep]), sapply(c(table(id[keep])),
                                           function (ni) ncol(combn(ni, 2))))
-    Coefs <- numeric(length(Models))
+    Coefs <- matrix(0, length(unique(id)), length(Models)) #numeric(length(Models))
     for (k in seq_along(Models)) {
         obs_vr <- variogram(resids[keep, k], tt[keep], id[keep])$svar
         DF_vr <- data.frame(id = id_vr, sqDiff = obs_vr[, 2L], lags = obs_vr[, 1L])
@@ -336,14 +336,19 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights) {
         #coef(summary(lm(sqDiff ~ lags, data = DF_vr)))
         #plot(sqDiff ~ lags, data = DF_vr)
         #abline(lm(sqDiff ~ lags, data = DF_vr), col = "red", lwd = 2)
-        Coefs[k] <-
-            log10(anova(lm(sqDiff ~ lags, data = DF_vr),
-                        lm(sqDiff ~ poly(lags, 2), data = DF_vr))$`Pr(>F)`[2L])
+        #Coefs[k] <-
+        #    log10(anova(lm(sqDiff ~ lags, data = DF_vr),
+        #                lm(sqDiff ~ poly(lags, 2), data = DF_vr))$`Pr(>F)`[2L])
+        Coefs[, k] <-
+            sapply(split(DF_vr, DF_vr$id), function (v) {
+                log10(cor.test(x = v$lag, y = v$sqDiff, method = "spearman",
+                              exact = FALSE)$p.value)
+                })
     }
-    #weights <- exp(Coefs - rowLogSumExps(Coefs))
-    #mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
-    weights <- exp(Coefs - logSumExp(Coefs))
-    mse_indv_w <- mean((rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after) - Obs_after)^2)
+    weights <- exp(Coefs - rowLogSumExps(Coefs))
+    mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
+    #weights <- exp(Coefs - logSumExp(Coefs))
+    #mse_indv_w <- mean((rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after) - Obs_after)^2)
     c(mse_oracle = mse_oracle, mse_best_model = mse_best_model,
       mse_indv = mse_indv, mse_indv_w = mse_indv_w)
 }
@@ -358,12 +363,12 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights) {
 Times <- seq(1.5, 5.5, 0.5)
 Dts <- 1
 settings <- expand.grid(T0 = Times, Dt = Dts)
-M <- 200
+M <- 20
 sim_results <- array(NA_real_, c(nrow(settings), 5, M))
 dnams <-
     list(paste0("T0=", sprintf("%.1f", settings$T0), ", Dt=",
                 sprintf("%.1f", settings$Dt)),
-         c("Orcale", "Best_Model", "Best_AIC", "Indv", "Weights_Indv"))
+         c("Oracle", "Best_Model", "Best_AIC", "Indv", "Weights_Indv"))
 for (m in seq_len(M)) {
     res <- matrix(0, nrow(settings), 5, dimnames = dnams)
     training <- create_data(150, 150, 150, K = 20)
@@ -372,7 +377,7 @@ for (m in seq_len(M)) {
     Models <- fit_models(training)
     aic_best <- which.min(sapply(Models, AIC))
     if (FALSE) {
-        i = 9
+        i = 1
         T0 = settings$T0[i]
         Dt = 1
         best_model = selected_model[[1]]
