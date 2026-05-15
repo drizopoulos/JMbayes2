@@ -3,6 +3,172 @@ library("lattice")
 library("matrixStats")
 source("./R/optimal_model.R")
 
+#######
+# PBC #
+#######
+
+fit_models <- function (training) {
+    library("JMbayes2")
+    fm0 <- lme(fixed = log(serBilir) ~ year, data = training,
+               random = ~ year | id, control = lmeControl(opt = "optim"))
+    fm1 <- lme(fixed = log(serBilir) ~ year * sex, data = training,
+               random = ~ year | id, control = lmeControl(opt = "optim"))
+    fm2 <- lme(fixed = log(serBilir) ~ sex * nsk(year, 3), data = training,
+               random = list(id = pdDiag(form = ~ nsk(year, 3))),
+               control = lmeControl(opt = "optim"))
+    fm3 <- lme(fixed = log(serBilir) ~ poly(year, 2), data = training,
+               random = list(id = pdDiag(form = ~ poly(year, 2))),
+               control = lmeControl(opt = "optim"))
+    fm4 <- lme(fixed = log(serBilir) ~ poly(year, 3) + sex, data = training,
+               random = list(id = pdDiag(form = ~ poly(year, 3))),
+               control = lmeControl(opt = "optim"))
+    fm5 <- lme(fixed = log(serBilir) ~ (year + I(year^2)) * sex + age, data = training,
+               random = list(id = pdDiag(form = ~ year + I(year^2))),
+               control = lmeControl(opt = "optim"))
+    fm6 <- lme(fixed = log(serBilir) ~ nsk(year, 3) + age + sex, data = training,
+               random = list(id = pdDiag(form = ~ nsk(year, 3))),
+               control = lmeControl(opt = "optim"))
+    list(fm0, fm1, fm2, fm3, fm4, fm5, fm6)
+}
+Preds_testing <- function (Models, testing, T0, Dt) {
+    Data <- testing[ave(testing$year, testing$id, FUN = max) > T0, ]
+    Data_before <- Data[Data$year <= T0, ]
+    Data_after <- Data[Data$year > T0 & Data$year <= T0 + Dt, ]
+    preds <- lapply(Models, IndvPred_lme, newdata = Data_before, newdata2 = Data_after)
+    Preds_after <- do.call('cbind', lapply(preds, function (x) x$predicted_y))
+    Obs_after <- log(Data_after$serBilir)
+    list(Obs_after = Obs_after, Preds_after = Preds_after)
+}
+best_model <- function (Models_folds, testing_folds, T0, Dt) {
+    Obs <- Preds <- vector("list", length(Models_folds))
+    for (i in seq_along(Models_folds)) {
+        pp <- Preds_testing(Models_folds[[i]], CVdats$testing[[i]], T0 = T0, Dt = Dt)
+        Preds[[i]] <- pp$Preds_after
+        Obs[[i]] <- pp$Obs_after
+    }
+    Preds <- do.call('rbind', Preds)
+    Obs <- do.call('c', Obs)
+    which.min(colMeans((Preds - Obs)^2))
+}
+
+CVdats <- create_folds(pbc2, V = 5, id_var = "id")
+cl <- parallel::makeCluster(5L)
+Models_folds <- parallel::parLapply(cl, CVdats$training, fit_models)
+parallel::stopCluster(cl)
+
+best_model(Models_folds, CVdats$testing, 3, 2)
+best_model(Models_folds, CVdats$testing, 5, 2)
+best_model(Models_folds, CVdats$testing, 7, 2)
+best_model(Models_folds, CVdats$testing, 9, 2)
+
+Models <- fit_models(pbc2)
+pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
+CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
+auc_brier <- function (T0, Dt) {
+    best <- best_model(Models_folds, CVdats$testing, T0, Dt)
+    jointFit0 <- jm(CoxFit, Models[[7]], time_var = "year")
+    jointFit1 <- jm(CoxFit, Models[[best]], time_var = "year")
+    list(Model7_auc = tvAUC(jointFit0, pbc2, Tstart = T0, Dt = Dt),
+         Best_Model_auc = tvAUC(jointFit1, pbc2, Tstart = T0, Dt = Dt),
+         Model7_brier = tvBrier(jointFit0, pbc2, Tstart = T0, Dt = Dt),
+         Best_Model_brier = tvBrier(jointFit1, pbc2, Tstart = T0, Dt = Dt))
+}
+
+auc_brier(5, 2)
+auc_brier(6, 1)
+
+
+###########
+# Prothro #
+###########
+
+fit_models <- function (training) {
+    library("JMbayes2")
+    fm0 <- lme(fixed = pro ~ time, data = training,
+               random = ~ time | id, control = lmeControl(opt = "optim"))
+    fm1 <- lme(fixed = pro ~ time * treat, data = training,
+               random = ~ time | id, control = lmeControl(opt = "optim"))
+    fm2 <- lme(fixed = pro ~ treat * nsk(time, 3), data = training,
+               random = list(id = pdDiag(form = ~ nsk(time, 3))),
+               control = lmeControl(opt = "optim"))
+    fm3 <- lme(fixed = pro ~ poly(time, 2), data = training,
+               random = list(id = pdDiag(form = ~ poly(time, 2))),
+               control = lmeControl(opt = "optim"))
+    fm4 <- lme(fixed = pro ~ poly(time, 3) + treat, data = training,
+               random = list(id = pdDiag(form = ~ poly(time, 3))),
+               control = lmeControl(opt = "optim"))
+    fm5 <- lme(fixed = pro ~ (time + I(time^2)) * treat, data = training,
+               random = list(id = pdDiag(form = ~ time + I(time^2))),
+               control = lmeControl(opt = "optim"))
+    fm6 <- lme(fixed = pro ~ nsk(time, 3) + treat, data = training,
+               random = list(id = pdDiag(form = ~ nsk(time, 3))),
+               control = lmeControl(opt = "optim"))
+    list(fm0, fm1, fm2, fm3, fm4, fm5, fm6)
+}
+Preds_testing <- function (Models, testing, T0, Dt) {
+    Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
+    Data_before <- Data[Data$time <= T0, ]
+    Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
+    preds <- lapply(Models, IndvPred_lme, newdata = Data_before, newdata2 = Data_after)
+    Preds_after <- do.call('cbind', lapply(preds, function (x) x$predicted_y))
+    Obs_after <- Data_after$pro
+    list(Obs_after = Obs_after, Preds_after = Preds_after)
+}
+best_model <- function (Models_folds, testing_folds, T0, Dt) {
+    Obs <- Preds <- vector("list", length(Models_folds))
+    for (i in seq_along(Models_folds)) {
+        pp <- Preds_testing(Models_folds[[i]], CVdats$testing[[i]], T0 = T0, Dt = Dt)
+        Preds[[i]] <- pp$Preds_after
+        Obs[[i]] <- pp$Obs_after
+    }
+    Preds <- do.call('rbind', Preds)
+    Obs <- do.call('c', Obs)
+    which.min(colMeans((Preds - Obs)^2))
+}
+
+CVdats <- create_folds(prothro, V = 5, id_var = "id")
+cl <- parallel::makeCluster(5L)
+Models_folds <- parallel::parLapply(cl, CVdats$training, fit_models)
+parallel::stopCluster(cl)
+
+best_model(Models_folds, CVdats$testing, 4, 3)
+best_model(Models_folds, CVdats$testing, 6, 3)
+best_model(Models_folds, CVdats$testing, 8, 3)
+best_model(Models_folds, CVdats$testing, 10, 3)
+
+Models <- fit_models(prothro)
+CoxFit <- coxph(Surv(Time, death) ~ treat, data = prothros)
+auc_brier <- function (T0, Dt) {
+    best <- best_model(Models_folds, CVdats$testing, T0, Dt)
+    jointFit0 <- jm(CoxFit, Models[[3]], time_var = "time")
+    jointFit1 <- jm(CoxFit, Models[[best]], time_var = "time")
+    list(Model7_auc = tvAUC(jointFit0, prothro, Tstart = T0, Dt = Dt),
+         Best_Model_auc = tvAUC(jointFit1, prothro, Tstart = T0, Dt = Dt),
+         Model7_brier = tvBrier(jointFit0, prothro, Tstart = T0, Dt = Dt),
+         Best_Model_brier = tvBrier(jointFit1, prothro, Tstart = T0, Dt = Dt))
+}
+
+auc_brier(4, 3)
+auc_brier(6, 3)
+auc_brier(8, 3)
+auc_brier(10, 3)
+
+
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+
+library("JMbayes2")
+library("lattice")
+library("matrixStats")
+source("./R/optimal_model.R")
+
 sim_fun1 <- function (n, model = c("mixed", "joint"), K = 30) {
     model <- match.arg(model)
     t_max <- 7 # maximum follow-up time
@@ -11,7 +177,8 @@ sim_fun1 <- function (n, model = c("mixed", "joint"), K = 30) {
     # follow-up times up to t_max
     DF <- data.frame(id = rep(seq_len(n), each = K),
                      time = rep(seq(0, t_max, length.out = K), n),
-                     sex = rep(gl(2, n/2, labels = c("male", "female")), each = K))
+                     sex = rep(gl(2, n/2, labels = c("male", "female")), each = K),
+                     age = rep(runif(n, 30, 60), each = K))
 
     # design matrices for the fixed and random effects
     X <- model.matrix(~ sex * time, data = DF)
@@ -85,12 +252,13 @@ sim_fun2 <- function (n, model = c("mixed", "joint"), K = 30) {
     # follow-up times up to t_max
     DF <- data.frame(id = rep(seq_len(n), each = K),
                      time = rep(seq(0, t_max, length.out = K), n),
-                     sex = rep(gl(2, n/2, labels = c("male", "female")), each = K))
+                     sex = rep(gl(2, n/2, labels = c("male", "female")), each = K),
+                     age = rep(runif(n, 30, 60), each = K))
 
     # design matrices for the fixed and random effects
     X <- model.matrix(~ sex * ns(time, k = c(3, 5), B = c(0, 7)), data = DF)
     Z <- model.matrix(~ ns(time, k = c(3, 5), B = c(0, 7)), data = DF)
-    betas <- 10 * c(5.2, -0.25, 0.2, 0.3, 0.5, -0.2, -0.3, -0.5) # fixed effects coefficients
+    betas <- 15 * c(5.2, -0.25, 0.2, 0.3, 0.5, -0.4, -0.6, -1.0) # fixed effects coefficients
     sigma <- 1 # errors' standard deviation
     D11 <- 2 # variance of random intercepts
     D22 <- 2 # variance of random slopes
@@ -163,12 +331,13 @@ sim_fun3 <- function (n, model = c("mixed", "joint"), K = 30) {
     # follow-up times up to t_max
     DF <- data.frame(id = rep(seq_len(n), each = K),
                      time = rep(seq(0, t_max, length.out = K), n),
-                     sex = rep(gl(2, n/2, labels = c("male", "female")), each = K))
+                     sex = rep(gl(2, n/2, labels = c("male", "female")), each = K),
+                     age = rep(runif(n, 30, 60), each = K))
 
     # design matrices for the fixed and random effects
     X <- model.matrix(~ time + I(time^2), data = DF)
     Z <- model.matrix(~ time + I(time^2), data = DF)
-    betas <- -10 * c(5.2, 0.2, 0.1) # fixed effects coefficients
+    betas <- -10 * c(5.2, 0.8, 0.5) # fixed effects coefficients
     sigma <- 1 # errors' standard deviation
     D11 <- 2 # variance of random intercepts
     D22 <- 2 # variance of random slopes
@@ -242,16 +411,24 @@ fit_models <- function (training) {
     #training_id <- training[!duplicated(training$id), ]
     #CoxFit <- coxph(Surv(Time, event) ~ sex, data = training_id)
 
+    fm0 <- lme(fixed = y ~ time * sex, data = training, random = ~ 1 | id,
+               control = lmeControl(opt = "optim"))
     fm1 <- lme(fixed = y ~ time * sex, data = training, random = ~ time | id,
                control = lmeControl(opt = "optim"))
     fm2 <- lme(fixed = y ~ sex * nsk(time, 3), data = training,
                random = list(id = pdDiag(form = ~ nsk(time, 3))),
                control = lmeControl(opt = "optim"))
-    fm3 <- lme(fixed = y ~ poly(time, 2) * sex, data = training,
+    fm3 <- lme(fixed = y ~ poly(time, 2), data = training,
                random = list(id = pdDiag(form = ~ poly(time, 2))),
                control = lmeControl(opt = "optim"))
-    fm4 <- lme(fixed = y ~ poly(time, 3), data = training,
+    fm4 <- lme(fixed = y ~ poly(time, 3) + sex, data = training,
                random = list(id = pdDiag(form = ~ poly(time, 3))),
+               control = lmeControl(opt = "optim"))
+    fm5 <- lme(fixed = y ~ poly(time, 2) * sex + age, data = training,
+               random = list(id = pdDiag(form = ~ poly(time, 2))),
+               control = lmeControl(opt = "optim"))
+    fm6 <- lme(fixed = y ~ age + sex + nsk(time, 3), data = training,
+               random = list(id = pdDiag(form = ~ nsk(time, 3))),
                control = lmeControl(opt = "optim"))
 
     #jointFit1 <- jm(CoxFit, fm1, time_var = "time")
@@ -259,7 +436,7 @@ fit_models <- function (training) {
     #jointFit3 <- jm(CoxFit, fm3, time_var = "time")
     #jointFit4 <- jm(CoxFit, fm4, time_var = "time")
 
-    list(fm1, fm2, fm3, fm4)
+    list(fm0, fm1, fm2, fm3, fm4, fm5, fm6)
 }
 best_model_test <- function (testing, T0, Dt) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
@@ -302,53 +479,20 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights) {
     # MSE best model from testing
     mse_best_model <- colMeans((Preds_after[, best_model, drop = FALSE] - Obs_after)^2)
     # MSE best model per id
-    keep <- Data_before$time > 0#T0 - Dt
+    keep <- Data_before$time > T0 - Dt
     mse_id <- rowsum((Preds[keep, ] - Obs[keep])^2, id[keep], reorder = FALSE)
     model_id <- apply(mse_id, 1L, which.min)
     mse_indv <- mean((Preds_after[cbind(seq_along(id_after), model_id[id_after])] - Obs_after)^2)
     # MSE weighted average MSEs per id
-    #sigmas <- matrix(sapply(Models, "[[", "sigma"), nrow(Preds), ncol(Preds),
-    #                 byrow = TRUE)
-    #log_w <- rowsum(dnorm(Obs[keep], Preds[keep, ], sigmas[keep, ], TRUE), id[keep],
-    #                reorder = FALSE)
-    #weights <- exp(log_w - rowLogSumExps(log_w))
-    #mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
-    #tt <- Data_before$time
-    #obs_vr <- variogram(Obs[keep], tt[keep], id[keep])$svar[, "diffs2"]
-    #pred_vr <- sapply(Models, fitted_variogram)
-    #id_vr <- rep(unique(id[keep]), sapply(c(table(id[keep])),
-    #                                      function (ni) ncol(combn(ni, 2))))
-    #log_w <- rowsum(-abs(obs_vr - pred_vr), id_vr, reorder = FALSE)
-    #weights <- exp(log_w - rowLogSumExps(log_w))
-    #mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
     sigmas <- matrix(sapply(Models, "[[", "sigma"), nrow(Preds), ncol(Preds),
                      byrow = TRUE)
-    resids <- (Obs - Preds) / sigmas
-    tt <- Data_before$time
-    id_vr <- rep(unique(id[keep]), sapply(c(table(id[keep])),
-                                          function (ni) ncol(combn(ni, 2))))
-    Coefs <- matrix(0, length(unique(id)), length(Models)) #numeric(length(Models))
-    for (k in seq_along(Models)) {
-        obs_vr <- variogram(resids[keep, k], tt[keep], id[keep])$svar
-        DF_vr <- data.frame(id = id_vr, sqDiff = obs_vr[, 2L], lags = obs_vr[, 1L])
-        #lme_vr <- lme(sqDiff ~ lags, data = DF_vr, random = ~ 1 | id,
-        #              control = lmeControl(opt = 'optim'))
-        #coef(summary(lm(sqDiff ~ lags, data = DF_vr)))
-        #plot(sqDiff ~ lags, data = DF_vr)
-        #abline(lm(sqDiff ~ lags, data = DF_vr), col = "red", lwd = 2)
-        #Coefs[k] <-
-        #    log10(anova(lm(sqDiff ~ lags, data = DF_vr),
-        #                lm(sqDiff ~ poly(lags, 2), data = DF_vr))$`Pr(>F)`[2L])
-        Coefs[, k] <-
-            sapply(split(DF_vr, DF_vr$id), function (v) {
-                log10(cor.test(x = v$lag, y = v$sqDiff, method = "spearman",
-                              exact = FALSE)$p.value)
-                })
-    }
-    weights <- exp(Coefs - rowLogSumExps(Coefs))
+    log_w <- rowsum(dnorm(Obs[keep], Preds[keep, ], sigmas[keep, ], TRUE), id[keep],
+                    reorder = FALSE) #+ do.call('cbind', lapply(preds, function (x) x$log_pb))
+    #log_w <- do.call('cbind', lapply(preds, function (x) x$log_py))
+    penalty <- rep(sapply(Models, npar, Data_before), each = nrow(log_w))
+    log_w <- log_w - penalty
+    weights <- exp(log_w - rowLogSumExps(log_w))
     mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
-    #weights <- exp(Coefs - logSumExp(Coefs))
-    #mse_indv_w <- mean((rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after) - Obs_after)^2)
     c(mse_oracle = mse_oracle, mse_best_model = mse_best_model,
       mse_indv = mse_indv, mse_indv_w = mse_indv_w)
 }
@@ -363,21 +507,23 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights) {
 Times <- seq(1.5, 5.5, 0.5)
 Dts <- 1
 settings <- expand.grid(T0 = Times, Dt = Dts)
-M <- 20
+M <- 100
 sim_results <- array(NA_real_, c(nrow(settings), 5, M))
 dnams <-
     list(paste0("T0=", sprintf("%.1f", settings$T0), ", Dt=",
                 sprintf("%.1f", settings$Dt)),
          c("Oracle", "Best_Model", "Best_AIC", "Indv", "Weights_Indv"))
+winner <- array(0, c(3, 9, M))
+best_model <- matrix(0, M, 9)
 for (m in seq_len(M)) {
     res <- matrix(0, nrow(settings), 5, dimnames = dnams)
-    training <- create_data(150, 150, 150, K = 20)
-    testing <- create_data(350, 100, 50, K = 20)
-    testing2 <- create_data(25, 25, 400, K = 20)
+    training <- create_data(50, 350, 50, K = 20)
+    testing <- create_data(350, 50, 50, K = 20)
+    testing2 <- create_data(50, 50, 350, K = 20)
     Models <- fit_models(training)
     aic_best <- which.min(sapply(Models, AIC))
     if (FALSE) {
-        i = 1
+        i = 5
         T0 = settings$T0[i]
         Dt = 1
         best_model = selected_model[[1]]
@@ -386,9 +532,13 @@ for (m in seq_len(M)) {
 
     for (i in seq_len(nrow(res))) {
         selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
-        res[i, ] <- individualized_selection(testing2, settings$T0[i],settings$Dt[i],
-                                 c(selected_model[[1]], aic_best),
-                                 weights = selected_model[[2]])
+        r <- individualized_selection(testing2, settings$T0[i],settings$Dt[i],
+                                      c(selected_model[[1]], aic_best),
+                                      weights = selected_model[[2]])
+        res[i, ] <- r
+        best_model[m, i] <- selected_model[[1]]
+        rr <- r[c(2,3,5)]
+        winner[, i, m] <- as.numeric(abs(rr - min(rr)) < 1e-06)
     }
     sim_results[, , m] <- res
 }
@@ -409,18 +559,73 @@ bwplot(MSE ~ Model | T0, data = plot_data, as.table = TRUE,
        subset = Model %in% c("Best_Model", "Weights_Indv"),
        scales = list(y = list(relation = "free")),
        coef = 1.5, pch = "|", do.out = FALSE, fill = "lightgrey",
-       par.strip.text = list(cex = 0.8), ylim = c(0, 25),
-       par.settings = list(box.umbrella = list(lty = 1)))
-
+       par.strip.text = list(cex = 0.8),
+       prepanel = function (x, y) {
+           bp <- boxplot(split(y, x), plot = FALSE)
+           list(ylim = range(bp$stats))
+       }, par.settings = list(box.umbrella = list(lty = 1)))
 
 Res <- apply(sim_results, 1:2, median, na.rm = TRUE)
 dimnames(Res) <- dimnames(res)
 Res
 
+Win <- apply(winner, c(1L, 2L), mean)
+dimnames(Win) <- list(c("T0", "AIC", "IndW"), dnams[[1]])
+t(Win)
+
+bar_data <- sapply(seq_len(9), function (i) table(factor(best_model[, i], levels = 1:6)))
+dimnames(bar_data) <- list(paste0("M", 1:6), paste0("T0=", sprintf("%.1f", settings$T0)))
+barplot(bar_data, beside = TRUE,
+        col = heat.colors(6), ylim = c(0, max(bar_data) + 20))
+legend("topleft", rownames(bar_data), horiz = TRUE, bty = "n",
+       fill = heat.colors(6))
+
 Res <- apply(sim_results, 1:2, sd, na.rm = TRUE)
 dimnames(Res) <- dimnames(res)
 Res
 
+
+
+################################################################################
+################################################################################
+################################################################################
+
+#tt <- Data_before$time
+#obs_vr <- variogram(Obs[keep], tt[keep], id[keep])$svar[, "diffs2"]
+#pred_vr <- sapply(Models, fitted_variogram)
+#id_vr <- rep(unique(id[keep]), sapply(c(table(id[keep])),
+#                                      function (ni) ncol(combn(ni, 2))))
+#log_w <- rowsum(-abs(obs_vr - pred_vr), id_vr, reorder = FALSE)
+#weights <- exp(log_w - rowLogSumExps(log_w))
+#mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
+#sigmas <- matrix(sapply(Models, "[[", "sigma"), nrow(Preds), ncol(Preds),
+#                 byrow = TRUE)
+#resids <- (Obs - Preds) / sigmas
+#tt <- Data_before$time
+#id_vr <- rep(unique(id[keep]), sapply(c(table(id[keep])),
+#                                      function (ni) ncol(combn(ni, 2))))
+#Coefs <- matrix(0, length(unique(id)), length(Models)) #numeric(length(Models))
+#for (k in seq_along(Models)) {
+#    obs_vr <- variogram(resids[keep, k], tt[keep], id[keep])$svar
+#    DF_vr <- data.frame(id = id_vr, sqDiff = obs_vr[, 2L], lags = obs_vr[, 1L])
+#lme_vr <- lme(sqDiff ~ lags, data = DF_vr, random = ~ 1 | id,
+#              control = lmeControl(opt = 'optim'))
+#coef(summary(lm(sqDiff ~ lags, data = DF_vr)))
+#plot(sqDiff ~ lags, data = DF_vr)
+#abline(lm(sqDiff ~ lags, data = DF_vr), col = "red", lwd = 2)
+#Coefs[k] <-
+#    log10(anova(lm(sqDiff ~ lags, data = DF_vr),
+#                lm(sqDiff ~ poly(lags, 2), data = DF_vr))$`Pr(>F)`[2L])
+#    Coefs[, k] <-
+#        sapply(split(DF_vr, DF_vr$id), function (v) {
+#            log10(cor.test(x = v$lag, y = v$sqDiff, method = "spearman",
+#                          exact = FALSE)$p.value)
+#            })
+#}
+#weights <- exp(Coefs - rowLogSumExps(Coefs))
+#mse_indv_w <- mean((rowSums(weights[id_after, ] * Preds_after) - Obs_after)^2)
+#weights <- exp(Coefs - logSumExp(Coefs))
+#mse_indv_w <- mean((rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after) - Obs_after)^2)
 
 mse_id_before <-
     rowsum((Preds[keep, ] - Obs[keep])^2, id[keep], reorder = FALSE) /
@@ -430,14 +635,6 @@ mse_id_after <-
     c(table(id_after))
 
 cor(cbind(mse_id_before, mse_id_after))[1:4, 5:8]
-
-
-
-################################################################################
-################################################################################
-################################################################################
-
-
 
 T0 <- 2
 Dt <- 1

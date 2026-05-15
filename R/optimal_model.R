@@ -165,9 +165,98 @@ opt_model <- function (models, newdata, t0, parallel = "snow", cores = 1L) {
     out
 }
 
-#object = fm4
-#newdata = testing
-#newdata2 = testing2
+#object = Models[[4]]
+#newdata = testing[testing$time < T0, ]
+#newdata2 = testing[testing$time >= T0, ]
+
+dmvnorm <- function (x, mu, Sigma = NULL, invSigma = NULL, log = FALSE,
+                     prop = FALSE) {
+    if (!is.matrix(x))
+        x <- rbind(x)
+    if (is.matrix(mu)) {
+        if (nrow(mu) != nrow(x))
+            stop("incorrect dimensions for 'mu'.")
+        p <- ncol(mu)
+    } else {
+        p <- length(mu)
+        mu <- rep(mu, each = nrow(x))
+    }
+    if (is.null(Sigma) && is.null(invSigma))
+        stop("'Sigma' or 'invSigma' must be given.")
+    if (!is.null(Sigma)) {
+        if (is.list(Sigma)) {
+            ev <- Sigma$values
+            evec <- Sigma$vectors
+        }
+        else {
+            ed <- eigen(Sigma, symmetric = TRUE)
+            ev <- ed$values
+            evec <- ed$vectors
+        }
+        invSigma <- evec %*% (t(evec)/ev)
+        if (!prop)
+            logdetSigma <- sum(log(ev))
+    } else {
+        if (!prop)
+            logdetSigma <- -determinant(as.matrix(invSigma))$modulus
+    }
+    ss <- x - mu
+    quad <- 0.5 * rowSums((ss %*% invSigma) * ss)
+    if (!prop)
+        fact <- -0.5 * (p * log(2 * pi) + logdetSigma)
+    if (log) {
+        if (!prop)
+            as.vector(fact - quad)
+        else as.vector(-quad)
+    } else {
+        if (!prop)
+            as.vector(exp(fact - quad))
+        else as.vector(exp(-quad))
+    }
+}
+
+npar <- function (object, newdata, type = c("marginal", "conditional")) {
+    type <- match.arg(type)
+    if (type == "marginal") {
+        TermsX <- object$terms
+        mfX <- model.frame(TermsX, object$data)
+        X <- model.matrix(TermsX, mfX)
+        formYz <- formula(object$modelStruct$reStruct[[1]])
+        mfZ <- model.frame(terms(formYz), data = object$data)
+        TermsZ <- attr(mfZ, "terms")
+        Z <- model.matrix(TermsZ, mfZ)
+        nx <- qr(model.matrix(TermsX, mfX))$rank
+        sigma <- object$sigma
+        D <- lapply(pdMatrix(object$modelStruct$reStruct), "*", sigma^2)[[1]]
+        D <- unique(D[lower.tri(D, TRUE)])
+        D <- D[D > 1e-06]
+        nz <- length(D)
+        nx + nz + 1
+        #qr(cbind(X, Z))$rank + 1
+    } else {
+        TermsX <- object$terms
+        formYz <- formula(object$modelStruct$reStruct[[1]])
+        mfZ <- model.frame(terms(formYz), data = object$data)
+        TermsZ <- attr(mfZ, "terms")
+        sigma <- object$sigma
+        D <- lapply(pdMatrix(object$modelStruct$reStruct), "*", sigma^2)[[1]]
+        #######
+        all_vars <- unique(c(all.vars(TermsX), all.vars(TermsZ)))
+        newdata_nomiss <- newdata[complete.cases(newdata[all_vars]), ]
+        mfX_new <- model.frame(TermsX, data = newdata_nomiss)
+        X_new <- model.matrix(TermsX, mfX_new)
+        mfZ_new <- model.frame(TermsZ, data = newdata_nomiss)
+        Z_new <- model.matrix(TermsZ, mfZ_new)
+        XZ <- cbind(X_new, Z_new)
+        V11 <- crossprod(X_new)
+        V22 <- crossprod(Z_new) + sigma^2 * solve(D)
+        VV <- JMbayes2:::nearPD(
+            rbind(cbind(V11, crossprod(X_new, Z_new)),
+                  cbind(crossprod(Z_new, X_new), V22)))
+        sum(diag(XZ %*% solve(VV, t(XZ))))
+    }
+}
+
 IndvPred_lme <- function (object, newdata, newdata2) {
     if (!inherits(object, "lme") && !inherits(object, "lmeComponents"))
         stop("Use only with 'lme' or 'lmeComponents' objects.\n")
@@ -207,13 +296,14 @@ IndvPred_lme <- function (object, newdata, newdata2) {
     post_vars <- DZtVinv <- vector("list", n)
     for (i in seq_len(n)) {
         id_i <- id_nomiss == i
+        y_new_id <- y_new[id_i]
         X_new_id <- X_new[id_i, , drop = FALSE]
         Z_new_id <- Z_new[id_i, , drop = FALSE]
         Vi_inv <- solve(Z_new_id %*% tcrossprod(D, Z_new_id) +
                             sigma^2 * diag(sum(id_i)))
         DZtVinv[[i]] <- tcrossprod(D, Z_new_id) %*% Vi_inv
-        modes[i, ] <- c(DZtVinv[[i]] %*% (y_new[id_i] - X_new_id %*%
-                                              betas))
+        mu_id <- c(X_new_id %*% betas)
+        modes[i, ] <- c(DZtVinv[[i]] %*% (y_new_id - mu_id))
         t1 <- DZtVinv[[i]] %*% Z_new_id %*% D
         t2 <- DZtVinv[[i]] %*% X_new_id %*% V %*%
             crossprod(X_new_id, Vi_inv) %*% Z_new_id %*% D
