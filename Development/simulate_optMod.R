@@ -171,7 +171,7 @@ library("JMbayes2")
 library("lattice")
 library("matrixStats")
 source("./R/optimal_model.R")
-
+Rcpp::sourceCpp("Development/variogram/variogram.cpp")
 sim_fun1 <- function (n, model = c("mixed", "joint"), K = 30) {
     model <- match.arg(model)
     t_max <- 7 # maximum follow-up time
@@ -340,7 +340,7 @@ sim_fun3 <- function (n, model = c("mixed", "joint"), K = 30) {
     # design matrices for the fixed and random effects
     X <- model.matrix(~ time + I(time^2), data = DF)
     Z <- model.matrix(~ time + I(time^2), data = DF)
-    betas <- -10 * c(5.2, 0.8, 0.5) # fixed effects coefficients
+    betas <- -1 * c(0.2, 0.8, 0.5) # fixed effects coefficients
     sigma <- 2 # errors standard deviation
     D11 <- 2 # variance of random intercepts
     D22 <- 2 # variance of random slopes
@@ -351,7 +351,7 @@ sim_fun3 <- function (n, model = c("mixed", "joint"), K = 30) {
     # linear predictor
     eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
     # we simulate normal longitudinal data
-    DF$y <- rnorm(n * K, mean = eta_y, sd = sigma)
+    DF$y <- rnorm(n * K, mean = eta_y, sd = sigma) #exp(rnorm(n * K, mean = eta_y, sd = sigma) / 100)
 
     if (model != "mixed") {
         upp_Cens <- 5.1 # fixed Type I censoring time
@@ -462,7 +462,8 @@ best_model_test <- function (testing, T0, Dt) {
         weights <- exp(log_w - logSumExp(log_w))
         R <- rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after) - Obs_after
         diffs <- variogram(y = R, times = tt, id = id_after)$svar[, 'diffs2']
-        mean((diffs - 1)^2)
+        V <- total_var_cpp(split(R, id_after))
+        mean((diffs - V)^2)
     }
     init <- rep(0, ncol(Preds_after) - 1L)
     log_w1 <- c(optim(init, loss1, method = "BFGS")$par, 0)
@@ -523,7 +524,7 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights1,
 
 ######
 Times <- seq(1.5, 5.5, 0.5)
-Dts <- 2
+Dts <- 3
 settings <- expand.grid(T0 = Times, Dt = Dts)
 M <- 100
 sim_results <- array(NA_real_, c(nrow(settings), 6, M))
@@ -536,9 +537,9 @@ winner <- array(0, c(4, 9, M))
 best_model <- matrix(0, M, 9)
 for (m in seq_len(M)) {
     res <- matrix(0, nrow(settings), 6, dimnames = dnams)
-    training <- create_data(2, 2, 450, K = 20)
-    testing <- create_data(450, 2, 2, K = 20)
-    testing2 <- create_data(2, 450, 2, K = 20)
+    training <- create_data(150, 300, 2, K = 20)
+    testing <- create_data(250, 150, 50, K = 20)
+    testing2 <- create_data(50, 50, 350, K = 20)
     Models <- fit_models(training)
     aic_best <- which.min(sapply(Models, AIC))
     if (FALSE) {
@@ -546,7 +547,8 @@ for (m in seq_len(M)) {
         T0 = settings$T0[i]
         Dt = 1
         best_model = selected_model[[1]]
-        weights = selected_model[[2]]
+        weights1 = selected_model[[2]]
+        weights2 = selected_model[[3]]
     }
 
     for (i in seq_len(nrow(res))) {
@@ -598,7 +600,7 @@ dimnames(bar_data) <- list(paste0("M", 1:7), paste0("T0=", sprintf("%.1f", setti
 barplot(bar_data, beside = TRUE,
         col = heat.colors(7), ylim = c(0, max(bar_data) + 15))
 legend("topleft", rownames(bar_data), horiz = TRUE, bty = "n",
-       fill = heat.colors(7), cex = 0.7)
+       fill = heat.colors(7), cex = 0.6)
 
 Res <- apply(sim_results, 1:2, sd, na.rm = TRUE)
 dimnames(Res) <- dimnames(res)

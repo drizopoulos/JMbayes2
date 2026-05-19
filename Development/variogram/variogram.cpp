@@ -48,4 +48,29 @@ mat variogram_cpp(const field<vec> &y, const field<vec> &times) {
     return out;
 }
 
+// [[Rcpp::export]]
+double total_var_cpp(const field<vec> &y) {
+    uword n = y.n_elem;
+    double out = 0.0;
+    double s = 0.0;
+    double count = 0.0;
+    for (uword i = 0; i < n; ++i) {
+        vec y_i = y.at(i);
+        uword n_i = y.at(i).n_rows;
+        for (uword j = i + 1; j < n; ++j) {
+            vec y_j = y.at(j);
+            uword n_j = y.at(j).n_rows;
+            for (uword ii = 0; ii < n_i; ++ii) {
+                for (uword jj = 0; jj < n_j; ++jj) {
+                    double d = y_i.at(ii) - y_j.at(jj);
+                    s += 0.5 * d * d;
+                    count += 1;
+                }
+            }
+        }
+    }
+    out = s / count;
+    return out;
+}
+
 

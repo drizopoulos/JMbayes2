@@ -24,14 +24,44 @@ variogram2 <- function (y, times, id) {
     variogram_cpp(split(y, id), split(times, id))
 }
 
+total_var1 <- function (y, id) {
+    ys <- split(y, id)
+    n <- length(ys)
+    s <- 0
+    count <- 0
+    f <- function(x, y) 0.5 * (x - y)^2
+    for (i in seq_len(n-1)) {
+        for (j in seq(i + 1, n)) {
+            r <- outer(ys[[i]], ys[[j]], f)
+            s <- s + sum(r)
+            count <- count + length(r)
+        }
+    }
+    s / count
+}
+
+total_var2 <- function (y, id) {
+    total_var_cpp(split(y, id))
+}
+
+
 ################################################################################
 ################################################################################
 
-n <- 500
-k <- 20
+n <- 150
+k <- 50
 yy <- rnorm(n * k)
 tt <- runif(n * k, 0, 150)
 id <- rep(seq_len(n), each = k)
+
+v1 <- total_var1(yy, id)
+v2 <- total_var2(yy, id)
+all.equal(v1, v2)
+
+benchmark(R = total_var1(yy, id),
+          Cpp = total_var2(yy, id),
+          replications = 30)
+
 
 v1 <- variogram1(yy, tt, id)
 v2 <- variogram2(yy, tt, id)

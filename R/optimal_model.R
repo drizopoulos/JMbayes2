@@ -257,6 +257,21 @@ npar <- function (object, newdata, type = c("marginal", "conditional")) {
     }
 }
 
+total_var <- function (ys) {
+    n <- length(ys)
+    s <- 0
+    count <- 0
+    f <- function(x, y) 0.5 * (x - y)^2
+    for (i in seq_len(n-1)) {
+        for (j in seq(i + 1, n)) {
+            r <- outer(ys[[i]], ys[[j]], f)
+            s <- s + sum(r)
+            count <- count + length(r)
+        }
+    }
+    s / count
+}
+
 IndvPred_lme <- function (object, newdata, newdata2) {
     if (!inherits(object, "lme") && !inherits(object, "lmeComponents"))
         stop("Use only with 'lme' or 'lmeComponents' objects.\n")
