@@ -338,4 +338,8 @@ IndvPred_lme <- function (object, newdata, newdata2) {
     list(fitted_y = fitted_y, predicted_y = predicted_y)
 }
 
-
+cor2cov <- function (R, vars, sds = NULL) {
+    p <- nrow(R)
+    if (is.null(sds)) sds <- sqrt(vars)
+    sds * R * rep(sds, each = p)
+}

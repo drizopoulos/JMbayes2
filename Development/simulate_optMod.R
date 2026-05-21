@@ -351,7 +351,7 @@ sim_fun3 <- function (n, model = c("mixed", "joint"), K = 30) {
     # linear predictor
     eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
     # we simulate normal longitudinal data
-    DF$y <- rnorm(n * K, mean = eta_y, sd = sigma) #exp(rnorm(n * K, mean = eta_y, sd = sigma) / 100)
+    DF$y <- rnorm(n * K, mean = eta_y, sd = sigma)#exp(rnorm(n * K, mean = eta_y, sd = sigma) / 100)
 
     if (model != "mixed") {
         upp_Cens <- 5.1 # fixed Type I censoring time
@@ -404,6 +404,38 @@ sim_fun3 <- function (n, model = c("mixed", "joint"), K = 30) {
     DF
 }
 
+sim_fun4 <- function (n, model = c("mixed", "joint"), K = 30) {
+    model <- match.arg(model)
+    t_max <- 7 # maximum follow-up time
+    # we construct a data frame with the design:
+    # everyone has a baseline measurement, and then measurements at random
+    # follow-up times up to t_max
+    DF <- data.frame(id = rep(seq_len(n), each = K),
+                     time = rep(seq(0, t_max, length.out = K), n),
+                     sex = rep(gl(2, n/2, labels = c("male", "female")), each = K),
+                     age = rep(runif(n, 30, 60), each = K))
+
+    # design matrices for the fixed and random effects
+    X <- model.matrix(~ time, data = DF)
+    Z <- model.matrix(~ 1, data = DF)
+    betas <- c(0.2, 1.2) # fixed effects coefficients
+    sigma <- 2.5 # errors standard deviation
+    D11 <- 0.1 # variance of random intercepts
+    rho <- 0.9
+    b <- cbind(rnorm(n, sd = sqrt(D11)))
+    # linear predictor
+    eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
+    # we simulate normal longitudinal data
+    #
+    R <- rho^abs(outer(DF$time[DF$id == 1], DF$time[DF$id == 1], FUN = "-"))
+    Sigma <- sigma^2 * R
+    DF$y <- unlist(lapply(1:n, function (i) MASS::mvrnorm(1, eta_y[DF$id == i], Sigma)))
+
+    DF$id <- with(DF, ave(id, id, FUN = function (x) sample(1e06, 1) + x))
+    DF
+}
+
+
 create_data <- function (n1, n2, n3, K = 30) {
     DF <- do.call('rbind', list(sim_fun1(n1, K = K), sim_fun2(n2, K = K),
                                 sim_fun3(n3, K = K)))
@@ -441,34 +473,50 @@ fit_models <- function (training) {
 
     list(fm0, fm1, fm2, fm3, fm4, fm5, fm6)
 }
+fit_models <- function (training) {
+    fm1 <- lme(fixed = y ~ time, data = training, random = ~ 1 | id,
+               control = lmeControl(opt = "optim"))
+    fm2 <- lme(fixed = y ~ time, data = training,
+               random = list(id = pdDiag(form = ~ nsk(time, 3))),
+               control = lmeControl(opt = "optim"))
+    list(fm1, fm2)
+}
 best_model_test <- function (testing, T0, Dt) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
     Data$Time <- T0; Data$event <- 0
     Data_before <- Data[Data$time <= T0, ]
+    id_before <- match(Data_before$id, unique(Data_before$id))
+    means_before <- tapply(Data_before$y, id_before, mean)
     Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
     preds <- lapply(Models, IndvPred_lme, newdata = Data_before, newdata2 = Data_after)
     Preds_after <- do.call('cbind', lapply(preds, function (x) x$predicted_y))
     Obs_after <- Data_after$y
     tt <- Data_after$time
     id_after <- match(Data_after$id, unique(Data_after$id))
-    loss1 <- function (log_w) {
-        log_w <- c(log_w, 0)
-        weights <- exp(log_w - logSumExp(log_w))
-        R <- rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after) - Obs_after
-        mean(R^2)
+    loss <- function (obs, preds, type = c("MSPE", "Variogram")) {
+        type <- match.arg(type)
+        R <- obs - preds
+        if (type == "MSPE") {
+            mean(R^2)
+        } else {
+            diffs2 <- variogram(y = R, times = tt, id = id_after)$svar[, 'diffs2']
+            V <- total_var_cpp(split(R, id_after))
+            #mean((obs - means_before[id_after])^2) +
+            sigma2 <- mean((obs - means_before[id_after])^2)
+            mean(R^2) / sigma2 + mean((diffs2 - V)^2) / sigma2^2
+        }
     }
-    loss2 <- function (log_w) {
+    SL_weights <- function (log_w, type) {
         log_w <- c(log_w, 0)
         weights <- exp(log_w - logSumExp(log_w))
-        R <- rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after) - Obs_after
-        diffs <- variogram(y = R, times = tt, id = id_after)$svar[, 'diffs2']
-        V <- total_var_cpp(split(R, id_after))
-        mean((diffs - V)^2)
+        preds <- rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after)
+        loss(Obs_after, preds, type)
     }
     init <- rep(0, ncol(Preds_after) - 1L)
-    log_w1 <- c(optim(init, loss1, method = "BFGS")$par, 0)
-    log_w2 <- c(optim(init, loss2, method = "BFGS")$par, 0)
-    list(best_model = which.min(colMeans((Preds_after - Obs_after)^2)),
+    log_w1 <- c(optim(init, SL_weights, method = "BFGS", type = "MSPE")$par, 0)
+    log_w2 <- c(optim(init, SL_weights, method = "BFGS", type = "Vario")$par, 0)
+    list(best_model_MSPE = which.min(apply(Preds_after, 2L, loss, obs = Obs_after, type = "MSPE")),
+         best_model_Vario = which.min(apply(Preds_after, 2L, loss, obs = Obs_after, type = "Vario")),
          weights1 = exp(log_w1 - logSumExp(log_w1)),
          weights2 = exp(log_w2 - logSumExp(log_w2)))
 }
@@ -526,59 +574,59 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights1,
 Times <- seq(1.5, 5.5, 0.5)
 Dts <- 3
 settings <- expand.grid(T0 = Times, Dt = Dts)
-M <- 100
-sim_results <- array(NA_real_, c(nrow(settings), 6, M))
+M <- 300
+sim_results <- array(NA_real_, c(nrow(settings), 7, M))
 dnams <-
     list(paste0("T0=", sprintf("%.1f", settings$T0), ", Dt=",
                 sprintf("%.1f", settings$Dt)),
-         c("Oracle", "Best_Model", "Best_AIC", "Indv", "Weights_Indv1",
-           "Weights_Indv2"))
-winner <- array(0, c(4, 9, M))
+         c("Oracle", "Best_Model_MSPE", "Best_Model_Vario", "Best_AIC", "Indv",
+           "Weights_Indv1", "Weights_Indv2"))
+winner <- array(0, c(5, 9, M))
 best_model <- matrix(0, M, 9)
 for (m in seq_len(M)) {
-    res <- matrix(0, nrow(settings), 6, dimnames = dnams)
-    training <- create_data(150, 300, 2, K = 20)
-    testing <- create_data(250, 150, 50, K = 20)
-    testing2 <- create_data(50, 50, 350, K = 20)
+    res <- matrix(0, nrow(settings), 7, dimnames = dnams)
+    training <- sim_fun4(300, K = 30) #create_data(150, 300, 2, K = 20)
+    testing <- sim_fun4(300, K = 30) #create_data(50, 350, 50, K = 20)
+    testing2 <- sim_fun4(300, K = 30) #create_data(50, 350, 50, K = 20)
     Models <- fit_models(training)
     aic_best <- which.min(sapply(Models, AIC))
     if (FALSE) {
         i = 5
         T0 = settings$T0[i]
-        Dt = 1
+        Dt = 3
         best_model = selected_model[[1]]
-        weights1 = selected_model[[2]]
-        weights2 = selected_model[[3]]
+        weights1 = selected_model[[3]]
+        weights2 = selected_model[[4]]
     }
 
     for (i in seq_len(nrow(res))) {
         selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
         r <- individualized_selection(testing2, settings$T0[i],settings$Dt[i],
-                                      c(selected_model[[1]], aic_best),
-                                      weights1 = selected_model[[2]],
-                                      weights2 = selected_model[[3]])
+                                      c(selected_model[[1]], selected_model[[2]], aic_best),
+                                      weights1 = selected_model[[3]],
+                                      weights2 = selected_model[[4]])
         res[i, ] <- r
         best_model[m, i] <- selected_model[[1]]
-        rr <- r[c(2,3,5,6)]
+        rr <- r[c(2,3,4,5,6)]
         winner[, i, m] <- as.numeric(abs(rr - min(rr)) < 1e-06)
     }
     sim_results[, , m] <- res
 }
 
 plot_data <- vector("list", M)
-model_nams <- c("Oracle", "Best_Model", "Best_AIC", "Indv", "Weights_Indv1", "Weights_Indv2")
+model_nams <- c("Oracle", "MSPE", "Vario", "AIC", "Indv", "Weights_MSPE", "Weights_Vario")
 for (m in seq_len(M)) {
     dd <- sim_results[, , m]
     plot_data[[m]] <- data.frame(
         MSE = c(dd),
-        T0 = factor(rep(Times, 6), labels = paste("T0 =", Times)),
+        T0 = factor(rep(Times, 7), labels = paste("T0 =", Times)),
         Model = factor(rep(model_nams, each = length(Times)),
                        levels = model_nams)
     )
 }
 plot_data <- do.call('rbind', plot_data)
 bwplot(MSE ~ Model | T0, data = plot_data, as.table = TRUE,
-       subset = Model %in% c("Best_Model", "Best_AIC", "Weights_Indv1", "Weights_Indv2"),
+       subset = Model %in% c("MSPE", "Vario", "AIC", "Weights_MSPE", "Weights_Vario"),
        scales = list(y = list(relation = "free")),
        coef = 1.5, pch = "|", do.out = FALSE, fill = "lightgrey",
        par.strip.text = list(cex = 0.8),
@@ -592,7 +640,7 @@ dimnames(Res) <- dimnames(res)
 Res
 
 Win <- apply(winner, c(1L, 2L), mean)
-dimnames(Win) <- list(c("T0", "AIC", "IndW1", "IndW2"), dnams[[1]])
+dimnames(Win) <- list(c("MSPE", "Vario", "AIC", "W_MSPE", "W_Vario"), dnams[[1]])
 t(Win)
 
 bar_data <- sapply(seq_len(9), function (i) table(factor(best_model[, i], levels = 1:7)))
