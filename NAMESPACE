@@ -16,7 +16,7 @@ importFrom("stats", "coef", "fitted", "terms", "model.frame", "model.frame.defau
            "reformulate", "predict", "pnorm", "ave", "median", "density",
            "simulate", "rbinom", "rpois", "rt", "rbeta", "ecdf", "rnbinom",
            "loess.smooth", "smooth.spline", "loess", "qt", "rgamma", "approx",
-           "spline")
+           "spline", "complete.cases", "formula", "pbeta")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
            "clusterSetRNGStream", "makePSOCKcluster", "mclapply")
 importFrom("parallelly", "availableCores")

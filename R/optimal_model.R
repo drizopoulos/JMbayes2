@@ -250,7 +250,7 @@ npar <- function (object, newdata, type = c("marginal", "conditional")) {
         XZ <- cbind(X_new, Z_new)
         V11 <- crossprod(X_new)
         V22 <- crossprod(Z_new) + sigma^2 * solve(D)
-        VV <- JMbayes2:::nearPD(
+        VV <- nearPD(
             rbind(cbind(V11, crossprod(X_new, Z_new)),
                   cbind(crossprod(Z_new, X_new), V22)))
         sum(diag(XZ %*% solve(VV, t(XZ))))

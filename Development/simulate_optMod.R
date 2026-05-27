@@ -479,13 +479,13 @@ fit_models <- function (training) {
                control = lmeControl(opt = "optim"))
     fm1 <- lme(fixed = y ~ time, data = training, random = ~ time | id,
                control = lmeControl(opt = "optim"))
-    #fm2 <- lme(fixed = y ~ time, data = training, random = ~ time | id,
-     #          correlation = corCAR1(form = ~ time | id),
-      #         control = lmeControl(opt = "optim"))
+    fm2 <- lme(fixed = y ~ time, data = training,
+               random = list(id = pdDiag(form = ~ nsk(time, 2))),
+               control = lmeControl(opt = "optim"))
     fm3 <- lme(fixed = y ~ time, data = training,
                random = list(id = pdDiag(form = ~ nsk(time, 3))),
                control = lmeControl(opt = "optim"))
-    list(fm0, fm1, fm3)
+    list(fm0, fm1, fm2, fm3)
 }
 best_model_test <- function (testing, T0, Dt, alpha = 1) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
@@ -629,7 +629,7 @@ bwplot(MSE ~ Model | T0, data = plot_data, as.table = TRUE,
            list(ylim = range(bp$stats))
        }, par.settings = list(box.umbrella = list(lty = 1)))
 
-Res <- apply(sim_results, 1:2, median, na.rm = TRUE)
+Res <- apply(sim_results, 1:2, mean, na.rm = TRUE)
 dimnames(Res) <- dimnames(res)
 Res
 
