@@ -420,9 +420,9 @@ sim_fun4 <- function (n, model = c("mixed", "joint"), K = 30) {
     Z <- model.matrix(~ cos(time), data = DF)
     betas <- c(0.2, 1.2) # fixed effects coefficients
     sigma <- 1 # errors standard deviation
-    D11 <- 0.1 # variance of random intercepts
+    D11 <- 1 # variance of random intercepts
     D22 <- 3 # variance of random intercepts
-    #rho <- 0.9
+    rho <- 0.75
     b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
     # linear predictor
     eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
@@ -479,12 +479,13 @@ fit_models <- function (training) {
                control = lmeControl(opt = "optim"))
     fm1 <- lme(fixed = y ~ time, data = training, random = ~ time | id,
                control = lmeControl(opt = "optim"))
-    fm2 <- lme(fixed = y ~ time, data = training, random = ~ cos(time) | id,
+    #fm2 <- lme(fixed = y ~ time, data = training, random = ~ time | id,
+     #          correlation = corCAR1(form = ~ time | id),
+      #         control = lmeControl(opt = "optim"))
+    fm3 <- lme(fixed = y ~ time, data = training,
+               random = list(id = pdDiag(form = ~ nsk(time, 3))),
                control = lmeControl(opt = "optim"))
-    #fm2 <- lme(fixed = y ~ time, data = training,
-    #           random = list(id = pdDiag(form = ~ nsk(time, 3))),
-    #           control = lmeControl(opt = "optim"))
-    list(fm0, fm1, fm2)
+    list(fm0, fm1, fm3)
 }
 best_model_test <- function (testing, T0, Dt, alpha = 1) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
@@ -562,7 +563,7 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights1,
 ################################################################################
 
 nn <- 300
-KK <- 30
+KK <- 10
 Times <- seq(1.5, 5.5, 0.5)
 Dts <- 3
 settings <- expand.grid(T0 = Times, Dt = Dts)
@@ -592,8 +593,7 @@ for (m in seq_len(M)) {
     }
 
     for (i in seq_len(nrow(res))) {
-        selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i],
-                                          alpha = 2)
+        selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
         r <- individualized_selection(testing2, settings$T0[i],settings$Dt[i],
                                       c(selected_model[[1]], selected_model[[2]], aic_best),
                                       weights1 = selected_model[[3]],
