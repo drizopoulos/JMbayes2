@@ -417,11 +417,11 @@ sim_fun4 <- function (n, model = c("mixed", "joint"), K = 30) {
 
     # design matrices for the fixed and random effects
     X <- model.matrix(~ time, data = DF)
-    Z <- model.matrix(~ cos(time), data = DF)
+    Z <- model.matrix(~ cos(1.3 * time), data = DF)
     betas <- c(0.2, 1.2) # fixed effects coefficients
     sigma <- 1 # errors standard deviation
-    D11 <- 1 # variance of random intercepts
-    D22 <- 3 # variance of random intercepts
+    D11 <- 0.5 # variance of random intercepts
+    D22 <- 12 # variance of random intercepts
     rho <- 0.75
     b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
     # linear predictor
@@ -563,48 +563,42 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights1,
 ################################################################################
 
 nn <- 300
-KK <- 10
+KK <- 20
 Times <- seq(1.5, 5.5, 0.5)
 Dts <- 3
 settings <- expand.grid(T0 = Times, Dt = Dts)
-M <- 100
+M <- 200
 sim_results <- array(NA_real_, c(nrow(settings), 7, M))
 dnams <-
     list(paste0("T0=", sprintf("%.1f", settings$T0), ", Dt=",
                 sprintf("%.1f", settings$Dt)),
          c("Oracle", "Best_Model_MSPE", "Best_Model_Vario", "Best_AIC", "Indv",
            "Weights_MSPE", "Weights_Vario"))
-winner <- array(0, c(5, nrow(settings), M))
-best_model_MSPE <- best_model_Vario <- matrix(0, M, nrow(settings))
+winner <- array(NA_real_, c(5, nrow(settings), M))
+best_model_MSPE <- best_model_Vario <- matrix(NA_real_, M, nrow(settings))
 for (m in seq_len(M)) {
-    res <- matrix(0, nrow(settings), 7, dimnames = dnams)
+    res <- matrix(NA_real_, nrow(settings), 7, dimnames = dnams)
     training <- sim_fun4(nn, K = KK) #create_data(150, 300, 2, K = 20)
     testing <- sim_fun4(nn, K = KK) #create_data(50, 350, 50, K = 20)
     testing2 <- sim_fun4(nn, K = KK) #create_data(50, 350, 50, K = 20)
-    Models <- fit_models(training)
-    aic_best <- which.min(sapply(Models, AIC))
-    if (FALSE) {
-        i = 3
-        T0 = settings$T0[i]
-        Dt = 2
-        best_model = selected_model[[1]]
-        weights1 = selected_model[[3]]
-        weights2 = selected_model[[4]]
+    tt <- try(fit_models(training), silent = TRUE)
+    if (!inherits(tt, "try-error")) {
+        Models <- tt
+        aic_best <- which.min(sapply(Models, AIC))
+        for (i in seq_len(nrow(res))) {
+            selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
+            best_models <- c(selected_model[[1]], selected_model[[2]], aic_best)
+            r <- individualized_selection(testing2, settings$T0[i],
+                                          settings$Dt[i], best_models,
+                                          selected_model[[3]], selected_model[[4]])
+            res[i, ] <- r
+            best_model_MSPE[m, i] <- selected_model[[1]]
+            best_model_Vario[m, i] <- selected_model[[2]]
+            rr <- r[c(2,3,4,6,7)]
+            winner[, i, m] <- as.numeric(abs(rr - min(rr)) < 1e-06)
+        }
+        sim_results[, , m] <- res
     }
-
-    for (i in seq_len(nrow(res))) {
-        selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
-        r <- individualized_selection(testing2, settings$T0[i],settings$Dt[i],
-                                      c(selected_model[[1]], selected_model[[2]], aic_best),
-                                      weights1 = selected_model[[3]],
-                                      weights2 = selected_model[[4]])
-        res[i, ] <- r
-        best_model_MSPE[m, i] <- selected_model[[1]]
-        best_model_Vario[m, i] <- selected_model[[2]]
-        rr <- r[c(2,3,4,6,7)]
-        winner[, i, m] <- as.numeric(abs(rr - min(rr)) < 1e-06)
-    }
-    sim_results[, , m] <- res
 }
 
 plot_data <- vector("list", M)
@@ -639,14 +633,14 @@ t(Win)
 
 bar_data <- sapply(seq_len(9), function (i) table(factor(best_model_MSPE[, i], levels = seq_along(Models))))
 dimnames(bar_data) <- list(paste0("M", seq_along(Models)), paste0("T0=", sprintf("%.1f", settings$T0)))
-barplot(bar_data, beside = TRUE,
+barplot(bar_data, beside = TRUE, main = "Ranking MSPE",
         col = heat.colors(length(Models)), ylim = c(0, max(bar_data) + 15))
 legend("topleft", rownames(bar_data), horiz = TRUE, bty = "n",
        fill = heat.colors(length(Models)), cex = 0.6)
 
 bar_data <- sapply(seq_len(9), function (i) table(factor(best_model_Vario[, i], levels = seq_along(Models))))
 dimnames(bar_data) <- list(paste0("M", seq_along(Models)), paste0("T0=", sprintf("%.1f", settings$T0)))
-barplot(bar_data, beside = TRUE,
+barplot(bar_data, beside = TRUE, main = "Ranking Variogram",
         col = heat.colors(length(Models)), ylim = c(0, max(bar_data) + 15))
 legend("topleft", rownames(bar_data), horiz = TRUE, bty = "n",
        fill = heat.colors(length(Models)), cex = 0.6)
@@ -660,6 +654,14 @@ Res
 ################################################################################
 ################################################################################
 ################################################################################
+if (FALSE) {
+    i = 3
+    T0 = settings$T0[i]
+    Dt = 2
+    best_model = selected_model[[1]]
+    weights1 = selected_model[[3]]
+    weights2 = selected_model[[4]]
+}
 
 y <- (Preds_after - Obs_after)^2
 x <- Data_after$time

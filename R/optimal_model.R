@@ -272,9 +272,12 @@ total_var <- function (ys) {
     s / count
 }
 
-IndvPred_lme <- function (object, newdata, newdata2) {
+IndvPred_lme <- function (object, newdata, newdata2,
+                          interval = c("confidence", "prediction"),
+                          M = 200, level = 0.95) {
     if (!inherits(object, "lme") && !inherits(object, "lmeComponents"))
         stop("Use only with 'lme' or 'lmeComponents' objects.\n")
+    interval <- match.arg(interval)
     if (inherits(object, "lme")) {
         TermsX <- object$terms
         formYz <- formula(object$modelStruct$reStruct[[1]])
@@ -332,10 +335,41 @@ IndvPred_lme <- function (object, newdata, newdata2) {
     X_new2 <- model.matrix(TermsX, mfX_new2)
     mfZ_new2 <- model.frame(TermsZ, data = newdata2_nomiss)
     Z_new2 <- model.matrix(TermsZ, mfZ_new2)
-    id_nomiss <- match(newdata2_nomiss[[id_var]], unique(newdata2_nomiss[[id_var]]))
+    id_nomiss2 <- match(newdata2_nomiss[[id_var]], unique(newdata2_nomiss[[id_var]]))
     predicted_y <- c(X_new2 %*% betas) +
-        rowSums(Z_new2 * modes[id_nomiss, , drop = FALSE])
-    list(fitted_y = fitted_y, predicted_y = predicted_y)
+        rowSums(Z_new2 * modes[id_nomiss2, , drop = FALSE])
+    betas_M <- MASS::mvrnorm(M, betas, V)
+    modes_fun <- function (betas) {
+        v <- mapply("%*%", DZtVinv, split(y_new - X_new %*% betas, id_nomiss))
+        if (ncol(Z_new) > 1L) t(v) else as.matrix(v)
+    }
+    modes_M <- lapply(split(betas_M, row(betas_M)), modes_fun)
+    matrix_row <- function (m, i) m[i, , drop = FALSE]
+    modes_M <- lapply(seq_len(n), function (i) {
+        v <- sapply(modes_M, matrix_row, i = i)
+        if (ncol(Z_new) > 1L) t(v) else as.matrix(v)
+    })
+    b_M <- modes_M
+    for (i in seq_len(n)) {
+        b_M[[i]] <- t(apply(modes_M[[i]], 1, MASS::mvrnorm, n = 1,
+                            Sigma = post_vars[[i]]))
+    }
+    n_pred <- length(predicted_y)
+    sampled_y <- matrix(0, n_pred, M)
+    for (m in seq_len(M)) {
+        betas_m <- betas_M[m, ]
+        b_m <- t(sapply(b_M, function(x) x[m, , drop = FALSE]))
+        mean_m <- c(X_new2 %*% betas_m) +
+            rowSums(Z_new2 * b_m[id_nomiss2, , drop = FALSE])
+        sampled_y[, m] <- if (interval == "confidence") {
+            mean_m
+        } else {
+            rnorm(n_pred, mean_m, sigma)
+        }
+    }
+    low <- apply(sampled_y, 1L, quantile, probs = (1 - level) / 2)
+    upp <- apply(sampled_y, 1L, quantile, probs = 1 - (1 - level) / 2)
+    list(fitted_y = fitted_y, predicted_y = predicted_y, low = low, upp = upp)
 }
 
 cor2cov <- function (R, vars, sds = NULL) {
