@@ -444,6 +444,19 @@ create_data <- function (n1, n2, n3, K = 30) {
     DF
 }
 fit_models <- function (training) {
+    fm0 <- lme(fixed = y ~ time, data = training, random = ~ 1 | id,
+               control = lmeControl(opt = "optim"))
+    fm1 <- lme(fixed = y ~ time, data = training, random = ~ time | id,
+               control = lmeControl(opt = "optim"))
+    fm2 <- lme(fixed = y ~ time, data = training,
+               random = list(id = pdDiag(form = ~ nsk(time, 2))),
+               control = lmeControl(opt = "optim"))
+    fm3 <- lme(fixed = y ~ time, data = training,
+               random = list(id = pdDiag(form = ~ nsk(time, 3))),
+               control = lmeControl(opt = "optim"))
+    list(fm0, fm1, fm2, fm3)
+}
+fit_models <- function (training) {
     #training_id <- training[!duplicated(training$id), ]
     #CoxFit <- coxph(Surv(Time, event) ~ sex, data = training_id)
 
@@ -474,28 +487,15 @@ fit_models <- function (training) {
 
     list(fm0, fm1, fm2, fm3, fm4, fm5, fm6)
 }
-fit_models <- function (training) {
-    fm0 <- lme(fixed = y ~ time, data = training, random = ~ 1 | id,
-               control = lmeControl(opt = "optim"))
-    fm1 <- lme(fixed = y ~ time, data = training, random = ~ time | id,
-               control = lmeControl(opt = "optim"))
-    fm2 <- lme(fixed = y ~ time, data = training,
-               random = list(id = pdDiag(form = ~ nsk(time, 2))),
-               control = lmeControl(opt = "optim"))
-    fm3 <- lme(fixed = y ~ time, data = training,
-               random = list(id = pdDiag(form = ~ nsk(time, 3))),
-               control = lmeControl(opt = "optim"))
-    list(fm0, fm1, fm2, fm3)
-}
 best_model_test <- function (testing, T0, Dt, alpha = 1) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
-    Data$Time <- T0; Data$event <- 0
     Data_before <- Data[Data$time <= T0, ]
     id_before <- match(Data_before$id, unique(Data_before$id))
     means_before <- tapply(Data_before$y, id_before, mean)
     Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
-    preds <- lapply(Models, IndvPred_lme, newdata = Data_before, newdata2 = Data_after)
-    Preds_after <- do.call('cbind', lapply(preds, function (x) x$predicted_y))
+    preds <- lapply(Models, IndvPred_lme, newdata = Data_before,
+                    newdata2 = Data_after)
+    Preds_after <- do.call('cbind', lapply(preds, '[[', 'predicted_y'))
     Obs_after <- Data_after$y
     tt <- Data_after$time
     id_after <- match(Data_after$id, unique(Data_after$id))
@@ -529,17 +529,16 @@ best_model_test <- function (testing, T0, Dt, alpha = 1) {
 individualized_selection <- function (testing, T0, Dt, best_model, weights1,
                                       weights2) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
-    Data$Time <- T0; Data$event <- 0
     Data_before <- Data[Data$time <= T0, ]
     Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
     preds <- lapply(Models, IndvPred_lme, newdata = Data_before,
                     newdata2 = Data_after)
     ####
-    Preds <- do.call('cbind', lapply(preds, function (x) x$fitted_y))
+    Preds <- do.call('cbind', lapply(preds, '[[', 'fitted_y'))
     Obs <- Data_before$y
     id <- match(Data_before$id, unique(Data_before$id))
     ####
-    Preds_after <- do.call('cbind', lapply(preds, function (x) x$predicted_y))
+    Preds_after <- do.call('cbind', lapply(preds, '[[', 'predicted_y'))
     Obs_after <- Data_after$y
     id_after <- match(Data_after$id, unique(Data_after$id))
     # oracle predictions (per id best model for the after predictions)
@@ -549,38 +548,57 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights1,
     mse_oracle <- mean((Preds_after[cbind(seq_along(id_after), oracle[id_after])] - Obs_after)^2)
     # MSE best model from testing
     mse_best_model <- colMeans((Preds_after[, best_model, drop = FALSE] - Obs_after)^2)
-    # MSE best model per id
+    # MSE best model
     keep <- Data_before$time > 0#T0 - Dt
     mse_id <- rowsum((Preds[keep, ] - Obs[keep])^2, id[keep], reorder = FALSE)
     model_id <- apply(mse_id, 1L, which.min)
     mse_indv <- mean((Preds_after[cbind(seq_along(id_after), model_id[id_after])] - Obs_after)^2)
-    mse_indv_w1 <- mean((rowSums(rep(weights1, each = nrow(Preds_after)) * Preds_after) - Obs_after)^2)
-    mse_indv_w2 <- mean((rowSums(rep(weights2, each = nrow(Preds_after)) * Preds_after) - Obs_after)^2)
+    mse_w1 <- mean((rowSums(rep(weights1, each = nrow(Preds_after)) * Preds_after) - Obs_after)^2)
+    mse_w2 <- mean((rowSums(rep(weights2, each = nrow(Preds_after)) * Preds_after) - Obs_after)^2)
+    # MSE weighted average MSEs per id
+    Data_before2 <- Data[Data$time <= T0 - Dt, ]
+    Data_after2 <- Data[Data$time > T0 - Dt & Data$time <= T0, ]
+    mse_indv_w <- if (nrow(Data_before2) && nrow(Data_after2)) {
+        preds2 <- lapply(Models, IndvPred_lme, newdata = Data_before2,
+                         newdata2 = Data_after2)
+        ####
+        Preds_after2 <- do.call('cbind', lapply(preds2, '[[', 'predicted_y'))
+        Obs_after2 <- Data_after2$y
+        id_after2 <- match(Data_after2$id, unique(Data_after2$id))
+        sigmas <- matrix(sapply(Models, '[[', 'sigma'), nrow(Preds_after2),
+                         ncol(Preds_after2), byrow = TRUE)
+        log_w <- rowsum(dnorm(Obs_after2, Preds_after2, sigmas, TRUE), id_after2,
+                        reorder = FALSE)
+        iweights <- exp(log_w - rowLogSumExps(log_w))
+        mean((rowSums(iweights[id_after, ] * Preds_after) - Obs_after)^2)
+    } else NA_real_
     c(mse_oracle = mse_oracle, mse_best_model = mse_best_model,
-      mse_indv = mse_indv, mse_Wmspe = mse_indv_w1, mse_Wvario = mse_indv_w2)
+      mse_indv = mse_indv, mse_Wmspe = mse_w1, mse_Wvario = mse_w2,
+      mse_indv_w = mse_indv_w)
 }
 
 ################################################################################
 
 nn <- 300
-KK <- 20
+KK <- 30
 Times <- seq(1.5, 5.5, 0.5)
-Dts <- 3
+Dts <- 2
+n_methods <- 8
 settings <- expand.grid(T0 = Times, Dt = Dts)
-M <- 200
-sim_results <- array(NA_real_, c(nrow(settings), 7, M))
+M <- 100
+sim_results <- array(NA_real_, c(nrow(settings), n_methods, M))
 dnams <-
     list(paste0("T0=", sprintf("%.1f", settings$T0), ", Dt=",
                 sprintf("%.1f", settings$Dt)),
          c("Oracle", "Best_Model_MSPE", "Best_Model_Vario", "Best_AIC", "Indv",
-           "Weights_MSPE", "Weights_Vario"))
+           "Weights_MSPE", "Weights_Vario", "Weights_Indv"))
 winner <- array(NA_real_, c(5, nrow(settings), M))
 best_model_MSPE <- best_model_Vario <- matrix(NA_real_, M, nrow(settings))
 for (m in seq_len(M)) {
-    res <- matrix(NA_real_, nrow(settings), 7, dimnames = dnams)
-    training <- sim_fun4(nn, K = KK) #create_data(150, 300, 2, K = 20)
-    testing <- sim_fun4(nn, K = KK) #create_data(50, 350, 50, K = 20)
-    testing2 <- sim_fun4(nn, K = KK) #create_data(50, 350, 50, K = 20)
+    res <- matrix(NA_real_, nrow(settings), n_methods, dimnames = dnams)
+    training <- create_data(150, 300, 2, K = 20) #sim_fun4(nn, K = KK)
+    testing <- create_data(50, 350, 50, K = 20) #sim_fun4(nn, K = KK)
+    testing2 <- create_data(50, 350, 50, K = 20) #sim_fun4(nn, K = KK)
     tt <- try(fit_models(training), silent = TRUE)
     if (!inherits(tt, "try-error")) {
         Models <- tt
@@ -602,19 +620,20 @@ for (m in seq_len(M)) {
 }
 
 plot_data <- vector("list", M)
-model_nams <- c("Oracle", "MSPE", "Vario", "AIC", "Indv", "Weights_MSPE", "Weights_Vario")
+model_nams <- c("Oracle", "MSPE", "Vario", "AIC", "Indv", "Weights_MSPE",
+                "Weights_Vario", "Weights_Indv")
 for (m in seq_len(M)) {
     dd <- sim_results[, , m]
     plot_data[[m]] <- data.frame(
         MSE = c(dd),
-        T0 = factor(rep(Times, 7), labels = paste("T0 =", Times)),
+        T0 = factor(rep(Times, n_methods), labels = paste("T0 =", Times)),
         Model = factor(rep(model_nams, each = length(Times)),
                        levels = model_nams)
     )
 }
 plot_data <- do.call('rbind', plot_data)
 bwplot(MSE ~ Model | T0, data = plot_data, as.table = TRUE,
-       subset = Model %in% c("MSPE", "Vario", "Weights_MSPE", "Weights_Vario"),
+       subset = Model %in% c("MSPE", "Vario", "Weights_MSPE", "Weights_Vario", "Weights_Indv"),
        scales = list(y = list(relation = "free")),
        coef = 1.5, pch = "|", do.out = FALSE, fill = "lightgrey",
        par.strip.text = list(cex = 0.8),
@@ -626,10 +645,6 @@ bwplot(MSE ~ Model | T0, data = plot_data, as.table = TRUE,
 Res <- apply(sim_results, 1:2, mean, na.rm = TRUE)
 dimnames(Res) <- dimnames(res)
 Res
-
-Win <- apply(winner, c(1L, 2L), mean)
-dimnames(Win) <- list(c("MSPE", "Vario", "AIC", "W_MSPE", "W_Vario"), dnams[[1]])
-t(Win)
 
 bar_data <- sapply(seq_len(9), function (i) table(factor(best_model_MSPE[, i], levels = seq_along(Models))))
 dimnames(bar_data) <- list(paste0("M", seq_along(Models)), paste0("T0=", sprintf("%.1f", settings$T0)))
@@ -649,6 +664,9 @@ Res <- apply(sim_results, 1:2, sd, na.rm = TRUE)
 dimnames(Res) <- dimnames(res)
 Res
 
+Win <- apply(winner, c(1L, 2L), mean)
+dimnames(Win) <- list(c("MSPE", "Vario", "AIC", "W_MSPE", "W_Vario"), dnams[[1]])
+t(Win)
 
 
 ################################################################################
