@@ -436,7 +436,6 @@ sim_fun4 <- function (n, model = c("mixed", "joint"), K = 30) {
     DF
 }
 
-
 create_data <- function (n1, n2, n3, K = 30) {
     DF <- do.call('rbind', list(sim_fun1(n1, K = K), sim_fun2(n2, K = K),
                                 sim_fun3(n3, K = K)))
@@ -567,7 +566,9 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights1,
         id_after2 <- match(Data_after2$id, unique(Data_after2$id))
         sigmas <- matrix(sapply(Models, '[[', 'sigma'), nrow(Preds_after2),
                          ncol(Preds_after2), byrow = TRUE)
-        log_w <- rowsum(dnorm(Obs_after2, Preds_after2, sigmas, TRUE), id_after2,
+        #log_w <- rowsum(dnorm(Obs_after2, Preds_after2, sigmas, TRUE), id_after2,
+        #                reorder = FALSE)
+        log_w <- rowsum(-(Obs_after2 - Preds_after2)^2 / (2 * sigmas^2), id_after2,
                         reorder = FALSE)
         iweights <- exp(log_w - rowLogSumExps(log_w))
         mean((rowSums(iweights[id_after, ] * Preds_after) - Obs_after)^2)
@@ -580,23 +581,24 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights1,
 ################################################################################
 
 nn <- 300
-KK <- 30
+KK <- 20
 Times <- seq(1.5, 5.5, 0.5)
 Dts <- 2
 n_methods <- 8
 settings <- expand.grid(T0 = Times, Dt = Dts)
-M <- 100
+M <- 300
 sim_results <- array(NA_real_, c(nrow(settings), n_methods, M))
 dnams <-
     list(paste0("T0=", sprintf("%.1f", settings$T0), ", Dt=",
                 sprintf("%.1f", settings$Dt)),
          c("Oracle", "Best_Model_MSPE", "Best_Model_Vario", "Best_AIC", "Indv",
            "Weights_MSPE", "Weights_Vario", "Weights_Indv"))
-winner <- array(NA_real_, c(5, nrow(settings), M))
+winner <- array(NA_real_, c(6, nrow(settings), M))
 best_model_MSPE <- best_model_Vario <- matrix(NA_real_, M, nrow(settings))
 for (m in seq_len(M)) {
+    cat("\nm =", m, "\n")
     res <- matrix(NA_real_, nrow(settings), n_methods, dimnames = dnams)
-    training <- create_data(150, 300, 2, K = 20) #sim_fun4(nn, K = KK)
+    training <- create_data(350, 50, 50, K = 20) #sim_fun4(nn, K = KK)
     testing <- create_data(50, 350, 50, K = 20) #sim_fun4(nn, K = KK)
     testing2 <- create_data(50, 350, 50, K = 20) #sim_fun4(nn, K = KK)
     tt <- try(fit_models(training), silent = TRUE)
@@ -604,7 +606,7 @@ for (m in seq_len(M)) {
         Models <- tt
         aic_best <- which.min(sapply(Models, AIC))
         for (i in seq_len(nrow(res))) {
-            selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
+            selected_model <- best_model_test(training, settings$T0[i], settings$Dt[i])
             best_models <- c(selected_model[[1]], selected_model[[2]], aic_best)
             r <- individualized_selection(testing2, settings$T0[i],
                                           settings$Dt[i], best_models,
@@ -612,8 +614,9 @@ for (m in seq_len(M)) {
             res[i, ] <- r
             best_model_MSPE[m, i] <- selected_model[[1]]
             best_model_Vario[m, i] <- selected_model[[2]]
-            rr <- r[c(2,3,4,6,7)]
+            rr <- r[c(2,3,4,6,7,8)]
             winner[, i, m] <- as.numeric(abs(rr - min(rr)) < 1e-06)
+            cat("\ti =", i, "\n")
         }
         sim_results[, , m] <- res
     }
@@ -633,7 +636,7 @@ for (m in seq_len(M)) {
 }
 plot_data <- do.call('rbind', plot_data)
 bwplot(MSE ~ Model | T0, data = plot_data, as.table = TRUE,
-       subset = Model %in% c("MSPE", "Vario", "Weights_MSPE", "Weights_Vario", "Weights_Indv"),
+       subset = Model %in% c("MSPE", "Vario", "Weights_MSPE", "Weights_Vario", "AIC"),
        scales = list(y = list(relation = "free")),
        coef = 1.5, pch = "|", do.out = FALSE, fill = "lightgrey",
        par.strip.text = list(cex = 0.8),
@@ -675,7 +678,7 @@ t(Win)
 if (FALSE) {
     i = 3
     T0 = settings$T0[i]
-    Dt = 2
+    Dt = 1
     best_model = selected_model[[1]]
     weights1 = selected_model[[3]]
     weights2 = selected_model[[4]]
