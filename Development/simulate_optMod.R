@@ -525,8 +525,7 @@ best_model_test <- function (testing, T0, Dt, alpha = 1) {
          weights1 = exp(log_w1 - logSumExp(log_w1)),
          weights2 = exp(log_w2 - logSumExp(log_w2)))
 }
-individualized_selection <- function (testing, T0, Dt, best_model, weights1,
-                                      weights2) {
+metrics <- function (testing, T0, Dt, best_model, weights1, weights2) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
     Data_before <- Data[Data$time <= T0, ]
     Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
@@ -614,9 +613,8 @@ for (m in seq_len(M)) {
         for (i in seq_len(nrow(res))) {
             selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
             best_models <- c(selected_model[[1]], selected_model[[2]], aic_best)
-            r <- individualized_selection(testing2, settings$T0[i],
-                                          settings$Dt[i], best_models,
-                                          selected_model[[3]], selected_model[[4]])
+            r <- metrics(testing2, settings$T0[i], settings$Dt[i], best_models,
+                         selected_model[[3]], selected_model[[4]])
             res[i, ] <- r
             best_model_MSPE[m, i] <- selected_model[[1]]
             best_model_Vario[m, i] <- selected_model[[2]]
