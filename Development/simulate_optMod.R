@@ -531,7 +531,7 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights1,
     Data_before <- Data[Data$time <= T0, ]
     Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
     preds <- lapply(Models, IndvPred_lme, newdata = Data_before,
-                    newdata2 = Data_after)
+                    newdata2 = Data_after, interval = "prediction")
     ####
     Preds <- do.call('cbind', lapply(preds, '[[', 'fitted_y'))
     Obs <- Data_before$y
@@ -566,16 +566,20 @@ individualized_selection <- function (testing, T0, Dt, best_model, weights1,
         id_after2 <- match(Data_after2$id, unique(Data_after2$id))
         sigmas <- matrix(sapply(Models, '[[', 'sigma'), nrow(Preds_after2),
                          ncol(Preds_after2), byrow = TRUE)
-        #log_w <- rowsum(dnorm(Obs_after2, Preds_after2, sigmas, TRUE), id_after2,
-        #                reorder = FALSE)
-        log_w <- rowsum(-(Obs_after2 - Preds_after2)^2 / (2 * sigmas^2), id_after2,
+        log_w <- rowsum(dnorm(Obs_after2, Preds_after2, sigmas, TRUE), id_after2,
                         reorder = FALSE)
+        #log_w <- rowsum(-(Obs_after2 - Preds_after2)^2 / (2 * sigmas^2), id_after2,
+        #                reorder = FALSE)
         iweights <- exp(log_w - rowLogSumExps(log_w))
         mean((rowSums(iweights[id_after, ] * Preds_after) - Obs_after)^2)
     } else NA_real_
+    # coverage
+    Low <- do.call('cbind', lapply(preds, '[[', 'low'))
+    Upp <- do.call('cbind', lapply(preds, '[[', 'upp'))
+    Coverage <- colMeans(Obs_after > Low & Obs_after < Upp)
     c(mse_oracle = mse_oracle, mse_best_model = mse_best_model,
       mse_indv = mse_indv, mse_Wmspe = mse_w1, mse_Wvario = mse_w2,
-      mse_indv_w = mse_indv_w)
+      mse_indv_w = mse_indv_w, coverage = Coverage[best_model])
 }
 
 ################################################################################
@@ -584,15 +588,16 @@ nn <- 300
 KK <- 20
 Times <- seq(1.5, 5.5, 0.5)
 Dts <- 2
-n_methods <- 8
+n_methods <- 11
 settings <- expand.grid(T0 = Times, Dt = Dts)
-M <- 300
+M <- 30
 sim_results <- array(NA_real_, c(nrow(settings), n_methods, M))
 dnams <-
     list(paste0("T0=", sprintf("%.1f", settings$T0), ", Dt=",
                 sprintf("%.1f", settings$Dt)),
-         c("Oracle", "Best_Model_MSPE", "Best_Model_Vario", "Best_AIC", "Indv",
-           "Weights_MSPE", "Weights_Vario", "Weights_Indv"))
+         c("Oracle", "Best_Model_MSPE", "Best_Model_Vario", "Best_Model_AIC",
+           "Indv", "Weights_MSPE", "Weights_Vario", "Weights_Indv", "Cov_MSPE",
+           "Cov_Vario", "Cov_AIC"))
 winner <- array(NA_real_, c(6, nrow(settings), M))
 best_model_MSPE <- best_model_Vario <- matrix(NA_real_, M, nrow(settings))
 for (m in seq_len(M)) {
@@ -604,9 +609,10 @@ for (m in seq_len(M)) {
     tt <- try(fit_models(training), silent = TRUE)
     if (!inherits(tt, "try-error")) {
         Models <- tt
-        aic_best <- which.min(sapply(Models, AIC))
+        aic_best <- which.min(mapply(AIC_lme, Models,
+                                     MoreArgs = list(newdata = testing)))
         for (i in seq_len(nrow(res))) {
-            selected_model <- best_model_test(training, settings$T0[i], settings$Dt[i])
+            selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
             best_models <- c(selected_model[[1]], selected_model[[2]], aic_best)
             r <- individualized_selection(testing2, settings$T0[i],
                                           settings$Dt[i], best_models,
@@ -626,10 +632,10 @@ plot_data <- vector("list", M)
 model_nams <- c("Oracle", "MSPE", "Vario", "AIC", "Indv", "Weights_MSPE",
                 "Weights_Vario", "Weights_Indv")
 for (m in seq_len(M)) {
-    dd <- sim_results[, , m]
+    dd <- sim_results[, 1:8, m]
     plot_data[[m]] <- data.frame(
         MSE = c(dd),
-        T0 = factor(rep(Times, n_methods), labels = paste("T0 =", Times)),
+        T0 = factor(rep(Times, n_methods - 3), labels = paste("T0 =", Times)),
         Model = factor(rep(model_nams, each = length(Times)),
                        levels = model_nams)
     )
@@ -678,8 +684,8 @@ t(Win)
 if (FALSE) {
     i = 3
     T0 = settings$T0[i]
-    Dt = 1
-    best_model = selected_model[[1]]
+    Dt = settings$Dt[i]
+    best_model = c(selected_model[[1]], selected_model[[2]], aic_best)
     weights1 = selected_model[[3]]
     weights2 = selected_model[[4]]
 }

@@ -276,6 +276,42 @@ total_var <- function (ys) {
 #newdata = training[training$time <= 3, ]
 #newdata2 = training[training$time > 3, ]
 
+AIC_lme <- function (object, newdata) {
+    TermsX <- object$terms
+    formYz <- formula(object$modelStruct$reStruct[[1]])
+    mfZ <- model.frame(terms(formYz), data = object$data)
+    TermsZ <- attr(mfZ, "terms")
+    id_var <- names(object$modelStruct$reStruct)
+    betas <- fixef(object)
+    sigma <- object$sigma
+    D <- lapply(pdMatrix(object$modelStruct$reStruct), "*", sigma^2)[[1]]
+    all_vars <- unique(c(all.vars(TermsX), all.vars(TermsZ)))
+    newdata <- newdata[complete.cases(newdata[all_vars]), ]
+    mfX_new <- model.frame(TermsX, data = newdata)
+    X_new <- model.matrix(TermsX, mfX_new)
+    mfZ_new <- model.frame(TermsZ, data = newdata)
+    Z_new <- model.matrix(TermsZ, mfZ_new)
+    y_new <- model.response(mfX_new, "numeric")
+    id_new <- newdata[[id_var]]
+    unq_id <- unique(id_new)
+    id_new <- match(id_new, unq_id)
+    n <- length(unq_id)
+    lL <- numeric(n)
+    for (i in seq_len(n)) {
+        id_i <- id_new == i
+        y_new_i <- y_new[id_i]
+        X_new_i <- X_new[id_i, , drop = FALSE]
+        Z_new_i <- Z_new[id_i, , drop = FALSE]
+        mu_i <- c(X_new_i %*% betas)
+        V_i <- Z_new_i %*% tcrossprod(D, Z_new_i) + sigma^2 * diag(sum(id_i))
+        lL[i] <- dmvnorm(y_new_i, mu_i, V_i, log = TRUE)
+    }
+    nx <- qr(X_new)$rank
+    D <- unique(D[lower.tri(D, TRUE)])
+    D <- D[D > 1e-06]
+    nz <- length(D)
+    - 2 * sum(lL, na.rm = TRUE) + 2 * (nx + nz + 1)
+}
 
 IndvPred_lme <- function (object, newdata, newdata2,
                           interval = c("none", "confidence", "prediction"),
