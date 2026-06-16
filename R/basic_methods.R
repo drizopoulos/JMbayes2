@@ -605,7 +605,7 @@ compare_jm <- function (..., type = c("marginal", "conditional"),
 print.compare_jm <- function (x, ...) {
     cat("\n")
     print.data.frame(x$table, row.names = FALSE)
-    cat("\nThe criteria are calculated based on the", x$type, "log-likelihood.")
+    cat("\nThe criteria are calculated on the basis of the", x$type, "log-likelihood.")
 }
 
 crisk_setup <- function (data, statusVar, censLevel, nameStrata = "strata",
