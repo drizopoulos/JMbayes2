@@ -353,7 +353,7 @@ IndvPred_lme <- function (object, newdata, newdata2,
     id_nomiss <- match(newdata_nomiss[[id_var]], unique(newdata_nomiss[[id_var]]))
     n <- length(unique(id_nomiss))
     modes <- matrix(0, n, ncol(Z_new))
-    post_vars <- DZtVinv <- vector("list", n)
+    chol_post_vars <- DZtVinv <- vector("list", n)
     for (i in seq_len(n)) {
         id_i <- id_nomiss == i
         y_new_id <- y_new[id_i]
@@ -367,7 +367,7 @@ IndvPred_lme <- function (object, newdata, newdata2,
         t1 <- DZtVinv[[i]] %*% Z_new_id %*% D
         t2 <- DZtVinv[[i]] %*% X_new_id %*% V %*%
             crossprod(X_new_id, Vi_inv) %*% Z_new_id %*% D
-        post_vars[[i]] <- D - t1 + t2
+        chol_post_vars[[i]] <- chol(D - t1 + t2)
     }
     fitted_y <- c(X_new %*% betas) +
         rowSums(Z_new * modes[id_nomiss, , drop = FALSE])
@@ -390,11 +390,17 @@ IndvPred_lme <- function (object, newdata, newdata2,
         modes_M <- lapply(split(betas_M, row(betas_M)), modes_fun)
         n_pred <- length(predicted_y)
         sampled_y <- matrix(0, n_pred, M)
+        ncz <- ncol(Z_new)
         for (m in seq_len(M)) {
             betas_m <- betas_M[m, ]
             modes_m <- modes_M[[m]]
+            b_m <- matrix(rnorm(n * ncz), n, ncz)
+            for (i in seq_len(n)) {
+                b_m[i, ] <- b_m[i, ] %*% chol_post_vars[[i]]
+            }
+            b_m <- modes_m + b_m
             mean_m <- c(X_new2 %*% betas_m) +
-                rowSums(Z_new2 * modes_m[id_nomiss2, , drop = FALSE])
+                rowSums(Z_new2 * b_m[id_nomiss2, , drop = FALSE])
             sampled_y[, m] <- if (interval == "confidence") {
                 mean_m
             } else {

@@ -417,13 +417,16 @@ sim_fun4 <- function (n, model = c("mixed", "joint"), K = 30) {
 
     # design matrices for the fixed and random effects
     X <- model.matrix(~ time, data = DF)
-    Z <- model.matrix(~ cos(1.3 * time), data = DF)
+    Z <- model.matrix(~ poly(time, 4, raw = TRUE), data = DF)
     betas <- c(0.2, 1.2) # fixed effects coefficients
-    sigma <- 1 # errors standard deviation
+    sigma <- 3 # errors standard deviation
     D11 <- 0.5 # variance of random intercepts
-    D22 <- 12 # variance of random intercepts
+    D22 <- 0.1 # variance of random intercepts
+    D33 <- 0.1
+    D44 <- 0.5
+    D55 <- 0.3
     rho <- 0.75
-    b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
+    b <- MASS::mvrnorm(n, rep(0, 5), diag(c(D11, D22, D33, D44, D55)))
     # linear predictor
     eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
     # we simulate normal longitudinal data
@@ -441,19 +444,6 @@ create_data <- function (n1, n2, n3, K = 30) {
                                 sim_fun3(n3, K = K)))
     DF$id <- match(DF$id, unique(DF$id))
     DF
-}
-fit_models <- function (training) {
-    fm0 <- lme(fixed = y ~ time, data = training, random = ~ 1 | id,
-               control = lmeControl(opt = "optim"))
-    fm1 <- lme(fixed = y ~ time, data = training, random = ~ time | id,
-               control = lmeControl(opt = "optim"))
-    fm2 <- lme(fixed = y ~ time, data = training,
-               random = list(id = pdDiag(form = ~ nsk(time, 2))),
-               control = lmeControl(opt = "optim"))
-    fm3 <- lme(fixed = y ~ time, data = training,
-               random = list(id = pdDiag(form = ~ nsk(time, 3))),
-               control = lmeControl(opt = "optim"))
-    list(fm0, fm1, fm2, fm3)
 }
 fit_models <- function (training) {
     #training_id <- training[!duplicated(training$id), ]
@@ -485,6 +475,16 @@ fit_models <- function (training) {
     #jointFit4 <- jm(CoxFit, fm4, time_var = "time")
 
     list(fm0, fm1, fm2, fm3, fm4, fm5, fm6)
+}
+fit_models <- function (training) {
+    fm0 <- lme(fixed = y ~ time, data = training, random = ~ 1 | id,
+               control = lmeControl(opt = "optim"))
+    fm1 <- lme(fixed = y ~ time, data = training, random = ~ time | id,
+               control = lmeControl(opt = "optim"))
+    fm2 <- lme(fixed = y ~ nsk(time, 3), data = training,
+               random = list(id = pdDiag(form = ~ nsk(time, 3))),
+               control = lmeControl(opt = "optim"))
+    list(fm0, fm1, fm2)
 }
 best_model_test <- function (testing, T0, Dt, alpha = 1) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
@@ -575,36 +575,38 @@ metrics <- function (testing, T0, Dt, best_model, weights1, weights2) {
     # coverage
     Low <- do.call('cbind', lapply(preds, '[[', 'low'))
     Upp <- do.call('cbind', lapply(preds, '[[', 'upp'))
+    width_CIs <- colMeans(Upp - Low)
     Coverage <- colMeans(Obs_after > Low & Obs_after < Upp)
     c(mse_oracle = mse_oracle, mse_best_model = mse_best_model,
       mse_indv = mse_indv, mse_Wmspe = mse_w1, mse_Wvario = mse_w2,
-      mse_indv_w = mse_indv_w, coverage = Coverage[best_model])
+      mse_indv_w = mse_indv_w, coverage = Coverage[best_model],
+      width_CIs = width_CIs[best_model])
 }
 
 ################################################################################
 
 nn <- 300
-KK <- 20
+KK <- 15
 Times <- seq(1.5, 5.5, 0.5)
 Dts <- 2
-n_methods <- 11
+n_methods <- 14
 settings <- expand.grid(T0 = Times, Dt = Dts)
-M <- 30
+M <- 200
 sim_results <- array(NA_real_, c(nrow(settings), n_methods, M))
 dnams <-
     list(paste0("T0=", sprintf("%.1f", settings$T0), ", Dt=",
                 sprintf("%.1f", settings$Dt)),
          c("Oracle", "Best_Model_MSPE", "Best_Model_Vario", "Best_Model_AIC",
            "Indv", "Weights_MSPE", "Weights_Vario", "Weights_Indv", "Cov_MSPE",
-           "Cov_Vario", "Cov_AIC"))
+           "Cov_Vario", "Cov_AIC", "Width_MSPE", "Width_Vario", "Width_AIC"))
 winner <- array(NA_real_, c(6, nrow(settings), M))
 best_model_MSPE <- best_model_Vario <- matrix(NA_real_, M, nrow(settings))
 for (m in seq_len(M)) {
     cat("\nm =", m, "\n")
     res <- matrix(NA_real_, nrow(settings), n_methods, dimnames = dnams)
-    training <- create_data(350, 50, 50, K = 20) #sim_fun4(nn, K = KK)
-    testing <- create_data(50, 350, 50, K = 20) #sim_fun4(nn, K = KK)
-    testing2 <- create_data(50, 350, 50, K = 20) #sim_fun4(nn, K = KK)
+    training <- sim_fun4(nn, K = KK) # create_data(350, 50, 50, K = 20)
+    testing <- sim_fun4(nn, K = KK) # create_data(50, 350, 50, K = 20)
+    testing2 <- sim_fun4(nn, K = KK) # create_data(50, 350, 50, K = 20)
     tt <- try(fit_models(training), silent = TRUE)
     if (!inherits(tt, "try-error")) {
         Models <- tt
@@ -633,7 +635,7 @@ for (m in seq_len(M)) {
     dd <- sim_results[, 1:8, m]
     plot_data[[m]] <- data.frame(
         MSE = c(dd),
-        T0 = factor(rep(Times, n_methods - 3), labels = paste("T0 =", Times)),
+        T0 = factor(rep(Times, n_methods - 6), labels = paste("T0 =", Times)),
         Model = factor(rep(model_nams, each = length(Times)),
                        levels = model_nams)
     )
