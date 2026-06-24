@@ -419,12 +419,12 @@ sim_fun4 <- function (n, model = c("mixed", "joint"), K = 30) {
     X <- model.matrix(~ time, data = DF)
     Z <- model.matrix(~ poly(time, 4, raw = TRUE), data = DF)
     betas <- c(0.2, 1.2) # fixed effects coefficients
-    sigma <- 3 # errors standard deviation
+    sigma <- 1 # errors standard deviation
     D11 <- 0.5 # variance of random intercepts
-    D22 <- 0.1 # variance of random intercepts
-    D33 <- 0.1
-    D44 <- 0.5
-    D55 <- 0.3
+    D22 <- 0.2 # variance of random intercepts
+    D33 <- 0.3
+    D44 <- 0.1
+    D55 <- 0.1
     rho <- 0.75
     b <- MASS::mvrnorm(n, rep(0, 5), diag(c(D11, D22, D33, D44, D55)))
     # linear predictor
@@ -481,10 +481,13 @@ fit_models <- function (training) {
                control = lmeControl(opt = "optim"))
     fm1 <- lme(fixed = y ~ time, data = training, random = ~ time | id,
                control = lmeControl(opt = "optim"))
-    fm2 <- lme(fixed = y ~ nsk(time, 3), data = training,
+    fm2 <- lme(fixed = y ~ nsk(time, 2), data = training,
+               random = ~ nsk(time, 2) | id,
+               control = lmeControl(opt = "optim"))
+    fm3 <- lme(fixed = y ~ nsk(time, 3), data = training,
                random = list(id = pdDiag(form = ~ nsk(time, 3))),
                control = lmeControl(opt = "optim"))
-    list(fm0, fm1, fm2)
+    list(fm0, fm1, fm2, fm3)
 }
 best_model_test <- function (testing, T0, Dt, alpha = 1) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
@@ -498,16 +501,38 @@ best_model_test <- function (testing, T0, Dt, alpha = 1) {
     Obs_after <- Data_after$y
     tt <- Data_after$time
     id_after <- match(Data_after$id, unique(Data_after$id))
+
+    #obs = Obs_after
+    #preds = Preds_after[, 1]
+
     loss <- function (obs, preds, type = c("MSPE", "Variogram")) {
         type <- match.arg(type)
         R <- obs - preds
         if (type == "MSPE") {
             mean(R^2)
         } else {
+
+            lags <- variogram(y = R, times = tt, id = id_after)$svar[, 1L]
+            Diffs2 <- apply(Preds_after - obs, 2L, function (y)
+                variogram(y = y, times = tt, id = id_after)$svar[, 2L])
+            DF <- as.data.frame(Diffs2)
+            DF$lags <- lags
+
+    xyplot(sqrt(V1) ~ lags, data = DF, type = "smooth")
+
+    with(DF, tapply(V1, lags, mean))
+    with(DF, tapply(V2, lags, mean))
+    with(DF, tapply(V3, lags, mean))
+    with(DF, tapply(V4, lags, mean))
+
+
+
+
+
             diffs2 <- variogram(y = R, times = tt, id = id_after)$svar[, 'diffs2']
             V <- total_var_cpp(split(R, id_after))
             sigma2 <- mean((obs - means_before[id_after])^2)
-            mean(R^2) / sigma2 + alpha * mean((diffs2 - V)^2) / sigma2^2
+            mean(R^2) / sigma2 + alpha * mean((diffs2 - V)^2) / sigma2^2 # var(diffs2) / sigma2^2
         }
     }
     best_model_MSPE <- which.min(apply(Preds_after, 2L, loss, obs = Obs_after, type = "MSPE"))
@@ -586,12 +611,12 @@ metrics <- function (testing, T0, Dt, best_model, weights1, weights2) {
 ################################################################################
 
 nn <- 300
-KK <- 15
+KK <- 25
 Times <- seq(1.5, 5.5, 0.5)
 Dts <- 2
 n_methods <- 14
 settings <- expand.grid(T0 = Times, Dt = Dts)
-M <- 200
+M <- 100
 sim_results <- array(NA_real_, c(nrow(settings), n_methods, M))
 dnams <-
     list(paste0("T0=", sprintf("%.1f", settings$T0), ", Dt=",
