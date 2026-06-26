@@ -511,28 +511,19 @@ best_model_test <- function (testing, T0, Dt, alpha = 1) {
         if (type == "MSPE") {
             mean(R^2)
         } else {
-
-            lags <- variogram(y = R, times = tt, id = id_after)$svar[, 1L]
-            Diffs2 <- apply(Preds_after - obs, 2L, function (y)
-                variogram(y = y, times = tt, id = id_after)$svar[, 2L])
-            DF <- as.data.frame(Diffs2)
-            DF$lags <- lags
-
-    xyplot(sqrt(V1) ~ lags, data = DF, type = "smooth")
-
-    with(DF, tapply(V1, lags, mean))
-    with(DF, tapply(V2, lags, mean))
-    with(DF, tapply(V3, lags, mean))
-    with(DF, tapply(V4, lags, mean))
-
-
-
-
-
-            diffs2 <- variogram(y = R, times = tt, id = id_after)$svar[, 'diffs2']
-            V <- total_var_cpp(split(R, id_after))
+            #diffs2 <- variogram(y = R, times = tt, id = id_after)$svar[, 'diffs2']
+            #V <- total_var_cpp(split(R, id_after))
+            vr <- variogram(y = R, times = tt, id = id_after)$svar
+            lags <- round(vr[, 1L], 6)
+            hlf_sq_diffs <- vr[, 2L]
+            unq_lags <- unique(lags)
+            global_mean <- mean(hlf_sq_diffs)
+            f <- factor(lags)
+            ws <- c(table(f))
+            ws <- ws / sum(ws)
+            mean_per_lag <- tapply(hlf_sq_diffs, f, mean)
             sigma2 <- mean((obs - means_before[id_after])^2)
-            mean(R^2) / sigma2 + alpha * mean((diffs2 - V)^2) / sigma2^2 # var(diffs2) / sigma2^2
+            mean(R^2) / sigma2 + alpha * sum(ws * (mean_per_lag - global_mean)^2) / sigma2^2
         }
     }
     best_model_MSPE <- which.min(apply(Preds_after, 2L, loss, obs = Obs_after, type = "MSPE"))
@@ -629,9 +620,9 @@ best_model_MSPE <- best_model_Vario <- matrix(NA_real_, M, nrow(settings))
 for (m in seq_len(M)) {
     cat("\nm =", m, "\n")
     res <- matrix(NA_real_, nrow(settings), n_methods, dimnames = dnams)
-    training <- sim_fun4(nn, K = KK) # create_data(350, 50, 50, K = 20)
-    testing <- sim_fun4(nn, K = KK) # create_data(50, 350, 50, K = 20)
-    testing2 <- sim_fun4(nn, K = KK) # create_data(50, 350, 50, K = 20)
+    training <- create_data(350, 50, 50, K = 20) # sim_fun4(nn, K = KK)
+    testing <- create_data(50, 350, 50, K = 20) # sim_fun4(nn, K = KK)
+    testing2 <- create_data(50, 350, 50, K = 20) # sim_fun4(nn, K = KK)
     tt <- try(fit_models(training), silent = TRUE)
     if (!inherits(tt, "try-error")) {
         Models <- tt
