@@ -172,8 +172,7 @@ library("lattice")
 library("matrixStats")
 source("./R/optimal_model.R")
 Rcpp::sourceCpp("Development/variogram/variogram.cpp")
-sim_fun1 <- function (n, model = c("mixed", "joint"), K = 30) {
-    model <- match.arg(model)
+sim_fun <- function (n, scenario = c("I", "II", "III", "IV"), K = 30) {
     t_max <- 7 # maximum follow-up time
     # we construct a data frame with the design:
     # everyone has a baseline measurement, and then measurements at random
@@ -182,266 +181,66 @@ sim_fun1 <- function (n, model = c("mixed", "joint"), K = 30) {
                      time = rep(seq(0, t_max, length.out = K), n),
                      sex = rep(gl(2, n/2, labels = c("male", "female")), each = K),
                      age = rep(runif(n, 30, 60), each = K))
-
-    # design matrices for the fixed and random effects
-    X <- model.matrix(~ sex * time, data = DF)
-    Z <- model.matrix(~ time, data = DF)
-    betas <- 20 * c(-2.2, -0.25, 0.24, -0.05) # fixed effects coefficients
-    sigma <- 2 # errors' standard deviation
-    D11 <- 2 # variance of random intercepts
-    D22 <- 1.5 # variance of random slopes
-    # we simulate random effects
-    b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
+    if (scenario == "I") {
+        # design matrices for the fixed and random effects
+        X <- model.matrix(~ sex * time, data = DF)
+        Z <- model.matrix(~ time, data = DF)
+        betas <- 20 * c(-2.2, -0.25, 0.24, -0.05) # fixed effects coefficients
+        sigma <- 2 # errors' standard deviation
+        D11 <- 2 # variance of random intercepts
+        D22 <- 1.5 # variance of random slopes
+        # we simulate random effects
+        b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)))
+    } else if (scenario == "II") {
+        X <- model.matrix(~ sex * ns(time, k = c(3, 5), B = c(0, 7)), data = DF)
+        Z <- model.matrix(~ ns(time, k = c(3, 5), B = c(0, 7)), data = DF)
+        betas <- 15 * c(5.2, -0.25, 0.2, 0.3, 0.5, -0.4, -0.6, -1.0) # fixed effects coefficients
+        sigma <- 2 # errors' standard deviation
+        D11 <- 2 # variance of random intercepts
+        D22 <- 2 # variance of random slopes
+        D33 <- 2 # variance of quadratic random slopes
+        D44 <- 2 # variance of quadratic random slopes
+        # we simulate random effects
+        b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)),
+                   rnorm(n, sd = sqrt(D33)), rnorm(n, sd = sqrt(D44)))
+    } else if (scenario == "III") {
+        # design matrices for the fixed and random effects
+        X <- model.matrix(~ time + I(time^2), data = DF)
+        Z <- model.matrix(~ time + I(time^2), data = DF)
+        betas <- -1 * c(0.2, 0.8, 0.5) # fixed effects coefficients
+        sigma <- 2 # errors standard deviation
+        D11 <- 2 # variance of random intercepts
+        D22 <- 2 # variance of random slopes
+        D33 <- 2 # variance of quadratic random slopes
+        # we simulate random effects
+        b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)),
+                   rnorm(n, sd = sqrt(D33)))
+    } else {
+        # design matrices for the fixed and random effects
+        X <- model.matrix(~ time, data = DF)
+        Z <- model.matrix(~ poly(time, 4, raw = TRUE), data = DF)
+        betas <- c(0.2, 1.2) # fixed effects coefficients
+        sigma <- 1 # errors standard deviation
+        D11 <- 0.5 # variance of random intercepts
+        D22 <- 0.2 # variance of random intercepts
+        D33 <- 0.3
+        D44 <- 0.1
+        D55 <- 0.1
+        rho <- 0.75
+        b <- MASS::mvrnorm(n, rep(0, 5), diag(c(D11, D22, D33, D44, D55)))
+    }
     # linear predictor
     eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
     # we simulate normal longitudinal data
     DF$y <- rnorm(n * K, mean = eta_y, sd = sigma)
 
-    if (model != "mixed") {
-        upp_Cens <- 8 # fixed Type I censoring time
-        shape_wb <- 7 # shape Weibull
-        alpha <- 0.8 # association coefficients
-        gammas <- c("(Intercept)" = -9, "sex" = 0.5)
-        W <- model.matrix(~ sex, data = DF[!duplicated(DF$id), ])
-        # linear predictor for the survival model
-        eta_t <- as.vector(W %*% gammas)
-        # to simulate event times we use inverse transform sampling
-        # (https://en.wikipedia.org/wiki/Inverse_transform_sampling). Namely, we want
-        # to find t, such that S(t) = u, where S(.) is the survival function, and u a
-        # number from the Unif(0, 1) distribution. The function below calculates
-        # log(u) - log(S(t)), and for a given u, we want to find t for which it equals
-        # zero. We do that below using the uniroot() function
-        invS <- function (t, i) {
-            # i denotes the subject
-            sex_i <- W[i, 2L]
-            # h() is the hazard function and we assume a Weibull baseline hazard
-            h <- function (s) {
-                X_at_s <- cbind(1, sex_i, s, sex_i * s)
-                Z_at_s <- cbind(1, s)
-                # the linear predictor from the mixed model evaluated at time s
-                f <- as.vector(X_at_s %*% betas +
-                                   rowSums(Z_at_s * b[rep(i, nrow(Z_at_s)), ]))
-                exp(log(shape_wb) + (shape_wb - 1) * log(s) + eta_t[i] + f * alpha)
-            }
-            # -log(S(t)) = H(t), where H(t) is the cumulative hazard function
-            integrate(h, lower = 0, upper = t)$value + log(u[i])
-        }
-        # we simulate the event times
-        u <- runif(n)
-        trueTimes <- numeric(n)
-        for (i in seq_len(n)) {
-            Up <- 100
-            Root <- try(uniroot(invS, interval = c(1e-05, Up), i = i)$root, TRUE)
-            trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
-        }
-        # we use fixed Type I right censoring denoting the end of the trial.
-        Ctimes <- upp_Cens
-        Time <- pmin(trueTimes, Ctimes)
-        event <- as.numeric(trueTimes <= Ctimes) # event indicator
-        # we keep the longitudinal measurements before the event times
-        DF$Time <- Time[DF$id]
-        DF$event <- event[DF$id]
-        DF <- DF[DF$time <= DF$Time, ]
-    }
     DF$id <- with(DF, ave(id, id, FUN = function (x) sample(1e06, 1) + x))
     DF
 }
-
-sim_fun2 <- function (n, model = c("mixed", "joint"), K = 30) {
-    model <- match.arg(model)
-    t_max <- 7 # maximum follow-up time
-    # we construct a data frame with the design:
-    # everyone has a baseline measurement, and then measurements at random
-    # follow-up times up to t_max
-    DF <- data.frame(id = rep(seq_len(n), each = K),
-                     time = rep(seq(0, t_max, length.out = K), n),
-                     sex = rep(gl(2, n/2, labels = c("male", "female")), each = K),
-                     age = rep(runif(n, 30, 60), each = K))
-
-    # design matrices for the fixed and random effects
-    X <- model.matrix(~ sex * ns(time, k = c(3, 5), B = c(0, 7)), data = DF)
-    Z <- model.matrix(~ ns(time, k = c(3, 5), B = c(0, 7)), data = DF)
-    betas <- 15 * c(5.2, -0.25, 0.2, 0.3, 0.5, -0.4, -0.6, -1.0) # fixed effects coefficients
-    sigma <- 2 # errors' standard deviation
-    D11 <- 2 # variance of random intercepts
-    D22 <- 2 # variance of random slopes
-    D33 <- 2 # variance of quadratic random slopes
-    D44 <- 2 # variance of quadratic random slopes
-    # we simulate random effects
-    b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)),
-               rnorm(n, sd = sqrt(D33)), rnorm(n, sd = sqrt(D44)))
-    # linear predictor
-    eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
-    # we simulate normal longitudinal data
-    DF$y <- rnorm(n * K, mean = eta_y, sd = sigma)
-
-    if (model != "mixed") {
-        upp_Cens <- 5.1 # fixed Type I censoring time
-        shape_wb <- 7 # shape Weibull
-        alpha <- 0.15 # association coefficients
-        gammas <- c("(Intercept)" = -8, "sex" = 0.5)
-        W <- model.matrix(~ sex, data = DF[!duplicated(DF$id), ])
-        # linear predictor for the survival model
-        eta_t <- as.vector(W %*% gammas)
-        # to simulate event times we use inverse transform sampling
-        # (https://en.wikipedia.org/wiki/Inverse_transform_sampling). Namely, we want
-        # to find t, such that S(t) = u, where S(.) is the survival function, and u a
-        # number from the Unif(0, 1) distribution. The function below calculates
-        # log(u) - log(S(t)), and for a given u, we want to find t for which it equals
-        # zero. We do that below using the uniroot() function
-        invS <- function (t, i) {
-            # i denotes the subject
-            sex_i <- W[i, 2L]
-            # h() is the hazard function and we assume a Weibull baseline hazard
-            h <- function (s) {
-                X_at_s <- cbind(1, sex_i, s, s * s, sex_i * s, sex_i * s * s)
-                Z_at_s <- cbind(1, s, s * s)
-                # the linear predictor from the mixed model evaluated at time s
-                f <- as.vector(X_at_s %*% betas +
-                                   rowSums(Z_at_s * b[rep(i, nrow(Z_at_s)), ]))
-                exp(log(shape_wb) + (shape_wb - 1) * log(s) + eta_t[i] + f * alpha)
-            }
-            # -log(S(t)) = H(t), where H(t) is the cumulative hazard function
-            integrate(h, lower = 0, upper = t)$value + log(u[i])
-        }
-        # we simulate the event times
-        u <- runif(n)
-        trueTimes <- numeric(n)
-        for (i in seq_len(n)) {
-            Up <- 100
-            Root <- try(uniroot(invS, interval = c(1e-05, Up), i = i)$root, TRUE)
-            trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
-        }
-
-        # we use fixed Type I right censoring denoting the end of the trial.
-        Ctimes <- upp_Cens
-        Time <- pmin(trueTimes, Ctimes)
-        event <- as.numeric(trueTimes <= Ctimes) # event indicator
-        # we keep the longitudinal measurements before the event times
-        DF$Time <- Time[DF$id]
-        DF$event <- event[DF$id]
-        DF <- DF[DF$time <= DF$Time, ]
-    }
-    DF$id <- with(DF, ave(id, id, FUN = function (x) sample(1e06, 1) + x))
-    DF
-}
-
-sim_fun3 <- function (n, model = c("mixed", "joint"), K = 30) {
-    model <- match.arg(model)
-    t_max <- 7 # maximum follow-up time
-    # we construct a data frame with the design:
-    # everyone has a baseline measurement, and then measurements at random
-    # follow-up times up to t_max
-    DF <- data.frame(id = rep(seq_len(n), each = K),
-                     time = rep(seq(0, t_max, length.out = K), n),
-                     sex = rep(gl(2, n/2, labels = c("male", "female")), each = K),
-                     age = rep(runif(n, 30, 60), each = K))
-
-    # design matrices for the fixed and random effects
-    X <- model.matrix(~ time + I(time^2), data = DF)
-    Z <- model.matrix(~ time + I(time^2), data = DF)
-    betas <- -1 * c(0.2, 0.8, 0.5) # fixed effects coefficients
-    sigma <- 2 # errors standard deviation
-    D11 <- 2 # variance of random intercepts
-    D22 <- 2 # variance of random slopes
-    D33 <- 2 # variance of quadratic random slopes
-    # we simulate random effects
-    b <- cbind(rnorm(n, sd = sqrt(D11)), rnorm(n, sd = sqrt(D22)),
-               rnorm(n, sd = sqrt(D33)))
-    # linear predictor
-    eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
-    # we simulate normal longitudinal data
-    DF$y <- rnorm(n * K, mean = eta_y, sd = sigma)#exp(rnorm(n * K, mean = eta_y, sd = sigma) / 100)
-
-    if (model != "mixed") {
-        upp_Cens <- 5.1 # fixed Type I censoring time
-        shape_wb <- 7 # shape Weibull
-        alpha <- 0.15 # association coefficients
-        gammas <- c("(Intercept)" = -10, "sex" = 0.5)
-        W <- model.matrix(~ sex, data = DF[!duplicated(DF$id), ])
-        # linear predictor for the survival model
-        eta_t <- as.vector(W %*% gammas)
-        # to simulate event times we use inverse transform sampling
-        # (https://en.wikipedia.org/wiki/Inverse_transform_sampling). Namely, we want
-        # to find t, such that S(t) = u, where S(.) is the survival function, and u a
-        # number from the Unif(0, 1) distribution. The function below calculates
-        # log(u) - log(S(t)), and for a given u, we want to find t for which it equals
-        # zero. We do that below using the uniroot() function
-        invS <- function (t, i) {
-            # i denotes the subject
-            sex_i <- W[i, 2L]
-            # h() is the hazard function and we assume a Weibull baseline hazard
-            h <- function (s) {
-                X_at_s <- cbind(1, s, s * s)
-                Z_at_s <- cbind(1, s, s * s)
-                # the linear predictor from the mixed model evaluated at time s
-                f <- as.vector(X_at_s %*% betas +
-                                   rowSums(Z_at_s * b[rep(i, nrow(Z_at_s)), ]))
-                exp(log(shape_wb) + (shape_wb - 1) * log(s) + eta_t[i] + f * alpha)
-            }
-            # -log(S(t)) = H(t), where H(t) is the cumulative hazard function
-            integrate(h, lower = 0, upper = t)$value + log(u[i])
-        }
-        # we simulate the event times
-        u <- runif(n)
-        trueTimes <- numeric(n)
-        for (i in seq_len(n)) {
-            Up <- 100
-            Root <- try(uniroot(invS, interval = c(1e-05, Up), i = i)$root, TRUE)
-            trueTimes[i] <- if (!inherits(Root, "try-error")) Root else 150
-        }
-
-        # we use fixed Type I right censoring denoting the end of the trial.
-        Ctimes <- upp_Cens
-        Time <- pmin(trueTimes, Ctimes)
-        event <- as.numeric(trueTimes <= Ctimes) # event indicator
-        # we keep the longitudinal measurements before the event times
-        DF$Time <- Time[DF$id]
-        DF$event <- event[DF$id]
-        DF <- DF[DF$time <= DF$Time, ]
-    }
-    DF$id <- with(DF, ave(id, id, FUN = function (x) sample(1e06, 1) + x))
-    DF
-}
-
-sim_fun4 <- function (n, model = c("mixed", "joint"), K = 30) {
-    model <- match.arg(model)
-    t_max <- 7 # maximum follow-up time
-    # we construct a data frame with the design:
-    # everyone has a baseline measurement, and then measurements at random
-    # follow-up times up to t_max
-    DF <- data.frame(id = rep(seq_len(n), each = K),
-                     time = rep(seq(0, t_max, length.out = K), n),
-                     sex = rep(gl(2, n/2, labels = c("male", "female")), each = K),
-                     age = rep(runif(n, 30, 60), each = K))
-
-    # design matrices for the fixed and random effects
-    X <- model.matrix(~ time, data = DF)
-    Z <- model.matrix(~ poly(time, 4, raw = TRUE), data = DF)
-    betas <- c(0.2, 1.2) # fixed effects coefficients
-    sigma <- 1 # errors standard deviation
-    D11 <- 0.5 # variance of random intercepts
-    D22 <- 0.2 # variance of random intercepts
-    D33 <- 0.3
-    D44 <- 0.1
-    D55 <- 0.1
-    rho <- 0.75
-    b <- MASS::mvrnorm(n, rep(0, 5), diag(c(D11, D22, D33, D44, D55)))
-    # linear predictor
-    eta_y <- as.vector(X %*% betas + rowSums(Z * b[DF$id, ]))
-    # we simulate normal longitudinal data
-    #
-    #R <- rho^abs(outer(DF$time[DF$id == 1], DF$time[DF$id == 1], FUN = "-"))
-    #Sigma <- sigma^2 * R
-    #DF$y <- unlist(lapply(1:n, function (i) MASS::mvrnorm(1, eta_y[DF$id == i], Sigma)))
-    DF$y <- rnorm(n * K, mean = eta_y, sd = sigma)
-    DF$id <- with(DF, ave(id, id, FUN = function (x) sample(1e06, 1) + x))
-    DF
-}
-
 create_data <- function (n1, n2, n3, K = 30) {
-    DF <- do.call('rbind', list(sim_fun1(n1, K = K), sim_fun2(n2, K = K),
-                                sim_fun3(n3, K = K)))
+    DF <- do.call('rbind', list(sim_fun(n1, "I", K = K),
+                                sim_fun(n2, "II", K = K),
+                                sim_fun(n3, "III", K = K)))
     DF$id <- match(DF$id, unique(DF$id))
     DF
 }
@@ -489,45 +288,60 @@ fit_models <- function (training) {
                control = lmeControl(opt = "optim"))
     list(fm0, fm1, fm2, fm3)
 }
-best_model_test <- function (testing, T0, Dt, alpha = 1) {
+best_model_test <- function (Models, testing, T0, Dt, alpha = 1) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
     Data_before <- Data[Data$time <= T0, ]
     id_before <- match(Data_before$id, unique(Data_before$id))
     means_before <- tapply(Data_before$y, id_before, mean)
     Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
-    preds <- lapply(Models, IndvPred_lme, newdata = Data_before,
+    preds <- lapply(Models, indv_pred_lme, newdata = Data_before,
                     newdata2 = Data_after)
     Preds_after <- do.call('cbind', lapply(preds, '[[', 'predicted_y'))
     Obs_after <- Data_after$y
     tt <- Data_after$time
     id_after <- match(Data_after$id, unique(Data_after$id))
-
-    #obs = Obs_after
-    #preds = Preds_after[, 1]
-
-    loss <- function (obs, preds, type = c("MSPE", "Variogram")) {
+    loss <- function (obs, preds, type = c("MSPE", "sample-variogram", "exp-variogram")) {
         type <- match.arg(type)
         R <- obs - preds
         if (type == "MSPE") {
             mean(R^2)
         } else {
-            #diffs2 <- variogram(y = R, times = tt, id = id_after)$svar[, 'diffs2']
-            #V <- total_var_cpp(split(R, id_after))
             vr <- variogram(y = R, times = tt, id = id_after)$svar
             lags <- round(vr[, 1L], 6)
             hlf_sq_diffs <- vr[, 2L]
-            unq_lags <- unique(lags)
-            global_mean <- mean(hlf_sq_diffs)
-            f <- factor(lags)
-            ws <- c(table(f))
-            ws <- ws / sum(ws)
-            mean_per_lag <- tapply(hlf_sq_diffs, f, mean)
-            sigma2 <- mean((obs - means_before[id_after])^2)
-            mean(R^2) / sigma2 + alpha * sum(ws * (mean_per_lag - global_mean)^2) / sigma2^2
+            if (type == "sample-variogram") {
+                unq_lags <- unique(lags)
+                global_mean <- mean(hlf_sq_diffs)
+                f <- factor(lags)
+                ws <- c(table(f))
+                ws <- ws / sum(ws)
+                mean_per_lag <- tapply(hlf_sq_diffs, f, mean)
+                sigma2 <- mean((obs - means_before[id_after])^2)
+                mean(R^2) / sigma2 + alpha * mean(ws * (mean_per_lag - global_mean)^2) / sigma2^2
+            } else {
+                fit_variogram <- function(params) {
+                    nugget <- params[1L]
+                    partial_sill <- params[2L]
+                    range_param  <- params[3L]
+                    # Exponential variogram curve
+                    theoretical <- nugget + partial_sill * (1 - exp(-lags / range_param))
+                    # Return Mean Squared Error of the fit
+                    mean((hlf_sq_diffs - theoretical)^2)
+                }
+                # Initial guesses: nugget = total variance, partial_sill = 0, range = 1
+                init_guess <- c(nugget = var(R), partial_sill = 0.01, range = 1)
+                opt <- optim(par = init_guess, fn = fit_variogram,
+                             method = "L-BFGS-B",
+                             lower = c(0.001, 0, 0.001),
+                             upper = c(Inf, Inf, Inf))
+                # If c1 > 0, structured serial correlation remains!
+                extracted_partial_sill <- opt$par[2L]
+                mean(R^2) + alpha * extracted_partial_sill
+            }
         }
     }
     best_model_MSPE <- which.min(apply(Preds_after, 2L, loss, obs = Obs_after, type = "MSPE"))
-    best_model_Vario <- which.min(apply(Preds_after, 2L, loss, obs = Obs_after, type = "Vario"))
+    best_model_Vario <- which.min(apply(Preds_after, 2L, loss, obs = Obs_after, type = "sample"))
     SL_weights <- function (log_w, type) {
         log_w <- c(log_w, 0)
         weights <- exp(log_w - logSumExp(log_w))
@@ -536,16 +350,16 @@ best_model_test <- function (testing, T0, Dt, alpha = 1) {
     }
     init <- rep(0, ncol(Preds_after) - 1L)
     log_w1 <- c(optim(init, SL_weights, method = "BFGS", type = "MSPE")$par, 0)
-    log_w2 <- c(optim(init, SL_weights, method = "BFGS", type = "Vario")$par, 0)
+    log_w2 <- c(optim(init, SL_weights, method = "BFGS", type = "sample")$par, 0)
     list(best_model_MSPE = best_model_MSPE, best_model_Vario = best_model_Vario,
          weights1 = exp(log_w1 - logSumExp(log_w1)),
          weights2 = exp(log_w2 - logSumExp(log_w2)))
 }
-metrics <- function (testing, T0, Dt, best_model, weights1, weights2) {
+metrics <- function (Models, testing, T0, Dt, best_model, weights1, weights2) {
     Data <- testing[ave(testing$time, testing$id, FUN = max) > T0, ]
     Data_before <- Data[Data$time <= T0, ]
     Data_after <- Data[Data$time > T0 & Data$time <= T0 + Dt, ]
-    preds <- lapply(Models, IndvPred_lme, newdata = Data_before,
+    preds <- lapply(Models, indv_pred_lme, newdata = Data_before,
                     newdata2 = Data_after, interval = "prediction")
     ####
     Preds <- do.call('cbind', lapply(preds, '[[', 'fitted_y'))
@@ -573,7 +387,7 @@ metrics <- function (testing, T0, Dt, best_model, weights1, weights2) {
     Data_before2 <- Data[Data$time <= T0 - Dt, ]
     Data_after2 <- Data[Data$time > T0 - Dt & Data$time <= T0, ]
     mse_indv_w <- if (nrow(Data_before2) && nrow(Data_after2)) {
-        preds2 <- lapply(Models, IndvPred_lme, newdata = Data_before2,
+        preds2 <- lapply(Models, indv_pred_lme, newdata = Data_before2,
                          newdata2 = Data_after2)
         ####
         Preds_after2 <- do.call('cbind', lapply(preds2, '[[', 'predicted_y'))
@@ -607,7 +421,7 @@ Times <- seq(1.5, 5.5, 0.5)
 Dts <- 2
 n_methods <- 14
 settings <- expand.grid(T0 = Times, Dt = Dts)
-M <- 100
+M <- 10
 sim_results <- array(NA_real_, c(nrow(settings), n_methods, M))
 dnams <-
     list(paste0("T0=", sprintf("%.1f", settings$T0), ", Dt=",
@@ -629,9 +443,9 @@ for (m in seq_len(M)) {
         aic_best <- which.min(mapply(AIC_lme, Models,
                                      MoreArgs = list(newdata = testing)))
         for (i in seq_len(nrow(res))) {
-            selected_model <- best_model_test(testing, settings$T0[i], settings$Dt[i])
+            selected_model <- best_model_test(Models, testing, settings$T0[i], settings$Dt[i])
             best_models <- c(selected_model[[1]], selected_model[[2]], aic_best)
-            r <- metrics(testing2, settings$T0[i], settings$Dt[i], best_models,
+            r <- metrics(Models, testing2, settings$T0[i], settings$Dt[i], best_models,
                          selected_model[[3]], selected_model[[4]])
             res[i, ] <- r
             best_model_MSPE[m, i] <- selected_model[[1]]

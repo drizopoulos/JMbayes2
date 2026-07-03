@@ -313,7 +313,7 @@ AIC_lme <- function (object, newdata) {
     - 2 * sum(lL, na.rm = TRUE) + 2 * (nx + nz + 1)
 }
 
-IndvPred_lme <- function (object, newdata, newdata2,
+indv_pred_lme <- function (object, newdata, newdata2,
                           interval = c("none", "confidence", "prediction"),
                           M = 200, level = 0.95) {
     if (!inherits(object, "lme") && !inherits(object, "lmeComponents")) {
