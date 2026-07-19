@@ -345,7 +345,7 @@ best_model_test <- function (Models, testing, T0, Dt, alpha = 1) {
     SL_weights <- function (log_w, type) {
         log_w <- c(log_w, 0)
         weights <- exp(log_w - logSumExp(log_w))
-        preds <- rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after)
+        preds <- c(Preds_after %*% weights) #rowSums(rep(weights, each = nrow(Preds_after)) * Preds_after)
         loss(Obs_after, preds, type)
     }
     init <- rep(0, ncol(Preds_after) - 1L)
