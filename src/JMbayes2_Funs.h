@@ -62,7 +62,31 @@ mat cor2cov (const mat &R, const vec &sds) {
   return out;
 }
 
-vec group_sum (const vec &x, const uvec &ind) {
+arma::vec group_sum(const arma::vec& x, const arma::uvec& ind) {
+    arma::uword m = ind.n_elem;
+    arma::vec out(m);
+    // Extract raw pointers for maximum access speed
+    const double* p_x = x.memptr();
+    const arma::uword* p_ind = ind.memptr();
+    double* p_out = out.memptr();
+    arma::uword start = 0;
+    for (arma::uword i = 0; i < m; ++i) {
+        arma::uword end = p_ind[i];
+        // Safety bound check to prevent crashing R if an index is too large
+        if (end >= x.n_elem) end = x.n_elem - 1;
+        double current_sum = 0.0;
+        // Sum the elements for the current segment
+        for (arma::uword j = start; j <= end; ++j) {
+            current_sum += p_x[j];
+        }
+        p_out[i] = current_sum;
+        // Next group starts exactly one element after the current group ends
+        start = end + 1;
+    }
+    return out;
+}
+
+vec group_sum_old(const vec &x, const uvec &ind) {
   vec cumsum_x = cumsum(x);
   vec out = cumsum_x.rows(ind);
   out.insert_rows(0, 1);
@@ -70,7 +94,7 @@ vec group_sum (const vec &x, const uvec &ind) {
   return out;
 }
 
-vec group_sum2 (const vec &x, const uvec &ind) {
+vec group_sum2(const vec &x, const uvec &ind) {
     uvec tt = unique(ind);
     uword n = tt.n_rows;
     uvec ind2 = ind - 1;
