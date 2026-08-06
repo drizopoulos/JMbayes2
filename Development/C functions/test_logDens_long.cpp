@@ -45,6 +45,36 @@ vec log_dbinom_fast (const vec &x, const vec &size, const vec &prob) {
 }
 
 // [[Rcpp::export]]
+arma::vec log_dbinom_ultra (const arma::vec &x, const arma::vec &size, const arma::vec &prob) {
+    arma::uword n = x.n_elem;
+    arma::vec out(n, arma::fill::none);
+
+    const double* px = x.memptr();
+    const double* ps = size.memptr();
+    const double* pp = prob.memptr();
+    double* pout = out.memptr();
+
+    for (arma::uword i = 0; i < n; ++i) {
+        double xi = px[i];
+        double ni = ps[i];
+        double pi = pp[i];
+
+        // Boundary short-circuits: handles x = 0 and x = size without computing gamma functions
+        if (xi == 0.0) {
+            pout[i] = ni * std::log(1.0 - pi);
+        } else if (xi == ni) {
+            pout[i] = ni * std::log(pi);
+        } else {
+            // General case for 0 < x < size
+            pout[i] = std::lgamma(ni + 1.0) - std::lgamma(xi + 1.0) - std::lgamma(ni - xi + 1.0)
+            + xi * std::log(pi) + (ni - xi) * std::log(1.0 - pi);
+        }
+    }
+
+    return out;
+}
+
+// [[Rcpp::export]]
 vec log_dpois_fast (const vec &x, const vec &lambda) {
     uword n = x.n_elem;
     vec out(n, fill::none);
@@ -74,6 +104,49 @@ vec log_dbbinom_fast (const vec &x, const vec &size, const vec &prob, const doub
         pout[i] = R::lchoose(ps[i], px[i]) +
             R::lbeta(px[i] + A, ps[i] - px[i] + B) -
             R::lbeta(A, B);
+    }
+    return out;
+}
+
+// [[Rcpp::export]]
+arma::vec log_dbbinom_ultra(const arma::vec &x,
+                            const arma::vec &size,
+                            const arma::vec &prob,
+                            const double phi) {
+    arma::uword n = x.n_elem;
+    arma::vec out(n, arma::fill::none);
+    const double* px = x.memptr();
+    const double* ps = size.memptr();
+    const double* pp = prob.memptr();
+    double* pout = out.memptr();
+    double lgamma_phi = std::lgamma(phi);
+    for (arma::uword i = 0; i < n; ++i) {
+        double xi = px[i];
+        double ni = ps[i];
+        double pi = pp[i];
+        double A = phi * pi;
+        double B = phi * (1.0 - pi);
+        // Pre-compute the denominator for the beta function's numerator.
+        // It only depends on 'ni' and 'phi', and is used in every branch.
+        double lgamma_n_phi = std::lgamma(ni + phi);
+        if (xi == 0.0) {
+            // Short-circuit for x = 0
+            // log_binom is 0. log(Gamma(A)) completely cancels out.
+            pout[i] = std::lgamma(ni + B) - lgamma_n_phi + lgamma_phi - std::lgamma(B);
+        } else if (xi == ni) {
+            // Short-circuit for x = n
+            // log_binom is 0. log(Gamma(B)) completely cancels out.
+            pout[i] = std::lgamma(ni + A) - lgamma_n_phi + lgamma_phi - std::lgamma(A);
+        } else {
+            // General case for 0 < x < size
+            // 1. Log Binomial Coefficient: log( n! / (x! * (n-x)!) )
+            double log_binom = std::lgamma(ni + 1.0) - std::lgamma(xi + 1.0) - std::lgamma(ni - xi + 1.0);
+            // 2. Log Beta Numerator: log( B(x+A, n-x+B) )
+            double log_beta_num = std::lgamma(xi + A) + std::lgamma(ni - xi + B) - lgamma_n_phi;
+            // 3. Log Beta Denominator: log( B(A, B) )
+            double log_beta_den = std::lgamma(A) + std::lgamma(B) - lgamma_phi;
+            pout[i] = log_binom + log_beta_num - log_beta_den;
+        }
     }
     return out;
 }

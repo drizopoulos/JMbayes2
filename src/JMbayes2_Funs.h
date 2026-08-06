@@ -388,13 +388,27 @@ vec lchoose_arma (const vec &n, const vec &k) {
   return out;
 }
 
-vec log_dbinom (const vec &x, const vec &size, const vec &prob) {
-  uword n = x.n_rows;
-  vec out(n);
-  for (uword i = 0; i < n; ++i) {
-    out.at(i) = R::dbinom(x.at(i), size.at(i), prob.at(i), 1);
-  }
-  return out;
+arma::vec log_dbinom (const arma::vec &x, const arma::vec &size, const arma::vec &prob) {
+    arma::uword n = x.n_elem;
+    arma::vec out(n, arma::fill::none);
+    const double* px = x.memptr();
+    const double* ps = size.memptr();
+    const double* pp = prob.memptr();
+    double* pout = out.memptr();
+    for (arma::uword i = 0; i < n; ++i) {
+        double xi = px[i];
+        double ni = ps[i];
+        double pi = pp[i];
+        if (xi == 0.0) {
+            pout[i] = ni * std::log(1.0 - pi);
+        } else if (xi == ni) {
+            pout[i] = ni * std::log(pi);
+        } else {
+            pout[i] = std::lgamma(ni + 1.0) - std::lgamma(xi + 1.0) - std::lgamma(ni - xi + 1.0)
+            + xi * std::log(pi) + (ni - xi) * std::log(1.0 - pi);
+        }
+    }
+    return out;
 }
 
 vec log_dpois (const vec &x, const vec &lambda) {
@@ -406,15 +420,44 @@ vec log_dpois (const vec &x, const vec &lambda) {
   return out;
 }
 
-vec log_dbbinom (const vec &x, const vec &size, const vec &prob,
-                 const double &phi) {
-  vec A = phi * prob;
-  vec B = phi * (1.0 - prob);
-  vec log_numerator = lbeta_arma(x + A, size - x + B);
-  vec log_denominator = lbeta_arma(A, B);
-  vec fact = lchoose_arma(size, x);
-  vec out = fact + log_numerator - log_denominator;
-  return out;
+arma::vec log_dbbinom (const arma::vec &x, const arma::vec &size,
+                       const arma::vec &prob, const double phi) {
+    arma::uword n = x.n_elem;
+    arma::vec out(n, arma::fill::none);
+    const double* px = x.memptr();
+    const double* ps = size.memptr();
+    const double* pp = prob.memptr();
+    double* pout = out.memptr();
+    double lgamma_phi = std::lgamma(phi);
+    for (arma::uword i = 0; i < n; ++i) {
+        double xi = px[i];
+        double ni = ps[i];
+        double pi = pp[i];
+        double A = phi * pi;
+        double B = phi * (1.0 - pi);
+        // Pre-compute the denominator for the beta function's numerator.
+        // It only depends on 'ni' and 'phi', and is used in every branch.
+        double lgamma_n_phi = std::lgamma(ni + phi);
+        if (xi == 0.0) {
+            // Short-circuit for x = 0
+            // log_binom is 0. log(Gamma(A)) completely cancels out.
+            pout[i] = std::lgamma(ni + B) - lgamma_n_phi + lgamma_phi - std::lgamma(B);
+        } else if (xi == ni) {
+            // Short-circuit for x = n
+            // log_binom is 0. log(Gamma(B)) completely cancels out.
+            pout[i] = std::lgamma(ni + A) - lgamma_n_phi + lgamma_phi - std::lgamma(A);
+        } else {
+            // General case for 0 < x < size
+            // 1. Log Binomial Coefficient: log( n! / (x! * (n-x)!) )
+            double log_binom = std::lgamma(ni + 1.0) - std::lgamma(xi + 1.0) - std::lgamma(ni - xi + 1.0);
+            // 2. Log Beta Numerator: log( B(x+A, n-x+B) )
+            double log_beta_num = std::lgamma(xi + A) + std::lgamma(ni - xi + B) - lgamma_n_phi;
+            // 3. Log Beta Denominator: log( B(A, B) )
+            double log_beta_den = std::lgamma(A) + std::lgamma(B) - lgamma_phi;
+            pout[i] = log_binom + log_beta_num - log_beta_den;
+        }
+    }
+    return out;
 }
 
 vec log_dnbinom (const vec &x, const vec &mu, const double &size) {
@@ -426,11 +469,10 @@ vec log_dnbinom (const vec &x, const vec &mu, const double &size) {
   return out;
 }
 
- vec log_dnorm (const vec &x, const vec &mu, const double &sigma) {
-  vec sigmas(x.n_rows);
-  sigmas.fill(sigma);
-  vec out = log_normpdf(x, mu, sigmas);
-  return out;
+vec log_dnorm (const vec &x, const vec &mu, const double &sigma) {
+    double constant = -std::log(sigma) - 0.5 * std::log(2.0 * M_PI);
+    double var2 = 2.0 * sigma * sigma;
+    return constant - arma::square(x - mu) / var2;
 }
 
 vec log_pnorm (const vec &x, const vec &mu, const double &sigma,
