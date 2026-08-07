@@ -352,22 +352,22 @@ vec propose_mvnorm_vec (const mat &Sigma) {
 }
 
 vec mu_fun (const vec &eta, const std::string &link) {
-  uword n = eta.n_rows;
-  vec out(n);
-  if (link == "identity") {
-    out = eta;
-  } else if (link == "inverse") {
-    out = 1.0 / eta;
-  } else if (link == "logit") {
-    out = 1.0 / (1.0 + trunc_exp(- eta));
-  } else if (link == "probit") {
-    out = normcdf(eta);
-  } else if (link == "cloglog") {
-    out = - trunc_exp(- trunc_exp(eta)) + 1.0;
-  } else if (link == "log") {
-    out = trunc_exp(eta);
-  }
-  return out;
+    uword n = eta.n_rows;
+    vec out(n);
+    if (link == "identity") {
+        out = eta;
+    } else if (link == "inverse") {
+        out = 1.0 / eta;
+    } else if (link == "logit") {
+        out = 1.0 / (1.0 + trunc_exp(- eta));
+    } else if (link == "probit") {
+        out = normcdf(eta);
+    } else if (link == "cloglog") {
+        out = - trunc_exp(- trunc_exp(eta)) + 1.0;
+    } else if (link == "log") {
+        out = trunc_exp(eta);
+    }
+    return out;
 }
 
 vec lbeta_arma (const vec &a, const vec &b) {
@@ -593,11 +593,11 @@ field<vec> linpred_mixed (const field<mat> &X, const field<vec> &betas,
   uword n_outcomes = X.n_elem;
   field<vec> out(n_outcomes);
   for (uword i = 0; i < n_outcomes; ++i) {
-    mat X_i = X.at(i);
-    vec betas_i = betas.at(i);
-    mat Z_i = Z.at(i);
-    mat b_i = b.at(i);
-    uvec id_i = id.at(i);
+    const mat& X_i = X.at(i);
+    const vec& betas_i = betas.at(i);
+    const mat& Z_i = Z.at(i);
+    const mat& b_i = b.at(i);
+    const uvec& id_i = id.at(i);
     out.at(i) = X_i * betas_i + arma::sum(Z_i % b_i.rows(id_i), 1);
   }
   return out;

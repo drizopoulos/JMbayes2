@@ -158,16 +158,13 @@ vec log_dnbinom_fast (const vec &x, const vec &mu, const double &size) {
     const double* px = x.memptr();
     const double* pmu = mu.memptr();
     double* pout = out.memptr();
-
     // Precompute constant scalar values outside the loop!
     double lgamma_size = std::lgamma(size);
     double size_log_size = size * std::log(size);
-
     // Single pass calculation
     for (uword i = 0; i < n; ++i) {
         double mu_val = pmu[i];
         double x_val = px[i];
-
         double log_mu_size = std::log(mu_val + size);
         double comp1 = std::lgamma(x_val + size) - lgamma_size - std::lgamma(x_val + 1.0);
         double comp2 = size_log_size - size * log_mu_size;
@@ -176,6 +173,17 @@ vec log_dnbinom_fast (const vec &x, const vec &mu, const double &size) {
         pout[i] = comp1 + comp2 + comp3;
     }
     return out;
+}
+
+// [[Rcpp::export]]
+arma::vec log_dnbinom_ultra(const arma::vec &x, const arma::vec &mu, const double size) {
+    double lgamma_size = std::lgamma(size);
+    double size_log_size = size * std::log(size);
+
+    // Armadillo evaluates this in chunks, leveraging SIMD for log/lgamma,
+    // but we use strictly fewer arithmetic operations than before.
+    return arma::lgamma(x + size) - lgamma_size - arma::lgamma(x + 1.0)
+        + size_log_size + x % arma::log(mu) - (x + size) % arma::log(mu + size);
 }
 
 // 3. Mathematical simplification and Expression Templates

@@ -56,6 +56,27 @@ benchmark(
     replications = 100
 )
 
+#########################
+
+nn <- 1e5
+prs <- runif(nn)
+phi <- 2
+szs <- sample(1:3000, nn, TRUE)
+xx <- rpois(nn, szs)
+xx[sample(nn, 1e4)] <- 0
+
+tt1 <- log_dnbinom(xx, szs, phi)
+tt2 <- log_dnbinom_ultra(xx, szs, phi)
+
+all.equal(tt1, tt2)
+
+library("rbenchmark")
+
+benchmark(
+    Cpp1 = log_dnbinom(xx, szs, phi),
+    Cpp2 = log_dnbinom_ultra(xx, szs, phi),
+    replications = 1000
+)
 
 
 
