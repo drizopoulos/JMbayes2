@@ -34,3 +34,4 @@ benchmark(
     Cpp2 = linpred_surv2(X, betas, Z, b, id),
     replications = 5000
 )
+
