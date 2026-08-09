@@ -45,7 +45,7 @@ vec log_long_i (const mat &y_i, const vec &eta_i, const double &sigma_i,
       // not the number of failures
       log_contr = log_dbinom(y_i.col(0), y_i.col(1), mu_i);
     } else {
-      log_contr = y_i % log(mu_i) + (1.0 - y_i) % log(1.0 - mu_i);
+      log_contr = log_dbernoulli(y_i, mu_i);//y_i % log(mu_i) + (1.0 - y_i) % log(1.0 - mu_i);
     }
   } else if (fam_i == "poisson") {
     log_contr = log_dpois(y_i, mu_i);

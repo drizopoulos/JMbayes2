@@ -460,6 +460,19 @@ arma::vec log_dbbinom (const arma::vec &x, const arma::vec &size,
     return out;
 }
 
+arma::vec log_dbernoulli (const arma::vec &x, const arma::vec &prob) {
+    arma::uword n = x.n_elem;
+    arma::vec out(n, arma::fill::none);
+    const double* px = x.memptr();
+    const double* pp = prob.memptr();
+    double* pout = out.memptr();
+    for (arma::uword i = 0; i < n; ++i) {
+        double p_val = (px[i] > 0.0) ? pp[i] : (1.0 - pp[i]);
+        pout[i] = std::log(p_val);
+    }
+    return out;
+}
+
 vec log_dnbinom (const vec &x, const vec &mu, const double &size) {
   vec log_mu_size = log(mu + size);
   vec comp1 = lgamma(x + size) - lgamma(size) - lgamma(x + 1);
@@ -507,12 +520,20 @@ vec log_dht (const vec &x, const vec &sigma, const double &df = 3.0) {
 }
 
 vec log_dgamma (const vec &x, const double &shape, const vec &scale) {
-  uword n = x.n_rows;
-  vec out(n);
-  for (uword i = 0; i < n; ++i) {
-    out.at(i) = R::dgamma(x.at(i), shape, scale.at(i), 1);
-  }
-  return out;
+    uword n = x.n_elem;
+    vec out(n, fill::none);
+    const double* px = x.memptr();
+    const double* pscale = scale.memptr();
+    double* pout = out.memptr();
+    double lgamma_shape = std::lgamma(shape);
+    double shape_m1 = shape - 1.0;
+    for (uword i = 0; i < n; ++i) {
+        double x_val = px[i];
+        double scale_val = pscale[i];
+        pout[i] = -lgamma_shape - shape * std::log(scale_val)
+            + shape_m1 * std::log(x_val) - x_val / scale_val;
+    }
+    return out;
 }
 
 vec log_dbeta (const vec &x, const vec &shape1, const vec &shape2) {
@@ -692,43 +713,45 @@ field<mat> create_Wlong (const field<mat> &eta, const field<uvec> &FunForms,
 */
 
 mat transf_eta (const mat &eta, const CharacterVector &fun_nams) {
-  uword k = fun_nams.length();
-  mat out(eta.n_rows, k, fill::zeros);
-  for (uword i = 0; i < k; i++) {
-    if (fun_nams[i] == "identity") {
-      out.col(i) = eta;
-    } else if (fun_nams[i] == "abs") {
-      out.col(i) = abs(eta);
-    } else if (fun_nams[i] == "expit") {
-      out.col(i) = 1.0 / (1.0 + trunc_exp(- eta));
-    } else if (fun_nams[i] == "exp" || fun_nams[i] == "dexp") {
-      out.col(i) = trunc_exp(eta);
-    } else if (fun_nams[i] == "dexpit") {
-      mat pp = 1.0 / (1.0 + trunc_exp(- eta));
-      out.col(i) = pp * (1.0 - pp);
-    } else if (fun_nams[i] == "log") {
-      out.col(i) = trunc_log(eta);
-    } else if (fun_nams[i] == "log2") {
-      out.col(i) = log2(eta);
-    } else if (fun_nams[i] == "log10") {
-      out.col(i) = log10(eta);
-    } else if (fun_nams[i] == "sqrt") {
-      out.col(i) = sqrt(eta);
-    } else if (fun_nams[i] == "poly2") {
-      out.col(i) = square(eta);
-    } else if (fun_nams[i] == "poly3") {
-      out.col(i) = pow(eta, 3);
-    } else if (fun_nams[i] == "poly4") {
-      out.col(i) = pow(eta, 4);
-    } else if (fun_nams[i] == "poly2(expit)") {
-      out.col(i) = square(1.0 / (1.0 + trunc_exp(- eta)));
-    } else if (fun_nams[i] == "poly3(expit)") {
-      out.col(i) = pow(1.0 / (1.0 + trunc_exp(- eta)), 3);
-    } else if (fun_nams[i] == "poly4(expit)") {
-      out.col(i) = pow(1.0 / (1.0 + trunc_exp(- eta)), 4);
+    uword k = fun_nams.length();
+    mat out(eta.n_rows, k, fill::none);
+    for (uword i = 0; i < k; i++) {
+        std::string fun = as<std::string>(fun_nams[i]);
+        if (fun == "identity") {
+            out.col(i) = eta;
+        } else if (fun == "abs") {
+            out.col(i) = abs(eta);
+        } else if (fun == "expit") {
+            out.col(i) = 1.0 / (1.0 + trunc_exp(-eta));
+        } else if (fun == "exp" || fun == "dexp") {
+            out.col(i) = trunc_exp(eta);
+        } else if (fun == "dexpit") {
+            mat pp = 1.0 / (1.0 + trunc_exp(-eta));
+            out.col(i) = pp % (1.0 - pp);
+        } else if (fun == "log") {
+            out.col(i) = trunc_log(eta);
+        } else if (fun == "log2") {
+            out.col(i) = log2(eta);
+        } else if (fun == "log10") {
+            out.col(i) = log10(eta);
+        } else if (fun == "sqrt") {
+            out.col(i) = sqrt(eta);
+        } else if (fun == "poly2") {
+            out.col(i) = square(eta);
+        } else if (fun == "poly3") {
+            out.col(i) = eta % square(eta);
+        } else if (fun == "poly4") {
+            out.col(i) = square(square(eta));
+        } else if (fun == "poly2(expit)") {
+            out.col(i) = square(1.0 / (1.0 + trunc_exp(-eta)));
+        } else if (fun == "poly3(expit)") {
+            mat pp = 1.0 / (1.0 + trunc_exp(-eta));
+            out.col(i) = pp % square(pp);
+        } else if (fun == "poly4(expit)") {
+            out.col(i) = square(square(1.0 / (1.0 + trunc_exp(-eta))));
+        }
     }
-  }
-  return out;
+    return out;
 }
 
 field<mat> create_Wlong(const field<mat> &eta, const field<mat> &U,
