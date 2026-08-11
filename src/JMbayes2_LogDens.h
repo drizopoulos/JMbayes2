@@ -12,81 +12,83 @@ using namespace arma;
 vec log_long_i (const mat &y_i, const vec &eta_i, const double &sigma_i,
                 const double &extr_prm_i, const std::string &fam_i,
                 const std::string &link_i, const uvec &idFast_i) {
-  uword N = y_i.n_rows;
-  vec log_contr(N, fill::zeros);
-  vec mu_i = mu_fun(eta_i, link_i);
-  if (fam_i == "gaussian") {
-    log_contr = log_dnorm(y_i, mu_i, sigma_i);
-  } else if (fam_i == "Student's-t") {
-    log_contr = log_dt((y_i - mu_i) / sigma_i, extr_prm_i) - std::log(sigma_i);
-  } else if (fam_i == "beta") {
-    log_contr = log_dbeta(y_i, mu_i * sigma_i, sigma_i * (1.0 - mu_i));
-  } else if (fam_i == "Gamma") {
-    log_contr = log_dgamma(y_i, sigma_i, mu_i / sigma_i);
-  } else if (fam_i == "unit Lindley") {
-    vec theta = 1.0 / mu_i - 1.0;
-    vec comp1 = 2.0 * log(theta) - log(1.0 + theta);
-    vec comp2 = - 3.0 * log(1.0 - y_i);
-    vec comp3 = - (theta * y_i) / (1.0 - y_i);
-    log_contr = comp1 + comp2 + comp3;
-  } else if (fam_i == "censored normal") {
-    uvec ind0 = find(y_i.col(1) == 0);
-    uvec ind1 = find(y_i.col(1) == 1);
-    uvec ind2 = find(y_i.col(1) == 2);
-    vec yy = y_i.col(0);
-    log_contr.rows(ind0) = log_dnorm(yy.rows(ind0), mu_i.rows(ind0), sigma_i);
-    log_contr.rows(ind1) = log_pnorm(yy.rows(ind1), mu_i.rows(ind1), sigma_i);
-    log_contr.rows(ind2) = log_pnorm(yy.rows(ind2), mu_i.rows(ind2), sigma_i, 0);
-  } else if (fam_i == "binomial") {
-    uword k = y_i.n_cols;
-    if (k == 2) {
-      // y_i.col(1) has been set to y_i.col(0) + y_i.col(1)
-      // in jm_fit(), i.e., y_i.col(1) is already the number of trials
-      // not the number of failures
-      log_contr = log_dbinom(y_i.col(0), y_i.col(1), mu_i);
-    } else {
-      log_contr = log_dbernoulli(y_i, mu_i);//y_i % log(mu_i) + (1.0 - y_i) % log(1.0 - mu_i);
+    uword N = y_i.n_rows;
+    vec log_contr(N, fill::none);
+    vec mu_i = mu_fun(eta_i, link_i);
+    if (fam_i == "gaussian") {
+        log_contr = log_dnorm(y_i, mu_i, sigma_i);
+    } else if (fam_i == "Student's-t") {
+        log_contr = log_dt((y_i - mu_i) / sigma_i, extr_prm_i) - std::log(sigma_i);
+    } else if (fam_i == "beta") {
+        log_contr = log_dbeta(y_i, mu_i * sigma_i, sigma_i * (1.0 - mu_i));
+    } else if (fam_i == "Gamma") {
+        log_contr = log_dgamma(y_i, sigma_i, mu_i / sigma_i);
+    } else if (fam_i == "unit Lindley") {
+        const double* yy = y_i.memptr();
+        const double* mu_ptr = mu_i.memptr();
+        double* out_ptr = log_contr.memptr();
+        for (uword i = 0; i < N; ++i) {
+            double theta = 1.0 / mu_ptr[i] - 1.0;
+            double y_val = yy[i];
+            out_ptr[i] = 2.0 * std::log(theta) - std::log(1.0 + theta)
+                - 3.0 * std::log(1.0 - y_val)
+                - (theta * y_val) / (1.0 - y_val);
+        }
+    } else if (fam_i == "censored normal") {
+        const double* yy = y_i.colptr(0);
+        const double* cens = y_i.colptr(1);
+        const double* mu_ptr = mu_i.memptr();
+        double* out_ptr = log_contr.memptr();
+        for (uword i = 0; i < N; ++i) {
+            if (cens[i] == 0.0) {
+                out_ptr[i] = R::dnorm(yy[i], mu_ptr[i], sigma_i, 1);
+            } else if (cens[i] == 1.0) {
+                out_ptr[i] = R::pnorm(yy[i], mu_ptr[i], sigma_i, 1, 1);
+            } else { // cens == 2.0
+                out_ptr[i] = R::pnorm(yy[i], mu_ptr[i], sigma_i, 0, 1);
+            }
+        }
+    } else if (fam_i == "binomial") {
+        if (y_i.n_cols == 2) {
+            log_contr = log_dbinom(y_i.col(0), y_i.col(1), mu_i);
+        } else {
+            log_contr = log_dbernoulli(y_i, mu_i);
+        }
+    } else if (fam_i == "poisson") {
+        log_contr = log_dpois(y_i, mu_i);
+    } else if (fam_i == "negative binomial") {
+        log_contr = log_dnbinom(y_i, mu_i, sigma_i);
+    } else if (fam_i == "beta binomial") {
+        if (y_i.n_cols == 2) {
+            log_contr = log_dbbinom(y_i.col(0), y_i.col(1), mu_i, sigma_i);
+        } else {
+            vec ones(N, fill::ones);
+            log_contr = log_dbbinom(y_i, ones, mu_i, sigma_i);
+        }
     }
-  } else if (fam_i == "poisson") {
-    log_contr = log_dpois(y_i, mu_i);
-  } else if (fam_i == "negative binomial") {
-    log_contr = log_dnbinom(y_i, mu_i, sigma_i);
-  }  else if (fam_i == "beta binomial") {
-    uword k = y_i.n_cols;
-    if (k == 2) {
-      // y_i.col(1) has been set to y_i.col(0) + y_i.col(1)
-      // in jm_fit(), i.e., y_i.col(1) is already the number of trials
-      // not the number of failures
-      log_contr = log_dbbinom(y_i.col(0), y_i.col(1), mu_i, sigma_i);
-    } else {
-      vec ones(N, fill::ones);
-      log_contr = log_dbbinom(y_i, ones, mu_i, sigma_i);
-    }
-  }
-  vec out = group_sum(log_contr, idFast_i);
-  return out;
+    return group_sum(log_contr, idFast_i);
 }
 
 vec log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
-              const vec &extra_parms, const CharacterVector &families,
-              const CharacterVector &links, const field<uvec> &idFast,
-              const field<uvec> &unq_ids, const uword &n) {
-  uword n_outcomes = y.size();
-  vec out(n, fill::zeros);
-  for (uword i = 0; i < n_outcomes; ++i) {
-    mat y_i = y.at(i);
-    vec eta_i = eta.at(i);
-    double sigma_i = sigmas.at(i);
-    double extr_prm_i = extra_parms.at(i);
-    std::string fam_i = std::string(families[i]);
-    std::string link_i = std::string(links[i]);
-    uvec idFast_i = idFast.at(i);
-    uvec unq_id_i = unq_ids.at(i);
-    vec log_contr_i = log_long_i(y_i, eta_i, sigma_i, extr_prm_i, fam_i,
-                                 link_i, idFast_i);
-    out.rows(unq_id_i) += log_contr_i;
-  }
-  return out;
+             const vec &extra_parms, const CharacterVector &families,
+             const CharacterVector &links, const field<uvec> &idFast,
+             const field<uvec> &unq_ids, const uword &n) {
+    uword n_outcomes = y.size();
+    vec out(n, fill::zeros);
+    for (uword i = 0; i < n_outcomes; ++i) {
+        const mat& y_i = y.at(i);
+        const vec& eta_i = eta.at(i);
+        double sigma_i = sigmas.at(i);
+        double extr_prm_i = extra_parms.at(i);
+        std::string fam_i = as<std::string>(families[i]);
+        std::string link_i = as<std::string>(links[i]);
+        const uvec& idFast_i = idFast.at(i);
+        const uvec& unq_id_i = unq_ids.at(i);
+        vec log_contr_i = log_long_i(y_i, eta_i, sigma_i, extr_prm_i, fam_i,
+                                     link_i, idFast_i);
+        out.rows(unq_id_i) += log_contr_i;
+    }
+    return out;
 }
 
 vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,

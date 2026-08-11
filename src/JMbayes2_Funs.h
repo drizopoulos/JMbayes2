@@ -10,17 +10,16 @@ using namespace arma;
 
 static double const Const_Unif_Proposal = 0.5 * std::pow(12.0, 0.5);
 static double const log2pi = std::log(2.0 * M_PI);
+static double const half_log2pi = 0.5 * std::log(2.0 * M_PI);
 
-double robbins_monro (const double &scale, const double &acceptance_it,
-                      const int &it, const double &target_acceptance = 0.45) {
-  double step_length = scale / (target_acceptance * (1.0 - target_acceptance));
-  double out;
-  if (acceptance_it > 0) {
-    out = scale + step_length * (1 - target_acceptance) / (double)it;
-  } else {
-    out = scale - step_length * target_acceptance / (double)it;
-  }
-  return out;
+double robbins_monro (double scale, double acceptance_it,
+                          int it, double target_acceptance = 0.45) {
+    double it_d = static_cast<double>(it);
+    if (acceptance_it > 0.0) {
+        return scale * (1.0 + 1.0 / (target_acceptance * it_d));
+    } else {
+        return scale * (1.0 - 1.0 / ((1.0 - target_acceptance) * it_d));
+    }
 }
 
 void inplace_UpperTrimat_mult (rowvec &x, const mat &trimat) {
@@ -411,13 +410,25 @@ arma::vec log_dbinom (const arma::vec &x, const arma::vec &size, const arma::vec
     return out;
 }
 
-vec log_dpois (const vec &x, const vec &lambda) {
-  uword n = x.n_rows;
-  vec out(n);
-  for (uword i = 0; i < n; ++i) {
-    out.at(i) = R::dpois(x.at(i), lambda.at(i), 1);
-  }
-  return out;
+arma::vec log_dpois (const arma::vec &x, const arma::vec &lambda) {
+    arma::uword n = x.n_elem;
+    arma::vec out(n, arma::fill::none);
+    const double* px = x.memptr();
+    const double* pl = lambda.memptr();
+    double* pout = out.memptr();
+    for (arma::uword i = 0; i < n; ++i) {
+        double xi = px[i];
+        double lambda_i = pl[i];
+        // Boundary short-circuit: log(Poisson(0; lambda)) = -lambda
+        // Completely skips std::log() and std::lgamma() for zero counts!
+        if (xi == 0.0) {
+            pout[i] = -lambda_i;
+        } else {
+            // General case: x * log(lambda) - lambda - log(x!)
+            pout[i] = xi * std::log(lambda_i) - lambda_i - std::lgamma(xi + 1.0);
+        }
+    }
+    return out;
 }
 
 arma::vec log_dbbinom (const arma::vec &x, const arma::vec &size,
@@ -483,7 +494,7 @@ vec log_dnbinom (const vec &x, const vec &mu, const double &size) {
 }
 
 vec log_dnorm (const vec &x, const vec &mu, const double &sigma) {
-    double constant = -std::log(sigma) - 0.5 * std::log(2.0 * M_PI);
+    double constant = -std::log(sigma) - half_log2pi;
     double var2 = 2.0 * sigma * sigma;
     return constant - arma::square(x - mu) / var2;
 }
@@ -536,13 +547,21 @@ vec log_dgamma (const vec &x, const double &shape, const vec &scale) {
     return out;
 }
 
-vec log_dbeta (const vec &x, const vec &shape1, const vec &shape2) {
-  uword n = x.n_rows;
-  vec out(n);
-  for (uword i = 0; i < n; ++i) {
-    out.at(i) = R::dbeta(x.at(i), shape1.at(i), shape2.at(i), 1);
-  }
-  return out;
+arma::vec log_dbeta (const arma::vec &x, const arma::vec &shape1, const arma::vec &shape2) {
+    arma::uword n = x.n_elem;
+    arma::vec out(n, arma::fill::none);
+    const double* px = x.memptr();
+    const double* psh1 = shape1.memptr();
+    const double* psh2 = shape2.memptr();
+    double* pout = out.memptr();
+    for (arma::uword i = 0; i < n; ++i) {
+        double xi = px[i];
+        double a = psh1[i];
+        double b = psh2[i];
+        pout[i] = (a - 1.0) * std::log(xi) + (b - 1.0) * std::log(1.0 - xi) -
+            std::lgamma(a) - std::lgamma(b) + std::lgamma(a + b);
+    }
+    return out;
 }
 
 vec log_dmvnrm_chol (const mat &x, const mat &L) {
