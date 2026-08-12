@@ -50,8 +50,235 @@ double logPrior_surv (
   return out;
 }
 
-
 void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
+                       vec &W0H_bs_gammas, vec &W0h_bs_gammas, vec &W0H2_bs_gammas,
+                       const vec &WH_gammas, const vec &Wh_gammas, const vec &WH2_gammas,
+                       const vec &WlongH_alphas, const vec &Wlongh_alphas, const vec &WlongH2_alphas,
+                       const vec &log_Pwk, const vec &log_Pwk2, const vec &log_weights,
+                       const uvec &id_h2, const uvec &intgr_ind, const bool &intgr,
+                       const uvec &indFast_H, const uvec &indFast_h,
+                       const uvec &which_event, const uvec &which_right_event,
+                       const uvec &which_left, const uvec &interval,
+                       const bool &any_event, const bool &any_interval,
+                       const field<vec> &prior_mean_bs_gammas, field<mat> &prior_Tau_bs_gammas,
+                       const vec &tau_bs_gammas,
+                       const vec &prior_mean_gammas, mat &prior_Tau_gammas,
+                       const vec &lambda_gammas, const double &tau_gammas, const bool &shrink_gammas,
+                       const vec &prior_mean_alphas, mat &prior_Tau_alphas,
+                       const vec &lambda_alphas, const double &tau_alphas, const bool &shrink_alphas,
+                       vec &logLik_surv, double &denominator_surv, const uword &it,
+                       /////
+                       const mat &W0_H, const mat &W0_h, const mat &W0_H2,
+                       vec &scale_bs_gammas, mat &acceptance_bs_gammas,
+                       mat &res_bs_gammas,
+                       const bool &recurrent,
+                       const vec &frailtyH_sigmaF_alphaF, const vec &frailtyh_sigmaF_alphaF,
+                       const vec &alphaF, const vec prior_mean_alphaF,
+                       mat &prior_Tau_alphaF, const vec &lambda_alphaF,
+                       const double &tau_alphaF, const bool &shrink_alphaF) {
+
+    for (uword i = 0; i < bs_gammas.n_elem; ++i) {
+        double old_gamma_i = bs_gammas[i];
+        double diff = scale_bs_gammas[i] * R::norm_rand();
+        bs_gammas[i] += diff;
+        vec proposed_W0H_bs_gammas = W0H_bs_gammas + W0_H.col(i) * diff;
+        vec proposed_W0h_bs_gammas;
+        if (any_event) {
+            proposed_W0h_bs_gammas = W0h_bs_gammas + W0_h.col(i) * diff;
+        }
+        vec proposed_W0H2_bs_gammas;
+        if (any_interval) {
+            proposed_W0H2_bs_gammas = W0H2_bs_gammas + W0_H2.col(i) * diff;
+        }
+        // Evaluate likelihood
+        vec logLik_surv_proposed = log_surv(proposed_W0H_bs_gammas, proposed_W0h_bs_gammas, proposed_W0H2_bs_gammas,
+                                            WH_gammas, Wh_gammas, WH2_gammas,
+                                            WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+                                            log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+                                            indFast_H, indFast_h,
+                                            which_event, which_right_event, which_left,
+                                            any_interval, interval,
+                                            recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
+
+        double numerator_surv = sum(logLik_surv_proposed) +
+            logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
+                          prior_Tau_bs_gammas, tau_bs_gammas,
+                          prior_mean_gammas, prior_Tau_gammas, lambda_gammas, tau_gammas, shrink_gammas,
+                          prior_mean_alphas, prior_Tau_alphas, lambda_alphas, tau_alphas, shrink_alphas,
+                          recurrent, alphaF, prior_mean_alphaF, prior_Tau_alphaF,
+                          lambda_alphaF, tau_alphaF, shrink_alphaF);
+
+        double log_ratio = numerator_surv - denominator_surv;
+        if (std::isfinite(log_ratio) && std::log(R::unif_rand()) < log_ratio) {
+             W0H_bs_gammas = proposed_W0H_bs_gammas;
+            if (any_event) W0h_bs_gammas = proposed_W0h_bs_gammas;
+            if (any_interval) W0H2_bs_gammas = proposed_W0H2_bs_gammas;
+            logLik_surv = logLik_surv_proposed;
+            denominator_surv = numerator_surv;
+            acceptance_bs_gammas.at(it, i) = 1.0;
+        } else {
+            bs_gammas[i] = old_gamma_i;
+            acceptance_bs_gammas.at(it, i) = 0.0;
+        }
+        if (it > 19) {
+            scale_bs_gammas[i] = robbins_monro(scale_bs_gammas[i], acceptance_bs_gammas(it, i), it);
+        }
+        res_bs_gammas.at(it, i) = bs_gammas[i];
+    }
+}
+
+void update_gammas (const vec &bs_gammas, vec &gammas, const vec &alphas,
+                    const vec &W0H_bs_gammas, const vec &W0h_bs_gammas, const vec &W0H2_bs_gammas,
+                    vec &WH_gammas, vec &Wh_gammas, vec &WH2_gammas,
+                    const vec &WlongH_alphas, const vec &Wlongh_alphas, const vec &WlongH2_alphas,
+                    const vec &log_Pwk, const vec &log_Pwk2, const vec &log_weights,
+                    const uvec &id_h2, const uvec &intgr_ind, const bool &intgr,
+                    const uvec &indFast_H, const uvec &indFast_h,
+                    const uvec &which_event, const uvec &which_right_event,
+                    const uvec &which_left, const uvec &which_interval,
+                    const bool &any_event, const bool &any_interval,
+                    const field<vec> &prior_mean_bs_gammas, field<mat> &prior_Tau_bs_gammas,
+                    const vec &tau_bs_gammas,
+                    const vec &prior_mean_gammas, mat &prior_Tau_gammas,
+                    const vec &lambda_gammas, const double &tau_gammas, const bool &shrink_gammas,
+                    const vec &prior_mean_alphas, mat &prior_Tau_alphas,
+                    const vec &lambda_alphas, const double &tau_alphas, const bool &shrink_alphas,
+                    vec &logLik_surv, double &denominator_surv, const uword &it,
+                    /////
+                    const mat &W_H, const mat &W_h, const mat &W_H2,
+                    vec &scale_gammas, mat &acceptance_gammas, mat &res_gammas,
+                    const bool &recurrent,
+                    const vec &frailtyH_sigmaF_alphaF, const vec &frailtyh_sigmaF_alphaF,
+                    const vec &alphaF, const vec prior_mean_alphaF,
+                    mat &prior_Tau_alphaF, const vec &lambda_alphaF,
+                    const double &tau_alphaF, const bool &shrink_alphaF) {
+
+    for (uword i = 0; i < gammas.n_elem; ++i) {
+        double old_gamma_i = gammas[i];
+        double diff = scale_gammas[i] * R::norm_rand();
+        gammas[i] += diff;
+        vec proposed_WH_gammas = WH_gammas + W_H.col(i) * diff;
+        vec proposed_Wh_gammas;
+        if (any_event) {
+            proposed_Wh_gammas = Wh_gammas + W_h.col(i) * diff;
+        }
+        vec proposed_WH2_gammas;
+        if (any_interval) {
+            proposed_WH2_gammas = WH2_gammas + W_H2.col(i) * diff;
+        }
+        vec logLik_surv_proposed =
+            log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                     proposed_WH_gammas, proposed_Wh_gammas, proposed_WH2_gammas,
+                     WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+                     log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+                     indFast_H, indFast_h,
+                     which_event, which_right_event, which_left,
+                     any_interval, which_interval,
+                     recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
+        double numerator_surv =
+            sum(logLik_surv_proposed) +
+            logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
+                          prior_Tau_bs_gammas, tau_bs_gammas,
+                          prior_mean_gammas, prior_Tau_gammas, lambda_gammas, tau_gammas, shrink_gammas,
+                          prior_mean_alphas, prior_Tau_alphas, lambda_alphas, tau_alphas, shrink_alphas,
+                          recurrent, alphaF, prior_mean_alphaF, prior_Tau_alphaF,
+                          lambda_alphaF, tau_alphaF, shrink_alphaF);
+        double log_ratio = numerator_surv - denominator_surv;
+        if (std::isfinite(log_ratio) && std::log(R::unif_rand()) < log_ratio) {
+            WH_gammas = proposed_WH_gammas;
+            if (any_event) Wh_gammas = proposed_Wh_gammas;
+            if (any_interval) WH2_gammas = proposed_WH2_gammas;
+            logLik_surv = logLik_surv_proposed;
+            denominator_surv = numerator_surv;
+            acceptance_gammas.at(it, i) = 1.0;
+        } else {
+            gammas[i] = old_gamma_i;
+            acceptance_gammas.at(it, i) = 0.0;
+        }
+        if (it > 19) {
+            scale_gammas[i] = robbins_monro(scale_gammas[i], acceptance_gammas.at(it, i), it);
+        }
+        res_gammas.at(it, i) = gammas[i];
+    }
+}
+
+void update_alphas (const vec &bs_gammas, const vec &gammas, vec &alphas,
+                    const vec &W0H_bs_gammas, const vec &W0h_bs_gammas, const vec &W0H2_bs_gammas,
+                    const vec &WH_gammas, const vec &Wh_gammas, const vec &WH2_gammas,
+                    vec &WlongH_alphas, vec &Wlongh_alphas, vec &WlongH2_alphas,
+                    const vec &log_Pwk, const vec &log_Pwk2, const vec &log_weights,
+                    const uvec &id_h2, const uvec &intgr_ind, const bool &intgr,
+                    const uvec &indFast_H, const uvec &indFast_h,
+                    const uvec &which_event, const uvec &which_right_event,
+                    const uvec &which_left, const uvec &which_interval,
+                    const bool &any_event, const bool &any_interval,
+                    const field<vec> &prior_mean_bs_gammas, field<mat> &prior_Tau_bs_gammas,
+                    const vec &tau_bs_gammas,
+                    const vec &prior_mean_gammas, mat &prior_Tau_gammas,
+                    const vec &lambda_gammas, const double &tau_gammas, const bool &shrink_gammas,
+                    const vec &prior_mean_alphas, mat &prior_Tau_alphas,
+                    const vec &lambda_alphas, const double &tau_alphas, const bool &shrink_alphas,
+                    vec &logLik_surv, double &denominator_surv, const uword &it,
+                    /////
+                    const mat &Wlong_H, const mat &Wlong_h, const mat &Wlong_H2,
+                    vec &scale_alphas, mat &acceptance_alphas, mat &res_alphas,
+                    const bool &recurrent,
+                    const vec &frailtyH_sigmaF_alphaF, const vec &frailtyh_sigmaF_alphaF,
+                    const vec &alphaF, const vec prior_mean_alphaF,
+                    mat &prior_Tau_alphaF, const vec &lambda_alphaF,
+                    const double &tau_alphaF, const bool &shrink_alphaF) {
+
+    for (uword i = 0; i < alphas.n_elem; ++i) {
+        double old_alpha_i = alphas[i];
+        double diff = scale_alphas[i] * R::norm_rand();
+        alphas[i] += diff;
+        vec proposed_WlongH_alphas = WlongH_alphas + Wlong_H.col(i) * diff;
+        vec proposed_Wlongh_alphas;
+        if (any_event) {
+            proposed_Wlongh_alphas = Wlongh_alphas + Wlong_h.col(i) * diff;
+        }
+        vec proposed_WlongH2_alphas;
+        if (any_interval) {
+            proposed_WlongH2_alphas = WlongH2_alphas + Wlong_H2.col(i) * diff;
+        }
+        vec logLik_surv_proposed =
+            log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                     WH_gammas, Wh_gammas, WH2_gammas,
+                     proposed_WlongH_alphas, proposed_Wlongh_alphas, proposed_WlongH2_alphas,
+                     log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+                     indFast_H, indFast_h,
+                     which_event, which_right_event, which_left,
+                     any_interval, which_interval,
+                     recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
+        double numerator_surv =
+            sum(logLik_surv_proposed) +
+            logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
+                          prior_Tau_bs_gammas, tau_bs_gammas,
+                          prior_mean_gammas, prior_Tau_gammas, lambda_gammas, tau_gammas, shrink_gammas,
+                          prior_mean_alphas, prior_Tau_alphas, lambda_alphas, tau_alphas, shrink_alphas,
+                          recurrent, alphaF, prior_mean_alphaF, prior_Tau_alphaF,
+                          lambda_alphaF, tau_alphaF, shrink_alphaF);
+
+        double log_ratio = numerator_surv - denominator_surv;
+        if (std::isfinite(log_ratio) && std::log(R::unif_rand()) < log_ratio) {
+            WlongH_alphas = proposed_WlongH_alphas;
+            if (any_event) Wlongh_alphas = proposed_Wlongh_alphas;
+            if (any_interval) WlongH2_alphas = proposed_WlongH2_alphas;
+            logLik_surv = logLik_surv_proposed;
+            denominator_surv = numerator_surv;
+            acceptance_alphas.at(it, i) = 1.0;
+        } else {
+            alphas[i] = old_alpha_i;
+            acceptance_alphas.at(it, i) = 0.0;
+        }
+        if (it > 19) {
+            scale_alphas[i] = robbins_monro(scale_alphas[i], acceptance_alphas.at(it, i), it);
+        }
+        res_alphas.at(it, i) = alphas[i];
+    }
+}
+
+void update_bs_gammas_old (vec &bs_gammas, const vec &gammas, const vec &alphas,
                        vec &W0H_bs_gammas, vec &W0h_bs_gammas, vec &W0H2_bs_gammas,
                        const vec &WH_gammas, const vec &Wh_gammas, const vec &WH2_gammas,
                        const vec &WlongH_alphas, const vec &Wlongh_alphas, const vec &WlongH2_alphas,
@@ -128,7 +355,7 @@ void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
   }
 }
 
-void update_gammas (const vec &bs_gammas, vec &gammas, const vec &alphas,
+void update_gammas_old (const vec &bs_gammas, vec &gammas, const vec &alphas,
                     const vec &W0H_bs_gammas, const vec &W0h_bs_gammas, const vec &W0H2_bs_gammas,
                     vec &WH_gammas, vec &Wh_gammas, vec &WH2_gammas,
                     const vec &WlongH_alphas, const vec &Wlongh_alphas, const vec &WlongH2_alphas,
@@ -205,7 +432,7 @@ void update_gammas (const vec &bs_gammas, vec &gammas, const vec &alphas,
   }
 }
 
-void update_alphas (const vec &bs_gammas, const vec &gammas, vec &alphas,
+void update_alphas_old (const vec &bs_gammas, const vec &gammas, vec &alphas,
                     const vec &W0H_bs_gammas, const vec &W0h_bs_gammas, const vec &W0H2_bs_gammas,
                     const vec &WH_gammas, const vec &Wh_gammas, const vec &WH2_gammas,
                     vec &WlongH_alphas, vec &Wlongh_alphas, vec &WlongH2_alphas,
