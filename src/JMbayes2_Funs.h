@@ -249,8 +249,7 @@ double logPrior(const vec &x, const vec &mean, mat &Tau, const vec &lambda,
   if (shrink) {
     Tau.diag() = lambda;
   }
-  double out = - 0.5 * tau * as_scalar(z.t() * Tau * z);
-  return out;
+  return -0.5 * tau * arma::dot(z, Tau * z);;
 }
 
 vec propose_norm (const vec &thetas, const vec &scale, const uword &i) {
