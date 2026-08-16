@@ -11,44 +11,39 @@ using namespace Rcpp;
 using namespace arma;
 
 double logPrior_surv (
-    const vec &bs_gammas, const vec&gammas, const vec &alphas,
-    const field<vec> &prior_mean_bs_gammas, field<mat> &prior_Tau_bs_gammas,
-    const vec &tau_bs_gammas,
-    const vec &prior_mean_gammas, mat &prior_Tau_gammas, const vec &lambda_gammas,
-    const double &tau_gammas, const bool &shrink_gammas,
-    const vec &prior_mean_alphas, mat &prior_Tau_alphas, const vec &lambda_alphas,
-    const double &tau_alphas, const bool &shrink_alphas,
-    const bool &recurrent, const vec &alphaF, const vec prior_mean_alphaF,
-    mat &prior_Tau_alphaF, const vec &lambda_alphaF, const double &tau_alphaF,
-    const bool &shrink_alphaF) {
-  uword n_strata = prior_mean_bs_gammas.n_elem;
-  uvec ncoefs_per_stratum(n_strata);
-  for (uword i = 0; i < n_strata; ++i) {
-      ncoefs_per_stratum.at(i) = prior_mean_bs_gammas.at(i).n_rows;
-  }
-  uword str1 = 0;
-  uword str2 = ncoefs_per_stratum.at(0) - 1;
-  double out(0.0);
-  for (uword i = 0; i < n_strata; ++i) {
-      vec mu = prior_mean_bs_gammas.at(i);
-      vec bs_gammas_i = bs_gammas.rows(str1, str2);
-      out += logPrior(bs_gammas_i, mu, prior_Tau_bs_gammas.at(i), mu.ones(),
-                      tau_bs_gammas.at(i), false);
-      if (i + 1 < n_strata) {
-          str1 += ncoefs_per_stratum.at(i);
-          str2 += ncoefs_per_stratum.at(i + 1);
-      }
-  }
-  out += logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, lambda_gammas,
-                  tau_gammas, shrink_gammas);
-  out += logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, lambda_alphas,
-                  tau_alphas, shrink_alphas);
-  if (recurrent) {
-    out += logPrior(alphaF, prior_mean_alphaF, prior_Tau_alphaF, lambda_alphaF,
-                    tau_alphaF, shrink_alphaF);
-  }
-  return out;
+        const vec &bs_gammas, const vec&gammas, const vec &alphas,
+        const field<vec> &prior_mean_bs_gammas, field<mat> &prior_Tau_bs_gammas,
+        const vec &tau_bs_gammas,
+        const vec &prior_mean_gammas, mat &prior_Tau_gammas, const vec &lambda_gammas,
+        const double &tau_gammas, const bool &shrink_gammas,
+        const vec &prior_mean_alphas, mat &prior_Tau_alphas, const vec &lambda_alphas,
+        const double &tau_alphas, const bool &shrink_alphas,
+        const bool &recurrent, const vec &alphaF, const vec prior_mean_alphaF,
+        mat &prior_Tau_alphaF, const vec &lambda_alphaF, const double &tau_alphaF,
+        const bool &shrink_alphaF) {
+    uword n_strata = prior_mean_bs_gammas.n_elem;
+    double out = 0.0;
+    uword offset = 0;
+    for (uword i = 0; i < n_strata; ++i) {
+        const vec& mu = prior_mean_bs_gammas.at(i);
+        uword len = mu.n_elem;
+        out += logPrior(bs_gammas.subvec(offset, offset + len - 1),
+                        mu, prior_Tau_bs_gammas.at(i),
+                        arma::ones<arma::vec>(len), tau_bs_gammas.at(i),
+                        false);
+         offset += len;
+    }
+    out += logPrior(gammas, prior_mean_gammas, prior_Tau_gammas, lambda_gammas,
+                    tau_gammas, shrink_gammas);
+    out += logPrior(alphas, prior_mean_alphas, prior_Tau_alphas, lambda_alphas,
+                    tau_alphas, shrink_alphas);
+    if (recurrent) {
+        out += logPrior(alphaF, prior_mean_alphaF, prior_Tau_alphaF, lambda_alphaF,
+                        tau_alphaF, shrink_alphaF);
+    }
+    return out;
 }
+
 
 void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
                        vec &W0H_bs_gammas, vec &W0h_bs_gammas, vec &W0H2_bs_gammas,

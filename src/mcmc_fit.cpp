@@ -363,20 +363,20 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     ////////////////////////////////////////////////////////////////////////
 
-    uword str1 = 0;
-    uword str2 = ncoefs_per_stratum.at(0) - 1;
+    uword offset = 0;
     for (uword j = 0; j < n_strata; ++j) {
-         if (penalized_bs_gammas[j]) {
-            vec bs_gammas_j = bs_gammas.rows(str1, str2);
+        uword len = ncoefs_per_stratum.at(j);
+        if (penalized_bs_gammas.at(j)) {
+            // 'auto' creates a subview pointer, avoiding a costly vector copy
+            auto bs_gammas_j = bs_gammas.subvec(offset, offset + len - 1);
+            // Calculate using the subview
             double quad = arma::dot(bs_gammas_j, Tau_bs_gammas.at(j) * bs_gammas_j);
             double post_B_tau = B_tau_bs_gammas.at(j) + 0.5 * quad;
-            tau_bs_gammas.at(j) = R::rgamma(post_A_tau_bs_gammas.at(j), 1 / post_B_tau);
+            tau_bs_gammas.at(j) = R::rgamma(post_A_tau_bs_gammas.at(j), 1.0 / post_B_tau);
             res_tau_bs_gammas.at(it, j) = tau_bs_gammas.at(j);
         }
-        if (j + 1 < n_strata) {
-            str1 += ncoefs_per_stratum.at(j);
-            str2 += ncoefs_per_stratum.at(j + 1);
-        }
+        // Increment the offset cleanly
+        offset += len;
     }
 
     ////////////////////////////////////////////////////////////////////////
