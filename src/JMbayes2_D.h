@@ -74,35 +74,41 @@ double deriv_L (const mat &L, const vec &sds, const mat &b,
 mat propose_L (const mat &L, const vec &scale, const uvec &upper_part,
                const double &deriv, const uword &i, const umat &ind_zero_D,
                const bool &mala = false) {
-  mat proposed_L(size(L), fill::zeros);
-  vec l = L(upper_part);
-  vec proposed_l(l.n_rows, fill::zeros);
-  if (mala) {
-    if (std::isfinite(deriv)) {
-      proposed_l = propose_norm_mala(l, scale, deriv, i);
+    mat proposed_L(size(L), fill::zeros);
+    vec l = L(upper_part);
+    vec proposed_l;
+    if (mala) {
+        if (std::isfinite(deriv)) {
+            proposed_l = propose_norm_mala(l, scale, deriv, i);
+        } else {
+            proposed_L.fill(datum::nan);
+            return proposed_L;
+        }
     } else {
-      return proposed_L.fill(datum::nan);
+        proposed_l = propose_unif(l, scale, i);
     }
-  } else {
-    proposed_l = propose_unif(l, scale, i);
-  }
-  proposed_L(upper_part) = proposed_l;
-  uword n = L.n_rows;
-  for (uword j = 0; j < n; ++j) {
-      vec ll = proposed_L.col(j);
-      proposed_L.at(j, j) = sqrt(1 - dot(ll, ll));
-  }
-  uword nn = ind_zero_D.n_rows;
-  for (uword j = 0; j < nn; ++j) {
-      uword j0 = ind_zero_D.at(j, 0);
-      uword j1 = ind_zero_D.at(j, 1);
-      proposed_L.at(j0, j1) = - sum(proposed_L.col(j0) % proposed_L.col(j1)) / proposed_L.at(j0, j0);
-      vec ll = proposed_L.submat(0, j1, j1 - 1, j1);
-      double ss = dot(ll, ll);
-      if (ss > 1) return proposed_L.fill(datum::nan);
-      proposed_L.at(j1, j1) = sqrt(1 - ss);
-  }
-  return proposed_L;
+    proposed_L(upper_part) = proposed_l;
+    uword n = L.n_rows;
+    for (uword j = 0; j < n; ++j) {
+        auto ll = proposed_L.col(j);
+        proposed_L.at(j, j) = std::sqrt(1.0 - arma::dot(ll, ll));
+    }
+    uword nn = ind_zero_D.n_rows;
+    for (uword j = 0; j < nn; ++j) {
+        uword j0 = ind_zero_D.at(j, 0);
+        uword j1 = ind_zero_D.at(j, 1);
+        auto col_j0 = proposed_L.col(j0);
+        auto col_j1 = proposed_L.col(j1);
+        proposed_L.at(j0, j1) = -arma::dot(col_j0, col_j1) / proposed_L.at(j0, j0);
+        auto ll = proposed_L.col(j1).subvec(0, j1 - 1);
+        double ss = arma::dot(ll, ll);
+        if (ss > 1.0) {
+            proposed_L.fill(datum::nan);
+            return proposed_L;
+        }
+        proposed_L.at(j1, j1) = std::sqrt(1.0 - ss);
+    }
+    return proposed_L;
 }
 
 void update_D (mat &L, vec &sds, const mat &b,
