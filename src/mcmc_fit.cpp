@@ -370,7 +370,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
             // 'auto' creates a subview pointer, avoiding a costly vector copy
             auto bs_gammas_j = bs_gammas.subvec(offset, offset + len - 1);
             // Calculate using the subview
-            double quad = arma::dot(bs_gammas_j, Tau_bs_gammas.at(j) * bs_gammas_j);
+            double quad = arma::as_scalar(bs_gammas_j.t() * Tau_bs_gammas.at(j) *
+                                          bs_gammas_j);
             double post_B_tau = B_tau_bs_gammas.at(j) + 0.5 * quad;
             tau_bs_gammas.at(j) = R::rgamma(post_A_tau_bs_gammas.at(j), 1.0 / post_B_tau);
             res_tau_bs_gammas.at(it, j) = tau_bs_gammas.at(j);
