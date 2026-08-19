@@ -21,6 +21,7 @@ fitting a Cox model for the composite event transplantation or death,
 including sex as a baseline covariate:
 
 ``` r
+
 pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
 CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
 ```
@@ -35,6 +36,7 @@ and random slopes. The syntax to fit this model with
 is:
 
 ``` r
+
 fm1 <- lme(log(serBilir) ~ year * sex, data = pbc2, random = ~ year | id)
 ```
 
@@ -44,6 +46,7 @@ fitted with the following call to the
 function:
 
 ``` r
+
 jointFit1 <- jm(CoxFit, fm1, time_var = "year")
 summary(jointFit1)
 #> 
@@ -51,8 +54,8 @@ summary(jointFit1)
 #> JMbayes2::jm(Surv_object = CoxFit, Mixed_objects = fm1, time_var = "year")
 #> 
 #> Data Descriptives:
-#> Number of Groups: 312        Number of events: 169 (54.2%)
-#> Number of Observations:
+#> Number of groups: 312        Number of events: 169 (54.2%)
+#> Number of observations:
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
@@ -65,12 +68,12 @@ summary(jointFit1)
 #> (Intr) 1.0028 (Intr)
 #> year   0.1829 0.3994
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>                         Mean  StDev    2.5%  97.5%      P   Rhat
 #> sexfemale            -0.1581 0.2717 -0.6499 0.3848 0.5544 1.0015
 #> value(log(serBilir))  1.2433 0.0847  1.0776 1.4140 0.0000 1.0183
 #> 
-#> Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)
+#> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
 #> (Intercept)     0.7239 0.1720  0.3821  1.0600 0.0000 0.9997
 #> year            0.2668 0.0381  0.1929  0.3444 0.0000 1.0024
@@ -83,7 +86,7 @@ summary(jointFit1)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 17 sec
+#> time: 14 sec
 ```
 
 The output of the [`summary()`](https://rdrr.io/r/base/summary.html)
@@ -111,6 +114,7 @@ example, the traceplot for the association coefficient
 `value(log(serBilir))` is produced with the following syntax:
 
 ``` r
+
 ggtraceplot(jointFit1, "alphas")
 ```
 
@@ -119,6 +123,7 @@ ggtraceplot(jointFit1, "alphas")
 and the density plot with the call:
 
 ``` r
+
 ggdensityplot(jointFit1, "alphas")
 ```
 
@@ -159,6 +164,7 @@ number of burn-in iterations, and the thinning per chain using the
 corresponding control arguments:
 
 ``` r
+
 fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
 fm3 <- mixed_model(ascites ~ year + sex, data = pbc2,
                    random = ~ year || id, family = binomial())
@@ -174,8 +180,8 @@ summary(jointFit2)
 #>     2), n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)
 #> 
 #> Data Descriptives:
-#> Number of Groups: 312        Number of events: 169 (54.2%)
-#> Number of Observations:
+#> Number of groups: 312        Number of events: 169 (54.2%)
+#> Number of observations:
 #>   log(serBilir): 1945
 #>   prothrombin: 1945
 #>   ascites: 1885
@@ -194,14 +200,14 @@ summary(jointFit2)
 #> (Intr) 2.7049 0.5177 0.4745 0.3283  -0.0298       
 #> year   0.4613 0.4057 0.6660 -0.0592 0.3448        
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>                         Mean  StDev    2.5%  97.5%      P   Rhat
 #> sexfemale            -0.6621 0.3613 -1.3655 0.0338 0.0607 1.0140
 #> value(log(serBilir))  0.4863 0.1786  0.1096 0.8212 0.0147 1.0545
 #> value(prothrombin)   -0.0583 0.1244 -0.3296 0.1735 0.6293 1.0612
 #> value(ascites)        0.6227 0.1460  0.3708 0.9518 0.0000 1.0703
 #> 
-#> Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)
+#> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev    2.5%   97.5%     P   Rhat
 #> (Intercept)     0.6926 0.1691  0.3584  1.0311 0.000 1.0003
 #> year            0.2694 0.0349  0.2005  0.3383 0.000 1.0004
@@ -209,7 +215,7 @@ summary(jointFit2)
 #> year:sexfemale -0.0800 0.0362 -0.1508 -0.0097 0.024 1.0022
 #> sigma           0.3480 0.0068  0.3347  0.3617 0.000 1.0047
 #> 
-#> Longitudinal Outcome: prothrombin (family = gaussian, link = identity)
+#> Longitudinal outcome: prothrombin (family = gaussian, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
 #> (Intercept)    10.9863 0.1728 10.6532 11.3254 0.0000 1.0033
 #> year            0.2081 0.0774  0.0592  0.3599 0.0070 1.0065
@@ -217,7 +223,7 @@ summary(jointFit2)
 #> year:sexfemale  0.0470 0.0809 -0.1130  0.2029 0.5577 1.0088
 #> sigma           1.0569 0.0202  1.0185  1.0975 0.0000 1.0004
 #> 
-#> Longitudinal Outcome: ascites (family = binomial, link = logit)
+#> Longitudinal outcome: ascites (family = binomial, link = logit)
 #>                Mean  StDev    2.5%   97.5%      P   Rhat
 #> (Intercept) -4.4912 0.6735 -5.9197 -3.2356 0.0000 1.0121
 #> year         0.6393 0.0684  0.5128  0.7854 0.0000 1.0651
@@ -228,7 +234,7 @@ summary(jointFit2)
 #> iterations per chain: 12000 
 #> burn-in per chain: 2000 
 #> thinning: 5 
-#> time: 2 min
+#> time: 1.3 min
 ```
 
 The survival submodel output now contains the estimated coefficients for
@@ -265,6 +271,7 @@ keep the current value functional form. The corresponding syntax to fit
 this model is:
 
 ``` r
+
 fForms <- list(
   "log(serBilir)" = ~ slope(log(serBilir)) + slope(log(serBilir)):sex,
   "prothrombin"   = ~ JMbayes2::area(prothrombin)
@@ -279,8 +286,8 @@ summary(jointFit3)
 #>     which_independent = cbind(1, 2), n_iter = 12000L, n_burnin = 2000L, ...
 #> 
 #> Data Descriptives:
-#> Number of Groups: 312        Number of events: 169 (54.2%)
-#> Number of Observations:
+#> Number of groups: 312        Number of events: 169 (54.2%)
+#> Number of observations:
 #>   log(serBilir): 1945
 #>   prothrombin: 1945
 #>   ascites: 1885
@@ -299,7 +306,7 @@ summary(jointFit3)
 #> (Intr) 2.5559 0.5529 0.4692 0.3487  -0.0775       
 #> year   0.4361 0.4303 0.6690 -0.0720 0.3773        
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>                                   Mean  StDev     2.5%  97.5%      P   Rhat
 #> sexfemale                       0.3595 0.9644  -1.3670 2.3829 0.7557 1.0662
 #> slope(log(serBilir))            4.3938 2.5197  -0.0624 9.5851 0.0577 1.1294
@@ -307,7 +314,7 @@ summary(jointFit3)
 #> JMbayes2::area(prothrombin)    -0.4097 0.3097  -0.9998 0.1627 0.1957 1.3476
 #> value(ascites)                  1.0639 0.2373   0.6257 1.5698 0.0000 1.3015
 #> 
-#> Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)
+#> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
 #> (Intercept)     0.6684 0.1660  0.3397  0.9945 0.0003 1.0079
 #> year            0.2658 0.0336  0.2025  0.3346 0.0000 1.0005
@@ -315,7 +322,7 @@ summary(jointFit3)
 #> year:sexfemale -0.0745 0.0348 -0.1450 -0.0079 0.0270 1.0008
 #> sigma           0.3483 0.0066  0.3352  0.3615 0.0000 1.0046
 #> 
-#> Longitudinal Outcome: prothrombin (family = gaussian, link = identity)
+#> Longitudinal outcome: prothrombin (family = gaussian, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
 #> (Intercept)    10.9993 0.1684 10.6565 11.3294 0.0000 1.0003
 #> year            0.1839 0.0764  0.0325  0.3362 0.0140 1.0056
@@ -323,7 +330,7 @@ summary(jointFit3)
 #> year:sexfemale  0.0702 0.0806 -0.0884  0.2279 0.3857 1.0058
 #> sigma           1.0591 0.0203  1.0197  1.0994 0.0000 1.0152
 #> 
-#> Longitudinal Outcome: ascites (family = binomial, link = logit)
+#> Longitudinal outcome: ascites (family = binomial, link = logit)
 #>                Mean  StDev    2.5%   97.5%      P   Rhat
 #> (Intercept) -4.4105 0.6235 -5.7030 -3.2274 0.0000 1.0378
 #> year         0.6304 0.0777  0.4830  0.7938 0.0000 1.2194
@@ -334,7 +341,7 @@ summary(jointFit3)
 #> iterations per chain: 12000 
 #> burn-in per chain: 2000 
 #> thinning: 5 
-#> time: 2.2 min
+#> time: 1.5 min
 ```
 
 As seen above, the `functional_forms` argument is a named list with
@@ -363,6 +370,7 @@ example, we refit `jointFit3` by assuming a Horseshoe prior for the
 outcomes in the relative risk model):
 
 ``` r
+
 jointFit4 <- update(jointFit3, priors = list("penalty_alphas" = "horseshoe"))
 cbind("un-penalized" = unlist(coef(jointFit3)), 
       "penalized" = unlist(coef(jointFit4)))

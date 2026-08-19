@@ -13,8 +13,8 @@
 <link rel="manifest" href="../site.webmanifest">
 <!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="../katex-auto.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Transformation Functions for Functional Forms">
 <meta name="robots" content="noindex">
@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,7 +85,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2026-02-02</h4>
+            <h4 data-toc-skip class="date">2026-08-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Transformation_Functions.Rmd" class="external-link"><code>vignettes/Transformation_Functions.Rmd</code></a></small>
       <div class="d-none name"><code>Transformation_Functions.Rmd</code></div>
@@ -132,8 +132,8 @@ time-varying covariate in the survival relative risk model:</p>
 <span><span class="co">#&gt; JMbayes2::jm(Surv_object = CoxFit, Mixed_objects = fm, time_var = "year")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
-<span><span class="co">#&gt; Number of Groups: 312        Number of events: 169 (54.2%)</span></span>
-<span><span class="co">#&gt; Number of Observations:</span></span>
+<span><span class="co">#&gt; Number of groups: 312        Number of events: 169 (54.2%)</span></span>
+<span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   hepatomegaly: 1884</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
@@ -146,12 +146,12 @@ time-varying covariate in the survival relative risk model:</p>
 <span><span class="co">#&gt; (Intr) 3.2996 (Intr) </span></span>
 <span><span class="co">#&gt; year   0.5368 -0.1730</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Survival Outcome:</span></span>
+<span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;                        Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; sexfemale           -0.4733 0.3019 -1.0613 0.1357 0.1191 1.0011</span></span>
 <span><span class="co">#&gt; value(hepatomegaly)  0.3591 0.0531  0.2641 0.4690 0.0000 1.0712</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: hepatomegaly (family = binomial, link = logit)</span></span>
 <span><span class="co">#&gt;               Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; (Intercept) 0.0527 0.2282 -0.3928 0.5037 0.8244 1.0037</span></span>
 <span><span class="co">#&gt; year        0.2836 0.0646  0.1561 0.4083 0.0000 1.0248</span></span>
@@ -161,7 +161,7 @@ time-varying covariate in the survival relative risk model:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 16 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 15 sec</span></span></code></pre></div>
 <p>In the output, this is named <code>value(hepatomegaly)</code> to
 denote that the current value functional form is used. That is, we
 assume that the risk at a specific time <span class="math inline">t</span> is associated with the value of the linear
@@ -192,36 +192,36 @@ done using the <code><a href="../reference/jm.html">vexpit()</a></code> function
 <span><span class="co">#&gt;     functional_forms = ~vexpit(value(hepatomegaly)))</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
-<span><span class="co">#&gt; Number of Groups: 312        Number of events: 169 (54.2%)</span></span>
-<span><span class="co">#&gt; Number of Observations:</span></span>
+<span><span class="co">#&gt; Number of groups: 312        Number of events: 169 (54.2%)</span></span>
+<span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   hepatomegaly: 1884</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    3068.775 3059.436 -1530.111</span></span>
-<span><span class="co">#&gt; conditional 5005.254 4904.042 -2701.585</span></span>
+<span><span class="co">#&gt; marginal    3068.922 3059.928 -1530.331</span></span>
+<span><span class="co">#&gt; conditional 5007.089 4903.330 -2692.688</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                      </span></span>
 <span><span class="co">#&gt;        StdDev   Corr </span></span>
-<span><span class="co">#&gt; (Intr) 3.3268 (Intr) </span></span>
-<span><span class="co">#&gt; year   0.5302 -0.3244</span></span>
+<span><span class="co">#&gt; (Intr) 3.3594 (Intr) </span></span>
+<span><span class="co">#&gt; year   0.5306 -0.3373</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Survival Outcome:</span></span>
+<span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;                                Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale                   -0.3479 0.2838 -0.8972 0.2201 0.2196 1.0019</span></span>
-<span><span class="co">#&gt; vexpit(value(hepatomegaly))  3.2874 0.4691  2.3812 4.2400 0.0000 1.0166</span></span>
+<span><span class="co">#&gt; sexfemale                   -0.3506 0.2796 -0.8940 0.2111 0.2156 1.0011</span></span>
+<span><span class="co">#&gt; vexpit(value(hepatomegaly))  3.2219 0.4481  2.4085 4.1803 0.0000 1.0326</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: hepatomegaly (family = binomial, link = logit)</span></span>
 <span><span class="co">#&gt;               Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept) 0.0657 0.2354 -0.3840 0.5423 0.7862 1.0015</span></span>
-<span><span class="co">#&gt; year        0.2377 0.0619  0.1191 0.3605 0.0004 1.0017</span></span>
+<span><span class="co">#&gt; (Intercept) 0.0697 0.2310 -0.3768 0.5312 0.7664 1.0083</span></span>
+<span><span class="co">#&gt; year        0.2351 0.0617  0.1193 0.3579 0.0000 1.0159</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 18 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 16 sec</span></span></code></pre></div>
 <p>Other available functions to use in the definition of the
 <code>functional_forms</code> argument are <code><a href="../reference/jm.html">vexp()</a></code> to
 calculate the exponent, <code><a href="../reference/jm.html">vlog()</a></code> to calculate the natural
@@ -240,41 +240,41 @@ linear predictor, we also have the <code><a href="../reference/jm.html">Dexpit()
 <span><span class="co">#&gt;     functional_forms = forms)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
-<span><span class="co">#&gt; Number of Groups: 312        Number of events: 169 (54.2%)</span></span>
-<span><span class="co">#&gt; Number of Observations:</span></span>
+<span><span class="co">#&gt; Number of groups: 312        Number of events: 169 (54.2%)</span></span>
+<span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   hepatomegaly: 1884</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    3067.439 3058.267 -1529.488</span></span>
-<span><span class="co">#&gt; conditional 4990.422 4886.822 -2701.964</span></span>
+<span><span class="co">#&gt; marginal    3067.785 3060.312 -1534.212</span></span>
+<span><span class="co">#&gt; conditional 4988.077 4889.513 -2715.177</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                      </span></span>
 <span><span class="co">#&gt;        StdDev   Corr </span></span>
-<span><span class="co">#&gt; (Intr) 3.4301 (Intr) </span></span>
-<span><span class="co">#&gt; year   0.5544 -0.4777</span></span>
+<span><span class="co">#&gt; (Intr) 3.4175 (Intr) </span></span>
+<span><span class="co">#&gt; year   0.5553 -0.4686</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Survival Outcome:</span></span>
+<span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;                                                    Mean  StDev    2.5%   97.5%</span></span>
-<span><span class="co">#&gt; sexfemale                                       -0.3234 0.2953 -0.8756  0.2695</span></span>
-<span><span class="co">#&gt; vexpit(value(hepatomegaly))                      3.2922 0.5259  2.3173  4.3695</span></span>
-<span><span class="co">#&gt; Dexpit(value(hepatomegaly)):slope(hepatomegaly) -0.9686 0.4667 -2.0680 -0.2517</span></span>
-<span><span class="co">#&gt;                                                      P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale                                       0.2764 1.0079</span></span>
-<span><span class="co">#&gt; vexpit(value(hepatomegaly))                     0.0000 1.0142</span></span>
-<span><span class="co">#&gt; Dexpit(value(hepatomegaly)):slope(hepatomegaly) 0.0071 1.3755</span></span>
+<span><span class="co">#&gt; sexfemale                                       -0.3162 0.2913 -0.8542  0.2676</span></span>
+<span><span class="co">#&gt; vexpit(value(hepatomegaly))                      3.3665 0.4996  2.4415  4.3773</span></span>
+<span><span class="co">#&gt; Dexpit(value(hepatomegaly)):slope(hepatomegaly) -0.9790 0.4839 -2.1040 -0.1589</span></span>
+<span><span class="co">#&gt;                                                     P   Rhat</span></span>
+<span><span class="co">#&gt; sexfemale                                       0.282 1.0075</span></span>
+<span><span class="co">#&gt; vexpit(value(hepatomegaly))                     0.000 1.1171</span></span>
+<span><span class="co">#&gt; Dexpit(value(hepatomegaly)):slope(hepatomegaly) 0.022 1.1095</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: hepatomegaly (family = binomial, link = logit)</span></span>
 <span><span class="co">#&gt;               Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept) 0.1410 0.2439 -0.3245 0.6345 0.5656 1.0179</span></span>
-<span><span class="co">#&gt; year        0.1603 0.0688  0.0262 0.2970 0.0156 1.1988</span></span>
+<span><span class="co">#&gt; (Intercept) 0.1263 0.2364 -0.3337 0.5945 0.5869 1.0227</span></span>
+<span><span class="co">#&gt; year        0.1676 0.0666  0.0420 0.3018 0.0113 1.1185</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 21 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 19 sec</span></span></code></pre></div>
 <p>The call to <code>Dexpit(slope(hepatomegaly))</code> is internally
 transformed to
 <code>Dexpit(value(hepatomegaly)):slope(hepatomegaly)</code>, which
@@ -355,7 +355,7 @@ This calculates the term <span class="math inline">\{\eta(t) - \eta(t -
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

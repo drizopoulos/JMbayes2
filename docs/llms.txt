@@ -7,7 +7,7 @@ assuming different distributions, i.e., Gaussian, Student’s-t, Gamma,
 Beta, unit Lindley, censored Normal, Binomial, Poisson, Negative
 Binomial, and Beta-Binomial. For the event time process, right, left and
 interval censored data can be handled, while competing risks,
-multi-state and recurrent-event processes are also covered..
+multi-state and recurrent-event processes are also covered.
 
 **JMbayes2** fits joint models using Markov chain Monte Carlo algorithms
 implemented in C++. Besides the main modeling function, the package also
@@ -18,12 +18,14 @@ provides a number of functions to summarize and visualize the results.
 **JMbayes2** can be installed from [CRAN](https://cran.r-project.org/):
 
 ``` r
+
 install.packages("JMbayes2")
 ```
 
 The development version can be installed from GitHub:
 
 ``` r
+
 # install.packages("remotes")
 remotes::install_github("drizopoulos/jmbayes2")
 ```
@@ -51,6 +53,7 @@ procedure for a joint model with three longitudinal outcomes using the
 PBC dataset:
 
 ``` r
+
 # Cox model for the composite event death or transplantation
 pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
 CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)

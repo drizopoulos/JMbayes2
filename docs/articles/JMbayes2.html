@@ -13,8 +13,8 @@
 <link rel="manifest" href="../site.webmanifest">
 <!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="../katex-auto.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Univariate and Multivariate Joint Models">
 <meta name="robots" content="noindex">
@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,7 +85,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2026-02-02</h4>
+            <h4 data-toc-skip class="date">2026-08-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/JMbayes2.Rmd" class="external-link"><code>vignettes/JMbayes2.Rmd</code></a></small>
       <div class="d-none name"><code>JMbayes2.Rmd</code></div>
@@ -132,8 +132,8 @@ fitted with the following call to the <code><a href="../reference/jm.html">jm()<
 <span><span class="co">#&gt; JMbayes2::jm(Surv_object = CoxFit, Mixed_objects = fm1, time_var = "year")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
-<span><span class="co">#&gt; Number of Groups: 312        Number of events: 169 (54.2%)</span></span>
-<span><span class="co">#&gt; Number of Observations:</span></span>
+<span><span class="co">#&gt; Number of groups: 312        Number of events: 169 (54.2%)</span></span>
+<span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   log(serBilir): 1945</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
@@ -146,12 +146,12 @@ fitted with the following call to the <code><a href="../reference/jm.html">jm()<
 <span><span class="co">#&gt; (Intr) 1.0028 (Intr)</span></span>
 <span><span class="co">#&gt; year   0.1829 0.3994</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Survival Outcome:</span></span>
+<span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;                         Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; sexfemale            -0.1581 0.2717 -0.6499 0.3848 0.5544 1.0015</span></span>
 <span><span class="co">#&gt; value(log(serBilir))  1.2433 0.0847  1.0776 1.4140 0.0000 1.0183</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; (Intercept)     0.7239 0.1720  0.3821  1.0600 0.0000 0.9997</span></span>
 <span><span class="co">#&gt; year            0.2668 0.0381  0.1929  0.3444 0.0000 1.0024</span></span>
@@ -164,7 +164,7 @@ fitted with the following call to the <code><a href="../reference/jm.html">jm()<
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 17 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 14 sec</span></span></code></pre></div>
 <p>The output of the <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method provides some
 descriptive statistics of the sample at hand, followed by some fit
 statistics based on the marginal (random effects are integrated out
@@ -242,8 +242,8 @@ corresponding control arguments:</p>
 <span><span class="co">#&gt;     2), n_iter = 12000L, n_burnin = 2000L, n_thin = 5L)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
-<span><span class="co">#&gt; Number of Groups: 312        Number of events: 169 (54.2%)</span></span>
-<span><span class="co">#&gt; Number of Observations:</span></span>
+<span><span class="co">#&gt; Number of groups: 312        Number of events: 169 (54.2%)</span></span>
+<span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   log(serBilir): 1945</span></span>
 <span><span class="co">#&gt;   prothrombin: 1945</span></span>
 <span><span class="co">#&gt;   ascites: 1885</span></span>
@@ -262,14 +262,14 @@ corresponding control arguments:</p>
 <span><span class="co">#&gt; (Intr) 2.7049 0.5177 0.4745 0.3283  -0.0298       </span></span>
 <span><span class="co">#&gt; year   0.4613 0.4057 0.6660 -0.0592 0.3448        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Survival Outcome:</span></span>
+<span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;                         Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; sexfemale            -0.6621 0.3613 -1.3655 0.0338 0.0607 1.0140</span></span>
 <span><span class="co">#&gt; value(log(serBilir))  0.4863 0.1786  0.1096 0.8212 0.0147 1.0545</span></span>
 <span><span class="co">#&gt; value(prothrombin)   -0.0583 0.1244 -0.3296 0.1735 0.6293 1.0612</span></span>
 <span><span class="co">#&gt; value(ascites)        0.6227 0.1460  0.3708 0.9518 0.0000 1.0703</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%     P   Rhat</span></span>
 <span><span class="co">#&gt; (Intercept)     0.6926 0.1691  0.3584  1.0311 0.000 1.0003</span></span>
 <span><span class="co">#&gt; year            0.2694 0.0349  0.2005  0.3383 0.000 1.0004</span></span>
@@ -277,7 +277,7 @@ corresponding control arguments:</p>
 <span><span class="co">#&gt; year:sexfemale -0.0800 0.0362 -0.1508 -0.0097 0.024 1.0022</span></span>
 <span><span class="co">#&gt; sigma           0.3480 0.0068  0.3347  0.3617 0.000 1.0047</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: prothrombin (family = gaussian, link = identity)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: prothrombin (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; (Intercept)    10.9863 0.1728 10.6532 11.3254 0.0000 1.0033</span></span>
 <span><span class="co">#&gt; year            0.2081 0.0774  0.0592  0.3599 0.0070 1.0065</span></span>
@@ -285,7 +285,7 @@ corresponding control arguments:</p>
 <span><span class="co">#&gt; year:sexfemale  0.0470 0.0809 -0.1130  0.2029 0.5577 1.0088</span></span>
 <span><span class="co">#&gt; sigma           1.0569 0.0202  1.0185  1.0975 0.0000 1.0004</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: ascites (family = binomial, link = logit)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: ascites (family = binomial, link = logit)</span></span>
 <span><span class="co">#&gt;                Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; (Intercept) -4.4912 0.6735 -5.9197 -3.2356 0.0000 1.0121</span></span>
 <span><span class="co">#&gt; year         0.6393 0.0684  0.5128  0.7854 0.0000 1.0651</span></span>
@@ -296,7 +296,7 @@ corresponding control arguments:</p>
 <span><span class="co">#&gt; iterations per chain: 12000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 2000 </span></span>
 <span><span class="co">#&gt; thinning: 5 </span></span>
-<span><span class="co">#&gt; time: 2 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 1.3 min</span></span></code></pre></div>
 <p>The survival submodel output now contains the estimated coefficients
 for <code>value(prothrombin)</code> and <code>value(ascites)</code>, as
 well as parameter estimates for all three longitudinal submodels.</p>
@@ -343,8 +343,8 @@ corresponding syntax to fit this model is:</p>
 <span><span class="co">#&gt;     which_independent = cbind(1, 2), n_iter = 12000L, n_burnin = 2000L, ...</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
-<span><span class="co">#&gt; Number of Groups: 312        Number of events: 169 (54.2%)</span></span>
-<span><span class="co">#&gt; Number of Observations:</span></span>
+<span><span class="co">#&gt; Number of groups: 312        Number of events: 169 (54.2%)</span></span>
+<span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   log(serBilir): 1945</span></span>
 <span><span class="co">#&gt;   prothrombin: 1945</span></span>
 <span><span class="co">#&gt;   ascites: 1885</span></span>
@@ -363,7 +363,7 @@ corresponding syntax to fit this model is:</p>
 <span><span class="co">#&gt; (Intr) 2.5559 0.5529 0.4692 0.3487  -0.0775       </span></span>
 <span><span class="co">#&gt; year   0.4361 0.4303 0.6690 -0.0720 0.3773        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Survival Outcome:</span></span>
+<span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;                                   Mean  StDev     2.5%  97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; sexfemale                       0.3595 0.9644  -1.3670 2.3829 0.7557 1.0662</span></span>
 <span><span class="co">#&gt; slope(log(serBilir))            4.3938 2.5197  -0.0624 9.5851 0.0577 1.1294</span></span>
@@ -371,7 +371,7 @@ corresponding syntax to fit this model is:</p>
 <span><span class="co">#&gt; JMbayes2::area(prothrombin)    -0.4097 0.3097  -0.9998 0.1627 0.1957 1.3476</span></span>
 <span><span class="co">#&gt; value(ascites)                  1.0639 0.2373   0.6257 1.5698 0.0000 1.3015</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; (Intercept)     0.6684 0.1660  0.3397  0.9945 0.0003 1.0079</span></span>
 <span><span class="co">#&gt; year            0.2658 0.0336  0.2025  0.3346 0.0000 1.0005</span></span>
@@ -379,7 +379,7 @@ corresponding syntax to fit this model is:</p>
 <span><span class="co">#&gt; year:sexfemale -0.0745 0.0348 -0.1450 -0.0079 0.0270 1.0008</span></span>
 <span><span class="co">#&gt; sigma           0.3483 0.0066  0.3352  0.3615 0.0000 1.0046</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: prothrombin (family = gaussian, link = identity)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: prothrombin (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; (Intercept)    10.9993 0.1684 10.6565 11.3294 0.0000 1.0003</span></span>
 <span><span class="co">#&gt; year            0.1839 0.0764  0.0325  0.3362 0.0140 1.0056</span></span>
@@ -387,7 +387,7 @@ corresponding syntax to fit this model is:</p>
 <span><span class="co">#&gt; year:sexfemale  0.0702 0.0806 -0.0884  0.2279 0.3857 1.0058</span></span>
 <span><span class="co">#&gt; sigma           1.0591 0.0203  1.0197  1.0994 0.0000 1.0152</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: ascites (family = binomial, link = logit)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: ascites (family = binomial, link = logit)</span></span>
 <span><span class="co">#&gt;                Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; (Intercept) -4.4105 0.6235 -5.7030 -3.2274 0.0000 1.0378</span></span>
 <span><span class="co">#&gt; year         0.6304 0.0777  0.4830  0.7938 0.0000 1.2194</span></span>
@@ -398,7 +398,7 @@ corresponding syntax to fit this model is:</p>
 <span><span class="co">#&gt; iterations per chain: 12000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 2000 </span></span>
 <span><span class="co">#&gt; thinning: 5 </span></span>
-<span><span class="co">#&gt; time: 2.2 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 1.5 min</span></span></code></pre></div>
 <p>As seen above, the <code>functional_forms</code> argument is a named
 list with elements corresponding to the longitudinal outcomes. If a
 longitudinal outcome is not specified in this list, then the default
@@ -445,7 +445,7 @@ longitudinal outcomes in the relative risk model):</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

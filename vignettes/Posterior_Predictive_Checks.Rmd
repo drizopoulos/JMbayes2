@@ -1,12 +1,12 @@
 ---
-title: "Posterior Predictive Checks"
+title: "Goodness-of-Fit Checks"
 author: "Dimitris Rizopoulos"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Posterior Predictive Checks}
+  %\VignetteIndexEntry{Goodness-of-Fit Checks}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -47,7 +47,7 @@ knitr::opts_chunk$set(
 library("JMbayes2")
 ```
 
-## Goodness-of-Fit Checks for Joint Models
+## Posterior Predictive Checks for Joint Models
 To investigate the fit of a joint model to the training dataset $\mathcal D_n = \{T_i, \delta_i, \by_i, \mathcal X_i; i = 1, \ldots, n\}$, we compare simulated longitudinal measurements $\by_i^{\sf rep}$ and event times $T_i^{\sf *rep}$ from the fitted model with the observed data $\mathcal D_n$. Ideally, we expect that realizations from the fitted model are in close agreement with the observed data. This framework supports multiple settings, including checks for existing subjects, new subjects with only covariates, dynamic prediction at intermediate follow-up times, and cross-validated assessment. For the longitudinal component, goodness-of-fit is assessed through the mean, variance, and correlation structure, while the survival component is evaluated using empirical cumulative distributions and probability integral transforms. The association between processes is examined using time-dependent concordance statistics. A detailed presentation of this framework is given in [Rizopoulos, Taylor and Kardys (2026)](https://arxiv.org/abs/2601.18598).
 
 ## Posterior-Posterior Predictive Checks

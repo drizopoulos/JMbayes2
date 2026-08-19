@@ -312,6 +312,6 @@ compare_jm(fit_jm, fit_jm2)
 #>  fit_jm2 10512.30 10540.46 -5268.228
 #>   fit_jm 10665.69 11146.24 -6097.345
 #> 
-#> The criteria are calculated based on the marginal log-likelihood.
+#> The criteria are calculated on the basis of the marginal log-likelihood.
 # }
 ```

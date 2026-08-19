@@ -12,6 +12,7 @@ interaction with time. In the survival submodel, we only include the
 treatment effect.
 
 ``` r
+
 pbc2.id$status2 <- as.numeric(pbc2.id$status != "alive")
 lmeFit <- lme(log(serBilir) ~ ns(year, 3, B = c(0, 14.4)) * drug, 
                    data = pbc2, random = ~ ns(year, 3, B = c(0, 14.4)) | id,
@@ -24,8 +25,8 @@ summary(jmFit)
 #> JMbayes2::jm(Surv_object = CoxFit, Mixed_objects = lmeFit, time_var = "year")
 #> 
 #> Data Descriptives:
-#> Number of Groups: 312        Number of events: 169 (54.2%)
-#> Number of Observations:
+#> Number of groups: 312        Number of events: 169 (54.2%)
+#> Number of observations:
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
@@ -40,12 +41,12 @@ summary(jmFit)
 #> n(,3,B=c(0,14.4))2 1.6970 0.4318 0.7505                               
 #> n(,3,B=c(0,14.4))3 1.8995 0.4247 0.2076             0.6798            
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>                         Mean  StDev    2.5%  97.5%      P   Rhat
 #> drugD-penicil        -0.0138 0.2061 -0.4079 0.3859 0.9533 1.0037
 #> value(log(serBilir))  1.3001 0.0881  1.1354 1.4741 0.0000 1.0109
 #> 
-#> Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)
+#> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                        Mean  StDev    2.5%  97.5%      P   Rhat
 #> (Intercept)          0.5863 0.0808  0.4309 0.7430 0.0000 1.0007
 #> ns(,3,B=c(0,14.4))1  1.1251 0.1719  0.7905 1.4659 0.0000 1.0058
@@ -62,7 +63,7 @@ summary(jmFit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 21 sec
+#> time: 17 sec
 ```
 
 The coefficient for `drugD-penicil` for the survival outcome in the
@@ -77,6 +78,7 @@ group of patients that have the same distribution of serum bilirubin
 values as Patient 2:
 
 ``` r
+
 xyplot(log(serBilir) ~ year, data = pbc2, subset = id == 2, type = "b",
        xlab = "Follow-up time (years)", ylab = "log{serum bilirubin (mg/dL)}",
        main = "Patient 2")
@@ -92,6 +94,7 @@ received the active treatment D-penicillamine; hence, we also create a
 version of her data with the `drug` variable set to `placebo`:
 
 ``` r
+
 t0 <- 4
 t_horiz <- 6
 dataP2_Dpenici <- pbc2[pbc2$id == 2 & pbc2$year <= t0, ]
@@ -111,6 +114,7 @@ under the active treatment arm using the
 [`predict()`](https://rdrr.io/r/stats/predict.html) method:
 
 ``` r
+
 Pr1 <- predict(jmFit, newdata = dataP2_Dpenici, process = "event", 
                times = t_horiz, return_mcmc = TRUE)
 ```
@@ -120,6 +124,7 @@ calculation of a credible interval that accounts for the MCMC
 uncertainty. We produce the same estimate under the placebo arm:
 
 ``` r
+
 Pr0 <- predict(jmFit, newdata = dataP2_placebo, process = "event", 
                times = t_horiz, return_mcmc = TRUE)
 ```
@@ -129,6 +134,7 @@ calculated by the corresponding elements of the `Pr1` and `Pr0` objects,
 i.e.,
 
 ``` r
+
 # estimate 
 Pr1$pred[2L] - Pr0$pred[2L]
 #> [1] 0.002916423

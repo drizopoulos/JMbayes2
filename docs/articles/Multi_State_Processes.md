@@ -38,6 +38,7 @@ transition intensity at time t. The following piece of code simulates
 the data:
 
 ``` r
+
 # Set seed for reproducibility
 set.seed(1710)
 
@@ -125,6 +126,7 @@ The data for the multi-state process need to be in the appropriate long
 format:
 
 ``` r
+
 head(df_surv, n = 5L)
 #>   id transition   Tstart    Tstop status X
 #> 1  1          1 0.000000 1.014016      1 0
@@ -155,6 +157,7 @@ is very straightforward. First we fit a linear mixed model using the
 function from package **nlme**:
 
 ``` r
+
 mixedmodel <- lme(y ~ time, random = ~ time | id, data = df_long2)
 ```
 
@@ -167,6 +170,7 @@ interaction between covariate `X` and each transition to allow the
 effect of this covariate to vary across transitions.
 
 ``` r
+
 msmodel <- coxph(Surv(Tstart, Tstop, status) ~ X:strata(transition), 
                  data = df_surv)
 ```
@@ -174,6 +178,7 @@ msmodel <- coxph(Surv(Tstart, Tstop, status) ~ X:strata(transition),
 Finally, to fit the joint model, we simply run:
 
 ``` r
+
 jm_ms_model <- 
     jm(msmodel, mixedmodel, time_var = "time", base_hazard = rep("weibull", 3), 
        functional_forms = ~ value(y):transition, n_iter = 6000L, n_burnin = 1500L)
@@ -186,41 +191,41 @@ summary(jm_ms_model)
 #>     base_hazard = rep("weibull", 3), n_iter = 6000L, n_burnin = 1500L)
 #> 
 #> Data Descriptives:
-#> Number of Groups: 1500       Number of events: 1784 (45.8%)
-#> Number of Observations:
+#> Number of groups: 1500       Number of events: 1784 (45.8%)
+#> Number of observations:
 #>   y: 11573
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    46922.50 46862.53 -23431.28
-#> conditional 49794.51 48872.06 -25601.23
+#> marginal    46923.40 46863.84 -23431.94
+#> conditional 49796.78 48874.86 -25615.56
 #> 
 #> Random-effects covariance matrix:
 #>                     
 #>        StdDev   Corr
-#> (Intr) 1.0577 (Intr)
-#> time   0.5611 0.2092
+#> (Intr) 1.0580 (Intr)
+#> time   0.5609 0.2082
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>                          Mean  StDev    2.5%  97.5%      P   Rhat
-#> X:strata(transition)1  0.4395 0.0680  0.3060 0.5771 0.0000 1.0304
-#> X:strata(transition)2 -0.2348 0.1386 -0.5100 0.0220 0.0793 1.0025
-#> X:strata(transition)3  0.5705 0.0805  0.4144 0.7262 0.0000 1.0086
-#> value(y):transition1   0.5283 0.0211  0.4891 0.5707 0.0000 1.2283
-#> value(y):transition2   0.3143 0.0408  0.2347 0.3926 0.0000 1.0495
-#> value(y):transition3   0.2668 0.0201  0.2261 0.3063 0.0000 1.0239
+#> X:strata(transition)1  0.4382 0.0691  0.2965 0.5745 0.0000 1.0105
+#> X:strata(transition)2 -0.2359 0.1421 -0.5167 0.0366 0.0942 1.0045
+#> X:strata(transition)3  0.5681 0.0811  0.4101 0.7304 0.0000 1.0174
+#> value(y):transition1   0.5280 0.0201  0.4906 0.5677 0.0000 1.1397
+#> value(y):transition2   0.3110 0.0387  0.2314 0.3839 0.0000 1.0474
+#> value(y):transition3   0.2667 0.0187  0.2312 0.3045 0.0000 1.0351
 #> 
-#> Longitudinal Outcome: y (family = gaussian, link = identity)
+#> Longitudinal outcome: y (family = gaussian, link = identity)
 #>                Mean  StDev    2.5%   97.5% P   Rhat
-#> (Intercept)  5.0059 0.0313  4.9455  5.0670 0 1.0015
-#> time        -0.1070 0.0165 -0.1389 -0.0740 0 1.0014
-#> sigma        0.9306 0.0071  0.9170  0.9445 0 1.0004
+#> (Intercept)  5.0051 0.0311  4.9444  5.0664 0 1.0005
+#> time        -0.1068 0.0165 -0.1390 -0.0734 0 1.0031
+#> sigma        0.9304 0.0070  0.9171  0.9443 0 1.0005
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 6000 
 #> burn-in per chain: 1500 
 #> thinning: 1 
-#> time: 1.7 min
+#> time: 1.1 min
 ```
 
 which differs from a default call to

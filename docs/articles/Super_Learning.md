@@ -118,6 +118,7 @@ splitting the `pbc2` database into five folds using function
 [`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md):
 
 ``` r
+
 CVdats <- create_folds(pbc2, V = 5, id_var = "id")
 ```
 
@@ -141,6 +142,7 @@ this class to the resulting list will facilitate combining the
 predictions later. For our example, we use the following specifications:
 
 ``` r
+
 fit_models <- function (data) {
     library("JMbayes2")
     data$status2 <- as.numeric(data$status != "alive")
@@ -192,6 +194,7 @@ machine; in my machine with an Intel(R) Core(TM) i9-10885H CPU @ 2.40GHz
 and 32.0 GB RAM takes about 20 min to run the whole vignette):
 
 ``` r
+
 cl <- parallel::makeCluster(5L)
 Models_folds <- parallel::parLapply(cl, CVdats$training, fit_models)
 parallel::stopCluster(cl)
@@ -208,6 +211,7 @@ Brier score is calculated using the testing datasets that are provided
 in the `newdata` argument:
 
 ``` r
+
 tstr <- 6
 thor <- 8
 
@@ -224,8 +228,8 @@ Brier_weights
 #> Number of subjects with a censored time in [6, 8): 44
 #> Accounting for censoring using model-based weights
 #> 
-#> Integrated Brier score per model: 0.0596 0.0588 0.0613 0.0523 0.0611
-#> Weights per model: 0.199 0.1976 0.1925 0.214 0.1969
+#> Integrated Brier score per model: 0.0596 0.0586 0.0613 0.0523 0.061
+#> Weights per model: 0.199 0.1982 0.1924 0.2136 0.1968
 #> Number of folds: 5
 ```
 
@@ -237,20 +241,21 @@ using the expected predictive cross-entropy, use function
 with an almost identical call as for the Brier score:
 
 ``` r
+
 EPCE_weights <- tvEPCE(Models_folds, newdata = CVdats$testing, 
                        Tstart = tstr, Thoriz = thor)
 EPCE_weights
 #> 
 #> Cross-Validated Expected Predictive Cross-Entropy using the Library of Joint Models 'Models_folds'
 #> 
-#> Super Learning Estimated EPCE: 0.3109
+#> Super Learning Estimated EPCE: 0.3103
 #> In the time interval: [6, 8)
 #> For the 166 subjects at risk at time 6
 #> Number of subjects with an event in [6, 8): 18
 #> Number of subjects with a censored time in [6, 8): 44
 #> 
-#> EPCE per model: 0.3568 0.3599 0.3639 0.3589 0.4157
-#> Weights per model: 0.0013 0.5387 0.4599 0 1e-04
+#> EPCE per model: 0.3568 0.3607 0.3639 0.3589 0.4151
+#> Weights per model: 0.0025 0.5386 0.4587 0 2e-04
 #> Number of folds: 5
 ```
 
@@ -263,6 +268,7 @@ To use these weights in practice, we must first refit the five joint
 models we considered in the original dataset.
 
 ``` r
+
 Models <- fit_models(pbc2)
 ```
 
@@ -273,6 +279,7 @@ the event variable to zero, i.e., indicating that patients were
 event-free up to this time:
 
 ``` r
+
 ND <- pbc2[pbc2$years > tstr & pbc2$year <= tstr, ]
 ND$id <- ND$id[, drop = TRUE]
 ND$years <- tstr
@@ -288,6 +295,7 @@ rest of the arguments are the same as in the
 objects (see also the Dynamic Predictions vignette):
 
 ``` r
+
 model_weights <- EPCE_weights$weights
 
 predsEvent <- predict(Models, weights = model_weights, newdata = ND[ND$id == 8, ],

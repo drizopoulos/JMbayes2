@@ -102,6 +102,7 @@ competing risks, considering only the recurrent events process, or using
 a different timescale.
 
 ``` r
+
 gen_data <- function(){
   n <- 500 # desired number of subjects 
   n_i <- 15  # number of (planned) measurements per subject
@@ -265,6 +266,7 @@ the package the
 function:
 
 ``` r
+
 cox_data <- rc_setup(rc_data = recu_data, trm_data = term_data,
                      idVar = "id", statusVar = "status",
                      startVar = "tstart", stopVar = "tstop",
@@ -282,6 +284,7 @@ and in Figure 3, subject 1 experienced seven recurrent events during the
 follow-up; the terminal event censored the eighth recurrent event.
 
 ``` r
+
 cox_data[cox_data$id == 1, c("id", "tstart", "tstop", "status", "strata")]
 #>   id    tstart     tstop status strata
 #> 1  1 0.0000000 0.3756627      1      R
@@ -313,6 +316,7 @@ The user then needs to use the
 fit the linear mixed model that describes the longitudinal outcome,
 
 ``` r
+
 lme_fit <- lme(y ~ ns(time, k =  c(1, 3), B = c(0, 7)), 
                random = list(id = pdDiag(form = ~ ns(time, k = c(1, 3), 
                                                        B = c(0, 7)))),
@@ -325,6 +329,7 @@ Then, we use the
 function to fit a stratified Cox model using the transformed data,
 
 ``` r
+
 cox_fit <- coxph(Surv(tstart, tstop, status) ~ (group + age):strata(strata),
                  data = cox_data)
 ```
@@ -336,6 +341,7 @@ model in each relative-risk model. And with the `recurrent` argument
 specifying the desired timescale,
 
 ``` r
+
 jm_fit <- jm(cox_fit, lme_fit, time_var = "time", recurrent = "gap",
              functional_forms =  ~ value(y):strata)
 
@@ -346,8 +352,8 @@ summary(jm_fit)
 #>     time_var = "time", recurrent = "gap", functional_forms = ~value(y):strata)
 #> 
 #> Data Descriptives:
-#> Number of Groups: 500        Number of events: 2250 (81.6%)
-#> Number of Observations:
+#> Number of groups: 500        Number of events: 2250 (81.6%)
+#> Number of observations:
 #>   y: 3075
 #> 
 #>                  DIC     WAIC       LPML
@@ -372,7 +378,7 @@ summary(jm_fit)
 #>                 Mean   2.5%  97.5%
 #> sigma_frailty 0.1928 0.0212 0.3105
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>                             Mean  StDev    2.5%  97.5%      P   Rhat
 #> group:strata(strata)R     0.4638 0.0826  0.3032 0.6233 0.0000 1.0022
 #> group:strata(strata)T1    0.4348 0.1071  0.2215 0.6346 0.0000 1.0204
@@ -382,7 +388,7 @@ summary(jm_fit)
 #> value(y):strataT1         0.4983 0.0402  0.4222 0.5762 0.0000 1.5801
 #> frailty:strata(strata)T1 -0.6146 1.1373 -3.0913 2.2689 0.3878 1.1494
 #> 
-#> Longitudinal Outcome: y (family = gaussian, link = identity)
+#> Longitudinal outcome: y (family = gaussian, link = identity)
 #>                           Mean  StDev    2.5%  97.5%      P   Rhat
 #> (Intercept)             6.9873 0.0427  6.9034 7.0701 0.0000 1.0228
 #> n(,k=c(1,3),B=c(0,7))1  1.3662 0.1472  1.0788 1.6537 0.0000 1.0120
@@ -395,7 +401,7 @@ summary(jm_fit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 1.7 min
+#> time: 59 sec
 ```
 
 One can find the association parameters between the underlying value of

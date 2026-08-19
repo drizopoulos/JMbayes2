@@ -90,6 +90,7 @@ update the model formulation in the code below.
 ### Example 1: Speeding posterior sampling (parallel fitting)
 
 ``` r
+
 # 1. Split the dataset into `n_slices` subsamples
 pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive') # composite event indicator (1 = death or transplantation, 0 = otherwise)
 data_slc <- slicer(n_slices  = 2, # target number of data subsamples
@@ -152,6 +153,7 @@ simultaneously). In that case, the analyst can fit the model serially on
 each subsample, store the fitted objects, and then combine them.
 
 ``` r
+
 # 1. Prepare the data
 pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive') # composite event indicator (1 = death or transplantation, 0 = otherwise)
 data_slc <- slicer(n_slices  = 2, # target number of data subsamples

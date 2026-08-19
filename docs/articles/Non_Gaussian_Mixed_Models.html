@@ -13,8 +13,8 @@
 <link rel="manifest" href="../site.webmanifest">
 <!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="../katex-auto.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Non-Gaussian Mixed Models">
 <meta name="robots" content="noindex">
@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,7 +85,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2026-02-02</h4>
+            <h4 data-toc-skip class="date">2026-08-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Non_Gaussian_Mixed_Models.Rmd" class="external-link"><code>vignettes/Non_Gaussian_Mixed_Models.Rmd</code></a></small>
       <div class="d-none name"><code>Non_Gaussian_Mixed_Models.Rmd</code></div>
@@ -227,8 +227,8 @@ using the <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/ex
 <span><span class="co">#&gt;     time_var = "time")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
-<span><span class="co">#&gt; Number of Groups: 200        Number of events: 158 (79%)</span></span>
-<span><span class="co">#&gt; Number of Observations:</span></span>
+<span><span class="co">#&gt; Number of groups: 200        Number of events: 158 (79%)</span></span>
+<span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   y: 1182</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                   DIC      WAIC     LPML</span></span>
@@ -241,12 +241,12 @@ using the <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/ex
 <span><span class="co">#&gt; (Intr) 0.8436 (Intr)</span></span>
 <span><span class="co">#&gt; time   0.4664 0.0812</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Survival Outcome:</span></span>
+<span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;             Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; sexfemale 0.2153 0.2944 -0.3672 0.7865 0.4669 1.0030</span></span>
 <span><span class="co">#&gt; value(y)  1.0656 0.1018  0.8866 1.2781 0.0000 1.0832</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: y (family = beta, link = logit)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: y (family = beta, link = logit)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; (Intercept)    -2.3410 0.1115 -2.5592 -2.1270 0.0000 1.0046</span></span>
 <span><span class="co">#&gt; sexfemale      -0.0689 0.1486 -0.3584  0.2241 0.6462 1.0144</span></span>
@@ -259,7 +259,7 @@ using the <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/ex
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 24 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 17 sec</span></span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -374,39 +374,39 @@ syntax:</p>
 <span><span class="co">#&gt;     time_var = "time")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
-<span><span class="co">#&gt; Number of Groups: 200        Number of events: 165 (82.5%)</span></span>
-<span><span class="co">#&gt; Number of Observations:</span></span>
+<span><span class="co">#&gt; Number of groups: 200        Number of events: 165 (82.5%)</span></span>
+<span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   cbind(y, ind): 1346</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    3718.336 4647.791 -3267.595</span></span>
-<span><span class="co">#&gt; conditional 3330.882 3218.840 -1744.693</span></span>
+<span><span class="co">#&gt; marginal    3718.623 4651.602 -3262.619</span></span>
+<span><span class="co">#&gt; conditional 3331.387 3219.524 -1746.391</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                     </span></span>
 <span><span class="co">#&gt;        StdDev   Corr</span></span>
-<span><span class="co">#&gt; (Intr) 0.9502 (Intr)</span></span>
-<span><span class="co">#&gt; time   0.6633 0.1447</span></span>
+<span><span class="co">#&gt; (Intr) 0.9495 (Intr)</span></span>
+<span><span class="co">#&gt; time   0.6636 0.1449</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Survival Outcome:</span></span>
+<span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;                        Mean  StDev   2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale            0.6065 0.2483 0.1192 1.0889 0.0107 1.0027</span></span>
-<span><span class="co">#&gt; value(cbind(y, ind)) 0.8702 0.0641 0.7540 1.0005 0.0000 1.0477</span></span>
+<span><span class="co">#&gt; sexfemale            0.6056 0.2465 0.1188 1.0889 0.0102 1.0027</span></span>
+<span><span class="co">#&gt; value(cbind(y, ind)) 0.8694 0.0645 0.7539 1.0040 0.0000 1.0480</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: cbind(y, ind) (family = censored normal, link = identity)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: cbind(y, ind) (family = censored normal, link = identity)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)    -2.2588 0.1023 -2.4597 -2.0543 0.0000 1.0019</span></span>
-<span><span class="co">#&gt; sexfemale      -0.0300 0.1433 -0.3120  0.2483 0.8382 1.0011</span></span>
-<span><span class="co">#&gt; time            0.3344 0.0698  0.1989  0.4710 0.0000 1.0001</span></span>
-<span><span class="co">#&gt; sexfemale:time -0.1175 0.0983 -0.3082  0.0732 0.2260 1.0011</span></span>
-<span><span class="co">#&gt; sigma           0.4947 0.0138  0.4690  0.5227 0.0000 1.0028</span></span>
+<span><span class="co">#&gt; (Intercept)    -2.2585 0.1021 -2.4600 -2.0530 0.0000 1.0023</span></span>
+<span><span class="co">#&gt; sexfemale      -0.0298 0.1434 -0.3108  0.2495 0.8360 1.0009</span></span>
+<span><span class="co">#&gt; time            0.3344 0.0699  0.1987  0.4712 0.0000 1.0002</span></span>
+<span><span class="co">#&gt; sexfemale:time -0.1177 0.0983 -0.3092  0.0732 0.2256 1.0009</span></span>
+<span><span class="co">#&gt; sigma           0.4947 0.0140  0.4683  0.5230 0.0000 1.0065</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 16 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 14 sec</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="studentss-t-mixed-models">Students’s-t mixed models<a class="anchor" aria-label="anchor" href="#studentss-t-mixed-models"></a>
@@ -515,8 +515,8 @@ Student’s-t mixed effects model:</p>
 <span><span class="co">#&gt;     time_var = "time")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
-<span><span class="co">#&gt; Number of Groups: 200        Number of events: 165 (82.5%)</span></span>
-<span><span class="co">#&gt; Number of Observations:</span></span>
+<span><span class="co">#&gt; Number of groups: 200        Number of events: 165 (82.5%)</span></span>
+<span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   y: 1347</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
@@ -529,12 +529,12 @@ Student’s-t mixed effects model:</p>
 <span><span class="co">#&gt; (Intr) 0.9791 (Intr)</span></span>
 <span><span class="co">#&gt; time   0.6749 0.1175</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Survival Outcome:</span></span>
+<span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;             Mean  StDev    2.5%  97.5%     P   Rhat</span></span>
 <span><span class="co">#&gt; sexfemale 0.0207 0.2538 -0.4730 0.5131 0.932 1.0012</span></span>
 <span><span class="co">#&gt; value(y)  0.8350 0.0647  0.7152 0.9658 0.000 1.0569</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: y (family = Student's-t, link = identity)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: y (family = Student's-t, link = identity)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
 <span><span class="co">#&gt; (Intercept)    -2.2485 0.1083 -2.4626 -2.0334 0.0000 1.0038</span></span>
 <span><span class="co">#&gt; sexfemale      -0.1212 0.1513 -0.4205  0.1691 0.4267 1.0005</span></span>
@@ -546,7 +546,7 @@ Student’s-t mixed effects model:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 16 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 15 sec</span></span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -656,8 +656,8 @@ syntax:</p>
 <span><span class="co">#&gt;     time_var = "time")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
-<span><span class="co">#&gt; Number of Groups: 500        Number of events: 409 (81.8%)</span></span>
-<span><span class="co">#&gt; Number of Observations:</span></span>
+<span><span class="co">#&gt; Number of groups: 500        Number of events: 409 (81.8%)</span></span>
+<span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   y: 3842</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
@@ -670,12 +670,12 @@ syntax:</p>
 <span><span class="co">#&gt; (Intr) 1.0401 (Intr) </span></span>
 <span><span class="co">#&gt; time   0.5382 -0.0551</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Survival Outcome:</span></span>
+<span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;             Mean  StDev   2.5%  97.5% P   Rhat</span></span>
 <span><span class="co">#&gt; sexfemale 0.6141 0.1608 0.2967 0.9385 0 1.0126</span></span>
 <span><span class="co">#&gt; value(y)  0.8114 0.0536 0.7136 0.9274 0 1.0458</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: y (family = negative binomial, link = log)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: y (family = negative binomial, link = log)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5% P   Rhat</span></span>
 <span><span class="co">#&gt; (Intercept)     0.8422 0.0791  0.6852  0.9952 0 1.0116</span></span>
 <span><span class="co">#&gt; sexfemale      -0.5812 0.1143 -0.8014 -0.3573 0 1.0035</span></span>
@@ -688,7 +688,7 @@ syntax:</p>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 31 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 25 sec</span></span></code></pre></div>
 <div align="right">
 <a href="#top">Back to top</a>
 </div>
@@ -799,39 +799,39 @@ distribution:</p>
 <span><span class="co">#&gt;     time_var = "time")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
-<span><span class="co">#&gt; Number of Groups: 500        Number of events: 395 (79%)</span></span>
-<span><span class="co">#&gt; Number of Observations:</span></span>
+<span><span class="co">#&gt; Number of groups: 500        Number of events: 395 (79%)</span></span>
+<span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   cbind(y, 20 - y): 2837</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    11921.66 11871.70 -5942.471</span></span>
-<span><span class="co">#&gt; conditional 13491.02 13297.62 -7547.969</span></span>
+<span><span class="co">#&gt; marginal    11924.72 11874.68 -5952.664</span></span>
+<span><span class="co">#&gt; conditional 13480.82 13264.68 -7035.261</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                      </span></span>
 <span><span class="co">#&gt;        StdDev   Corr </span></span>
-<span><span class="co">#&gt; (Intr) 1.0077 (Intr) </span></span>
-<span><span class="co">#&gt; time   0.7146 -0.0045</span></span>
+<span><span class="co">#&gt; (Intr) 1.0072 (Intr) </span></span>
+<span><span class="co">#&gt; time   0.7123 -0.0012</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Survival Outcome:</span></span>
+<span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;                           Mean  StDev   2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale               0.5800 0.1952 0.2149 0.9642 0.0036 1.0050</span></span>
-<span><span class="co">#&gt; value(cbind(y, 20 - y)) 0.9346 0.0598 0.8248 1.0519 0.0000 1.0299</span></span>
+<span><span class="co">#&gt; sexfemale               0.5934 0.1974 0.2214 0.9899 0.0033 1.0067</span></span>
+<span><span class="co">#&gt; value(cbind(y, 20 - y)) 0.9439 0.0623 0.8333 1.0708 0.0000 1.0170</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: cbind(y, 20 - y) (family = beta binomial, link = logit)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: cbind(y, 20 - y) (family = beta binomial, link = logit)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)    -2.1593 0.0940 -2.3486 -1.9754 0.0000 1.0194</span></span>
-<span><span class="co">#&gt; sexfemale      -0.2722 0.1310 -0.5360 -0.0178 0.0336 1.0087</span></span>
-<span><span class="co">#&gt; time            0.3316 0.0522  0.2299  0.4334 0.0000 1.0039</span></span>
-<span><span class="co">#&gt; sexfemale:time -0.1798 0.0749 -0.3276 -0.0368 0.0142 1.0007</span></span>
-<span><span class="co">#&gt; sigma           4.8145 0.2810  4.2778  5.3776 0.0000 1.0262</span></span>
+<span><span class="co">#&gt; (Intercept)    -2.1530 0.0942 -2.3434 -1.9716 0.0000 1.0173</span></span>
+<span><span class="co">#&gt; sexfemale      -0.2745 0.1299 -0.5309 -0.0258 0.0309 1.0122</span></span>
+<span><span class="co">#&gt; time            0.3300 0.0524  0.2290  0.4332 0.0000 1.0019</span></span>
+<span><span class="co">#&gt; sexfemale:time -0.1795 0.0749 -0.3263 -0.0347 0.0151 1.0007</span></span>
+<span><span class="co">#&gt; sigma           4.8054 0.2806  4.2693  5.3793 0.0000 1.0111</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 57 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 29 sec</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -845,7 +845,7 @@ distribution:</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

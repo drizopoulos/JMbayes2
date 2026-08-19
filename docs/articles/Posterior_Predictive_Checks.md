@@ -31,6 +31,7 @@ effects random intercepts and linear random slopes. Finally, we fit the
 joint model that combines the two submodels:
 
 ``` r
+
 CoxFit <- coxph(Surv(Time, death) ~ treat, data = prothros)
 
 lmeFit1 <- lme(pro ~ time * treat, data = prothro, random = ~ time | id)
@@ -58,6 +59,7 @@ call to the
 function:
 
 ``` r
+
 ppcheck(jointFit1, random_effects = "mcmc", type = "ecdf")
 ```
 
@@ -81,6 +83,7 @@ compare the loess curve of the observed longitudinal responses with the
 loess curves of the simulated data:
 
 ``` r
+
 ppcheck(jointFit1, random_effects = "mcmc", type = "average")
 ```
 
@@ -95,6 +98,7 @@ longitudinal responses minus the corresponding loess estimates over
 time. This check is performed with the following call:
 
 ``` r
+
 ppcheck(jointFit1, random_effects = "mcmc", type = "variance")
 ```
 
@@ -106,6 +110,7 @@ compare the half-squared differences of the non-parametric residuals
 over the time lags for the observed and the simulated data:
 
 ``` r
+
 ppcheck(jointFit1, random_effects = "mcmc", type = "variogram")
 ```
 
@@ -121,6 +126,7 @@ fitted above, the functional form is the current value. Hence, the
 functional form function is specified as:
 
 ``` r
+
 FF1 <- function (t, betas, bi, data) {
     # t is the time variable
     # betas are the fixed effects as a list
@@ -148,6 +154,7 @@ To perform the check, we use the `FF1` function in the `Fforms_fun` of
 we also set the `process` argument to `"event"`:
 
 ``` r
+
 ppcheck(jointFit1, random_effects = "mcmc", process = "event", Fforms_fun = FF1,
         type = "ecdf")
 ```
@@ -171,6 +178,7 @@ following call to
 [`ppcheck()`](https://drizopoulos.github.io/JMbayes2/reference/ppcheck.md):
 
 ``` r
+
 ppcheck(jointFit1, random_effects = "mcmc", process = "event", Fforms_fun = FF1,
         type = "surv-uniform")
 ```
@@ -183,6 +191,7 @@ processes, we use the concordance statistic, which measures agreement
 between the time-to-event outcome and the longitudinal predictor:
 
 ``` r
+
 ppcheck(jointFit1, random_effects = "mcmc", process = "joint", Fforms_fun = FF1)
 ```
 
@@ -203,6 +212,7 @@ submodel we now use natural cubic splines with three degrees of freedom
 for the time effect in both the fixed- and random-effects parts:
 
 ``` r
+
 lmeFit2 <- lme(pro ~ ns(time, 3) * treat, data = prothro, 
            random = list(id = pdDiag(~ ns(time, 3))))
 
@@ -213,6 +223,7 @@ To perform the posterior-prior checks, we also need to update the
 functional forms function. This now takes the form:
 
 ``` r
+
 FF2 <- function (t, betas, bi, data) {
     treat <- as.numeric(data$treat == "prednisone")
     NS <- ns(t, k = c(0.4928, 2.1547), B = c(0, 11.1078))
@@ -232,24 +243,28 @@ posterior-prior predictive checks for the longitudinal outcome using the
 eCDF, the mean function, the variance function, and the semi-variogram:
 
 ``` r
+
 ppcheck(jointFit2, random_effects = "prior", type = "ecdf", Fforms_fun = FF2)
 ```
 
 ![](Posterior_Predictive_Checks_files/figure-html/Joint2-Long-1.png)
 
 ``` r
+
 ppcheck(jointFit2, random_effects = "prior", type = "average", Fforms_fun = FF2)
 ```
 
 ![](Posterior_Predictive_Checks_files/figure-html/Joint2-Long-2.png)
 
 ``` r
+
 ppcheck(jointFit2, random_effects = "prior", type = "variance", Fforms_fun = FF2)
 ```
 
 ![](Posterior_Predictive_Checks_files/figure-html/Joint2-Long-3.png)
 
 ``` r
+
 ppcheck(jointFit2, random_effects = "prior", type = "variogram", Fforms_fun = FF2)
 ```
 
@@ -260,6 +275,7 @@ Likewise, the following calls to
 produce the posterior-prior checks for the event time outcome:
 
 ``` r
+
 ppcheck(jointFit2, random_effects = "prior", process = "event", Fforms_fun = FF2,
         type = "ecdf")
 ```
@@ -267,6 +283,7 @@ ppcheck(jointFit2, random_effects = "prior", process = "event", Fforms_fun = FF2
 ![](Posterior_Predictive_Checks_files/figure-html/Joint2-Surv-1.png)
 
 ``` r
+
 ppcheck(jointFit2, random_effects = "prior", process = "event", Fforms_fun = FF2,
         type = "surv-uniform")
 ```
@@ -288,6 +305,7 @@ set that the observed time is equal to t_L and that the event has not
 occurred yet:
 
 ``` r
+
 t0 <- 3
 prothro_t0 <- prothro[prothro$Time > t0 & prothro$time <= t0, ]
 prothro_t0$Time <- t0
@@ -299,6 +317,7 @@ method to extract an MCMC sample for the random effects using only the
 longitudinal measurements up to year three:
 
 ``` r
+
 preds <- predict(jointFit2, newdata = prothro_t0, return_params_mcmc = TRUE)
 ```
 
@@ -310,6 +329,7 @@ argument, and the MCMC sample for the parameters and the random effects
 in the `params_mcmc` argument, i.e.:
 
 ``` r
+
 test_prothro <- prothro[prothro$Time > t0 & prothro$time > t0, ]
 ppcheck(jointFit2, random_effects = "mcmc", type = "average", 
         newdata = test_prothro, params_mcmc = preds$params_mcmc)
@@ -330,6 +350,7 @@ using the function
 [`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md):
 
 ``` r
+
 CVdats <- create_folds(prothro, V = 5, id_var = "id")
 ```
 
@@ -350,6 +371,7 @@ the **JMbayes2** package for each worker. The following code illustrates
 these steps:
 
 ``` r
+
 fit_model <- function (data) {
     library("JMbayes2")
     data_id <- data[!duplicated(data$id), ]
@@ -373,6 +395,7 @@ call produces the cross-validated posterior-prior predictive checks for
 the variance function of the prothrombin outcome:
 
 ``` r
+
 ppcheck(Models, type = "variance", newdata = CVdats$testing,
         random_effects = "prior", Fforms_fun = FF2)
 ```

@@ -18,6 +18,7 @@ start by fitting a Cox model for the composite event transplantation or
 death, including sex as a baseline covariate:
 
 ``` r
+
 pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
 CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
 ```
@@ -32,6 +33,7 @@ effects. The syntax to fit this model with
 is:
 
 ``` r
+
 fm <- mixed_model(hepatomegaly ~ year, data = pbc2, random = ~ year | id, 
                   family = binomial())
 ```
@@ -43,6 +45,7 @@ regression as a time-varying covariate in the survival relative risk
 model:
 
 ``` r
+
 jointFit1 <- jm(CoxFit, fm, time_var = "year")
 summary(jointFit1)
 #> 
@@ -50,8 +53,8 @@ summary(jointFit1)
 #> JMbayes2::jm(Surv_object = CoxFit, Mixed_objects = fm, time_var = "year")
 #> 
 #> Data Descriptives:
-#> Number of Groups: 312        Number of events: 169 (54.2%)
-#> Number of Observations:
+#> Number of groups: 312        Number of events: 169 (54.2%)
+#> Number of observations:
 #>   hepatomegaly: 1884
 #> 
 #>                  DIC     WAIC      LPML
@@ -64,12 +67,12 @@ summary(jointFit1)
 #> (Intr) 3.2996 (Intr) 
 #> year   0.5368 -0.1730
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>                        Mean  StDev    2.5%  97.5%      P   Rhat
 #> sexfemale           -0.4733 0.3019 -1.0613 0.1357 0.1191 1.0011
 #> value(hepatomegaly)  0.3591 0.0531  0.2641 0.4690 0.0000 1.0712
 #> 
-#> Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)
+#> Longitudinal outcome: hepatomegaly (family = binomial, link = logit)
 #>               Mean  StDev    2.5%  97.5%      P   Rhat
 #> (Intercept) 0.0527 0.2282 -0.3928 0.5037 0.8244 1.0037
 #> year        0.2836 0.0646  0.1561 0.4083 0.0000 1.0248
@@ -79,7 +82,7 @@ summary(jointFit1)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 16 sec
+#> time: 15 sec
 ```
 
 In the output, this is named `value(hepatomegaly)` to denote that the
@@ -105,6 +108,7 @@ risk of an event. This is done using the
 function:
 
 ``` r
+
 jointFit2 <- update(jointFit1, functional_forms = ~ vexpit(value(hepatomegaly)))
 summary(jointFit2)
 #> 
@@ -113,36 +117,36 @@ summary(jointFit2)
 #>     functional_forms = ~vexpit(value(hepatomegaly)))
 #> 
 #> Data Descriptives:
-#> Number of Groups: 312        Number of events: 169 (54.2%)
-#> Number of Observations:
+#> Number of groups: 312        Number of events: 169 (54.2%)
+#> Number of observations:
 #>   hepatomegaly: 1884
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    3068.775 3059.436 -1530.111
-#> conditional 5005.254 4904.042 -2701.585
+#> marginal    3068.922 3059.928 -1530.331
+#> conditional 5007.089 4903.330 -2692.688
 #> 
 #> Random-effects covariance matrix:
 #>                      
 #>        StdDev   Corr 
-#> (Intr) 3.3268 (Intr) 
-#> year   0.5302 -0.3244
+#> (Intr) 3.3594 (Intr) 
+#> year   0.5306 -0.3373
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>                                Mean  StDev    2.5%  97.5%      P   Rhat
-#> sexfemale                   -0.3479 0.2838 -0.8972 0.2201 0.2196 1.0019
-#> vexpit(value(hepatomegaly))  3.2874 0.4691  2.3812 4.2400 0.0000 1.0166
+#> sexfemale                   -0.3506 0.2796 -0.8940 0.2111 0.2156 1.0011
+#> vexpit(value(hepatomegaly))  3.2219 0.4481  2.4085 4.1803 0.0000 1.0326
 #> 
-#> Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)
+#> Longitudinal outcome: hepatomegaly (family = binomial, link = logit)
 #>               Mean  StDev    2.5%  97.5%      P   Rhat
-#> (Intercept) 0.0657 0.2354 -0.3840 0.5423 0.7862 1.0015
-#> year        0.2377 0.0619  0.1191 0.3605 0.0004 1.0017
+#> (Intercept) 0.0697 0.2310 -0.3768 0.5312 0.7664 1.0083
+#> year        0.2351 0.0617  0.1193 0.3579 0.0000 1.0159
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 18 sec
+#> time: 16 sec
 ```
 
 Other available functions to use in the definition of the
@@ -162,6 +166,7 @@ functions available. As an example, we extend `jointFit2` by including
 the derivative of the {\sf expit}() transformation:
 
 ``` r
+
 forms <- ~ vexpit(value(hepatomegaly)) + Dexpit(slope(hepatomegaly))
 jointFit3 <- update(jointFit1, functional_forms = forms)
 summary(jointFit3)
@@ -171,41 +176,41 @@ summary(jointFit3)
 #>     functional_forms = forms)
 #> 
 #> Data Descriptives:
-#> Number of Groups: 312        Number of events: 169 (54.2%)
-#> Number of Observations:
+#> Number of groups: 312        Number of events: 169 (54.2%)
+#> Number of observations:
 #>   hepatomegaly: 1884
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    3067.439 3058.267 -1529.488
-#> conditional 4990.422 4886.822 -2701.964
+#> marginal    3067.785 3060.312 -1534.212
+#> conditional 4988.077 4889.513 -2715.177
 #> 
 #> Random-effects covariance matrix:
 #>                      
 #>        StdDev   Corr 
-#> (Intr) 3.4301 (Intr) 
-#> year   0.5544 -0.4777
+#> (Intr) 3.4175 (Intr) 
+#> year   0.5553 -0.4686
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>                                                    Mean  StDev    2.5%   97.5%
-#> sexfemale                                       -0.3234 0.2953 -0.8756  0.2695
-#> vexpit(value(hepatomegaly))                      3.2922 0.5259  2.3173  4.3695
-#> Dexpit(value(hepatomegaly)):slope(hepatomegaly) -0.9686 0.4667 -2.0680 -0.2517
-#>                                                      P   Rhat
-#> sexfemale                                       0.2764 1.0079
-#> vexpit(value(hepatomegaly))                     0.0000 1.0142
-#> Dexpit(value(hepatomegaly)):slope(hepatomegaly) 0.0071 1.3755
+#> sexfemale                                       -0.3162 0.2913 -0.8542  0.2676
+#> vexpit(value(hepatomegaly))                      3.3665 0.4996  2.4415  4.3773
+#> Dexpit(value(hepatomegaly)):slope(hepatomegaly) -0.9790 0.4839 -2.1040 -0.1589
+#>                                                     P   Rhat
+#> sexfemale                                       0.282 1.0075
+#> vexpit(value(hepatomegaly))                     0.000 1.1171
+#> Dexpit(value(hepatomegaly)):slope(hepatomegaly) 0.022 1.1095
 #> 
-#> Longitudinal Outcome: hepatomegaly (family = binomial, link = logit)
+#> Longitudinal outcome: hepatomegaly (family = binomial, link = logit)
 #>               Mean  StDev    2.5%  97.5%      P   Rhat
-#> (Intercept) 0.1410 0.2439 -0.3245 0.6345 0.5656 1.0179
-#> year        0.1603 0.0688  0.0262 0.2970 0.0156 1.1988
+#> (Intercept) 0.1263 0.2364 -0.3337 0.5945 0.5869 1.0227
+#> year        0.1676 0.0666  0.0420 0.3018 0.0113 1.1185
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 21 sec
+#> time: 19 sec
 ```
 
 The call to `Dexpit(slope(hepatomegaly))` is internally transformed to
@@ -237,6 +242,7 @@ function. We illustrate this in the following example, in which we use
 the serum bilirubin
 
 ``` r
+
 gm <- lme(log(serBilir) ~ ns(year, 2), data = pbc2, random = ~ ns(year, 2) | id,
           control = lmeControl(opt = "optim"))
 ```
@@ -244,6 +250,7 @@ gm <- lme(log(serBilir) ~ ns(year, 2), data = pbc2, random = ~ ns(year, 2) | id,
 We first fit the joint model with time-varying slope term:
 
 ``` r
+
 jFit1 <- jm(CoxFit, gm, time_var = "year",
             functional_forms = ~ value(log(serBilir)) + slope(log(serBilir)))
 ```
@@ -256,6 +263,7 @@ This calculates the term \\\eta(t) - \eta(t - \varepsilon)\\ /
 \varepsilon for \varepsilon set equal to `eps = 1`:
 
 ``` r
+
 jFit2 <- jm(CoxFit, gm, time_var = "year",
             functional_forms = ~ value(log(serBilir)) + 
               slope(log(serBilir), eps = 1, direction = "back"))
@@ -264,6 +272,7 @@ jFit2 <- jm(CoxFit, gm, time_var = "year",
 We compare the two fits
 
 ``` r
+
 summary(jFit1)$Survival
 #>                            Mean     StDev       2.5%    97.5%         P
 #> sexfemale            -0.1683743 0.2795170 -0.6744899 0.405122 0.5535556

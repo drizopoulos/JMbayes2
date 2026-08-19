@@ -17,12 +17,12 @@ Source:
 
 Rizopoulos D, Miranda-Afonso P, Papageorgiou G (2026). *JMbayes2:
 Extended Joint Models for Longitudinal and Time-to-Event Data*. R
-package version 0.6-0, <https://drizopoulos.github.io/JMbayes2/>.
+package version 0.6-5, <https://drizopoulos.github.io/JMbayes2/>.
 
     @Manual{,
       title = {JMbayes2: Extended Joint Models for Longitudinal and Time-to-Event Data},
       author = {Dimitris Rizopoulos and Pedro Miranda-Afonso and Grigorios Papageorgiou},
       year = {2026},
-      note = {R package version 0.6-0},
+      note = {R package version 0.6-5},
       url = {https://drizopoulos.github.io/JMbayes2/},
     }

@@ -38,6 +38,7 @@ to the mean \mu(t) of the Beta distribution under the logit link
 function, i.e., \log\[\mu(t) / \\1 - \mu(t)\\\] = \eta(t).
 
 ``` r
+
 set.seed(1234)
 n <- 200 # number of subjects
 K <- 8 # number of measurements per subject
@@ -125,6 +126,7 @@ family object into the call of
 [`mixed_model()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md):
 
 ``` r
+
 DF_id <- DF[!duplicated(DF$id), ]
 Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
 Beta_MixMod <- mixed_model(y ~ sex * time, random = ~ time | id, data = DF,
@@ -138,8 +140,8 @@ summary(jointFit)
 #>     time_var = "time")
 #> 
 #> Data Descriptives:
-#> Number of Groups: 200        Number of events: 158 (79%)
-#> Number of Observations:
+#> Number of groups: 200        Number of events: 158 (79%)
+#> Number of observations:
 #>   y: 1182
 #> 
 #>                   DIC      WAIC     LPML
@@ -152,12 +154,12 @@ summary(jointFit)
 #> (Intr) 0.8436 (Intr)
 #> time   0.4664 0.0812
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>             Mean  StDev    2.5%  97.5%      P   Rhat
 #> sexfemale 0.2153 0.2944 -0.3672 0.7865 0.4669 1.0030
 #> value(y)  1.0656 0.1018  0.8866 1.2781 0.0000 1.0832
 #> 
-#> Longitudinal Outcome: y (family = beta, link = logit)
+#> Longitudinal outcome: y (family = beta, link = logit)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
 #> (Intercept)    -2.3410 0.1115 -2.5592 -2.1270 0.0000 1.0046
 #> sexfemale      -0.0689 0.1486 -0.3584  0.2241 0.6462 1.0144
@@ -170,7 +172,7 @@ summary(jointFit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 24 sec
+#> time: 17 sec
 ```
 
 [Back to top](#top)
@@ -194,6 +196,7 @@ model for the longitudinal outcomes but applies censoring in the
 realized longitudinal observations.
 
 ``` r
+
 set.seed(1234)
 n <- 200 # number of subjects
 K <- 12 # number of measurements per subject
@@ -276,6 +279,7 @@ DF <- DF[DF$time <= DF$Time, ]
 The corresponding joint model is fitted with the following syntax:
 
 ``` r
+
 DF_id <- DF[!duplicated(DF$id), ]
 Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
 CensNorm_MixMod <-
@@ -290,39 +294,39 @@ summary(jointFit)
 #>     time_var = "time")
 #> 
 #> Data Descriptives:
-#> Number of Groups: 200        Number of events: 165 (82.5%)
-#> Number of Observations:
+#> Number of groups: 200        Number of events: 165 (82.5%)
+#> Number of observations:
 #>   cbind(y, ind): 1346
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    3718.336 4647.791 -3267.595
-#> conditional 3330.882 3218.840 -1744.693
+#> marginal    3718.623 4651.602 -3262.619
+#> conditional 3331.387 3219.524 -1746.391
 #> 
 #> Random-effects covariance matrix:
 #>                     
 #>        StdDev   Corr
-#> (Intr) 0.9502 (Intr)
-#> time   0.6633 0.1447
+#> (Intr) 0.9495 (Intr)
+#> time   0.6636 0.1449
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>                        Mean  StDev   2.5%  97.5%      P   Rhat
-#> sexfemale            0.6065 0.2483 0.1192 1.0889 0.0107 1.0027
-#> value(cbind(y, ind)) 0.8702 0.0641 0.7540 1.0005 0.0000 1.0477
+#> sexfemale            0.6056 0.2465 0.1188 1.0889 0.0102 1.0027
+#> value(cbind(y, ind)) 0.8694 0.0645 0.7539 1.0040 0.0000 1.0480
 #> 
-#> Longitudinal Outcome: cbind(y, ind) (family = censored normal, link = identity)
+#> Longitudinal outcome: cbind(y, ind) (family = censored normal, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)    -2.2588 0.1023 -2.4597 -2.0543 0.0000 1.0019
-#> sexfemale      -0.0300 0.1433 -0.3120  0.2483 0.8382 1.0011
-#> time            0.3344 0.0698  0.1989  0.4710 0.0000 1.0001
-#> sexfemale:time -0.1175 0.0983 -0.3082  0.0732 0.2260 1.0011
-#> sigma           0.4947 0.0138  0.4690  0.5227 0.0000 1.0028
+#> (Intercept)    -2.2585 0.1021 -2.4600 -2.0530 0.0000 1.0023
+#> sexfemale      -0.0298 0.1434 -0.3108  0.2495 0.8360 1.0009
+#> time            0.3344 0.0699  0.1987  0.4712 0.0000 1.0002
+#> sexfemale:time -0.1177 0.0983 -0.3092  0.0732 0.2256 1.0009
+#> sigma           0.4947 0.0140  0.4683  0.5230 0.0000 1.0065
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 16 sec
+#> time: 14 sec
 ```
 
 ### Students’s-t mixed models
@@ -341,6 +345,7 @@ The following syntax simulates data from a joint model with a
 Student’s-t mixed effects model:
 
 ``` r
+
 set.seed(1234)
 n <- 200 # number of subjects
 K <- 12 # number of measurements per subject
@@ -423,6 +428,7 @@ family object in the call to
 [`mixed_model()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md):
 
 ``` r
+
 DF_id <- DF[!duplicated(DF$id), ]
 Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
 Stdt_MixMod <-
@@ -437,8 +443,8 @@ summary(jointFit)
 #>     time_var = "time")
 #> 
 #> Data Descriptives:
-#> Number of Groups: 200        Number of events: 165 (82.5%)
-#> Number of Observations:
+#> Number of groups: 200        Number of events: 165 (82.5%)
+#> Number of observations:
 #>   y: 1347
 #> 
 #>                  DIC     WAIC      LPML
@@ -451,12 +457,12 @@ summary(jointFit)
 #> (Intr) 0.9791 (Intr)
 #> time   0.6749 0.1175
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>             Mean  StDev    2.5%  97.5%     P   Rhat
 #> sexfemale 0.0207 0.2538 -0.4730 0.5131 0.932 1.0012
 #> value(y)  0.8350 0.0647  0.7152 0.9658 0.000 1.0569
 #> 
-#> Longitudinal Outcome: y (family = Student's-t, link = identity)
+#> Longitudinal outcome: y (family = Student's-t, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
 #> (Intercept)    -2.2485 0.1083 -2.4626 -2.0334 0.0000 1.0038
 #> sexfemale      -0.1212 0.1513 -0.4205  0.1691 0.4267 1.0005
@@ -468,7 +474,7 @@ summary(jointFit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 16 sec
+#> time: 15 sec
 ```
 
 [Back to top](#top)
@@ -485,6 +491,7 @@ The following piece of code simulates data from a joint model for count
 longitudinal data that follow the negative binomial distribution:
 
 ``` r
+
 set.seed(1234)
 n <- 500 # number of subjects
 K <- 10 # number of measurements per subject
@@ -567,6 +574,7 @@ DF <- DF[DF$time <= DF$Time, ]
 The corresponding joint model is the fitted using the following syntax:
 
 ``` r
+
 DF_id <- DF[!duplicated(DF$id), ]
 Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
 NB_MixMod <- mixed_model(y ~ sex * time, random = ~ time | id, data = DF,
@@ -580,8 +588,8 @@ summary(jointFit)
 #>     time_var = "time")
 #> 
 #> Data Descriptives:
-#> Number of Groups: 500        Number of events: 409 (81.8%)
-#> Number of Observations:
+#> Number of groups: 500        Number of events: 409 (81.8%)
+#> Number of observations:
 #>   y: 3842
 #> 
 #>                  DIC     WAIC      LPML
@@ -594,12 +602,12 @@ summary(jointFit)
 #> (Intr) 1.0401 (Intr) 
 #> time   0.5382 -0.0551
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>             Mean  StDev   2.5%  97.5% P   Rhat
 #> sexfemale 0.6141 0.1608 0.2967 0.9385 0 1.0126
 #> value(y)  0.8114 0.0536 0.7136 0.9274 0 1.0458
 #> 
-#> Longitudinal Outcome: y (family = negative binomial, link = log)
+#> Longitudinal outcome: y (family = negative binomial, link = log)
 #>                   Mean  StDev    2.5%   97.5% P   Rhat
 #> (Intercept)     0.8422 0.0791  0.6852  0.9952 0 1.0116
 #> sexfemale      -0.5812 0.1143 -0.8014 -0.3573 0 1.0035
@@ -612,7 +620,7 @@ summary(jointFit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 31 sec
+#> time: 25 sec
 ```
 
 [Back to top](#top)
@@ -627,6 +635,7 @@ The following piece of code simulates data from a joint model for
 binomial longitudinal data that follow the beta-binomial distribution:
 
 ``` r
+
 set.seed(1234)
 n <- 500 # number of subjects
 K <- 8 # number of measurements per subject
@@ -712,6 +721,7 @@ DF <- DF[DF$time <= DF$Time, ]
 The corresponding joint model is then fitted with the syntax:
 
 ``` r
+
 DF_id <- DF[!duplicated(DF$id), ]
 Cox_fit <- coxph(Surv(Time, event) ~ sex, data = DF_id)
 BetaBinom_MixMod <-
@@ -726,37 +736,37 @@ summary(jointFit)
 #>     time_var = "time")
 #> 
 #> Data Descriptives:
-#> Number of Groups: 500        Number of events: 395 (79%)
-#> Number of Observations:
+#> Number of groups: 500        Number of events: 395 (79%)
+#> Number of observations:
 #>   cbind(y, 20 - y): 2837
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    11921.66 11871.70 -5942.471
-#> conditional 13491.02 13297.62 -7547.969
+#> marginal    11924.72 11874.68 -5952.664
+#> conditional 13480.82 13264.68 -7035.261
 #> 
 #> Random-effects covariance matrix:
 #>                      
 #>        StdDev   Corr 
-#> (Intr) 1.0077 (Intr) 
-#> time   0.7146 -0.0045
+#> (Intr) 1.0072 (Intr) 
+#> time   0.7123 -0.0012
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>                           Mean  StDev   2.5%  97.5%      P   Rhat
-#> sexfemale               0.5800 0.1952 0.2149 0.9642 0.0036 1.0050
-#> value(cbind(y, 20 - y)) 0.9346 0.0598 0.8248 1.0519 0.0000 1.0299
+#> sexfemale               0.5934 0.1974 0.2214 0.9899 0.0033 1.0067
+#> value(cbind(y, 20 - y)) 0.9439 0.0623 0.8333 1.0708 0.0000 1.0170
 #> 
-#> Longitudinal Outcome: cbind(y, 20 - y) (family = beta binomial, link = logit)
+#> Longitudinal outcome: cbind(y, 20 - y) (family = beta binomial, link = logit)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)    -2.1593 0.0940 -2.3486 -1.9754 0.0000 1.0194
-#> sexfemale      -0.2722 0.1310 -0.5360 -0.0178 0.0336 1.0087
-#> time            0.3316 0.0522  0.2299  0.4334 0.0000 1.0039
-#> sexfemale:time -0.1798 0.0749 -0.3276 -0.0368 0.0142 1.0007
-#> sigma           4.8145 0.2810  4.2778  5.3776 0.0000 1.0262
+#> (Intercept)    -2.1530 0.0942 -2.3434 -1.9716 0.0000 1.0173
+#> sexfemale      -0.2745 0.1299 -0.5309 -0.0258 0.0309 1.0122
+#> time            0.3300 0.0524  0.2290  0.4332 0.0000 1.0019
+#> sexfemale:time -0.1795 0.0749 -0.3263 -0.0347 0.0151 1.0007
+#> sigma           4.8054 0.2806  4.2693  5.3793 0.0000 1.0111
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 57 sec
+#> time: 29 sec
 ```

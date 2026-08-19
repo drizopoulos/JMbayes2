@@ -47,6 +47,7 @@ nonlinear subject-specific time effects using natural cubic splines. For
 odds. The code is:
 
 ``` r
+
 fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
            random = ~ ns(year, 3) | id, control = lmeControl(opt = 'optim'))
 
@@ -63,6 +64,7 @@ second one fits the Cox model in which we have also included the
 baseline covariates `drug` and `age`. The code is:
 
 ``` r
+
 pbc2.id$event <- as.numeric(pbc2.id$status != "alive")
 CoxFit <- coxph(Surv(years, event) ~ drug + age, data = pbc2.id)
 ```
@@ -71,6 +73,7 @@ The joint model is fitted with the following call to
 [`jm()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md):
 
 ``` r
+
 jointFit <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year")
 ```
 
@@ -79,6 +82,7 @@ outcomes for Patients 25 and 93. As a first step, we extract the data of
 these patients and store them in the data.frame `ND` with the code:
 
 ``` r
+
 t0 <- 5
 ND <- pbc2[pbc2$id %in% c(25, 93), ]
 ND <- ND[ND$year < t0, ]
@@ -110,6 +114,7 @@ value of L defined above and specifies the number of Monte Carlo
 samples:
 
 ``` r
+
 predLong1 <- predict(jointFit, newdata = ND, return_newdata = TRUE)
 ```
 
@@ -122,6 +127,7 @@ display the predictions. With the following code, we do that for the
 first longitudinal outcome:
 
 ``` r
+
 plot(predLong1)
 ```
 
@@ -132,6 +138,7 @@ can accordingly specify the `times` argument. In the following example,
 we calculate predictions from time `t0` to time 12:
 
 ``` r
+
 predLong2 <- predict(jointFit, newdata = ND,
                      times = seq(t0, 12, length.out = 51),
                      return_newdata = TRUE)
@@ -143,6 +150,7 @@ We show these predictions for the second outcome and the second patient
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) method:
 
 ``` r
+
 plot(predLong2, outcomes = 2, subject = 93)
 ```
 
@@ -153,6 +161,7 @@ We continue with the predictions for the event outcome. To let
 the cumulative risk probabilities, we specify `process = "event"`:
 
 ``` r
+
 predSurv <- predict(jointFit, newdata = ND, process = "event",
                     times = seq(t0, 12, length.out = 51),
                     return_newdata = TRUE)
@@ -164,6 +173,7 @@ survival outcomes combined, we provide both objects to the
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) method:
 
 ``` r
+
 plot(predLong2, predSurv)
 ```
 
@@ -196,6 +206,7 @@ specifies the relative positive of the y-axis labels for the three
 longitudinal outcomes.
 
 ``` r
+
 cols <- c('#F25C78', '#D973B5', '#F28322')
 plot(predLong2, predSurv, outcomes = 1:3, subject = 93,
      fun_long = list(exp, identity, identity),
@@ -223,6 +234,7 @@ T_j \> 8). The calculations are performed with the following call to
 [`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md):
 
 ``` r
+
 pbc2$event <- as.numeric(pbc2$status != "alive")
 roc <- tvROC(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 roc
@@ -311,6 +323,7 @@ The area under the ROC curve is calculated with the
 function:
 
 ``` r
+
 tvAUC(roc)
 #> 
 #>  Time-dependent AUC for the Joint Model jointFit
@@ -336,6 +349,7 @@ We compare the added value of using the longitudinal data compared to
 only using the baseline value of the markers,
 
 ``` r
+
 baseline_Cox <- coxph(Surv(years, event) ~ drug + age + log(serBilir) + 
                           prothrombin + ascites, data = pbc2.id)
 tvAUC(baseline_Cox, newdata = pbc2.id, Tstart = t0, Dt = 3)
@@ -352,6 +366,7 @@ To assess the accuracy of the predictions, we produce a calibration
 plot:
 
 ``` r
+
 calibration_plot(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 ```
 
@@ -370,6 +385,7 @@ the predicted cumulative risks probabilities. Using the
 function we can also calculate metrics for the accuracy of predictions:
 
 ``` r
+
 calibration_metrics(jointFit, pbc2, Tstart = 5, Dt = 3)
 #>        ICI        E50        E90 
 #> 0.02984699 0.02453557 0.05820965
@@ -384,6 +400,7 @@ computed with the
 function:
 
 ``` r
+
 tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 #> 
 #> Prediction Error for the Joint Model 'jointFit'
@@ -402,6 +419,7 @@ can use the integrated Brier score. The corresponding integral is
 approximated using the Simpson’s rule:
 
 ``` r
+
 tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE)
 #> 
 #> Prediction Error for the Joint Model 'jointFit'
@@ -419,6 +437,7 @@ Function
 also works for Cox models, e.g.,
 
 ``` r
+
 tvBrier(baseline_Cox, newdata = pbc2.id, Tstart = t0, Dt = 3, integrated = TRUE)
 #> 
 #> Prediction Error for the Cox Model 'baseline_Cox'
@@ -440,6 +459,7 @@ censoring in the interval `(t0, t0 + Dt]` using the Kaplan-Meier
 estimate of the censoring distribution (however, see the note below):
 
 ``` r
+
 tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE,
         type_weights = "IPCW")
 #> 
@@ -498,6 +518,7 @@ function. We start with cross-validation and split the `pbc2` database
 into five folds using the syntax:
 
 ``` r
+
 CVdats <- create_folds(pbc2, V = 5, id_var = "id")
 ```
 
@@ -519,6 +540,7 @@ package **JMbayes2** for each worker. The output of this function is the
 fitted joint model we wish to internally validate.
 
 ``` r
+
 fit_model <- function (data) {
     library("JMbayes2")
     # data
@@ -546,6 +568,7 @@ computations require some time to perform depending on the capabilities
 of your computing environment):
 
 ``` r
+
 cl <- parallel::makeCluster(5L)
 Model_folds <- parallel::parLapply(cl, CVdats$training, fit_model)
 parallel::stopCluster(cl)
@@ -556,6 +579,7 @@ datasets, we must create the `event` variable in each one. This is
 achieved with the following piece of code:
 
 ``` r
+
 CVdats$testing[] <- lapply(CVdats$testing, function (d) {
     d$event <- as.numeric(d$status != "alive")
     d
@@ -567,6 +591,7 @@ testing datasets at follow-up year `t0 = 5` and for a window of `Dt = 3`
 years (we use parallel computing again):
 
 ``` r
+
 calculate_Brier <- function (v, models, testing_data) {
     library("JMbayes2")
     tvBrier(models[[v]], newdata = testing_data[[v]], Tstart = 5, Dt = 3, 
@@ -584,6 +609,7 @@ The cross-validated estimate of the integrated Brier score is the
 average of the estimated Brier scores in the testing datasets:
 
 ``` r
+
 average_Brier <- mean(sapply(Brier_per_fold, "[[", "Brier"))
 average_Brier
 #> [1] 0.0862818
@@ -593,6 +619,7 @@ The calculation of the cross-validated estimate of the AUC at follow-up
 year 5 and for a window of 3 years proceeds similarly:
 
 ``` r
+
 calculate_AUC <- function (v, models, testing_data) {
     library("JMbayes2")
     tvAUC(models[[v]], newdata = testing_data[[v]], Tstart = 5, Dt = 3)
@@ -618,6 +645,7 @@ created with the
 function by specifying `method = "Bootstrap"`:
 
 ``` r
+
 bootDats <- create_folds(pbc2, V = 10, id_var = "id", method = "Bootstrap")
 ```
 
@@ -628,6 +656,7 @@ Bootstrap sample form the testing dataset. We fit the joint model in the
 training datasets using parallel computing:
 
 ``` r
+
 cl <- parallel::makeCluster(5L)
 Model_bootSamples <- parallel::parLapply(cl, bootDats$training, fit_model)
 parallel::stopCluster(cl)
@@ -637,6 +666,7 @@ Before calculating the predictive accuracy measures in the testing
 datasets, we must create again the `event` variable in each one.
 
 ``` r
+
 bootDats$testing[] <- lapply(bootDats$testing, function (d) {
     d$event <- as.numeric(d$status != "alive")
     d
@@ -647,6 +677,7 @@ Following we calculate the integrated Brier score in each testing
 dataset and compute the average:
 
 ``` r
+
 cl <- parallel::makeCluster(10L)
 Brier_per_bootSample <- 
     parallel::parLapply(cl, seq_len(10), calculate_Brier, models = Model_bootSamples,
@@ -662,6 +693,7 @@ the contrary, the estimate of the integrate Brier score in the `pbc2`
 dataset used to fit the joint model will be highly optimistic:
 
 ``` r
+
 jointFit <- fit_model(pbc2)
 
 Brier_original <- tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, 
@@ -675,6 +707,7 @@ dataset and the estimates from the Bootstrap samples to reduce the
 upward bias:
 
 ``` r
+
 0.368 * Brier_original$Brier + 0.632 * average_Brier_bootSamples
 #> [1] 0.08199523
 ```
@@ -682,6 +715,7 @@ upward bias:
 We perform the same calculations also for the AUC:
 
 ``` r
+
 cl <- parallel::makeCluster(10L)
 AUC_per_bootSample <- 
     parallel::parLapply(cl, seq_len(10), calculate_AUC, models = Model_bootSamples,
@@ -700,6 +734,7 @@ A 95% confidence interval for the AUC in the original sample can be
 derived by calculating the AUC in the Bootstrap training samples, i.e.,
 
 ``` r
+
 bootDats$training[] <- lapply(bootDats$training, function (d) {
     d$event <- as.numeric(d$status != "alive")
     d

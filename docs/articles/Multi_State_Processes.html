@@ -13,8 +13,8 @@
 <link rel="manifest" href="../site.webmanifest">
 <!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="../katex-auto.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Multi-State Processes">
 <meta name="robots" content="noindex">
@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,7 +85,7 @@
                         <h4 data-toc-skip class="author">Grigorios
 Papageorgiou</h4>
             
-            <h4 data-toc-skip class="date">2026-02-02</h4>
+            <h4 data-toc-skip class="date">2026-08-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Multi_State_Processes.Rmd" class="external-link"><code>vignettes/Multi_State_Processes.Rmd</code></a></small>
       <div class="d-none name"><code>Multi_State_Processes.Rmd</code></div>
@@ -266,41 +266,41 @@ transitions.</p>
 <span><span class="co">#&gt;     base_hazard = rep("weibull", 3), n_iter = 6000L, n_burnin = 1500L)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
-<span><span class="co">#&gt; Number of Groups: 1500       Number of events: 1784 (45.8%)</span></span>
-<span><span class="co">#&gt; Number of Observations:</span></span>
+<span><span class="co">#&gt; Number of groups: 1500       Number of events: 1784 (45.8%)</span></span>
+<span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   y: 11573</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    46922.50 46862.53 -23431.28</span></span>
-<span><span class="co">#&gt; conditional 49794.51 48872.06 -25601.23</span></span>
+<span><span class="co">#&gt; marginal    46923.40 46863.84 -23431.94</span></span>
+<span><span class="co">#&gt; conditional 49796.78 48874.86 -25615.56</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                     </span></span>
 <span><span class="co">#&gt;        StdDev   Corr</span></span>
-<span><span class="co">#&gt; (Intr) 1.0577 (Intr)</span></span>
-<span><span class="co">#&gt; time   0.5611 0.2092</span></span>
+<span><span class="co">#&gt; (Intr) 1.0580 (Intr)</span></span>
+<span><span class="co">#&gt; time   0.5609 0.2082</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Survival Outcome:</span></span>
+<span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;                          Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; X:strata(transition)1  0.4395 0.0680  0.3060 0.5771 0.0000 1.0304</span></span>
-<span><span class="co">#&gt; X:strata(transition)2 -0.2348 0.1386 -0.5100 0.0220 0.0793 1.0025</span></span>
-<span><span class="co">#&gt; X:strata(transition)3  0.5705 0.0805  0.4144 0.7262 0.0000 1.0086</span></span>
-<span><span class="co">#&gt; value(y):transition1   0.5283 0.0211  0.4891 0.5707 0.0000 1.2283</span></span>
-<span><span class="co">#&gt; value(y):transition2   0.3143 0.0408  0.2347 0.3926 0.0000 1.0495</span></span>
-<span><span class="co">#&gt; value(y):transition3   0.2668 0.0201  0.2261 0.3063 0.0000 1.0239</span></span>
+<span><span class="co">#&gt; X:strata(transition)1  0.4382 0.0691  0.2965 0.5745 0.0000 1.0105</span></span>
+<span><span class="co">#&gt; X:strata(transition)2 -0.2359 0.1421 -0.5167 0.0366 0.0942 1.0045</span></span>
+<span><span class="co">#&gt; X:strata(transition)3  0.5681 0.0811  0.4101 0.7304 0.0000 1.0174</span></span>
+<span><span class="co">#&gt; value(y):transition1   0.5280 0.0201  0.4906 0.5677 0.0000 1.1397</span></span>
+<span><span class="co">#&gt; value(y):transition2   0.3110 0.0387  0.2314 0.3839 0.0000 1.0474</span></span>
+<span><span class="co">#&gt; value(y):transition3   0.2667 0.0187  0.2312 0.3045 0.0000 1.0351</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Longitudinal Outcome: y (family = gaussian, link = identity)</span></span>
+<span><span class="co">#&gt; Longitudinal outcome: y (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                Mean  StDev    2.5%   97.5% P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)  5.0059 0.0313  4.9455  5.0670 0 1.0015</span></span>
-<span><span class="co">#&gt; time        -0.1070 0.0165 -0.1389 -0.0740 0 1.0014</span></span>
-<span><span class="co">#&gt; sigma        0.9306 0.0071  0.9170  0.9445 0 1.0004</span></span>
+<span><span class="co">#&gt; (Intercept)  5.0051 0.0311  4.9444  5.0664 0 1.0005</span></span>
+<span><span class="co">#&gt; time        -0.1068 0.0165 -0.1390 -0.0734 0 1.0031</span></span>
+<span><span class="co">#&gt; sigma        0.9304 0.0070  0.9171  0.9443 0 1.0005</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
 <span><span class="co">#&gt; iterations per chain: 6000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 1500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 1.7 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 1.1 min</span></span></code></pre></div>
 <p>which differs from a default call to <code><a href="../reference/jm.html">jm()</a></code> by the
 addition of the <code>functional_forms</code> argument specifying that
 we want an “interaction” between the marker’s value and each transition,
@@ -321,7 +321,7 @@ baseline hazard function per transition by specifying the
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

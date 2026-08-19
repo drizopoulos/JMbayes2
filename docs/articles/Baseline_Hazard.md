@@ -29,6 +29,7 @@ the default joint model for the time to death and the longitudinal
 measurements of the square root transformed CD4 cell counts:
 
 ``` r
+
 # Cox regression
 CoxFit <- coxph(Surv(Time, death) ~ drug, data = aids.id)
 
@@ -52,6 +53,7 @@ used. The internal function `JMbayes2:::plot_hazard()` can be used to
 depict the estimated baseline hazard function:
 
 ``` r
+
 JMbayes2:::plot_hazard(jointFit1)
 ```
 
@@ -69,6 +71,7 @@ restricted cubic spline) basis for the logarithm of time using the
 `base_hazard` argument:
 
 ``` r
+
 jointFit2 <- update(jointFit1, base_hazard = "log time, ns")
 JMbayes2:::plot_hazard(jointFit2)
 ```
@@ -92,6 +95,7 @@ that the piecewise-constant approximation is defined for time in its
 original scale again):
 
 ``` r
+
 jointFit3 <- update(jointFit1, base_hazard = "piecewise constant",
                     base_hazard_segments = 5L)
 JMbayes2:::plot_hazard(jointFit3)
@@ -105,6 +109,7 @@ A piecewise-linear baseline hazard function for the log time variable
 with three interconnected lines is fitted using the syntax:
 
 ``` r
+
 jointFit4 <- update(jointFit1, base_hazard = "piecewise linear, log time",
                     base_hazard_segments = 3L, 
                     priors = list(penalized_bs_gammas = FALSE))
@@ -126,6 +131,7 @@ considered above. We can fit a joint model with the Weibull baseline
 hazard using the call:
 
 ``` r
+
 jointFit5 <- update(jointFit1, base_hazard = "weibull")
 JMbayes2:::plot_hazard(jointFit5)
 ```
@@ -138,6 +144,7 @@ natural cubic spline basis is used. In the following figure, we
 extrapolate until month 24:
 
 ``` r
+
 JMbayes2:::plot_hazard(jointFit5, tmax = 24)
 ```
 
@@ -154,6 +161,7 @@ Weibull, and for the ddI group a penalized natural cubic spline for the
 logarithm of the time variable:
 
 ``` r
+
 CoxFit2 <- coxph(Surv(Time, death) ~ strata(drug), data = aids.id)
 
 jointFit6 <- jm(CoxFit2, fm, time_var = "obstime", 

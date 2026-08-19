@@ -15,6 +15,7 @@ fitting a Cox model for the composite event transplantation or death,
 including sex as a baseline covariate:
 
 ``` r
+
 pbc2.id$status2 <- as.numeric(pbc2.id$status != 'alive')
 CoxFit <- coxph(Surv(years, status2) ~ sex, data = pbc2.id)
 ```
@@ -30,6 +31,7 @@ sex. The syntax to fit this model with
 is:
 
 ``` r
+
 fm <- lme(log(serBilir) ~ poly(year, 2) * sex, data = pbc2, 
           random = ~ poly(year, 2) | id, control = lmeControl(opt = 'optim'))
 ```
@@ -40,6 +42,7 @@ the subject-specific linear predictor of the mixed model as a
 time-varying covariate in the survival relative risk model:
 
 ``` r
+
 jointFit1 <- jm(CoxFit, fm, time_var = "year")
 summary(jointFit1)
 #> 
@@ -47,8 +50,8 @@ summary(jointFit1)
 #> JMbayes2::jm(Surv_object = CoxFit, Mixed_objects = fm, time_var = "year")
 #> 
 #> Data Descriptives:
-#> Number of Groups: 312        Number of events: 169 (54.2%)
-#> Number of Observations:
+#> Number of groups: 312        Number of events: 169 (54.2%)
+#> Number of observations:
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
@@ -62,12 +65,12 @@ summary(jointFit1)
 #> p(,2)1 21.6892 0.6786         
 #> p(,2)2 12.1450 -0.2361 -0.1267
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>                         Mean  StDev    2.5%  97.5%      P   Rhat
 #> sexfemale            -0.1531 0.2625 -0.6448 0.3834 0.5444 1.0118
 #> value(log(serBilir))  1.2974 0.0989  1.1169 1.5105 0.0000 1.0469
 #> 
-#> Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)
+#> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev     2.5%   97.5%      P   Rhat
 #> (Intercept)     1.4897 0.2236   1.0479  1.9216 0.0000 1.0008
 #> poly(year, 2)1 29.5318 5.1216  19.7020 39.8127 0.0000 1.0106
@@ -82,7 +85,7 @@ summary(jointFit1)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 18 sec
+#> time: 16 sec
 ```
 
 To specify that the association of serum bilirubin may change over time,
@@ -95,6 +98,7 @@ basis, i.e., in the following example, we set the internal knots at 3,
 6, and 9 years, and the boundary knots at 0 and 14.5 years:
 
 ``` r
+
 form_splines <- ~ value(log(serBilir)) * ns(year, k = c(3, 6, 9), B = c(0, 14.5))
 jointFit2 <- update(jointFit1, functional_forms = form_splines, 
                     n_iter = 6500L, n_burnin = 2500L)
@@ -105,8 +109,8 @@ summary(jointFit2)
 #>     functional_forms = form_splines, n_iter = 6500L, n_burnin = 2500L)
 #> 
 #> Data Descriptives:
-#> Number of Groups: 312        Number of events: 169 (54.2%)
-#> Number of Observations:
+#> Number of groups: 312        Number of events: 169 (54.2%)
+#> Number of observations:
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
@@ -120,7 +124,7 @@ summary(jointFit2)
 #> p(,2)1 22.1410 0.6886         
 #> p(,2)2 12.1107 -0.2160 -0.1051
 #> 
-#> Survival Outcome:
+#> Survival outcome:
 #>                                                                   Mean  StDev
 #> sexfemale                                                      -0.1687 0.2778
 #> value(log(serBilir))                                            1.3764 0.2307
@@ -143,7 +147,7 @@ summary(jointFit2)
 #> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 0.4217 1.0656
 #> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 0.2075 1.1052
 #> 
-#> Longitudinal Outcome: log(serBilir) (family = gaussian, link = identity)
+#> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev     2.5%   97.5%      P   Rhat
 #> (Intercept)     1.4928 0.2264   1.0449  1.9387 0.0000 1.0071
 #> poly(year, 2)1 30.0902 5.3321  19.8109 40.8594 0.0000 1.0643
@@ -158,7 +162,7 @@ summary(jointFit2)
 #> iterations per chain: 6500 
 #> burn-in per chain: 2500 
 #> thinning: 1 
-#> time: 38 sec
+#> time: 29 sec
 ```
 
 The spline coefficients do not have a straightforward interpretation.
@@ -167,6 +171,7 @@ bilirubin with the hazard of the composite event using the following
 piece of code:
 
 ``` r
+
 x_times <- seq(0.001, 12, length = 501)
 X <- cbind(1, ns(x_times, knots = c(3, 6, 9), B = c(0, 14.5)))
 mcmc_alphas <- do.call('rbind', jointFit2$mcmc$alphas)
@@ -192,13 +197,14 @@ coefficient includes the horizontal line corresponding to proportional
 hazards. This is also confirmed by comparing the two models:
 
 ``` r
+
 compare_jm(jointFit1, jointFit2)
 #> 
 #>                 DIC     WAIC      LPML
 #>  jointFit1 4346.937 6096.897 -3271.149
 #>  jointFit2 4341.405 6355.209 -3701.785
 #> 
-#> The criteria are calculated based on the marginal log-likelihood.
+#> The criteria are calculated on the basis of the marginal log-likelihood.
 ```
 
 The WAIC and LPML indicate that `jointFit1` is a better model than
