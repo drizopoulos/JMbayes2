@@ -244,12 +244,12 @@ uvec create_fast_ind (const uvec &group) {
 }
 
 double logPrior(const vec &x, const vec &mean, mat &Tau, const vec &lambda,
-                const double &tau, const bool &shrink) {
+                double tau, bool shrink) {
   vec z = x - mean;
   if (shrink) {
     Tau.diag() = lambda;
   }
-  return -0.5 * tau * arma::dot(z, Tau * z);;
+  return -0.5 * tau * arma::as_scalar(z.t() * Tau * z);
 }
 
 vec propose_norm (const vec &thetas, const vec &scale, const uword &i) {
@@ -258,7 +258,7 @@ vec propose_norm (const vec &thetas, const vec &scale, const uword &i) {
   return proposed_thetas;
 }
 
-vec propose_unif (const vec &thetas, const vec &scale, const uword &i) {
+vec propose_unif (const vec &thetas, const vec &scale, uword i) {
   vec proposed_thetas = thetas;
   proposed_thetas.at(i) = R::runif(thetas.at(i) - Const_Unif_Proposal * scale.at(i),
                      thetas.at(i) + Const_Unif_Proposal * scale.at(i));
@@ -266,14 +266,14 @@ vec propose_unif (const vec &thetas, const vec &scale, const uword &i) {
 }
 
 vec propose_lnorm (const vec &thetas, const double &log_mu_i, const vec &scale,
-                   const uword &i) {
+                   uword i) {
   vec proposed_thetas = thetas;
   proposed_thetas.at(i) = R::rlnorm(log_mu_i, scale.at(i));
   return proposed_thetas;
 }
 
 vec propose_norm_mala (const vec &thetas, const vec &scale,
-                       const double &deriv, const uword &i) {
+                       const double &deriv, uword i) {
   vec proposed_thetas = thetas;
   double mu = thetas.at(i) + 0.5 * scale.at(i) * deriv;
   double sigma = sqrt(scale.at(i));
@@ -349,9 +349,9 @@ vec propose_mvnorm_vec (const mat &Sigma) {
   return res;
 }
 
-vec mu_fun (const vec &eta, const std::string &link) {
-    uword n = eta.n_rows;
-    vec out(n);
+arma::vec mu_fun_old (const arma::vec &eta, const std::string &link) {
+    arma::uword n = eta.n_rows;
+    arma::vec out(n);
     if (link == "identity") {
         out = eta;
     } else if (link == "inverse") {
@@ -366,6 +366,22 @@ vec mu_fun (const vec &eta, const std::string &link) {
         out = trunc_exp(eta);
     }
     return out;
+}
+
+void mu_fun (arma::vec &eta, const std::string &link) {
+    if (link == "identity") {
+        return;
+    } else if (link == "inverse") {
+        eta = 1.0 / eta;
+    } else if (link == "logit") {
+        eta = 1.0 / (1.0 + arma::trunc_exp(-eta));
+    } else if (link == "probit") {
+        eta = arma::normcdf(eta);
+    } else if (link == "cloglog") {
+        eta = 1.0 - arma::trunc_exp(-arma::trunc_exp(eta));
+    } else if (link == "log") {
+        eta = arma::trunc_exp(eta);
+    }
 }
 
 vec lbeta_arma (const vec &a, const vec &b) {
