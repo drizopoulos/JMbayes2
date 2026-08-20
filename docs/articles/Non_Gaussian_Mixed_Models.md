@@ -620,7 +620,7 @@ summary(jointFit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 25 sec
+#> time: 26 sec
 ```
 
 [Back to top](#top)

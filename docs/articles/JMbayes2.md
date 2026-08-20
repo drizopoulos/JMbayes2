@@ -234,7 +234,7 @@ summary(jointFit2)
 #> iterations per chain: 12000 
 #> burn-in per chain: 2000 
 #> thinning: 5 
-#> time: 1.4 min
+#> time: 1.3 min
 ```
 
 The survival submodel output now contains the estimated coefficients for
