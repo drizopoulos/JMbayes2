@@ -85,7 +85,7 @@ summary(jointFit1)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 16 sec
+#> time: 15 sec
 ```
 
 To specify that the association of serum bilirubin may change over time,

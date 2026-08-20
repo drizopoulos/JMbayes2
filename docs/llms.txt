@@ -194,7 +194,7 @@ summary(jointFit)
   Processes](https://drizopoulos.github.io/JMbayes2/articles/Multi_State_Processes.md):
 - [Non-Gaussian Mixed
   Models](https://drizopoulos.github.io/JMbayes2/articles/Non_Gaussian_Mixed_Models.md):
-- [Posterior Predictive
+- [Goodness-of-Fit
   Checks](https://drizopoulos.github.io/JMbayes2/articles/Posterior_Predictive_Checks.md):
 - [Recurrent
   Events](https://drizopoulos.github.io/JMbayes2/articles/Recurring_Events.md):

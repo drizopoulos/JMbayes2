@@ -16,7 +16,6 @@ template:
       card: summary_large_image
   params:
     bootswatch: yeti
-    noindex: true
     ganalytics: G-YDBZ5DBBSP
     docsearch:
       api_key: 66a8ef39105517ba1ce2f07aa1c70890

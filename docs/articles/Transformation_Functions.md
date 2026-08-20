@@ -210,7 +210,7 @@ summary(jointFit3)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 19 sec
+#> time: 18 sec
 ```
 
 The call to `Dexpit(slope(hepatomegaly))` is internally transformed to

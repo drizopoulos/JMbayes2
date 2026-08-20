@@ -1,6 +1,6 @@
-# Posterior Predictive Checks
+# Goodness-of-Fit Checks
 
-## Goodness-of-Fit Checks for Joint Models
+## Posterior Predictive Checks for Joint Models
 
 To investigate the fit of a joint model to the training dataset \mathcal
 D_n = \\T_i, \delta_i, \mathbf{y}\_i, \mathcal X_i; i = 1, \ldots, n\\,
