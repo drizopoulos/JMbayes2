@@ -129,7 +129,8 @@ void update_D (mat &L, vec &sds, const mat &b,
   double denominator_sds = sum(logLik_re) +
     sum(logPrior_D_sds(sds, D_sds_sigma, D_sds_df, D_sds_mean, D_sds_shape, gamma_prior));
   for (uword i = 0; i < n_sds; ++i) {
-    double SS = 0.5 * pow(scale_sds.at(i), 2.0);
+    double val = scale_sds.at(i);
+    double SS = 0.5 * val * val;
     double log_mu_current = log(sds.at(i)) - SS;
     vec proposed_sds = propose_lnorm(sds, log_mu_current, scale_sds, i);
     vec logLik_re_proposed = log_re(b, L, proposed_sds);
@@ -139,7 +140,7 @@ void update_D (mat &L, vec &sds, const mat &b,
     double log_ratio_sds = numerator_sds - denominator_sds +
       R::dlnorm(sds.at(i), log_mu_proposed, scale_sds.at(i), true) -
       R::dlnorm(proposed_sds.at(i), log_mu_current, scale_sds.at(i), true);
-    if (std::isfinite(log_ratio_sds) && exp(log_ratio_sds) > R::runif(0.0, 1.0)) {
+    if (std::isfinite(log_ratio_sds) && log_ratio_sds > std::log(R::unif_rand())) {
       sds = proposed_sds;
       logLik_re = logLik_re_proposed;
       denominator_sds = numerator_sds;
@@ -188,7 +189,7 @@ void update_D (mat &L, vec &sds, const mat &b,
       }
     }
     if (finite_L && std::isfinite(log_ratio_L) &&
-        exp(log_ratio_L) > R::runif(0.0, 1.0)) {
+        log_ratio_L > std::log(R::unif_rand())) {
       L = proposed_L;
       logLik_re = logLik_re_proposed;
       denominator_L = numerator_L;
