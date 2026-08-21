@@ -42,7 +42,8 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
       sum(logPrior_sigmas(sigmas, gamma_prior, sigmas_sigmas, sigmas_df,
                           sigmas_mean, sigmas_shape));
     //
-    double SS = 0.5 * std::pow(scale_sigmas.at(i), 2.0);
+    double val = scale_sigmas.at(i);
+    double SS = 0.5 * val * val;
     double log_mu_current = std::log(sigmas.at(i)) - SS;
     vec proposed_sigmas = propose_lnorm(sigmas, log_mu_current, scale_sigmas, i);
     vec logLik_long_proposed_i =
@@ -111,7 +112,8 @@ void update_sigmaF (vec &sigmaF,
     sum(logPrior_sigmas(sigmaF, gamma_prior_sigmaF, sigmaF_sigmas, sigmaF_df,
                         sigmaF_mean, sigmaF_shape));
   // numerator
-  double SS = 0.5 * std::pow(scale_sigmaF.at(0), 2.0);
+  double val = scale_sigmaF.at(0);
+  double SS = 0.5 * val * val;
   double log_mu_current = std::log(sigmaF.at(0)) - SS;
   vec proposed_sigmaF = propose_lnorm(sigmaF, log_mu_current, scale_sigmaF, 0);
   vec proposed_frailtyH_sigmaF_alphaF(WH_gammas.n_rows, fill::zeros);
