@@ -56,7 +56,7 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
     double log_ratio = numerator - denominator +
       R::dlnorm(sigmas.at(i), log_mu_proposed, scale_sigmas.at(i), true) -
       R::dlnorm(proposed_sigmas.at(i), log_mu_current, scale_sigmas.at(i), true);
-    if (std::isfinite(log_ratio) && std::exp(log_ratio) > R::runif(0.0, 1.0)) {
+    if (std::isfinite(log_ratio) && log_ratio > std::log(R::unif_rand())) {
       sigmas = proposed_sigmas;
       acceptance_sigmas.at(it, i) = 1;
     }

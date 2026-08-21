@@ -19,5 +19,5 @@ LinkingTo: Rcpp, RcppArmadillo
 LazyLoad: yes
 LazyData: yes
 License: GPL (>= 3)
-URL: https://drizopoulos.github.io/JMbayes2/, https://github.com/drizopoulos/JMbayes2
+URL: https://drizopoulos.github.io/JMbayes2/
 RoxygenNote: 7.3.3
