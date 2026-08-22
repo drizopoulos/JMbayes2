@@ -178,6 +178,67 @@ vec log_re (const mat &b, const mat &L, const vec &sds) {
   return out;
 }
 
+vec log_re_onlySDS (const mat &b, const mat &V_R, double log_det_V_R, const vec &sds) {
+    uword const n = b.n_rows, k = b.n_cols;
+    vec out(n, arma::fill::none);
+    double log_det_V_Sigma = log_det_V_R - arma::sum(arma::log(sds));
+    double constants = -(double)k / 2.0 * log2pi;
+    double other_terms = constants + log_det_V_Sigma;
+    std::vector<double> inv_sds(k);
+    for (uword j = 0; j < k; ++j) {
+        inv_sds[j] = 1.0 / sds.at(j);
+    }
+    std::vector<double> z(k);
+    for (uword i = 0; i < n; ++i) {
+        for (uword j = 0; j < k; ++j) {
+            z[j] = b.at(i, j) * inv_sds[j];
+        }
+        for (uword j = k; j-- > 0;) {
+            double tmp = 0.0;
+            const double* col_j = V_R.colptr(j);
+            for (uword c = 0; c <= j; ++c) {
+                tmp += col_j[c] * z[c];
+            }
+            z[j] = tmp;
+        }
+        double sq_dist = 0.0;
+        for (uword j = 0; j < k; ++j) {
+            sq_dist += z[j] * z[j];
+        }
+        out.at(i) = other_terms - 0.5 * sq_dist;
+    }
+    return out;
+}
+
+vec log_re_onlyL (const mat &b_scaled, const mat &L, double sum_log_sds) {
+    uword const n = b_scaled.n_rows, k = b_scaled.n_cols;
+    vec out(n, arma::fill::none);
+    mat V = inv(trimatu(L));
+    double log_det = -arma::sum(arma::log(L.diag())) - sum_log_sds;
+    double constants = -(double)k / 2.0 * log2pi;
+    double other_terms = constants + log_det;
+    std::vector<double> z(k);
+    for (uword i = 0; i < n; ++i) {
+        for (uword j = 0; j < k; ++j) {
+            z[j] = b_scaled.at(i, j);
+        }
+        for (uword j = k; j-- > 0;) {
+            double tmp = 0.0;
+            const double* col_j = V.colptr(j);
+            for (uword c = 0; c <= j; ++c) {
+                tmp += col_j[c] * z[c];
+            }
+            z[j] = tmp;
+        }
+        double sq_dist = 0.0;
+        for (uword j = 0; j < k; ++j) {
+            sq_dist += z[j] * z[j];
+        }
+        out[i] = other_terms - 0.5 * sq_dist;
+    }
+    return out;
+}
+
 /*
 double logLik_prior (const mat &L, const vec &sds,
                      const double &prior_D_sds_df, const double &prior_D_sds_sigma,
