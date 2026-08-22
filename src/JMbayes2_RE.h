@@ -45,6 +45,10 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const vec &frailtyH_sigmaF_alphaF, const vec &frailtyh_sigmaF_alphaF) {
     uword n = b_mat.n_rows;
     uword nRE = b_mat.n_cols;
+    mat V_R = inv(trimatu(L));
+    mat V_Sigma = V_R.each_col() / sds;
+    double log_det_V_Sigma = -arma::sum(arma::log(L.diag())) - arma::sum(arma::log(sds));
+    double other_terms = -(double)nRE / 2.0 * log2pi + log_det_V_Sigma;
     vec denominator_b = logLik_long + logLik_surv + logLik_re;
     for (uword j = 0; j < nRE; ++j) {
         vec old_b_j = b_mat.col(j);
@@ -81,18 +85,18 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                      which_event, which_right_event, which_left,
                      any_interval, which_interval,
                      recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
-        vec logLik_re_proposed = log_re(b_mat, L, sds);
+        vec logLik_re_proposed = log_re_onlyRE(b_mat, V_Sigma, other_terms); //log_re(b_mat, L, sds);
         vec numerator_b = logLik_long_proposed + logLik_surv_proposed + logLik_re_proposed;
         vec log_ratio = numerator_b - denominator_b;
         for (uword i = 0; i < n; ++i) {
             double acc_i = 0.0;
-            if (std::isfinite(log_ratio[i]) && std::log(R::unif_rand()) < log_ratio[i]) {
+            if (std::isfinite(log_ratio.at(i)) && std::log(R::unif_rand()) < log_ratio.at(i)) {
                 acc_i = 1.0;
                 if (it > n_burnin - 1) acceptance_b.at(i, j) += 1.0;
-                denominator_b[i] = numerator_b[i];
-                logLik_long[i] = logLik_long_proposed[i];
-                logLik_surv[i] = logLik_surv_proposed[i];
-                logLik_re[i] = logLik_re_proposed[i];
+                denominator_b.at(i) = numerator_b.at(i);
+                logLik_long.at(i) = logLik_long_proposed.at(i);
+                logLik_surv.at(i) = logLik_surv_proposed.at(i);
+                logLik_re.at(i) = logLik_re_proposed.at(i);
                 uword first_H = GK_k * ni_event.at(i, 0);
                 uword last_H = GK_k * ni_event.at(i, 1) - 1;
                 Wlong_H.rows(first_H, last_H) = Wlong_H_proposed.rows(first_H, last_H);

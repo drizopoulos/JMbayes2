@@ -178,6 +178,31 @@ vec log_re (const mat &b, const mat &L, const vec &sds) {
   return out;
 }
 
+vec log_re_onlyRE (const mat &b_prop, const mat &V_Sigma, double other_terms) {
+    uword const n = b_prop.n_rows, k = b_prop.n_cols;
+    vec out(n, arma::fill::none);
+    std::vector<double> z(k);
+    for (uword i = 0; i < n; ++i) {
+        for(uword j = 0; j < k; ++j) {
+            z[j] = b_prop.at(i, j);
+        }
+        for (uword j = k; j-- > 0;) {
+            double tmp = 0.0;
+            const double* col_j = V_Sigma.colptr(j);
+            for (uword c = 0; c <= j; ++c) {
+                tmp += col_j[c] * z[c];
+            }
+            z[j] = tmp;
+        }
+        double sq_dist = 0.0;
+        for(uword j = 0; j < k; ++j) {
+            sq_dist += z[j] * z[j];
+        }
+        out[i] = other_terms - 0.5 * sq_dist;
+    }
+    return out;
+}
+
 vec log_re_onlySDS (const mat &b, const mat &V_R, double log_det_V_R, const vec &sds) {
     uword const n = b.n_rows, k = b.n_cols;
     vec out(n, arma::fill::none);
