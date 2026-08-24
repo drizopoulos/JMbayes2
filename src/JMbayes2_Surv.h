@@ -44,7 +44,6 @@ double logPrior_surv (
     return out;
 }
 
-
 void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
                        vec &W0H_bs_gammas, vec &W0h_bs_gammas, vec &W0H2_bs_gammas,
                        const vec &WH_gammas, const vec &Wh_gammas, const vec &WH2_gammas,
@@ -118,7 +117,7 @@ void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
         if (it > 19) {
             scale_bs_gammas.at(i) = robbins_monro(scale_bs_gammas.at(i), acceptance_bs_gammas(it, i), it);
         }
-        res_bs_gammas.at(it, i) = bs_gammas[i];
+        res_bs_gammas.at(it, i) = bs_gammas.at(i);
     }
 }
 
@@ -193,7 +192,7 @@ void update_gammas (const vec &bs_gammas, vec &gammas, const vec &alphas,
         if (it > 19) {
             scale_gammas.at(i) = robbins_monro(scale_gammas.at(i), acceptance_gammas.at(it, i), it);
         }
-        res_gammas.at(it, i) = gammas[i];
+        res_gammas.at(it, i) = gammas.at(i);
     }
 }
 
@@ -269,7 +268,7 @@ void update_alphas (const vec &bs_gammas, const vec &gammas, vec &alphas,
         if (it > 19) {
             scale_alphas.at(i) = robbins_monro(scale_alphas.at(i), acceptance_alphas.at(it, i), it);
         }
-        res_alphas.at(it, i) = alphas[i];
+        res_alphas.at(it, i) = alphas.at(i);
     }
 }
 
