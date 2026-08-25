@@ -54,12 +54,12 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     for (uword i = 0; i < ind_RE.n_elem; ++i) {
         proposed_b.at(i).set_size(b_mat.n_rows, ind_RE.at(i).n_elem);
     }
+    field<vec> eta_proposed = eta;
     for (uword j = 0; j < nRE; ++j) {
         vec old_b_j = b_mat.col(j);
         b_mat.col(j) += scale_b.col(j) % arma::randn<arma::vec>(n);
-        //field<mat> proposed_b = mat2field(b_mat, ind_RE);
         mat2field_inplace(proposed_b, b_mat, ind_RE);
-        field<vec> eta_proposed = linpred_mixed(X, betas, Z, proposed_b, idL);
+        linpred_mixed_inplace(eta_proposed, X, betas, Z, proposed_b, idL);
         vec logLik_long_proposed = log_long(y, eta_proposed, sigmas, extra_parms,
                                             families, links, ids, unq_ids, n);
         mat Wlong_H_proposed =
