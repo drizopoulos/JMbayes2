@@ -158,9 +158,20 @@ field<mat> mat2field (const mat &b, const field<uvec> &ind_RE) {
   uword n = ind_RE.n_elem;
   field<mat> out(n);
   for (uword i = 0; i < n; i++) {
-    out.at(i) = b.cols(ind_RE.at(i));
+      uword first_col = ind_RE.at(i).front();
+      uword last_col  = ind_RE.at(i).back();
+      out.at(i) = b.cols(first_col, last_col);
   }
   return out;
+}
+
+inline void mat2field_inplace (field<mat> &out, const mat &b, const field<uvec> &ind_RE) {
+    uword n = ind_RE.n_elem;
+    for (uword i = 0; i < n; ++i) {
+        uword first_col = ind_RE.at(i).front();
+        uword last_col  = ind_RE.at(i).back();
+        out.at(i) = b.cols(first_col, last_col);
+    }
 }
 
 field<vec> vec2field (const vec &betas, const field<uvec> &ind_FE) {
