@@ -24,6 +24,10 @@ variogram2 <- function (y, times, id) {
     variogram_cpp(split(y, id), split(times, id))
 }
 
+variogram3 <- function (y, times, id) {
+    variogram_cpp_fast(split(y, id), split(times, id))
+}
+
 total_var1 <- function (y, id) {
     ys <- split(y, id)
     n <- length(ys)
@@ -48,8 +52,8 @@ total_var2 <- function (y, id) {
 ################################################################################
 ################################################################################
 
-n <- 150
-k <- 50
+n <- 550
+k <- 100
 yy <- rnorm(n * k)
 tt <- runif(n * k, 0, 150)
 id <- rep(seq_len(n), each = k)
@@ -65,13 +69,22 @@ benchmark(R = total_var1(yy, id),
 
 v1 <- variogram1(yy, tt, id)
 v2 <- variogram2(yy, tt, id)
+v3 <- variogram3(yy, tt, id)
 
 all.equal(v1, v2)
-
+all.equal(v1, v3)
+all.equal(v2, v3)
 
 benchmark(R = variogram1(yy, tt, id),
           Cpp = variogram2(yy, tt, id),
+          Cpp_fast = variogram3(yy, tt, id),
           replications = 30)
+
+benchmark(Cpp = variogram2(yy, tt, id),
+          Cpp_fast = variogram3(yy, tt, id),
+          replications = 300)
+
+
 
 data("pbc2", package = "JM")
 
