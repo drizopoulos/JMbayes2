@@ -711,7 +711,6 @@ mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
                      const field<vec> &betas, const field<mat> &b,
                      const uvec &id, const field<uvec> &FunForms,
                      const List &Funs_FunForms) {
-    //field<mat> eta = linpred_surv(X, betas, Z, b, id);
     uword n_outcomes_X = X.n_elem;
     field<mat> eta(n_outcomes_X);
     for (uword i = 0; i < n_outcomes_X; ++i) {
