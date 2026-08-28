@@ -128,7 +128,6 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   field<vec> betas = List2Field_vec(as<List>(initial_values["betas"]));
   vec betas_vec = docall_rbindF(betas);
   vec sigmas = exp(as<vec>(initial_values["log_sigmas"]));
-  //field<vec> sigmas = List2Field_vec(as<List>(initial_values["sigmas"]));
   vec alphaF = as<vec>(initial_values["alphaF"]);
   vec sigmaF = as<vec>(initial_values["sigmaF"]);
   vec frailty = as<vec>(initial_values["frailty"]);
@@ -1229,10 +1228,10 @@ arma::mat logLik_Event (const List &Data, const List &MCMC) {
     vec W0h_bs_gammas(W0_h.n_rows, fill::zeros);
     vec W0H2_bs_gammas(W0_H2.n_rows, fill::zeros);
     if (any_event) {
-        W0h_bs_gammas = W0_h * bs_gammas_it - W_std_gammas.at(it) - Wlong_std_alphas.at(it);;
+        W0h_bs_gammas = W0_h * bs_gammas_it - W_std_gammas.at(it) - Wlong_std_alphas.at(it);
     }
     if (any_interval) {
-        W0H2_bs_gammas = W0_H2 * bs_gammas_it - W_std_gammas.at(it) - Wlong_std_alphas.at(it);;
+        W0H2_bs_gammas = W0_H2 * bs_gammas_it - W_std_gammas.at(it) - Wlong_std_alphas.at(it);
     }
     vec WH_gammas(W0_H.n_rows, fill::zeros);
     vec Wh_gammas(W0_h.n_rows, fill::zeros);
