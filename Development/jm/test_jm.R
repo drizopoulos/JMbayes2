@@ -70,10 +70,18 @@ fm1 <- mixed_model(I(CD4^2) ~ ns(obstime, k = 6), data = aids,
 jointFit3 <- jm(Cox, fm1, time_var = "obstime")
 
 
+jointFit3$statistics$Rhat
+
+DD <- jointFit3$mcmc$D
+
+
+coda::gelman.diag(lapply(DD, function (m) m[, colSums(m) > 1e-06, drop = FALSE]))$psrf
+
+
 Surv_object = Cox
 Mixed_objects = fm1
-time_var = 'year'
-functional_forms = ~ Delta(log(serBilir), standardise = TRUE)
+time_var = 'obstime'
+functional_forms = NULL
 which_independent = NULL
 recurrent = FALSE
 data_Surv = NULL

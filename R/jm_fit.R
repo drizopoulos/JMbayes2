@@ -285,6 +285,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     if (control$n_chains > 1) {
         no_b <- !names(mcmc_out$mcmc) %in% "b"
         calculate_Rhat <- function (theta) {
+            theta <- lapply(theta, function (m) m[, colSums(abs(m)) > 1e-06, drop = FALSE])
             ntheta <- ncol(theta[[1]])
             tt <- try(coda::gelman.diag(theta)$psrf, silent = TRUE)
             if (inherits(tt, "try-error"))

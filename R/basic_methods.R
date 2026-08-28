@@ -166,10 +166,10 @@ summary.jm <- function (object, ...) {
     if(out$recurrent & out$any_terminal) {
       out$Survival <- do.call(rbind, list(tab_f("gammas"), tab_f("alphas"),
                                           tab_f("alphaF")))
+      out$sigmaF <- tab_f("sigmaF")[c(1, 3, 4)]
     } else {
       out$Survival <- do.call(rbind, list(tab_f("gammas"), tab_f("alphas")))
     }
-    out$sigmaF <- tab_f("sigmaF")[c(1, 3, 4)]
     out$fit_stats <- object$fit_stats
     class(out) <- "summary.jm"
     out
