@@ -733,51 +733,9 @@ cube chol_cube (const cube &S) {
   return out;
 }
 
-mat transf_eta (const mat &eta, const CharacterVector &fun_nams) {
-    uword k = fun_nams.length();
-    mat out(eta.n_rows, k, fill::none);
-    for (uword i = 0; i < k; i++) {
-        std::string fun = as<std::string>(fun_nams[i]);
-        if (fun == "identity") {
-            out.col(i) = eta;
-        } else if (fun == "abs") {
-            out.col(i) = abs(eta);
-        } else if (fun == "expit") {
-            out.col(i) = 1.0 / (1.0 + trunc_exp(-eta));
-        } else if (fun == "exp" || fun == "dexp") {
-            out.col(i) = trunc_exp(eta);
-        } else if (fun == "dexpit") {
-            mat pp = 1.0 / (1.0 + trunc_exp(-eta));
-            out.col(i) = pp % (1.0 - pp);
-        } else if (fun == "log") {
-            out.col(i) = trunc_log(eta);
-        } else if (fun == "log2") {
-            out.col(i) = log2(eta);
-        } else if (fun == "log10") {
-            out.col(i) = log10(eta);
-        } else if (fun == "sqrt") {
-            out.col(i) = sqrt(eta);
-        } else if (fun == "poly2") {
-            out.col(i) = square(eta);
-        } else if (fun == "poly3") {
-            out.col(i) = eta % square(eta);
-        } else if (fun == "poly4") {
-            out.col(i) = square(square(eta));
-        } else if (fun == "poly2(expit)") {
-            out.col(i) = square(1.0 / (1.0 + trunc_exp(-eta)));
-        } else if (fun == "poly3(expit)") {
-            mat pp = 1.0 / (1.0 + trunc_exp(-eta));
-            out.col(i) = pp % square(pp);
-        } else if (fun == "poly4(expit)") {
-            out.col(i) = square(square(1.0 / (1.0 + trunc_exp(-eta))));
-        }
-    }
-    return out;
-}
-
-field<mat> create_Wlong(const field<mat> &eta, const field<mat> &U,
-                        const field<uvec> &FunForms,
-                        const List &Funs_FunForms) {
+field<mat> create_Wlong (const field<mat> &eta, const field<mat> &U,
+                         const field<uvec> &FunForms,
+                         const List &Funs_FunForms) {
     uword n_outcomes = eta.n_elem;
     field<mat> out(n_outcomes);
     for (uword i = 0; i < n_outcomes; ++i) {
