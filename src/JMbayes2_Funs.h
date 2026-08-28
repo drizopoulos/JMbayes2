@@ -93,17 +93,6 @@ vec group_sum_old(const vec &x, const uvec &ind) {
   return out;
 }
 
-vec group_sum2(const vec &x, const uvec &ind) {
-    uvec tt = unique(ind);
-    uword n = tt.n_rows;
-    uvec ind2 = ind - 1;
-    vec out(n);
-    for (uword i = 0; i < n; ++i) {
-        out.at(i) = sum(x.elem(find(ind2 == i)));
-    }
-    return out;
-}
-
 vec create_init_scale(const uword &n, const double &fill_val = 0.1) {
   vec out(n);
   out.fill(fill_val);
@@ -360,25 +349,6 @@ vec propose_mvnorm_vec (const mat &Sigma) {
   return res;
 }
 
-arma::vec mu_fun_old (const arma::vec &eta, const std::string &link) {
-    arma::uword n = eta.n_rows;
-    arma::vec out(n);
-    if (link == "identity") {
-        out = eta;
-    } else if (link == "inverse") {
-        out = 1.0 / eta;
-    } else if (link == "logit") {
-        out = 1.0 / (1.0 + trunc_exp(- eta));
-    } else if (link == "probit") {
-        out = normcdf(eta);
-    } else if (link == "cloglog") {
-        out = - trunc_exp(- trunc_exp(eta)) + 1.0;
-    } else if (link == "log") {
-        out = trunc_exp(eta);
-    }
-    return out;
-}
-
 void mu_fun (arma::vec &eta, const std::string &link) {
     if (link == "identity") {
         return;
@@ -393,24 +363,6 @@ void mu_fun (arma::vec &eta, const std::string &link) {
     } else if (link == "log") {
         eta = arma::trunc_exp(eta);
     }
-}
-
-vec lbeta_arma (const vec &a, const vec &b) {
-  uword n = a.n_rows;
-  vec out(n);
-  for (uword i = 0; i < n; ++i) {
-    out.at(i) = R::lbeta(a.at(i), b.at(i));
-  }
-  return out;
-}
-
-vec lchoose_arma (const vec &n, const vec &k) {
-  uword n_ = n.n_rows;
-  vec out(n_);
-  for (uword i = 0; i < n_; ++i) {
-    out.at(i) = R::lchoose(n.at(i), k.at(i));
-  }
-  return out;
 }
 
 arma::vec log_dbinom (const arma::vec &x, const arma::vec &size, const arma::vec &prob) {
@@ -781,52 +733,6 @@ cube chol_cube (const cube &S) {
   return out;
 }
 
-/*
-void transf_eta (mat &eta, const CharacterVector &fun_nams) {
-  uword n = eta.n_cols;
-  for (uword i = 0; i < n; i++) {
-    if (fun_nams[i] == "identity") continue;
-    if (fun_nams[i] == "expit") {
-      eta.col(i) = 1.0 / (1.0 + trunc_exp(- eta.col(i)));
-    } else if (fun_nams[i] == "exp" || fun_nams[i] == "dexp") {
-      eta.col(i) = trunc_exp(eta.col(i));
-    } else if (fun_nams[i] == "dexpit") {
-      mat pp = 1.0 / (1.0 + trunc_exp(- eta.col(i)));
-      eta.col(i) = pp * (1.0 - pp);
-    } else if (fun_nams[i] == "log") {
-      eta.col(i) = trunc_log(eta.col(i));
-    } else if (fun_nams[i] == "log2") {
-      eta.col(i) = log2(eta.col(i));
-    } else if (fun_nams[i] == "log10") {
-      eta.col(i) = log10(eta.col(i));
-    } else if (fun_nams[i] == "sqrt") {
-      eta.col(i) = sqrt(eta.col(i));
-    } else if (fun_nams[i] == "square") {
-      eta.col(i) = square(eta.col(i));
-    }
-  }
-}
-
-field<mat> create_Wlong (const field<mat> &eta, const field<uvec> &FunForms,
-                         const field<mat> &U, const field<uvec> &ind,
-                         const List &Funs_FunForms) {
-  uword n_outcomes = eta.n_elem;
-  field<mat> out(n_outcomes);
-  for (uword i = 0; i < n_outcomes; ++i) {
-    CharacterVector Funs_i = Funs_FunForms[i];
-    mat eta_i = eta.at(i);
-    transf_eta(eta_i, Funs_i);
-    uvec FF_i = FunForms.at(i);
-    mat U_i = U.at(i);
-    uvec ind_i = ind.at(i);
-    mat Wlong_i(eta_i.n_rows, U_i.n_cols, fill::ones);
-    Wlong_i.cols(FF_i) %= eta_i.cols(ind_i);
-    out.at(i) = U_i % Wlong_i;
-  }
-  return out;
-}
-*/
-
 mat transf_eta (const mat &eta, const CharacterVector &fun_nams) {
     uword k = fun_nams.length();
     mat out(eta.n_rows, k, fill::none);
@@ -865,28 +771,6 @@ mat transf_eta (const mat &eta, const CharacterVector &fun_nams) {
         } else if (fun == "poly4(expit)") {
             out.col(i) = square(square(1.0 / (1.0 + trunc_exp(-eta))));
         }
-    }
-    return out;
-}
-
-field<mat> create_Wlong_old (const field<mat> &eta, const field<mat> &U,
-                        const field<uvec> &FunForms,
-                        const List &Funs_FunForms) {
-    uword n_outcomes = eta.n_elem;
-    field<mat> out(n_outcomes);
-    for (uword i = 0; i < n_outcomes; ++i) {
-        const mat& eta_i = eta.at(i);
-        const mat& U_i = U.at(i);
-        const uvec& FF_i = FunForms.at(i);
-        List Funs_i = Funs_FunForms[i];
-        uword n = Funs_i.length();
-        field<mat> res(n);
-        for (uword j = 0; j < n; ++j) {
-            res.at(j) = transf_eta(eta_i.col(j), Funs_i[j]);
-        }
-        mat Res = docall_cbindF(res);
-        out.at(i) = U_i;
-        out.at(i).cols(FF_i) %= Res;
     }
     return out;
 }
