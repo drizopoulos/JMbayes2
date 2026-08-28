@@ -665,9 +665,48 @@ extractFuns_FunForms <- function (Form, nam, data) {
         out[f("poly2")] <- "poly2"
         out[f("poly3")] <- "poly3"
         out[f("poly4")] <- "poly4"
-        out[f("poly2(expit")] <- "poly2"
-        out[f("poly3(expit")] <- "poly3"
-        out[f("poly4(expit")] <- "poly4"
+        out[f("poly2(expit")] <- "poly2(expit)"
+        out[f("poly3(expit")] <- "poly3(expit)"
+        out[f("poly4(expit")] <- "poly4(expit)"
+        out
+    }
+    mapply2(get_fun, FForms, names(FForms))
+}
+
+extractFuns_FunForms_numeric <- function (Form, nam, data) {
+    tr <- terms(Form)
+    mF <- model.frame(tr, data = data)
+    M <- model.matrix(tr, mF)
+    cnams <- colnames(M)
+    possible_forms <- c("value(", "slope(", "area(", "velocity(",
+                        "acceleration(", "coefs(", "Delta(") #!! new
+    possible_forms <- paste0(possible_forms, nam)
+    ind <- unlist(lapply(possible_forms, grep, x = cnams, fixed = TRUE))
+    M <- M[1, cnams %in% cnams[unique(ind)], drop = FALSE]
+    FForms <- sapply(possible_forms, grep, x = colnames(M), fixed = TRUE,
+                     simplify = FALSE)
+    FForms <- FForms[sapply(FForms, length) > 0]
+    get_fun <- function (FForm, nam) {
+        cnams <- colnames(M)[FForm]
+        out <- rep(1, length(cnams))
+        f <- function (fun_nam) {
+            grep(paste0(fun_nam, "(", nam), cnams, fixed = TRUE)
+        }
+        out[f("abs")] <- 2
+        out[f("expit")] <- 3
+        out[f("exp")] <- 4
+        out[f("dexp")] <- 4
+        out[f("dexpit")] <- 5
+        out[f("log")] <- 6
+        out[f("log2")] <- 7
+        out[f("log10")] <- 8
+        out[f("sqrt")] <- 9
+        out[f("poly2")] <- 10
+        out[f("poly3")] <- 11
+        out[f("poly4")] <- 12
+        out[f("poly2(expit")] <- 13
+        out[f("poly3(expit")] <- 14
+        out[f("poly4(expit")] <- 15
         out
     }
     mapply2(get_fun, FForms, names(FForms))
@@ -1955,3 +1994,4 @@ beta_w_ecost <- function(p, y, a, b) {
   u <- y + (1 - y) * p
   (beta(alpha, beta) / beta(a, b)) * (pbeta(u, alpha, beta) - pbeta(l, alpha, beta))
 }
+

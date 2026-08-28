@@ -78,7 +78,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
   field<uvec> FunForms = List2Field_uvec(as<List>(model_info["FunForms_cpp"]), true);
-  List Funs_FunForms = as<List>(model_info["Funs_FunForms"]);
+  List Funs_FunForms = as<List>(model_info["Funs_FunForms_num"]);
   field<uvec> x_in_z = List2Field_uvec(as<List>(model_data["x_in_z"]), true);
   field<uvec> x_notin_z = List2Field_uvec(as<List>(model_data["x_notin_z"]), true);
   field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
@@ -704,7 +704,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
   field<uvec> FunForms = List2Field_uvec(as<List>(model_info["FunForms_cpp"]), true);
-  List Funs_FunForms = as<List>(model_info["Funs_FunForms"]);
+  List Funs_FunForms = as<List>(model_info["Funs_FunForms_num"]);
   uvec id_H_ = as<uvec>(model_data["id_H_"]) - 1;
   uvec id_h = as<uvec>(model_data["id_h"]) - 1;
   uvec id_h_ = as<uvec>(model_data["id_h_"]) - 1;
@@ -818,7 +818,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
   field<uvec> FunForms = List2Field_uvec(as<List>(model_info["FunForms_cpp"]), true);
-  List Funs_FunForms = as<List>(model_info["Funs_FunForms"]);
+  List Funs_FunForms = as<List>(model_info["Funs_FunForms_num"]);
   uvec id_H_ = as<uvec>(model_data["id_H_"]) - 1;
   uvec id_h = as<uvec>(model_data["id_h"]) - 1;
   uvec id_h_ = as<uvec>(model_data["id_h_"]) - 1;
@@ -900,7 +900,7 @@ List simulate_REs (List Data, List MCMC, List control) {
   uword GK_k = as<uword>(control["GK_k"]);
   bool any_gammas = as<bool>(Data["any_gammas"]);
   field<uvec> FunForms = List2Field_uvec(as<List>(Data["FunForms_cpp"]), true);
-  List Funs_FunForms = as<List>(Data["Funs_FunForms"]);
+  List Funs_FunForms = as<List>(Data["Funs_FunForms_num"]);
   //
   field<uvec> ind_RE = List2Field_uvec(as<List>(Data["ind_RE"]), true);
   mat W0_H = as<mat>(Data["W0_H"]);
@@ -1186,7 +1186,7 @@ arma::mat logLik_Event (const List &Data, const List &MCMC) {
   }
   bool any_gammas = as<bool>(Data["any_gammas"]);
   field<uvec> FunForms = List2Field_uvec(as<List>(Data["FunForms_cpp"]), true);
-  List Funs_FunForms = as<List>(Data["Funs_FunForms"]);
+  List Funs_FunForms = as<List>(Data["Funs_FunForms_num"]);
   field<uvec> ind_RE = List2Field_uvec(as<List>(Data["ind_RE"]), true);
 
    //////////////////////
@@ -1315,7 +1315,7 @@ arma::mat hSfun (const List &Data, const List &MCMC) {
 
     bool any_gammas = as<bool>(Data["any_gammas"]);
     field<uvec> FunForms = List2Field_uvec(as<List>(Data["FunForms_cpp"]), true);
-    List Funs_FunForms = as<List>(Data["Funs_FunForms"]);
+    List Funs_FunForms = as<List>(Data["Funs_FunForms_num"]);
 
     ////////////////////////////
     // Calculation log hazard //

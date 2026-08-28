@@ -240,6 +240,7 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
     FunForms_cpp <- object$model_info$FunForms_cpp
     FunForms_ind <- object$model_info$FunForms_ind
     Funs_FunForms <- object$model_info$Funs_FunForms
+    Funs_FunForms_num <- object$model_info$Funs_FunForms_num
     eps <- object$model_info$eps
     direction <- object$model_info$direction
     zero_ind_X <- object$model_info$zero_ind_X
@@ -317,13 +318,13 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
                                                  dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, Xbar,
                                                  eps, direction, zero_ind_X,
-                                                 time_window, standardise, 
+                                                 time_window, standardise,
                                                  IE_time) #!! new
         Z_H2 <- design_matrices_functional_forms(st, terms_RE,
                                                  dataL, time_var, idVar, idT,
                                                  collapsed_functional_forms, NULL,
                                                  eps, direction, zero_ind_X,
-                                                 time_window, standardise, 
+                                                 time_window, standardise,
                                                  IE_time) #!! new
         U_H2 <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
     } else {
@@ -358,6 +359,7 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
         which_left = which_left, which_interval = which_interval,
         ni_event = ni_event, FunForms_cpp = FunForms_cpp,
         FunForms_ind = FunForms_ind, Funs_FunForms = Funs_FunForms,
+        Funs_FunForms_num = Funs_FunForms_num,
         X = X, Z = Z, y = y, family_names = family_names,
         links = links, extra_parms = object$model_data$extra_parms,
         unq_idL = unq_idL, idL_lp = idL_lp, idL = idL, last_times = last_times,
@@ -454,6 +456,7 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
     FunForms_cpp <- object$model_info$FunForms_cpp
     FunForms_ind <- object$model_info$FunForms_ind
     Funs_FunForms <- object$model_info$Funs_FunForms
+    Funs_FunForms_num <- object$model_info$Funs_FunForms_num
     eps <- object$model_info$eps
     direction <- object$model_info$direction
     zero_ind_X <- object$model_info$zero_ind_X
@@ -495,7 +498,7 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
     X_H <- design_matrices_functional_forms(split(st, row(st)), terms_FE_noResp,
                                             dataL, time_var, idVar, index2_H,
                                             collapsed_functional_forms, Xbar,
-                                            eps, direction, zero_ind_X, 
+                                            eps, direction, zero_ind_X,
                                             time_window, standardise, IE_time) #!! new
     Z_H <- design_matrices_functional_forms(split(st, row(st)), terms_RE,
                                             dataL, time_var, idVar, index2_H,
@@ -518,13 +521,13 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
                                                 dataL, time_var, idVar, index2,
                                                 collapsed_functional_forms, Xbar,
                                                 eps, direction, zero_ind_X,
-                                                time_window, standardise, 
+                                                time_window, standardise,
                                                 IE_time) #!! new
         Z_h <- design_matrices_functional_forms(split(st0, row(st0)), terms_RE,
                                                 dataL, time_var, idVar, index2,
                                                 collapsed_functional_forms, NULL,
                                                 eps, direction, zero_ind_Z,
-                                                time_window, standardise, 
+                                                time_window, standardise,
                                                 IE_time) #!! new
         U_h <- lapply(functional_forms, construct_Umat, dataS = dataS_h)
     } else {
@@ -548,14 +551,14 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
                                                  rep(index2, each = control$GK_k),
                                                  collapsed_functional_forms, Xbar,
                                                  eps, direction, zero_ind_X,
-                                                 time_window, standardise, 
+                                                 time_window, standardise,
                                                  IE_time) #!! new
         Z_H2 <- design_matrices_functional_forms(split(st2, row(st2)), terms_RE,
                                                  dataL, time_var, idVar,
                                                  rep(index2, each = control$GK_k),
                                                  collapsed_functional_forms, NULL,
                                                  eps, direction, zero_ind_Z,
-                                                 time_window, standardise, 
+                                                 time_window, standardise,
                                                  IE_time) #!! new
         U_H2 <- lapply(functional_forms, construct_Umat, dataS = dataS_H2)
     } else {
@@ -582,7 +585,7 @@ prepare_DataE_preds <- function (object, newdataL, newdataE,
         which_left = which_left, which_interval = which_interval,
         ni_event = ni_event, FunForms_cpp = FunForms_cpp,
         FunForms_ind = FunForms_ind, Funs_FunForms = Funs_FunForms,
-        strata = strata)
+        Funs_FunForms_num = Funs_FunForms_num, strata = strata)
 }
 
 get_components_newdata <- function (object, newdata, n_samples, n_mcmc,

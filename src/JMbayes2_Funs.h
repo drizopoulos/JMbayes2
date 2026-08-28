@@ -638,6 +638,38 @@ vec log_dmvnrm (const mat &x, const mat &D) {
   return out;
 }
 
+inline void linpred_surv_inplace(field<mat> &eta,
+                                 const field<mat> &X, const field<vec> &betas,
+                                 const field<mat> &Z, const field<mat> &b,
+                                 const uvec &id) {
+    uword n_outcomes = X.n_elem;
+    for (uword i = 0; i < n_outcomes; ++i) {
+        const mat& X_i = X.at(i);
+        const vec& betas_i = betas.at(i);
+        const mat& Z_i = Z.at(i);
+        const mat& b_i = b.at(i);
+        uword n_betas = betas_i.n_rows;
+        uword n_REs = b_i.n_cols;
+        uword n_forms = X_i.n_cols / n_betas;
+        uword N = X_i.n_rows;
+        for (uword j = 0; j < n_forms; ++j) {
+            uword j_beta_start = j * n_betas;
+            uword j_beta_end = j_beta_start + n_betas - 1;
+            eta.at(i).col(j) = X_i.cols(j_beta_start, j_beta_end) * betas_i;
+            uword j_RE_start = j * n_REs;
+            double* eta_col_ptr = eta.at(i).colptr(j);
+            const uword* id_ptr = id.memptr();
+            for (uword k = 0; k < n_REs; ++k) {
+                const double* Z_col_ptr = Z_i.colptr(j_RE_start + k);
+                const double* b_col_ptr = b_i.colptr(k);
+                for (uword obs = 0; obs < N; ++obs) {
+                    eta_col_ptr[obs] += Z_col_ptr[obs] * b_col_ptr[id_ptr[obs]];
+                }
+            }
+        }
+    }
+}
+
 field<mat> linpred_surv (const field<mat> &X, const field<vec> &betas,
                          const field<mat> &Z, const field<mat> &b,
                          const uvec &id) {
@@ -837,7 +869,7 @@ mat transf_eta (const mat &eta, const CharacterVector &fun_nams) {
     return out;
 }
 
-field<mat> create_Wlong(const field<mat> &eta, const field<mat> &U,
+field<mat> create_Wlong_old (const field<mat> &eta, const field<mat> &U,
                         const field<uvec> &FunForms,
                         const List &Funs_FunForms) {
     uword n_outcomes = eta.n_elem;
@@ -859,7 +891,67 @@ field<mat> create_Wlong(const field<mat> &eta, const field<mat> &U,
     return out;
 }
 
-mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
+field<mat> create_Wlong(const field<mat> &eta, const field<mat> &U,
+                        const field<uvec> &FunForms,
+                        const List &Funs_FunForms) {
+    uword n_outcomes = eta.n_elem;
+    field<mat> out(n_outcomes);
+    for (uword i = 0; i < n_outcomes; ++i) {
+        out.at(i) = U.at(i);
+        const mat& eta_i = eta.at(i);
+        const uvec& FF_i = FunForms.at(i);
+        List Funs_i = Funs_FunForms[i];
+        uword current_col = 0;
+        uword n_funs = Funs_i.length();
+        for (uword j = 0; j < n_funs; ++j) {
+            const vec& eta_col = eta_i.col(j);
+            CharacterVector fun_nams = Funs_i[j];
+            uword k = fun_nams.length();
+            for (uword f = 0; f < k; ++f) {
+                uword target_col = FF_i.at(current_col);
+                std::string fun = as<std::string>(fun_nams[f]);
+                auto out_col = out.at(i).col(target_col);
+                if (fun == "identity") {
+                    out_col %= eta_col;
+                } else if (fun == "abs") {
+                    out_col %= arma::abs(eta_col);
+                } else if (fun == "expit") {
+                    out_col %= 1.0 / (1.0 + trunc_exp(-eta_col));
+                } else if (fun == "exp" || fun == "dexp") {
+                    out_col %= trunc_exp(eta_col);
+                } else if (fun == "dexpit") {
+                    vec pp = 1.0 / (1.0 + trunc_exp(-eta_col));
+                    out_col %= pp % (1.0 - pp);
+                } else if (fun == "log") {
+                    out_col %= trunc_log(eta_col);
+                } else if (fun == "log2") {
+                    out_col %= arma::log2(eta_col);
+                } else if (fun == "log10") {
+                    out_col %= arma::log10(eta_col);
+                } else if (fun == "sqrt") {
+                    out_col %= arma::sqrt(eta_col);
+                } else if (fun == "poly2") {
+                    out_col %= arma::square(eta_col);
+                } else if (fun == "poly3") {
+                    out_col %= eta_col % arma::square(eta_col);
+                } else if (fun == "poly4") {
+                    out_col %= arma::square(arma::square(eta_col));
+                } else if (fun == "poly2(expit)") {
+                    out_col %= arma::square(1.0 / (1.0 + trunc_exp(-eta_col)));
+                } else if (fun == "poly3(expit)") {
+                    vec pp = 1.0 / (1.0 + trunc_exp(-eta_col));
+                    out_col %= pp % arma::square(pp);
+                } else if (fun == "poly4(expit)") {
+                    out_col %= arma::square(arma::square(1.0 / (1.0 + trunc_exp(-eta_col))));
+                }
+                current_col++;
+            }
+        }
+    }
+    return out;
+}
+
+mat calculate_Wlong_old (const field<mat> &X, const field<mat> &Z,
                      const field<mat> &U, const mat &Wlong_bar,
                      const mat &Wlong_sds,
                      const field<vec> &betas, const field<mat> &b,
@@ -871,6 +963,110 @@ mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
   Wlong.each_row() -= Wlong_bar;
   Wlong.each_row() /= Wlong_sds;
   return Wlong;
+}
+
+mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
+                     const field<mat> &U, const mat &Wlong_bar,
+                     const mat &Wlong_sds,
+                     const field<vec> &betas, const field<mat> &b,
+                     const uvec &id, const field<uvec> &FunForms,
+                     const List &Funs_FunForms) {
+    //field<mat> eta = linpred_surv(X, betas, Z, b, id);
+    uword n_outcomes_X = X.n_elem;
+    field<mat> eta(n_outcomes_X);
+    for (uword i = 0; i < n_outcomes_X; ++i) {
+        uword n_forms = X.at(i).n_cols / betas.at(i).n_rows;
+        eta.at(i).set_size(X.at(i).n_rows, n_forms);
+    }
+    linpred_surv_inplace(eta, X, betas, Z, b, id);
+    uword n_outcomes = U.n_elem;
+    uword N = U.at(0).n_rows;
+    uword total_cols = 0;
+    uvec col_starts(n_outcomes);
+    for (uword i = 0; i < n_outcomes; ++i) {
+        col_starts.at(i) = total_cols;
+        total_cols += U.at(i).n_cols;
+    }
+    mat Wlong(N, total_cols, arma::fill::none);
+    for (uword i = 0; i < n_outcomes; ++i) {
+        uword start_col = col_starts.at(i);
+        uword end_col = start_col + U.at(i).n_cols - 1;
+        Wlong.cols(start_col, end_col) = U.at(i);
+        const mat& eta_i = eta.at(i);
+        const uvec& FF_i = FunForms.at(i);
+        List Funs_i = Funs_FunForms[i];
+        uword current_col = 0;
+        uword n_funs = Funs_i.length();
+        for (uword j = 0; j < n_funs; ++j) {
+            const vec& eta_col = eta_i.col(j);
+            IntegerVector fun_ints = Funs_i[j];
+            uword k = fun_ints.length();
+            for (uword f = 0; f < k; ++f) {
+                uword target_col = start_col + FF_i.at(current_col);
+                auto out_col = Wlong.col(target_col);
+                int fun = fun_ints[f];
+                switch (fun) {
+                case 1: // "identity"
+                    out_col %= eta_col;
+                    break;
+                case 2: // "abs"
+                    out_col %= arma::abs(eta_col);
+                    break;
+                case 3: // "expit"
+                    out_col %= 1.0 / (1.0 + trunc_exp(-eta_col));
+                    break;
+                case 4: // "exp" or "dexp"
+                    out_col %= trunc_exp(eta_col);
+                    break;
+                case 5: // "dexpit"
+                    { // Brackets keep 'pp' safely scoped within this case
+                        vec pp = 1.0 / (1.0 + trunc_exp(-eta_col));
+                        out_col %= pp % (1.0 - pp);
+                        break;
+                    }
+                case 6: // "log"
+                    out_col %= trunc_log(eta_col);
+                    break;
+                case 7: // "log2"
+                    out_col %= arma::log2(eta_col);
+                    break;
+                case 8: // "log10"
+                    out_col %= arma::log10(eta_col);
+                    break;
+                case 9: // "sqrt"
+                    out_col %= arma::sqrt(eta_col);
+                    break;
+                case 10: // "poly2"
+                    out_col %= arma::square(eta_col);
+                    break;
+                case 11: // "poly3"
+                    out_col %= eta_col % arma::square(eta_col);
+                    break;
+                case 12: // "poly4"
+                    out_col %= arma::square(arma::square(eta_col));
+                    break;
+                case 13: // "poly2(expit)"
+                    out_col %= arma::square(1.0 / (1.0 + trunc_exp(-eta_col)));
+                    break;
+                case 14: // "poly3(expit)"
+                    {
+                        vec pp = 1.0 / (1.0 + trunc_exp(-eta_col));
+                        out_col %= pp % arma::square(pp);
+                        break;
+                    }
+                case 15: // "poly4(expit)"
+                    out_col %= arma::square(arma::square(1.0 / (1.0 + trunc_exp(-eta_col))));
+                    break;
+                default:
+                    Rcpp::stop("Unknown transformation function integer code.");
+                }
+                current_col++;
+            }
+        }
+    }
+    Wlong.each_row() -= Wlong_bar;
+    Wlong.each_row() /= Wlong_sds;
+    return Wlong;
 }
 
 mat bdiagF (const field<mat> &F) { // builds a block diagonal matrix given a field of matrices
