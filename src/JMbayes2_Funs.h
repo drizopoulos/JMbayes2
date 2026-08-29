@@ -469,6 +469,14 @@ vec log_dnorm (const vec &x, const vec &mu, const double &sigma) {
     return constant - arma::square(x - mu) / var2;
 }
 
+inline double log_dlnorm (double x, double mu, double sigma) {
+    double log_x = std::log(x);
+    double diff = log_x - mu;
+    double constant = -std::log(sigma) - half_log2pi;
+    double sq_term = (diff * diff) / (2.0 * sigma * sigma);
+    return constant - log_x - sq_term;
+}
+
 vec log_pnorm (const vec &x, const vec &mu, const double &sigma,
                const int lower_tail = 1) {
   uword n = x.n_rows;

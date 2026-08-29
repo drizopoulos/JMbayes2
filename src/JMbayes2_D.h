@@ -141,8 +141,8 @@ void update_D (mat &L, vec &sds, const mat &b,
                          D_sds_shape, gamma_prior));
     double log_mu_proposed = log(proposed_sds.at(i)) - SS;
     double log_ratio_sds = numerator_sds - denominator_sds +
-      R::dlnorm(sds.at(i), log_mu_proposed, scale_sds.at(i), true) -
-      R::dlnorm(proposed_sds.at(i), log_mu_current, scale_sds.at(i), true);
+        log_dlnorm(sds.at(i), log_mu_proposed, scale_sds.at(i)) -
+        log_dlnorm(proposed_sds.at(i), log_mu_current, scale_sds.at(i));
     if (std::isfinite(log_ratio_sds) && log_ratio_sds > std::log(R::unif_rand())) {
       sds = proposed_sds;
       logLik_re = logLik_re_proposed;
