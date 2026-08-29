@@ -234,7 +234,7 @@ summary(jointFit2)
 #> iterations per chain: 12000 
 #> burn-in per chain: 2000 
 #> thinning: 5 
-#> time: 1.3 min
+#> time: 1.2 min
 ```
 
 The survival submodel output now contains the estimated coefficients for
@@ -341,7 +341,7 @@ summary(jointFit3)
 #> iterations per chain: 12000 
 #> burn-in per chain: 2000 
 #> thinning: 5 
-#> time: 1.5 min
+#> time: 1.3 min
 ```
 
 As seen above, the `functional_forms` argument is a named list with

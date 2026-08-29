@@ -12,7 +12,7 @@ multi-state processes) are accommodated.
 | Package: | JMbayes2   |
 | Type:    | Package    |
 | Version: | 0.6-5      |
-| Date:    | 2026-08-13 |
+| Date:    | 2026-08-24 |
 | License: | GPL (\>=3) |
 
 This package fits joint models for longitudinal and time-to-event data.

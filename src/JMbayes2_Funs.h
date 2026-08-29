@@ -85,14 +85,6 @@ arma::vec group_sum(const arma::vec& x, const arma::uvec& ind) {
     return out;
 }
 
-vec group_sum_old(const vec &x, const uvec &ind) {
-  vec cumsum_x = cumsum(x);
-  vec out = cumsum_x.rows(ind);
-  out.insert_rows(0, 1);
-  out = diff(out);
-  return out;
-}
-
 vec create_init_scale(const uword &n, const double &fill_val = 0.1) {
   vec out(n);
   out.fill(fill_val);
@@ -672,36 +664,6 @@ field<vec> linpred_mixed_i (const field<vec> eta, const field<mat> &X,
   field<vec> out = eta;
   out.at(i) = X.at(i) * betas.at(i) +
     arma::sum(Z.at(i) % b.at(i).rows(id.at(i)), 1);
-  return out;
-}
-
-field<vec> linpred_mixed_Zb (const field<mat>& Xbetas,
-                             const field<mat> &Z, const field<mat> &b,
-                             const field<uvec> &id) {
-  uword n_outcomes = Z.n_elem;
-  field<vec> out(n_outcomes);
-  for (uword i = 0; i < n_outcomes; ++i) {
-    mat Xbetas_i = Xbetas.at(i);
-    mat Z_i = Z.at(i);
-    mat b_i = b.at(i);
-    uvec id_i = id.at(i);
-    out.at(i) = Xbetas_i + arma::sum(Z_i % b_i.rows(id_i), 1);
-  }
-  return out;
-}
-
-field<mat> Xbeta_calc (const field<mat> &X, const field<vec> &betas) {
-  uword n = X.n_elem;
-  field<mat> out(n);
-  for (uword i = 0; i < n; i++) {
-    out.at(i) = X.at(i) * betas.at(i);
-  }
-  return out;
-}
-
-cube chol_cube (const cube &S) {
-  cube out = S;
-  out.each_slice([](mat &X){X = chol(X);});
   return out;
 }
 

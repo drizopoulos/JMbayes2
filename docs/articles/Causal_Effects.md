@@ -63,7 +63,7 @@ summary(jmFit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 17 sec
+#> time: 16 sec
 ```
 
 The coefficient for `drugD-penicil` for the survival outcome in the

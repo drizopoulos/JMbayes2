@@ -401,7 +401,7 @@ summary(jm_fit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 59 sec
+#> time: 56 sec
 ```
 
 One can find the association parameters between the underlying value of

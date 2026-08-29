@@ -1,3 +1,8 @@
+# JMbayes2 0.6.5
+
+## Major
+* Most C++ functions have been rewritten for computational efficiency and better memory management.
+
 # JMbayes2 0.6.0
 
 ## Major
