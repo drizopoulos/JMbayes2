@@ -665,6 +665,34 @@ field<vec> linpred_mixed (const field<mat> &X, const field<vec> &betas,
   return out;
 }
 
+inline void linpred_mixed_inplace (field<vec> &eta,
+                                   const field<mat> &X,
+                                   const field<vec> &betas,
+                                   const field<mat> &Z,
+                                   const field<mat> &b,
+                                   const field<uvec> &id) {
+    uword n_outcomes = X.n_elem;
+    for (uword i = 0; i < n_outcomes; ++i) {
+        const mat& X_i = X.at(i);
+        const vec& betas_i = betas.at(i);
+        const mat& Z_i = Z.at(i);
+        const mat& b_i = b.at(i);
+        const uvec& id_i = id.at(i);
+        eta.at(i) = X_i * betas_i;
+        uword N = Z_i.n_rows;
+        uword q = Z_i.n_cols;
+        double* eta_ptr = eta.at(i).memptr();
+        const uword* id_ptr = id_i.memptr();
+        for (uword k = 0; k < q; ++k) {
+            const double* Z_col = Z_i.colptr(k);
+            const double* b_col = b_i.colptr(k);
+            for (uword obs = 0; obs < N; ++obs) {
+                eta_ptr[obs] += Z_col[obs] * b_col[id_ptr[obs]];
+            }
+        }
+    }
+}
+
 field<vec> linpred_mixed_i (const field<vec> eta, const field<mat> &X,
                             const field<vec> &betas, const field<mat> &Z,
                             const field<mat> &b, const field<uvec> &id,

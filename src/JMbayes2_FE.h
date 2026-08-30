@@ -102,13 +102,24 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
         mat D_inv_i = D_inv.at(patt_i);
         mat XD_i = X_dot_i.t() * D_inv_i;
 
-        sum_JXDu += add_zero_rows(XD_i * u_i, p_HC, ind_FE_i);
-        sum_JXDXJ += add_zero_colrows(XD_i * X_dot_i, p_HC, p_HC, ind_FE_i, ind_FE_i);
+        sum_JXDu.rows(ind_FE_i) += XD_i * u_i;
+        sum_JXDXJ.submat(ind_FE_i, ind_FE_i) += XD_i * X_dot_i;
     }
 
-    mat Sigma_1 = inv(prior_Tau_betas_HC + sum_JXDXJ);
-    vec mean_1 = Sigma_1 * (Tau_mean_betas_HC + sum_JXDu);
-    betas_vec.rows(ind_FE_HC) = propose_mvnorm_vec(Sigma_1) + mean_1;
+    //mat Sigma_1 = inv_sympd(prior_Tau_betas_HC + sum_JXDXJ);
+    //vec mean_1 = Sigma_1 * (Tau_mean_betas_HC + sum_JXDu);
+    //betas_vec.rows(ind_FE_HC) = mean_1 + chol(Sigma_1, "lower") * randn<vec>(p_HC);
+    // 1. Define the Precision Matrix (Q) and Canonical Mean (b)
+    mat Q = prior_Tau_betas_HC + sum_JXDXJ;
+    vec b_vec = Tau_mean_betas_HC + sum_JXDu;
+    // 2. Calculate the Cholesky factor of the PRECISION matrix EXACTLY ONCE
+    mat L_prec = chol(Q, "lower");
+    // 3. Forward substitution: Solve L_prec * yy = b_vec  (This is yy = L^-1 * b)
+    vec yy = arma::solve(arma::trimatl(L_prec), b_vec);
+    // 4. Add the standard normal noise
+    vec ww = yy + arma::randn<vec>(p_HC);
+    // 5. Back substitution: Solve L_prec^T * x = ww (This is x = L^-T * ww)
+    betas_vec.rows(ind_FE_HC) = arma::solve(arma::trimatu(L_prec.t()), ww);
     betas = vec2field(betas_vec, ind_FE);
 
     // 3. VECTORIZED b_mat RECALCULATION (Deletes an entire n_b loop)
@@ -131,7 +142,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     b = mat2field(b_mat, ind_RE);
 
     // update eta and logLik_surv baselines
-    eta = linpred_mixed(X, betas, Z, b, idL);
+    linpred_mixed_inplace(eta, X, betas, Z, b, idL);
 
     Wlong_H = calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas, b, id_H_, FunForms, Funs_FunForms);
     WlongH_alphas = Wlong_H * alphas;
