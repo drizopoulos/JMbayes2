@@ -823,7 +823,26 @@ mat bdiagF (const field<mat> &F) { // builds a block diagonal matrix given a fie
   return B;
 }
 
-vec docall_rbindF (const field<vec> &F) { // binds a field of vectors into one vector
+inline vec docall_rbindF (const field<vec> &F) {
+    uword n = F.n_elem;
+    uword total_rows = 0;
+    for (uword i = 0; i < n; ++i) {
+        total_rows += F.at(i).n_elem;
+    }
+    vec V(total_rows, arma::fill::none);
+    double* V_ptr = V.memptr();
+    uword current_pos = 0;
+    for (uword i = 0; i < n; ++i) {
+        uword len = F.at(i).n_elem;
+        if (len > 0) {
+            std::memcpy(V_ptr + current_pos, F.at(i).memptr(), len * sizeof(double));
+            current_pos += len;
+        }
+    }
+    return V;
+}
+
+vec docall_rbindF_old (const field<vec> &F) { // binds a field of vectors into one vector
   uword n = F.n_elem;
   uword nrows = 0;
   uvec rows(n);
