@@ -120,7 +120,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     vec ww = yy + arma::randn<vec>(p_HC);
     // 5. Back substitution: Solve L_prec^T * x = ww (This is x = L^-T * ww)
     betas_vec.rows(ind_FE_HC) = arma::solve(arma::trimatu(L_prec.t()), ww);
-    betas = vec2field(betas_vec, ind_FE);
+    vec2field_inplace(betas, betas_vec, ind_FE);
 
     // 3. VECTORIZED b_mat RECALCULATION (Deletes an entire n_b loop)
     mean_u = X_dot * betas_vec.rows(ind_FE_HC);
@@ -139,20 +139,22 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     if (it == n_iter - 1) {
         res_b_last.slice(0) = b_mat;
     }
-    b = mat2field(b_mat, ind_RE);
+    mat2field_inplace(b, b_mat, ind_RE);
 
     // update eta and logLik_surv baselines
     linpred_mixed_inplace(eta, X, betas, Z, b, idL);
 
-    Wlong_H = calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas, b, id_H_, FunForms, Funs_FunForms);
+    calculate_Wlong_inplace(Wlong_H, X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas,
+                            b, id_H_, FunForms, Funs_FunForms);
     WlongH_alphas = Wlong_H * alphas;
-
     if (any_event) {
-        Wlong_h = calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas, b, id_h, FunForms, Funs_FunForms);
+        calculate_Wlong_inplace(Wlong_h, X_h, Z_h, U_h, Wlong_bar, Wlong_sds,
+                                betas, b, id_h, FunForms, Funs_FunForms);
         Wlongh_alphas = Wlong_h * alphas;
     }
     if (any_interval) {
-        Wlong_H2 = calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas, b, id_H_, FunForms, Funs_FunForms);
+        calculate_Wlong_inplace(Wlong_H2, X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds,
+                                betas, b, id_H_, FunForms, Funs_FunForms);
         WlongH2_alphas = Wlong_H2 * alphas;
     }
 

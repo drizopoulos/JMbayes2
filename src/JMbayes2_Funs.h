@@ -164,6 +164,25 @@ field<vec> vec2field (const vec &betas, const field<uvec> &ind_FE) {
   return out;
 }
 
+inline void vec2field_inplace(field<vec> &out, const vec &betas_vec, const field<uvec> &ind_FE) {
+    uword n = ind_FE.n_elem;
+    // Pointer to the master vector we are pulling from
+    const double* betas_ptr = betas_vec.memptr();
+    for (uword i = 0; i < n; ++i) {
+        const uvec& idx = ind_FE.at(i);
+        uword len = idx.n_elem;
+        if (len == 0) continue;
+        // Pointers for the target vector and the specific index map
+        double* out_ptr = out.at(i).memptr();
+        const uword* idx_ptr = idx.memptr();
+        // Bare-metal loop: Writes sequentially into 'out',
+        // while safely jumping around 'betas_ptr' based on 'idx'
+        for (uword j = 0; j < len; ++j) {
+            out_ptr[j] = betas_ptr[idx_ptr[j]];
+        }
+    }
+}
+
 field<vec> create_storage (const field<uvec> &F) {
   uword n = F.size();
   field<vec> out(n);
@@ -804,6 +823,79 @@ mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
     Wlong.each_row() -= Wlong_bar;
     Wlong.each_row() /= Wlong_sds;
     return Wlong;
+}
+
+inline void calculate_Wlong_inplace (mat &Wlong,
+                                     const field<mat> &X, const field<mat> &Z,
+                                     const field<mat> &U, const mat &Wlong_bar,
+                                     const mat &Wlong_sds,
+                                     const field<vec> &betas, const field<mat> &b,
+                                     const uvec &id, const field<uvec> &FunForms,
+                                     const List &Funs_FunForms) {
+
+    uword n_outcomes_X = X.n_elem;
+    field<mat> eta(n_outcomes_X);
+    for (uword i = 0; i < n_outcomes_X; ++i) {
+        uword n_forms = X.at(i).n_cols / betas.at(i).n_rows;
+        eta.at(i).set_size(X.at(i).n_rows, n_forms);
+    }
+    linpred_surv_inplace(eta, X, betas, Z, b, id);
+    uword n_outcomes = U.n_elem;
+    uword total_cols = 0;
+    uvec col_starts(n_outcomes);
+    for (uword i = 0; i < n_outcomes; ++i) {
+        col_starts.at(i) = total_cols;
+        total_cols += U.at(i).n_cols;
+    }
+    for (uword i = 0; i < n_outcomes; ++i) {
+        uword start_col = col_starts.at(i);
+        uword end_col = start_col + U.at(i).n_cols - 1;
+        Wlong.cols(start_col, end_col) = U.at(i);
+        const mat& eta_i = eta.at(i);
+        const uvec& FF_i = FunForms.at(i);
+        List Funs_i = Funs_FunForms[i];
+        uword current_col = 0;
+        uword n_funs = Funs_i.length();
+        for (uword j = 0; j < n_funs; ++j) {
+            const vec& eta_col = eta_i.col(j);
+            IntegerVector fun_ints = Funs_i[j];
+            uword k = fun_ints.length();
+            for (uword f = 0; f < k; ++f) {
+                uword target_col = start_col + FF_i.at(current_col);
+                auto out_col = Wlong.col(target_col);
+                int fun = fun_ints[f];
+                switch (fun) {
+                case 1: out_col %= eta_col; break;
+                case 2: out_col %= arma::abs(eta_col); break;
+                case 3: out_col %= 1.0 / (1.0 + trunc_exp(-eta_col)); break;
+                case 4: out_col %= trunc_exp(eta_col); break;
+                case 5: {
+                    vec pp = 1.0 / (1.0 + trunc_exp(-eta_col));
+                    out_col %= pp % (1.0 - pp);
+                    break;
+                }
+                case 6: out_col %= trunc_log(eta_col); break;
+                case 7: out_col %= arma::log2(eta_col); break;
+                case 8: out_col %= arma::log10(eta_col); break;
+                case 9: out_col %= arma::sqrt(eta_col); break;
+                case 10: out_col %= arma::square(eta_col); break;
+                case 11: out_col %= eta_col % arma::square(eta_col); break;
+                case 12: out_col %= arma::square(arma::square(eta_col)); break;
+                case 13: out_col %= arma::square(1.0 / (1.0 + trunc_exp(-eta_col))); break;
+                case 14: {
+                    vec pp = 1.0 / (1.0 + trunc_exp(-eta_col));
+                    out_col %= pp % arma::square(pp);
+                    break;
+                }
+                case 15: out_col %= arma::square(arma::square(1.0 / (1.0 + trunc_exp(-eta_col)))); break;
+                default: Rcpp::stop("Unknown transformation function integer code.");
+                }
+                current_col++;
+            }
+        }
+    }
+    Wlong.each_row() -= Wlong_bar;
+    Wlong.each_row() /= Wlong_sds;
 }
 
 mat bdiagF (const field<mat> &F) { // builds a block diagonal matrix given a field of matrices
