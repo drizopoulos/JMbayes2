@@ -10,7 +10,6 @@
 using namespace Rcpp;
 using namespace arma;
 
-
 void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                vec &logLik_long, vec &logLik_surv, vec &logLik_re,
                mat &Wlong_H, mat &Wlong_h, mat &Wlong_H2,
@@ -48,7 +47,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     uword nRE = b_mat.n_cols;
     mat V_R = inv(trimatu(L));
     mat V_Sigma = V_R.each_col() / sds;
-    double log_det_V_Sigma = -arma::sum(arma::log(L.diag())) - arma::sum(arma::log(sds));
+    double log_det_V_Sigma = -arma::sum(arma::log(L.diag())) -
+        arma::sum(arma::log(sds));
     double other_terms = -(double)nRE / 2.0 * log2pi + log_det_V_Sigma;
     vec denominator_b = logLik_long + logLik_surv + logLik_re;
     uvec map_o(nRE);
@@ -80,8 +80,9 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
         for (uword obs = 0; obs < N_o; ++obs) {
             eta_ptr[obs] += Z_col[obs] * delta_ptr[id_ptr[obs]];
         }
-        vec logLik_long_proposed = log_long(y, eta, sigmas, extra_parms,
-                                            families, links, ids, unq_ids, n);
+        vec logLik_long_proposed =
+            log_long(y, eta, sigmas, extra_parms, families, links, ids, unq_ids,
+                     n);
         mat Wlong_H_proposed =
             calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas,
                             proposed_b, id_H_, FunForms, Funs_FunForms);
@@ -113,7 +114,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                      any_interval, which_interval,
                      recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
         vec logLik_re_proposed = log_re_onlyRE(b_mat, V_Sigma, other_terms);
-        vec numerator_b = logLik_long_proposed + logLik_surv_proposed + logLik_re_proposed;
+        vec numerator_b = logLik_long_proposed + logLik_surv_proposed +
+            logLik_re_proposed;
         vec log_ratio = numerator_b - denominator_b;
         uvec accepted(n, arma::fill::zeros);
         uword* acc_ptr = accepted.memptr();
@@ -129,23 +131,30 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                 logLik_re.at(i) = logLik_re_proposed.at(i);
                 uword first_H = GK_k * ni_event.at(i, 0);
                 uword last_H = GK_k * ni_event.at(i, 1) - 1;
-                Wlong_H.rows(first_H, last_H) = Wlong_H_proposed.rows(first_H, last_H);
-                WlongH_alphas.rows(first_H, last_H) = WlongH_alphas_proposed.rows(first_H, last_H);
+                Wlong_H.rows(first_H, last_H) =
+                    Wlong_H_proposed.rows(first_H, last_H);
+                WlongH_alphas.rows(first_H, last_H) =
+                    WlongH_alphas_proposed.rows(first_H, last_H);
                 if (any_event) {
                     uword first_h = ni_event.at(i, 0);
                     uword last_h = ni_event.at(i, 1) - 1;
-                    Wlong_h.rows(first_h, last_h) = Wlong_h_proposed.rows(first_h, last_h);
-                    Wlongh_alphas.rows(first_h, last_h) = Wlongh_alphas_proposed.rows(first_h, last_h);
+                    Wlong_h.rows(first_h, last_h) =
+                        Wlong_h_proposed.rows(first_h, last_h);
+                    Wlongh_alphas.rows(first_h, last_h) =
+                        Wlongh_alphas_proposed.rows(first_h, last_h);
                 }
                 if (any_interval) {
-                    Wlong_H2.rows(first_H, last_H) = Wlong_H2_proposed.rows(first_H, last_H);
-                    WlongH2_alphas.rows(first_H, last_H) = WlongH2_alphas_proposed.rows(first_H, last_H);
+                    Wlong_H2.rows(first_H, last_H) =
+                        Wlong_H2_proposed.rows(first_H, last_H);
+                    WlongH2_alphas.rows(first_H, last_H) =
+                        WlongH2_alphas_proposed.rows(first_H, last_H);
                 }
             } else {
                 b_mat.at(i, j) = old_b_j[i];
             }
             if (it > 119) {
-                scale_b.at(i, j) = robbins_monro(scale_b.at(i, j), acc_i, it - 100);
+                scale_b.at(i, j) =
+                    robbins_monro(scale_b.at(i, j), acc_i, it - 100);
             }
         }
         for (uword obs = 0; obs < N_o; ++obs) {
