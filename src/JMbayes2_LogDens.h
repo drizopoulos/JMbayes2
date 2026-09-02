@@ -171,96 +171,60 @@ vec log_surv_old (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
   return out;
 }
 
-vec log_re (const mat &b, const mat &L, const vec &sds) {
-  mat chol_Sigma = L.each_row() % sds.t();
-  vec out = log_dmvnrm_chol(b, chol_Sigma);
-  return out;
-}
-
-vec log_re_onlyRE (const mat &b_prop, const mat &V_Sigma, double other_terms) {
-    uword const n = b_prop.n_rows, k = b_prop.n_cols;
-    vec out(n, arma::fill::none);
-    std::vector<double> z(k);
-    for (uword i = 0; i < n; ++i) {
-        for(uword j = 0; j < k; ++j) {
-            z[j] = b_prop.at(i, j);
-        }
-        for (uword j = k; j-- > 0;) {
-            double tmp = 0.0;
-            const double* col_j = V_Sigma.colptr(j);
-            for (uword c = 0; c <= j; ++c) {
-                tmp += col_j[c] * z[c];
-            }
-            z[j] = tmp;
-        }
-        double sq_dist = 0.0;
-        for(uword j = 0; j < k; ++j) {
-            sq_dist += z[j] * z[j];
-        }
-        out[i] = other_terms - 0.5 * sq_dist;
-    }
-    return out;
-}
-
-vec log_re_onlySDS (const mat &b, const mat &V_R, double log_det_V_R, const vec &sds) {
-    uword const n = b.n_rows, k = b.n_cols;
-    vec out(n, arma::fill::none);
-    double log_det_V_Sigma = log_det_V_R - arma::sum(arma::log(sds));
+inline vec log_re (const mat &b, const mat &L, const vec &sds) {
+    uword k = b.n_cols;
+    double log_det = -arma::sum(arma::log(L.diag())) - arma::sum(arma::log(sds));
     double constants = -(double)k / 2.0 * log2pi;
-    double other_terms = constants + log_det_V_Sigma;
-    std::vector<double> inv_sds(k);
-    for (uword j = 0; j < k; ++j) {
-        inv_sds[j] = 1.0 / sds.at(j);
-    }
-    std::vector<double> z(k);
-    for (uword i = 0; i < n; ++i) {
-        for (uword j = 0; j < k; ++j) {
-            z[j] = b.at(i, j) * inv_sds[j];
-        }
-        for (uword j = k; j-- > 0;) {
-            double tmp = 0.0;
-            const double* col_j = V_R.colptr(j);
-            for (uword c = 0; c <= j; ++c) {
-                tmp += col_j[c] * z[c];
-            }
-            z[j] = tmp;
-        }
-        double sq_dist = 0.0;
-        for (uword j = 0; j < k; ++j) {
-            sq_dist += z[j] * z[j];
-        }
-        out.at(i) = other_terms - 0.5 * sq_dist;
-    }
-    return out;
+    double other_terms = constants + log_det;
+    mat B_scaled = b.each_row() / sds.t();
+    mat Z_transposed = arma::solve(arma::trimatl(L.t()), B_scaled.t());
+    vec sq_dist = arma::sum(arma::square(Z_transposed), 0).t();
+    return other_terms - 0.5 * sq_dist;
 }
 
-vec log_re_onlyL (const mat &b_scaled, const mat &L, double sum_log_sds) {
-    uword const n = b_scaled.n_rows, k = b_scaled.n_cols;
-    vec out(n, arma::fill::none);
-    mat V = inv(trimatu(L));
+inline vec log_re_onlyRE (const mat &b_prop, const mat &V_Sigma, double other_terms) {
+    // Fast Triangular Multiplication (TRMM)
+    // V_Sigma is upper-triangular, so trimatu() safely bypasses half the math.
+    mat Z = b_prop * arma::trimatu(V_Sigma);
+    // Calculate squared distances for all subjects
+    // sum(..., 1) sums across the rows, giving an (n x 1) vector
+    vec sq_dist = arma::sum(arma::square(Z), 1);
+    return other_terms - 0.5 * sq_dist;
+}
+
+inline vec log_re_onlySDS (const mat &b, const mat &V_R, double log_det_V_R,
+                           const vec &sds) {
+    uword k = b.n_cols;
+    // Calculate constants
+    double log_det_V_Sigma = log_det_V_R - arma::sum(arma::log(sds));
+    double other_terms = -(double)k / 2.0 * log2pi + log_det_V_Sigma;
+    // Scale all random effects by the proposed SDS instantly
+    mat B_scaled = b.each_row() / sds.t();
+    // Fast Triangular Multiplication (TRMM)
+    // By wrapping V_R in trimatu(), we tell the BLAS backend to skip half the math.
+    mat Z = B_scaled * arma::trimatu(V_R);
+    // Calculate squared distances for all subjects
+    vec sq_dist = arma::sum(arma::square(Z), 1);
+    // Final vectorized computation
+    return other_terms - 0.5 * sq_dist;
+}
+
+inline vec log_re_onlyL (const mat &b_scaled, const mat &L, double sum_log_sds) {
+    uword k = b_scaled.n_cols;
+    // Calculate constants
     double log_det = -arma::sum(arma::log(L.diag())) - sum_log_sds;
     double constants = -(double)k / 2.0 * log2pi;
     double other_terms = constants + log_det;
-    std::vector<double> z(k);
-    for (uword i = 0; i < n; ++i) {
-        for (uword j = 0; j < k; ++j) {
-            z[j] = b_scaled.at(i, j);
-        }
-        for (uword j = k; j-- > 0;) {
-            double tmp = 0.0;
-            const double* col_j = V.colptr(j);
-            for (uword c = 0; c <= j; ++c) {
-                tmp += col_j[c] * z[c];
-            }
-            z[j] = tmp;
-        }
-        double sq_dist = 0.0;
-        for (uword j = 0; j < k; ++j) {
-            sq_dist += z[j] * z[j];
-        }
-        out[i] = other_terms - 0.5 * sq_dist;
-    }
-    return out;
+    // Fast Triangular Solve (TRSM)
+    // We want Z = b_scaled * L^-1.
+    // We achieve this safely by solving L^T * Z^T = b_scaled^T
+    mat Z_transposed = arma::solve(arma::trimatl(L.t()), b_scaled.t());
+    // Calculate squared distances for all subjects
+    // sum(..., 0) sums down the columns, returning a (1 x n) row vector.
+    // .t() flips it to an (n x 1) column vector to match your expected output.
+    vec sq_dist = arma::sum(arma::square(Z_transposed), 0).t();
+    // Final vectorized computation
+    return other_terms - 0.5 * sq_dist;
 }
 
 /*

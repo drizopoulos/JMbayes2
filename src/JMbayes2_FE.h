@@ -164,11 +164,12 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
         WlongH2_alphas = Wlong_H2 * alphas;
     }
 
-    logLik_surv = log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas, Wh_gammas, WH2_gammas,
-                           WlongH_alphas, Wlongh_alphas, WlongH2_alphas, log_Pwk, log_Pwk2, log_weights,
-                           id_h2, intgr_ind, intgr, id_H_fast, id_h_fast, which_event, which_right_event,
-                           which_left, any_interval, which_interval, recurrent, frailtyH_sigmaF_alphaF,
-                           frailtyh_sigmaF_alphaF);
+    logLik_surv =
+        log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas, Wh_gammas, WH2_gammas,
+                 WlongH_alphas, Wlongh_alphas, WlongH2_alphas, log_Pwk, log_Pwk2, log_weights,
+                 id_h2, intgr_ind, intgr, id_H_fast, id_h_fast, which_event, which_right_event,
+                 which_left, any_interval, which_interval, recurrent, frailtyH_sigmaF_alphaF,
+                 frailtyh_sigmaF_alphaF);
 
     // /////////////////////////////////////////////////////////////////////////////
     // FE outside HC - Metropolis-Hastings sampling
@@ -180,16 +181,18 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
             uvec ind_j = x_notin_z.at(j);
             uword n_betas = ind_j.n_rows;
 
-            double sum_logLik_long_j = sum(log_long_i(y.at(j), eta.at(j), sigmas.at(j), extra_parms.at(j),
-                                                      std::string(families[j]), std::string(links[j]), idL_lp_fast.at(j)));
+            double sum_logLik_long_j =
+                sum(log_long_i(y.at(j), eta.at(j), sigmas.at(j),
+                               extra_parms.at(j), std::string(families[j]),
+                               std::string(links[j]), idL_lp_fast.at(j)));
             vec ll(n_betas);
-            double logPrior_j = logPrior(betas.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
-                                         prior_Tau_betas_nHC.at(j), ll, 1.0, false);
+            double logPrior_j =
+                logPrior(betas.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
+                         prior_Tau_betas_nHC.at(j), ll, 1.0, false);
 
             double denominator_j = sum_logLik_long_j + sum(logLik_surv) + logPrior_j;
 
             for (uword i = 0; i < n_betas; ++i) {
-
                 // 4. IN-PLACE SCALAR MUTATION (Destroys field<vec> deep copy bottleneck)
                 uword idx = ind_j.at(i);
                 double old_beta = betas.at(j).at(idx);
@@ -202,32 +205,42 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                 // 5. RANK-1 ETA UPDATE (Deletes the massive linpred_mixed_i matrix multiplication)
                 vec eta_j_prop = eta.at(j) + X.at(j).col(idx) * diff;
 
-                double sum_logLik_long_j_prop = sum(log_long_i(y.at(j), eta_j_prop, sigmas.at(j), extra_parms.at(j),
-                                                               std::string(families[j]), std::string(links[j]), idL_lp_fast.at(j)));
+                double sum_logLik_long_j_prop =
+                    sum(log_long_i(y.at(j), eta_j_prop, sigmas.at(j),
+                                   extra_parms.at(j), std::string(families[j]),
+                                   std::string(links[j]), idL_lp_fast.at(j)));
 
                 // 6. DEFERRED MATRIX ALLOCATIONS
-                mat Wlong_H_prop = calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas, b, id_H_, FunForms, Funs_FunForms);
+                mat Wlong_H_prop =
+                    calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas,
+                                    b, id_H_, FunForms, Funs_FunForms);
                 vec WlongH_alphas_prop = Wlong_H_prop * alphas;
 
                 mat Wlong_h_prop; vec Wlongh_alphas_prop;
                 if (any_event) {
-                    Wlong_h_prop = calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas, b, id_h, FunForms, Funs_FunForms);
+                    Wlong_h_prop =
+                        calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds,
+                                        betas, b, id_h, FunForms, Funs_FunForms);
                     Wlongh_alphas_prop = Wlong_h_prop * alphas;
                 }
 
                 mat Wlong_H2_prop; vec WlongH2_alphas_prop;
                 if (any_interval) {
-                    Wlong_H2_prop = calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas, b, id_H_, FunForms, Funs_FunForms);
+                    Wlong_H2_prop =
+                        calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds,
+                                        betas, b, id_H_, FunForms, Funs_FunForms);
                     WlongH2_alphas_prop = Wlong_H2_prop * alphas;
                 }
 
-                vec logLik_surv_prop = log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas, Wh_gammas, WH2_gammas,
-                                                WlongH_alphas_prop, Wlongh_alphas_prop, WlongH2_alphas_prop,
-                                                log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr, id_H_fast, id_h_fast,
-                                                which_event, which_right_event, which_left, any_interval, which_interval,
-                                                recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
+                vec logLik_surv_prop =
+                    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas, Wh_gammas, WH2_gammas,
+                             WlongH_alphas_prop, Wlongh_alphas_prop, WlongH2_alphas_prop,
+                             log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr, id_H_fast, id_h_fast,
+                             which_event, which_right_event, which_left, any_interval, which_interval,
+                             recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
 
-                double numerator_j = sum_logLik_long_j_prop + sum(logLik_surv_prop) + logPrior_j_prop;
+                double numerator_j =
+                    sum_logLik_long_j_prop + sum(logLik_surv_prop) + logPrior_j_prop;
                 double log_ratio_j = numerator_j - denominator_j;
                 double acc_i = 0.0;
 
@@ -241,8 +254,13 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
 
                     Wlong_H = Wlong_H_prop;
                     WlongH_alphas = WlongH_alphas_prop;
-                    if (any_event)    { Wlong_h = Wlong_h_prop; Wlongh_alphas = Wlongh_alphas_prop; }
-                    if (any_interval) { Wlong_H2 = Wlong_H2_prop; WlongH2_alphas = WlongH2_alphas_prop; }
+                    if (any_event) {
+                        Wlong_h = Wlong_h_prop; Wlongh_alphas = Wlongh_alphas_prop;
+                    }
+                    if (any_interval) {
+                        Wlong_H2 = Wlong_H2_prop;
+                        WlongH2_alphas = WlongH2_alphas_prop;
+                    }
 
                     logLik_surv = logLik_surv_prop;
                     denominator_j = numerator_j;
@@ -252,13 +270,15 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                 }
 
                 if (it > 119) {
-                    scale_betas.at(j).at(i) = robbins_monro(scale_betas.at(j).at(i), acc_i, it - 100);
+                    scale_betas.at(j).at(i) =
+                        robbins_monro(scale_betas.at(j).at(i), acc_i, it - 100);
                 }
             }
         }
     }
 
-    logLik_long = log_long(y, eta, sigmas, extra_parms, families, links, idL_lp_fast, unq_idL, n_b);
+    logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
+                           idL_lp_fast, unq_idL, n_b);
     res_betas.row(it) = docall_rbindF(betas).t();
 }
 
