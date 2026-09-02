@@ -79,11 +79,12 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     mat U = L.each_row() % sds.t();
 
     // 2. ISOLATED D_INV PRE-CALCULATION
-    field<mat> D_inv(patt_count);
+    // Store just the upper-triangular Cholesky factor, not the inverse
+    field<mat> U_patt_field(patt_count);
     for (uword p = 0; p < patt_count; ++p) {
         if (!ind_RE_patt.at(p).is_empty()) {
-            mat U_patt_inv = inv(trimatu(chol_update(U, ind_RE_patt.at(p))));
-            D_inv.at(p) = U_patt_inv * U_patt_inv.t();
+            // No inv(), no matrix multiplication!
+            U_patt_field.at(p) = trimatu(chol_update(U, ind_RE_patt.at(p)));
         }
     }
 
@@ -99,11 +100,16 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
         vec u_i = u_mat.row(i).t();
         u_i = u_i.rows(ind_RE_i);
 
-        mat D_inv_i = D_inv.at(patt_i);
-        mat XD_i = X_dot_i.t() * D_inv_i;
+        // Fetch the upper-triangular Cholesky factor
+        mat R = U_patt_field.at(patt_i);
 
-        sum_JXDu.rows(ind_FE_i) += XD_i * u_i;
-        sum_JXDXJ.submat(ind_FE_i, ind_FE_i) += XD_i * X_dot_i;
+        // Fast Triangular Solves (Calculates R^-T * X  and  R^-T * u)
+        mat X_tilde = arma::solve(arma::trimatl(R.t()), X_dot_i);
+        vec u_tilde = arma::solve(arma::trimatl(R.t()), u_i);
+
+        // Simple Cross-products
+        sum_JXDu.rows(ind_FE_i) += X_tilde.t() * u_tilde;
+        sum_JXDXJ.submat(ind_FE_i, ind_FE_i) += X_tilde.t() * X_tilde;
     }
 
     //mat Sigma_1 = inv_sympd(prior_Tau_betas_HC + sum_JXDXJ);
