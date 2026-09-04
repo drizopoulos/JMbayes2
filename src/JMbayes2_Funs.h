@@ -832,7 +832,6 @@ inline void calculate_Wlong_inplace (mat &Wlong,
                                      const field<vec> &betas, const field<mat> &b,
                                      const uvec &id, const field<uvec> &FunForms,
                                      const List &Funs_FunForms) {
-
     uword n_outcomes_X = X.n_elem;
     field<mat> eta(n_outcomes_X);
     for (uword i = 0; i < n_outcomes_X; ++i) {
