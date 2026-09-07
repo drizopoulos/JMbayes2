@@ -69,7 +69,10 @@ void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
                        const vec &frailtyH_sigmaF_alphaF, const vec &frailtyh_sigmaF_alphaF,
                        const vec &alphaF, const vec prior_mean_alphaF,
                        mat &prior_Tau_alphaF, const vec &lambda_alphaF,
-                       const double &tau_alphaF, const bool &shrink_alphaF) {
+                       const double &tau_alphaF, const bool &shrink_alphaF,
+                       vec &lambda_H_workspace, vec &H_workspace,
+                       vec &lambda_H2_workspace, vec &H2_workspace,
+                       vec &surv_out_workspace) {
 
     for (uword i = 0; i < bs_gammas.n_elem; ++i) {
         double old_gamma_i = bs_gammas.at(i);
@@ -85,14 +88,17 @@ void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
             proposed_W0H2_bs_gammas = W0H2_bs_gammas + W0_H2.col(i) * diff;
         }
         // Evaluate likelihood
-        vec logLik_surv_proposed = log_surv(proposed_W0H_bs_gammas, proposed_W0h_bs_gammas, proposed_W0H2_bs_gammas,
+        vec logLik_surv_proposed =
+            log_surv(proposed_W0H_bs_gammas, proposed_W0h_bs_gammas, proposed_W0H2_bs_gammas,
                                             WH_gammas, Wh_gammas, WH2_gammas,
                                             WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
                                             log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
                                             indFast_H, indFast_h,
                                             which_event, which_right_event, which_left,
                                             any_interval, interval,
-                                            recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
+                                            recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+                                            lambda_H_workspace, H_workspace,
+                                            lambda_H2_workspace, H2_workspace, surv_out_workspace);
 
         double numerator_surv = sum(logLik_surv_proposed) +
             logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
@@ -145,7 +151,10 @@ void update_gammas (const vec &bs_gammas, vec &gammas, const vec &alphas,
                     const vec &frailtyH_sigmaF_alphaF, const vec &frailtyh_sigmaF_alphaF,
                     const vec &alphaF, const vec prior_mean_alphaF,
                     mat &prior_Tau_alphaF, const vec &lambda_alphaF,
-                    const double &tau_alphaF, const bool &shrink_alphaF) {
+                    const double &tau_alphaF, const bool &shrink_alphaF,
+                    vec &lambda_H_workspace, vec &H_workspace,
+                    vec &lambda_H2_workspace, vec &H2_workspace,
+                    vec &surv_out_workspace) {
 
     for (uword i = 0; i < gammas.n_elem; ++i) {
         double old_gamma_i = gammas.at(i);
@@ -168,7 +177,9 @@ void update_gammas (const vec &bs_gammas, vec &gammas, const vec &alphas,
                      indFast_H, indFast_h,
                      which_event, which_right_event, which_left,
                      any_interval, which_interval,
-                     recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
+                     recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+                     lambda_H_workspace, H_workspace,
+                     lambda_H2_workspace, H2_workspace, surv_out_workspace);
         double numerator_surv =
             sum(logLik_surv_proposed) +
             logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
@@ -220,7 +231,10 @@ void update_alphas (const vec &bs_gammas, const vec &gammas, vec &alphas,
                     const vec &frailtyH_sigmaF_alphaF, const vec &frailtyh_sigmaF_alphaF,
                     const vec &alphaF, const vec prior_mean_alphaF,
                     mat &prior_Tau_alphaF, const vec &lambda_alphaF,
-                    const double &tau_alphaF, const bool &shrink_alphaF) {
+                    const double &tau_alphaF, const bool &shrink_alphaF,
+                    vec &lambda_H_workspace, vec &H_workspace,
+                    vec &lambda_H2_workspace, vec &H2_workspace,
+                    vec &surv_out_workspace) {
 
     for (uword i = 0; i < alphas.n_elem; ++i) {
         double old_alpha_i = alphas.at(i);
@@ -243,7 +257,9 @@ void update_alphas (const vec &bs_gammas, const vec &gammas, vec &alphas,
                      indFast_H, indFast_h,
                      which_event, which_right_event, which_left,
                      any_interval, which_interval,
-                     recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
+                     recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+                     lambda_H_workspace, H_workspace,
+                     lambda_H2_workspace, H2_workspace, surv_out_workspace);
         double numerator_surv =
             sum(logLik_surv_proposed) +
             logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
@@ -300,7 +316,10 @@ void update_alphaF (const vec &bs_gammas, const vec &gammas, const vec &alphas,
                     const vec &lambda_alphaF, const double &tau_alphaF,
                     const bool &shrink_alphaF,
                     const vec &sigmaF,
-                    vec &frailtyH_sigmaF_alphaF, vec &frailtyh_sigmaF_alphaF) {
+                    vec &frailtyH_sigmaF_alphaF, vec &frailtyh_sigmaF_alphaF,
+                    vec &lambda_H_workspace, vec &H_workspace,
+                    vec &lambda_H2_workspace, vec &H2_workspace,
+                    vec &surv_out_workspace) {
   for (uword i = 0; i < alphaF.n_rows; ++i) {
     vec proposed_alphaF = propose_norm(alphaF, scale_alphaF, i);
     vec proposed_alphaF_H(WH_gammas.n_rows, fill::ones);
@@ -322,7 +341,9 @@ void update_alphaF (const vec &bs_gammas, const vec &gammas, const vec &alphas,
                which_event, which_right_event, which_left,
                any_interval, which_interval,
                recurrent,
-               proposed_frailtyH_sigmaF_alphaF, proposed_frailtyh_sigmaF_alphaF);
+               proposed_frailtyH_sigmaF_alphaF, proposed_frailtyh_sigmaF_alphaF,
+               lambda_H_workspace, H_workspace,
+               lambda_H2_workspace, H2_workspace, surv_out_workspace);
     double numerator_surv =
       sum(logLik_surv_proposed) +
       logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,

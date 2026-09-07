@@ -61,9 +61,10 @@ mat cor2cov (const mat &R, const vec &sds) {
   return out;
 }
 
-arma::vec group_sum(const arma::vec& x, const arma::uvec& ind) {
+inline void group_sum (const arma::vec& x, const arma::uvec& ind,
+                       arma::vec& out) {
     arma::uword m = ind.n_elem;
-    arma::vec out(m);
+    out.set_size(m);
     // Extract raw pointers for maximum access speed
     const double* p_x = x.memptr();
     const arma::uword* p_ind = ind.memptr();
@@ -82,6 +83,11 @@ arma::vec group_sum(const arma::vec& x, const arma::uvec& ind) {
         // Next group starts exactly one element after the current group ends
         start = end + 1;
     }
+}
+
+inline arma::vec group_sum (const arma::vec& x, const arma::uvec& ind) {
+    arma::vec out;
+    group_sum(x, ind, out); // Calls the fast, in-place version above
     return out;
 }
 
@@ -91,7 +97,8 @@ vec create_init_scale(const uword &n, const double &fill_val = 0.1) {
   return out;
 }
 
-field<vec> create_init_scaleF(const field<uvec> &x, const double &fill_val = 0.1) {
+field<vec> create_init_scaleF(const field<uvec> &x,
+                              const double &fill_val = 0.1) {
   uword n = x.size();
   field<vec> out(n);
   for (uword i = 0; i < n; ++i) {
@@ -146,7 +153,8 @@ field<mat> mat2field (const mat &b, const field<uvec> &ind_RE) {
   return out;
 }
 
-inline void mat2field_inplace (field<mat> &out, const mat &b, const field<uvec> &ind_RE) {
+inline void mat2field_inplace (field<mat> &out, const mat &b,
+                               const field<uvec> &ind_RE) {
     uword n = ind_RE.n_elem;
     for (uword i = 0; i < n; ++i) {
         uword first_col = ind_RE.at(i).front();
@@ -164,7 +172,8 @@ field<vec> vec2field (const vec &betas, const field<uvec> &ind_FE) {
   return out;
 }
 
-inline void vec2field_inplace(field<vec> &out, const vec &betas_vec, const field<uvec> &ind_FE) {
+inline void vec2field_inplace(field<vec> &out, const vec &betas_vec,
+                              const field<uvec> &ind_FE) {
     uword n = ind_FE.n_elem;
     // Pointer to the master vector we are pulling from
     const double* betas_ptr = betas_vec.memptr();
@@ -376,7 +385,8 @@ void mu_fun (arma::vec &eta, const std::string &link) {
     }
 }
 
-arma::vec log_dbinom (const arma::vec &x, const arma::vec &size, const arma::vec &prob) {
+arma::vec log_dbinom (const arma::vec &x, const arma::vec &size,
+                      const arma::vec &prob) {
     arma::uword n = x.n_elem;
     arma::vec out(n, arma::fill::none);
     const double* px = x.memptr();
@@ -392,8 +402,9 @@ arma::vec log_dbinom (const arma::vec &x, const arma::vec &size, const arma::vec
         } else if (xi == ni) {
             pout[i] = ni * std::log(pi);
         } else {
-            pout[i] = std::lgamma(ni + 1.0) - std::lgamma(xi + 1.0) - std::lgamma(ni - xi + 1.0)
-            + xi * std::log(pi) + (ni - xi) * std::log(1.0 - pi);
+            pout[i] = std::lgamma(ni + 1.0) - std::lgamma(xi + 1.0) -
+                std::lgamma(ni - xi + 1.0) + xi * std::log(pi) +
+                (ni - xi) * std::log(1.0 - pi);
         }
     }
     return out;

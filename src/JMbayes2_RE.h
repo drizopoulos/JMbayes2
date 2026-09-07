@@ -42,7 +42,10 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const uword &GK_k,
                const bool &recurrent,
                const vec &frailtyH_sigmaF_alphaF,
-               const vec &frailtyh_sigmaF_alphaF) {
+               const vec &frailtyh_sigmaF_alphaF,
+               vec &lambda_H_workspace, vec &H_workspace,
+               vec &lambda_H2_workspace, vec &H2_workspace,
+               vec &surv_out_workspace) {
     uword n = b_mat.n_rows;
     uword nRE = b_mat.n_cols;
     mat V_R = inv(trimatu(L));
@@ -112,7 +115,9 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                      indFast_H, indFast_h,
                      which_event, which_right_event, which_left,
                      any_interval, which_interval,
-                     recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF);
+                     recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+                     lambda_H_workspace, H_workspace,
+                     lambda_H2_workspace, H2_workspace, surv_out_workspace);
         vec logLik_re_proposed = log_re_onlyRE(b_mat, V_Sigma, other_terms);
         vec numerator_b = logLik_long_proposed + logLik_surv_proposed +
             logLik_re_proposed;
@@ -186,7 +191,10 @@ void update_frailty (vec &frailty, mat &res_frailty, mat &acceptance_frailty,
                      const bool &any_interval,
                      const uword &n_burnin, const uword &it,
                      const vec &sigmaF,
-                     vec &frailtyH_sigmaF_alphaF, vec &frailtyh_sigmaF_alphaF) {
+                     vec &frailtyH_sigmaF_alphaF, vec &frailtyh_sigmaF_alphaF,
+                     vec &lambda_H_workspace, vec &H_workspace,
+                     vec &lambda_H2_workspace, vec &H2_workspace,
+                     vec &surv_out_workspace) {
   uword n = frailty.n_rows;
   // calculate denominator
   vec denominator_frailty = logLik_surv + logLik_frailty;
@@ -211,7 +219,9 @@ void update_frailty (vec &frailty, mat &res_frailty, mat &acceptance_frailty,
              which_event, which_right_event, which_left,
              any_interval, which_interval,
              recurrent,
-             proposed_frailtyH_sigmaF_alphaF, proposed_frailtyh_sigmaF_alphaF);
+             proposed_frailtyH_sigmaF_alphaF, proposed_frailtyh_sigmaF_alphaF,
+             lambda_H_workspace, H_workspace,
+             lambda_H2_workspace, H2_workspace, surv_out_workspace);
   // logLik_frailty_proposed
   vec logLik_frailty_proposed = log_dnorm(frailty_proposed, vec(frailty.n_elem, fill::zeros), 1.0);
   // calculate the numerator

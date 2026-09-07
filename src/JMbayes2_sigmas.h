@@ -54,8 +54,8 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
                           sigmas_mean, sigmas_shape));
     double log_mu_proposed = std::log(proposed_sigmas.at(i)) - SS;
     double log_ratio = numerator - denominator +
-      R::dlnorm(sigmas.at(i), log_mu_proposed, scale_sigmas.at(i), true) -
-      R::dlnorm(proposed_sigmas.at(i), log_mu_current, scale_sigmas.at(i), true);
+        log_dlnorm(sigmas.at(i), log_mu_proposed, scale_sigmas.at(i)) -
+        log_dlnorm(proposed_sigmas.at(i), log_mu_current, scale_sigmas.at(i));
     if (std::isfinite(log_ratio) && log_ratio > std::log(R::unif_rand())) {
       sigmas = proposed_sigmas;
       acceptance_sigmas.at(it, i) = 1;
@@ -105,7 +105,10 @@ void update_sigmaF (vec &sigmaF,
                     const vec &alphaF_H,
                     const vec &alphaF_h,
                     vec &frailtyH_sigmaF_alphaF,
-                    vec &frailtyh_sigmaF_alphaF
+                    vec &frailtyh_sigmaF_alphaF,
+                    vec &lambda_H_workspace, vec &H_workspace,
+                    vec &lambda_H2_workspace, vec &H2_workspace,
+                    vec &surv_out_workspace
 ) {
   // denominator
   double denominator = sum(logLik_surv) +
@@ -128,8 +131,9 @@ void update_sigmaF (vec &sigmaF,
              id_H_fast, id_h_fast,
              which_event, which_right_event, which_left,
              any_interval, which_interval,
-             recurrent,
-             proposed_frailtyH_sigmaF_alphaF, proposed_frailtyh_sigmaF_alphaF);
+             recurrent, proposed_frailtyH_sigmaF_alphaF,
+             proposed_frailtyh_sigmaF_alphaF,lambda_H_workspace, H_workspace,
+             lambda_H2_workspace, H2_workspace, surv_out_workspace);
   double numerator = sum(logLik_surv_proposed) +
     sum(logPrior_sigmas(proposed_sigmaF, gamma_prior_sigmaF, sigmaF_sigmas, sigmaF_df,
                         sigmaF_mean, sigmaF_shape));
