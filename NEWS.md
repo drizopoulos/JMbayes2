@@ -1,7 +1,7 @@
 # JMbayes2 0.6.5
 
 ## Major
-* Most C++ functions have been rewritten for computational efficiency and better memory management.
+* Most C++ functions have been rewritten for computational efficiency and better memory management. This is a backward-incompatible version because the implementation of a sampler has changed, leading to slightly different results even when the same seed is used compared to previous versions.
 
 # JMbayes2 0.6.0
 

@@ -108,7 +108,8 @@ inline vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
     if (recurrent) {
         lambda_H += frailtyH_sigmaF_alphaF;
     }
-    H = group_sum(exp(log_Pwk + lambda_H), indFast_H);
+    lambda_H = exp(log_Pwk + lambda_H);
+    group_sum(lambda_H, indFast_H, H);
     out.rows(which_right_event) = -H.rows(which_right_event);
     if (which_event.n_elem > 0) {
         out.rows(which_event) += log_weights.rows(which_event) +
@@ -131,7 +132,8 @@ inline vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
     if (intgr) {
         out = lse(out, ind_h2, intgr_ind);
     }
-    return group_sum(out, indFast_h);}
+    return group_sum(out, indFast_h);
+}
 
 vec log_surv_old (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
               const vec &W0H2_bs_gammas, const vec &WH_gammas,
