@@ -312,6 +312,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   frailtyh_sigmaF_alphaF =
       frailty_h.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
   //
+  // pre-allocate workspaces for log_long()
+  //vec long_out_workspace(n_b, arma::fill::zeros);
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -750,13 +752,14 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   vec frailty = as<vec>(thetas["frailty"]);
   vec sigmaF = as<vec>(thetas["sigmaF"]);
   // pre-allocate workspaces for log_surv()
+  //vec long_out_workspace(b_mat.n_rows, arma::fill::zeros);
+  // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
   vec tmp_H = group_sum(log_Pwk, id_H_fast);
   vec H_workspace(tmp_H.n_rows, arma::fill::none);
   vec H2_workspace(tmp_H.n_rows, arma::fill::none);
   vec surv_out_workspace(tmp_H.n_rows, arma::fill::none);
-
   /////////////
   vec out =
     logLik_jm_stripped(
@@ -872,6 +875,8 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   mat alphaF = trans(as<mat>(res_thetas["alphaF"]));
   mat frailty = trans(as<mat>(res_thetas["frailty"]));
   mat sigmaF = trans(as<mat>(res_thetas["sigmaF"]));
+  // pre-allocate workspaces for log_long()
+  //vec long_out_workspace(n, arma::fill::zeros);
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -879,7 +884,6 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   vec H_workspace(tmp_H.n_rows, arma::fill::none);
   vec H2_workspace(tmp_H.n_rows, arma::fill::none);
   vec surv_out_workspace(tmp_H.n_rows, arma::fill::none);
-
   /////////////
   mat out(n, K);
   field<vec> betas_i(betas.n_elem);
@@ -1010,6 +1014,8 @@ List simulate_REs (List Data, List MCMC, List control) {
   uword nRE = b_mat.n_cols;
   mat scale_b = mat(n_b,  b_mat.n_cols, fill::ones) * 0.2;
   //
+  // pre-allocate workspaces for log_long()
+  //vec long_out_workspace(n_b, arma::fill::zeros);
   field<vec> betas_it(betas.n_elem);
   cube out(n_b, nRE, n_samples, fill::zeros);
   mat outS(n_b, n_samples, fill::zeros);
