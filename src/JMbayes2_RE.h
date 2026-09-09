@@ -45,7 +45,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const vec &frailtyh_sigmaF_alphaF,
                vec &lambda_H_workspace, vec &H_workspace,
                vec &lambda_H2_workspace, vec &H2_workspace,
-               vec &surv_out_workspace) {
+               vec &surv_out_workspace, vec &logLik_long_proposed) {
     uword n = b_mat.n_rows;
     uword nRE = b_mat.n_cols;
     mat V_R = inv(trimatu(L));
@@ -83,9 +83,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
         for (uword obs = 0; obs < N_o; ++obs) {
             eta_ptr[obs] += Z_col[obs] * delta_ptr[id_ptr[obs]];
         }
-        vec logLik_long_proposed =
-            log_long(y, eta, sigmas, extra_parms, families, links, ids, unq_ids,
-                     n);
+        log_long(y, eta, sigmas, extra_parms, families, links, ids, unq_ids,
+                     logLik_long_proposed);
         mat Wlong_H_proposed =
             calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas,
                             proposed_b, id_H_, FunForms, Funs_FunForms);

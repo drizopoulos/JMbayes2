@@ -282,9 +282,8 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
             }
         }
     }
-
-    logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
-                           idL_lp_fast, unq_idL, n_b);
+    log_long(y, eta, sigmas, extra_parms, families, links, idL_lp_fast,
+             unq_idL, logLik_long);
     res_betas.row(it) = docall_rbindF(betas).t();
 }
 

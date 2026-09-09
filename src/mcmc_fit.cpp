@@ -313,7 +313,13 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       frailty_h.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
   //
   // pre-allocate workspaces for log_long()
-  //vec long_out_workspace(n_b, arma::fill::zeros);
+  vec logLik_long(n_b, arma::fill::none);
+  vec logLik_long_proposed(n_b, arma::fill::none);
+  //uword n_outcomes = y.size();
+  //field<vec> log_contr_long_workspace(n_outcomes);
+  //for (word i = 0; i < n_outcomes; ++i) {
+    //  log_contr_long_workspace.at(i).set_size(y.at(i).n_rows);
+  //}
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -347,8 +353,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec logLik_re = log_re(b_mat, L, sds);
   //
   field<vec> eta = linpred_mixed(X, betas, Z, b, idL);
-  vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
-                             idL_lp_fast, unq_idL, n_b);
+  log_long(y, eta, sigmas, extra_parms, families, links, idL_lp_fast, unq_idL,
+           logLik_long);
   vec logLik_frailty = log_dnorm(frailty, vec(frailty.n_elem, fill::zeros), 1.0);
   //
   for (uword it = 0; it < n_iter; ++it) {
@@ -559,7 +565,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              L, sds, it, acceptance_b, n_burnin, GK_k,
              recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
              lambda_H_workspace, H_workspace,
-             lambda_H2_workspace, H2_workspace, surv_out_workspace);
+             lambda_H2_workspace, H2_workspace, surv_out_workspace,
+             logLik_long_proposed);
 
     ////////////////////////////////////////////////////////////////////
 
@@ -609,8 +616,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                   sigmas_shape, sigmas_mean, it, res_sigmas, scale_sigmas,
                   acceptance_sigmas);
 
-        logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
-                           idL_lp_fast, unq_idL, n_b);
+        log_long(y, eta, sigmas, extra_parms, families, links, idL_lp_fast,
+                 unq_idL, logLik_long);
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -752,7 +759,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   vec frailty = as<vec>(thetas["frailty"]);
   vec sigmaF = as<vec>(thetas["sigmaF"]);
   // pre-allocate workspaces for log_surv()
-  //vec long_out_workspace(b_mat.n_rows, arma::fill::zeros);
+  vec long_out_workspace(b_mat.n_rows, arma::fill::none);
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -775,7 +782,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
       which_interval,
       recurrent, alphaF, frailty, which_term_H, which_term_h, any_terminal,
       sigmaF, lambda_H_workspace, H_workspace,
-      lambda_H2_workspace, H2_workspace, surv_out_workspace);
+      lambda_H2_workspace, H2_workspace, surv_out_workspace, long_out_workspace);
   return out;
 }
 
@@ -876,7 +883,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   mat frailty = trans(as<mat>(res_thetas["frailty"]));
   mat sigmaF = trans(as<mat>(res_thetas["sigmaF"]));
   // pre-allocate workspaces for log_long()
-  //vec long_out_workspace(n, arma::fill::zeros);
+  vec logLik_long(n, arma::fill::none);
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -903,7 +910,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
       which_interval,
       recurrent, alphaF.col(i), frailty.col(i), which_term_H, which_term_h, any_terminal,
       sigmaF.col(i), lambda_H_workspace, H_workspace,
-      lambda_H2_workspace, H2_workspace, surv_out_workspace);
+      lambda_H2_workspace, H2_workspace, surv_out_workspace, logLik_long);
     oo += 0.5 * ((double)mean_b_mat.n_cols * log2pi + log_det_post_vars);
     out.col(i) = oo;
   }
@@ -1015,7 +1022,8 @@ List simulate_REs (List Data, List MCMC, List control) {
   mat scale_b = mat(n_b,  b_mat.n_cols, fill::ones) * 0.2;
   //
   // pre-allocate workspaces for log_long()
-  //vec long_out_workspace(n_b, arma::fill::zeros);
+  vec logLik_long(n_b, arma::fill::none);
+  vec logLik_long_proposed(n_b, arma::fill::none);
   field<vec> betas_it(betas.n_elem);
   cube out(n_b, nRE, n_samples, fill::zeros);
   mat outS(n_b, n_samples, fill::zeros);
@@ -1079,8 +1087,8 @@ List simulate_REs (List Data, List MCMC, List control) {
                    any_interval, which_interval);
     ///
     field<vec> eta = linpred_mixed(X, betas_it, Z, b, idL);
-    vec logLik_long = log_long(y, eta, sigmas_it, extra_parms, families,
-                               links, ids, unq_idL, n_b);
+    log_long(y, eta, sigmas_it, extra_parms, families, links, ids, unq_idL,
+             logLik_long);
     ///
     vec logLik_re = log_re(b_mat, L_it, sds_it);
     // calculate the denominator
@@ -1098,9 +1106,8 @@ List simulate_REs (List Data, List MCMC, List control) {
         //
         field<vec> eta_proposed =
           linpred_mixed(X, betas_it, Z, proposed_b, idL);
-        vec logLik_long_proposed =
-          log_long(y, eta_proposed, sigmas_it, extra_parms,
-                   families, links, ids, unq_idL, n_b);
+        log_long(y, eta_proposed, sigmas_it, extra_parms, families, links, ids,
+                 unq_idL, logLik_long_proposed);
         //
         mat Wlong_H_proposed =
           calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds,

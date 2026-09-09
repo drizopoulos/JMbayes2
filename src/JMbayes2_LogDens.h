@@ -69,12 +69,12 @@ vec log_long_i (const mat &y_i, vec mu_i, const double &sigma_i,
     return group_sum(log_contr, idFast_i);
 }
 
-vec log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
+inline void log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
              const vec &extra_parms, const CharacterVector &families,
              const CharacterVector &links, const field<uvec> &idFast,
-             const field<uvec> &unq_ids, const uword &n) {
+             const field<uvec> &unq_ids, vec &out) {
     uword n_outcomes = y.size();
-    vec out(n, fill::zeros);
+    out.zeros();
     for (uword i = 0; i < n_outcomes; ++i) {
         const mat& y_i = y.at(i);
         const vec& eta_i = eta.at(i);
@@ -88,7 +88,6 @@ vec log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
                                      link_i, idFast_i);
         out.rows(unq_id_i) += log_contr_i;
     }
-    return out;
 }
 
 inline vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
@@ -281,8 +280,9 @@ vec logLik_jm_stripped (
     const bool &recurrent, const vec &alphaF, const vec &frailty,
     const field<uvec> &which_term_H, const field<uvec> &which_term_h, const bool &any_terminal,
     const vec &sigmaF, vec &lambda_H_workspace, vec &H_workspace,
-    vec &lambda_H2_workspace, vec &H2_workspace, vec &surv_out_workspace) {
-  uword n = b.at(0).n_rows;
+    vec &lambda_H2_workspace, vec &H2_workspace, vec &surv_out_workspace,
+    vec &logLik_long) {
+  //uword n = b.at(0).n_rows;
   /////////////
   field<vec> betas_ = betas;
   // set intercept to centered covariates
@@ -290,8 +290,8 @@ vec logLik_jm_stripped (
     betas_.at(j).at(0) += as_scalar(Xbar.at(j) * betas.at(j));
   }
   field<vec> eta = linpred_mixed(X, betas_, Z, b, idL);
-  vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
-                             idL_lp_fast, unq_idL, n);
+  log_long(y, eta, sigmas, extra_parms, families, links, idL_lp_fast, unq_idL,
+           logLik_long);
   /////////////
   vec W0H_bs_gammas = W0_H * bs_gammas;
   vec W0h_bs_gammas(W0_h.n_rows);
