@@ -45,7 +45,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const vec &frailtyh_sigmaF_alphaF,
                vec &lambda_H_workspace, vec &H_workspace,
                vec &lambda_H2_workspace, vec &H2_workspace,
-               vec &surv_out_workspace, vec &logLik_long_proposed) {
+               vec &surv_out_workspace, vec &logLik_long_proposed,
+               vec &logLik_surv_proposed) {
     uword n = b_mat.n_rows;
     uword nRE = b_mat.n_cols;
     mat V_R = inv(trimatu(L));
@@ -105,18 +106,18 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                                 proposed_b, id_H_, FunForms, Funs_FunForms);
             WlongH2_alphas_proposed = Wlong_H2_proposed * alphas;
         }
-        vec logLik_surv_proposed =
-            log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-                     WH_gammas, Wh_gammas, WH2_gammas,
-                     WlongH_alphas_proposed, Wlongh_alphas_proposed,
-                     WlongH2_alphas_proposed,
-                     log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
-                     indFast_H, indFast_h,
-                     which_event, which_right_event, which_left,
-                     any_interval, which_interval,
-                     recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
-                     lambda_H_workspace, H_workspace,
-                     lambda_H2_workspace, H2_workspace, surv_out_workspace);
+        log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                 WH_gammas, Wh_gammas, WH2_gammas,
+                 WlongH_alphas_proposed, Wlongh_alphas_proposed,
+                 WlongH2_alphas_proposed,
+                 log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+                 indFast_H, indFast_h,
+                 which_event, which_right_event, which_left,
+                 any_interval, which_interval,
+                 recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+                 lambda_H_workspace, H_workspace,
+                 lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                 logLik_surv_proposed);
         vec logLik_re_proposed = log_re_onlyRE(b_mat, V_Sigma, other_terms);
         vec numerator_b = logLik_long_proposed + logLik_surv_proposed +
             logLik_re_proposed;
@@ -193,7 +194,7 @@ void update_frailty (vec &frailty, mat &res_frailty, mat &acceptance_frailty,
                      vec &frailtyH_sigmaF_alphaF, vec &frailtyh_sigmaF_alphaF,
                      vec &lambda_H_workspace, vec &H_workspace,
                      vec &lambda_H2_workspace, vec &H2_workspace,
-                     vec &surv_out_workspace) {
+                     vec &surv_out_workspace, vec &logLik_surv_proposed) {
   uword n = frailty.n_rows;
   // calculate denominator
   vec denominator_frailty = logLik_surv + logLik_frailty;
@@ -208,19 +209,19 @@ void update_frailty (vec &frailty, mat &res_frailty, mat &acceptance_frailty,
   vec proposed_frailtyh_sigmaF_alphaF(which_event.n_rows, fill::zeros);
   proposed_frailtyH_sigmaF_alphaF = frailty_H_proposed % alphaF_H * sigmaF;
   proposed_frailtyh_sigmaF_alphaF = frailty_h_proposed.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
-  vec logLik_surv_proposed =
-    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-             WH_gammas, Wh_gammas, WH2_gammas,
-             WlongH_alphas, Wlongh_alphas,
-             WlongH2_alphas,
-             log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
-             indFast_H, indFast_h,
-             which_event, which_right_event, which_left,
-             any_interval, which_interval,
-             recurrent,
-             proposed_frailtyH_sigmaF_alphaF, proposed_frailtyh_sigmaF_alphaF,
-             lambda_H_workspace, H_workspace,
-             lambda_H2_workspace, H2_workspace, surv_out_workspace);
+  log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+           WH_gammas, Wh_gammas, WH2_gammas,
+           WlongH_alphas, Wlongh_alphas,
+           WlongH2_alphas,
+           log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+           indFast_H, indFast_h,
+           which_event, which_right_event, which_left,
+           any_interval, which_interval,
+           recurrent,
+           proposed_frailtyH_sigmaF_alphaF, proposed_frailtyh_sigmaF_alphaF,
+           lambda_H_workspace, H_workspace,
+           lambda_H2_workspace, H2_workspace, surv_out_workspace,
+           logLik_surv_proposed);
   // logLik_frailty_proposed
   vec logLik_frailty_proposed = log_dnorm(frailty_proposed, vec(frailty.n_elem, fill::zeros), 1.0);
   // calculate the numerator

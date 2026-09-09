@@ -108,8 +108,7 @@ void update_sigmaF (vec &sigmaF,
                     vec &frailtyh_sigmaF_alphaF,
                     vec &lambda_H_workspace, vec &H_workspace,
                     vec &lambda_H2_workspace, vec &H2_workspace,
-                    vec &surv_out_workspace
-) {
+                    vec &surv_out_workspace, vec &logLik_surv_proposed) {
   // denominator
   double denominator = sum(logLik_surv) +
     sum(logPrior_sigmas(sigmaF, gamma_prior_sigmaF, sigmaF_sigmas, sigmaF_df,
@@ -123,7 +122,6 @@ void update_sigmaF (vec &sigmaF,
   vec proposed_frailtyh_sigmaF_alphaF(which_event.n_rows, fill::zeros);
   proposed_frailtyH_sigmaF_alphaF = frailty_H % alphaF_H * proposed_sigmaF;
   proposed_frailtyh_sigmaF_alphaF = frailty_h.rows(which_event) % alphaF_h.rows(which_event) * proposed_sigmaF;
-  vec logLik_surv_proposed =
     log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
              WH_gammas, Wh_gammas, WH2_gammas,
              WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
@@ -133,15 +131,16 @@ void update_sigmaF (vec &sigmaF,
              any_interval, which_interval,
              recurrent, proposed_frailtyH_sigmaF_alphaF,
              proposed_frailtyh_sigmaF_alphaF,lambda_H_workspace, H_workspace,
-             lambda_H2_workspace, H2_workspace, surv_out_workspace);
+             lambda_H2_workspace, H2_workspace, surv_out_workspace,
+             logLik_surv_proposed);
   double numerator = sum(logLik_surv_proposed) +
     sum(logPrior_sigmas(proposed_sigmaF, gamma_prior_sigmaF, sigmaF_sigmas, sigmaF_df,
                         sigmaF_mean, sigmaF_shape));
   // log_ratio
   double log_mu_proposed = std::log(proposed_sigmaF.at(0)) - SS;
   double log_ratio = numerator - denominator +
-    R::dlnorm(sigmaF.at(0), log_mu_proposed, scale_sigmaF.at(0), true) -
-    R::dlnorm(proposed_sigmaF.at(0), log_mu_current, scale_sigmaF.at(0), true);
+    log_dlnorm(sigmaF.at(0), log_mu_proposed, scale_sigmaF.at(0)) -
+    log_dlnorm(proposed_sigmaF.at(0), log_mu_current, scale_sigmaF.at(0));
   if (std::isfinite(log_ratio) && std::exp(log_ratio) > R::runif(0.0, 1.0)) {
     sigmaF = proposed_sigmaF;
     acceptance_sigmaF.at(it, 0) = 1;

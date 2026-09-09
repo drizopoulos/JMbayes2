@@ -61,7 +61,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    mat &cumsum_b, cube &outprod_b, const uword &n_iter,
                    vec &lambda_H_workspace, vec &H_workspace,
                    vec &lambda_H2_workspace, vec &H2_workspace,
-                   vec &surv_out_workspace) {
+                   vec &surv_out_workspace, vec &logLik_surv_proposed) {
 
     uword n_b = b_mat.n_rows;
     uword q = b_mat.n_cols;
@@ -167,13 +167,12 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
         WlongH2_alphas = Wlong_H2 * alphas;
     }
 
-    logLik_surv =
-        log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas, Wh_gammas, WH2_gammas,
-                 WlongH_alphas, Wlongh_alphas, WlongH2_alphas, log_Pwk, log_Pwk2, log_weights,
-                 id_h2, intgr_ind, intgr, id_H_fast, id_h_fast, which_event, which_right_event,
-                 which_left, any_interval, which_interval, recurrent, frailtyH_sigmaF_alphaF,
-                 frailtyh_sigmaF_alphaF, lambda_H_workspace, H_workspace,
-                 lambda_H2_workspace, H2_workspace, surv_out_workspace);
+    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas, Wh_gammas, WH2_gammas,
+             WlongH_alphas, Wlongh_alphas, WlongH2_alphas, log_Pwk, log_Pwk2, log_weights,
+             id_h2, intgr_ind, intgr, id_H_fast, id_h_fast, which_event, which_right_event,
+             which_left, any_interval, which_interval, recurrent, frailtyH_sigmaF_alphaF,
+             frailtyh_sigmaF_alphaF, lambda_H_workspace, H_workspace,
+             lambda_H2_workspace, H2_workspace, surv_out_workspace, logLik_surv);
 
     // /////////////////////////////////////////////////////////////////////////////
     // FE outside HC - Metropolis-Hastings sampling
@@ -236,17 +235,17 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                     WlongH2_alphas_prop = Wlong_H2_prop * alphas;
                 }
 
-                vec logLik_surv_prop =
-                    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas, Wh_gammas, WH2_gammas,
-                             WlongH_alphas_prop, Wlongh_alphas_prop, WlongH2_alphas_prop,
-                             log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr, id_H_fast, id_h_fast,
-                             which_event, which_right_event, which_left, any_interval, which_interval,
-                             recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
-                             lambda_H_workspace, H_workspace,
-                             lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas, WH_gammas, Wh_gammas, WH2_gammas,
+                         WlongH_alphas_prop, Wlongh_alphas_prop, WlongH2_alphas_prop,
+                         log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr, id_H_fast, id_h_fast,
+                         which_event, which_right_event, which_left, any_interval, which_interval,
+                         recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+                         lambda_H_workspace, H_workspace,
+                         lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                         logLik_surv_proposed);
 
                 double numerator_j =
-                    sum_logLik_long_j_prop + sum(logLik_surv_prop) + logPrior_j_prop;
+                    sum_logLik_long_j_prop + sum(logLik_surv_proposed) + logPrior_j_prop;
                 double log_ratio_j = numerator_j - denominator_j;
                 double acc_i = 0.0;
 
@@ -261,14 +260,14 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                     Wlong_H = Wlong_H_prop;
                     WlongH_alphas = WlongH_alphas_prop;
                     if (any_event) {
-                        Wlong_h = Wlong_h_prop; Wlongh_alphas = Wlongh_alphas_prop;
+                        Wlong_h = Wlong_h_prop;
+                        Wlongh_alphas = Wlongh_alphas_prop;
                     }
                     if (any_interval) {
                         Wlong_H2 = Wlong_H2_prop;
                         WlongH2_alphas = WlongH2_alphas_prop;
                     }
-
-                    logLik_surv = logLik_surv_prop;
+                    logLik_surv = logLik_surv_proposed;
                     denominator_j = numerator_j;
                 } else {
                     // Reject: Simply revert the scalar change in the field

@@ -90,7 +90,7 @@ inline void log_long (const field<mat> &y, const field<vec> &eta, const vec &sig
     }
 }
 
-inline vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
+inline void log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
               const vec &W0H2_bs_gammas, const vec &WH_gammas,
               const vec &Wh_gammas, const vec &WH2_gammas,
               const vec &WlongH_alphas, const vec &Wlongh_alphas,
@@ -102,7 +102,8 @@ inline vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
               const bool &recurrent,
               const vec &frailtyH_sigmaF_alphaF,
               const vec &frailtyh_sigmaF_alphaF,
-              vec &lambda_H, vec &H, vec &lambda_H2, vec &H2, vec &out) {
+              vec &lambda_H, vec &H, vec &lambda_H2, vec &H2, vec &out,
+              vec &logLik_surv) {
     lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
     if (recurrent) {
         lambda_H += frailtyH_sigmaF_alphaF;
@@ -131,7 +132,7 @@ inline vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
     if (intgr) {
         out = lse(out, ind_h2, intgr_ind);
     }
-    return group_sum(out, indFast_h);
+    group_sum(out, indFast_h, logLik_surv);
 }
 
 vec log_surv_old (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
@@ -281,7 +282,7 @@ vec logLik_jm_stripped (
     const field<uvec> &which_term_H, const field<uvec> &which_term_h, const bool &any_terminal,
     const vec &sigmaF, vec &lambda_H_workspace, vec &H_workspace,
     vec &lambda_H2_workspace, vec &H2_workspace, vec &surv_out_workspace,
-    vec &logLik_long) {
+    vec &logLik_long, vec &logLik_surv) {
   //uword n = b.at(0).n_rows;
   /////////////
   field<vec> betas_ = betas;
@@ -352,17 +353,17 @@ vec logLik_jm_stripped (
   vec frailtyh_sigmaF_alphaF(which_event.n_rows, fill::zeros);
   frailtyH_sigmaF_alphaF = frailty_H % alphaF_H * sigmaF;
   frailtyh_sigmaF_alphaF = frailty_h.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
-  vec logLik_surv =
-    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-             WH_gammas, Wh_gammas, WH2_gammas,
-             WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-             log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
-             id_H_fast, id_h_fast,
-             which_event, which_right_event, which_left,
-             any_interval, which_interval,
-             recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
-             lambda_H_workspace, H_workspace,
-             lambda_H2_workspace, H2_workspace, surv_out_workspace);
+  log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+           WH_gammas, Wh_gammas, WH2_gammas,
+           WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+           log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+           id_H_fast, id_h_fast,
+           which_event, which_right_event, which_left,
+           any_interval, which_interval,
+           recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+           lambda_H_workspace, H_workspace,
+           lambda_H2_workspace, H2_workspace, surv_out_workspace,
+           logLik_surv);
   mat b_mat = docall_cbindF(b);
   vec logLik_re = log_re(b_mat, L, sds);
   vec out = logLik_long + logLik_surv + logLik_re;

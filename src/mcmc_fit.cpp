@@ -327,18 +327,20 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec H_workspace(tmp_H.n_rows, arma::fill::none);
   vec H2_workspace(tmp_H.n_rows, arma::fill::none);
   vec surv_out_workspace(tmp_H.n_rows, arma::fill::none);
+  vec logLik_surv(n_b, arma::fill::none);
+  vec logLik_surv_proposed(n_b, arma::fill::none);
   //
-  vec logLik_surv =
-    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-             WH_gammas, Wh_gammas, WH2_gammas,
-             WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-             log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
-             id_H_fast, id_h_fast,
-             which_event, which_right_event, which_left,
-             any_interval, which_interval,
-             recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
-             lambda_H_workspace, H_workspace,
-             lambda_H2_workspace, H2_workspace, surv_out_workspace);
+  log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+           WH_gammas, Wh_gammas, WH2_gammas,
+           WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+           log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+           id_H_fast, id_h_fast,
+           which_event, which_right_event, which_left,
+           any_interval, which_interval,
+           recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+           lambda_H_workspace, H_workspace,
+           lambda_H2_workspace, H2_workspace, surv_out_workspace,
+           logLik_surv);
   double denominator_surv =
     sum(logLik_surv) +
     logPrior_surv(bs_gammas, gammas, alphas, mean_bs_gammas,
@@ -378,7 +380,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                      recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
                      alphaF, mean_alphaF, Tau_alphaF, lambda_alphaF, tau_alphaF,
                      shrink_alphaF, lambda_H_workspace, H_workspace,
-                     lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                     lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                     logLik_surv_proposed);
 
     ////////////////////////////////////////////////////////////////////////
 
@@ -419,7 +422,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
                     alphaF, mean_alphaF, Tau_alphaF, lambda_alphaF, tau_alphaF,
                     shrink_alphaF, lambda_H_workspace, H_workspace,
-                    lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                    lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                    logLik_surv_proposed);
       res_W_std_gammas.at(it) = as_scalar(W_std * gammas);
 
       if (shrink_gammas) {
@@ -453,7 +457,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                   recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
                   alphaF, mean_alphaF, Tau_alphaF, lambda_alphaF, tau_alphaF,
                   shrink_alphaF, lambda_H_workspace, H_workspace,
-                  lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                  lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                  logLik_surv_proposed);
 
     res_Wlong_std_alphas.at(it) = as_scalar(Wlong_std * alphas);
 
@@ -485,7 +490,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                      n_burnin, it,
                      sigmaF, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
                      lambda_H_workspace, H_workspace,
-                     lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                     lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                     logLik_surv_proposed);
 
       update_sigmaF(sigmaF, logLik_surv,
                     res_sigmaF, scale_sigmaF, acceptance_sigmaF,
@@ -498,7 +504,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     which_interval, recurrent, frailty_H, frailty_h, alphaF_H,
                     alphaF_h, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
                     lambda_H_workspace, H_workspace,
-                    lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                    lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                    logLik_surv_proposed);
 
       denominator_surv =
         sum(logLik_surv) +
@@ -538,7 +545,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                       sigmaF,
                       frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
                       lambda_H_workspace, H_workspace,
-                      lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                      lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                      logLik_surv_proposed);
       }
     }
 
@@ -566,7 +574,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
              lambda_H_workspace, H_workspace,
              lambda_H2_workspace, H2_workspace, surv_out_workspace,
-             logLik_long_proposed);
+             logLik_long_proposed, logLik_surv_proposed);
 
     ////////////////////////////////////////////////////////////////////
 
@@ -590,7 +598,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  frailtyh_sigmaF_alphaF, save_random_effects, res_b, res_b_last,
                  cumsum_b, outprod_b, n_iter,
                  lambda_H_workspace, H_workspace,
-                 lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                 lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                 logLik_surv_proposed);
 
         // update intercepts
         for (uword j = 0; j < y.n_elem; ++j) {
@@ -758,7 +767,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   vec alphaF = as<vec>(thetas["alphaF"]);
   vec frailty = as<vec>(thetas["frailty"]);
   vec sigmaF = as<vec>(thetas["sigmaF"]);
-  // pre-allocate workspaces for log_surv()
+  // pre-allocate workspaces for log_long()
   vec long_out_workspace(b_mat.n_rows, arma::fill::none);
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
@@ -767,6 +776,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   vec H_workspace(tmp_H.n_rows, arma::fill::none);
   vec H2_workspace(tmp_H.n_rows, arma::fill::none);
   vec surv_out_workspace(tmp_H.n_rows, arma::fill::none);
+  vec logLik_surv(b_mat.n_rows, arma::fill::none);
   /////////////
   vec out =
     logLik_jm_stripped(
@@ -782,7 +792,8 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
       which_interval,
       recurrent, alphaF, frailty, which_term_H, which_term_h, any_terminal,
       sigmaF, lambda_H_workspace, H_workspace,
-      lambda_H2_workspace, H2_workspace, surv_out_workspace, long_out_workspace);
+      lambda_H2_workspace, H2_workspace, surv_out_workspace, long_out_workspace,
+      logLik_surv);
   return out;
 }
 
@@ -891,6 +902,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   vec H_workspace(tmp_H.n_rows, arma::fill::none);
   vec H2_workspace(tmp_H.n_rows, arma::fill::none);
   vec surv_out_workspace(tmp_H.n_rows, arma::fill::none);
+  vec logLik_surv(n, arma::fill::none);
   /////////////
   mat out(n, K);
   field<vec> betas_i(betas.n_elem);
@@ -910,7 +922,8 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
       which_interval,
       recurrent, alphaF.col(i), frailty.col(i), which_term_H, which_term_h, any_terminal,
       sigmaF.col(i), lambda_H_workspace, H_workspace,
-      lambda_H2_workspace, H2_workspace, surv_out_workspace, logLik_long);
+      lambda_H2_workspace, H2_workspace, surv_out_workspace, logLik_long,
+      logLik_surv);
     oo += 0.5 * ((double)mean_b_mat.n_cols * log2pi + log_det_post_vars);
     out.col(i) = oo;
   }
