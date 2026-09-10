@@ -68,14 +68,21 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     for (uword i = 0; i < ind_RE.n_elem; ++i) {
         proposed_b.at(i).set_size(b_mat.n_rows, ind_RE.at(i).n_elem);
     }
+    vec old_b_j, new_b_j, delta_b, z_rand;
+    mat Wlong_H_proposed, Wlong_h_proposed, Wlong_H2_proposed;
+    vec WlongH_alphas_proposed, Wlongh_alphas_proposed, WlongH2_alphas_proposed;
+    vec logLik_re_proposed, numerator_b, log_ratio;
+    uvec accepted;
+    mat2field_inplace(proposed_b, b_mat, ind_RE);
     for (uword j = 0; j < nRE; ++j) {
-        vec old_b_j = b_mat.col(j);
-        vec new_b_j = old_b_j + scale_b.col(j) % arma::randn<arma::vec>(n);
-        vec delta_b = new_b_j - old_b_j;
+        old_b_j = b_mat.col(j);
+        z_rand.randn(n);
+        new_b_j = old_b_j + scale_b.col(j) % z_rand;
+        delta_b = new_b_j - old_b_j;
         b_mat.col(j) = new_b_j;
-        mat2field_inplace(proposed_b, b_mat, ind_RE);
         uword o = map_o[j];
         uword k = map_k[j];
+        proposed_b.at(o).col(k) = new_b_j;
         uword N_o = Z.at(o).n_rows;
         double* eta_ptr = eta.at(o).memptr();
         const double* Z_col = Z.at(o).colptr(k);
@@ -86,20 +93,16 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
         }
         log_long(y, eta, sigmas, extra_parms, families, links, ids, unq_ids,
                      logLik_long_proposed);
-        mat Wlong_H_proposed =
+        Wlong_H_proposed =
             calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas,
                             proposed_b, id_H_, FunForms, Funs_FunForms);
-        vec WlongH_alphas_proposed = Wlong_H_proposed * alphas;
-        mat Wlong_h_proposed;
-        vec Wlongh_alphas_proposed;
+        WlongH_alphas_proposed = Wlong_H_proposed * alphas;
         if (any_event) {
             Wlong_h_proposed =
                 calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas,
                                 proposed_b, id_h, FunForms, Funs_FunForms);
             Wlongh_alphas_proposed = Wlong_h_proposed * alphas;
         }
-        mat Wlong_H2_proposed;
-        vec WlongH2_alphas_proposed;
         if (any_interval) {
             Wlong_H2_proposed =
                 calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas,
@@ -118,15 +121,16 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                  lambda_H_workspace, H_workspace,
                  lambda_H2_workspace, H2_workspace, surv_out_workspace,
                  logLik_surv_proposed);
-        vec logLik_re_proposed = log_re_onlyRE(b_mat, V_Sigma, other_terms);
-        vec numerator_b = logLik_long_proposed + logLik_surv_proposed +
+        logLik_re_proposed = log_re_onlyRE(b_mat, V_Sigma, other_terms);
+        numerator_b = logLik_long_proposed + logLik_surv_proposed +
             logLik_re_proposed;
-        vec log_ratio = numerator_b - denominator_b;
-        uvec accepted(n, arma::fill::zeros);
+        log_ratio = numerator_b - denominator_b;
+        accepted.zeros(n);
         uword* acc_ptr = accepted.memptr();
         for (uword i = 0; i < n; ++i) {
             double acc_i = 0.0;
-            if (std::isfinite(log_ratio.at(i)) && std::log(R::unif_rand()) < log_ratio.at(i)) {
+            if (std::isfinite(log_ratio.at(i)) &&
+                std::log(R::unif_rand()) < log_ratio.at(i)) {
                 acc_i = 1.0;
                 acc_ptr[i] = 1;
                 if (it > n_burnin - 1) acceptance_b.at(i, j) += 1.0;
@@ -156,6 +160,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                 }
             } else {
                 b_mat.at(i, j) = old_b_j[i];
+                proposed_b.at(o).at(i, k) = old_b_j[i];
             }
             if (it > 119) {
                 scale_b.at(i, j) =

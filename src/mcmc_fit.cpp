@@ -315,6 +315,22 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   // pre-allocate workspaces for log_long()
   vec logLik_long(n_b, arma::fill::none);
   vec logLik_long_proposed(n_b, arma::fill::none);
+  uword p_HC = ind_FE_HC.n_elem;
+  uword q = b_mat.n_cols;
+  field<mat> X_dots(n_b);
+  for (uword i = 0; i < n_b; ++i) {
+      uword patt_i = id_patt.at(i);
+      if (ind_FE_patt.at(patt_i).is_empty()) continue;
+      uvec ind_FE_i = ind_FE_patt.at(patt_i);
+      uvec ind_RE_i = ind_RE_patt.at(patt_i);
+      uvec absolute_rows = i * q + ind_RE_i;
+      X_dots.at(i) = X_dot.submat(absolute_rows, ind_FE_i);
+  }
+  mat sum_JXDXJ(p_HC, p_HC, fill::none);
+  vec sum_JXDu(p_HC, fill::none);
+  mat u_mat(n_b, q, fill::none);
+  mat mean_u_mat(n_b, q, fill::none);
+  mat mean_u_mat2(n_b, q, fill::none);
   //uword n_outcomes = y.size();
   //field<vec> log_contr_long_workspace(n_outcomes);
   //for (word i = 0; i < n_outcomes; ++i) {
@@ -599,7 +615,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  cumsum_b, outprod_b, n_iter,
                  lambda_H_workspace, H_workspace,
                  lambda_H2_workspace, H2_workspace, surv_out_workspace,
-                 logLik_surv_proposed);
+                 logLik_surv_proposed, X_dots, sum_JXDXJ, sum_JXDu, u_mat,
+                 mean_u_mat, mean_u_mat2);
 
         // update intercepts
         for (uword j = 0; j < y.n_elem; ++j) {

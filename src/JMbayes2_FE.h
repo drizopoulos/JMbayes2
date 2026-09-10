@@ -61,7 +61,9 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    mat &cumsum_b, cube &outprod_b, const uword &n_iter,
                    vec &lambda_H_workspace, vec &H_workspace,
                    vec &lambda_H2_workspace, vec &H2_workspace,
-                   vec &surv_out_workspace, vec &logLik_surv_proposed) {
+                   vec &surv_out_workspace, vec &logLik_surv_proposed,
+                   const field<mat> &X_dots, mat &sum_JXDXJ, vec &sum_JXDu,
+                   mat &u_mat, mat &mean_u_mat, mat &mean_u_mat2) {
 
     uword n_b = b_mat.n_rows;
     uword q = b_mat.n_cols;
@@ -71,14 +73,14 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     vec mean_u = X_dot * betas_vec.rows(ind_FE_HC);
 
     // 1. VECTORIZED RESHAPING: Replaces the manual u_mat loop
-    mat mean_u_mat = arma::reshape(mean_u, q, n_b).t();
-    mat u_mat = b_mat + mean_u_mat;
+    mean_u_mat = arma::reshape(mean_u, q, n_b).t();
+    u_mat = b_mat + mean_u_mat;
 
     uword patt_count = ind_RE_patt.n_elem;
     uword p_HC = ind_FE_HC.n_elem;
 
-    mat sum_JXDXJ(p_HC, p_HC, fill::zeros);
-    vec sum_JXDu(p_HC, fill::zeros);
+    sum_JXDXJ.zeros();
+    sum_JXDu.zeros();
     mat U = L.each_row() % sds.t();
 
     // 2. ISOLATED D_INV PRE-CALCULATION
@@ -91,24 +93,28 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
         }
     }
 
+    mat X_tilde;
+    vec u_tilde;
+    uvec absolute_rows;
+    vec u_i;
+
     for (uword i = 0; i < n_b; ++i) {
         uword patt_i = id_patt.at(i);
         if (ind_FE_patt.at(patt_i).is_empty()) continue;
 
-        uvec ind_FE_i = ind_FE_patt.at(patt_i);
-        uvec ind_RE_i = ind_RE_patt.at(patt_i);
-        uvec absolute_rows = i * q + ind_RE_i;
-        mat X_dot_i = X_dot.submat(absolute_rows, ind_FE_i);
+        const uvec& ind_FE_i = ind_FE_patt.at(patt_i);
+        const uvec& ind_RE_i = ind_RE_patt.at(patt_i);
+        absolute_rows = i * q + ind_RE_i;
 
-        vec u_i = u_mat.row(i).t();
+        u_i = u_mat.row(i).t();
         u_i = u_i.rows(ind_RE_i);
 
         // Fetch the upper-triangular Cholesky factor
-        mat R = U_patt_field.at(patt_i);
+        const mat& R = U_patt_field.at(patt_i);
 
         // Fast Triangular Solves (Calculates R^-T * X  and  R^-T * u)
-        mat X_tilde = arma::solve(arma::trimatl(R.t()), X_dot_i);
-        vec u_tilde = arma::solve(arma::trimatl(R.t()), u_i);
+        X_tilde = arma::solve(arma::trimatl(R.t()), X_dots.at(i));
+        u_tilde = arma::solve(arma::trimatl(R.t()), u_i);
 
         // Simple Cross-products
         sum_JXDu.rows(ind_FE_i) += X_tilde.t() * u_tilde;
@@ -133,7 +139,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
 
     // 3. VECTORIZED b_mat RECALCULATION (Deletes an entire n_b loop)
     mean_u = X_dot * betas_vec.rows(ind_FE_HC);
-    mat mean_u_mat2 = arma::reshape(mean_u, q, n_b).t();
+    mean_u_mat2 = arma::reshape(mean_u, q, n_b).t();
     b_mat = u_mat - mean_u_mat2;
 
     if (save_random_effects) {
