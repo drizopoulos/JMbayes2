@@ -130,12 +130,13 @@ void update_D (mat &L, vec &sds, const mat &b,
     sum(logPrior_D_sds(sds, D_sds_sigma, D_sds_df, D_sds_mean, D_sds_shape, gamma_prior));
   mat V_R = inv(trimatu(L));
   double log_det_V_R = -arma::sum(arma::log(L.diag()));
+  vec proposed_sds, logLik_re_proposed;
   for (uword i = 0; i < n_sds; ++i) {
     double val = scale_sds.at(i);
     double SS = 0.5 * val * val;
     double log_mu_current = log(sds.at(i)) - SS;
-    vec proposed_sds = propose_lnorm(sds, log_mu_current, scale_sds, i);
-    vec logLik_re_proposed = log_re_onlySDS(b, V_R, log_det_V_R, proposed_sds);
+    proposed_sds = propose_lnorm(sds, log_mu_current, scale_sds, i);
+    logLik_re_proposed = log_re_onlySDS(b, V_R, log_det_V_R, proposed_sds);
     double numerator_sds = sum(logLik_re_proposed) +
       sum(logPrior_D_sds(proposed_sds, D_sds_sigma, D_sds_df, D_sds_mean,
                          D_sds_shape, gamma_prior));
@@ -158,11 +159,12 @@ void update_D (mat &L, vec &sds, const mat &b,
   double denominator_L = sum(logLik_re) + logPrior_LKJ(L, D_L_etaLKJ);
   mat b_scaled = b.each_row() / sds.t();
   double sum_log_sds = arma::sum(arma::log(sds));
+  mat proposed_L(L.n_rows, L.n_cols, arma::fill::none);
   for (uword i = 0; i < n_L; ++i) {
     uword upper_part_i = upper_part.at(i);
     double deriv_current(0.0);
     double mu_current(0.0);
-    mat proposed_L = L;
+    proposed_L = L;
     if (MALA) {
       deriv_current = deriv_L(L, sds, b, denominator_L, i, upper_part,
                               D_L_etaLKJ);
@@ -171,7 +173,7 @@ void update_D (mat &L, vec &sds, const mat &b,
     } else {
       proposed_L = propose_L(L, scale_L, upper_part, deriv_current, i, ind_zero_D);
     }
-    vec logLik_re_proposed = logLik_re;
+    logLik_re_proposed = logLik_re;
     double numerator_L(0.0);
     double deriv_proposed(0.0);
     double mu_proposed(0.0);
@@ -207,6 +209,5 @@ void update_D (mat &L, vec &sds, const mat &b,
     res_L.at(it, i) = L.at(upper_part_i);
   }
 }
-
 
 #endif
