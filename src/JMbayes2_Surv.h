@@ -73,17 +73,15 @@ void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
                        vec &lambda_H_workspace, vec &H_workspace,
                        vec &lambda_H2_workspace, vec &H2_workspace,
                        vec &surv_out_workspace, vec &logLik_surv_proposed) {
-
+    vec proposed_W0H_bs_gammas, proposed_W0h_bs_gammas, proposed_W0H2_bs_gammas;
     for (uword i = 0; i < bs_gammas.n_elem; ++i) {
         double old_gamma_i = bs_gammas.at(i);
         double diff = scale_bs_gammas.at(i) * R::norm_rand();
         bs_gammas.at(i) += diff;
-        vec proposed_W0H_bs_gammas = W0H_bs_gammas + W0_H.col(i) * diff;
-        vec proposed_W0h_bs_gammas;
+        proposed_W0H_bs_gammas = W0H_bs_gammas + W0_H.col(i) * diff;
         if (any_event) {
             proposed_W0h_bs_gammas = W0h_bs_gammas + W0_h.col(i) * diff;
         }
-        vec proposed_W0H2_bs_gammas;
         if (any_interval) {
             proposed_W0H2_bs_gammas = W0H2_bs_gammas + W0_H2.col(i) * diff;
         }
@@ -155,17 +153,15 @@ void update_gammas (const vec &bs_gammas, vec &gammas, const vec &alphas,
                     vec &lambda_H_workspace, vec &H_workspace,
                     vec &lambda_H2_workspace, vec &H2_workspace,
                     vec &surv_out_workspace, vec &logLik_surv_proposed) {
-
+    vec proposed_WH_gammas, proposed_Wh_gammas, proposed_WH2_gammas;
     for (uword i = 0; i < gammas.n_elem; ++i) {
         double old_gamma_i = gammas.at(i);
         double diff = scale_gammas.at(i) * R::norm_rand();
         gammas.at(i) += diff;
-        vec proposed_WH_gammas = WH_gammas + W_H.col(i) * diff;
-        vec proposed_Wh_gammas;
-        if (any_event) {
+        proposed_WH_gammas = WH_gammas + W_H.col(i) * diff;
+         if (any_event) {
             proposed_Wh_gammas = Wh_gammas + W_h.col(i) * diff;
         }
-        vec proposed_WH2_gammas;
         if (any_interval) {
             proposed_WH2_gammas = WH2_gammas + W_H2.col(i) * diff;
         }
@@ -235,17 +231,15 @@ void update_alphas (const vec &bs_gammas, const vec &gammas, vec &alphas,
                     vec &lambda_H_workspace, vec &H_workspace,
                     vec &lambda_H2_workspace, vec &H2_workspace,
                     vec &surv_out_workspace, vec &logLik_surv_proposed) {
-
+    vec proposed_WlongH_alphas, proposed_Wlongh_alphas, proposed_WlongH2_alphas;
     for (uword i = 0; i < alphas.n_elem; ++i) {
         double old_alpha_i = alphas.at(i);
         double diff = scale_alphas.at(i) * R::norm_rand();
         alphas.at(i) += diff;
-        vec proposed_WlongH_alphas = WlongH_alphas + Wlong_H.col(i) * diff;
-        vec proposed_Wlongh_alphas;
+        proposed_WlongH_alphas = WlongH_alphas + Wlong_H.col(i) * diff;
         if (any_event) {
             proposed_Wlongh_alphas = Wlongh_alphas + Wlong_h.col(i) * diff;
         }
-        vec proposed_WlongH2_alphas;
         if (any_interval) {
             proposed_WlongH2_alphas = WlongH2_alphas + Wlong_H2.col(i) * diff;
         }
