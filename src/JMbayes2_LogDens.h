@@ -183,14 +183,14 @@ inline vec log_re (const mat &b, const mat &L, const vec &sds) {
     return other_terms - 0.5 * sq_dist;
 }
 
-inline vec log_re_onlyRE (const mat &b_prop, const mat &V_Sigma, double other_terms) {
+inline void log_re_onlyRE (const mat &b_prop, const mat &V_Sigma,
+                           double other_terms, mat &Z_workspace, vec &log_re) {
     // Fast Triangular Multiplication (TRMM)
     // V_Sigma is upper-triangular, so trimatu() safely bypasses half the math.
-    mat Z = b_prop * arma::trimatu(V_Sigma);
+    Z_workspace = b_prop * arma::trimatu(V_Sigma);
     // Calculate squared distances for all subjects
     // sum(..., 1) sums across the rows, giving an (n x 1) vector
-    vec sq_dist = arma::sum(arma::square(Z), 1);
-    return other_terms - 0.5 * sq_dist;
+    log_re = other_terms - 0.5 * arma::sum(arma::square(Z_workspace), 1);
 }
 
 inline vec log_re_onlySDS (const mat &b, const mat &V_R, double log_det_V_R,

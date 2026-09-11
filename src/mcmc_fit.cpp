@@ -331,7 +331,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat u_mat(n_b, q, fill::none);
   mat mean_u_mat(n_b, q, fill::none);
   mat mean_u_mat2(n_b, q, fill::none);
-  //uword n_outcomes = y.size();
+  uword n_outcomes = y.size();
   //field<vec> log_contr_long_workspace(n_outcomes);
   //for (word i = 0; i < n_outcomes; ++i) {
     //  log_contr_long_workspace.at(i).set_size(y.at(i).n_rows);
@@ -345,6 +345,15 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec surv_out_workspace(tmp_H.n_rows, arma::fill::none);
   vec logLik_surv(n_b, arma::fill::none);
   vec logLik_surv_proposed(n_b, arma::fill::none);
+  field<mat> eta_H(n_outcomes);
+  field<mat> eta_h(n_outcomes);
+  field<mat> eta_H2(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+      uword n_forms = X_H.at(i).n_cols / betas.at(i).n_rows;
+      eta_H.at(i).set_size(X_H.at(i).n_rows, n_forms);
+      if (any_event) eta_h.at(i).set_size(X_h.at(i).n_rows, n_forms);
+      if (any_interval) eta_H2.at(i).set_size(X_H2.at(i).n_rows, n_forms);
+  }
   //
   log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
            WH_gammas, Wh_gammas, WH2_gammas,
@@ -574,9 +583,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     ////////////////////////////////////////////////////////////////////////
 
-        update_b(b, b_mat, eta, logLik_long, logLik_surv, logLik_re,
-             Wlong_H, Wlong_h, Wlong_H2, WlongH_alphas, Wlongh_alphas,
-             WlongH2_alphas, scale_b, ind_RE,
+    update_b(b, b_mat, eta, logLik_long, logLik_surv, logLik_re,
+             eta_H, eta_h, eta_H2, Wlong_H, Wlong_h, Wlong_H2,
+             WlongH_alphas, Wlongh_alphas, WlongH2_alphas, scale_b, ind_RE,
              X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
              Wlong_bar, Wlong_sds, betas, alphas, id_H_, id_h,
              FunForms, Funs_FunForms, X, Z, idL, y, sigmas,
@@ -594,9 +603,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     ////////////////////////////////////////////////////////////////////
 
-        update_betas(betas, res_betas, acceptance_betas, scale_betas, eta,
-                 logLik_long, logLik_surv, Wlong_H, Wlong_h, Wlong_H2,
-                 WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+    update_betas(betas, res_betas, acceptance_betas, scale_betas, eta,
+                 logLik_long, eta_H, eta_h, eta_H2, logLik_surv, Wlong_H,
+                 Wlong_h, Wlong_H2, WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
                  Tau_mean_betas_HC, Tau_betas_HC, b_mat, L, sds, X_dot,
                  ind_FE, ind_RE, ind_FE_HC, id_patt, ind_RE_patt, ind_FE_patt,
                  it, has_tilde_betas, X, Z, b, idL, y, sigmas,

@@ -12,6 +12,7 @@ using namespace arma;
 
 void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                vec &logLik_long, vec &logLik_surv, vec &logLik_re,
+               field<mat> &eta_H, field<mat> &eta_h, field<mat> &eta_H2,
                mat &Wlong_H, mat &Wlong_h, mat &Wlong_H2,
                vec &WlongH_alphas, vec &Wlongh_alphas, vec &WlongH2_alphas,
                mat &scale_b,
@@ -68,11 +69,21 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     for (uword i = 0; i < ind_RE.n_elem; ++i) {
         proposed_b.at(i).set_size(b_mat.n_rows, ind_RE.at(i).n_elem);
     }
-    vec old_b_j, new_b_j, delta_b, z_rand;
-    mat Wlong_H_proposed, Wlong_h_proposed, Wlong_H2_proposed;
-    vec WlongH_alphas_proposed, Wlongh_alphas_proposed, WlongH2_alphas_proposed;
-    vec logLik_re_proposed, numerator_b, log_ratio;
-    uvec accepted;
+    vec old_b_j(n, arma::fill::none);
+    vec new_b_j(n, arma::fill::none);
+    vec delta_b(n, arma::fill::none);
+    vec z_rand(n, arma::fill::none);
+    mat Wlong_H_proposed(size(Wlong_H), arma::fill::none);
+    mat Wlong_h_proposed(size(Wlong_h), arma::fill::none);
+    mat Wlong_H2_proposed(size(Wlong_H2), arma::fill::none);
+    vec WlongH_alphas_proposed(size(WlongH_alphas), arma::fill::none);
+    vec Wlongh_alphas_proposed(size(Wlongh_alphas), arma::fill::none);
+    vec WlongH2_alphas_proposed(size(WlongH2_alphas), arma::fill::none);
+    mat Z_workspace(n, nRE, arma::fill::none);
+    vec logLik_re_proposed(n, arma::fill::none);
+    vec numerator_b(n, arma::fill::none);
+    vec log_ratio(n, arma::fill::none);
+    uvec accepted(n, arma::fill::none);
     mat2field_inplace(proposed_b, b_mat, ind_RE);
     for (uword j = 0; j < nRE; ++j) {
         old_b_j = b_mat.col(j);
@@ -92,21 +103,21 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
             eta_ptr[obs] += Z_col[obs] * delta_ptr[id_ptr[obs]];
         }
         log_long(y, eta, sigmas, extra_parms, families, links, ids, unq_ids,
-                     logLik_long_proposed);
-        Wlong_H_proposed =
-            calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas,
-                            proposed_b, id_H_, FunForms, Funs_FunForms);
+                 logLik_long_proposed);
+        calculate_Wlong_inplace(Wlong_H_proposed, eta_H, X_H, Z_H, U_H,
+                                Wlong_bar, Wlong_sds, betas, proposed_b, id_H_,
+                                FunForms, Funs_FunForms);
         WlongH_alphas_proposed = Wlong_H_proposed * alphas;
         if (any_event) {
-            Wlong_h_proposed =
-                calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas,
-                                proposed_b, id_h, FunForms, Funs_FunForms);
+            calculate_Wlong_inplace(Wlong_h_proposed, eta_h, X_h, Z_h, U_h,
+                                    Wlong_bar, Wlong_sds, betas, proposed_b,
+                                    id_h, FunForms, Funs_FunForms);
             Wlongh_alphas_proposed = Wlong_h_proposed * alphas;
         }
         if (any_interval) {
-            Wlong_H2_proposed =
-                calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas,
-                                proposed_b, id_H_, FunForms, Funs_FunForms);
+            calculate_Wlong_inplace(Wlong_H2_proposed, eta_H2, X_H2, Z_H2, U_H2,
+                                    Wlong_bar, Wlong_sds, betas, proposed_b,
+                                    id_H_, FunForms, Funs_FunForms);
             WlongH2_alphas_proposed = Wlong_H2_proposed * alphas;
         }
         log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
@@ -121,7 +132,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                  lambda_H_workspace, H_workspace,
                  lambda_H2_workspace, H2_workspace, surv_out_workspace,
                  logLik_surv_proposed);
-        logLik_re_proposed = log_re_onlyRE(b_mat, V_Sigma, other_terms);
+        log_re_onlyRE(b_mat, V_Sigma, other_terms, Z_workspace, logLik_re_proposed);
         numerator_b = logLik_long_proposed + logLik_surv_proposed +
             logLik_re_proposed;
         log_ratio = numerator_b - denominator_b;

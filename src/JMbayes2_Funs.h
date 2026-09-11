@@ -836,19 +836,13 @@ mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
     return Wlong;
 }
 
-inline void calculate_Wlong_inplace (mat &Wlong,
+inline void calculate_Wlong_inplace (mat &Wlong, field<mat> &eta,
                                      const field<mat> &X, const field<mat> &Z,
                                      const field<mat> &U, const mat &Wlong_bar,
                                      const mat &Wlong_sds,
                                      const field<vec> &betas, const field<mat> &b,
                                      const uvec &id, const field<uvec> &FunForms,
                                      const List &Funs_FunForms) {
-    uword n_outcomes_X = X.n_elem;
-    field<mat> eta(n_outcomes_X);
-    for (uword i = 0; i < n_outcomes_X; ++i) {
-        uword n_forms = X.at(i).n_cols / betas.at(i).n_rows;
-        eta.at(i).set_size(X.at(i).n_rows, n_forms);
-    }
     linpred_surv_inplace(eta, X, betas, Z, b, id);
     uword n_outcomes = U.n_elem;
     uword total_cols = 0;

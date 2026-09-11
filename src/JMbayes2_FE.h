@@ -12,6 +12,7 @@ using namespace arma;
 
 void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_betas,
                    field<vec> &scale_betas, field<vec> &eta, vec &logLik_long,
+                   field<mat> &eta_H, field<mat> &eta_h, field<mat> &eta_H2,
                    vec &logLik_surv, mat &Wlong_H, mat &Wlong_h, mat &Wlong_H2,
                    vec &WlongH_alphas, vec &Wlongh_alphas, vec &WlongH2_alphas,
                    const vec &Tau_mean_betas_HC, const mat &prior_Tau_betas_HC,
@@ -113,8 +114,8 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
         const mat& R = U_patt_field.at(patt_i);
 
         // Fast Triangular Solves (Calculates R^-T * X  and  R^-T * u)
-        X_tilde = arma::solve(arma::trimatl(R.t()), X_dots.at(i));
-        u_tilde = arma::solve(arma::trimatl(R.t()), u_i);
+        arma::solve(X_tilde, arma::trimatl(R.t()), X_dots.at(i));
+        arma::solve(u_tilde, arma::trimatl(R.t()), u_i);
 
         // Simple Cross-products
         sum_JXDu.rows(ind_FE_i) += X_tilde.t() * u_tilde;
@@ -159,17 +160,19 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     // update eta and logLik_surv baselines
     linpred_mixed_inplace(eta, X, betas, Z, b, idL);
 
-    calculate_Wlong_inplace(Wlong_H, X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas,
-                            b, id_H_, FunForms, Funs_FunForms);
+    calculate_Wlong_inplace(Wlong_H, eta_H, X_H, Z_H, U_H, Wlong_bar, Wlong_sds,
+                            betas, b, id_H_, FunForms, Funs_FunForms);
     WlongH_alphas = Wlong_H * alphas;
     if (any_event) {
-        calculate_Wlong_inplace(Wlong_h, X_h, Z_h, U_h, Wlong_bar, Wlong_sds,
-                                betas, b, id_h, FunForms, Funs_FunForms);
+        calculate_Wlong_inplace(Wlong_h, eta_h, X_h, Z_h, U_h, Wlong_bar,
+                                Wlong_sds, betas, b, id_h, FunForms,
+                                Funs_FunForms);
         Wlongh_alphas = Wlong_h * alphas;
     }
     if (any_interval) {
-        calculate_Wlong_inplace(Wlong_H2, X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds,
-                                betas, b, id_H_, FunForms, Funs_FunForms);
+        calculate_Wlong_inplace(Wlong_H2, eta_H2, X_H2, Z_H2, U_H2, Wlong_bar,
+                                Wlong_sds, betas, b, id_H_, FunForms,
+                                Funs_FunForms);
         WlongH2_alphas = Wlong_H2 * alphas;
     }
 
