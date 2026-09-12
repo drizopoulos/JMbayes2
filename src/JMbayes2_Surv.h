@@ -73,7 +73,9 @@ void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
                        vec &lambda_H_workspace, vec &H_workspace,
                        vec &lambda_H2_workspace, vec &H2_workspace,
                        vec &surv_out_workspace, vec &logLik_surv_proposed) {
-    vec proposed_W0H_bs_gammas, proposed_W0h_bs_gammas, proposed_W0H2_bs_gammas;
+    vec proposed_W0H_bs_gammas(size(W0H_bs_gammas), arma::fill::none);
+    vec proposed_W0h_bs_gammas(size(W0h_bs_gammas), arma::fill::none);
+    vec proposed_W0H2_bs_gammas(size(W0H2_bs_gammas), arma::fill::none);
     for (uword i = 0; i < bs_gammas.n_elem; ++i) {
         double old_gamma_i = bs_gammas.at(i);
         double diff = scale_bs_gammas.at(i) * R::norm_rand();
@@ -153,7 +155,9 @@ void update_gammas (const vec &bs_gammas, vec &gammas, const vec &alphas,
                     vec &lambda_H_workspace, vec &H_workspace,
                     vec &lambda_H2_workspace, vec &H2_workspace,
                     vec &surv_out_workspace, vec &logLik_surv_proposed) {
-    vec proposed_WH_gammas, proposed_Wh_gammas, proposed_WH2_gammas;
+    vec proposed_WH_gammas(size(WH_gammas), arma::fill::none);
+    vec proposed_Wh_gammas(size(Wh_gammas), arma::fill::none);
+    vec proposed_WH2_gammas(size(WH2_gammas), arma::fill::none);
     for (uword i = 0; i < gammas.n_elem; ++i) {
         double old_gamma_i = gammas.at(i);
         double diff = scale_gammas.at(i) * R::norm_rand();
@@ -231,7 +235,9 @@ void update_alphas (const vec &bs_gammas, const vec &gammas, vec &alphas,
                     vec &lambda_H_workspace, vec &H_workspace,
                     vec &lambda_H2_workspace, vec &H2_workspace,
                     vec &surv_out_workspace, vec &logLik_surv_proposed) {
-    vec proposed_WlongH_alphas, proposed_Wlongh_alphas, proposed_WlongH2_alphas;
+    vec proposed_WlongH_alphas(size(WlongH_alphas), arma::fill::none);
+    vec proposed_Wlongh_alphas(size(Wlongh_alphas), arma::fill::none);
+    vec proposed_WlongH2_alphas(size(WlongH2_alphas), arma::fill::none);
     for (uword i = 0; i < alphas.n_elem; ++i) {
         double old_alpha_i = alphas.at(i);
         double diff = scale_alphas.at(i) * R::norm_rand();

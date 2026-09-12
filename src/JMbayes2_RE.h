@@ -61,8 +61,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     for (uword o = 0; o < ind_RE.n_elem; ++o) {
         for (uword k = 0; k < ind_RE.at(o).n_elem; ++k) {
             uword j_col = ind_RE.at(o).at(k);
-            map_o[j_col] = o;
-            map_k[j_col] = k;
+            map_o.at(j_col) = o;
+            map_k.at(j_col) = k;
         }
     }
     field<mat> proposed_b(ind_RE.n_elem);
@@ -91,8 +91,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
         new_b_j = old_b_j + scale_b.col(j) % z_rand;
         delta_b = new_b_j - old_b_j;
         b_mat.col(j) = new_b_j;
-        uword o = map_o[j];
-        uword k = map_k[j];
+        uword o = map_o.at(j);
+        uword k = map_k.at(j);
         proposed_b.at(o).col(k) = new_b_j;
         uword N_o = Z.at(o).n_rows;
         double* eta_ptr = eta.at(o).memptr();
@@ -170,8 +170,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                         WlongH2_alphas_proposed.rows(first_H, last_H);
                 }
             } else {
-                b_mat.at(i, j) = old_b_j[i];
-                proposed_b.at(o).at(i, k) = old_b_j[i];
+                b_mat.at(i, j) = old_b_j.at(i);
+                proposed_b.at(o).at(i, k) = old_b_j.at(i);
             }
             if (it > 119) {
                 scale_b.at(i, j) =
