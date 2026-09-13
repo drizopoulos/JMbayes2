@@ -742,12 +742,12 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   std::vector<std::string> families = as<std::vector<std::string>>(families_);
   std::vector<std::string> links = as<std::vector<std::string>>(links_);
   field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
+  field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
   field<uvec> idL_lp_fast(idL_lp.n_elem);
   for (uword i = 0; i < idL_lp.n_elem; ++i) {
     idL_lp_fast.at(i) = create_fast_ind(idL_lp.at(i) + 1);
   }
-  field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
   /////////////
   mat W0_H = as<mat>(model_data["W0_H"]);
   mat W0_h = as<mat>(model_data["W0_h"]);
@@ -800,11 +800,13 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   vec frailty = as<vec>(thetas["frailty"]);
   vec sigmaF = as<vec>(thetas["sigmaF"]);
   // pre-allocate workspaces for log_long()
-  vec long_out_workspace(b_mat.n_rows, arma::fill::none);
+  vec logLik_long(b_mat.n_rows, arma::fill::none);
   uword n_outcomes = y.size();
-  field<vec> log_contr_long_workspace(n_outcomes);
+  field<vec> log_contr_obs_workspace(n_outcomes);
+  field<vec> log_contr_subj_workspace(n_outcomes);
   for (uword i = 0; i < n_outcomes; ++i) {
-      log_contr_long_workspace.at(i).set_size(y.at(i).n_rows);
+      log_contr_obs_workspace.at(i).set_size(y.at(i).n_rows);
+      log_contr_subj_workspace.at(i).set_size(unq_idL.at(i).n_elem);
   }
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
@@ -829,7 +831,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
       which_interval,
       recurrent, alphaF, frailty, which_term_H, which_term_h, any_terminal,
       sigmaF, lambda_H_workspace, H_workspace,
-      lambda_H2_workspace, H2_workspace, surv_out_workspace, long_out_workspace,
+      lambda_H2_workspace, H2_workspace, surv_out_workspace, logLik_long,
       logLik_surv);
   return out;
 }
@@ -935,9 +937,11 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   // pre-allocate workspaces for log_long()
   vec logLik_long(n, arma::fill::none);
   uword n_outcomes = y.size();
-  field<vec> log_contr_long_workspace(n_outcomes);
+  field<vec> log_contr_obs_workspace(n_outcomes);
+  field<vec> log_contr_subj_workspace(n_outcomes);
   for (uword i = 0; i < n_outcomes; ++i) {
-      log_contr_long_workspace.at(i).set_size(y.at(i).n_rows);
+      log_contr_obs_workspace.at(i).set_size(y.at(i).n_rows);
+      log_contr_subj_workspace.at(i).set_size(unq_idL.at(i).n_elem);
   }
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
@@ -1084,9 +1088,11 @@ List simulate_REs (List Data, List MCMC, List control) {
   vec logLik_long(n_b, arma::fill::none);
   vec logLik_long_proposed(n_b, arma::fill::none);
   uword n_outcomes = y.size();
-  field<vec> log_contr_long_workspace(n_outcomes);
+  field<vec> log_contr_obs_workspace(n_outcomes);
+  field<vec> log_contr_subj_workspace(n_outcomes);
   for (uword i = 0; i < n_outcomes; ++i) {
-      log_contr_long_workspace.at(i).set_size(y.at(i).n_rows);
+      log_contr_obs_workspace.at(i).set_size(y.at(i).n_rows);
+      log_contr_subj_workspace.at(i).set_size(unq_idL.at(i).n_elem);
   }
   field<vec> betas_it(betas.n_elem);
   cube out(n_b, nRE, n_samples, fill::zeros);
