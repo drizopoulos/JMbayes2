@@ -104,8 +104,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   }
   vec extra_parms = as<vec>(model_data["extra_parms"]);
   field<uvec> ind_RE = List2Field_uvec(as<List>(model_data["ind_RE"]), true);
-  CharacterVector families = as<CharacterVector>(model_info["family_names"]);
-  CharacterVector links = as<CharacterVector>(model_info["links"]);
+  CharacterVector families_ = as<CharacterVector>(model_info["family_names"]);
+  CharacterVector links_ = as<CharacterVector>(model_info["links"]);
+  std::vector<std::string> families = as<std::vector<std::string>>(families_);
+  std::vector<std::string> links = as<std::vector<std::string>>(links_);
   // initial values
   vec bs_gammas = as<vec>(initial_values["bs_gammas"]);
   vec tau_bs_gammas = as<vec>(initial_values["tau_bs_gammas"]);
@@ -332,10 +334,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat mean_u_mat(n_b, q, fill::none);
   mat mean_u_mat2(n_b, q, fill::none);
   uword n_outcomes = y.size();
-  //field<vec> log_contr_long_workspace(n_outcomes);
-  //for (word i = 0; i < n_outcomes; ++i) {
-    //  log_contr_long_workspace.at(i).set_size(y.at(i).n_rows);
-  //}
+  field<vec> log_contr_obs_workspace(n_outcomes);
+  field<vec> log_contr_subj_workspace(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+      log_contr_obs_workspace.at(i).set_size(y.at(i).n_rows);
+      log_contr_subj_workspace.at(i).set_size(unq_idL.at(i).n_elem);
+  }
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -733,8 +737,10 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   field<mat> Xbar = List2Field_mat(as<List>(model_data["Xbar"]));
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   vec extra_parms = as<vec>(model_data["extra_parms"]);
-  CharacterVector families = as<CharacterVector>(model_info["family_names"]);
-  CharacterVector links = as<CharacterVector>(model_info["links"]);
+  CharacterVector families_ = as<CharacterVector>(model_info["family_names"]);
+  CharacterVector links_ = as<CharacterVector>(model_info["links"]);
+  std::vector<std::string> families = as<std::vector<std::string>>(families_);
+  std::vector<std::string> links = as<std::vector<std::string>>(links_);
   field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
   field<uvec> idL_lp_fast(idL_lp.n_elem);
@@ -795,6 +801,11 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   vec sigmaF = as<vec>(thetas["sigmaF"]);
   // pre-allocate workspaces for log_long()
   vec long_out_workspace(b_mat.n_rows, arma::fill::none);
+  uword n_outcomes = y.size();
+  field<vec> log_contr_long_workspace(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+      log_contr_long_workspace.at(i).set_size(y.at(i).n_rows);
+  }
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -858,8 +869,10 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   field<mat> Xbar = List2Field_mat(as<List>(model_data["Xbar"]));
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   vec extra_parms = as<vec>(model_data["extra_parms"]);
-  CharacterVector families = as<CharacterVector>(model_info["family_names"]);
-  CharacterVector links = as<CharacterVector>(model_info["links"]);
+  CharacterVector families_ = as<CharacterVector>(model_info["family_names"]);
+  CharacterVector links_ = as<CharacterVector>(model_info["links"]);
+  std::vector<std::string> families = as<std::vector<std::string>>(families_);
+  std::vector<std::string> links = as<std::vector<std::string>>(links_);
   field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
   field<uvec> idL_lp_fast(idL_lp.n_elem);
@@ -921,6 +934,11 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   mat sigmaF = trans(as<mat>(res_thetas["sigmaF"]));
   // pre-allocate workspaces for log_long()
   vec logLik_long(n, arma::fill::none);
+  uword n_outcomes = y.size();
+  field<vec> log_contr_long_workspace(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+      log_contr_long_workspace.at(i).set_size(y.at(i).n_rows);
+  }
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -1019,8 +1037,10 @@ List simulate_REs (List Data, List MCMC, List control) {
   field<mat> Z = List2Field_mat(as<List>(Data["Z"]));
   //
   vec extra_parms = as<vec>(Data["extra_parms"]);
-  CharacterVector families = as<CharacterVector>(Data["family_names"]);
-  CharacterVector links = as<CharacterVector>(Data["links"]);
+  CharacterVector families_ = as<CharacterVector>(Data["family_names"]);
+  CharacterVector links_ = as<CharacterVector>(Data["links"]);
+  std::vector<std::string> families = as<std::vector<std::string>>(families_);
+  std::vector<std::string> links = as<std::vector<std::string>>(links_);
   field<uvec> idL = List2Field_uvec(as<List>(Data["idL"]), true);
   field<uvec> unq_idL = List2Field_uvec(as<List>(Data["unq_idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(Data["idL_lp"]), true);
@@ -1063,6 +1083,11 @@ List simulate_REs (List Data, List MCMC, List control) {
   // pre-allocate workspaces for log_long()
   vec logLik_long(n_b, arma::fill::none);
   vec logLik_long_proposed(n_b, arma::fill::none);
+  uword n_outcomes = y.size();
+  field<vec> log_contr_long_workspace(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+      log_contr_long_workspace.at(i).set_size(y.at(i).n_rows);
+  }
   field<vec> betas_it(betas.n_elem);
   cube out(n_b, nRE, n_samples, fill::zeros);
   mat outS(n_b, n_samples, fill::zeros);

@@ -33,8 +33,8 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    const field<mat> &y,
                    const vec &sigmas,
                    const vec &extra_parms,
-                   const CharacterVector &families,
-                   const CharacterVector &links,
+                   const std::vector<std::string> &families,
+                   const std::vector<std::string> &links,
                    const field<uvec> &idL_lp_fast,
                    const field<vec> &prior_mean_betas_nHC,
                    field<mat> &prior_Tau_betas_nHC,
@@ -219,8 +219,8 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
 
                 double sum_logLik_long_j_prop =
                     sum(log_long_i(y.at(j), eta_j_prop, sigmas.at(j),
-                                   extra_parms.at(j), std::string(families[j]),
-                                   std::string(links[j]), idL_lp_fast.at(j)));
+                                   extra_parms.at(j), families[j],
+                                   links[j], idL_lp_fast.at(j)));
 
                 // 6. DEFERRED MATRIX ALLOCATIONS
                 mat Wlong_H_prop =

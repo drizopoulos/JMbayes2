@@ -70,8 +70,8 @@ vec log_long_i (const mat &y_i, vec mu_i, const double &sigma_i,
 }
 
 inline void log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
-             const vec &extra_parms, const CharacterVector &families,
-             const CharacterVector &links, const field<uvec> &idFast,
+             const vec &extra_parms, const std::vector<std::string> &families,
+             const std::vector<std::string> &links, const field<uvec> &idFast,
              const field<uvec> &unq_ids, vec &out) {
     uword n_outcomes = y.size();
     out.zeros();
@@ -80,8 +80,8 @@ inline void log_long (const field<mat> &y, const field<vec> &eta, const vec &sig
         const vec& eta_i = eta.at(i);
         double sigma_i = sigmas.at(i);
         double extr_prm_i = extra_parms.at(i);
-        std::string fam_i = as<std::string>(families[i]);
-        std::string link_i = as<std::string>(links[i]);
+        const std::string& fam_i = families[i];
+        const std::string& link_i = links[i];
         const uvec& idFast_i = idFast.at(i);
         const uvec& unq_id_i = unq_ids.at(i);
         vec log_contr_i = log_long_i(y_i, eta_i, sigma_i, extr_prm_i, fam_i,
@@ -104,11 +104,11 @@ inline void log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
               const vec &frailtyh_sigmaF_alphaF,
               vec &lambda_H, vec &H, vec &lambda_H2, vec &H2, vec &out,
               vec &logLik_surv) {
-    lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
+    lambda_H = log_Pwk + W0H_bs_gammas + WH_gammas + WlongH_alphas;
     if (recurrent) {
         lambda_H += frailtyH_sigmaF_alphaF;
     }
-    lambda_H = exp(log_Pwk + lambda_H);
+    lambda_H = exp(lambda_H);
     group_sum(lambda_H, indFast_H, H);
     out.rows(which_right_event) = -H.rows(which_right_event);
     if (which_event.n_elem > 0) {
@@ -124,8 +124,9 @@ inline void log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
         out.rows(which_left) = log1p(-exp(-H.rows(which_left)));
     }
     if (any_interval) {
-        lambda_H2 = W0H2_bs_gammas + WH2_gammas + WlongH2_alphas;
-        H2 = group_sum(exp(log_Pwk2 + lambda_H2), indFast_H);
+        lambda_H2 = log_Pwk2 + W0H2_bs_gammas + WH2_gammas + WlongH2_alphas;
+        lambda_H2 = exp(lambda_H2);
+        group_sum(lambda_H2, indFast_H, H2);
         out.rows(which_interval) = -H.rows(which_interval) +
             log(-expm1(-H2.rows(which_interval)));
     }
@@ -261,7 +262,8 @@ vec logLik_jm_stripped (
     const mat &L, const vec &sds,
     /////////////
     const field<mat> &y, const field<mat> &X, const field<mat> &Xbar, const field<mat> &Z,
-    const vec &extra_parms, const CharacterVector &families, const CharacterVector &links,
+    const vec &extra_parms, const std::vector<std::string> &families,
+    const std::vector<std::string> &links,
     const field<uvec> &idL, const field<uvec> &idL_lp_fast, const field<uvec> &unq_idL,
     /////////////
     const mat &W0_H, const mat &W0_h, const mat &W0_H2,

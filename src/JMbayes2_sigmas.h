@@ -25,8 +25,8 @@ vec logPrior_sigmas(const vec &sigmas, const bool &gamma_prior,
 
 void update_sigmas (vec &sigmas, const uvec &has_sigmas,
                     const field<mat> &y, const field<vec> &eta,
-                    const vec &extra_parms, const CharacterVector &families,
-                    const CharacterVector &links, const field<uvec> &idFast,
+                    const vec &extra_parms, const std::vector<std::string> &families,
+                    const std::vector<std::string> &links, const field<uvec> &idFast,
                     const bool &gamma_prior,
                     const double &sigmas_df, const vec &sigmas_sigmas,
                     const double &sigmas_shape, const vec &sigmas_mean,
@@ -48,7 +48,7 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
     vec proposed_sigmas = propose_lnorm(sigmas, log_mu_current, scale_sigmas, i);
     vec logLik_long_proposed_i =
       log_long_i(y.at(i), eta.at(i), proposed_sigmas.at(i), extra_parms.at(i),
-                 std::string(families[i]), std::string(links[i]), idFast.at(i));
+                 families[i], links[i], idFast.at(i));
     double numerator = sum(logLik_long_proposed_i) +
       sum(logPrior_sigmas(proposed_sigmas, gamma_prior, sigmas_sigmas, sigmas_df,
                           sigmas_mean, sigmas_shape));
