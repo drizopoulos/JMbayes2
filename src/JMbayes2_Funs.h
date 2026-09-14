@@ -537,12 +537,20 @@ vec log_pnorm (const vec &x, const vec &mu, const double &sigma,
 }
 
 inline void log_dt_void (const vec &x, const vec &mu, const double sigma,
-                    const double df, vec &out) {
-    uword n = x.n_rows;
+                         const double df, vec &out) {
+    arma::uword n = x.n_elem;
+    const double* px = x.memptr();
+    const double* pmu = mu.memptr();
+    double* pout = out.memptr();
     double log_sigma = std::log(sigma);
-    for (uword i = 0; i < n; ++i) {
-        double xx = (x.at(i) - mu.at(i)) / sigma;
-        out.at(i) = R::dt(xx, df, 1) - log_sigma;
+    double half_df = 0.5 * df;
+    double half_df_plus_1 = 0.5 * (df + 1.0);
+    double const_term = std::lgamma(half_df_plus_1) - std::lgamma(half_df) -
+        0.5 * std::log(df * arma::datum::pi);
+    for (arma::uword i = 0; i < n; ++i) {
+        double xx = (px[i] - pmu[i]) / sigma;
+        pout[i] = const_term - half_df_plus_1 *
+            std::log(1.0 + (xx * xx) / df) - log_sigma;
     }
 }
 
