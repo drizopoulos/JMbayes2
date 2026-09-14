@@ -9,20 +9,20 @@
 using namespace Rcpp;
 using namespace arma;
 
-vec log_long_i (const mat &y_i, vec mu_i, const double &sigma_i,
+vec log_long_i (const mat &y_i, vec mu_i, const double sigma_i,
                 const double &extr_prm_i, const std::string &fam_i,
                 const std::string &link_i, const uvec &idFast_i) {
     uword N = y_i.n_rows;
     vec log_contr(N, fill::none);
     mu_fun(mu_i, link_i);
     if (fam_i == "gaussian") {
-        log_contr = log_dnorm(y_i, mu_i, sigma_i);
+        log_dnorm_void(y_i, mu_i, sigma_i, log_contr);
     } else if (fam_i == "Student's-t") {
-        log_contr = log_dt((y_i - mu_i) / sigma_i, extr_prm_i) - std::log(sigma_i);
+        log_dt_void(y_i, mu_i, sigma_i, extr_prm_i, log_contr);
     } else if (fam_i == "beta") {
-        log_contr = log_dbeta(y_i, mu_i * sigma_i, sigma_i * (1.0 - mu_i));
+        log_dbeta_void(y_i, mu_i * sigma_i, sigma_i * (1.0 - mu_i), log_contr);
     } else if (fam_i == "Gamma") {
-        log_contr = log_dgamma(y_i, sigma_i, mu_i / sigma_i);
+        log_dgamma_void(y_i, sigma_i, mu_i / sigma_i, log_contr);
     } else if (fam_i == "unit Lindley") {
         const double* yy = y_i.memptr();
         const double* mu_ptr = mu_i.memptr();
@@ -50,20 +50,20 @@ vec log_long_i (const mat &y_i, vec mu_i, const double &sigma_i,
         }
     } else if (fam_i == "binomial") {
         if (y_i.n_cols == 2) {
-            log_contr = log_dbinom(y_i.col(0), y_i.col(1), mu_i);
+            log_dbinom_void(y_i.col(0), y_i.col(1), mu_i, log_contr);
         } else {
-            log_contr = log_dbernoulli(y_i, mu_i);
+            log_dbernoulli_void(y_i, mu_i, log_contr);
         }
     } else if (fam_i == "poisson") {
-        log_contr = log_dpois(y_i, mu_i);
+        log_dpois_void(y_i, mu_i, log_contr);
     } else if (fam_i == "negative binomial") {
-        log_contr = log_dnbinom(y_i, mu_i, sigma_i);
+        log_dnbinom_void(y_i, mu_i, sigma_i, log_contr);
     } else if (fam_i == "beta binomial") {
         if (y_i.n_cols == 2) {
-            log_contr = log_dbbinom(y_i.col(0), y_i.col(1), mu_i, sigma_i);
+            log_dbbinom_void(y_i.col(0), y_i.col(1), mu_i, sigma_i, log_contr);
         } else {
             vec ones(N, fill::ones);
-            log_contr = log_dbbinom(y_i, ones, mu_i, sigma_i);
+            log_dbbinom_void(y_i, ones, mu_i, sigma_i, log_contr);
         }
     }
     return group_sum(log_contr, idFast_i);

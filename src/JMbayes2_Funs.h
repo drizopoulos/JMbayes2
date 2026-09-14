@@ -385,10 +385,9 @@ void mu_fun (arma::vec &eta, const std::string &link) {
     }
 }
 
-arma::vec log_dbinom (const arma::vec &x, const arma::vec &size,
-                      const arma::vec &prob) {
+inline void log_dbinom_void (const arma::vec &x, const arma::vec &size,
+                      const arma::vec &prob, arma::vec &out) {
     arma::uword n = x.n_elem;
-    arma::vec out(n, arma::fill::none);
     const double* px = x.memptr();
     const double* ps = size.memptr();
     const double* pp = prob.memptr();
@@ -407,12 +406,11 @@ arma::vec log_dbinom (const arma::vec &x, const arma::vec &size,
                 (ni - xi) * std::log(1.0 - pi);
         }
     }
-    return out;
 }
 
-arma::vec log_dpois (const arma::vec &x, const arma::vec &lambda) {
+inline void log_dpois_void (const arma::vec &x, const arma::vec &lambda,
+                       arma::vec &out) {
     arma::uword n = x.n_elem;
-    arma::vec out(n, arma::fill::none);
     const double* px = x.memptr();
     const double* pl = lambda.memptr();
     double* pout = out.memptr();
@@ -428,13 +426,12 @@ arma::vec log_dpois (const arma::vec &x, const arma::vec &lambda) {
             pout[i] = xi * std::log(lambda_i) - lambda_i - std::lgamma(xi + 1.0);
         }
     }
-    return out;
 }
 
-arma::vec log_dbbinom (const arma::vec &x, const arma::vec &size,
-                       const arma::vec &prob, const double phi) {
+inline void log_dbbinom_void (const arma::vec &x, const arma::vec &size,
+                       const arma::vec &prob, const double phi,
+                       arma::vec &out) {
     arma::uword n = x.n_elem;
-    arma::vec out(n, arma::fill::none);
     const double* px = x.memptr();
     const double* ps = size.memptr();
     const double* pp = prob.memptr();
@@ -468,12 +465,11 @@ arma::vec log_dbbinom (const arma::vec &x, const arma::vec &size,
             pout[i] = log_binom + log_beta_num - log_beta_den;
         }
     }
-    return out;
 }
 
-arma::vec log_dbernoulli (const arma::vec &x, const arma::vec &prob) {
+inline void log_dbernoulli_void (const arma::vec &x, const arma::vec &prob,
+                            arma::vec &out) {
     arma::uword n = x.n_elem;
-    arma::vec out(n, arma::fill::none);
     const double* px = x.memptr();
     const double* pp = prob.memptr();
     double* pout = out.memptr();
@@ -481,16 +477,39 @@ arma::vec log_dbernoulli (const arma::vec &x, const arma::vec &prob) {
         double p_val = (px[i] > 0.0) ? pp[i] : (1.0 - pp[i]);
         pout[i] = std::log(p_val);
     }
-    return out;
 }
 
-vec log_dnbinom (const vec &x, const vec &mu, const double &size) {
+vec log_dnbinom2 (const vec &x, const vec &mu, const double &size) {
   vec log_mu_size = log(mu + size);
   vec comp1 = lgamma(x + size) - lgamma(size) - lgamma(x + 1);
   vec comp2 = size * log(size) - size * log_mu_size;
   vec comp3 = x % (log(mu) - log_mu_size);
   vec out = comp1 + comp2 + comp3;
   return out;
+}
+
+inline void log_dnbinom_void (const vec &x, const vec &mu, const double &size,
+                         vec &out) {
+    arma::uword n = x.n_elem;
+    const double* px = x.memptr();
+    const double* pmu = mu.memptr();
+    double* pout = out.memptr();
+    double lgamma_size = std::lgamma(size);
+    double size_log_size = size * std::log(size);
+    for (arma::uword i = 0; i < n; ++i) {
+        double xi = px[i];
+        double mui = pmu[i];
+        double log_mu_size = std::log(mui + size);
+        pout[i] = std::lgamma(xi + size) - lgamma_size - std::lgamma(xi + 1.0) +
+            size_log_size - size * log_mu_size +
+            xi * (std::log(mui) - log_mu_size);
+    }
+}
+
+inline void log_dnorm_void (const vec &x, const vec &mu, const double sigma, vec &out) {
+    double constant = -std::log(sigma) - half_log2pi;
+    double var2 = 2.0 * sigma * sigma;
+    out = constant - arma::square(x - mu) / var2;
 }
 
 vec log_dnorm (const vec &x, const vec &mu, const double &sigma) {
@@ -517,13 +536,14 @@ vec log_pnorm (const vec &x, const vec &mu, const double &sigma,
   return out;
 }
 
-vec log_dt (const vec &x, const double &df) {
-  uword n = x.n_rows;
-  vec out(n);
-  for (uword i = 0; i < n; ++i) {
-    out.at(i) = R::dt(x.at(i), df, 1);
-  }
-  return out;
+inline void log_dt_void (const vec &x, const vec &mu, const double sigma,
+                    const double df, vec &out) {
+    uword n = x.n_rows;
+    double log_sigma = std::log(sigma);
+    for (uword i = 0; i < n; ++i) {
+        double xx = (x.at(i) - mu.at(i)) / sigma;
+        out.at(i) = R::dt(xx, df, 1) - log_sigma;
+    }
 }
 
 vec log_dht (const vec &x, const vec &sigma, const double &df = 3.0) {
@@ -536,6 +556,22 @@ vec log_dht (const vec &x, const vec &sigma, const double &df = 3.0) {
   vec log_kernel = - 0.5 * (df + 1.0) * log(1.0 + square(x) / (df * square(sigma)));
   out = log_const + log_kernel;
   return out;
+}
+
+inline void log_dgamma_void (const vec &x, const double &shape, const vec &scale,
+                vec &out) {
+    uword n = x.n_elem;
+    const double* px = x.memptr();
+    const double* pscale = scale.memptr();
+    double* pout = out.memptr();
+    double lgamma_shape = std::lgamma(shape);
+    double shape_m1 = shape - 1.0;
+    for (uword i = 0; i < n; ++i) {
+        double x_val = px[i];
+        double scale_val = pscale[i];
+        pout[i] = -lgamma_shape - shape * std::log(scale_val)
+            + shape_m1 * std::log(x_val) - x_val / scale_val;
+    }
 }
 
 vec log_dgamma (const vec &x, const double &shape, const vec &scale) {
@@ -555,9 +591,9 @@ vec log_dgamma (const vec &x, const double &shape, const vec &scale) {
     return out;
 }
 
-arma::vec log_dbeta (const arma::vec &x, const arma::vec &shape1, const arma::vec &shape2) {
+inline void log_dbeta_void (const arma::vec &x, const arma::vec &shape1,
+                     const arma::vec &shape2, arma::vec &out) {
     arma::uword n = x.n_elem;
-    arma::vec out(n, arma::fill::none);
     const double* px = x.memptr();
     const double* psh1 = shape1.memptr();
     const double* psh2 = shape2.memptr();
@@ -569,7 +605,6 @@ arma::vec log_dbeta (const arma::vec &x, const arma::vec &shape1, const arma::ve
         pout[i] = (a - 1.0) * std::log(xi) + (b - 1.0) * std::log(1.0 - xi) -
             std::lgamma(a) - std::lgamma(b) + std::lgamma(a + b);
     }
-    return out;
 }
 
 vec log_dmvnrm_chol (const mat &x, const mat &L) {
