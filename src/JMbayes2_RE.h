@@ -47,7 +47,9 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                vec &lambda_H_workspace, vec &H_workspace,
                vec &lambda_H2_workspace, vec &H2_workspace,
                vec &surv_out_workspace, vec &logLik_long_proposed,
-               vec &logLik_surv_proposed) {
+               vec &logLik_surv_proposed,
+               field<vec> &log_contr_obs_workspace,
+               field<vec> &log_contr_subj_workspace) {
     uword n = b_mat.n_rows;
     uword nRE = b_mat.n_cols;
     mat V_R = inv(trimatu(L));
@@ -103,7 +105,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
             eta_ptr[obs] += Z_col[obs] * delta_ptr[id_ptr[obs]];
         }
         log_long(y, eta, sigmas, extra_parms, families, links, ids, unq_ids,
-                 logLik_long_proposed);
+                 logLik_long_proposed, log_contr_obs_workspace,
+                 log_contr_subj_workspace);
         calculate_Wlong_inplace(Wlong_H_proposed, eta_H, X_H, Z_H, U_H,
                                 Wlong_bar, Wlong_sds, betas, proposed_b, id_H_,
                                 FunForms, Funs_FunForms);

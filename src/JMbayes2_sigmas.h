@@ -31,25 +31,27 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
                     const double &sigmas_df, const vec &sigmas_sigmas,
                     const double &sigmas_shape, const vec &sigmas_mean,
                     const uword &it, mat &res_sigmas, vec &scale_sigmas,
-                    mat &acceptance_sigmas) {
+                    mat &acceptance_sigmas,
+                    field<vec> &log_contr_obs_workspace,
+                    field<vec> &log_contr_subj_workspace) {
   uword n_sigmas = sigmas.n_rows;
   for (uword i = 0; i < n_sigmas; ++i) {
     if (!has_sigmas.at(i)) continue;
-    vec logLik_long_i =
-      log_long_i(y.at(i), eta.at(i), sigmas.at(i), extra_parms.at(i),
-                 std::string(families[i]), std::string(links[i]), idFast.at(i));
-    double denominator = sum(logLik_long_i) +
-      sum(logPrior_sigmas(sigmas, gamma_prior, sigmas_sigmas, sigmas_df,
-                          sigmas_mean, sigmas_shape));
+    log_long_i(y.at(i), eta.at(i), sigmas.at(i), extra_parms.at(i),
+               std::string(families[i]), std::string(links[i]), idFast.at(i),
+               log_contr_obs_workspace.at(i), log_contr_subj_workspace.at(i));
+    double denominator = sum(log_contr_subj_workspace.at(i)) +
+        sum(logPrior_sigmas(sigmas, gamma_prior, sigmas_sigmas, sigmas_df,
+                            sigmas_mean, sigmas_shape));
     //
     double val = scale_sigmas.at(i);
     double SS = 0.5 * val * val;
     double log_mu_current = std::log(sigmas.at(i)) - SS;
     vec proposed_sigmas = propose_lnorm(sigmas, log_mu_current, scale_sigmas, i);
-    vec logLik_long_proposed_i =
-      log_long_i(y.at(i), eta.at(i), proposed_sigmas.at(i), extra_parms.at(i),
-                 families[i], links[i], idFast.at(i));
-    double numerator = sum(logLik_long_proposed_i) +
+    log_long_i(y.at(i), eta.at(i), proposed_sigmas.at(i), extra_parms.at(i),
+               families[i], links[i], idFast.at(i),
+               log_contr_obs_workspace.at(i), log_contr_subj_workspace.at(i));
+    double numerator = sum(log_contr_subj_workspace.at(i)) +
       sum(logPrior_sigmas(proposed_sigmas, gamma_prior, sigmas_sigmas, sigmas_df,
                           sigmas_mean, sigmas_shape));
     double log_mu_proposed = std::log(proposed_sigmas.at(i)) - SS;
