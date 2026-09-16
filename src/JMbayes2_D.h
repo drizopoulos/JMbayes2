@@ -111,6 +111,35 @@ mat propose_L (const mat &L, const vec &scale, const uvec &upper_part,
     return proposed_L;
 }
 
+inline void propose_L_void (const mat &L, const vec &scale,
+                            const uvec &upper_part, const uword i,
+                            const umat &ind_zero_D, mat &proposed_L) {
+    proposed_L.zeros();
+    vec proposed_l = L(upper_part);
+    double rr = Const_Unif_Proposal * scale.at(i);
+    proposed_l.at(i) = R::runif(proposed_l.at(i) - rr, proposed_l.at(i) + rr);
+    proposed_L(upper_part) = proposed_l;
+    uword n = L.n_rows;
+    for (uword j = 0; j < n; ++j) {
+        auto ll = proposed_L.col(j);
+        proposed_L.at(j, j) = std::sqrt(1.0 - arma::dot(ll, ll));
+    }
+    uword nn = ind_zero_D.n_rows;
+    for (uword j = 0; j < nn; ++j) {
+        uword j0 = ind_zero_D.at(j, 0);
+        uword j1 = ind_zero_D.at(j, 1);
+        auto col_j0 = proposed_L.col(j0);
+        auto col_j1 = proposed_L.col(j1);
+        proposed_L.at(j0, j1) = -arma::dot(col_j0, col_j1) / proposed_L.at(j0, j0);
+        auto ll = proposed_L.col(j1).subvec(0, j1 - 1);
+        double ss = arma::dot(ll, ll);
+        if (ss > 1.0) {
+            proposed_L.fill(datum::nan);
+        }
+        proposed_L.at(j1, j1) = std::sqrt(1.0 - ss);
+    }
+}
+
 void update_D (mat &L, vec &sds, const mat &b,
                const uvec &upper_part,
                const double &D_sds_df,
@@ -124,19 +153,27 @@ void update_D (mat &L, vec &sds, const mat &b,
                mat &res_sds, mat &res_L,
                vec &scale_sds, vec &scale_L,
                mat &acceptance_sds, mat &acceptance_L) {
+  uword n = b.n_rows;
+  uword nRE = b.n_cols;
   uword n_sds = sds.n_rows;
   uword n_L = upper_part.n_rows;
   double denominator_sds = sum(logLik_re) +
     sum(logPrior_D_sds(sds, D_sds_sigma, D_sds_df, D_sds_mean, D_sds_shape, gamma_prior));
   mat V_R = inv(trimatu(L));
   double log_det_V_R = -arma::sum(arma::log(L.diag()));
-  vec proposed_sds, logLik_re_proposed;
+  vec proposed_sds(n_sds, arma::fill::none);
+  vec logLik_re_proposed(n, arma::fill::none);
+  mat B_scaled_workspace(n, nRE, arma::fill::none);
+  mat Z_workspace(n, nRE, arma::fill::none);
+  mat Z_transposed(nRE, n, arma::fill::none);
   for (uword i = 0; i < n_sds; ++i) {
     double val = scale_sds.at(i);
     double SS = 0.5 * val * val;
     double log_mu_current = log(sds.at(i)) - SS;
-    proposed_sds = propose_lnorm(sds, log_mu_current, scale_sds, i);
-    logLik_re_proposed = log_re_onlySDS(b, V_R, log_det_V_R, proposed_sds);
+    proposed_sds = sds;
+    proposed_sds.at(i) = R::rlnorm(log_mu_current, scale_sds.at(i));
+    log_re_onlySDS(b, V_R, log_det_V_R, proposed_sds, B_scaled_workspace,
+                   Z_workspace, logLik_re_proposed);
     double numerator_sds = sum(logLik_re_proposed) +
       sum(logPrior_D_sds(proposed_sds, D_sds_sigma, D_sds_df, D_sds_mean,
                          D_sds_shape, gamma_prior));
@@ -144,7 +181,8 @@ void update_D (mat &L, vec &sds, const mat &b,
     double log_ratio_sds = numerator_sds - denominator_sds +
         log_dlnorm(sds.at(i), log_mu_proposed, scale_sds.at(i)) -
         log_dlnorm(proposed_sds.at(i), log_mu_current, scale_sds.at(i));
-    if (std::isfinite(log_ratio_sds) && log_ratio_sds > std::log(R::unif_rand())) {
+    if (std::isfinite(log_ratio_sds) &&
+        log_ratio_sds > std::log(R::unif_rand())) {
       sds = proposed_sds;
       logLik_re = logLik_re_proposed;
       denominator_sds = numerator_sds;
@@ -157,7 +195,7 @@ void update_D (mat &L, vec &sds, const mat &b,
     res_sds.at(it, i) = sds.at(i);
   }
   double denominator_L = sum(logLik_re) + logPrior_LKJ(L, D_L_etaLKJ);
-  mat b_scaled = b.each_row() / sds.t();
+  B_scaled_workspace = b.each_row() / sds.t();
   double sum_log_sds = arma::sum(arma::log(sds));
   mat proposed_L(L.n_rows, L.n_cols, arma::fill::none);
   for (uword i = 0; i < n_L; ++i) {
@@ -171,7 +209,7 @@ void update_D (mat &L, vec &sds, const mat &b,
       mu_current = L.at(upper_part_i) + 0.5 * scale_L.at(i) * deriv_current;
       proposed_L = propose_L(L, scale_L, upper_part, deriv_current, i, ind_zero_D, true);
     } else {
-      proposed_L = propose_L(L, scale_L, upper_part, deriv_current, i, ind_zero_D);
+      propose_L_void(L, scale_L, upper_part, i, ind_zero_D, proposed_L);
     }
     logLik_re_proposed = logLik_re;
     double numerator_L(0.0);
@@ -180,7 +218,8 @@ void update_D (mat &L, vec &sds, const mat &b,
     double log_ratio_L(0.0);
     bool finite_L = proposed_L.is_finite();
     if (finite_L) {
-      logLik_re_proposed = log_re_onlyL(b_scaled, proposed_L, sum_log_sds);
+      log_re_onlyL(B_scaled_workspace, proposed_L, sum_log_sds, Z_transposed,
+                   logLik_re_proposed);
       numerator_L = sum(logLik_re_proposed) +
         logPrior_LKJ(proposed_L, D_L_etaLKJ);
       if (MALA) {

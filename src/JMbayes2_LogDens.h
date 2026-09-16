@@ -197,24 +197,23 @@ inline void log_re_onlyRE (const mat &b_prop, const mat &V_Sigma,
     log_re = other_terms - 0.5 * arma::sum(arma::square(Z_workspace), 1);
 }
 
-inline vec log_re_onlySDS (const mat &b, const mat &V_R, double log_det_V_R,
-                           const vec &sds) {
+inline void log_re_onlySDS (const mat &b, const mat &V_R, double log_det_V_R,
+                           const vec &sds, mat &B_scaled_workspace,
+                           mat &Z_workspace, vec &log_re) {
     uword k = b.n_cols;
     // Calculate constants
     double log_det_V_Sigma = log_det_V_R - arma::sum(arma::log(sds));
     double other_terms = -(double)k / 2.0 * log2pi + log_det_V_Sigma;
-    // Scale all random effects by the proposed SDS instantly
-    mat B_scaled = b.each_row() / sds.t();
-    // Fast Triangular Multiplication (TRMM)
+     // Fast Triangular Multiplication (TRMM)
+     B_scaled_workspace = b.each_row() / sds.t();
     // By wrapping V_R in trimatu(), we tell the BLAS backend to skip half the math.
-    mat Z = B_scaled * arma::trimatu(V_R);
-    // Calculate squared distances for all subjects
-    vec sq_dist = arma::sum(arma::square(Z), 1);
+    Z_workspace = B_scaled_workspace * arma::trimatu(V_R);
     // Final vectorized computation
-    return other_terms - 0.5 * sq_dist;
+    log_re = other_terms - 0.5 * arma::sum(arma::square(Z_workspace), 1);
 }
 
-inline vec log_re_onlyL (const mat &b_scaled, const mat &L, double sum_log_sds) {
+inline void log_re_onlyL (const mat &b_scaled, const mat &L, double sum_log_sds,
+                         mat &Z_transposed, vec &log_re) {
     uword k = b_scaled.n_cols;
     // Calculate constants
     double log_det = -arma::sum(arma::log(L.diag())) - sum_log_sds;
@@ -223,13 +222,12 @@ inline vec log_re_onlyL (const mat &b_scaled, const mat &L, double sum_log_sds) 
     // Fast Triangular Solve (TRSM)
     // We want Z = b_scaled * L^-1.
     // We achieve this safely by solving L^T * Z^T = b_scaled^T
-    mat Z_transposed = arma::solve(arma::trimatl(L.t()), b_scaled.t());
+    Z_transposed = arma::solve(arma::trimatl(L.t()), b_scaled.t());
     // Calculate squared distances for all subjects
     // sum(..., 0) sums down the columns, returning a (1 x n) row vector.
     // .t() flips it to an (n x 1) column vector to match your expected output.
-    vec sq_dist = arma::sum(arma::square(Z_transposed), 0).t();
     // Final vectorized computation
-    return other_terms - 0.5 * sq_dist;
+    log_re = other_terms - 0.5 * arma::sum(arma::square(Z_transposed), 0).t();
 }
 
 /*
