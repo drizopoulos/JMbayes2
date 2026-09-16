@@ -9,20 +9,20 @@
 using namespace Rcpp;
 using namespace arma;
 
-vec log_long_i (const mat &y_i, vec mu_i, const double &sigma_i,
+inline void log_long_i (const mat &y_i, vec mu_i, const double sigma_i,
                 const double &extr_prm_i, const std::string &fam_i,
-                const std::string &link_i, const uvec &idFast_i) {
+                const std::string &link_i, const uvec &idFast_i,
+                vec &log_contr, vec &out) {
     uword N = y_i.n_rows;
-    vec log_contr(N, fill::none);
     mu_fun(mu_i, link_i);
     if (fam_i == "gaussian") {
-        log_contr = log_dnorm(y_i, mu_i, sigma_i);
+        log_dnorm_void(y_i, mu_i, sigma_i, log_contr);
     } else if (fam_i == "Student's-t") {
-        log_contr = log_dt((y_i - mu_i) / sigma_i, extr_prm_i) - std::log(sigma_i);
+        log_dt_void(y_i, mu_i, sigma_i, extr_prm_i, log_contr);
     } else if (fam_i == "beta") {
-        log_contr = log_dbeta(y_i, mu_i * sigma_i, sigma_i * (1.0 - mu_i));
+        log_dbeta_void(y_i, mu_i * sigma_i, sigma_i * (1.0 - mu_i), log_contr);
     } else if (fam_i == "Gamma") {
-        log_contr = log_dgamma(y_i, sigma_i, mu_i / sigma_i);
+        log_dgamma_void(y_i, sigma_i, mu_i / sigma_i, log_contr);
     } else if (fam_i == "unit Lindley") {
         const double* yy = y_i.memptr();
         const double* mu_ptr = mu_i.memptr();
@@ -50,48 +50,50 @@ vec log_long_i (const mat &y_i, vec mu_i, const double &sigma_i,
         }
     } else if (fam_i == "binomial") {
         if (y_i.n_cols == 2) {
-            log_contr = log_dbinom(y_i.col(0), y_i.col(1), mu_i);
+            log_dbinom_void(y_i.col(0), y_i.col(1), mu_i, log_contr);
         } else {
-            log_contr = log_dbernoulli(y_i, mu_i);
+            log_dbernoulli_void(y_i, mu_i, log_contr);
         }
     } else if (fam_i == "poisson") {
-        log_contr = log_dpois(y_i, mu_i);
+        log_dpois_void(y_i, mu_i, log_contr);
     } else if (fam_i == "negative binomial") {
-        log_contr = log_dnbinom(y_i, mu_i, sigma_i);
+        log_dnbinom_void(y_i, mu_i, sigma_i, log_contr);
     } else if (fam_i == "beta binomial") {
         if (y_i.n_cols == 2) {
-            log_contr = log_dbbinom(y_i.col(0), y_i.col(1), mu_i, sigma_i);
+            log_dbbinom_void(y_i.col(0), y_i.col(1), mu_i, sigma_i, log_contr);
         } else {
             vec ones(N, fill::ones);
-            log_contr = log_dbbinom(y_i, ones, mu_i, sigma_i);
+            log_dbbinom_void(y_i, ones, mu_i, sigma_i, log_contr);
         }
     }
-    return group_sum(log_contr, idFast_i);
+    group_sum(log_contr, idFast_i, out);
 }
 
-vec log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
-             const vec &extra_parms, const CharacterVector &families,
-             const CharacterVector &links, const field<uvec> &idFast,
-             const field<uvec> &unq_ids, const uword &n) {
+inline void log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
+             const vec &extra_parms, const std::vector<std::string> &families,
+             const std::vector<std::string> &links, const field<uvec> &idFast,
+             const field<uvec> &unq_ids, vec &out,
+             field<vec> &log_contr_obs_workspace,
+             field<vec> &log_contr_subj_workspace) {
     uword n_outcomes = y.size();
-    vec out(n, fill::zeros);
+    out.zeros();
     for (uword i = 0; i < n_outcomes; ++i) {
         const mat& y_i = y.at(i);
         const vec& eta_i = eta.at(i);
         double sigma_i = sigmas.at(i);
         double extr_prm_i = extra_parms.at(i);
-        std::string fam_i = as<std::string>(families[i]);
-        std::string link_i = as<std::string>(links[i]);
+        const std::string& fam_i = families[i];
+        const std::string& link_i = links[i];
         const uvec& idFast_i = idFast.at(i);
         const uvec& unq_id_i = unq_ids.at(i);
-        vec log_contr_i = log_long_i(y_i, eta_i, sigma_i, extr_prm_i, fam_i,
-                                     link_i, idFast_i);
-        out.rows(unq_id_i) += log_contr_i;
+        log_long_i(y_i, eta_i, sigma_i, extr_prm_i, fam_i, link_i, idFast_i,
+                   log_contr_obs_workspace.at(i),
+                   log_contr_subj_workspace.at(i));
+        out.rows(unq_id_i) += log_contr_subj_workspace.at(i);
     }
-    return out;
 }
 
-inline vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
+inline void log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
               const vec &W0H2_bs_gammas, const vec &WH_gammas,
               const vec &Wh_gammas, const vec &WH2_gammas,
               const vec &WlongH_alphas, const vec &Wlongh_alphas,
@@ -103,12 +105,13 @@ inline vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
               const bool &recurrent,
               const vec &frailtyH_sigmaF_alphaF,
               const vec &frailtyh_sigmaF_alphaF,
-              vec &lambda_H, vec &H, vec &lambda_H2, vec &H2, vec &out) {
-    lambda_H = W0H_bs_gammas + WH_gammas + WlongH_alphas;
+              vec &lambda_H, vec &H, vec &lambda_H2, vec &H2, vec &out,
+              vec &logLik_surv) {
+    lambda_H = log_Pwk + W0H_bs_gammas + WH_gammas + WlongH_alphas;
     if (recurrent) {
         lambda_H += frailtyH_sigmaF_alphaF;
     }
-    lambda_H = exp(log_Pwk + lambda_H);
+    lambda_H = exp(lambda_H);
     group_sum(lambda_H, indFast_H, H);
     out.rows(which_right_event) = -H.rows(which_right_event);
     if (which_event.n_elem > 0) {
@@ -124,15 +127,16 @@ inline vec log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
         out.rows(which_left) = log1p(-exp(-H.rows(which_left)));
     }
     if (any_interval) {
-        lambda_H2 = W0H2_bs_gammas + WH2_gammas + WlongH2_alphas;
-        H2 = group_sum(exp(log_Pwk2 + lambda_H2), indFast_H);
+        lambda_H2 = log_Pwk2 + W0H2_bs_gammas + WH2_gammas + WlongH2_alphas;
+        lambda_H2 = exp(lambda_H2);
+        group_sum(lambda_H2, indFast_H, H2);
         out.rows(which_interval) = -H.rows(which_interval) +
             log(-expm1(-H2.rows(which_interval)));
     }
     if (intgr) {
         out = lse(out, ind_h2, intgr_ind);
     }
-    return group_sum(out, indFast_h);
+    group_sum(out, indFast_h, logLik_surv);
 }
 
 vec log_surv_old (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
@@ -183,34 +187,33 @@ inline vec log_re (const mat &b, const mat &L, const vec &sds) {
     return other_terms - 0.5 * sq_dist;
 }
 
-inline vec log_re_onlyRE (const mat &b_prop, const mat &V_Sigma, double other_terms) {
+inline void log_re_onlyRE (const mat &b_prop, const mat &V_Sigma,
+                           double other_terms, mat &Z_workspace, vec &log_re) {
     // Fast Triangular Multiplication (TRMM)
     // V_Sigma is upper-triangular, so trimatu() safely bypasses half the math.
-    mat Z = b_prop * arma::trimatu(V_Sigma);
+    Z_workspace = b_prop * arma::trimatu(V_Sigma);
     // Calculate squared distances for all subjects
     // sum(..., 1) sums across the rows, giving an (n x 1) vector
-    vec sq_dist = arma::sum(arma::square(Z), 1);
-    return other_terms - 0.5 * sq_dist;
+    log_re = other_terms - 0.5 * arma::sum(arma::square(Z_workspace), 1);
 }
 
-inline vec log_re_onlySDS (const mat &b, const mat &V_R, double log_det_V_R,
-                           const vec &sds) {
+inline void log_re_onlySDS (const mat &b, const mat &V_R, double log_det_V_R,
+                           const vec &sds, mat &B_scaled_workspace,
+                           mat &Z_workspace, vec &log_re) {
     uword k = b.n_cols;
     // Calculate constants
     double log_det_V_Sigma = log_det_V_R - arma::sum(arma::log(sds));
     double other_terms = -(double)k / 2.0 * log2pi + log_det_V_Sigma;
-    // Scale all random effects by the proposed SDS instantly
-    mat B_scaled = b.each_row() / sds.t();
-    // Fast Triangular Multiplication (TRMM)
+     // Fast Triangular Multiplication (TRMM)
+     B_scaled_workspace = b.each_row() / sds.t();
     // By wrapping V_R in trimatu(), we tell the BLAS backend to skip half the math.
-    mat Z = B_scaled * arma::trimatu(V_R);
-    // Calculate squared distances for all subjects
-    vec sq_dist = arma::sum(arma::square(Z), 1);
+    Z_workspace = B_scaled_workspace * arma::trimatu(V_R);
     // Final vectorized computation
-    return other_terms - 0.5 * sq_dist;
+    log_re = other_terms - 0.5 * arma::sum(arma::square(Z_workspace), 1);
 }
 
-inline vec log_re_onlyL (const mat &b_scaled, const mat &L, double sum_log_sds) {
+inline void log_re_onlyL (const mat &b_scaled, const mat &L, double sum_log_sds,
+                         mat &Z_transposed, vec &log_re) {
     uword k = b_scaled.n_cols;
     // Calculate constants
     double log_det = -arma::sum(arma::log(L.diag())) - sum_log_sds;
@@ -219,13 +222,12 @@ inline vec log_re_onlyL (const mat &b_scaled, const mat &L, double sum_log_sds) 
     // Fast Triangular Solve (TRSM)
     // We want Z = b_scaled * L^-1.
     // We achieve this safely by solving L^T * Z^T = b_scaled^T
-    mat Z_transposed = arma::solve(arma::trimatl(L.t()), b_scaled.t());
+    Z_transposed = arma::solve(arma::trimatl(L.t()), b_scaled.t());
     // Calculate squared distances for all subjects
     // sum(..., 0) sums down the columns, returning a (1 x n) row vector.
     // .t() flips it to an (n x 1) column vector to match your expected output.
-    vec sq_dist = arma::sum(arma::square(Z_transposed), 0).t();
     // Final vectorized computation
-    return other_terms - 0.5 * sq_dist;
+    log_re = other_terms - 0.5 * arma::sum(arma::square(Z_transposed), 0).t();
 }
 
 /*
@@ -261,7 +263,8 @@ vec logLik_jm_stripped (
     const mat &L, const vec &sds,
     /////////////
     const field<mat> &y, const field<mat> &X, const field<mat> &Xbar, const field<mat> &Z,
-    const vec &extra_parms, const CharacterVector &families, const CharacterVector &links,
+    const vec &extra_parms, const std::vector<std::string> &families,
+    const std::vector<std::string> &links,
     const field<uvec> &idL, const field<uvec> &idL_lp_fast, const field<uvec> &unq_idL,
     /////////////
     const mat &W0_H, const mat &W0_h, const mat &W0_H2,
@@ -281,8 +284,11 @@ vec logLik_jm_stripped (
     const bool &recurrent, const vec &alphaF, const vec &frailty,
     const field<uvec> &which_term_H, const field<uvec> &which_term_h, const bool &any_terminal,
     const vec &sigmaF, vec &lambda_H_workspace, vec &H_workspace,
-    vec &lambda_H2_workspace, vec &H2_workspace, vec &surv_out_workspace) {
-  uword n = b.at(0).n_rows;
+    vec &lambda_H2_workspace, vec &H2_workspace, vec &surv_out_workspace,
+    vec &logLik_long, vec &logLik_surv,
+    field<vec> &log_contr_obs_workspace,
+    field<vec> &log_contr_subj_workspace) {
+  //uword n = b.at(0).n_rows;
   /////////////
   field<vec> betas_ = betas;
   // set intercept to centered covariates
@@ -290,8 +296,8 @@ vec logLik_jm_stripped (
     betas_.at(j).at(0) += as_scalar(Xbar.at(j) * betas.at(j));
   }
   field<vec> eta = linpred_mixed(X, betas_, Z, b, idL);
-  vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
-                             idL_lp_fast, unq_idL, n);
+  log_long(y, eta, sigmas, extra_parms, families, links, idL_lp_fast, unq_idL,
+           logLik_long, log_contr_obs_workspace, log_contr_subj_workspace);
   /////////////
   vec W0H_bs_gammas = W0_H * bs_gammas;
   vec W0h_bs_gammas(W0_h.n_rows);
@@ -352,17 +358,17 @@ vec logLik_jm_stripped (
   vec frailtyh_sigmaF_alphaF(which_event.n_rows, fill::zeros);
   frailtyH_sigmaF_alphaF = frailty_H % alphaF_H * sigmaF;
   frailtyh_sigmaF_alphaF = frailty_h.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
-  vec logLik_surv =
-    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-             WH_gammas, Wh_gammas, WH2_gammas,
-             WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-             log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
-             id_H_fast, id_h_fast,
-             which_event, which_right_event, which_left,
-             any_interval, which_interval,
-             recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
-             lambda_H_workspace, H_workspace,
-             lambda_H2_workspace, H2_workspace, surv_out_workspace);
+  log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+           WH_gammas, Wh_gammas, WH2_gammas,
+           WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+           log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+           id_H_fast, id_h_fast,
+           which_event, which_right_event, which_left,
+           any_interval, which_interval,
+           recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+           lambda_H_workspace, H_workspace,
+           lambda_H2_workspace, H2_workspace, surv_out_workspace,
+           logLik_surv);
   mat b_mat = docall_cbindF(b);
   vec logLik_re = log_re(b_mat, L, sds);
   vec out = logLik_long + logLik_surv + logLik_re;

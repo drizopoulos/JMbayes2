@@ -72,33 +72,33 @@ void update_bs_gammas (vec &bs_gammas, const vec &gammas, const vec &alphas,
                        const double &tau_alphaF, const bool &shrink_alphaF,
                        vec &lambda_H_workspace, vec &H_workspace,
                        vec &lambda_H2_workspace, vec &H2_workspace,
-                       vec &surv_out_workspace) {
-
+                       vec &surv_out_workspace, vec &logLik_surv_proposed) {
+    vec proposed_W0H_bs_gammas(size(W0H_bs_gammas), arma::fill::none);
+    vec proposed_W0h_bs_gammas(size(W0h_bs_gammas), arma::fill::none);
+    vec proposed_W0H2_bs_gammas(size(W0H2_bs_gammas), arma::fill::none);
     for (uword i = 0; i < bs_gammas.n_elem; ++i) {
         double old_gamma_i = bs_gammas.at(i);
         double diff = scale_bs_gammas.at(i) * R::norm_rand();
         bs_gammas.at(i) += diff;
-        vec proposed_W0H_bs_gammas = W0H_bs_gammas + W0_H.col(i) * diff;
-        vec proposed_W0h_bs_gammas;
+        proposed_W0H_bs_gammas = W0H_bs_gammas + W0_H.col(i) * diff;
         if (any_event) {
             proposed_W0h_bs_gammas = W0h_bs_gammas + W0_h.col(i) * diff;
         }
-        vec proposed_W0H2_bs_gammas;
         if (any_interval) {
             proposed_W0H2_bs_gammas = W0H2_bs_gammas + W0_H2.col(i) * diff;
         }
         // Evaluate likelihood
-        vec logLik_surv_proposed =
-            log_surv(proposed_W0H_bs_gammas, proposed_W0h_bs_gammas, proposed_W0H2_bs_gammas,
-                                            WH_gammas, Wh_gammas, WH2_gammas,
-                                            WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                                            log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
-                                            indFast_H, indFast_h,
-                                            which_event, which_right_event, which_left,
-                                            any_interval, interval,
-                                            recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
-                                            lambda_H_workspace, H_workspace,
-                                            lambda_H2_workspace, H2_workspace, surv_out_workspace);
+        log_surv(proposed_W0H_bs_gammas, proposed_W0h_bs_gammas, proposed_W0H2_bs_gammas,
+                 WH_gammas, Wh_gammas, WH2_gammas,
+                 WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+                 log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+                 indFast_H, indFast_h,
+                 which_event, which_right_event, which_left,
+                 any_interval, interval,
+                 recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+                 lambda_H_workspace, H_workspace,
+                 lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                 logLik_surv_proposed);
 
         double numerator_surv = sum(logLik_surv_proposed) +
             logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
@@ -154,32 +154,32 @@ void update_gammas (const vec &bs_gammas, vec &gammas, const vec &alphas,
                     const double &tau_alphaF, const bool &shrink_alphaF,
                     vec &lambda_H_workspace, vec &H_workspace,
                     vec &lambda_H2_workspace, vec &H2_workspace,
-                    vec &surv_out_workspace) {
-
+                    vec &surv_out_workspace, vec &logLik_surv_proposed) {
+    vec proposed_WH_gammas(size(WH_gammas), arma::fill::none);
+    vec proposed_Wh_gammas(size(Wh_gammas), arma::fill::none);
+    vec proposed_WH2_gammas(size(WH2_gammas), arma::fill::none);
     for (uword i = 0; i < gammas.n_elem; ++i) {
         double old_gamma_i = gammas.at(i);
         double diff = scale_gammas.at(i) * R::norm_rand();
         gammas.at(i) += diff;
-        vec proposed_WH_gammas = WH_gammas + W_H.col(i) * diff;
-        vec proposed_Wh_gammas;
-        if (any_event) {
+        proposed_WH_gammas = WH_gammas + W_H.col(i) * diff;
+         if (any_event) {
             proposed_Wh_gammas = Wh_gammas + W_h.col(i) * diff;
         }
-        vec proposed_WH2_gammas;
         if (any_interval) {
             proposed_WH2_gammas = WH2_gammas + W_H2.col(i) * diff;
         }
-        vec logLik_surv_proposed =
-            log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-                     proposed_WH_gammas, proposed_Wh_gammas, proposed_WH2_gammas,
-                     WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-                     log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
-                     indFast_H, indFast_h,
-                     which_event, which_right_event, which_left,
-                     any_interval, which_interval,
-                     recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
-                     lambda_H_workspace, H_workspace,
-                     lambda_H2_workspace, H2_workspace, surv_out_workspace);
+        log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                 proposed_WH_gammas, proposed_Wh_gammas, proposed_WH2_gammas,
+                 WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+                 log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+                 indFast_H, indFast_h,
+                 which_event, which_right_event, which_left,
+                 any_interval, which_interval,
+                 recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+                 lambda_H_workspace, H_workspace,
+                 lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                 logLik_surv_proposed);
         double numerator_surv =
             sum(logLik_surv_proposed) +
             logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
@@ -234,32 +234,32 @@ void update_alphas (const vec &bs_gammas, const vec &gammas, vec &alphas,
                     const double &tau_alphaF, const bool &shrink_alphaF,
                     vec &lambda_H_workspace, vec &H_workspace,
                     vec &lambda_H2_workspace, vec &H2_workspace,
-                    vec &surv_out_workspace) {
-
+                    vec &surv_out_workspace, vec &logLik_surv_proposed) {
+    vec proposed_WlongH_alphas(size(WlongH_alphas), arma::fill::none);
+    vec proposed_Wlongh_alphas(size(Wlongh_alphas), arma::fill::none);
+    vec proposed_WlongH2_alphas(size(WlongH2_alphas), arma::fill::none);
     for (uword i = 0; i < alphas.n_elem; ++i) {
         double old_alpha_i = alphas.at(i);
         double diff = scale_alphas.at(i) * R::norm_rand();
         alphas.at(i) += diff;
-        vec proposed_WlongH_alphas = WlongH_alphas + Wlong_H.col(i) * diff;
-        vec proposed_Wlongh_alphas;
+        proposed_WlongH_alphas = WlongH_alphas + Wlong_H.col(i) * diff;
         if (any_event) {
             proposed_Wlongh_alphas = Wlongh_alphas + Wlong_h.col(i) * diff;
         }
-        vec proposed_WlongH2_alphas;
         if (any_interval) {
             proposed_WlongH2_alphas = WlongH2_alphas + Wlong_H2.col(i) * diff;
         }
-        vec logLik_surv_proposed =
-            log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-                     WH_gammas, Wh_gammas, WH2_gammas,
-                     proposed_WlongH_alphas, proposed_Wlongh_alphas, proposed_WlongH2_alphas,
-                     log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
-                     indFast_H, indFast_h,
-                     which_event, which_right_event, which_left,
-                     any_interval, which_interval,
-                     recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
-                     lambda_H_workspace, H_workspace,
-                     lambda_H2_workspace, H2_workspace, surv_out_workspace);
+        log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+                 WH_gammas, Wh_gammas, WH2_gammas,
+                 proposed_WlongH_alphas, proposed_Wlongh_alphas, proposed_WlongH2_alphas,
+                 log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+                 indFast_H, indFast_h,
+                 which_event, which_right_event, which_left,
+                 any_interval, which_interval,
+                 recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+                 lambda_H_workspace, H_workspace,
+                 lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                 logLik_surv_proposed);
         double numerator_surv =
             sum(logLik_surv_proposed) +
             logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,
@@ -319,7 +319,7 @@ void update_alphaF (const vec &bs_gammas, const vec &gammas, const vec &alphas,
                     vec &frailtyH_sigmaF_alphaF, vec &frailtyh_sigmaF_alphaF,
                     vec &lambda_H_workspace, vec &H_workspace,
                     vec &lambda_H2_workspace, vec &H2_workspace,
-                    vec &surv_out_workspace) {
+                    vec &surv_out_workspace, vec &logLik_surv_proposed) {
   for (uword i = 0; i < alphaF.n_rows; ++i) {
     vec proposed_alphaF = propose_norm(alphaF, scale_alphaF, i);
     vec proposed_alphaF_H(WH_gammas.n_rows, fill::ones);
@@ -332,18 +332,18 @@ void update_alphaF (const vec &bs_gammas, const vec &gammas, const vec &alphas,
     vec proposed_frailtyh_sigmaF_alphaF(which_event.n_rows, fill::zeros);
     proposed_frailtyH_sigmaF_alphaF = frailty_H % proposed_alphaF_H * sigmaF;
     proposed_frailtyh_sigmaF_alphaF = frailty_h.rows(which_event) % proposed_alphaF_h.rows(which_event) * sigmaF;
-    vec logLik_surv_proposed =
-      log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-               WH_gammas, Wh_gammas, WH2_gammas,
-               WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-               log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
-               indFast_H, indFast_h,
-               which_event, which_right_event, which_left,
-               any_interval, which_interval,
-               recurrent,
-               proposed_frailtyH_sigmaF_alphaF, proposed_frailtyh_sigmaF_alphaF,
-               lambda_H_workspace, H_workspace,
-               lambda_H2_workspace, H2_workspace, surv_out_workspace);
+    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+             WH_gammas, Wh_gammas, WH2_gammas,
+             WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+             log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+             indFast_H, indFast_h,
+             which_event, which_right_event, which_left,
+             any_interval, which_interval,
+             recurrent,
+             proposed_frailtyH_sigmaF_alphaF, proposed_frailtyh_sigmaF_alphaF,
+             lambda_H_workspace, H_workspace,
+             lambda_H2_workspace, H2_workspace, surv_out_workspace,
+             logLik_surv_proposed);
     double numerator_surv =
       sum(logLik_surv_proposed) +
       logPrior_surv(bs_gammas, gammas, alphas, prior_mean_bs_gammas,

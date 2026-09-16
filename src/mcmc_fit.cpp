@@ -104,8 +104,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   }
   vec extra_parms = as<vec>(model_data["extra_parms"]);
   field<uvec> ind_RE = List2Field_uvec(as<List>(model_data["ind_RE"]), true);
-  CharacterVector families = as<CharacterVector>(model_info["family_names"]);
-  CharacterVector links = as<CharacterVector>(model_info["links"]);
+  CharacterVector families_ = as<CharacterVector>(model_info["family_names"]);
+  CharacterVector links_ = as<CharacterVector>(model_info["links"]);
+  std::vector<std::string> families = as<std::vector<std::string>>(families_);
+  std::vector<std::string> links = as<std::vector<std::string>>(links_);
   // initial values
   vec bs_gammas = as<vec>(initial_values["bs_gammas"]);
   vec tau_bs_gammas = as<vec>(initial_values["tau_bs_gammas"]);
@@ -313,7 +315,31 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       frailty_h.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
   //
   // pre-allocate workspaces for log_long()
-  //vec long_out_workspace(n_b, arma::fill::zeros);
+  vec logLik_long(n_b, arma::fill::none);
+  vec logLik_long_proposed(n_b, arma::fill::none);
+  uword p_HC = ind_FE_HC.n_elem;
+  uword q = b_mat.n_cols;
+  field<mat> X_dots(n_b);
+  for (uword i = 0; i < n_b; ++i) {
+      uword patt_i = id_patt.at(i);
+      if (ind_FE_patt.at(patt_i).is_empty()) continue;
+      uvec ind_FE_i = ind_FE_patt.at(patt_i);
+      uvec ind_RE_i = ind_RE_patt.at(patt_i);
+      uvec absolute_rows = i * q + ind_RE_i;
+      X_dots.at(i) = X_dot.submat(absolute_rows, ind_FE_i);
+  }
+  mat sum_JXDXJ(p_HC, p_HC, fill::none);
+  vec sum_JXDu(p_HC, fill::none);
+  mat u_mat(n_b, q, fill::none);
+  mat mean_u_mat(n_b, q, fill::none);
+  mat mean_u_mat2(n_b, q, fill::none);
+  uword n_outcomes = y.size();
+  field<vec> log_contr_obs_workspace(n_outcomes);
+  field<vec> log_contr_subj_workspace(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+      log_contr_obs_workspace.at(i).set_size(y.at(i).n_rows);
+      log_contr_subj_workspace.at(i).set_size(unq_idL.at(i).n_elem);
+  }
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -321,18 +347,29 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec H_workspace(tmp_H.n_rows, arma::fill::none);
   vec H2_workspace(tmp_H.n_rows, arma::fill::none);
   vec surv_out_workspace(tmp_H.n_rows, arma::fill::none);
+  vec logLik_surv(n_b, arma::fill::none);
+  vec logLik_surv_proposed(n_b, arma::fill::none);
+  field<mat> eta_H(n_outcomes);
+  field<mat> eta_h(n_outcomes);
+  field<mat> eta_H2(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+      uword n_forms = X_H.at(i).n_cols / betas.at(i).n_rows;
+      eta_H.at(i).set_size(X_H.at(i).n_rows, n_forms);
+      if (any_event) eta_h.at(i).set_size(X_h.at(i).n_rows, n_forms);
+      if (any_interval) eta_H2.at(i).set_size(X_H2.at(i).n_rows, n_forms);
+  }
   //
-  vec logLik_surv =
-    log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
-             WH_gammas, Wh_gammas, WH2_gammas,
-             WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
-             log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
-             id_H_fast, id_h_fast,
-             which_event, which_right_event, which_left,
-             any_interval, which_interval,
-             recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
-             lambda_H_workspace, H_workspace,
-             lambda_H2_workspace, H2_workspace, surv_out_workspace);
+  log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
+           WH_gammas, Wh_gammas, WH2_gammas,
+           WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+           log_Pwk, log_Pwk2, log_weights, id_h2, intgr_ind, intgr,
+           id_H_fast, id_h_fast,
+           which_event, which_right_event, which_left,
+           any_interval, which_interval,
+           recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+           lambda_H_workspace, H_workspace,
+           lambda_H2_workspace, H2_workspace, surv_out_workspace,
+           logLik_surv);
   double denominator_surv =
     sum(logLik_surv) +
     logPrior_surv(bs_gammas, gammas, alphas, mean_bs_gammas,
@@ -347,8 +384,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec logLik_re = log_re(b_mat, L, sds);
   //
   field<vec> eta = linpred_mixed(X, betas, Z, b, idL);
-  vec logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
-                             idL_lp_fast, unq_idL, n_b);
+  log_long(y, eta, sigmas, extra_parms, families, links, idL_lp_fast, unq_idL,
+           logLik_long, log_contr_obs_workspace, log_contr_subj_workspace);
   vec logLik_frailty = log_dnorm(frailty, vec(frailty.n_elem, fill::zeros), 1.0);
   //
   for (uword it = 0; it < n_iter; ++it) {
@@ -372,7 +409,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                      recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
                      alphaF, mean_alphaF, Tau_alphaF, lambda_alphaF, tau_alphaF,
                      shrink_alphaF, lambda_H_workspace, H_workspace,
-                     lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                     lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                     logLik_surv_proposed);
 
     ////////////////////////////////////////////////////////////////////////
 
@@ -413,7 +451,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
                     alphaF, mean_alphaF, Tau_alphaF, lambda_alphaF, tau_alphaF,
                     shrink_alphaF, lambda_H_workspace, H_workspace,
-                    lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                    lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                    logLik_surv_proposed);
       res_W_std_gammas.at(it) = as_scalar(W_std * gammas);
 
       if (shrink_gammas) {
@@ -447,7 +486,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                   recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
                   alphaF, mean_alphaF, Tau_alphaF, lambda_alphaF, tau_alphaF,
                   shrink_alphaF, lambda_H_workspace, H_workspace,
-                  lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                  lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                  logLik_surv_proposed);
 
     res_Wlong_std_alphas.at(it) = as_scalar(Wlong_std * alphas);
 
@@ -479,7 +519,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                      n_burnin, it,
                      sigmaF, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
                      lambda_H_workspace, H_workspace,
-                     lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                     lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                     logLik_surv_proposed);
 
       update_sigmaF(sigmaF, logLik_surv,
                     res_sigmaF, scale_sigmaF, acceptance_sigmaF,
@@ -492,7 +533,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                     which_interval, recurrent, frailty_H, frailty_h, alphaF_H,
                     alphaF_h, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
                     lambda_H_workspace, H_workspace,
-                    lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                    lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                    logLik_surv_proposed);
 
       denominator_surv =
         sum(logLik_surv) +
@@ -532,7 +574,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                       sigmaF,
                       frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
                       lambda_H_workspace, H_workspace,
-                      lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                      lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                      logLik_surv_proposed);
       }
     }
 
@@ -544,9 +587,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     ////////////////////////////////////////////////////////////////////////
 
-        update_b(b, b_mat, eta, logLik_long, logLik_surv, logLik_re,
-             Wlong_H, Wlong_h, Wlong_H2, WlongH_alphas, Wlongh_alphas,
-             WlongH2_alphas, scale_b, ind_RE,
+    update_b(b, b_mat, eta, logLik_long, logLik_surv, logLik_re,
+             eta_H, eta_h, eta_H2, Wlong_H, Wlong_h, Wlong_H2,
+             WlongH_alphas, Wlongh_alphas, WlongH2_alphas, scale_b, ind_RE,
              X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
              Wlong_bar, Wlong_sds, betas, alphas, id_H_, id_h,
              FunForms, Funs_FunForms, X, Z, idL, y, sigmas,
@@ -559,13 +602,15 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              L, sds, it, acceptance_b, n_burnin, GK_k,
              recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
              lambda_H_workspace, H_workspace,
-             lambda_H2_workspace, H2_workspace, surv_out_workspace);
+             lambda_H2_workspace, H2_workspace, surv_out_workspace,
+             logLik_long_proposed, logLik_surv_proposed,
+             log_contr_obs_workspace, log_contr_subj_workspace);
 
     ////////////////////////////////////////////////////////////////////
 
-        update_betas(betas, res_betas, acceptance_betas, scale_betas, eta,
-                 logLik_long, logLik_surv, Wlong_H, Wlong_h, Wlong_H2,
-                 WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+    update_betas(betas, res_betas, acceptance_betas, scale_betas, eta,
+                 logLik_long, eta_H, eta_h, eta_H2, logLik_surv, Wlong_H,
+                 Wlong_h, Wlong_H2, WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
                  Tau_mean_betas_HC, Tau_betas_HC, b_mat, L, sds, X_dot,
                  ind_FE, ind_RE, ind_FE_HC, id_patt, ind_RE_patt, ind_FE_patt,
                  it, has_tilde_betas, X, Z, b, idL, y, sigmas,
@@ -583,7 +628,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  frailtyh_sigmaF_alphaF, save_random_effects, res_b, res_b_last,
                  cumsum_b, outprod_b, n_iter,
                  lambda_H_workspace, H_workspace,
-                 lambda_H2_workspace, H2_workspace, surv_out_workspace);
+                 lambda_H2_workspace, H2_workspace, surv_out_workspace,
+                 logLik_surv_proposed, X_dots, sum_JXDXJ, sum_JXDu, u_mat,
+                 mean_u_mat, mean_u_mat2, log_contr_obs_workspace,
+                 log_contr_subj_workspace);
 
         // update intercepts
         for (uword j = 0; j < y.n_elem; ++j) {
@@ -607,10 +655,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
         update_sigmas(sigmas, has_sigmas, y, eta, extra_parms, families, links,
                   idL_lp_fast, gamma_prior_sigmas, sigmas_df, sigmas_sigmas,
                   sigmas_shape, sigmas_mean, it, res_sigmas, scale_sigmas,
-                  acceptance_sigmas);
+                  acceptance_sigmas, log_contr_obs_workspace,
+                  log_contr_subj_workspace);
 
-        logLik_long = log_long(y, eta, sigmas, extra_parms, families, links,
-                           idL_lp_fast, unq_idL, n_b);
+        log_long(y, eta, sigmas, extra_parms, families, links, idL_lp_fast,
+                 unq_idL, logLik_long, log_contr_obs_workspace,
+                 log_contr_subj_workspace);
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -691,15 +741,17 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   field<mat> Xbar = List2Field_mat(as<List>(model_data["Xbar"]));
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   vec extra_parms = as<vec>(model_data["extra_parms"]);
-  CharacterVector families = as<CharacterVector>(model_info["family_names"]);
-  CharacterVector links = as<CharacterVector>(model_info["links"]);
+  CharacterVector families_ = as<CharacterVector>(model_info["family_names"]);
+  CharacterVector links_ = as<CharacterVector>(model_info["links"]);
+  std::vector<std::string> families = as<std::vector<std::string>>(families_);
+  std::vector<std::string> links = as<std::vector<std::string>>(links_);
   field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
+  field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
   field<uvec> idL_lp_fast(idL_lp.n_elem);
   for (uword i = 0; i < idL_lp.n_elem; ++i) {
     idL_lp_fast.at(i) = create_fast_ind(idL_lp.at(i) + 1);
   }
-  field<uvec> unq_idL = List2Field_uvec(as<List>(model_data["unq_idL"]), true);
   /////////////
   mat W0_H = as<mat>(model_data["W0_H"]);
   mat W0_h = as<mat>(model_data["W0_h"]);
@@ -751,8 +803,15 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   vec alphaF = as<vec>(thetas["alphaF"]);
   vec frailty = as<vec>(thetas["frailty"]);
   vec sigmaF = as<vec>(thetas["sigmaF"]);
-  // pre-allocate workspaces for log_surv()
-  //vec long_out_workspace(b_mat.n_rows, arma::fill::zeros);
+  // pre-allocate workspaces for log_long()
+  vec logLik_long(b_mat.n_rows, arma::fill::none);
+  uword n_outcomes = y.size();
+  field<vec> log_contr_obs_workspace(n_outcomes);
+  field<vec> log_contr_subj_workspace(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+      log_contr_obs_workspace.at(i).set_size(y.at(i).n_rows);
+      log_contr_subj_workspace.at(i).set_size(unq_idL.at(i).n_elem);
+  }
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -760,6 +819,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   vec H_workspace(tmp_H.n_rows, arma::fill::none);
   vec H2_workspace(tmp_H.n_rows, arma::fill::none);
   vec surv_out_workspace(tmp_H.n_rows, arma::fill::none);
+  vec logLik_surv(b_mat.n_rows, arma::fill::none);
   /////////////
   vec out =
     logLik_jm_stripped(
@@ -775,7 +835,8 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
       which_interval,
       recurrent, alphaF, frailty, which_term_H, which_term_h, any_terminal,
       sigmaF, lambda_H_workspace, H_workspace,
-      lambda_H2_workspace, H2_workspace, surv_out_workspace);
+      lambda_H2_workspace, H2_workspace, surv_out_workspace, logLik_long,
+      logLik_surv, log_contr_obs_workspace, log_contr_subj_workspace);
   return out;
 }
 
@@ -814,8 +875,10 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   field<mat> Xbar = List2Field_mat(as<List>(model_data["Xbar"]));
   field<mat> Z = List2Field_mat(as<List>(model_data["Z"]));
   vec extra_parms = as<vec>(model_data["extra_parms"]);
-  CharacterVector families = as<CharacterVector>(model_info["family_names"]);
-  CharacterVector links = as<CharacterVector>(model_info["links"]);
+  CharacterVector families_ = as<CharacterVector>(model_info["family_names"]);
+  CharacterVector links_ = as<CharacterVector>(model_info["links"]);
+  std::vector<std::string> families = as<std::vector<std::string>>(families_);
+  std::vector<std::string> links = as<std::vector<std::string>>(links_);
   field<uvec> idL = List2Field_uvec(as<List>(model_data["idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(model_data["idL_lp"]), true);
   field<uvec> idL_lp_fast(idL_lp.n_elem);
@@ -876,7 +939,14 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   mat frailty = trans(as<mat>(res_thetas["frailty"]));
   mat sigmaF = trans(as<mat>(res_thetas["sigmaF"]));
   // pre-allocate workspaces for log_long()
-  //vec long_out_workspace(n, arma::fill::zeros);
+  vec logLik_long(n, arma::fill::none);
+  uword n_outcomes = y.size();
+  field<vec> log_contr_obs_workspace(n_outcomes);
+  field<vec> log_contr_subj_workspace(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+      log_contr_obs_workspace.at(i).set_size(y.at(i).n_rows);
+      log_contr_subj_workspace.at(i).set_size(unq_idL.at(i).n_elem);
+  }
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -884,6 +954,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   vec H_workspace(tmp_H.n_rows, arma::fill::none);
   vec H2_workspace(tmp_H.n_rows, arma::fill::none);
   vec surv_out_workspace(tmp_H.n_rows, arma::fill::none);
+  vec logLik_surv(n, arma::fill::none);
   /////////////
   mat out(n, K);
   field<vec> betas_i(betas.n_elem);
@@ -903,7 +974,8 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
       which_interval,
       recurrent, alphaF.col(i), frailty.col(i), which_term_H, which_term_h, any_terminal,
       sigmaF.col(i), lambda_H_workspace, H_workspace,
-      lambda_H2_workspace, H2_workspace, surv_out_workspace);
+      lambda_H2_workspace, H2_workspace, surv_out_workspace, logLik_long,
+      logLik_surv, log_contr_obs_workspace, log_contr_subj_workspace);
     oo += 0.5 * ((double)mean_b_mat.n_cols * log2pi + log_det_post_vars);
     out.col(i) = oo;
   }
@@ -973,8 +1045,10 @@ List simulate_REs (List Data, List MCMC, List control) {
   field<mat> Z = List2Field_mat(as<List>(Data["Z"]));
   //
   vec extra_parms = as<vec>(Data["extra_parms"]);
-  CharacterVector families = as<CharacterVector>(Data["family_names"]);
-  CharacterVector links = as<CharacterVector>(Data["links"]);
+  CharacterVector families_ = as<CharacterVector>(Data["family_names"]);
+  CharacterVector links_ = as<CharacterVector>(Data["links"]);
+  std::vector<std::string> families = as<std::vector<std::string>>(families_);
+  std::vector<std::string> links = as<std::vector<std::string>>(links_);
   field<uvec> idL = List2Field_uvec(as<List>(Data["idL"]), true);
   field<uvec> unq_idL = List2Field_uvec(as<List>(Data["unq_idL"]), true);
   field<uvec> idL_lp = List2Field_uvec(as<List>(Data["idL_lp"]), true);
@@ -1015,7 +1089,15 @@ List simulate_REs (List Data, List MCMC, List control) {
   mat scale_b = mat(n_b,  b_mat.n_cols, fill::ones) * 0.2;
   //
   // pre-allocate workspaces for log_long()
-  //vec long_out_workspace(n_b, arma::fill::zeros);
+  vec logLik_long(n_b, arma::fill::none);
+  vec logLik_long_proposed(n_b, arma::fill::none);
+  uword n_outcomes = y.size();
+  field<vec> log_contr_obs_workspace(n_outcomes);
+  field<vec> log_contr_subj_workspace(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+      log_contr_obs_workspace.at(i).set_size(y.at(i).n_rows);
+      log_contr_subj_workspace.at(i).set_size(unq_idL.at(i).n_elem);
+  }
   field<vec> betas_it(betas.n_elem);
   cube out(n_b, nRE, n_samples, fill::zeros);
   mat outS(n_b, n_samples, fill::zeros);
@@ -1079,8 +1161,8 @@ List simulate_REs (List Data, List MCMC, List control) {
                    any_interval, which_interval);
     ///
     field<vec> eta = linpred_mixed(X, betas_it, Z, b, idL);
-    vec logLik_long = log_long(y, eta, sigmas_it, extra_parms, families,
-                               links, ids, unq_idL, n_b);
+    log_long(y, eta, sigmas_it, extra_parms, families, links, ids, unq_idL,
+             logLik_long, log_contr_obs_workspace, log_contr_subj_workspace);
     ///
     vec logLik_re = log_re(b_mat, L_it, sds_it);
     // calculate the denominator
@@ -1098,9 +1180,9 @@ List simulate_REs (List Data, List MCMC, List control) {
         //
         field<vec> eta_proposed =
           linpred_mixed(X, betas_it, Z, proposed_b, idL);
-        vec logLik_long_proposed =
-          log_long(y, eta_proposed, sigmas_it, extra_parms,
-                   families, links, ids, unq_idL, n_b);
+        log_long(y, eta_proposed, sigmas_it, extra_parms, families, links, ids,
+                 unq_idL, logLik_long_proposed, log_contr_obs_workspace,
+                 log_contr_subj_workspace);
         //
         mat Wlong_H_proposed =
           calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds,
