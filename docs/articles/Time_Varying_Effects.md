@@ -55,30 +55,30 @@ summary(jointFit1)
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    4346.937 6096.897 -3271.149
-#> conditional 8713.787 8448.451 -4517.738
+#> marginal    4347.328 6109.815 -3487.499
+#> conditional 8712.938 8455.463 -4540.759
 #> 
 #> Random-effects covariance matrix:
 #>                               
 #>        StdDev    Corr         
-#> (Intr) 1.3091  (Intr)  p(,2)1 
-#> p(,2)1 21.6892 0.6786         
-#> p(,2)2 12.1450 -0.2361 -0.1267
+#> (Intr) 1.3031  (Intr)  p(,2)1 
+#> p(,2)1 21.5646 0.6718         
+#> p(,2)2 12.2502 -0.2408 -0.1198
 #> 
 #> Survival outcome:
 #>                         Mean  StDev    2.5%  97.5%      P   Rhat
-#> sexfemale            -0.1531 0.2625 -0.6448 0.3834 0.5444 1.0118
-#> value(log(serBilir))  1.2974 0.0989  1.1169 1.5105 0.0000 1.0469
+#> sexfemale            -0.1578 0.2680 -0.6374 0.3961 0.5458 1.0034
+#> value(log(serBilir))  1.2969 0.0956  1.1170 1.4854 0.0000 1.0247
 #> 
 #> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev     2.5%   97.5%      P   Rhat
-#> (Intercept)     1.4897 0.2236   1.0479  1.9216 0.0000 1.0008
-#> poly(year, 2)1 29.5318 5.1216  19.7020 39.8127 0.0000 1.0106
-#> poly(year, 2)2 -4.8101 3.1672 -11.1911  1.2785 0.1256 1.0055
-#> sexfemale      -0.4703 0.2386  -0.9310  0.0002 0.0502 1.0001
-#> p(,2)1         -5.0308 5.3098 -15.6799  5.3492 0.3393 1.0088
-#> p(,2)2          6.3008 3.2751  -0.1080 12.8040 0.0540 1.0120
-#> sigma           0.3028 0.0061   0.2909  0.3149 0.0000 1.0077
+#> (Intercept)     1.4887 0.2258   1.0513  1.9331 0.0000 1.0034
+#> poly(year, 2)1 29.6265 5.2082  19.6130 39.8990 0.0000 1.0385
+#> poly(year, 2)2 -4.7674 3.1874 -11.2709  1.2877 0.1311 1.0093
+#> sexfemale      -0.4738 0.2391  -0.9373 -0.0012 0.0496 1.0018
+#> p(,2)1         -5.3098 5.4130 -16.0293  5.2024 0.3207 1.0574
+#> p(,2)2          6.2334 3.3565  -0.1724 13.0465 0.0542 1.0215
+#> sigma           0.3025 0.0061   0.2910  0.3149 0.0000 1.0026
 #> 
 #> MCMC summary:
 #> chains: 3 
@@ -114,48 +114,48 @@ summary(jointFit2)
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    4341.405 6355.209 -3701.785
-#> conditional 8721.121 8458.791 -4518.159
+#> marginal    4339.228 6124.230 -3449.639
+#> conditional 8708.186 8447.553 -4509.049
 #> 
 #> Random-effects covariance matrix:
 #>                               
 #>        StdDev    Corr         
-#> (Intr) 1.3165  (Intr)  p(,2)1 
-#> p(,2)1 22.1410 0.6886         
-#> p(,2)2 12.1107 -0.2160 -0.1051
+#> (Intr) 1.3093  (Intr)  p(,2)1 
+#> p(,2)1 21.8150 0.6809         
+#> p(,2)2 11.9878 -0.2276 -0.1222
 #> 
 #> Survival outcome:
 #>                                                                   Mean  StDev
-#> sexfemale                                                      -0.1687 0.2778
-#> value(log(serBilir))                                            1.3764 0.2307
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 -0.2749 0.2747
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2 -0.0072 0.3547
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 -0.6068 0.7512
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 -1.1876 0.9046
+#> sexfemale                                                      -0.1642 0.2835
+#> value(log(serBilir))                                            1.3704 0.2477
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 -0.2748 0.3118
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2  0.0239 0.3692
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 -0.5696 0.7533
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 -1.1826 0.9127
 #>                                                                   2.5%  97.5%
-#> sexfemale                                                      -0.7010 0.3837
-#> value(log(serBilir))                                            0.9567 1.8273
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 -0.8186 0.2543
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2 -0.7200 0.7006
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 -2.0471 0.9432
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 -2.7763 0.6365
+#> sexfemale                                                      -0.6957 0.4011
+#> value(log(serBilir))                                            0.9123 1.8689
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 -0.9048 0.2912
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2 -0.6756 0.7640
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 -2.0441 0.9807
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 -2.8740 0.6086
 #>                                                                     P   Rhat
-#> sexfemale                                                      0.5503 1.0000
-#> value(log(serBilir))                                           0.0000 1.0511
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 0.3257 1.0029
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2 0.9955 1.0172
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 0.4217 1.0656
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 0.2075 1.1052
+#> sexfemale                                                      0.5527 1.0041
+#> value(log(serBilir))                                           0.0000 1.3202
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 0.3988 1.2206
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2 0.9562 1.0477
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 0.4177 1.5001
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 0.2227 1.2250
 #> 
 #> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev     2.5%   97.5%      P   Rhat
-#> (Intercept)     1.4928 0.2264   1.0449  1.9387 0.0000 1.0071
-#> poly(year, 2)1 30.0902 5.3321  19.8109 40.8594 0.0000 1.0643
-#> poly(year, 2)2 -4.4062 3.2052 -10.5846  1.9815 0.1732 1.0559
-#> sexfemale      -0.4713 0.2410  -0.9480  0.0006 0.0505 1.0053
-#> p(,2)1         -5.3315 5.6721 -16.7089  5.5721 0.3432 1.0534
-#> p(,2)2          6.0298 3.3524  -0.5961 12.6127 0.0733 1.0530
-#> sigma           0.3030 0.0062   0.2907  0.3151 0.0000 1.0019
+#> (Intercept)     1.4946 0.2256   1.0556  1.9361 0.0000 1.0023
+#> poly(year, 2)1 30.0112 5.2490  19.9845 40.4760 0.0000 1.0422
+#> poly(year, 2)2 -4.3607 3.1320 -10.4344  1.7848 0.1647 1.0479
+#> sexfemale      -0.4759 0.2402  -0.9440 -0.0048 0.0473 1.0024
+#> p(,2)1         -5.4405 5.4597 -16.1193  5.2577 0.3178 1.0634
+#> p(,2)2          5.9020 3.2388  -0.3603 12.1993 0.0677 1.0717
+#> sigma           0.3031 0.0062   0.2911  0.3158 0.0000 1.0098
 #> 
 #> MCMC summary:
 #> chains: 3 
@@ -201,8 +201,8 @@ hazards. This is also confirmed by comparing the two models:
 compare_jm(jointFit1, jointFit2)
 #> 
 #>                 DIC     WAIC      LPML
-#>  jointFit1 4346.937 6096.897 -3271.149
-#>  jointFit2 4341.405 6355.209 -3701.785
+#>  jointFit1 4347.328 6109.815 -3487.499
+#>  jointFit2 4339.228 6124.230 -3449.639
 #> 
 #> The criteria are calculated on the basis of the marginal log-likelihood.
 ```

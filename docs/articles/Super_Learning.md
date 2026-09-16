@@ -221,15 +221,15 @@ Brier_weights
 #> 
 #> Cross-Validated Prediction Error using the Library of Joint Models 'Models_folds'
 #> 
-#> Super Learning Estimated Integrated Brier score: 0.0548
+#> Super Learning Estimated Integrated Brier score: 0.0547
 #> In the time interval: [6, 8)
 #> For the 166 subjects at risk at time 6
 #> Number of subjects with an event in [6, 8): 18
 #> Number of subjects with a censored time in [6, 8): 44
 #> Accounting for censoring using model-based weights
 #> 
-#> Integrated Brier score per model: 0.0596 0.0586 0.0613 0.0523 0.061
-#> Weights per model: 0.199 0.1982 0.1924 0.2136 0.1968
+#> Integrated Brier score per model: 0.0595 0.0586 0.0613 0.052 0.061
+#> Weights per model: 0.199 0.1978 0.1914 0.2151 0.1968
 #> Number of folds: 5
 ```
 
@@ -248,14 +248,14 @@ EPCE_weights
 #> 
 #> Cross-Validated Expected Predictive Cross-Entropy using the Library of Joint Models 'Models_folds'
 #> 
-#> Super Learning Estimated EPCE: 0.3103
+#> Super Learning Estimated EPCE: 0.3121
 #> In the time interval: [6, 8)
 #> For the 166 subjects at risk at time 6
 #> Number of subjects with an event in [6, 8): 18
 #> Number of subjects with a censored time in [6, 8): 44
 #> 
-#> EPCE per model: 0.3568 0.3607 0.3639 0.3589 0.4151
-#> Weights per model: 0.0025 0.5386 0.4587 0 2e-04
+#> EPCE per model: 0.3566 0.3599 0.3651 0.358 0.4133
+#> Weights per model: 0.003 0.5461 0.4508 0 1e-04
 #> Number of folds: 5
 ```
 

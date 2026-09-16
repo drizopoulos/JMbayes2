@@ -247,67 +247,73 @@ roc
 #> 
 #>    cut-off      SN      SP  
 #> 1     0.00 0.00000 1.00000  
-#> 2     0.03 0.01513 0.99812  
-#> 3     0.08 0.03648 0.99812  
-#> 4     0.09 0.03648 0.99168  
-#> 5     0.11 0.10052 0.99168  
-#> 6     0.12 0.11871 0.99072  
-#> 7     0.13 0.11871 0.98428  
-#> 8     0.14 0.11871 0.97783  
-#> 9     0.16 0.15223 0.97506  
-#> 10    0.18 0.17358 0.97506  
-#> 11    0.20 0.21628 0.97506  
-#> 12    0.21 0.23763 0.97506  
-#> 13    0.25 0.25898 0.97506  
-#> 14    0.27 0.28033 0.97506  
-#> 15    0.30 0.32303 0.97506  
-#> 16    0.31 0.34438 0.96862  
-#> 17    0.33 0.37464 0.96486  
-#> 18    0.36 0.41734 0.95842  
-#> 19    0.37 0.41842 0.95230  
-#> 20    0.40 0.43977 0.95230  
-#> 21    0.44 0.47216 0.94919  
-#> 22    0.46 0.49351 0.94919  
-#> 23    0.48 0.53621 0.94919  
-#> 24    0.52 0.53621 0.94274  
-#> 25    0.53 0.53621 0.93630  
-#> 26    0.55 0.53621 0.92985  
-#> 27    0.56 0.57891 0.92985  
-#> 28    0.58 0.60026 0.92985  
-#> 29    0.65 0.60026 0.92341  
-#> 30    0.66 0.62161 0.92341 *
-#> 31    0.67 0.62429 0.91133  
-#> 32    0.68 0.62429 0.90488  
-#> 33    0.69 0.62466 0.89855  
-#> 34    0.70 0.62466 0.89210  
-#> 35    0.71 0.65737 0.86975  
-#> 36    0.72 0.66079 0.85145  
-#> 37    0.73 0.68214 0.84500  
-#> 38    0.74 0.68625 0.83980  
-#> 39    0.75 0.68827 0.82108  
-#> 40    0.76 0.69335 0.80327  
-#> 41    0.78 0.71470 0.78394  
-#> 42    0.79 0.71976 0.77258  
-#> 43    0.80 0.72024 0.76628  
-#> 44    0.82 0.72769 0.74919  
-#> 45    0.83 0.72996 0.73699  
-#> 46    0.84 0.75692 0.71935  
-#> 47    0.85 0.77904 0.70025  
-#> 48    0.86 0.80261 0.68802  
-#> 49    0.87 0.80679 0.66995  
-#> 50    0.88 0.80679 0.66351  
-#> 51    0.89 0.83360 0.63937  
-#> 52    0.90 0.85677 0.60770  
-#> 53    0.91 0.86058 0.55729  
-#> 54    0.92 0.88370 0.52560  
-#> 55    0.93 0.88683 0.42987  
-#> 56    0.94 0.92953 0.40409  
-#> 57    0.95 0.95217 0.32714  
-#> 58    0.96 0.97586 0.24407  
-#> 59    0.97 0.97829 0.15457  
-#> 60    0.98 0.97829 0.09656  
-#> 61    0.99 0.99989 0.01286  
-#> 62    1.00 1.00000 0.00000
+#> 2     0.04 0.01512 0.99822  
+#> 3     0.06 0.03596 0.99822  
+#> 4     0.08 0.03596 0.99172  
+#> 5     0.09 0.05680 0.98523  
+#> 6     0.10 0.07765 0.98523  
+#> 7     0.13 0.09849 0.98523  
+#> 8     0.14 0.13729 0.98434  
+#> 9     0.15 0.15062 0.98200  
+#> 10    0.18 0.15062 0.97550  
+#> 11    0.19 0.17146 0.97550  
+#> 12    0.21 0.19231 0.97550  
+#> 13    0.22 0.23399 0.97550  
+#> 14    0.24 0.27567 0.97550  
+#> 15    0.27 0.29651 0.97550  
+#> 16    0.29 0.31736 0.97550  
+#> 17    0.31 0.36025 0.96290  
+#> 18    0.32 0.38109 0.95640  
+#> 19    0.33 0.39042 0.95282  
+#> 20    0.34 0.41126 0.95282  
+#> 21    0.35 0.42264 0.94987  
+#> 22    0.39 0.44348 0.94987  
+#> 23    0.40 0.46432 0.94987  
+#> 24    0.42 0.48517 0.94987  
+#> 25    0.45 0.50601 0.94987  
+#> 26    0.47 0.52685 0.94987  
+#> 27    0.50 0.52685 0.94337  
+#> 28    0.51 0.54769 0.94337  
+#> 29    0.52 0.56853 0.94337  
+#> 30    0.53 0.56853 0.93688  
+#> 31    0.54 0.58938 0.93039  
+#> 32    0.60 0.58938 0.92390  
+#> 33    0.62 0.59505 0.91917  
+#> 34    0.63 0.59864 0.90731  
+#> 35    0.64 0.61949 0.90081  
+#> 36    0.65 0.64033 0.90081 *
+#> 37    0.66 0.64072 0.88146  
+#> 38    0.68 0.64647 0.87026  
+#> 39    0.69 0.65953 0.84836  
+#> 40    0.70 0.65953 0.84187  
+#> 41    0.71 0.65953 0.82888  
+#> 42    0.73 0.66484 0.81106  
+#> 43    0.74 0.67314 0.79417  
+#> 44    0.75 0.69399 0.78768  
+#> 45    0.76 0.72249 0.76409  
+#> 46    0.77 0.72320 0.75782  
+#> 47    0.78 0.72320 0.75133  
+#> 48    0.79 0.74495 0.73862  
+#> 49    0.80 0.74797 0.73307  
+#> 50    0.81 0.75039 0.70786  
+#> 51    0.82 0.77123 0.70786  
+#> 52    0.83 0.77123 0.70136  
+#> 53    0.84 0.77992 0.67810  
+#> 54    0.85 0.80076 0.67161  
+#> 55    0.86 0.82322 0.65912  
+#> 56    0.87 0.83087 0.60307  
+#> 57    0.88 0.83622 0.57228  
+#> 58    0.89 0.86153 0.54121  
+#> 59    0.90 0.88450 0.51590  
+#> 60    0.91 0.88677 0.45168  
+#> 61    0.92 0.90761 0.40623  
+#> 62    0.93 0.92846 0.36727  
+#> 63    0.94 0.97329 0.29034  
+#> 64    0.95 0.97467 0.25182  
+#> 65    0.96 0.97860 0.12968  
+#> 66    0.97 0.97860 0.09072  
+#> 67    0.98 0.99946 0.05177  
+#> 68    0.99 1.00000 0.00000
 ```
 
 In the first line we define the event indicator as we did in the
@@ -328,7 +334,7 @@ tvAUC(roc)
 #> 
 #>  Time-dependent AUC for the Joint Model jointFit
 #> 
-#> Estimated AUC:  0.8282
+#> Estimated AUC:  0.823
 #> At time: 8
 #> Using information up to time: 5 (202 subjects still at risk)
 #> Accounting for censoring using model-based weights
@@ -387,8 +393,8 @@ function we can also calculate metrics for the accuracy of predictions:
 ``` r
 
 calibration_metrics(jointFit, pbc2, Tstart = 5, Dt = 3)
-#>        ICI        E50        E90 
-#> 0.02984699 0.02453557 0.05820965
+#>         ICI         E50         E90 
+#> 0.020676624 0.008193399 0.078628056
 ```
 
 The ICI is the mean absolute difference between the observed and
@@ -405,7 +411,7 @@ tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 #> 
 #> Prediction Error for the Joint Model 'jointFit'
 #> 
-#> Estimated Brier score: 0.1242
+#> Estimated Brier score: 0.1267
 #> At time: 8
 #> For the 202 subjects at risk at time 5
 #> Number of subjects with an event in [5, 8): 40
@@ -424,7 +430,7 @@ tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE)
 #> 
 #> Prediction Error for the Joint Model 'jointFit'
 #> 
-#> Estimated Integrated Brier score: 0.0829
+#> Estimated Integrated Brier score: 0.0839
 #> In the time interval: [5, 8)
 #> For the 202 subjects at risk at time 5
 #> Number of subjects with an event in [5, 8): 40
@@ -465,7 +471,7 @@ tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE,
 #> 
 #> Prediction Error for the Joint Model 'jointFit'
 #> 
-#> Estimated Integrated Brier score: 0.0841
+#> Estimated Integrated Brier score: 0.0836
 #> In the time interval: [5, 8)
 #> For the 202 subjects at risk at time 5
 #> Number of subjects with an event in [5, 8): 40
@@ -612,7 +618,7 @@ average of the estimated Brier scores in the testing datasets:
 
 average_Brier <- mean(sapply(Brier_per_fold, "[[", "Brier"))
 average_Brier
-#> [1] 0.0862818
+#> [1] 0.08633074
 ```
 
 The calculation of the cross-validated estimate of the AUC at follow-up
@@ -633,7 +639,7 @@ parallel::stopCluster(cl)
 
 average_AUC <- mean(sapply(AUC_per_fold, "[[", "auc"))
 average_AUC
-#> [1] 0.8183163
+#> [1] 0.818448
 ```
 
 #### Bootstrap
@@ -709,7 +715,7 @@ upward bias:
 ``` r
 
 0.368 * Brier_original$Brier + 0.632 * average_Brier_bootSamples
-#> [1] 0.08199523
+#> [1] 0.08190476
 ```
 
 We perform the same calculations also for the AUC:
@@ -727,7 +733,7 @@ average_AUC_bootSamples <- mean(sapply(AUC_per_bootSample, "[[", "auc"))
 AUC_original <- tvAUC(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 
 0.368 * AUC_original$auc + 0.632 * average_AUC_bootSamples
-#> [1] 0.8165295
+#> [1] 0.8167267
 ```
 
 A 95% confidence interval for the AUC in the original sample can be
@@ -751,7 +757,7 @@ AUC_original
 #> 
 #>  Time-dependent AUC for the Joint Model jointFit
 #> 
-#> Estimated AUC:  0.8175
+#> Estimated AUC:  0.8169
 #> At time: 8
 #> Using information up to time: 5 (202 subjects still at risk)
 #> Accounting for censoring using model-based weights
@@ -759,5 +765,5 @@ AUC_original
 # 95% Bootstrap CI
 quantile(AUC_per_bootSample_training, probs = c(0.025, 0.975))
 #>      2.5%     97.5% 
-#> 0.7765123 0.8436562
+#> 0.7696276 0.8395893
 ```

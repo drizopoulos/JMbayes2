@@ -20,9 +20,8 @@ reference. The *calendar* uses the study entry, while the *gap* uses the
 end of the previous event (Figure 1). *Gap* assumes a renewal after each
 event and resets the time to zero.
 
-![\<b\>Figure 1\</b\> Visual representation of an hazard function under
-the gap or calendar timescale. During the follow-up, the subject
-experienced three
+![Figure 1 Visual representation of an hazard function under the gap or
+calendar timescale. During the follow-up, the subject experienced three
 events.](Recurring_Events_files/figure-html/timescale-1.png)
 
 **Figure 1** Visual representation of an hazard function under the gap
@@ -34,9 +33,9 @@ in which the subject is not at risk of experiencing the recurring event
 (Figure 2). For example, while a patient is in the hospital, they are
 not at risk of being hospitalized again.
 
-![\<b\>Figure 2\</b\> Visual representation of an hazard function under
-the gap or calendar timescale, while accounting for non-risk periods
-(gray areas). During the follow-up, the subject experienced three
+![Figure 2 Visual representation of an hazard function under the gap or
+calendar timescale, while accounting for non-risk periods (gray areas).
+During the follow-up, the subject experienced three
 events.](Recurring_Events_files/figure-html/disc_risk-1.png)
 
 **Figure 2** Visual representation of an hazard function under the gap
@@ -298,10 +297,10 @@ cox_data[cox_data$id == 1, c("id", "tstart", "tstop", "status", "strata")]
 #> 9  1 0.0000000 4.0375415      1     T1
 ```
 
-![\<b\>Figure 3\</b\> Visual representation of the failure-time data
-during the follow-up for subject 1. The horizontal black line denotes
-risk periods, while the blue line denotes non-risk periods. 'R' and 'T'
-represent a recurrent and terminal event,
+![Figure 3 Visual representation of the failure-time data during the
+follow-up for subject 1. The horizontal black line denotes risk periods,
+while the blue line denotes non-risk periods. 'R' and 'T' represent a
+recurrent and terminal event,
 respectively.](Recurring_Events_files/figure-html/trf_data3-1.png)
 
 **Figure 3** Visual representation of the failure-time data during the
@@ -401,7 +400,7 @@ summary(jm_fit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 56 sec
+#> time: 55 sec
 ```
 
 One can find the association parameters between the underlying value of

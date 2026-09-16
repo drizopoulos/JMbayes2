@@ -84,7 +84,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2026-08-29</h4>
+            <h4 data-toc-skip class="date">2026-09-16</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Causal_Effects.Rmd" class="external-link"><code>vignettes/Causal_Effects.Rmd</code></a></small>
       <div class="d-none name"><code>Causal_Effects.Rmd</code></div>
@@ -121,33 +121,33 @@ submodel, we only include the treatment effect.</p>
 <span><span class="co">#&gt;   log(serBilir): 1945</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    4217.836 4527.502 -2937.053</span></span>
-<span><span class="co">#&gt; conditional 6503.006 6206.639 -3454.250</span></span>
+<span><span class="co">#&gt; marginal    4265.150 4655.901 -3061.661</span></span>
+<span><span class="co">#&gt; conditional 6547.734 6249.080 -3470.014</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                                                                       </span></span>
 <span><span class="co">#&gt;                    StdDev   Corr                                      </span></span>
-<span><span class="co">#&gt; (Intr)             0.9958 (Intr) n(,3,B=c(0,14.4))1 n(,3,B=c(0,14.4))2</span></span>
-<span><span class="co">#&gt; n(,3,B=c(0,14.4))1 1.5005 0.2219                                      </span></span>
-<span><span class="co">#&gt; n(,3,B=c(0,14.4))2 1.6970 0.4318 0.7505                               </span></span>
-<span><span class="co">#&gt; n(,3,B=c(0,14.4))3 1.8995 0.4247 0.2076             0.6798            </span></span>
+<span><span class="co">#&gt; (Intr)             0.9952 (Intr) n(,3,B=c(0,14.4))1 n(,3,B=c(0,14.4))2</span></span>
+<span><span class="co">#&gt; n(,3,B=c(0,14.4))1 1.5252 0.2199                                      </span></span>
+<span><span class="co">#&gt; n(,3,B=c(0,14.4))2 1.7081 0.4481 0.7168                               </span></span>
+<span><span class="co">#&gt; n(,3,B=c(0,14.4))3 1.9617 0.4451 0.1663             0.6811            </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;                         Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; drugD-penicil        -0.0138 0.2061 -0.4079 0.3859 0.9533 1.0037</span></span>
-<span><span class="co">#&gt; value(log(serBilir))  1.3001 0.0881  1.1354 1.4741 0.0000 1.0109</span></span>
+<span><span class="co">#&gt; drugD-penicil        -0.0187 0.2074 -0.4135 0.3790 0.9204 1.0120</span></span>
+<span><span class="co">#&gt; value(log(serBilir))  1.2907 0.0882  1.1210 1.4634 0.0000 1.0741</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                        Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)          0.5863 0.0808  0.4309 0.7430 0.0000 1.0007</span></span>
-<span><span class="co">#&gt; ns(,3,B=c(0,14.4))1  1.1251 0.1719  0.7905 1.4659 0.0000 1.0058</span></span>
-<span><span class="co">#&gt; ns(,3,B=c(0,14.4))2  2.1954 0.2329  1.7749 2.6913 0.0000 1.0201</span></span>
-<span><span class="co">#&gt; ns(,3,B=c(0,14.4))3  2.4177 0.3416  1.8350 3.1714 0.0000 1.0342</span></span>
-<span><span class="co">#&gt; drugD-penicil       -0.1061 0.1163 -0.3386 0.1217 0.3633 1.0017</span></span>
-<span><span class="co">#&gt; n(,3,B=c(0,14.4))1:  0.1869 0.2369 -0.2802 0.6490 0.4218 1.0055</span></span>
-<span><span class="co">#&gt; n(,3,B=c(0,14.4))2: -0.4776 0.3224 -1.1454 0.1111 0.1211 1.0175</span></span>
-<span><span class="co">#&gt; n(,3,B=c(0,14.4))3: -0.6994 0.4770 -1.7031 0.1481 0.1233 1.0384</span></span>
-<span><span class="co">#&gt; sigma                0.2894 0.0065  0.2776 0.3027 0.0000 1.0061</span></span>
+<span><span class="co">#&gt; (Intercept)          0.5856 0.0820  0.4257 0.7487 0.0000 0.9997</span></span>
+<span><span class="co">#&gt; ns(,3,B=c(0,14.4))1  1.1457 0.1761  0.7961 1.4997 0.0000 1.0215</span></span>
+<span><span class="co">#&gt; ns(,3,B=c(0,14.4))2  2.1875 0.2557  1.7402 2.7301 0.0000 2.1044</span></span>
+<span><span class="co">#&gt; ns(,3,B=c(0,14.4))3  2.3944 0.4079  1.7144 3.2219 0.0000 2.5316</span></span>
+<span><span class="co">#&gt; drugD-penicil       -0.1040 0.1164 -0.3347 0.1247 0.3638 1.0009</span></span>
+<span><span class="co">#&gt; n(,3,B=c(0,14.4))1:  0.1856 0.2402 -0.2854 0.6501 0.4389 1.0475</span></span>
+<span><span class="co">#&gt; n(,3,B=c(0,14.4))2: -0.4786 0.2993 -1.0691 0.1095 0.1149 1.4567</span></span>
+<span><span class="co">#&gt; n(,3,B=c(0,14.4))3: -0.6995 0.4444 -1.5822 0.1721 0.1207 1.7222</span></span>
+<span><span class="co">#&gt; sigma                0.2885 0.0063  0.2765 0.3014 0.0000 1.0287</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
@@ -207,12 +207,12 @@ calculated by the corresponding elements of the <code>Pr1</code> and
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># estimate </span></span>
 <span><span class="va">Pr1</span><span class="op">$</span><span class="va">pred</span><span class="op">[</span><span class="fl">2L</span><span class="op">]</span> <span class="op">-</span> <span class="va">Pr0</span><span class="op">$</span><span class="va">pred</span><span class="op">[</span><span class="fl">2L</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] 0.002916423</span></span>
+<span><span class="co">#&gt; [1] -0.002945748</span></span>
 <span></span>
 <span><span class="co"># MCMC variability</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">Pr1</span><span class="op">$</span><span class="va">mcmc</span><span class="op">[</span><span class="fl">2L</span>, <span class="op">]</span> <span class="op">-</span> <span class="va">Pr0</span><span class="op">$</span><span class="va">mcmc</span><span class="op">[</span><span class="fl">2L</span>, <span class="op">]</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       2.5%      97.5% </span></span>
-<span><span class="co">#&gt; -0.1790905  0.1952539</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.1931788  0.1579895</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="time-varying-treatments">Time-varying treatments<a class="anchor" aria-label="anchor" href="#time-varying-treatments"></a>
 </h3>

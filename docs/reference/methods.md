@@ -216,27 +216,27 @@ fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year",
 coef(fit_jm)
 #> $gammas
 #>       Mean 
-#> 0.06070451 
+#> 0.06015635 
 #> 
 #> $association
 #> value(log(serBilir))   value(prothrombin) 
-#>            1.3604613            0.1063424 
+#>            1.3397493            0.1035939 
 #> 
 
 # fixef(): fixed effects for the first linear mixed submodel
 fixef(fit_jm, outcome = 1)
 #>    (Intercept)            age   year:sexmale year:sexfemale 
-#>     0.66594783    -0.00445036     0.23584373     0.16253524 
+#>    0.669776347   -0.004536448    0.234799643    0.161635133 
 
 # ranef(): random effects from all linear mixed submodels
 head(ranef(fit_jm))
-#>             [,1]        [,2]        [,3]         [,4]
-#> [1,]  2.23319313  0.20276852  1.05194350  0.126098411
-#> [2,] -0.36290322  0.00382308 -0.03130737  0.089480915
-#> [3,] -0.19671871  0.06974686  0.51040201  0.210441867
-#> [4,]  0.03344513  0.10239115  0.85942217  0.574548016
-#> [5,]  0.32900876  0.22520488 -0.04018424  0.442201332
-#> [6,] -0.62705384 -0.16161656 -0.11058573 -0.003544499
+#>            [,1]         [,2]         [,3]         [,4]
+#> [1,]  2.2351707  0.208431879  1.064497473  0.127318163
+#> [2,] -0.3618781  0.004369166 -0.014035927  0.085292706
+#> [3,] -0.1935768  0.068259347  0.531963518  0.198230091
+#> [4,]  0.0408405  0.101460737  0.855986565  0.578484983
+#> [5,]  0.3287492  0.226938809  0.006864474  0.422746952
+#> [6,] -0.6270285 -0.160616267 -0.103576212 -0.006573902
 
 # terms(): random effects terms for the first linear mixed submodel
 terms(fit_jm, process = "longitudinal", type = "random")[[1]]
@@ -309,8 +309,8 @@ fit_jm2 <- jm(fit_cox, list(fit_lme1b, fit_lme2), time_var = "year",
 compare_jm(fit_jm, fit_jm2)
 #> 
 #>               DIC     WAIC      LPML
-#>  fit_jm2 10512.30 10540.46 -5268.228
-#>   fit_jm 10665.69 11146.24 -6097.345
+#>  fit_jm2 10510.75 10541.53 -5277.992
+#>   fit_jm 10667.81 11178.94 -6152.203
 #> 
 #> The criteria are calculated on the basis of the marginal log-likelihood.
 # }

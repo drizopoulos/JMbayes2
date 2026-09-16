@@ -630,31 +630,31 @@ summary(joint_model_fit_1)
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    4204.643 5075.364 -2931.823
-#> conditional 3334.409 3165.829 -1817.475
+#> marginal    4199.714 4985.926 -3083.326
+#> conditional 3339.719 3172.861 -1812.772
 #> 
 #> Random-effects covariance matrix:
 #>                     
 #>        StdDev   Corr
-#> (Intr) 0.9752 (Intr)
-#> year   0.1772 0.3429
+#> (Intr) 0.9748 (Intr)
+#> year   0.1767 0.3361
 #> 
 #> Survival outcome:
-#>                         Mean  StDev    2.5%  97.5%     P
-#> drugD-penicil        -0.0294 0.2359 -0.4760 0.4417 0.913
-#> age                   0.0639 0.0092  0.0465 0.0824 0.000
-#> value(log(serBilir))  1.4254 0.0976  1.2296 1.6264 0.000
+#>                         Mean  StDev    2.5%  97.5%      P
+#> drugD-penicil        -0.0255 0.2287 -0.4611 0.4265 0.9154
+#> age                   0.0636 0.0091  0.0463 0.0818 0.0000
+#> value(log(serBilir))  1.4162 0.1070  1.2227 1.6338 0.0000
 #> 
 #> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P
-#> (Intercept)     0.2444 0.3605 -0.4688  0.9355 0.4880
-#> year            0.2281 0.0370  0.1568  0.3005 0.0000
-#> sexfemale      -0.2421 0.1816 -0.6013  0.1134 0.1850
-#> I(year^2)       0.0026 0.0010  0.0007  0.0045 0.0066
-#> age            -0.0017 0.0054 -0.0122  0.0092 0.7452
-#> prothrombin     0.0529 0.0085  0.0364  0.0695 0.0000
-#> year:sexfemale -0.0881 0.0385 -0.1644 -0.0137 0.0206
-#> sigma           0.3452 0.0068  0.3322  0.3594 0.0000
+#> (Intercept)     0.2445 0.3564 -0.4556  0.9403 0.4928
+#> year            0.2261 0.0363  0.1556  0.2973 0.0000
+#> sexfemale      -0.2440 0.1804 -0.5965  0.1090 0.1746
+#> I(year^2)       0.0026 0.0010  0.0007  0.0046 0.0002
+#> age            -0.0017 0.0054 -0.0121  0.0090 0.7492
+#> prothrombin     0.0529 0.0086  0.0366  0.0700 0.0000
+#> year:sexfemale -0.0870 0.0380 -0.1615 -0.0135 0.0200
+#> sigma           0.3457 0.0068  0.3323  0.3593 0.0000
 #> 
 #> MCMC summary:
 #> chains: 1 
@@ -731,55 +731,55 @@ summary(joint_model_fit_2)
 #>   hepatomegaly: 1884
 #>   ascites: 1885
 #> 
-#>                  DIC     WAIC      LPML
-#> marginal    6632.739 6870.898 -3753.886
-#> conditional 9110.856 8863.104 -4876.052
+#>                  DIC    WAIC      LPML
+#> marginal    6635.479 6872.14 -3785.564
+#> conditional 9087.043 8809.28 -4865.980
 #> 
 #> Random-effects covariance matrix:
-#>                                                    
-#>        StdDev   Corr                               
-#> (Intr) 0.9893 (Intr)   year (Intr)    year  (Intr) 
-#> year   0.1733 0.3907                               
-#> (Intr) 3.2864 0.5330 0.3398                        
-#> year   0.5734 0.0382 0.3498 -0.3487                
-#> (Intr) 2.9721 0.6096 0.4818 0.5282  -0.0083        
-#> year   0.4331 0.3691 0.5934 0.3360  0.2505  -0.1014
+#>                                                   
+#>        StdDev   Corr                              
+#> (Intr) 0.9922 (Intr)   year (Intr)    year (Intr) 
+#> year   0.1743 0.3942                              
+#> (Intr) 3.2229 0.5335 0.3416                       
+#> year   0.5718 0.0592 0.3716 -0.3173               
+#> (Intr) 2.8087 0.6176 0.4972 0.5285  0.0001        
+#> year   0.4341 0.3977 0.6224 0.3794  0.2771 -0.0393
 #> 
 #> Survival outcome:
 #>                         Mean  StDev    2.5%  97.5%      P
-#> drugD-penicil        -0.1835 0.2681 -0.6967 0.3418 0.4940
-#> age                   0.0345 0.0138  0.0055 0.0602 0.0228
-#> value(log(serBilir))  0.7152 0.2214  0.2396 1.1226 0.0022
-#> value(hepatomegaly)  -0.0422 0.0895 -0.2327 0.1400 0.6166
-#> value(ascites)        0.5345 0.1802  0.1911 0.9177 0.0000
+#> drugD-penicil        -0.1922 0.2621 -0.7099 0.3155 0.4564
+#> age                   0.0326 0.0141  0.0020 0.0593 0.0350
+#> value(log(serBilir))  0.6789 0.2203  0.2160 1.0936 0.0030
+#> value(hepatomegaly)  -0.0412 0.0879 -0.2267 0.1258 0.6330
+#> value(ascites)        0.5579 0.2077  0.1843 1.0865 0.0000
 #> 
 #> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P
-#> (Intercept)     0.6763 0.1390  0.4064  0.9513 0.0000
-#> year            0.2449 0.0274  0.1923  0.2990 0.0000
-#> sexfemale      -0.2085 0.1435 -0.4946  0.0675 0.1442
-#> year:sexfemale -0.0641 0.0281 -0.1203 -0.0106 0.0182
-#> sigma           0.3482 0.0067  0.3353  0.3618 0.0000
+#> (Intercept)     0.6729 0.1418  0.3950  0.9489 0.0000
+#> year            0.2460 0.0281  0.1918  0.3017 0.0000
+#> sexfemale      -0.2036 0.1448 -0.4901  0.0835 0.1570
+#> year:sexfemale -0.0650 0.0295 -0.1236 -0.0087 0.0252
+#> sigma           0.3481 0.0068  0.3354  0.3614 0.0000
 #> 
 #> Longitudinal outcome: hepatomegaly (family = binomial, link = logit)
 #>                Mean  StDev    2.5%  97.5%      P
-#> (Intercept)  0.1123 1.0239 -1.8832 2.1349 0.9162
-#> sexfemale   -0.8010 0.5274 -1.8554 0.1974 0.1188
-#> age          0.0146 0.0164 -0.0176 0.0470 0.3742
-#> year         0.2485 0.0694  0.1149 0.3874 0.0000
+#> (Intercept)  0.0694 1.0134 -1.9184 2.0920 0.9532
+#> sexfemale   -0.7647 0.5251 -1.8352 0.2462 0.1444
+#> age          0.0147 0.0162 -0.0169 0.0461 0.3608
+#> year         0.2541 0.0698  0.1190 0.3887 0.0002
 #> 
 #> Longitudinal outcome: ascites (family = binomial, link = logit)
 #>                Mean  StDev     2.5%   97.5% P
-#> (Intercept) -9.1784 1.1370 -11.4720 -7.1558 0
-#> year         0.5916 0.0751   0.4611  0.7529 0
-#> age          0.0829 0.0172   0.0507  0.1169 0
+#> (Intercept) -8.9621 0.9847 -10.9888 -7.1858 0
+#> year         0.5734 0.0681   0.4420  0.7205 0
+#> age          0.0812 0.0160   0.0514  0.1147 0
 #> 
 #> MCMC summary:
 #> chains: 1 
 #> iterations per chain: 11000 
 #> burn-in per chain: 1000 
 #> thinning: 1 
-#> time: 56 sec
+#> time: 1 min
 traceplot(joint_model_fit_2)
 
 
@@ -892,56 +892,56 @@ summary(joint_model_fit_2)
 #>   ascites: 1885
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    6687.050 7034.445 -4283.997
-#> conditional 9002.434 8739.099 -4827.833
+#> marginal    6637.878 7007.934 -3866.512
+#> conditional 9035.769 8798.276 -4844.879
 #> 
 #> Random-effects covariance matrix:
 #>                                                   
 #>        StdDev   Corr                              
-#> (Intr) 0.9891 (Intr)   year (Intr)    year  (Intr)
-#> year   0.1798 0.4155                              
-#> (Intr) 3.3535 0.5361 0.3412                       
-#> year   0.5831 0.0243 0.3575 -0.3801               
-#> (Intr) 2.2908 0.6482 0.5783 0.6036  -0.1252       
-#> year   0.4029 0.4939 0.6868 0.4348  0.3518  0.3231
+#> (Intr) 0.9913 (Intr)   year (Intr)    year  (Intr)
+#> year   0.1804 0.4247                              
+#> (Intr) 3.4220 0.5342 0.3458                       
+#> year   0.6024 0.0343 0.3591 -0.3794               
+#> (Intr) 2.3184 0.6455 0.5774 0.5968  -0.0947       
+#> year   0.4166 0.4976 0.6947 0.4381  0.3218  0.3199
 #> 
 #> Survival outcome:
 #>                         Mean  StDev    2.5%   97.5%      P
-#> drugD-penicil        -0.1218 0.2734 -0.6696  0.3927 0.6718
-#> age                   0.0472 0.0132  0.0188  0.0708 0.0006
-#> value(log(serBilir))  0.9030 0.1869  0.5548  1.2815 0.0000
-#> slope(log(serBilir))  3.6008 1.2959  1.0806  6.2951 0.0034
-#> area(hepatomegaly)    0.1217 0.0867 -0.0535  0.3053 0.1558
-#> value(ascites)       -0.6116 0.2099 -0.9474 -0.1067 0.0034
-#> area(ascites)         0.9588 0.2968  0.1782  1.4429 0.0028
+#> drugD-penicil        -0.1310 0.2646 -0.6481  0.3912 0.6074
+#> age                   0.0476 0.0136  0.0198  0.0727 0.0074
+#> value(log(serBilir))  0.9100 0.2021  0.5211  1.3053 0.0000
+#> slope(log(serBilir))  3.5037 1.2792  1.2429  6.2379 0.0010
+#> area(hepatomegaly)    0.1084 0.0811 -0.0502  0.2751 0.1652
+#> value(ascites)       -0.5290 0.2552 -1.0677 -0.0867 0.0300
+#> area(ascites)         0.8628 0.3374  0.3289  1.6461 0.0000
 #> 
 #> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P
-#> (Intercept)     0.7047 0.1433  0.4263  0.9870 0.0000
-#> year            0.2590 0.0294  0.2023  0.3175 0.0000
-#> sexfemale      -0.2421 0.1481 -0.5327  0.0457 0.0998
-#> year:sexfemale -0.0715 0.0302 -0.1323 -0.0136 0.0152
-#> sigma           0.3481 0.0067  0.3355  0.3617 0.0000
+#> (Intercept)     0.7042 0.1436  0.4273  0.9827 0.0000
+#> year            0.2582 0.0297  0.2021  0.3187 0.0000
+#> sexfemale      -0.2419 0.1478 -0.5352  0.0452 0.0996
+#> year:sexfemale -0.0705 0.0295 -0.1312 -0.0149 0.0142
+#> sigma           0.3481 0.0067  0.3351  0.3617 0.0000
 #> 
 #> Longitudinal outcome: hepatomegaly (family = binomial, link = logit)
 #>                Mean  StDev    2.5%  97.5%      P
-#> (Intercept)  0.2812 1.0151 -1.6637 2.3313 0.8010
-#> sexfemale   -0.9065 0.5235 -1.9406 0.1066 0.0774
-#> age          0.0136 0.0163 -0.0184 0.0453 0.3986
-#> year         0.2462 0.0753  0.1030 0.3931 0.0004
+#> (Intercept)  0.2845 1.0364 -1.7434 2.3376 0.7930
+#> sexfemale   -0.9183 0.5464 -1.9911 0.1413 0.0918
+#> age          0.0138 0.0165 -0.0186 0.0461 0.4038
+#> year         0.2545 0.0733  0.1101 0.3976 0.0000
 #> 
 #> Longitudinal outcome: ascites (family = binomial, link = logit)
 #>                Mean  StDev     2.5%   97.5% P
-#> (Intercept) -8.2230 0.9798 -10.2546 -6.4654 0
-#> year         0.4641 0.0683   0.3204  0.5958 0
-#> age          0.0753 0.0164   0.0453  0.1096 0
+#> (Intercept) -8.3055 0.9338 -10.2158 -6.6444 0
+#> year         0.4722 0.0725   0.3256  0.6064 0
+#> age          0.0761 0.0159   0.0471  0.1082 0
 #> 
 #> MCMC summary:
 #> chains: 1 
 #> iterations per chain: 11000 
 #> burn-in per chain: 1000 
 #> thinning: 1 
-#> time: 1.1 min
+#> time: 1.2 min
 
 # }
 ```

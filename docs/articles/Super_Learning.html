@@ -84,7 +84,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2026-08-29</h4>
+            <h4 data-toc-skip class="date">2026-09-16</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Super_Learning.Rmd" class="external-link"><code>vignettes/Super_Learning.Rmd</code></a></small>
       <div class="d-none name"><code>Super_Learning.Rmd</code></div>
@@ -296,15 +296,15 @@ datasets that are provided in the <code>newdata</code> argument:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Cross-Validated Prediction Error using the Library of Joint Models 'Models_folds'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Super Learning Estimated Integrated Brier score: 0.0548</span></span>
+<span><span class="co">#&gt; Super Learning Estimated Integrated Brier score: 0.0547</span></span>
 <span><span class="co">#&gt; In the time interval: [6, 8)</span></span>
 <span><span class="co">#&gt; For the 166 subjects at risk at time 6</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 8): 18</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 8): 44</span></span>
 <span><span class="co">#&gt; Accounting for censoring using model-based weights</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Integrated Brier score per model: 0.0596 0.0586 0.0613 0.0523 0.061</span></span>
-<span><span class="co">#&gt; Weights per model: 0.199 0.1982 0.1924 0.2136 0.1968</span></span>
+<span><span class="co">#&gt; Integrated Brier score per model: 0.0595 0.0586 0.0613 0.052 0.061</span></span>
+<span><span class="co">#&gt; Weights per model: 0.199 0.1978 0.1914 0.2151 0.1968</span></span>
 <span><span class="co">#&gt; Number of folds: 5</span></span></code></pre></div>
 <p>We observe that the fourth model dominates the weights. Hence, the
 integrated Brier score based on the combined predictions is essentially
@@ -319,14 +319,14 @@ score:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Cross-Validated Expected Predictive Cross-Entropy using the Library of Joint Models 'Models_folds'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Super Learning Estimated EPCE: 0.3103</span></span>
+<span><span class="co">#&gt; Super Learning Estimated EPCE: 0.3121</span></span>
 <span><span class="co">#&gt; In the time interval: [6, 8)</span></span>
 <span><span class="co">#&gt; For the 166 subjects at risk at time 6</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 8): 18</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 8): 44</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; EPCE per model: 0.3568 0.3607 0.3639 0.3589 0.4151</span></span>
-<span><span class="co">#&gt; Weights per model: 0.0025 0.5386 0.4587 0 2e-04</span></span>
+<span><span class="co">#&gt; EPCE per model: 0.3566 0.3599 0.3651 0.358 0.4133</span></span>
+<span><span class="co">#&gt; Weights per model: 0.003 0.5461 0.4508 0 1e-04</span></span>
 <span><span class="co">#&gt; Number of folds: 5</span></span></code></pre></div>
 <p>The EPCE results indicate that models <code>M2</code> and
 <code>M3</code> share the most weight. We observe that the EPCE based on

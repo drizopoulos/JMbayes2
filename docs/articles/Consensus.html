@@ -84,7 +84,7 @@
                         <h4 data-toc-skip class="author">Pedro
 Miranda-Afonso</h4>
             
-            <h4 data-toc-skip class="date">2026-08-29</h4>
+            <h4 data-toc-skip class="date">2026-09-16</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Consensus.Rmd" class="external-link"><code>vignettes/Consensus.Rmd</code></a></small>
       <div class="d-none name"><code>Consensus.Rmd</code></div>
@@ -195,7 +195,7 @@ need to update the model formulation in the code below.</p>
 <span>                   seed      <span class="op">=</span> <span class="fl">123L</span><span class="op">)</span> <span class="co"># seed for reproducibility</span></span>
 <span></span>
 <span><span class="co"># 2. Specify the number of available cores</span></span>
-<span><span class="va">n_cores</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu">parallelly</span><span class="fu">::</span><span class="fu"><a href="https://parallelly.futureverse.org/reference/availableCores.html" class="external-link">availableCores</a></span><span class="op">(</span>omit <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">n_cores</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu">parallelly</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/parallelly/man/availableCores.html" class="external-link">availableCores</a></span><span class="op">(</span>omit <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 3. Fit the longitudinal and survival submodels on each subsample</span></span>
 <span><span class="co">## 3.1 Fit a linear mixed-effects model </span></span>
@@ -227,14 +227,14 @@ need to update the model formulation in the code below.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Parameter block: alphas (9000 draws)</span></span>
 <span><span class="co">#&gt;                        Mean  StDev   2.5%  97.5% P   w_S1   w_S2</span></span>
-<span><span class="co">#&gt; value(log(serBilir)) 1.2503 0.0885 1.0817 1.4297 0 0.4261 0.5739</span></span>
+<span><span class="co">#&gt; value(log(serBilir)) 1.2499 0.0889 1.0805 1.4284 0 0.4198 0.5802</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Parameter block: betas1 (9000 draws)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   w_S1   w_S2</span></span>
-<span><span class="co">#&gt; (Intercept)     0.7235 0.1693  0.3870  1.0565 0.0000 0.6853 0.3147</span></span>
-<span><span class="co">#&gt; year            0.2648 0.0381  0.1911  0.3407 0.0000 0.5906 0.4094</span></span>
-<span><span class="co">#&gt; sexfemale      -0.2410 0.1844 -0.5961  0.1181 0.1880 0.6668 0.3332</span></span>
-<span><span class="co">#&gt; year:sexfemale -0.0875 0.0406 -0.1678 -0.0072 0.0329 0.5706 0.4294</span></span></code></pre></div>
+<span><span class="co">#&gt; (Intercept)     0.7238 0.1720  0.3834  1.0554 0.0000 0.6856 0.3144</span></span>
+<span><span class="co">#&gt; year            0.2664 0.0384  0.1918  0.3425 0.0000 0.5859 0.4141</span></span>
+<span><span class="co">#&gt; sexfemale      -0.2429 0.1827 -0.5938  0.1217 0.1820 0.6675 0.3325</span></span>
+<span><span class="co">#&gt; year:sexfemale -0.0894 0.0406 -0.1683 -0.0113 0.0238 0.5687 0.4313</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="example-2-federated-or-sequential-posterior-sampling">Example 2: Federated or sequential posterior sampling<a class="anchor" aria-label="anchor" href="#example-2-federated-or-sequential-posterior-sampling"></a>
@@ -307,14 +307,14 @@ each subsample, store the fitted objects, and then combine them.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Parameter block: alphas (9000 draws)</span></span>
 <span><span class="co">#&gt;                        Mean  StDev   2.5%  97.5% P   w_S1   w_S2</span></span>
-<span><span class="co">#&gt; value(log(serBilir)) 1.2503 0.0885 1.0817 1.4297 0 0.4261 0.5739</span></span>
+<span><span class="co">#&gt; value(log(serBilir)) 1.2499 0.0889 1.0805 1.4284 0 0.4198 0.5802</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Parameter block: betas1 (9000 draws)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev    2.5%   97.5%      P   w_S1   w_S2</span></span>
-<span><span class="co">#&gt; (Intercept)     0.7235 0.1693  0.3870  1.0565 0.0000 0.6853 0.3147</span></span>
-<span><span class="co">#&gt; year            0.2648 0.0381  0.1911  0.3407 0.0000 0.5906 0.4094</span></span>
-<span><span class="co">#&gt; sexfemale      -0.2410 0.1844 -0.5961  0.1181 0.1880 0.6668 0.3332</span></span>
-<span><span class="co">#&gt; year:sexfemale -0.0875 0.0406 -0.1678 -0.0072 0.0329 0.5706 0.4294</span></span></code></pre></div>
+<span><span class="co">#&gt; (Intercept)     0.7238 0.1720  0.3834  1.0554 0.0000 0.6856 0.3144</span></span>
+<span><span class="co">#&gt; year            0.2664 0.0384  0.1918  0.3425 0.0000 0.5859 0.4141</span></span>
+<span><span class="co">#&gt; sexfemale      -0.2429 0.1827 -0.5938  0.1217 0.1820 0.6675 0.3325</span></span>
+<span><span class="co">#&gt; year:sexfemale -0.0894 0.0406 -0.1683 -0.0113 0.0238 0.5687 0.4313</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

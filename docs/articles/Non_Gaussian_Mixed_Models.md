@@ -145,27 +145,27 @@ summary(jointFit)
 #>   y: 1182
 #> 
 #>                   DIC      WAIC     LPML
-#> marginal    -4018.171 -4061.024 1910.317
-#> conditional -3837.701 -3938.538 1799.508
+#> marginal    -4017.577 -4058.223 1834.994
+#> conditional -3840.343 -3943.855 1819.955
 #> 
 #> Random-effects covariance matrix:
 #>                     
 #>        StdDev   Corr
-#> (Intr) 0.8436 (Intr)
-#> time   0.4664 0.0812
+#> (Intr) 0.8443 (Intr)
+#> time   0.4663 0.0785
 #> 
 #> Survival outcome:
 #>             Mean  StDev    2.5%  97.5%      P   Rhat
-#> sexfemale 0.2153 0.2944 -0.3672 0.7865 0.4669 1.0030
-#> value(y)  1.0656 0.1018  0.8866 1.2781 0.0000 1.0832
+#> sexfemale 0.2169 0.2916 -0.3701 0.7895 0.4604 1.0055
+#> value(y)  1.0584 0.0948  0.8890 1.2615 0.0000 1.0643
 #> 
 #> Longitudinal outcome: y (family = beta, link = logit)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)    -2.3410 0.1115 -2.5592 -2.1270 0.0000 1.0046
-#> sexfemale      -0.0689 0.1486 -0.3584  0.2241 0.6462 1.0144
-#> time            0.3271 0.0523  0.2258  0.4312 0.0000 1.0022
-#> sexfemale:time -0.0615 0.0729 -0.2035  0.0801 0.3898 1.0059
-#> sigma           6.2757 0.3932  5.5169  7.0813 0.0000 1.0064
+#> (Intercept)    -2.3446 0.1085 -2.5563 -2.1344 0.0000 1.0111
+#> sexfemale      -0.0625 0.1511 -0.3630  0.2353 0.6787 1.0099
+#> time            0.3272 0.0515  0.2271  0.4287 0.0000 1.0062
+#> sexfemale:time -0.0631 0.0733 -0.2072  0.0804 0.3842 1.0084
+#> sigma           6.2935 0.3824  5.5669  7.0915 0.0000 1.0315
 #> 
 #> MCMC summary:
 #> chains: 3 
@@ -299,27 +299,27 @@ summary(jointFit)
 #>   cbind(y, ind): 1346
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    3718.623 4651.602 -3262.619
-#> conditional 3331.387 3219.524 -1746.391
+#> marginal    3711.934 4595.230 -3394.924
+#> conditional 3331.589 3219.776 -1756.184
 #> 
 #> Random-effects covariance matrix:
 #>                     
 #>        StdDev   Corr
-#> (Intr) 0.9495 (Intr)
-#> time   0.6636 0.1449
+#> (Intr) 0.9478 (Intr)
+#> time   0.6600 0.1456
 #> 
 #> Survival outcome:
-#>                        Mean  StDev   2.5%  97.5%      P   Rhat
-#> sexfemale            0.6056 0.2465 0.1188 1.0889 0.0102 1.0027
-#> value(cbind(y, ind)) 0.8694 0.0645 0.7539 1.0040 0.0000 1.0480
+#>                        Mean  StDev   2.5% 97.5%      P   Rhat
+#> sexfemale            0.5991 0.2473 0.1252 1.073 0.0142 1.0043
+#> value(cbind(y, ind)) 0.8672 0.0657 0.7457 1.007 0.0000 1.0359
 #> 
 #> Longitudinal outcome: cbind(y, ind) (family = censored normal, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)    -2.2585 0.1021 -2.4600 -2.0530 0.0000 1.0023
-#> sexfemale      -0.0298 0.1434 -0.3108  0.2495 0.8360 1.0009
-#> time            0.3344 0.0699  0.1987  0.4712 0.0000 1.0002
-#> sexfemale:time -0.1177 0.0983 -0.3092  0.0732 0.2256 1.0009
-#> sigma           0.4947 0.0140  0.4683  0.5230 0.0000 1.0065
+#> (Intercept)    -2.2608 0.1012 -2.4567 -2.0624 0.0000 1.0016
+#> sexfemale      -0.0255 0.1438 -0.3087  0.2568 0.8616 1.0020
+#> time            0.3334 0.0690  0.1988  0.4679 0.0000 1.0004
+#> sexfemale:time -0.1179 0.0973 -0.3099  0.0708 0.2307 1.0003
+#> sigma           0.4949 0.0138  0.4692  0.5230 0.0000 1.0003
 #> 
 #> MCMC summary:
 #> chains: 3 
@@ -448,33 +448,33 @@ summary(jointFit)
 #>   y: 1347
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    5197.868 6842.793 -3988.557
-#> conditional 4447.164 4349.718 -2333.522
+#> marginal    5192.321 6795.293 -3932.573
+#> conditional 4447.501 4350.715 -2338.512
 #> 
 #> Random-effects covariance matrix:
 #>                     
 #>        StdDev   Corr
-#> (Intr) 0.9791 (Intr)
-#> time   0.6749 0.1175
+#> (Intr) 0.9795 (Intr)
+#> time   0.6721 0.1166
 #> 
 #> Survival outcome:
-#>             Mean  StDev    2.5%  97.5%     P   Rhat
-#> sexfemale 0.0207 0.2538 -0.4730 0.5131 0.932 1.0012
-#> value(y)  0.8350 0.0647  0.7152 0.9658 0.000 1.0569
+#>            Mean  StDev    2.5%  97.5%      P   Rhat
+#> sexfemale 0.017 0.2466 -0.4614 0.5010 0.9307 1.0058
+#> value(y)  0.823 0.0645  0.7074 0.9625 0.0000 1.0910
 #> 
 #> Longitudinal outcome: y (family = Student's-t, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)    -2.2485 0.1083 -2.4626 -2.0334 0.0000 1.0038
-#> sexfemale      -0.1212 0.1513 -0.4205  0.1691 0.4267 1.0005
-#> time            0.2828 0.0710  0.1455  0.4235 0.0000 1.0007
-#> sexfemale:time -0.0335 0.0993 -0.2263  0.1598 0.7318 1.0007
+#> (Intercept)    -2.2460 0.1074 -2.4519 -2.0340 0.0000 1.0057
+#> sexfemale      -0.1217 0.1511 -0.4158  0.1718 0.4153 1.0029
+#> time            0.2794 0.0705  0.1430  0.4168 0.0002 1.0066
+#> sexfemale:time -0.0312 0.0985 -0.2256  0.1595 0.7489 1.0049
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 15 sec
+#> time: 12 sec
 ```
 
 [Back to top](#top)
@@ -592,35 +592,35 @@ summary(jointFit)
 #> Number of observations:
 #>   y: 3842
 #> 
-#>                  DIC     WAIC      LPML
-#> marginal    21347.40 21300.55 -10650.44
-#> conditional 22639.19 22350.27 -11565.82
+#>                  DIC    WAIC      LPML
+#> marginal    21348.93 21302.2 -10651.26
+#> conditional 22635.87 22347.6 -11559.46
 #> 
 #> Random-effects covariance matrix:
 #>                      
 #>        StdDev   Corr 
-#> (Intr) 1.0401 (Intr) 
-#> time   0.5382 -0.0551
+#> (Intr) 1.0398 (Intr) 
+#> time   0.5364 -0.0502
 #> 
 #> Survival outcome:
 #>             Mean  StDev   2.5%  97.5% P   Rhat
-#> sexfemale 0.6141 0.1608 0.2967 0.9385 0 1.0126
-#> value(y)  0.8114 0.0536 0.7136 0.9274 0 1.0458
+#> sexfemale 0.6168 0.1653 0.3061 0.9410 0 1.0150
+#> value(y)  0.8175 0.0542 0.7129 0.9267 0 1.0214
 #> 
 #> Longitudinal outcome: y (family = negative binomial, link = log)
 #>                   Mean  StDev    2.5%   97.5% P   Rhat
-#> (Intercept)     0.8422 0.0791  0.6852  0.9952 0 1.0116
-#> sexfemale      -0.5812 0.1143 -0.8014 -0.3573 0 1.0035
-#> time            0.8617 0.0415  0.7813  0.9427 0 1.0053
-#> sexfemale:time -0.5161 0.0591 -0.6298 -0.3989 0 1.0010
-#> sigma           1.9921 0.0848  1.8281  2.1608 0 1.0027
+#> (Intercept)     0.8415 0.0785  0.6851  0.9938 0 1.0033
+#> sexfemale      -0.5827 0.1134 -0.8076 -0.3660 0 1.0009
+#> time            0.8620 0.0414  0.7813  0.9428 0 1.0017
+#> sexfemale:time -0.5149 0.0582 -0.6302 -0.4018 0 1.0008
+#> sigma           1.9878 0.0837  1.8274  2.1574 0 1.0021
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 25 sec
+#> time: 29 sec
 ```
 
 [Back to top](#top)
@@ -741,27 +741,27 @@ summary(jointFit)
 #>   cbind(y, 20 - y): 2837
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    11924.72 11874.68 -5952.664
-#> conditional 13480.82 13264.68 -7035.261
+#> marginal    11924.20 11874.98 -5976.623
+#> conditional 13471.07 13256.09 -7023.212
 #> 
 #> Random-effects covariance matrix:
-#>                      
-#>        StdDev   Corr 
-#> (Intr) 1.0072 (Intr) 
-#> time   0.7123 -0.0012
+#>                     
+#>        StdDev   Corr
+#> (Intr) 0.9996 (Intr)
+#> time   0.7069 0.0040
 #> 
 #> Survival outcome:
 #>                           Mean  StDev   2.5%  97.5%      P   Rhat
-#> sexfemale               0.5934 0.1974 0.2214 0.9899 0.0033 1.0067
-#> value(cbind(y, 20 - y)) 0.9439 0.0623 0.8333 1.0708 0.0000 1.0170
+#> sexfemale               0.5880 0.1985 0.2080 0.9867 0.0053 1.0093
+#> value(cbind(y, 20 - y)) 0.9487 0.0722 0.8227 1.1051 0.0000 1.2894
 #> 
 #> Longitudinal outcome: cbind(y, 20 - y) (family = beta binomial, link = logit)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)    -2.1530 0.0942 -2.3434 -1.9716 0.0000 1.0173
-#> sexfemale      -0.2745 0.1299 -0.5309 -0.0258 0.0309 1.0122
-#> time            0.3300 0.0524  0.2290  0.4332 0.0000 1.0019
-#> sexfemale:time -0.1795 0.0749 -0.3263 -0.0347 0.0151 1.0007
-#> sigma           4.8054 0.2806  4.2693  5.3793 0.0000 1.0111
+#> (Intercept)    -2.1503 0.0946 -2.3383 -1.9667 0.0000 1.0373
+#> sexfemale      -0.2702 0.1313 -0.5340 -0.0161 0.0373 1.0035
+#> time            0.3288 0.0524  0.2276  0.4298 0.0000 1.0048
+#> sexfemale:time -0.1778 0.0742 -0.3239 -0.0336 0.0187 1.0009
+#> sigma           4.7852 0.2768  4.2656  5.3463 0.0000 1.0598
 #> 
 #> MCMC summary:
 #> chains: 3 
