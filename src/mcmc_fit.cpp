@@ -331,6 +331,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat sum_JXDXJ(p_HC, p_HC, fill::none);
   vec sum_JXDu(p_HC, fill::none);
   mat u_mat(n_b, q, fill::none);
+  vec mean_u(X_dot.n_rows, fill::none);
   mat mean_u_mat(n_b, q, fill::none);
   mat mean_u_mat2(n_b, q, fill::none);
   uword n_outcomes = y.size();
@@ -340,6 +341,13 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       log_contr_obs_workspace.at(i).set_size(y.at(i).n_rows);
       log_contr_subj_workspace.at(i).set_size(unq_idL.at(i).n_elem);
   }
+  mat U(size(L), fill::none);
+  mat Q(size(Tau_betas_HC), fill::none);
+  mat L_prec(size(Tau_betas_HC), fill::none);
+  vec b_vec(size(Tau_mean_betas_HC), fill::none);
+  vec yy(size(Tau_mean_betas_HC), fill::none);
+  vec betasHC_workspace(size(ind_FE_HC), fill::none);
+  vec z_rand_betaHC(size(ind_FE_HC), fill::none);
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -630,8 +638,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  lambda_H_workspace, H_workspace,
                  lambda_H2_workspace, H2_workspace, surv_out_workspace,
                  logLik_surv_proposed, X_dots, sum_JXDXJ, sum_JXDu, u_mat,
-                 mean_u_mat, mean_u_mat2, log_contr_obs_workspace,
-                 log_contr_subj_workspace);
+                 mean_u, mean_u_mat, mean_u_mat2, log_contr_obs_workspace,
+                 log_contr_subj_workspace, U, Q, L_prec, b_vec, yy,
+                 betasHC_workspace, z_rand_betaHC);
 
         // update intercepts
         for (uword j = 0; j < y.n_elem; ++j) {

@@ -64,19 +64,22 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    vec &lambda_H2_workspace, vec &H2_workspace,
                    vec &surv_out_workspace, vec &logLik_surv_proposed,
                    const field<mat> &X_dots, mat &sum_JXDXJ, vec &sum_JXDu,
-                   mat &u_mat, mat &mean_u_mat, mat &mean_u_mat2,
+                   mat &u_mat, vec &mean_u, mat &mean_u_mat, mat &mean_u_mat2,
                    field<vec> &log_contr_obs_workspace,
-                   field<vec> &log_contr_subj_workspace) {
+                   field<vec> &log_contr_subj_workspace, mat &U, mat &Q,
+                   mat &L_prec, vec &b_vec, vec &yy, vec &betasHC_workspace,
+                   vec &z_rand_betaHC) {
 
     uword n_b = b_mat.n_rows;
     uword q = b_mat.n_cols;
 
     // FE in HC - Gibbs sampling
     vec betas_vec = docall_rbindF(betas);
-    vec mean_u = X_dot * betas_vec.rows(ind_FE_HC);
+    mean_u = X_dot * betas_vec.rows(ind_FE_HC);
 
     // 1. VECTORIZED RESHAPING: Replaces the manual u_mat loop
-    mean_u_mat = arma::reshape(mean_u, q, n_b).t();
+    arma::mat alias_mat(mean_u.memptr(), q, n_b, false, true);
+    mean_u_mat = alias_mat.t();
     u_mat = b_mat + mean_u_mat;
 
     uword patt_count = ind_RE_patt.n_elem;
@@ -84,7 +87,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
 
     sum_JXDXJ.zeros();
     sum_JXDu.zeros();
-    mat U = L.each_row() % sds.t();
+    U = L.each_row() % sds.t();
 
     // 2. ISOLATED D_INV PRE-CALCULATION
     // Store just the upper-triangular Cholesky factor, not the inverse
@@ -128,16 +131,18 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     //vec mean_1 = Sigma_1 * (Tau_mean_betas_HC + sum_JXDu);
     //betas_vec.rows(ind_FE_HC) = mean_1 + chol(Sigma_1, "lower") * randn<vec>(p_HC);
     // 1. Define the Precision Matrix (Q) and Canonical Mean (b)
-    mat Q = prior_Tau_betas_HC + sum_JXDXJ;
-    vec b_vec = Tau_mean_betas_HC + sum_JXDu;
+    Q = prior_Tau_betas_HC + sum_JXDXJ;
+    b_vec = Tau_mean_betas_HC + sum_JXDu;
     // 2. Calculate the Cholesky factor of the PRECISION matrix EXACTLY ONCE
-    mat L_prec = chol(Q, "lower");
+    arma::chol(L_prec, Q, "lower");
     // 3. Forward substitution: Solve L_prec * yy = b_vec  (This is yy = L^-1 * b)
-    vec yy = arma::solve(arma::trimatl(L_prec), b_vec);
+    arma::solve(yy, arma::trimatl(L_prec), b_vec);
     // 4. Add the standard normal noise
-    vec ww = yy + arma::randn<vec>(p_HC);
-    // 5. Back substitution: Solve L_prec^T * x = ww (This is x = L^-T * ww)
-    betas_vec.rows(ind_FE_HC) = arma::solve(arma::trimatu(L_prec.t()), ww);
+    z_rand_betaHC.randn(p_HC);
+    yy += z_rand_betaHC;
+    // 5. Back substitution: Solve L_prec^T * x = ww (This is x = L^-T * yy)
+    arma::solve(betasHC_workspace, arma::trimatu(L_prec.t()), yy);
+    betas_vec.rows(ind_FE_HC) = betasHC_workspace;
     vec2field_inplace(betas, betas_vec, ind_FE);
 
     // 3. VECTORIZED b_mat RECALCULATION (Deletes an entire n_b loop)
