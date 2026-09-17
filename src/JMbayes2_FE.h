@@ -99,10 +99,13 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
         }
     }
 
-    mat X_tilde;
-    vec u_tilde;
     uvec absolute_rows;
-    vec u_i;
+    mat outprod_workspace(q, q, arma::fill::none);
+    vec u_workspace(q, arma::fill::none);
+    vec u_tilde_workspace(q, arma::fill::none);
+    mat X_tilde_workspace(q, p_HC, arma::fill::none);
+    vec JXDu_workspace(p_HC, arma::fill::none);
+    mat JXDXJ_workspace(p_HC, p_HC, arma::fill::none);
 
     for (uword i = 0; i < n_b; ++i) {
         uword patt_i = id_patt.at(i);
@@ -112,19 +115,29 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
         const uvec& ind_RE_i = ind_RE_patt.at(patt_i);
         absolute_rows = i * q + ind_RE_i;
 
-        u_i = u_mat.row(i).t();
-        u_i = u_i.rows(ind_RE_i);
+        uword k = ind_RE_i.n_elem;
+        uword p_i = ind_FE_i.n_elem;
+
+        vec u_i(u_workspace.memptr(), k, false, true);
+        vec u_tilde(u_tilde_workspace.memptr(), k, false, true);
+        mat X_tilde(X_tilde_workspace.memptr(), k, p_i, false, true);
+        vec JXDu(JXDu_workspace.memptr(), p_i, false, true);
+        mat JXDXJ(JXDXJ_workspace.memptr(), p_i, p_i, false, true);
+        for (uword j = 0; j < k; ++j) {
+            u_i[j] = u_mat.at(i, ind_RE_i[j]);
+        }
 
         // Fetch the upper-triangular Cholesky factor
         const mat& R = U_patt_field.at(patt_i);
-
         // Fast Triangular Solves (Calculates R^-T * X  and  R^-T * u)
         arma::solve(X_tilde, arma::trimatl(R.t()), X_dots.at(i));
         arma::solve(u_tilde, arma::trimatl(R.t()), u_i);
 
         // Simple Cross-products
-        sum_JXDu.rows(ind_FE_i) += X_tilde.t() * u_tilde;
-        sum_JXDXJ.submat(ind_FE_i, ind_FE_i) += X_tilde.t() * X_tilde;
+        JXDu = X_tilde.t() * u_tilde;
+        sum_JXDu.rows(ind_FE_i) += JXDu;
+        JXDXJ = X_tilde.t() * X_tilde;
+        sum_JXDXJ.submat(ind_FE_i, ind_FE_i) += JXDXJ;
     }
 
     //mat Sigma_1 = inv_sympd(prior_Tau_betas_HC + sum_JXDXJ);
@@ -147,7 +160,8 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
 
     // 3. VECTORIZED b_mat RECALCULATION (Deletes an entire n_b loop)
     mean_u = X_dot * betas_vec.rows(ind_FE_HC);
-    mean_u_mat2 = arma::reshape(mean_u, q, n_b).t();
+    arma::mat alias_mat2(mean_u.memptr(), q, n_b, false, true);
+    mean_u_mat2 = alias_mat2.t();
     b_mat = u_mat - mean_u_mat2;
 
     if (save_random_effects) {
@@ -155,7 +169,8 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     } else if (it > n_burnin - 1) {
         cumsum_b += b_mat;
         for (uword j = 0; j < n_b; j++) {
-            outprod_b.slice(j) += b_mat.row(j).t() * b_mat.row(j);
+            outprod_workspace = b_mat.row(j).t() * b_mat.row(j);
+            outprod_b.slice(j) += outprod_workspace;
         }
     }
 
