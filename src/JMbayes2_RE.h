@@ -90,8 +90,15 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     for (uword j = 0; j < nRE; ++j) {
         old_b_j = b_mat.col(j);
         z_rand.randn(n);
-        new_b_j = old_b_j + scale_b.col(j) % z_rand;
-        delta_b = new_b_j - old_b_j;
+        double* old_ptr = old_b_j.memptr();
+        double* new_ptr = new_b_j.memptr();
+        double* delta_ptr = delta_b.memptr();
+        const double* scale_ptr = scale_b.colptr(j);
+        const double* z_ptr = z_rand.memptr();
+        for (uword obs = 0; obs < n; ++obs) {
+            delta_ptr[obs] = scale_ptr[obs] * z_ptr[obs];
+            new_ptr[obs] = old_ptr[obs] + delta_ptr[obs];
+        }
         b_mat.col(j) = new_b_j;
         uword o = map_o.at(j);
         uword k = map_k.at(j);
@@ -99,7 +106,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
         uword N_o = Z.at(o).n_rows;
         double* eta_ptr = eta.at(o).memptr();
         const double* Z_col = Z.at(o).colptr(k);
-        const double* delta_ptr = delta_b.memptr();
+        //const double* delta_ptr = delta_b.memptr();
         const uword* id_ptr = idL.at(o).memptr();
         for (uword obs = 0; obs < N_o; ++obs) {
             eta_ptr[obs] += Z_col[obs] * delta_ptr[id_ptr[obs]];
