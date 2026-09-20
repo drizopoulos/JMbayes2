@@ -44,6 +44,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const bool &recurrent,
                const vec &frailtyH_sigmaF_alphaF,
                const vec &frailtyh_sigmaF_alphaF,
+               const uvec &map_o, const uvec &map_k, mat &V_Sigma,
+               field<mat> &proposed_b,
                vec &lambda_H_workspace, vec &H_workspace,
                vec &lambda_H2_workspace, vec &H2_workspace,
                vec &surv_out_workspace, vec &logLik_long_proposed,
@@ -52,25 +54,12 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                field<vec> &log_contr_subj_workspace) {
     uword n = b_mat.n_rows;
     uword nRE = b_mat.n_cols;
-    mat V_R = inv(trimatu(L));
-    mat V_Sigma = V_R.each_col() / sds;
+    inv(V_Sigma, trimatu(L));
+    V_Sigma.each_col() /= sds;
     double log_det_V_Sigma = -arma::sum(arma::log(L.diag())) -
         arma::sum(arma::log(sds));
     double other_terms = -(double)nRE / 2.0 * log2pi + log_det_V_Sigma;
     vec denominator_b = logLik_long + logLik_surv + logLik_re;
-    uvec map_o(nRE);
-    uvec map_k(nRE);
-    for (uword o = 0; o < ind_RE.n_elem; ++o) {
-        for (uword k = 0; k < ind_RE.at(o).n_elem; ++k) {
-            uword j_col = ind_RE.at(o).at(k);
-            map_o.at(j_col) = o;
-            map_k.at(j_col) = k;
-        }
-    }
-    field<mat> proposed_b(ind_RE.n_elem);
-    for (uword i = 0; i < ind_RE.n_elem; ++i) {
-        proposed_b.at(i).set_size(b_mat.n_rows, ind_RE.at(i).n_elem);
-    }
     vec old_b_j(n, arma::fill::none);
     vec new_b_j(n, arma::fill::none);
     vec delta_b(n, arma::fill::none);
@@ -106,7 +95,6 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
         uword N_o = Z.at(o).n_rows;
         double* eta_ptr = eta.at(o).memptr();
         const double* Z_col = Z.at(o).colptr(k);
-        //const double* delta_ptr = delta_b.memptr();
         const uword* id_ptr = idL.at(o).memptr();
         for (uword obs = 0; obs < N_o; ++obs) {
             eta_ptr[obs] += Z_col[obs] * delta_ptr[id_ptr[obs]];
@@ -234,7 +222,8 @@ void update_frailty (vec &frailty, mat &res_frailty, mat &acceptance_frailty,
   vec proposed_frailtyH_sigmaF_alphaF(WH_gammas.n_rows, fill::zeros);
   vec proposed_frailtyh_sigmaF_alphaF(which_event.n_rows, fill::zeros);
   proposed_frailtyH_sigmaF_alphaF = frailty_H_proposed % alphaF_H * sigmaF;
-  proposed_frailtyh_sigmaF_alphaF = frailty_h_proposed.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
+  proposed_frailtyh_sigmaF_alphaF =
+      frailty_h_proposed.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
   log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
            WH_gammas, Wh_gammas, WH2_gammas,
            WlongH_alphas, Wlongh_alphas,
@@ -249,7 +238,8 @@ void update_frailty (vec &frailty, mat &res_frailty, mat &acceptance_frailty,
            lambda_H2_workspace, H2_workspace, surv_out_workspace,
            logLik_surv_proposed);
   // logLik_frailty_proposed
-  vec logLik_frailty_proposed = log_dnorm(frailty_proposed, vec(frailty.n_elem, fill::zeros), 1.0);
+  vec logLik_frailty_proposed =
+      log_dnorm(frailty_proposed, vec(frailty.n_elem, fill::zeros), 1.0);
   // calculate the numerator
   vec numerator_frailty = logLik_surv_proposed + logLik_frailty_proposed;
   // log_ratio
@@ -273,7 +263,8 @@ void update_frailty (vec &frailty, mat &res_frailty, mat &acceptance_frailty,
   frailty_h = frailty.rows(id_h);
   res_frailty.row(it) = frailty.t();
   frailtyH_sigmaF_alphaF = frailty_H % alphaF_H * sigmaF;
-  frailtyh_sigmaF_alphaF = frailty_h.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
+  frailtyh_sigmaF_alphaF =
+      frailty_h.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
 }
 
 #endif

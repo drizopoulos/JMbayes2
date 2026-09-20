@@ -348,6 +348,20 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec yy(size(Tau_mean_betas_HC), fill::none);
   vec betasHC_workspace(size(ind_FE_HC), fill::none);
   vec z_rand_betaHC(size(ind_FE_HC), fill::none);
+  mat V_Sigma(size(L), fill::none);
+  uvec map_o(q);
+  uvec map_k(q);
+  for (uword o = 0; o < ind_RE.n_elem; ++o) {
+      for (uword k = 0; k < ind_RE.at(o).n_elem; ++k) {
+          uword j_col = ind_RE.at(o).at(k);
+          map_o.at(j_col) = o;
+          map_k.at(j_col) = k;
+      }
+  }
+  field<mat> proposed_b(ind_RE.n_elem);
+  for (uword i = 0; i < ind_RE.n_elem; ++i) {
+      proposed_b.at(i).set_size(n_b, ind_RE.at(i).n_elem);
+  }
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -609,6 +623,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              which_interval, any_event, any_interval, ni_event,
              L, sds, it, acceptance_b, n_burnin, GK_k,
              recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
+             map_o, map_k, V_Sigma, proposed_b,
              lambda_H_workspace, H_workspace,
              lambda_H2_workspace, H2_workspace, surv_out_workspace,
              logLik_long_proposed, logLik_surv_proposed,
