@@ -55,6 +55,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat Wlong_H2 = docall_cbindL(as<List>(model_data["Wlong_H2"]));
   mat Wlong_bar = docall_cbindL(as<List>(model_data["Wlong_bar"]));
   mat Wlong_sds = docall_cbindL(as<List>(model_data["Wlong_sds"]));
+  Wlong_sds = 1.0 / Wlong_sds;
   mat Wlong_std = docall_cbindL(as<List>(model_data["Wlong_std"]));
   mat X_dot = as<mat>(model_data["X_dot"]);
   // other information
@@ -362,6 +363,15 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   for (uword i = 0; i < ind_RE.n_elem; ++i) {
       proposed_b.at(i).set_size(n_b, ind_RE.at(i).n_elem);
   }
+  vec old_b_j(n_b, arma::fill::none);
+  vec new_b_j(n_b, arma::fill::none);
+  vec delta_b(n_b, arma::fill::none);
+  vec z_rand(n_b, arma::fill::none);
+  mat Z_workspace(n_b, q, arma::fill::none);
+  vec logLik_re_proposed(n_b, arma::fill::none);
+  vec numerator_b(n_b, arma::fill::none);
+  vec denominator_b(n_b, arma::fill::none);
+  vec log_ratio(n_b, arma::fill::none);
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -380,6 +390,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
       if (any_event) eta_h.at(i).set_size(X_h.at(i).n_rows, n_forms);
       if (any_interval) eta_H2.at(i).set_size(X_H2.at(i).n_rows, n_forms);
   }
+  mat Wlong_H_proposed(size(Wlong_H), arma::fill::none);
+  mat Wlong_h_proposed(size(Wlong_h), arma::fill::none);
+  mat Wlong_H2_proposed(size(Wlong_H2), arma::fill::none);
+  vec WlongH_alphas_proposed(size(WlongH_alphas), arma::fill::none);
+  vec Wlongh_alphas_proposed(size(Wlongh_alphas), arma::fill::none);
+  vec WlongH2_alphas_proposed(size(WlongH2_alphas), arma::fill::none);
   //
   log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
            WH_gammas, Wh_gammas, WH2_gammas,
@@ -611,7 +627,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
 
     update_b(b, b_mat, eta, logLik_long, logLik_surv, logLik_re,
              eta_H, eta_h, eta_H2, Wlong_H, Wlong_h, Wlong_H2,
-             WlongH_alphas, Wlongh_alphas, WlongH2_alphas, scale_b, ind_RE,
+             Wlong_H_proposed, Wlong_h_proposed, Wlong_H2_proposed,
+             WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
+             WlongH_alphas_proposed, Wlongh_alphas_proposed, WlongH2_alphas_proposed,
+             scale_b, ind_RE,
              X_H, X_h, X_H2, Z_H, Z_h, Z_H2, U_H, U_h, U_H2,
              Wlong_bar, Wlong_sds, betas, alphas, id_H_, id_h,
              FunForms, Funs_FunForms, X, Z, idL, y, sigmas,
@@ -623,8 +642,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
              which_interval, any_event, any_interval, ni_event,
              L, sds, it, acceptance_b, n_burnin, GK_k,
              recurrent, frailtyH_sigmaF_alphaF, frailtyh_sigmaF_alphaF,
-             map_o, map_k, V_Sigma, proposed_b,
-             lambda_H_workspace, H_workspace,
+             map_o, map_k, V_Sigma, proposed_b, denominator_b, old_b_j, new_b_j,
+             delta_b, z_rand, Z_workspace, logLik_re_proposed, numerator_b,
+             log_ratio, lambda_H_workspace, H_workspace,
              lambda_H2_workspace, H2_workspace, surv_out_workspace,
              logLik_long_proposed, logLik_surv_proposed,
              log_contr_obs_workspace, log_contr_subj_workspace);
@@ -704,7 +724,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   if (any_gammas) {
     res_gammas.each_row() /= W_sds;
   }
-  res_alphas.each_row() /= Wlong_sds;
+  res_alphas.each_row() %= Wlong_sds;
   acceptance_frailty = acceptance_frailty / (n_iter - n_burnin);
   return List::create(
     Named("mcmc") = List::create(
@@ -794,6 +814,7 @@ arma::vec logLik_jm (List thetas, List model_data, List model_info,
   field<mat> U_H2 = List2Field_mat(as<List>(model_data["U_H2"]));
   mat Wlong_bar = docall_cbindL(as<List>(model_data["Wlong_bar"]));
   mat Wlong_sds = docall_cbindL(as<List>(model_data["Wlong_sds"]));
+  Wlong_sds = 1.0 / Wlong_sds;
   mat W_sds = as<mat>(model_data["W_sds"]);
   uvec which_event = as<uvec>(model_data["which_event"]) - 1;
   uvec which_right = as<uvec>(model_data["which_right"]) - 1;
@@ -929,6 +950,7 @@ arma::mat mlogLik_jm (List res_thetas, arma::mat mean_b_mat, arma::cube post_var
   field<mat> U_H2 = List2Field_mat(as<List>(model_data["U_H2"]));
   mat Wlong_bar = docall_cbindL(as<List>(model_data["Wlong_bar"]));
   mat Wlong_sds = docall_cbindL(as<List>(model_data["Wlong_sds"]));
+  Wlong_sds = 1.0 / Wlong_sds;
   mat W_sds = as<mat>(model_data["W_sds"]);
   uvec which_event = as<uvec>(model_data["which_event"]) - 1;
   uvec which_right = as<uvec>(model_data["which_right"]) - 1;
@@ -1061,6 +1083,7 @@ List simulate_REs (List Data, List MCMC, List control) {
   field<mat> U_H2 = List2Field_mat(as<List>(Data["U_H2"]));
   mat Wlong_bar = docall_cbindL(as<List>(Data["Wlong_bar"]));
   mat Wlong_sds = docall_cbindL(as<List>(Data["Wlong_sds"]));
+  Wlong_sds = 1.0 / Wlong_sds;
   /////////////////////////////////////
   // Longitudinal Process Components //
   /////////////////////////////////////

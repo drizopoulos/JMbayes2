@@ -14,7 +14,9 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                vec &logLik_long, vec &logLik_surv, vec &logLik_re,
                field<mat> &eta_H, field<mat> &eta_h, field<mat> &eta_H2,
                mat &Wlong_H, mat &Wlong_h, mat &Wlong_H2,
+               mat &Wlong_H_proposed, mat &Wlong_h_proposed, mat &Wlong_H2_proposed,
                vec &WlongH_alphas, vec &Wlongh_alphas, vec &WlongH2_alphas,
+               vec &WlongH_alphas_proposed, vec &Wlongh_alphas_proposed, vec &WlongH2_alphas_proposed,
                mat &scale_b,
                const field<uvec> &ind_RE,
                const field<mat> &X_H, const field<mat> &X_h, const field<mat> &X_H2,
@@ -46,6 +48,9 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
                const vec &frailtyh_sigmaF_alphaF,
                const uvec &map_o, const uvec &map_k, mat &V_Sigma,
                field<mat> &proposed_b,
+               vec &denominator_b, vec &old_b_j, vec &new_b_j,
+               vec &delta_b, vec &z_rand, mat &Z_workspace,
+               vec &logLik_re_proposed, vec &numerator_b, vec &log_ratio,
                vec &lambda_H_workspace, vec &H_workspace,
                vec &lambda_H2_workspace, vec &H2_workspace,
                vec &surv_out_workspace, vec &logLik_long_proposed,
@@ -59,21 +64,7 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     double log_det_V_Sigma = -arma::sum(arma::log(L.diag())) -
         arma::sum(arma::log(sds));
     double other_terms = -(double)nRE / 2.0 * log2pi + log_det_V_Sigma;
-    vec denominator_b = logLik_long + logLik_surv + logLik_re;
-    vec old_b_j(n, arma::fill::none);
-    vec new_b_j(n, arma::fill::none);
-    vec delta_b(n, arma::fill::none);
-    vec z_rand(n, arma::fill::none);
-    mat Wlong_H_proposed(size(Wlong_H), arma::fill::none);
-    mat Wlong_h_proposed(size(Wlong_h), arma::fill::none);
-    mat Wlong_H2_proposed(size(Wlong_H2), arma::fill::none);
-    vec WlongH_alphas_proposed(size(WlongH_alphas), arma::fill::none);
-    vec Wlongh_alphas_proposed(size(Wlongh_alphas), arma::fill::none);
-    vec WlongH2_alphas_proposed(size(WlongH2_alphas), arma::fill::none);
-    mat Z_workspace(n, nRE, arma::fill::none);
-    vec logLik_re_proposed(n, arma::fill::none);
-    vec numerator_b(n, arma::fill::none);
-    vec log_ratio(n, arma::fill::none);
+    denominator_b = logLik_long + logLik_surv + logLik_re;
     uvec accepted(n, arma::fill::none);
     mat2field_inplace(proposed_b, b_mat, ind_RE);
     for (uword j = 0; j < nRE; ++j) {

@@ -885,7 +885,7 @@ mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
         }
     }
     Wlong.each_row() -= Wlong_bar;
-    Wlong.each_row() /= Wlong_sds;
+    Wlong.each_row() %= Wlong_sds;
     return Wlong;
 }
 
@@ -951,8 +951,20 @@ inline void calculate_Wlong_inplace (mat &Wlong, field<mat> &eta,
             }
         }
     }
-    Wlong.each_row() -= Wlong_bar;
-    Wlong.each_row() /= Wlong_sds;
+    //Wlong.each_row() -= Wlong_bar;
+    //Wlong.each_row() /= Wlong_sds;
+    uword n_rows = Wlong.n_rows;
+    uword n_cols = Wlong.n_cols;
+    const double* bar_ptr = Wlong_bar.memptr();
+    const double* inv_sds_ptr = Wlong_sds.memptr();
+    for (uword c = 0; c < n_cols; ++c) {
+        double bar = bar_ptr[c];
+        double inv_sd = inv_sds_ptr[c];
+        double* col_ptr = Wlong.colptr(c);
+        for (uword r = 0; r < n_rows; ++r) {
+            col_ptr[r] = (col_ptr[r] - bar) * inv_sd;
+        }
+    }
 }
 
 mat bdiagF (const field<mat> &F) { // builds a block diagonal matrix given a field of matrices
