@@ -72,8 +72,6 @@ inline void group_sum (const arma::vec& x, const arma::uvec& ind,
     arma::uword start = 0;
     for (arma::uword i = 0; i < m; ++i) {
         arma::uword end = p_ind[i];
-        // Safety bound check to prevent crashing R if an index is too large
-        if (end >= x.n_elem) end = x.n_elem - 1;
         double current_sum = 0.0;
         // Sum the elements for the current segment
         for (arma::uword j = start; j <= end; ++j) {
@@ -673,7 +671,7 @@ vec log_dmvnrm (const mat &x, const mat &D) {
   return out;
 }
 
-inline void linpred_surv_inplace(field<mat> &eta,
+inline void linpred_surv_inplace2(field<mat> &eta,
                                  const field<mat> &X, const field<vec> &betas,
                                  const field<mat> &Z, const field<mat> &b,
                                  const uvec &id) {
@@ -694,6 +692,44 @@ inline void linpred_surv_inplace(field<mat> &eta,
             uword j_RE_start = j * n_REs;
             double* eta_col_ptr = eta.at(i).colptr(j);
             const uword* id_ptr = id.memptr();
+            for (uword k = 0; k < n_REs; ++k) {
+                const double* Z_col_ptr = Z_i.colptr(j_RE_start + k);
+                const double* b_col_ptr = b_i.colptr(k);
+                for (uword obs = 0; obs < N; ++obs) {
+                    eta_col_ptr[obs] += Z_col_ptr[obs] * b_col_ptr[id_ptr[obs]];
+                }
+            }
+        }
+    }
+}
+
+inline void linpred_surv_inplace(field<mat> &eta,
+                                 const field<mat> &X, const field<vec> &betas,
+                                 const field<mat> &Z, const field<mat> &b,
+                                 const uvec &id) {
+    uword n_outcomes = X.n_elem;
+    for (uword i = 0; i < n_outcomes; ++i) {
+        const mat& X_i = X.at(i);
+        const vec& betas_i = betas.at(i);
+        const mat& Z_i = Z.at(i);
+        const mat& b_i = b.at(i);
+        uword n_betas = betas_i.n_rows;
+        uword n_REs = b_i.n_cols;
+        uword n_forms = X_i.n_cols / n_betas;
+        uword N = X_i.n_rows;
+        const uword* id_ptr = id.memptr();
+        for (uword j = 0; j < n_forms; ++j) {
+            double* eta_col_ptr = eta.at(i).colptr(j);
+            std::memset(eta_col_ptr, 0, N * sizeof(double));
+            uword j_beta_start = j * n_betas;
+            for (uword k = 0; k < n_betas; ++k) {
+                const double* X_col_ptr = X_i.colptr(j_beta_start + k);
+                double beta_val = betas_i[k];
+                for (uword obs = 0; obs < N; ++obs) {
+                    eta_col_ptr[obs] += X_col_ptr[obs] * beta_val;
+                }
+            }
+            uword j_RE_start = j * n_REs;
             for (uword k = 0; k < n_REs; ++k) {
                 const double* Z_col_ptr = Z_i.colptr(j_RE_start + k);
                 const double* b_col_ptr = b_i.colptr(k);
@@ -748,7 +784,7 @@ field<vec> linpred_mixed (const field<mat> &X, const field<vec> &betas,
   return out;
 }
 
-inline void linpred_mixed_inplace (field<vec> &eta,
+inline void linpred_mixed_inplace2 (field<vec> &eta,
                                    const field<mat> &X,
                                    const field<vec> &betas,
                                    const field<mat> &Z,
@@ -769,6 +805,45 @@ inline void linpred_mixed_inplace (field<vec> &eta,
         for (uword k = 0; k < q; ++k) {
             const double* Z_col = Z_i.colptr(k);
             const double* b_col = b_i.colptr(k);
+            for (uword obs = 0; obs < N; ++obs) {
+                eta_ptr[obs] += Z_col[obs] * b_col[id_ptr[obs]];
+            }
+        }
+    }
+}
+
+inline void linpred_mixed_inplace (field<vec> &eta,
+                                   const field<mat> &X,
+                                   const field<vec> &betas,
+                                   const field<mat> &Z,
+                                   const field<mat> &b,
+                                   const field<uvec> &id) {
+    uword n_outcomes = X.n_elem;
+    for (uword i = 0; i < n_outcomes; ++i) {
+        const mat& X_i = X.at(i);
+        const vec& betas_i = betas.at(i);
+        const mat& Z_i = Z.at(i);
+        const mat& b_i = b.at(i);
+        const uvec& id_i = id.at(i);
+
+        uword N = X_i.n_rows;
+        uword n_betas = betas_i.n_rows;
+        uword q = Z_i.n_cols;
+        double* eta_ptr = eta.at(i).memptr();
+        const uword* id_ptr = id_i.memptr();
+        std::memset(eta_ptr, 0, N * sizeof(double));
+        for (uword k = 0; k < n_betas; ++k) {
+            const double* X_col = X_i.colptr(k);
+            double beta_val = betas_i[k];
+
+            for (uword obs = 0; obs < N; ++obs) {
+                eta_ptr[obs] += X_col[obs] * beta_val;
+            }
+        }
+        for (uword k = 0; k < q; ++k) {
+            const double* Z_col = Z_i.colptr(k);
+            const double* b_col = b_i.colptr(k);
+
             for (uword obs = 0; obs < N; ++obs) {
                 eta_ptr[obs] += Z_col[obs] * b_col[id_ptr[obs]];
             }
@@ -884,12 +959,20 @@ mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
             }
         }
     }
-    Wlong.each_row() -= Wlong_bar;
-    Wlong.each_row() %= Wlong_sds;
+    const double* bar_ptr = Wlong_bar.memptr();
+    const double* inv_sds_ptr = Wlong_sds.memptr();
+    for (uword c = 0; c < total_cols; ++c) {
+        double bar = bar_ptr[c];
+        double inv_sd = inv_sds_ptr[c];
+        double* col_ptr = Wlong.colptr(c);
+        for (uword r = 0; r < N; ++r) {
+            col_ptr[r] = (col_ptr[r] - bar) * inv_sd;
+        }
+    }
     return Wlong;
 }
 
-inline void calculate_Wlong_inplace (mat &Wlong, field<mat> &eta,
+inline void calculate_Wlong_inplace2 (mat &Wlong, field<mat> &eta,
                                      const field<mat> &X, const field<mat> &Z,
                                      const field<mat> &U, const mat &Wlong_bar,
                                      const mat &Wlong_sds,
@@ -953,6 +1036,141 @@ inline void calculate_Wlong_inplace (mat &Wlong, field<mat> &eta,
     }
     //Wlong.each_row() -= Wlong_bar;
     //Wlong.each_row() /= Wlong_sds;
+    uword n_rows = Wlong.n_rows;
+    uword n_cols = Wlong.n_cols;
+    const double* bar_ptr = Wlong_bar.memptr();
+    const double* inv_sds_ptr = Wlong_sds.memptr();
+    for (uword c = 0; c < n_cols; ++c) {
+        double bar = bar_ptr[c];
+        double inv_sd = inv_sds_ptr[c];
+        double* col_ptr = Wlong.colptr(c);
+        for (uword r = 0; r < n_rows; ++r) {
+            col_ptr[r] = (col_ptr[r] - bar) * inv_sd;
+        }
+    }
+}
+
+inline void calculate_Wlong_inplace (mat &Wlong, field<mat> &eta,
+                                     const field<mat> &X, const field<mat> &Z,
+                                     const field<mat> &U, const mat &Wlong_bar,
+                                     const mat &Wlong_sds,
+                                     const field<vec> &betas, const field<mat> &b,
+                                     const uvec &id, const field<uvec> &FunForms,
+                                     const List &Funs_FunForms) {
+    linpred_surv_inplace(eta, X, betas, Z, b, id);
+    uword n_outcomes = U.n_elem;
+    uword total_cols = 0;
+    uvec col_starts(n_outcomes);
+    for (uword i = 0; i < n_outcomes; ++i) {
+        col_starts.at(i) = total_cols;
+        total_cols += U.at(i).n_cols;
+    }
+    uword N = Wlong.n_rows;
+    for (uword i = 0; i < n_outcomes; ++i) {
+        uword start_col = col_starts.at(i);
+        uword end_col = start_col + U.at(i).n_cols - 1;
+        Wlong.cols(start_col, end_col) = U.at(i);
+        const mat& eta_i = eta.at(i);
+        const uvec& FF_i = FunForms.at(i);
+        List Funs_i = Funs_FunForms[i];
+        uword current_col = 0;
+        uword n_funs = Funs_i.length();
+
+        for (uword j = 0; j < n_funs; ++j) {
+            // 1. Get raw pointer to the j-th column of eta_i
+            const double* eta_ptr = eta_i.colptr(j);
+
+            IntegerVector fun_ints = Funs_i[j];
+            uword k = fun_ints.length();
+
+            for (uword f = 0; f < k; ++f) {
+                uword target_col = start_col + FF_i.at(current_col);
+
+                // 2. Get raw pointer to the target column in Wlong
+                double* out_ptr = Wlong.colptr(target_col);
+
+                int fun = fun_ints[f];
+
+                switch (fun) {
+                case 1: // Linear
+                    for(uword r = 0; r < N; ++r) out_ptr[r] *= eta_ptr[r];
+                    break;
+                case 2: // Absolute value
+                    for(uword r = 0; r < N; ++r) out_ptr[r] *= std::abs(eta_ptr[r]);
+                    break;
+                case 3: // Logit
+                    for(uword r = 0; r < N; ++r) {
+                        double exp_val = std::exp(std::max(std::min(-eta_ptr[r], 700.0), -700.0));
+                        out_ptr[r] *= 1.0 / (1.0 + exp_val);
+                    }
+                    break;
+                case 4: // Truncated Exp
+                    for(uword r = 0; r < N; ++r) {
+                        out_ptr[r] *= std::exp(std::max(std::min(eta_ptr[r], 700.0), -700.0));
+                    }
+                    break;
+                case 5: // Logit Derivative
+                    for(uword r = 0; r < N; ++r) {
+                        double exp_val = std::exp(std::max(std::min(-eta_ptr[r], 700.0), -700.0));
+                        double p = 1.0 / (1.0 + exp_val);
+                        out_ptr[r] *= p * (1.0 - p);
+                    }
+                    break;
+                case 6: // Truncated Log
+                    for(uword r = 0; r < N; ++r) {
+                        // Trunc_log replication (assuming safe positive values or handling externally)
+                        out_ptr[r] *= std::log(std::max(eta_ptr[r], 1e-12));
+                    }
+                    break;
+                case 7: // Log2
+                    for(uword r = 0; r < N; ++r) out_ptr[r] *= std::log2(std::max(eta_ptr[r], 1e-12));
+                    break;
+                case 8: // Log10
+                    for(uword r = 0; r < N; ++r) out_ptr[r] *= std::log10(std::max(eta_ptr[r], 1e-12));
+                    break;
+                case 9: // Sqrt
+                    for(uword r = 0; r < N; ++r) out_ptr[r] *= std::sqrt(std::max(eta_ptr[r], 0.0));
+                    break;
+                case 10: // Square
+                    for(uword r = 0; r < N; ++r) out_ptr[r] *= (eta_ptr[r] * eta_ptr[r]);
+                    break;
+                case 11: // Cubic (eta * eta^2)
+                    for(uword r = 0; r < N; ++r) out_ptr[r] *= (eta_ptr[r] * eta_ptr[r] * eta_ptr[r]);
+                    break;
+                case 12: // Quartic (eta^2 * eta^2)
+                    for(uword r = 0; r < N; ++r) {
+                        double sq = eta_ptr[r] * eta_ptr[r];
+                        out_ptr[r] *= (sq * sq);
+                    }
+                    break;
+                case 13: // Square of Logit
+                    for(uword r = 0; r < N; ++r) {
+                        double exp_val = std::exp(std::max(std::min(-eta_ptr[r], 700.0), -700.0));
+                        double p = 1.0 / (1.0 + exp_val);
+                        out_ptr[r] *= (p * p);
+                    }
+                    break;
+                case 14: // Logit * Square of Logit
+                    for(uword r = 0; r < N; ++r) {
+                        double exp_val = std::exp(std::max(std::min(-eta_ptr[r], 700.0), -700.0));
+                        double p = 1.0 / (1.0 + exp_val);
+                        out_ptr[r] *= (p * p * p);
+                    }
+                    break;
+                case 15: // Quartic of Logit
+                    for(uword r = 0; r < N; ++r) {
+                        double exp_val = std::exp(std::max(std::min(-eta_ptr[r], 700.0), -700.0));
+                        double p = 1.0 / (1.0 + exp_val);
+                        double sq = p * p;
+                        out_ptr[r] *= (sq * sq);
+                    }
+                    break;
+                default: Rcpp::stop("Unknown transformation function integer code.");
+                }
+                current_col++;
+            }
+        }
+    }
     uword n_rows = Wlong.n_rows;
     uword n_cols = Wlong.n_cols;
     const double* bar_ptr = Wlong_bar.memptr();

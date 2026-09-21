@@ -139,6 +139,110 @@ inline void log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
     group_sum(out, indFast_h, logLik_surv);
 }
 
+inline void log_surv2 (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
+                      const vec &W0H2_bs_gammas, const vec &WH_gammas,
+                      const vec &Wh_gammas, const vec &WH2_gammas,
+                      const vec &WlongH_alphas, const vec &Wlongh_alphas,
+                      const vec &WlongH2_alphas, const vec &log_Pwk, const vec &log_Pwk2,
+                      const vec &log_weights, const uvec &ind_h2, const uvec &intgr_ind, const bool &intgr,
+                      const uvec &indFast_H, const uvec &indFast_h, const uvec &which_event,
+                      const uvec &which_right_event, const uvec &which_left,
+                      const bool &any_interval, const uvec &which_interval,
+                      const bool &recurrent,
+                      const vec &frailtyH_sigmaF_alphaF,
+                      const vec &frailtyh_sigmaF_alphaF,
+                      vec &lambda_H, vec &H, vec &lambda_H2, vec &H2, vec &out,
+                      vec &logLik_surv) {
+    // 1. Calculate lambda_H (Fused Math)
+    uword N_H = log_Pwk.n_elem;
+    double* lam_H_ptr = lambda_H.memptr();
+    const double* log_Pwk_ptr = log_Pwk.memptr();
+    const double* W0H_ptr = W0H_bs_gammas.memptr();
+    const double* WH_ptr = WH_gammas.memptr();
+    const double* WlongH_ptr = WlongH_alphas.memptr();
+    if (recurrent) {
+        const double* frail_ptr = frailtyH_sigmaF_alphaF.memptr();
+        for (uword r = 0; r < N_H; ++r) {
+            lam_H_ptr[r] = std::exp(log_Pwk_ptr[r] + W0H_ptr[r] + WH_ptr[r] +
+                WlongH_ptr[r] + frail_ptr[r]);
+        }
+    } else {
+        for (uword r = 0; r < N_H; ++r) {
+            lam_H_ptr[r] = std::exp(log_Pwk_ptr[r] + W0H_ptr[r] + WH_ptr[r] +
+                WlongH_ptr[r]);
+        }
+    }
+    group_sum(lambda_H, indFast_H, H);
+    double* out_ptr = out.memptr();
+    const double* H_ptr = H.memptr();
+    // 2. Right Censored Events
+    uword N_right = which_right_event.n_elem;
+    const uword* right_ptr = which_right_event.memptr();
+    for(uword i = 0; i < N_right; ++i) {
+        uword idx = right_ptr[i];
+        out_ptr[idx] = -H_ptr[idx];
+    }
+    // 3. Observed Events
+    uword N_event = which_event.n_elem;
+    if (N_event > 0) {
+        const uword* event_ptr = which_event.memptr();
+        const double* log_w_ptr = log_weights.memptr();
+        const double* W0h_ptr = W0h_bs_gammas.memptr();
+        const double* Wh_ptr = Wh_gammas.memptr();
+        const double* Wlongh_ptr = Wlongh_alphas.memptr();
+        if (recurrent) {
+            const double* frail_h_ptr = frailtyh_sigmaF_alphaF.memptr();
+            for(uword i = 0; i < N_event; ++i) {
+                uword idx = event_ptr[i];
+                out_ptr[idx] += log_w_ptr[idx] + W0h_ptr[idx] + Wh_ptr[idx] +
+                    Wlongh_ptr[idx] + frail_h_ptr[idx];
+            }
+        } else {
+            for(uword i = 0; i < N_event; ++i) {
+                uword idx = event_ptr[i];
+                out_ptr[idx] += log_w_ptr[idx] + W0h_ptr[idx] + Wh_ptr[idx] +
+                    Wlongh_ptr[idx];
+            }
+        }
+    }
+    // 4. Left Censored Events
+    uword N_left = which_left.n_elem;
+    if (N_left > 0) {
+        const uword* left_ptr = which_left.memptr();
+        for(uword i = 0; i < N_left; ++i) {
+            uword idx = left_ptr[i];
+            out_ptr[idx] = std::log1p(-std::exp(-H_ptr[idx]));
+        }
+    }
+    // 5. Interval Censored Events
+    if (any_interval) {
+        uword N_H2 = log_Pwk2.n_elem;
+        double* lam_H2_ptr = lambda_H2.memptr();
+        const double* log_Pwk2_ptr = log_Pwk2.memptr();
+        const double* W0H2_ptr = W0H2_bs_gammas.memptr();
+        const double* WH2_ptr = WH2_gammas.memptr();
+        const double* WlongH2_ptr = WlongH2_alphas.memptr();
+        for (uword r = 0; r < N_H2; ++r) {
+            lam_H2_ptr[r] = std::exp(log_Pwk2_ptr[r] + W0H2_ptr[r] + WH2_ptr[r] + WlongH2_ptr[r]);
+        }
+        group_sum(lambda_H2, indFast_H, H2);
+        uword N_interval = which_interval.n_elem;
+        const uword* int_ptr = which_interval.memptr();
+        const double* H2_ptr = H2.memptr();
+
+        for(uword i = 0; i < N_interval; ++i) {
+            uword idx = int_ptr[i];
+            out_ptr[idx] = -H_ptr[idx] + std::log(-std::expm1(-H2_ptr[idx]));
+        }
+    }
+    // 6. Final Integration and Aggregation
+    if (intgr) {
+        out = lse(out, ind_h2, intgr_ind);
+    }
+
+    group_sum(out, indFast_h, logLik_surv);
+}
+
 vec log_surv_old (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
               const vec &W0H2_bs_gammas, const vec &WH_gammas,
               const vec &Wh_gammas, const vec &WH2_gammas,
