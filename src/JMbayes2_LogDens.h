@@ -9,11 +9,12 @@
 using namespace Rcpp;
 using namespace arma;
 
-inline void log_long_i (const mat &y_i, vec mu_i, const double sigma_i,
-                const double &extr_prm_i, const std::string &fam_i,
-                const std::string &link_i, const uvec &idFast_i,
-                vec &log_contr, vec &out) {
+inline void log_long_i (const mat &y_i, const vec &eta_i, vec &mu_i,
+                        const double sigma_i, const double &extr_prm_i,
+                        const std::string &fam_i, const std::string &link_i,
+                        const uvec &idFast_i, vec &log_contr, vec &out) {
     uword N = y_i.n_rows;
+    mu_i = eta_i;
     mu_fun(mu_i, link_i);
     if (fam_i == "gaussian") {
         log_dnorm_void(y_i, mu_i, sigma_i, log_contr);
@@ -69,12 +70,13 @@ inline void log_long_i (const mat &y_i, vec mu_i, const double sigma_i,
     group_sum(log_contr, idFast_i, out);
 }
 
-inline void log_long (const field<mat> &y, const field<vec> &eta, const vec &sigmas,
-             const vec &extra_parms, const std::vector<std::string> &families,
-             const std::vector<std::string> &links, const field<uvec> &idFast,
-             const field<uvec> &unq_ids, vec &out,
-             field<vec> &log_contr_obs_workspace,
-             field<vec> &log_contr_subj_workspace) {
+inline void log_long (const field<mat> &y, const field<vec> &eta, field<vec> &mu,
+                      const vec &sigmas, const vec &extra_parms,
+                      const std::vector<std::string> &families,
+                      const std::vector<std::string> &links,
+                      const field<uvec> &idFast, const field<uvec> &unq_ids,
+                      vec &out, field<vec> &log_contr_obs_workspace,
+                      field<vec> &log_contr_subj_workspace) {
     uword n_outcomes = y.size();
     out.zeros();
     for (uword i = 0; i < n_outcomes; ++i) {
@@ -86,8 +88,8 @@ inline void log_long (const field<mat> &y, const field<vec> &eta, const vec &sig
         const std::string& link_i = links[i];
         const uvec& idFast_i = idFast.at(i);
         const uvec& unq_id_i = unq_ids.at(i);
-        log_long_i(y_i, eta_i, sigma_i, extr_prm_i, fam_i, link_i, idFast_i,
-                   log_contr_obs_workspace.at(i),
+        log_long_i(y_i, eta_i, mu.at(i), sigma_i, extr_prm_i, fam_i, link_i,
+                   idFast_i, log_contr_obs_workspace.at(i),
                    log_contr_subj_workspace.at(i));
         out.rows(unq_id_i) += log_contr_subj_workspace.at(i);
     }
@@ -390,6 +392,7 @@ vec logLik_jm_stripped (
     const vec &sigmaF, vec &lambda_H_workspace, vec &H_workspace,
     vec &lambda_H2_workspace, vec &H2_workspace, vec &surv_out_workspace,
     vec &logLik_long, vec &logLik_surv,
+    field<vec> &mu_obs_workspace,
     field<vec> &log_contr_obs_workspace,
     field<vec> &log_contr_subj_workspace) {
   //uword n = b.at(0).n_rows;
@@ -400,8 +403,9 @@ vec logLik_jm_stripped (
     betas_.at(j).at(0) += as_scalar(Xbar.at(j) * betas.at(j));
   }
   field<vec> eta = linpred_mixed(X, betas_, Z, b, idL);
-  log_long(y, eta, sigmas, extra_parms, families, links, idL_lp_fast, unq_idL,
-           logLik_long, log_contr_obs_workspace, log_contr_subj_workspace);
+  log_long(y, eta, mu_obs_workspace, sigmas, extra_parms, families, links,
+           idL_lp_fast, unq_idL, logLik_long, log_contr_obs_workspace,
+           log_contr_subj_workspace);
   /////////////
   vec W0H_bs_gammas = W0_H * bs_gammas;
   vec W0h_bs_gammas(W0_h.n_rows);

@@ -1075,96 +1075,46 @@ inline void calculate_Wlong_inplace (mat &Wlong, field<mat> &eta,
         List Funs_i = Funs_FunForms[i];
         uword current_col = 0;
         uword n_funs = Funs_i.length();
-
         for (uword j = 0; j < n_funs; ++j) {
-            // 1. Get raw pointer to the j-th column of eta_i
+            // 1. Extract raw pointer, bypassing subview instantiation overhead
             const double* eta_ptr = eta_i.colptr(j);
-
+            // 2. Wrap in Armadillo vector (Zero allocation, Strict size)
+            arma::vec eta_vec(const_cast<double*>(eta_ptr), N, false, true);
             IntegerVector fun_ints = Funs_i[j];
             uword k = fun_ints.length();
-
             for (uword f = 0; f < k; ++f) {
                 uword target_col = start_col + FF_i.at(current_col);
-
-                // 2. Get raw pointer to the target column in Wlong
+                // 3. Extract raw target pointer and wrap it
                 double* out_ptr = Wlong.colptr(target_col);
-
+                arma::vec out_vec(out_ptr, N, false, true);
                 int fun = fun_ints[f];
-
                 switch (fun) {
-                case 1: // Linear
-                    for(uword r = 0; r < N; ++r) out_ptr[r] *= eta_ptr[r];
+                case 1: out_vec %= eta_vec; break;
+                case 2: out_vec %= arma::abs(eta_vec); break;
+                case 3: out_vec %= 1.0 / (1.0 + arma::trunc_exp(-eta_vec)); break;
+                case 4: out_vec %= arma::trunc_exp(eta_vec); break;
+                case 5: {
+                    auto pp = 1.0 / (1.0 + arma::trunc_exp(-eta_vec));
+                    out_vec %= pp % (1.0 - pp);
                     break;
-                case 2: // Absolute value
-                    for(uword r = 0; r < N; ++r) out_ptr[r] *= std::abs(eta_ptr[r]);
+                }
+                case 6: out_vec %= arma::trunc_log(eta_vec); break;
+                case 7: out_vec %= arma::log2(eta_vec); break;
+                case 8: out_vec %= arma::log10(eta_vec); break;
+                case 9: out_vec %= arma::sqrt(eta_vec); break;
+                case 10: out_vec %= arma::square(eta_vec); break;
+                case 11: out_vec %= eta_vec % arma::square(eta_vec); break;
+                case 12: out_vec %= arma::square(arma::square(eta_vec)); break;
+                case 13: out_vec %=
+                    arma::square(1.0 / (1.0 + arma::trunc_exp(-eta_vec))); break;
+                case 14: {
+                    auto pp = 1.0 / (1.0 + arma::trunc_exp(-eta_vec));
+                    out_vec %= pp % arma::square(pp);
                     break;
-                case 3: // Logit
-                    for(uword r = 0; r < N; ++r) {
-                        double exp_val = std::exp(std::max(std::min(-eta_ptr[r], 700.0), -700.0));
-                        out_ptr[r] *= 1.0 / (1.0 + exp_val);
-                    }
-                    break;
-                case 4: // Truncated Exp
-                    for(uword r = 0; r < N; ++r) {
-                        out_ptr[r] *= std::exp(std::max(std::min(eta_ptr[r], 700.0), -700.0));
-                    }
-                    break;
-                case 5: // Logit Derivative
-                    for(uword r = 0; r < N; ++r) {
-                        double exp_val = std::exp(std::max(std::min(-eta_ptr[r], 700.0), -700.0));
-                        double p = 1.0 / (1.0 + exp_val);
-                        out_ptr[r] *= p * (1.0 - p);
-                    }
-                    break;
-                case 6: // Truncated Log
-                    for(uword r = 0; r < N; ++r) {
-                        // Trunc_log replication (assuming safe positive values or handling externally)
-                        out_ptr[r] *= std::log(std::max(eta_ptr[r], 1e-12));
-                    }
-                    break;
-                case 7: // Log2
-                    for(uword r = 0; r < N; ++r) out_ptr[r] *= std::log2(std::max(eta_ptr[r], 1e-12));
-                    break;
-                case 8: // Log10
-                    for(uword r = 0; r < N; ++r) out_ptr[r] *= std::log10(std::max(eta_ptr[r], 1e-12));
-                    break;
-                case 9: // Sqrt
-                    for(uword r = 0; r < N; ++r) out_ptr[r] *= std::sqrt(std::max(eta_ptr[r], 0.0));
-                    break;
-                case 10: // Square
-                    for(uword r = 0; r < N; ++r) out_ptr[r] *= (eta_ptr[r] * eta_ptr[r]);
-                    break;
-                case 11: // Cubic (eta * eta^2)
-                    for(uword r = 0; r < N; ++r) out_ptr[r] *= (eta_ptr[r] * eta_ptr[r] * eta_ptr[r]);
-                    break;
-                case 12: // Quartic (eta^2 * eta^2)
-                    for(uword r = 0; r < N; ++r) {
-                        double sq = eta_ptr[r] * eta_ptr[r];
-                        out_ptr[r] *= (sq * sq);
-                    }
-                    break;
-                case 13: // Square of Logit
-                    for(uword r = 0; r < N; ++r) {
-                        double exp_val = std::exp(std::max(std::min(-eta_ptr[r], 700.0), -700.0));
-                        double p = 1.0 / (1.0 + exp_val);
-                        out_ptr[r] *= (p * p);
-                    }
-                    break;
-                case 14: // Logit * Square of Logit
-                    for(uword r = 0; r < N; ++r) {
-                        double exp_val = std::exp(std::max(std::min(-eta_ptr[r], 700.0), -700.0));
-                        double p = 1.0 / (1.0 + exp_val);
-                        out_ptr[r] *= (p * p * p);
-                    }
-                    break;
-                case 15: // Quartic of Logit
-                    for(uword r = 0; r < N; ++r) {
-                        double exp_val = std::exp(std::max(std::min(-eta_ptr[r], 700.0), -700.0));
-                        double p = 1.0 / (1.0 + exp_val);
-                        double sq = p * p;
-                        out_ptr[r] *= (sq * sq);
-                    }
-                    break;
+                }
+                case 15: out_vec %=
+                    arma::square(arma::square(1.0 /
+                    (1.0 + arma::trunc_exp(-eta_vec)))); break;
                 default: Rcpp::stop("Unknown transformation function integer code.");
                 }
                 current_col++;

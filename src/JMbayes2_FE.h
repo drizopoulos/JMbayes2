@@ -65,6 +65,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    vec &surv_out_workspace, vec &logLik_surv_proposed,
                    const field<mat> &X_dots, mat &sum_JXDXJ, vec &sum_JXDu,
                    mat &u_mat, vec &mean_u, mat &mean_u_mat, mat &mean_u_mat2,
+                   field<vec> &mu_obs_workspace,
                    field<vec> &log_contr_obs_workspace,
                    field<vec> &log_contr_subj_workspace, mat &U, mat &Q,
                    mat &L_prec, vec &b_vec, vec &yy, vec &betasHC_workspace,
@@ -215,7 +216,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
             uvec ind_j = x_notin_z.at(j);
             uword n_betas = ind_j.n_rows;
 
-            log_long_i(y.at(j), eta.at(j), sigmas.at(j),
+            log_long_i(y.at(j), eta.at(j), mu_obs_workspace.at(j), sigmas.at(j),
                        extra_parms.at(j), std::string(families[j]),
                        std::string(links[j]), idL_lp_fast.at(j),
                        log_contr_obs_workspace.at(j),
@@ -242,8 +243,8 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                 // 5. RANK-1 ETA UPDATE (Deletes the massive linpred_mixed_i matrix multiplication)
                 vec eta_j_prop = eta.at(j) + X.at(j).col(idx) * diff;
 
-                log_long_i(y.at(j), eta_j_prop, sigmas.at(j),
-                           extra_parms.at(j), families[j], links[j],
+                log_long_i(y.at(j), eta_j_prop, mu_obs_workspace.at(j),
+                           sigmas.at(j), extra_parms.at(j), families[j], links[j],
                            idL_lp_fast.at(j), log_contr_obs_workspace.at(j),
                            log_contr_subj_workspace.at(j));
 
@@ -318,8 +319,8 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
             }
         }
     }
-    log_long(y, eta, sigmas, extra_parms, families, links, idL_lp_fast,
-             unq_idL, logLik_long, log_contr_obs_workspace,
+    log_long(y, eta, mu_obs_workspace, sigmas, extra_parms, families, links,
+             idL_lp_fast, unq_idL, logLik_long, log_contr_obs_workspace,
              log_contr_subj_workspace);
     res_betas.row(it) = docall_rbindF(betas).t();
 }

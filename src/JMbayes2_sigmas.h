@@ -42,6 +42,7 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
                     const double &sigmas_shape, const vec &sigmas_mean,
                     const uword &it, mat &res_sigmas, vec &scale_sigmas,
                     mat &acceptance_sigmas,
+                    field<vec> &mu_obs_workspace,
                     field<vec> &log_contr_obs_workspace,
                     field<vec> &log_contr_subj_workspace) {
     uword n_sigmas = sigmas.n_rows;
@@ -49,8 +50,9 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
     vec log_prior_sigmas(n_sigmas, arma::fill::none);
     for (uword i = 0; i < n_sigmas; ++i) {
         if (!has_sigmas.at(i)) continue;
-        log_long_i(y.at(i), eta.at(i), sigmas.at(i), extra_parms.at(i),
-                   std::string(families[i]), std::string(links[i]), idFast.at(i),
+        log_long_i(y.at(i), eta.at(i), mu_obs_workspace.at(i), sigmas.at(i),
+                   extra_parms.at(i), std::string(families[i]),
+                   std::string(links[i]), idFast.at(i),
                    log_contr_obs_workspace.at(i), log_contr_subj_workspace.at(i));
         logPrior_sigmas_void(sigmas, gamma_prior, sigmas_sigmas, sigmas_df,
                         sigmas_mean, sigmas_shape, log_prior_sigmas);
@@ -62,7 +64,8 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
         double log_mu_current = std::log(sigmas.at(i)) - SS;
         proposed_sigmas = sigmas;
         proposed_sigmas.at(i) = R::rlnorm(log_mu_current, scale_sigmas.at(i));
-        log_long_i(y.at(i), eta.at(i), proposed_sigmas.at(i), extra_parms.at(i),
+        log_long_i(y.at(i), eta.at(i), mu_obs_workspace.at(i),
+                   proposed_sigmas.at(i), extra_parms.at(i),
                    families[i], links[i], idFast.at(i),
                    log_contr_obs_workspace.at(i), log_contr_subj_workspace.at(i));
         logPrior_sigmas_void(proposed_sigmas, gamma_prior, sigmas_sigmas,
