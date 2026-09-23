@@ -222,13 +222,13 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                        log_contr_obs_workspace.at(j),
                        log_contr_subj_workspace.at(j));
 
-            double sum_logLik_long_j = sum(log_contr_subj_workspace.at(j));
+            double sum_logLik_long_j = arma::accu(log_contr_subj_workspace.at(j));
             vec ll(n_betas);
             double logPrior_j =
                 logPrior(betas.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
                          prior_Tau_betas_nHC.at(j), ll, 1.0, false);
 
-            double denominator_j = sum_logLik_long_j + sum(logLik_surv) + logPrior_j;
+            double denominator_j = sum_logLik_long_j + arma::accu(logLik_surv) + logPrior_j;
 
             for (uword i = 0; i < n_betas; ++i) {
                 // 4. IN-PLACE SCALAR MUTATION (Destroys field<vec> deep copy bottleneck)
@@ -249,7 +249,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                            log_contr_subj_workspace.at(j));
 
                 double sum_logLik_long_j_prop =
-                    sum(log_contr_subj_workspace.at(j));
+                    arma::accu(log_contr_subj_workspace.at(j));
 
                 // 6. DEFERRED MATRIX ALLOCATIONS
                 mat Wlong_H_prop =
@@ -283,18 +283,18 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                          logLik_surv_proposed);
 
                 double numerator_j =
-                    sum_logLik_long_j_prop + sum(logLik_surv_proposed) + logPrior_j_prop;
+                    sum_logLik_long_j_prop + arma::accu(logLik_surv_proposed) +
+                    logPrior_j_prop;
                 double log_ratio_j = numerator_j - denominator_j;
                 double acc_i = 0.0;
 
                 // 7. FAST LOG-SPACE ACCEPTANCE
-                if (std::isfinite(log_ratio_j) && std::log(R::unif_rand()) < log_ratio_j) {
+                if (std::isfinite(log_ratio_j) &&
+                    std::log(R::unif_rand()) < log_ratio_j) {
                     acc_i = 1.0;
                     if (it > n_burnin - 1) acceptance_betas.at(j).at(i) += 1.0;
-
                     // betas is already mutated
                     eta.at(j) = eta_j_prop;
-
                     Wlong_H = Wlong_H_prop;
                     WlongH_alphas = WlongH_alphas_prop;
                     if (any_event) {
@@ -311,7 +311,6 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                     // Reject: Simply revert the scalar change in the field
                     betas.at(j).at(idx) = old_beta;
                 }
-
                 if (it > 119) {
                     scale_betas.at(j).at(i) =
                         robbins_monro(scale_betas.at(j).at(i), acc_i, it - 100);

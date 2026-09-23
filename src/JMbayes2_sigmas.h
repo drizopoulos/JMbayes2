@@ -56,8 +56,8 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
                    log_contr_obs_workspace.at(i), log_contr_subj_workspace.at(i));
         logPrior_sigmas_void(sigmas, gamma_prior, sigmas_sigmas, sigmas_df,
                         sigmas_mean, sigmas_shape, log_prior_sigmas);
-        double denominator = sum(log_contr_subj_workspace.at(i)) +
-            sum(log_prior_sigmas);
+        double denominator = arma::accu(log_contr_subj_workspace.at(i)) +
+            arma::accu(log_prior_sigmas);
         //
         double val = scale_sigmas.at(i);
         double SS = 0.5 * val * val;
@@ -71,8 +71,8 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
         logPrior_sigmas_void(proposed_sigmas, gamma_prior, sigmas_sigmas,
                              sigmas_df, sigmas_mean, sigmas_shape,
                              log_prior_sigmas);
-        double numerator = sum(log_contr_subj_workspace.at(i)) +
-            sum(log_prior_sigmas);
+        double numerator = arma::accu(log_contr_subj_workspace.at(i)) +
+            arma::accu(log_prior_sigmas);
         double log_mu_proposed = std::log(proposed_sigmas.at(i)) - SS;
         double log_ratio = numerator - denominator +
             log_dlnorm(sigmas.at(i), log_mu_proposed, scale_sigmas.at(i)) -
@@ -132,9 +132,9 @@ void update_sigmaF (vec &sigmaF,
                     vec &lambda_H2_workspace, vec &H2_workspace,
                     vec &surv_out_workspace, vec &logLik_surv_proposed) {
   // denominator
-  double denominator = sum(logLik_surv) +
-    sum(logPrior_sigmas(sigmaF, gamma_prior_sigmaF, sigmaF_sigmas, sigmaF_df,
-                        sigmaF_mean, sigmaF_shape));
+  double denominator = arma::accu(logLik_surv) +
+      arma::accu(logPrior_sigmas(sigmaF, gamma_prior_sigmaF, sigmaF_sigmas,
+                                 sigmaF_df, sigmaF_mean, sigmaF_shape));
   // numerator
   double val = scale_sigmaF.at(0);
   double SS = 0.5 * val * val;
@@ -155,9 +155,10 @@ void update_sigmaF (vec &sigmaF,
              proposed_frailtyh_sigmaF_alphaF,lambda_H_workspace, H_workspace,
              lambda_H2_workspace, H2_workspace, surv_out_workspace,
              logLik_surv_proposed);
-  double numerator = sum(logLik_surv_proposed) +
-    sum(logPrior_sigmas(proposed_sigmaF, gamma_prior_sigmaF, sigmaF_sigmas, sigmaF_df,
-                        sigmaF_mean, sigmaF_shape));
+  double numerator = arma::accu(logLik_surv_proposed) +
+      arma::accu(logPrior_sigmas(proposed_sigmaF, gamma_prior_sigmaF,
+                                 sigmaF_sigmas, sigmaF_df, sigmaF_mean,
+                                 sigmaF_shape));
   // log_ratio
   double log_mu_proposed = std::log(proposed_sigmaF.at(0)) - SS;
   double log_ratio = numerator - denominator +

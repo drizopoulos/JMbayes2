@@ -194,8 +194,17 @@ void update_D (mat &L, vec &sds, const mat &b,
     res_sds.at(it, i) = sds.at(i);
   }
   double denominator_L = sum(logLik_re) + logPrior_LKJ(L, D_L_etaLKJ);
-  B_scaled_workspace = b.each_row() / sds.t();
-  double sum_log_sds = arma::sum(arma::log(sds));
+  uword n_rows_b = b.n_rows;
+  const double* sds_ptr = sds.memptr();
+  for (uword c = 0; c < n_sds; ++c) {
+      double inv_sd = 1.0 / sds_ptr[c];
+      const double* b_col = b.colptr(c);
+      double* B_ws_col = B_scaled_workspace.colptr(c);
+      for (uword r = 0; r < n_rows_b; ++r) {
+          B_ws_col[r] = b_col[r] * inv_sd;
+      }
+  }
+  double sum_log_sds = arma::accu(arma::log(sds));
   for (uword i = 0; i < n_L; ++i) {
     uword upper_part_i = upper_part.at(i);
     double deriv_current(0.0);

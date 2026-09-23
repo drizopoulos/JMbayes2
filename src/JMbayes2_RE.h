@@ -62,8 +62,8 @@ void update_b (field<mat> &b, mat &b_mat, field<vec> &eta,
     uword nRE = b_mat.n_cols;
     inv(V_Sigma, trimatu(L));
     V_Sigma.each_col() /= sds;
-    double log_det_V_Sigma = -arma::sum(arma::log(L.diag())) -
-        arma::sum(arma::log(sds));
+    double log_det_V_Sigma = -arma::accu(arma::log(L.diag())) -
+        arma::accu(arma::log(sds));
     double other_terms = -(double)nRE / 2.0 * log2pi + log_det_V_Sigma;
     denominator_b = logLik_long + logLik_surv + logLik_re;
     uvec accepted(n, arma::fill::none);
