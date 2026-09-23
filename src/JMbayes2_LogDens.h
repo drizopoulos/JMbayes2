@@ -113,7 +113,7 @@ inline void log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
     if (recurrent) {
         lambda_H += frailtyH_sigmaF_alphaF;
     }
-    lambda_H = exp(lambda_H);
+    lambda_H = arma::exp(lambda_H);
     group_sum(lambda_H, indFast_H, H);
     out.rows(which_right_event) = -H.rows(which_right_event);
     if (which_event.n_elem > 0) {
@@ -126,14 +126,14 @@ inline void log_surv (const vec &W0H_bs_gammas, const vec &W0h_bs_gammas,
         }
     }
     if (which_left.n_elem > 0) {
-        out.rows(which_left) = log1p(-exp(-H.rows(which_left)));
+        out.rows(which_left) = arma::log1p(-exp(-H.rows(which_left)));
     }
     if (any_interval) {
         lambda_H2 = log_Pwk2 + W0H2_bs_gammas + WH2_gammas + WlongH2_alphas;
-        lambda_H2 = exp(lambda_H2);
+        lambda_H2 = arma::exp(lambda_H2);
         group_sum(lambda_H2, indFast_H, H2);
         out.rows(which_interval) = -H.rows(which_interval) +
-            log(-expm1(-H2.rows(which_interval)));
+            arma::log(-arma::expm1(-H2.rows(which_interval)));
     }
     if (intgr) {
         out = lse(out, ind_h2, intgr_ind);

@@ -149,22 +149,16 @@ void update_D (mat &L, vec &sds, const mat &b,
                const bool &gamma_prior,
                const double &D_L_etaLKJ,
                const int &it, const bool &MALA, const umat &ind_zero_D,
-               vec &logLik_re,
-               mat &res_sds, mat &res_L,
-               vec &scale_sds, vec &scale_L,
-               mat &acceptance_sds, mat &acceptance_L) {
-  uword n = b.n_rows;
-  uword nRE = b.n_cols;
+               mat &V_R, mat &Z_workspace, mat &Z_transposed,
+               mat &B_scaled_workspace, vec &log_prior_sds, vec &proposed_sds,
+               mat &proposed_L, vec &proposed_l, vec &logLik_re,
+               vec &logLik_re_proposed, mat &res_sds, mat &res_L,
+               vec &scale_sds, vec &scale_L, mat &acceptance_sds,
+               mat &acceptance_L) {
   uword n_sds = sds.n_rows;
   uword n_L = upper_part.n_rows;
-  mat V_R = inv(trimatu(L));
+  inv(V_R, trimatu(L));
   double log_det_V_R = -arma::sum(arma::log(L.diag()));
-  vec log_prior_sds(n_sds, arma::fill::none);
-  vec proposed_sds(n_sds, arma::fill::none);
-  vec logLik_re_proposed(n, arma::fill::none);
-  mat B_scaled_workspace(n, nRE, arma::fill::none);
-  mat Z_workspace(n, nRE, arma::fill::none);
-  mat Z_transposed(nRE, n, arma::fill::none);
   logPrior_D_sds(sds, D_sds_sigma, D_sds_df, D_sds_mean, D_sds_shape,
                  gamma_prior, log_prior_sds);
   double denominator_sds = sum(logLik_re) + sum(log_prior_sds);
@@ -199,8 +193,6 @@ void update_D (mat &L, vec &sds, const mat &b,
   double denominator_L = sum(logLik_re) + logPrior_LKJ(L, D_L_etaLKJ);
   B_scaled_workspace = b.each_row() / sds.t();
   double sum_log_sds = arma::sum(arma::log(sds));
-  mat proposed_L(L.n_rows, L.n_cols, arma::fill::none);
-  vec proposed_l(upper_part.n_rows, arma::fill::none);
   for (uword i = 0; i < n_L; ++i) {
     uword upper_part_i = upper_part.at(i);
     double deriv_current(0.0);

@@ -352,6 +352,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec betasHC_workspace(size(ind_FE_HC), fill::none);
   vec z_rand_betaHC(size(ind_FE_HC), fill::none);
   mat V_Sigma(size(L), fill::none);
+  mat V_R(size(L), fill::none);
   uvec map_o(q);
   uvec map_k(q);
   for (uword o = 0; o < ind_RE.n_elem; ++o) {
@@ -370,10 +371,16 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec delta_b(n_b, arma::fill::none);
   vec z_rand(n_b, arma::fill::none);
   mat Z_workspace(n_b, q, arma::fill::none);
+  mat Z_transposed(q, n_b, arma::fill::none);
+  mat B_scaled_workspace(n_b, q, arma::fill::none);
   vec logLik_re_proposed(n_b, arma::fill::none);
   vec numerator_b(n_b, arma::fill::none);
   vec denominator_b(n_b, arma::fill::none);
   vec log_ratio(n_b, arma::fill::none);
+  vec log_prior_sds(n_sds, arma::fill::none);
+  vec proposed_sds(n_sds, arma::fill::none);
+  mat proposed_L(L.n_rows, L.n_cols, arma::fill::none);
+  vec proposed_l(upper_part.n_rows, arma::fill::none);
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -623,7 +630,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     if (it > 99) {
         update_D(L, sds, b_mat, upper_part,
              D_sds_df, D_sds_sigma, D_sds_shape, D_sds_mean, gamma_prior_D_sds,
-             D_L_etaLKJ, it, MALA, ind_zero_D, logLik_re, res_sds, res_L,
+             D_L_etaLKJ, it, MALA, ind_zero_D, V_R, Z_workspace, Z_transposed,
+             B_scaled_workspace, log_prior_sds, proposed_sds, proposed_L,
+             proposed_l, logLik_re, logLik_re_proposed, res_sds, res_L,
              scale_sds, scale_L, acceptance_sds, acceptance_L);
 
     ////////////////////////////////////////////////////////////////////////
