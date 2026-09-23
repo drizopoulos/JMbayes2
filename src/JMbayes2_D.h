@@ -161,28 +161,31 @@ void update_D (mat &L, vec &sds, const mat &b,
   double log_det_V_R = -arma::sum(arma::log(L.diag()));
   logPrior_D_sds(sds, D_sds_sigma, D_sds_df, D_sds_mean, D_sds_shape,
                  gamma_prior, log_prior_sds);
-  double denominator_sds = sum(logLik_re) + sum(log_prior_sds);
+  double denominator_sds = arma::accu(logLik_re) + arma::accu(log_prior_sds);
   for (uword i = 0; i < n_sds; ++i) {
     double val = scale_sds.at(i);
     double SS = 0.5 * val * val;
-    double log_mu_current = log(sds.at(i)) - SS;
-    proposed_sds = sds;
-    proposed_sds.at(i) = R::rlnorm(log_mu_current, scale_sds.at(i));
-    log_re_onlySDS(b, V_R, log_det_V_R, proposed_sds, B_scaled_workspace,
+    double current_sd_i = sds.at(i);
+    double log_mu_current = std::log(current_sd_i) - SS;
+    double proposed_sd_i = R::rlnorm(log_mu_current, scale_sds.at(i));
+    sds.at(i) = proposed_sd_i;
+    log_re_onlySDS(b, V_R, log_det_V_R, sds, B_scaled_workspace,
                    Z_workspace, logLik_re_proposed);
-    logPrior_D_sds(proposed_sds, D_sds_sigma, D_sds_df, D_sds_mean,
+    logPrior_D_sds(sds, D_sds_sigma, D_sds_df, D_sds_mean,
                    D_sds_shape, gamma_prior, log_prior_sds);
-    double numerator_sds = sum(logLik_re_proposed) + sum(log_prior_sds);
-    double log_mu_proposed = log(proposed_sds.at(i)) - SS;
+    double numerator_sds = arma::accu(logLik_re_proposed) +
+        arma::accu(log_prior_sds);
+    double log_mu_proposed = std::log(proposed_sd_i) - SS;
     double log_ratio_sds = numerator_sds - denominator_sds +
-        log_dlnorm(sds.at(i), log_mu_proposed, scale_sds.at(i)) -
-        log_dlnorm(proposed_sds.at(i), log_mu_current, scale_sds.at(i));
+        log_dlnorm(current_sd_i, log_mu_proposed, scale_sds.at(i)) -
+        log_dlnorm(proposed_sd_i, log_mu_current, scale_sds.at(i));
     if (std::isfinite(log_ratio_sds) &&
         log_ratio_sds > std::log(R::unif_rand())) {
-      sds = proposed_sds;
       logLik_re = logLik_re_proposed;
       denominator_sds = numerator_sds;
       acceptance_sds.at(it, i) = 1;
+    } else {
+        sds.at(i) = current_sd_i;
     }
     if (it > 119) {
       scale_sds.at(i) =
