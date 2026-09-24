@@ -356,7 +356,7 @@ inline void log_re_onlySDS (const mat &b, const mat &V_R, double log_det_V_R,
     }
 }
 
-inline void log_re_onlyL (const mat &b_scaled, const mat &L, double sum_log_sds,
+inline void log_re_onlyL2 (const mat &b_scaled, const mat &L, double sum_log_sds,
                          mat &Z_transposed, vec &log_re) {
     uword k = b_scaled.n_cols;
     // Calculate constants
@@ -372,6 +372,35 @@ inline void log_re_onlyL (const mat &b_scaled, const mat &L, double sum_log_sds,
     // .t() flips it to an (n x 1) column vector to match your expected output.
     // Final vectorized computation
     log_re = other_terms - 0.5 * arma::sum(arma::square(Z_transposed), 0).t();
+}
+
+inline void log_re_onlyL (const mat &b_scaled, const mat &L, double sum_log_sds,
+                          mat &Z_transposed, vec &log_re) {
+    uword N = b_scaled.n_rows;
+    uword k = b_scaled.n_cols;
+    // 1. Zero-allocation log determinant
+    double sum_log_L = 0.0;
+    const double* L_ptr = L.memptr();
+    for (uword j = 0; j < k; ++j) {
+        // In column-major layout, diagonal elements are at index (j * k + j)
+        sum_log_L += std::log(L_ptr[j * k + j]);
+    }
+    double log_det = -sum_log_L - sum_log_sds;
+    double other_terms = -(double)k / 2.0 * log2pi + log_det;
+    // 2. Fast Triangular Solve (TRSM)
+    arma::solve(Z_transposed, arma::trimatl(L.t()), b_scaled.t());
+    // 3. Fused, Zero-Allocation Sum of Squares (100% Cache Aligned)
+    double* log_re_ptr = log_re.memptr();
+    const double* Z_t_ptr = Z_transposed.memptr();
+    for (uword i = 0; i < N; ++i) {
+        double sq_sum = 0.0;
+        // Z_transposed is k x N.
+        for (uword j = 0; j < k; ++j) {
+            double val = Z_t_ptr[i * k + j];
+            sq_sum += val * val;
+        }
+        log_re_ptr[i] = other_terms - 0.5 * sq_sum;
+    }
 }
 
 /*
