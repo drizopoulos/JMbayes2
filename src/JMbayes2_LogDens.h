@@ -303,7 +303,7 @@ inline void log_re_onlyRE (const mat &b_prop, const mat &V_Sigma,
     log_re = other_terms - 0.5 * arma::sum(arma::square(Z_workspace), 1);
 }
 
-inline void log_re_onlySDS (const mat &b, const mat &V_R, double log_det_V_R,
+inline void log_re_onlySDS2 (const mat &b, const mat &V_R, double log_det_V_R,
                            const vec &sds, mat &B_scaled_workspace,
                            mat &Z_workspace, vec &log_re) {
     uword k = b.n_cols;
@@ -316,6 +316,44 @@ inline void log_re_onlySDS (const mat &b, const mat &V_R, double log_det_V_R,
     Z_workspace = B_scaled_workspace * arma::trimatu(V_R);
     // Final vectorized computation
     log_re = other_terms - 0.5 * arma::sum(arma::square(Z_workspace), 1);
+}
+
+inline void log_re_onlySDS (const mat &b, const mat &V_R, double log_det_V_R,
+                            const vec &sds, mat &B_scaled_workspace,
+                            mat &Z_workspace, vec &log_re) {
+    uword N = b.n_rows;
+    uword k = b.n_cols;
+    // 1. Fused scalar math using accu
+    double log_det_V_Sigma = log_det_V_R - arma::accu(arma::log(sds));
+    double other_terms = -(double)k / 2.0 * log2pi + log_det_V_Sigma;
+    // 2. Fused scaling loop (Column-major cache friendly, zero allocations)
+    const double* sds_ptr = sds.memptr();
+    for (uword c = 0; c < k; ++c) {
+        double inv_sd = 1.0 / sds_ptr[c]; // Single division per column
+        const double* b_col = b.colptr(c);
+        double* B_ws_col = B_scaled_workspace.colptr(c);
+        for (uword r = 0; r < N; ++r) {
+            B_ws_col[r] = b_col[r] * inv_sd; // Fast multiplication
+        }
+    }
+    // 3. Fast Triangular Multiplication (TRMM) via BLAS
+    Z_workspace = B_scaled_workspace * arma::trimatu(V_R);
+    // 4. Fused row-wise sum of squares (Zero allocations, Cache aligned)
+    double* log_re_ptr = log_re.memptr();
+    // Initialize the target vector with the constant term first
+    for (uword r = 0; r < N; ++r) {
+        log_re_ptr[r] = other_terms;
+    }
+    // Accumulate the squares COLUMN BY COLUMN.
+    // By iterating columns in the outer loop and rows in the inner loop,
+    // the CPU reads memory perfectly sequentially.
+    for (uword c = 0; c < k; ++c) {
+        const double* Z_col = Z_workspace.colptr(c);
+        for (uword r = 0; r < N; ++r) {
+            double val = Z_col[r];
+            log_re_ptr[r] -= 0.5 * (val * val);
+        }
+    }
 }
 
 inline void log_re_onlyL (const mat &b_scaled, const mat &L, double sum_log_sds,
@@ -388,7 +426,8 @@ vec logLik_jm_stripped (
     const uvec &which_event, const uvec &which_right_event,
     const uvec &which_left, const uvec &which_interval,
     const bool &recurrent, const vec &alphaF, const vec &frailty,
-    const field<uvec> &which_term_H, const field<uvec> &which_term_h, const bool &any_terminal,
+    const field<uvec> &which_term_H, const field<uvec> &which_term_h,
+    const bool &any_terminal,
     const vec &sigmaF, vec &lambda_H_workspace, vec &H_workspace,
     vec &lambda_H2_workspace, vec &H2_workspace, vec &surv_out_workspace,
     vec &logLik_long, vec &logLik_surv,
@@ -465,7 +504,8 @@ vec logLik_jm_stripped (
   vec frailtyH_sigmaF_alphaF(WH_gammas.n_rows, fill::zeros);
   vec frailtyh_sigmaF_alphaF(which_event.n_rows, fill::zeros);
   frailtyH_sigmaF_alphaF = frailty_H % alphaF_H * sigmaF;
-  frailtyh_sigmaF_alphaF = frailty_h.rows(which_event) % alphaF_h.rows(which_event) * sigmaF;
+  frailtyh_sigmaF_alphaF = frailty_h.rows(which_event) %
+      alphaF_h.rows(which_event) * sigmaF;
   log_surv(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
            WH_gammas, Wh_gammas, WH2_gammas,
            WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
@@ -480,7 +520,7 @@ vec logLik_jm_stripped (
   mat b_mat = docall_cbindF(b);
   vec logLik_re = log_re(b_mat, L, sds);
   vec out = logLik_long + logLik_surv + logLik_re;
-  if(recurrent) {
+  if (recurrent) {
     vec logLik_frailty = log_dnorm(frailty, vec(frailty.n_elem, fill::zeros), 1.0);
     out += logLik_frailty;
   }
