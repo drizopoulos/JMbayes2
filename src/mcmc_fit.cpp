@@ -319,6 +319,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec logLik_long(n_b, arma::fill::none);
   vec logLik_long_proposed(n_b, arma::fill::none);
   uword p_HC = ind_FE_HC.n_elem;
+  uword patt_count = ind_RE_patt.n_elem;
   uword q = b_mat.n_cols;
   field<mat> X_dots(n_b);
   for (uword i = 0; i < n_b; ++i) {
@@ -341,6 +342,20 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   mat X_tilde_workspace(q, p_HC, arma::fill::none);
   vec JXDu_workspace(p_HC, arma::fill::none);
   mat JXDXJ_workspace(p_HC, p_HC, arma::fill::none);
+
+  field<mat> U_patt_field_workspace(patt_count);
+  field<uvec> rem_patt_field(patt_count);
+  mat Res_workspace(q, q);
+  for (uword p = 0; p < patt_count; ++p) {
+      uvec keep = ind_RE_patt.at(p);
+      if (!keep.is_empty()) {
+          U_patt_field_workspace.at(p).set_size(keep.n_elem, keep.n_elem);
+          uvec rem = arma::regspace<uvec>(0, q - 1);
+          rem.shed_rows(keep);
+          rem_patt_field.at(p) = rem;
+      }
+  }
+
   uword n_outcomes = y.size();
   field<vec> mu_obs_workspace(n_outcomes);
   field<vec> log_contr_obs_workspace(n_outcomes);
@@ -696,7 +711,8 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  log_contr_obs_workspace, log_contr_subj_workspace, U, Q,
                  L_prec, b_vec, yy, betasHC_workspace, z_rand_betaHC,
                  outprod_workspace, u_workspace, u_tilde_workspace,
-                 X_tilde_workspace, JXDu_workspace, JXDXJ_workspace);
+                 X_tilde_workspace, JXDu_workspace, JXDXJ_workspace,
+                 U_patt_field_workspace, rem_patt_field, Res_workspace);
 
         // update intercepts
         for (uword j = 0; j < y.n_elem; ++j) {

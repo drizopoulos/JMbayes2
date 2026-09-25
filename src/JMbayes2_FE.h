@@ -71,7 +71,9 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    mat &L_prec, vec &b_vec, vec &yy, vec &betasHC_workspace,
                    vec &z_rand_betaHC, mat &outprod_workspace, vec &u_workspace,
                    vec &u_tilde_workspace, mat &X_tilde_workspace,
-                   vec &JXDu_workspace, mat &JXDXJ_workspace) {
+                   vec &JXDu_workspace, mat &JXDXJ_workspace,
+                   field<mat> &U_patt_field, field<uvec> &rem_patt_field,
+                   mat &Res_workspace) {
 
     uword n_b = b_mat.n_rows;
     uword q = b_mat.n_cols;
@@ -94,11 +96,18 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
 
     // 2. ISOLATED D_INV PRE-CALCULATION
     // Store just the upper-triangular Cholesky factor, not the inverse
-    field<mat> U_patt_field(patt_count);
+    //field<mat> U_patt_field(patt_count);
+    //for (uword p = 0; p < patt_count; ++p) {
+     //   if (!ind_RE_patt.at(p).is_empty()) {
+            // No inv(), no matrix multiplication!
+       //     U_patt_field.at(p) = trimatu(chol_update(U, ind_RE_patt.at(p)));
+        //}
+    //}
+
     for (uword p = 0; p < patt_count; ++p) {
         if (!ind_RE_patt.at(p).is_empty()) {
-            // No inv(), no matrix multiplication!
-            U_patt_field.at(p) = trimatu(chol_update(U, ind_RE_patt.at(p)));
+            chol_update_inplace(U, ind_RE_patt.at(p), rem_patt_field.at(p),
+                                Res_workspace, U_patt_field.at(p));
         }
     }
 
