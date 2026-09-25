@@ -82,7 +82,7 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     vec betas_vec = docall_rbindF(betas);
     mean_u = X_dot * betas_vec.rows(ind_FE_HC);
 
-    // 1. VECTORIZED RESHAPING: Replaces the manual u_mat loop
+    // VECTORIZED RESHAPING: Replaces the manual u_mat loop
     arma::mat alias_mat(mean_u.memptr(), q, n_b, false, true);
     mean_u_mat = alias_mat.t();
     u_mat = b_mat + mean_u_mat;
@@ -94,16 +94,8 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     sum_JXDu.zeros();
     U = L.each_row() % sds.t();
 
-    // 2. ISOLATED D_INV PRE-CALCULATION
+    // ISOLATED D_INV PRE-CALCULATION
     // Store just the upper-triangular Cholesky factor, not the inverse
-    //field<mat> U_patt_field(patt_count);
-    //for (uword p = 0; p < patt_count; ++p) {
-     //   if (!ind_RE_patt.at(p).is_empty()) {
-            // No inv(), no matrix multiplication!
-       //     U_patt_field.at(p) = trimatu(chol_update(U, ind_RE_patt.at(p)));
-        //}
-    //}
-
     for (uword p = 0; p < patt_count; ++p) {
         if (!ind_RE_patt.at(p).is_empty()) {
             chol_update_inplace(U, ind_RE_patt.at(p), rem_patt_field.at(p),
@@ -241,8 +233,9 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                 double diff = scale_betas.at(j).at(i) * R::norm_rand();
                 betas.at(j).at(idx) += diff;
 
-                double logPrior_j_prop = logPrior(betas.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
-                                                  prior_Tau_betas_nHC.at(j), ll, 1.0, false);
+                double logPrior_j_prop =
+                    logPrior(betas.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
+                             prior_Tau_betas_nHC.at(j), ll, 1.0, false);
 
                 // 5. RANK-1 ETA UPDATE (Deletes the massive linpred_mixed_i matrix multiplication)
                 vec eta_j_prop = eta.at(j) + X.at(j).col(idx) * diff;
