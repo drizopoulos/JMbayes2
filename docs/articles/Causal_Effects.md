@@ -30,8 +30,8 @@ summary(jmFit)
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    4265.150 4655.901 -3061.661
-#> conditional 6547.734 6249.080 -3470.014
+#> marginal    4299.465 4683.969 -3083.300
+#> conditional 6504.107 6249.080 -3470.014
 #> 
 #> Random-effects covariance matrix:
 #>                                                                       

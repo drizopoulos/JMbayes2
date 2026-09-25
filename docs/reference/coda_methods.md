@@ -66,7 +66,7 @@ cumuplot(object,
 
   a character string specifying which parameters of the joint model to
   plot. Possible options are `'all'`, `'betas'`, `'alphas'`, `'sigmas'`,
-  `'D'`, `'bs_gammas'`, `'tau_bs_gammas'`, or `'gammas'`.  
+  `'D'`, `'bs_gammas'`, `'tau_bs_gammas'`, or `'gammas'`.\
 
 - linewidth:
 
@@ -84,14 +84,14 @@ cumuplot(object,
   option supports fitted objects with three chains. If the object was
   fitted using a different number of chains then the colors are either
   automatically chosen, or can be specified by the user via the argument
-  `custom_theme`.  
+  `custom_theme`.\
 
 - grid:
 
   logical; defaults to `FALSE`. If `TRUE`, the plots are returned in
   grids split over multiple pages. For more details see the
   documentation for
-  [`gridExtra::marrangeGrob()`](https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html).  
+  [`gridExtra::marrangeGrob()`](https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html).\
 
 - gridrows:
 

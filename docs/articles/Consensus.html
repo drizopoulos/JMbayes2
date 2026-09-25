@@ -84,7 +84,7 @@
                         <h4 data-toc-skip class="author">Pedro
 Miranda-Afonso</h4>
             
-            <h4 data-toc-skip class="date">2026-09-16</h4>
+            <h4 data-toc-skip class="date">2026-09-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Consensus.Rmd" class="external-link"><code>vignettes/Consensus.Rmd</code></a></small>
       <div class="d-none name"><code>Consensus.Rmd</code></div>
@@ -195,7 +195,7 @@ need to update the model formulation in the code below.</p>
 <span>                   seed      <span class="op">=</span> <span class="fl">123L</span><span class="op">)</span> <span class="co"># seed for reproducibility</span></span>
 <span></span>
 <span><span class="co"># 2. Specify the number of available cores</span></span>
-<span><span class="va">n_cores</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu">parallelly</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/parallelly/man/availableCores.html" class="external-link">availableCores</a></span><span class="op">(</span>omit <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">n_cores</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu">parallelly</span><span class="fu">::</span><span class="fu"><a href="https://parallelly.futureverse.org/reference/availableCores.html" class="external-link">availableCores</a></span><span class="op">(</span>omit <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 3. Fit the longitudinal and survival submodels on each subsample</span></span>
 <span><span class="co">## 3.1 Fit a linear mixed-effects model </span></span>

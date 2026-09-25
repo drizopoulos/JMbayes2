@@ -145,8 +145,8 @@ summary(jointFit)
 #>   y: 1182
 #> 
 #>                   DIC      WAIC     LPML
-#> marginal    -4017.577 -4058.223 1834.994
-#> conditional -3840.343 -3943.855 1819.955
+#> marginal    -3700.436 -3722.514 1751.861
+#> conditional -4171.526 -3943.855 1819.955
 #> 
 #> Random-effects covariance matrix:
 #>                     
@@ -299,8 +299,8 @@ summary(jointFit)
 #>   cbind(y, ind): 1346
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    3711.934 4595.230 -3394.924
-#> conditional 3331.589 3219.776 -1756.184
+#> marginal    4958.446 7521.087 -4660.703
+#> conditional 2273.742 3219.776 -1756.184
 #> 
 #> Random-effects covariance matrix:
 #>                     
@@ -448,8 +448,8 @@ summary(jointFit)
 #>   y: 1347
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    5192.321 6795.293 -3932.573
-#> conditional 4447.501 4350.715 -2338.512
+#> marginal    6151.498 8249.053 -4370.657
+#> conditional 3587.961 4350.715 -2338.512
 #> 
 #> Random-effects covariance matrix:
 #>                     
@@ -474,7 +474,7 @@ summary(jointFit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 12 sec
+#> time: 13 sec
 ```
 
 [Back to top](#top)
@@ -592,9 +592,9 @@ summary(jointFit)
 #> Number of observations:
 #>   y: 3842
 #> 
-#>                  DIC    WAIC      LPML
-#> marginal    21348.93 21302.2 -10651.26
-#> conditional 22635.87 22347.6 -11559.46
+#>                  DIC     WAIC      LPML
+#> marginal    21716.78 21678.49 -10839.52
+#> conditional 22255.35 22347.60 -11559.46
 #> 
 #> Random-effects covariance matrix:
 #>                      
@@ -740,9 +740,9 @@ summary(jointFit)
 #> Number of observations:
 #>   cbind(y, 20 - y): 2837
 #> 
-#>                  DIC     WAIC      LPML
-#> marginal    11924.20 11874.98 -5976.623
-#> conditional 13471.07 13256.09 -7023.212
+#>                   DIC     WAIC       LPML
+#> marginal    16068.827 21506.46 -10946.349
+#> conditional  9850.636 13256.09  -7023.212
 #> 
 #> Random-effects covariance matrix:
 #>                     
@@ -768,5 +768,5 @@ summary(jointFit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 29 sec
+#> time: 30 sec
 ```

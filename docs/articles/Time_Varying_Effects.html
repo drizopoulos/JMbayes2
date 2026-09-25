@@ -84,7 +84,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2026-09-16</h4>
+            <h4 data-toc-skip class="date">2026-09-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Time_Varying_Effects.Rmd" class="external-link"><code>vignettes/Time_Varying_Effects.Rmd</code></a></small>
       <div class="d-none name"><code>Time_Varying_Effects.Rmd</code></div>
@@ -134,8 +134,8 @@ survival relative risk model:</p>
 <span><span class="co">#&gt;   log(serBilir): 1945</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    4347.328 6109.815 -3487.499</span></span>
-<span><span class="co">#&gt; conditional 8712.938 8455.463 -4540.759</span></span>
+<span><span class="co">#&gt; marginal    4377.545 6111.971 -3498.634</span></span>
+<span><span class="co">#&gt; conditional 8671.837 8455.463 -4540.759</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                               </span></span>
@@ -188,9 +188,9 @@ at 0 and 14.5 years:</p>
 <span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   log(serBilir): 1945</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    4339.228 6124.230 -3449.639</span></span>
-<span><span class="co">#&gt; conditional 8708.186 8447.553 -4509.049</span></span>
+<span><span class="co">#&gt;                       DIC         WAIC          LPML</span></span>
+<span><span class="co">#&gt; marginal     1.057545e+24 1.287908e+51 -3.109028e+27</span></span>
+<span><span class="co">#&gt; conditional -1.557547e+05 8.447553e+03 -4.509049e+03</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                               </span></span>
@@ -266,9 +266,9 @@ hazards. This is also confirmed by comparing the two models:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/methods.html">compare_jm</a></span><span class="op">(</span><span class="va">jointFit1</span>, <span class="va">jointFit2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                 DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt;  jointFit1 4347.328 6109.815 -3487.499</span></span>
-<span><span class="co">#&gt;  jointFit2 4339.228 6124.230 -3449.639</span></span>
+<span><span class="co">#&gt;                     DIC         WAIC          LPML</span></span>
+<span><span class="co">#&gt;  jointFit1 4.377545e+03 6.111971e+03 -3.498634e+03</span></span>
+<span><span class="co">#&gt;  jointFit2 1.057545e+24 1.287908e+51 -3.109028e+27</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; The criteria are calculated on the basis of the marginal log-likelihood.</span></span></code></pre></div>
 <p>The WAIC and LPML indicate that <code>jointFit1</code> is a better

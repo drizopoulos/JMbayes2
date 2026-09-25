@@ -195,9 +195,9 @@ summary(jm_ms_model)
 #> Number of observations:
 #>   y: 11573
 #> 
-#>                  DIC     WAIC      LPML
-#> marginal    46920.62 46860.97 -23430.50
-#> conditional 49793.41 48869.63 -25595.21
+#>                 DIC     WAIC      LPML
+#> marginal    48361.6 48304.34 -24152.20
+#> conditional 48376.8 48869.63 -25595.21
 #> 
 #> Random-effects covariance matrix:
 #>                     
@@ -225,7 +225,7 @@ summary(jm_ms_model)
 #> iterations per chain: 6000 
 #> burn-in per chain: 1500 
 #> thinning: 1 
-#> time: 1.1 min
+#> time: 1 min
 ```
 
 which differs from a default call to

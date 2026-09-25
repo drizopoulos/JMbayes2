@@ -42,7 +42,7 @@ tv(x, knots = NULL, ord = 2L)
 
 - Surv_object:
 
-  an object:  
+  an object:\
 
   - of class 'coxph' fitted by function
     [`coxph()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md)
@@ -53,7 +53,7 @@ tv(x, knots = NULL, ord = 2L)
 
 - Mixed_objects:
 
-  a `list` of objects or a single object. Objects may be:  
+  a `list` of objects or a single object. Objects may be:\
 
   - of class 'lme' fitted by function
     [`lme()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md)
@@ -107,246 +107,246 @@ tv(x, knots = NULL, ord = 2L)
 
   `mean_betas_HC`
 
-  :   the prior mean vector of the normal prior for the regression
-      coefficients of the covariates of the longitudinal model(s), which
-      were hierarchically centered.
+  : the prior mean vector of the normal prior for the regression
+    coefficients of the covariates of the longitudinal model(s), which
+    were hierarchically centered.
 
   `Tau_betas_HC`
 
-  :   the prior precision matrix of the normal prior for the regression
-      coefficients of the longitudinal model(s), which were
-      hierarchically centered.
+  : the prior precision matrix of the normal prior for the regression
+    coefficients of the longitudinal model(s), which were hierarchically
+    centered.
 
   `mean_betas_nHC`
 
-  :   a `list` of the prior mean vector(s) of the normal prior(s) for
-      the regression coefficients of the covariates of the longitudinal
-      model(s), which were not hierarchically centered.
+  : a `list` of the prior mean vector(s) of the normal prior(s) for the
+    regression coefficients of the covariates of the longitudinal
+    model(s), which were not hierarchically centered.
 
   `Tau_betas_nHC`
 
-  :   a `list` of the prior precision matrix(ces) of the normal prior(s)
-      for the regression coefficients of the longitudinal model(s),
-      which were not Hierarchically Centered.
+  : a `list` of the prior precision matrix(ces) of the normal prior(s)
+    for the regression coefficients of the longitudinal model(s), which
+    were not Hierarchically Centered.
 
   `mean_bs_gammas`
 
-  :   the prior mean vector of the normal prior for the B-splines
-      coefficients used to approximate the baseline hazard.
+  : the prior mean vector of the normal prior for the B-splines
+    coefficients used to approximate the baseline hazard.
 
   `Tau_bs_gammas`
 
-  :   the prior precision matrix of the normal prior for the B-splines
-      coefficients used to approximate the baseline hazard.
+  : the prior precision matrix of the normal prior for the B-splines
+    coefficients used to approximate the baseline hazard.
 
   `A_tau_bs_gammas`
 
-  :   the prior shape parameter of the gamma prior for the precision
-      parameter of the penalty term for the B-splines coefficients for
-      the baseline hazard.
+  : the prior shape parameter of the gamma prior for the precision
+    parameter of the penalty term for the B-splines coefficients for the
+    baseline hazard.
 
   `B_tau_bs_gammas`
 
-  :   the prior rate parameter of the gamma prior for the precision
-      parameter of the penalty term for the B-splines coefficients for
-      the baseline hazard.
+  : the prior rate parameter of the gamma prior for the precision
+    parameter of the penalty term for the B-splines coefficients for the
+    baseline hazard.
 
   `rank_Tau_bs_gammas`
 
-  :   the prior rank parameter for the precision matrix of the normal
-      prior for the B-splines coefficients used to approximate the
-      baseline hazard.
+  : the prior rank parameter for the precision matrix of the normal
+    prior for the B-splines coefficients used to approximate the
+    baseline hazard.
 
   `mean_gammas`
 
-  :   the prior mean vector of the normal prior for the regression
-      coefficients of baseline covariates.
+  : the prior mean vector of the normal prior for the regression
+    coefficients of baseline covariates.
 
   `Tau_gammas`
 
-  :   the prior precision matrix of the normal prior for the regression
-      coefficients of baseline covariates.
+  : the prior precision matrix of the normal prior for the regression
+    coefficients of baseline covariates.
 
   `penalty_gammas`
 
-  :   a character string with value 'none', 'ridge', or 'horseshoe'
-      indicating whether the coefficients of the baseline covariates
-      included in the survival submodel should not be shrunk, shrank
-      using ridge prior, or shrank using horseshoe prior, respectively.
+  : a character string with value 'none', 'ridge', or 'horseshoe'
+    indicating whether the coefficients of the baseline covariates
+    included in the survival submodel should not be shrunk, shrank using
+    ridge prior, or shrank using horseshoe prior, respectively.
 
   `A_lambda_gammas`
 
-  :   the prior shape parameter of the gamma prior for the precision
-      parameter of the local penalty term for the baseline regression
-      coefficients. Only relevant when `penalty_gammas = 'ridge'` or
-      when `penalty_gammas = 'horseshoe'`.
+  : the prior shape parameter of the gamma prior for the precision
+    parameter of the local penalty term for the baseline regression
+    coefficients. Only relevant when `penalty_gammas = 'ridge'` or when
+    `penalty_gammas = 'horseshoe'`.
 
   `B_lambda_gammas`
 
-  :   the prior rate parameter of the gamma prior for the precision
-      parameter of the local penalty term for the baseline regression
-      coefficients. Only relevant when `penalty_gammas = 'ridge'` or
-      when `penalty_gammas = 'horseshoe'`.
+  : the prior rate parameter of the gamma prior for the precision
+    parameter of the local penalty term for the baseline regression
+    coefficients. Only relevant when `penalty_gammas = 'ridge'` or when
+    `penalty_gammas = 'horseshoe'`.
 
   `A_tau_gammas`
 
-  :   the prior shape parameter of the gamma prior for the precision
-      parameter of the global penalty term for the baseline regression
-      coefficients. Only relevant when `penalty_gammas = 'ridge'` or
-      when `penalty_gammas = 'horseshoe'`.
+  : the prior shape parameter of the gamma prior for the precision
+    parameter of the global penalty term for the baseline regression
+    coefficients. Only relevant when `penalty_gammas = 'ridge'` or when
+    `penalty_gammas = 'horseshoe'`.
 
   `B_tau_gammas`
 
-  :   the prior rate parameter of the gamma prior for the precision
-      parameter of the global penalty term for the baseline regression
-      coefficients. Only relevant when `penalty_gammas = 'ridge'` or
-      when `penalty_gammas = 'horseshoe'`.
+  : the prior rate parameter of the gamma prior for the precision
+    parameter of the global penalty term for the baseline regression
+    coefficients. Only relevant when `penalty_gammas = 'ridge'` or when
+    `penalty_gammas = 'horseshoe'`.
 
   `A_nu_gammas`
 
-  :   the prior shape parameter of the gamma prior for the variance
-      hyperparameter for the precision parameter of the local penalty
-      term for the baseline regression coefficients. Only relevant when
-      `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
+  : the prior shape parameter of the gamma prior for the variance
+    hyperparameter for the precision parameter of the local penalty term
+    for the baseline regression coefficients. Only relevant when
+    `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
 
   `B_nu_gammas`
 
-  :   the prior rate parameter of the gamma prior for the variance
-      hyperparameter for the precision parameter of the local penalty
-      term for the baseline regression coefficients. Only relevant when
-      `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
+  : the prior rate parameter of the gamma prior for the variance
+    hyperparameter for the precision parameter of the local penalty term
+    for the baseline regression coefficients. Only relevant when
+    `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
 
   `A_xi_gammas`
 
-  :   the prior shape parameter of the gamma prior for the variance
-      hyperparameter for the precision parameter of the global penalty
-      term for the baseline regression coefficients. Only relevant when
-      `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
+  : the prior shape parameter of the gamma prior for the variance
+    hyperparameter for the precision parameter of the global penalty
+    term for the baseline regression coefficients. Only relevant when
+    `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
 
   `B_xi_gammas`
 
-  :   the prior rate parameter of the gamma prior for the variance
-      hyperparameter for the precision parameter of the global penalty
-      term for the baseline regression coefficients. Only relevant when
-      `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
+  : the prior rate parameter of the gamma prior for the variance
+    hyperparameter for the precision parameter of the global penalty
+    term for the baseline regression coefficients. Only relevant when
+    `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
 
   `mean_alphas`
 
-  :   the prior mean vector of the normal prior for the association
-      parameter(s).
+  : the prior mean vector of the normal prior for the association
+    parameter(s).
 
   `Tau_alphas`
 
-  :   the prior mean vector of the normal prior for the association
-      parameter(s).
+  : the prior mean vector of the normal prior for the association
+    parameter(s).
 
   `penalty_alphas`
 
-  :   a character string with value 'none', 'ridge', 'horseshoe'
-      indicating whether the coefficients association parameters should
-      not be shrunk, shrank using ridge prior, or shrank using horseshoe
-      prior, respectively.
+  : a character string with value 'none', 'ridge', 'horseshoe'
+    indicating whether the coefficients association parameters should
+    not be shrunk, shrank using ridge prior, or shrank using horseshoe
+    prior, respectively.
 
   `A_lambda_alphas`
 
-  :   the prior shape parameter of the gamma prior for the precision
-      parameter of the local penalty term for the association
-      parameters. Only relevant when `penalty_gammas = 'ridge'` or when
-      `penalty_gammas = 'horseshoe'`.
+  : the prior shape parameter of the gamma prior for the precision
+    parameter of the local penalty term for the association parameters.
+    Only relevant when `penalty_gammas = 'ridge'` or when
+    `penalty_gammas = 'horseshoe'`.
 
   `B_lambda_alphas`
 
-  :   the prior rate parameter of the gamma prior for the precision
-      parameter of the local penalty term for the association
-      parameters. Only relevant when `penalty_gammas = 'ridge'` or when
-      `penalty_gammas = 'horseshoe'`.
+  : the prior rate parameter of the gamma prior for the precision
+    parameter of the local penalty term for the association parameters.
+    Only relevant when `penalty_gammas = 'ridge'` or when
+    `penalty_gammas = 'horseshoe'`.
 
   `A_tau_alphas`
 
-  :   the prior shape parameter of the gamma prior for the precision
-      parameter of the global penalty term for the association
-      parameters. Only relevant when `penalty_gammas = 'ridge'` or when
-      `penalty_gammas = 'horseshoe'`.
+  : the prior shape parameter of the gamma prior for the precision
+    parameter of the global penalty term for the association parameters.
+    Only relevant when `penalty_gammas = 'ridge'` or when
+    `penalty_gammas = 'horseshoe'`.
 
   `B_tau_alphas`
 
-  :   the prior rate parameter of the gamma prior for the precision
-      parameter of the global penalty term for the association
-      parameters. Only relevant when `penalty_gammas = 'ridge'` or
-      `penalty_gammas = 'horseshoe'`.
+  : the prior rate parameter of the gamma prior for the precision
+    parameter of the global penalty term for the association parameters.
+    Only relevant when `penalty_gammas = 'ridge'` or
+    `penalty_gammas = 'horseshoe'`.
 
   `A_nu_alphas`
 
-  :   the prior shape parameter of the gamma prior for the variance
-      hyperparameter for the precision parameter of the local penalty
-      term for the association parameters. Only relevant when
-      `penalty_gammas = 'ridge'`, or `penalty_gammas = 'horseshoe'`.
+  : the prior shape parameter of the gamma prior for the variance
+    hyperparameter for the precision parameter of the local penalty term
+    for the association parameters. Only relevant when
+    `penalty_gammas = 'ridge'`, or `penalty_gammas = 'horseshoe'`.
 
   `B_nu_alphas`
 
-  :   the prior rate parameter of the gamma prior for the variance
-      hyperparameter for the precision parameter of the local penalty
-      term for the association parameters. Only relevant when
-      `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
+  : the prior rate parameter of the gamma prior for the variance
+    hyperparameter for the precision parameter of the local penalty term
+    for the association parameters. Only relevant when
+    `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
 
   `A_xi_alphas`
 
-  :   the prior shape parameter of the gamma prior for the variance
-      hyperparameter for the precision parameter of the global penalty
-      term for the association parameters. Only relevant when
-      `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
+  : the prior shape parameter of the gamma prior for the variance
+    hyperparameter for the precision parameter of the global penalty
+    term for the association parameters. Only relevant when
+    `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
 
   `B_xi_alphas`
 
-  :   the prior rate parameter of the gamma prior for the variance
-      hyperparameter for the precision parameter of the global penalty
-      term for the association parameters. Only relevant when
-      `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
+  : the prior rate parameter of the gamma prior for the variance
+    hyperparameter for the precision parameter of the global penalty
+    term for the association parameters. Only relevant when
+    `penalty_gammas = 'ridge'` or when `penalty_gammas = 'horseshoe'`.
 
   `gamma_prior_D_sds`
 
-  :   logical; if `TRUE`, a gamma prior will be used for the standard
-      deviations of the D matrix (variance-covariance matrix of the
-      random effects). Defaults to `TRUE`
+  : logical; if `TRUE`, a gamma prior will be used for the standard
+    deviations of the D matrix (variance-covariance matrix of the random
+    effects). Defaults to `TRUE`
 
   `D_sds_df`
 
-  :   the prior degrees of freedom parameter for the half-t prior for
-      the standard deviations of the D matrix (variance-covariance
-      matrix of the random effects).
+  : the prior degrees of freedom parameter for the half-t prior for the
+    standard deviations of the D matrix (variance-covariance matrix of
+    the random effects).
 
   `D_sds_sigma`
 
-  :   the prior sigma parameter vector for the half-t prior for the
-      standard deviations of the D matrix (variance-covariance matrix of
-      the random effects).
+  : the prior sigma parameter vector for the half-t prior for the
+    standard deviations of the D matrix (variance-covariance matrix of
+    the random effects).
 
   `D_sds_shape`
 
-  :   the prior shape parameter for the gamma prior for the standard
-      deviations of the D matrix (variance-covariance matrix of the
-      random effects).
+  : the prior shape parameter for the gamma prior for the standard
+    deviations of the D matrix (variance-covariance matrix of the random
+    effects).
 
   `D_sds_mean`
 
-  :   the prior mean parameter vector for the gamma prior for the
-      standard deviations of the D matrix (variance-covariance matrix of
-      the random effects).
+  : the prior mean parameter vector for the gamma prior for the standard
+    deviations of the D matrix (variance-covariance matrix of the random
+    effects).
 
   `D_L_etaLKJ`
 
-  :   the prior eta parameter for the LKJ prior for the correlation
-      matrix of the random effects.
+  : the prior eta parameter for the LKJ prior for the correlation matrix
+    of the random effects.
 
   `sigmas_df`
 
-  :   the prior degrees of freedom parameter for the half-t prior for
-      the error term(s).
+  : the prior degrees of freedom parameter for the half-t prior for the
+    error term(s).
 
   `sigmas_sigma`
 
-  :   the prior sigma parameter for the half-t prior for the error
-      term(s).
+  : the prior sigma parameter for the half-t prior for the error
+    term(s).
 
 - control:
 
@@ -354,100 +354,99 @@ tv(x, knots = NULL, ord = 2L)
 
   `GK_k`
 
-  :   the number of quadrature points for the Gauss Kronrod rule;
-      options 15 and 7.
+  : the number of quadrature points for the Gauss Kronrod rule; options
+    15 and 7.
 
   `n_chains`
 
-  :   an integer specifying the number of chains for the MCMC. Defaults
-      to 3.
+  : an integer specifying the number of chains for the MCMC. Defaults to
+    3.
 
   `n_burnin`
 
-  :   an integer specifying the number of burn-in iterations. Defaults
-      to 500.
+  : an integer specifying the number of burn-in iterations. Defaults to
+    500.
 
   `n_iter`
 
-  :   an integer specifying the number of total iterations per chain.
-      Defaults to 3500.
+  : an integer specifying the number of total iterations per chain.
+    Defaults to 3500.
 
   `n_thin`
 
-  :   an integer specifying the thinning of the chains. Defaults to 1.
+  : an integer specifying the thinning of the chains. Defaults to 1.
 
   `seed`
 
-  :   the seed used in the sampling procedures. Defaults to 123.
+  : the seed used in the sampling procedures. Defaults to 123.
 
   `MALA`
 
-  :   `logical`; if `TRUE`, the MALA algorithm is used when updating the
-      elements of the Cholesky factor of the D matrix. Defaults to
-      `FALSE`.
+  : `logical`; if `TRUE`, the MALA algorithm is used when updating the
+    elements of the Cholesky factor of the D matrix. Defaults to
+    `FALSE`.
 
   `save_random_effects`
 
-  :   `logical`; if `TRUE`, the full MCMC results of the random effects
-      will be saved and returned with the `jm` object. Defaults to
-      `FALSE`.
+  : `logical`; if `TRUE`, the full MCMC results of the random effects
+    will be saved and returned with the `jm` object. Defaults to
+    `FALSE`.
 
   `save_logLik_contributions`
 
-  :   `logical`; if `TRUE`, the log-likelihood contributions are saved
-      in the `mcmc` component of the `jm` object. Defaults to `FALSE`
+  : `logical`; if `TRUE`, the log-likelihood contributions are saved in
+    the `mcmc` component of the `jm` object. Defaults to `FALSE`
 
   `cores`
 
-  :   an integer specifying the number of cores to use for running the
-      chains in parallel; no point of setting this greater than
-      `n_chains`.
+  : an integer specifying the number of cores to use for running the
+    chains in parallel; no point of setting this greater than
+    `n_chains`.
 
   `parallel`
 
-  :   a character string indicating how the parallel sampling of the
-      chains will be performed. Options are `"snow"` (default) and
-      `"multicore"`.
+  : a character string indicating how the parallel sampling of the
+    chains will be performed. Options are `"snow"` (default) and
+    `"multicore"`.
 
   `basis`
 
-  :   character string with possible values `"bs"` (default) or `"ns"`.
-      When `"bs"` a B-spline basis is used to approximate the log
-      baseline hazard function with degree of the spline specified by
-      the `Bsplines_degree`. When `"ns"` a natrual cubic spline basis is
-      used; in this case the value of the `Bsplines_degree` control
-      argument is ignored.
+  : character string with possible values `"bs"` (default) or `"ns"`.
+    When `"bs"` a B-spline basis is used to approximate the log baseline
+    hazard function with degree of the spline specified by the
+    `Bsplines_degree`. When `"ns"` a natrual cubic spline basis is used;
+    in this case the value of the `Bsplines_degree` control argument is
+    ignored.
 
   `Bsplines_degree`
 
-  :   the degree of the splines in each basis; default is quadratic
-      splines.
+  : the degree of the splines in each basis; default is quadratic
+    splines.
 
   `base_hazard_segments`
 
-  :   the number of segments to split the follow-up period for the
-      spline approximation of the log baseline hazard function. Defaults
-      to 10.
+  : the number of segments to split the follow-up period for the spline
+    approximation of the log baseline hazard function. Defaults to 10.
 
   `timescale_base_hazard`
 
-  :   character string with possible values `"identity"` (default) or
-      `"log"`. When `"identity"` the spline basis is specified for the
-      time variable in its orginal scale. When `"log"` the spline basis
-      is specified for the logarithm of the time variable.
+  : character string with possible values `"identity"` (default) or
+    `"log"`. When `"identity"` the spline basis is specified for the
+    time variable in its orginal scale. When `"log"` the spline basis is
+    specified for the logarithm of the time variable.
 
   `diff`
 
-  :   the order of the difference used in the penalty matrix for the
-      coefficients of the splines used to approximate the log baseline
-      hazard function. Defaults to 2.
+  : the order of the difference used in the penalty matrix for the
+    coefficients of the splines used to approximate the log baseline
+    hazard function. Defaults to 2.
 
   `knots`
 
-  :   a numeric vector with the position of the knots for the spline
-      approximation of the log baseline hazard function. The default is
-      equally-spaced knots starting from `sqrt(.Machine$double.eps)`
-      until the maximum follow-up time.
+  : a numeric vector with the position of the knots for the spline
+    approximation of the log baseline hazard function. The default is
+    equally-spaced knots starting from `sqrt(.Machine$double.eps)` until
+    the maximum follow-up time.
 
 - x:
 
@@ -630,8 +629,8 @@ summary(joint_model_fit_1)
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    4199.714 4985.926 -3083.326
-#> conditional 3339.719 3172.861 -1812.772
+#> marginal    4237.524 5004.651 -3052.932
+#> conditional 3287.283 3172.861 -1812.772
 #> 
 #> Random-effects covariance matrix:
 #>                     
@@ -661,7 +660,7 @@ summary(joint_model_fit_1)
 #> iterations per chain: 11000 
 #> burn-in per chain: 1000 
 #> thinning: 1 
-#> time: 22 sec
+#> time: 21 sec
 traceplot(joint_model_fit_1)
 
 
@@ -731,9 +730,9 @@ summary(joint_model_fit_2)
 #>   hepatomegaly: 1884
 #>   ascites: 1885
 #> 
-#>                  DIC    WAIC      LPML
-#> marginal    6635.479 6872.14 -3785.564
-#> conditional 9087.043 8809.28 -4865.980
+#>                  DIC     WAIC      LPML
+#> marginal    6824.450 7049.583 -3824.694
+#> conditional 8866.056 8809.280 -4865.980
 #> 
 #> Random-effects covariance matrix:
 #>                                                   
@@ -779,7 +778,7 @@ summary(joint_model_fit_2)
 #> iterations per chain: 11000 
 #> burn-in per chain: 1000 
 #> thinning: 1 
-#> time: 1 min
+#> time: 56 sec
 traceplot(joint_model_fit_2)
 
 
@@ -891,9 +890,9 @@ summary(joint_model_fit_2)
 #>   hepatomegaly: 1884
 #>   ascites: 1885
 #> 
-#>                  DIC     WAIC      LPML
-#> marginal    6637.878 7007.934 -3866.512
-#> conditional 9035.769 8798.276 -4844.879
+#>                       DIC          WAIC          LPML
+#> marginal     1.196293e+82 8.787595e+166 -1.499269e+85
+#> conditional -2.608670e+33  8.798276e+03 -4.844879e+03
 #> 
 #> Random-effects covariance matrix:
 #>                                                   
@@ -941,7 +940,7 @@ summary(joint_model_fit_2)
 #> iterations per chain: 11000 
 #> burn-in per chain: 1000 
 #> thinning: 1 
-#> time: 1.2 min
+#> time: 1.1 min
 
 # }
 ```

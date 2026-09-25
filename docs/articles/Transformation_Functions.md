@@ -58,8 +58,8 @@ summary(jointFit1)
 #>   hepatomegaly: 1884
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    3078.940 3067.799 -1534.727
-#> conditional 4983.835 4846.361 -2664.249
+#> marginal    3271.158 3264.337 -1632.730
+#> conditional 4783.809 4846.361 -2664.249
 #> 
 #> Random-effects covariance matrix:
 #>                      
@@ -121,9 +121,9 @@ summary(jointFit2)
 #> Number of observations:
 #>   hepatomegaly: 1884
 #> 
-#>                  DIC     WAIC      LPML
-#> marginal    3068.113 3059.759 -1530.319
-#> conditional 5002.669 4898.106 -2681.990
+#>                  DIC         WAIC          LPML
+#> marginal    10948427 2.096815e+12 -211893560.62
+#> conditional -2398343 4.898106e+03      -2681.99
 #> 
 #> Random-effects covariance matrix:
 #>                      
@@ -146,7 +146,7 @@ summary(jointFit2)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 17 sec
+#> time: 16 sec
 ```
 
 Other available functions to use in the definition of the
@@ -180,9 +180,9 @@ summary(jointFit3)
 #> Number of observations:
 #>   hepatomegaly: 1884
 #> 
-#>                  DIC     WAIC      LPML
-#> marginal    3065.501 3058.802 -1529.794
-#> conditional 4982.721 4879.972 -2707.586
+#>                       DIC         WAIC          LPML
+#> marginal     3.710210e+22 3.101078e+47 -6.213371e+25
+#> conditional -1.123152e+10 4.879972e+03 -2.707586e+03
 #> 
 #> Random-effects covariance matrix:
 #>                      

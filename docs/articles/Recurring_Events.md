@@ -61,14 +61,14 @@ h\_{R_0}(t)\exp\left\\ w\_{R_i}(t)^\top \gamma_R +
 \mathcal{f}\_{R_p}\left\\\eta\_{p_i}(t)\right\\ \alpha\_{R_p} + b\_{F_i}
 \right\\ & \text{Recurrent event,}\\ \end{cases} }
 
-  
+\
 
 \begin{pmatrix} b\_{1_i} \\ \vdots \\ b\_{p_i} \\ b\_{F_i}\end{pmatrix}
 \sim \mathcal{N} \left(0, \begin{pmatrix}D & 0 \\ &
 \sigma^2_F\end{pmatrix}\right), \qquad \varepsilon(t) \sim N \left(0,
 \sigma^2\right),
 
-  
+\
 
 where i = 1, \ldots, n. We specify linear mixed-effects models for the
 longitudinal outcomes, and for the terminal and recurrence processes, we
@@ -356,8 +356,8 @@ summary(jm_fit)
 #>   y: 3075
 #> 
 #>                  DIC     WAIC       LPML
-#> marginal    13149.97 12983.05  -6736.434
-#> conditional 19832.17 19095.66 -10201.566
+#> marginal    13964.45 13961.02  -7349.692
+#> conditional 19094.06 19095.66 -10201.566
 #> 
 #> Random-effects covariance matrix:
 #>                                                            

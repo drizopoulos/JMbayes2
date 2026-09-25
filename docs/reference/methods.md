@@ -65,7 +65,7 @@ compare_jm(..., type = c("marginal", "conditional"),
 
 - process:
 
-  which submodel(s) to extract the terms:  
+  which submodel(s) to extract the terms:\
 
   - if `"longitudinal"`, the linear mixed model(s), or
 
@@ -74,14 +74,14 @@ compare_jm(..., type = c("marginal", "conditional"),
 - type:
 
   in `terms()` and `model.frame()`, which effects to select in the
-  longitudinal process:  
+  longitudinal process:\
 
   - if `"fixed"`, the fixed-effects, or
 
   - if `"random"`, the random-efects.
 
   in `compare_jm()`, which log-likelihood function use to calculate the
-  criteria:  
+  criteria:\
 
   - if `"marginal"`, the marginal log-likelihood, or
 
@@ -89,7 +89,7 @@ compare_jm(..., type = c("marginal", "conditional"),
 
 - ...:
 
-  further arguments; currently, none is used.  
+  further arguments; currently, none is used.\
   in `compare_jm()`, a series of `jm` objects.
 
 - order:
@@ -139,7 +139,7 @@ compare_jm(..., type = c("marginal", "conditional"),
 
 - `coef()`:
 
-  a list with the elements:  
+  a list with the elements:\
 
   - `gammas`: estimated baseline fixed effects, and
 
@@ -160,13 +160,13 @@ compare_jm(..., type = c("marginal", "conditional"),
 - `terms()`:
 
   if `process = "longitudinal"`, a list of the terms object(s) for the
-  linear mixed model(s).  
+  linear mixed model(s).\
   if `process = "event"`, the terms object for the survival model.
 
 - `model.frame()`:
 
   if `process = "longitudinal"`, a list of the model frames used in the
-  linear mixed model(s).  
+  linear mixed model(s).\
   if `process = "event"`, the model frame used in the survival model.
 
 - `model.matrix()`:
@@ -179,7 +179,7 @@ compare_jm(..., type = c("marginal", "conditional"),
 
 - `compare_jm()`:
 
-  a list with the elements:  
+  a list with the elements:\
 
   - `table`: a table with the criteria calculated for each joint model,
     and
@@ -309,8 +309,8 @@ fit_jm2 <- jm(fit_cox, list(fit_lme1b, fit_lme2), time_var = "year",
 compare_jm(fit_jm, fit_jm2)
 #> 
 #>               DIC     WAIC      LPML
-#>  fit_jm2 10510.75 10541.53 -5277.992
-#>   fit_jm 10667.81 11178.94 -6152.203
+#>  fit_jm2 10549.46 10576.17 -5295.704
+#>   fit_jm 10692.72 11192.76 -6117.450
 #> 
 #> The criteria are calculated on the basis of the marginal log-likelihood.
 # }

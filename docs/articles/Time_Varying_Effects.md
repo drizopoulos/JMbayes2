@@ -55,8 +55,8 @@ summary(jointFit1)
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    4347.328 6109.815 -3487.499
-#> conditional 8712.938 8455.463 -4540.759
+#> marginal    4377.545 6111.971 -3498.634
+#> conditional 8671.837 8455.463 -4540.759
 #> 
 #> Random-effects covariance matrix:
 #>                               
@@ -113,9 +113,9 @@ summary(jointFit2)
 #> Number of observations:
 #>   log(serBilir): 1945
 #> 
-#>                  DIC     WAIC      LPML
-#> marginal    4339.228 6124.230 -3449.639
-#> conditional 8708.186 8447.553 -4509.049
+#>                       DIC         WAIC          LPML
+#> marginal     1.057545e+24 1.287908e+51 -3.109028e+27
+#> conditional -1.557547e+05 8.447553e+03 -4.509049e+03
 #> 
 #> Random-effects covariance matrix:
 #>                               
@@ -200,9 +200,9 @@ hazards. This is also confirmed by comparing the two models:
 
 compare_jm(jointFit1, jointFit2)
 #> 
-#>                 DIC     WAIC      LPML
-#>  jointFit1 4347.328 6109.815 -3487.499
-#>  jointFit2 4339.228 6124.230 -3449.639
+#>                     DIC         WAIC          LPML
+#>  jointFit1 4.377545e+03 6.111971e+03 -3.498634e+03
+#>  jointFit2 1.057545e+24 1.287908e+51 -3.109028e+27
 #> 
 #> The criteria are calculated on the basis of the marginal log-likelihood.
 ```

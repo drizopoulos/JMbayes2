@@ -115,9 +115,9 @@ summary(jFit_CR)
 #>   log(serBilir): 1945
 #>   prothrombin: 1945
 #> 
-#>                  DIC     WAIC     LPML
-#> marginal    10824.47 11537.00 -7027.52
-#> conditional 15755.21 15440.83 -8245.93
+#>                  DIC     WAIC      LPML
+#> marginal    11232.93 13259.66 -9216.452
+#> conditional 15658.92 15440.83 -8245.930
 #> 
 #> Random-effects covariance matrix:
 #>                                              
@@ -171,7 +171,7 @@ summary(jFit_CR)
 #> iterations per chain: 25000 
 #> burn-in per chain: 5000 
 #> thinning: 5 
-#> time: 3.1 min
+#> time: 3 min
 ```
 
 ### Dynamic predictions

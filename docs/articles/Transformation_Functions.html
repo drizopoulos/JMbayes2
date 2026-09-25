@@ -84,7 +84,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2026-09-16</h4>
+            <h4 data-toc-skip class="date">2026-09-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Transformation_Functions.Rmd" class="external-link"><code>vignettes/Transformation_Functions.Rmd</code></a></small>
       <div class="d-none name"><code>Transformation_Functions.Rmd</code></div>
@@ -136,8 +136,8 @@ time-varying covariate in the survival relative risk model:</p>
 <span><span class="co">#&gt;   hepatomegaly: 1884</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    3078.940 3067.799 -1534.727</span></span>
-<span><span class="co">#&gt; conditional 4983.835 4846.361 -2664.249</span></span>
+<span><span class="co">#&gt; marginal    3271.158 3264.337 -1632.730</span></span>
+<span><span class="co">#&gt; conditional 4783.809 4846.361 -2664.249</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                      </span></span>
@@ -195,9 +195,9 @@ done using the <code><a href="../reference/jm.html">vexpit()</a></code> function
 <span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   hepatomegaly: 1884</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    3068.113 3059.759 -1530.319</span></span>
-<span><span class="co">#&gt; conditional 5002.669 4898.106 -2681.990</span></span>
+<span><span class="co">#&gt;                  DIC         WAIC          LPML</span></span>
+<span><span class="co">#&gt; marginal    10948427 2.096815e+12 -211893560.62</span></span>
+<span><span class="co">#&gt; conditional -2398343 4.898106e+03      -2681.99</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                      </span></span>
@@ -220,7 +220,7 @@ done using the <code><a href="../reference/jm.html">vexpit()</a></code> function
 <span><span class="co">#&gt; iterations per chain: 3500 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 17 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 16 sec</span></span></code></pre></div>
 <p>Other available functions to use in the definition of the
 <code>functional_forms</code> argument are <code><a href="../reference/jm.html">vexp()</a></code> to
 calculate the exponent, <code><a href="../reference/jm.html">vlog()</a></code> to calculate the natural
@@ -243,9 +243,9 @@ linear predictor, we also have the <code><a href="../reference/jm.html">Dexpit()
 <span><span class="co">#&gt; Number of observations:</span></span>
 <span><span class="co">#&gt;   hepatomegaly: 1884</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    3065.501 3058.802 -1529.794</span></span>
-<span><span class="co">#&gt; conditional 4982.721 4879.972 -2707.586</span></span>
+<span><span class="co">#&gt;                       DIC         WAIC          LPML</span></span>
+<span><span class="co">#&gt; marginal     3.710210e+22 3.101078e+47 -6.213371e+25</span></span>
+<span><span class="co">#&gt; conditional -1.123152e+10 4.879972e+03 -2.707586e+03</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                      </span></span>
