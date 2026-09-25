@@ -335,6 +335,12 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec mean_u(X_dot.n_rows, fill::none);
   mat mean_u_mat(n_b, q, fill::none);
   mat mean_u_mat2(n_b, q, fill::none);
+  mat outprod_workspace(q, q, arma::fill::none);
+  vec u_workspace(q, arma::fill::none);
+  vec u_tilde_workspace(q, arma::fill::none);
+  mat X_tilde_workspace(q, p_HC, arma::fill::none);
+  vec JXDu_workspace(p_HC, arma::fill::none);
+  mat JXDXJ_workspace(p_HC, p_HC, arma::fill::none);
   uword n_outcomes = y.size();
   field<vec> mu_obs_workspace(n_outcomes);
   field<vec> log_contr_obs_workspace(n_outcomes);
@@ -381,6 +387,7 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
   vec proposed_sds(n_sds, arma::fill::none);
   mat proposed_L(L.n_rows, L.n_cols, arma::fill::none);
   vec proposed_l(upper_part.n_rows, arma::fill::none);
+  vec log_prior_sigmas(n_sigmas, arma::fill::none);
   // pre-allocate workspaces for log_surv()
   vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
   vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
@@ -687,7 +694,9 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                  logLik_surv_proposed, X_dots, sum_JXDXJ, sum_JXDu, u_mat,
                  mean_u, mean_u_mat, mean_u_mat2, mu_obs_workspace,
                  log_contr_obs_workspace, log_contr_subj_workspace, U, Q,
-                 L_prec, b_vec, yy, betasHC_workspace, z_rand_betaHC);
+                 L_prec, b_vec, yy, betasHC_workspace, z_rand_betaHC,
+                 outprod_workspace, u_workspace, u_tilde_workspace,
+                 X_tilde_workspace, JXDu_workspace, JXDXJ_workspace);
 
         // update intercepts
         for (uword j = 0; j < y.n_elem; ++j) {
@@ -705,14 +714,13 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
                       recurrent, alphaF, mean_alphaF, Tau_alphaF, lambda_alphaF,
                       tau_alphaF, shrink_alphaF);
 
-
         ////////////////////////////////////////////////////////////////////
 
         update_sigmas(sigmas, has_sigmas, y, eta, extra_parms, families, links,
                   idL_lp_fast, gamma_prior_sigmas, sigmas_df, sigmas_sigmas,
                   sigmas_shape, sigmas_mean, it, res_sigmas, scale_sigmas,
                   acceptance_sigmas, mu_obs_workspace, log_contr_obs_workspace,
-                  log_contr_subj_workspace);
+                  log_contr_subj_workspace, log_prior_sigmas);
 
         log_long(y, eta, mu_obs_workspace, sigmas, extra_parms, families, links,
                  idL_lp_fast, unq_idL, logLik_long, log_contr_obs_workspace,

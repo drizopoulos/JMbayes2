@@ -1321,6 +1321,49 @@ mat chol_update (const mat &U, const uvec &keep) {
     return Res.submat(keep, keep);
 }
 
+inline void chol_update_inplace (const mat &U, const uvec &keep, const uvec &rem,
+                                 mat &Res_workspace, mat &out_mat) {
+    uword N = U.n_cols;
+    // Zero-Allocation Deep Copy
+    // std::memcpy is the absolute fastest way to copy matrix data in C++
+    std::memcpy(Res_workspace.memptr(), U.memptr(), U.n_elem * sizeof(double));
+    // Process each removal index (Givens Rotations)
+    const uword* rem_ptr = rem.memptr();
+    for (uword i = 0; i < rem.n_elem; ++i) {
+        uword k = rem_ptr[i];
+        for (uword row_idx = k + 1; row_idx < N; ++row_idx) {
+            double res_ii = Res_workspace.at(row_idx, row_idx);
+            double v_i    = Res_workspace.at(k, row_idx);
+            double r = std::sqrt(res_ii * res_ii + v_i * v_i);
+            double c = r / res_ii;
+            double s = v_i / res_ii;
+            Res_workspace.at(row_idx, row_idx) = r;
+            for (uword col_idx = row_idx + 1; col_idx < N; ++col_idx) {
+                double res_ij = Res_workspace.at(row_idx, col_idx);
+                double v_j    = Res_workspace.at(k, col_idx);
+                double new_res_ij = (res_ij + s * v_j) / c;
+                Res_workspace.at(row_idx, col_idx) = new_res_ij;
+                Res_workspace.at(k, col_idx) = c * v_j - s * new_res_ij;
+            }
+        }
+    }
+    // Fused Submatrix Extraction & trimatu (Zero Allocations)
+    uword keep_N = keep.n_elem;
+    const uword* keep_ptr = keep.memptr();
+    for (uword col = 0; col < keep_N; ++col) {
+        uword global_col = keep_ptr[col];
+        for (uword row = 0; row < keep_N; ++row) {
+            if (row > col) {
+                // Equivalent to trimatu: explicitly zero the lower triangle
+                out_mat.at(row, col) = 0.0;
+            } else {
+                // Extract from the updated Res_workspace
+                uword global_row = keep_ptr[row];
+                out_mat.at(row, col) = Res_workspace.at(global_row, global_col);
+            }
+        }
+    }
+}
 
 uword n_field (const field<vec> &x) {
   uword n = x.n_rows;

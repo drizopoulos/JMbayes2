@@ -69,7 +69,9 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    field<vec> &log_contr_obs_workspace,
                    field<vec> &log_contr_subj_workspace, mat &U, mat &Q,
                    mat &L_prec, vec &b_vec, vec &yy, vec &betasHC_workspace,
-                   vec &z_rand_betaHC) {
+                   vec &z_rand_betaHC, mat &outprod_workspace, vec &u_workspace,
+                   vec &u_tilde_workspace, mat &X_tilde_workspace,
+                   vec &JXDu_workspace, mat &JXDXJ_workspace) {
 
     uword n_b = b_mat.n_rows;
     uword q = b_mat.n_cols;
@@ -101,13 +103,6 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     }
 
     uvec absolute_rows;
-    mat outprod_workspace(q, q, arma::fill::none);
-    vec u_workspace(q, arma::fill::none);
-    vec u_tilde_workspace(q, arma::fill::none);
-    mat X_tilde_workspace(q, p_HC, arma::fill::none);
-    vec JXDu_workspace(p_HC, arma::fill::none);
-    mat JXDXJ_workspace(p_HC, p_HC, arma::fill::none);
-
     for (uword i = 0; i < n_b; ++i) {
         uword patt_i = id_patt.at(i);
         if (ind_FE_patt.at(patt_i).is_empty()) continue;
