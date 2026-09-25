@@ -50,8 +50,7 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
         if (!has_sigmas.at(i)) continue;
         double current_sigma_i = sigmas.at(i);
         log_long_i(y.at(i), eta.at(i), mu_obs_workspace.at(i), current_sigma_i,
-                   extra_parms.at(i), std::string(families[i]),
-                   std::string(links[i]), idFast.at(i),
+                   extra_parms.at(i), families[i], links[i], idFast.at(i),
                    log_contr_obs_workspace.at(i), log_contr_subj_workspace.at(i));
         logPrior_sigmas_void(sigmas, gamma_prior, sigmas_sigmas, sigmas_df,
                         sigmas_mean, sigmas_shape, log_prior_sigmas);
@@ -64,9 +63,9 @@ void update_sigmas (vec &sigmas, const uvec &has_sigmas,
         double proposed_sigma_i = R::rlnorm(log_mu_current, scale_sigmas.at(i));
         sigmas.at(i) = proposed_sigma_i;
         log_long_i(y.at(i), eta.at(i), mu_obs_workspace.at(i),
-                   proposed_sigma_i, extra_parms.at(i),
-                   families[i], links[i], idFast.at(i),
-                   log_contr_obs_workspace.at(i), log_contr_subj_workspace.at(i));
+                   proposed_sigma_i, extra_parms.at(i), families[i], links[i],
+                   idFast.at(i), log_contr_obs_workspace.at(i),
+                   log_contr_subj_workspace.at(i));
         logPrior_sigmas_void(sigmas, gamma_prior, sigmas_sigmas,
                              sigmas_df, sigmas_mean, sigmas_shape,
                              log_prior_sigmas);

@@ -213,10 +213,8 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
             uword n_betas = ind_j.n_rows;
 
             log_long_i(y.at(j), eta.at(j), mu_obs_workspace.at(j), sigmas.at(j),
-                       extra_parms.at(j), std::string(families[j]),
-                       std::string(links[j]), idL_lp_fast.at(j),
-                       log_contr_obs_workspace.at(j),
-                       log_contr_subj_workspace.at(j));
+                       extra_parms.at(j), families[j], links[j], idL_lp_fast.at(j),
+                       log_contr_obs_workspace.at(j), log_contr_subj_workspace.at(j));
 
             double sum_logLik_long_j = arma::accu(log_contr_subj_workspace.at(j));
             vec ll(n_betas);
@@ -224,7 +222,8 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                 logPrior(betas.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
                          prior_Tau_betas_nHC.at(j), ll, 1.0, false);
 
-            double denominator_j = sum_logLik_long_j + arma::accu(logLik_surv) + logPrior_j;
+            double denominator_j = sum_logLik_long_j + arma::accu(logLik_surv) +
+                logPrior_j;
 
             for (uword i = 0; i < n_betas; ++i) {
                 // 4. IN-PLACE SCALAR MUTATION (Destroys field<vec> deep copy bottleneck)

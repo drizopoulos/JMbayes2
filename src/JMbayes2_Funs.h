@@ -504,7 +504,8 @@ inline void log_dnbinom_void (const vec &x, const vec &mu, const double &size,
     }
 }
 
-inline void log_dnorm_void (const vec &x, const vec &mu, const double sigma, vec &out) {
+inline void log_dnorm_void (const vec &x, const vec &mu, const double sigma,
+                            vec &out) {
     double constant = -std::log(sigma) - half_log2pi;
     double var2 = 2.0 * sigma * sigma;
     out = constant - arma::square(x - mu) / var2;
