@@ -1178,8 +1178,15 @@ List simulate_REs (List Data, List MCMC, List control) {
   mat scale_b = mat(n_b,  b_mat.n_cols, fill::ones) * 0.2;
   //
   // pre-allocate workspaces for log_long()
+  vec numerator_b(n_b, arma::fill::none);
+  vec denominator_b(n_b, arma::fill::none);
+  vec logLik_surv(n_b, arma::fill::none);
+  vec logLik_surv_proposed(n_b, arma::fill::none);
   vec logLik_long(n_b, arma::fill::none);
   vec logLik_long_proposed(n_b, arma::fill::none);
+  vec logLik_re(n_b, arma::fill::none);
+  vec logLik_re_proposed(n_b, arma::fill::none);
+  vec log_ratio(n_b, arma::fill::none);
   uword n_outcomes = y.size();
   field<vec> mu_obs_workspace(n_outcomes);
   field<vec> log_contr_obs_workspace(n_outcomes);
@@ -1189,30 +1196,53 @@ List simulate_REs (List Data, List MCMC, List control) {
       log_contr_obs_workspace.at(i).set_size(y.at(i).n_rows);
       log_contr_subj_workspace.at(i).set_size(unq_idL.at(i).n_elem);
   }
+  //mat L_it(size(L.slice(0)), fill::none);
+  vec W0H_bs_gammas(W0_H.n_rows, fill::none);
+  vec W0h_bs_gammas(W0_h.n_rows, fill::none);
+  vec W0H2_bs_gammas(W0_H2.n_rows, fill::none);
+  vec WH_gammas(W0_H.n_rows, fill::none);
+  vec Wh_gammas(W0_h.n_rows, fill::none);
+  vec WH2_gammas(W0_H2.n_rows, fill::none);
+  mat Wlong_H(W0_H.n_rows, Wlong_bar.n_cols, fill::none);
+  mat Wlong_h(W0_h.n_rows, Wlong_H.n_cols, fill::none);
+  mat Wlong_H2(W0_H2.n_rows, Wlong_H.n_cols, fill::none);
+  mat Wlong_H_proposed(W0_H.n_rows, Wlong_bar.n_cols, fill::none);
+  mat Wlong_h_proposed(W0_h.n_rows, Wlong_H.n_cols, fill::none);
+  mat Wlong_H2_proposed(W0_H2.n_rows, Wlong_H.n_cols, fill::none);
+  vec WlongH_alphas(W0_H.n_rows, fill::none);
+  vec Wlongh_alphas(W0_h.n_rows, fill::none);
+  vec WlongH2_alphas(W0_H2.n_rows, fill::none);
+  vec WlongH_alphas_proposed(W0_H.n_rows, fill::none);
+  vec Wlongh_alphas_proposed(W0_h.n_rows, fill::none);
+  vec WlongH2_alphas_proposed(W0_H2.n_rows, fill::none);
+  field<mat> eta_H(n_outcomes);
+  field<mat> eta_h(n_outcomes);
+  field<mat> eta_H2(n_outcomes);
+  for (uword i = 0; i < n_outcomes; ++i) {
+      uword n_forms = X_H.at(i).n_cols / betas.at(i).n_rows;
+      eta_H.at(i).set_size(X_H.at(i).n_rows, n_forms);
+      if (any_event) eta_h.at(i).set_size(X_h.at(i).n_rows, n_forms);
+      if (any_interval) eta_H2.at(i).set_size(X_H2.at(i).n_rows, n_forms);
+  }
   field<vec> betas_it(betas.n_elem);
   cube out(n_b, nRE, n_samples, fill::zeros);
   mat outS(n_b, n_samples, fill::zeros);
   for (uword it = 0; it < n_samples; ++it) {
-    vec bs_gammas_it = bs_gammas.col(it);
-    vec gammas_it = gammas.col(it);
-    vec alphas_it = alphas.col(it);
+    const vec &bs_gammas_it = bs_gammas.col(it);
+    const vec &gammas_it = gammas.col(it);
+    const vec &alphas_it = alphas.col(it);
     for (uword i = 0; i < betas.n_elem; ++i) betas_it.at(i) = betas.at(i).col(it);
-    vec sigmas_it = sigmas.col(it);
-    mat L_it = L.slice(it);
-    vec sds_it = sds.col(it);
+    const vec &sigmas_it = sigmas.col(it);
+    const mat &L_it = L.slice(it);
+    const vec &sds_it = sds.col(it);
     ///////////////////////
-    vec W0H_bs_gammas = W0_H * bs_gammas_it;
-    vec W0h_bs_gammas(W0_h.n_rows, fill::zeros);
-    vec W0H2_bs_gammas(W0_H2.n_rows, fill::zeros);
+    W0H_bs_gammas = W0_H * bs_gammas_it;
     if (any_event) {
       W0h_bs_gammas = W0_h * bs_gammas_it;
     }
     if (any_interval) {
       W0H2_bs_gammas = W0_H2 * bs_gammas_it;
     }
-    vec WH_gammas(W0_H.n_rows, fill::zeros);
-    vec Wh_gammas(W0_h.n_rows, fill::zeros);
-    vec WH2_gammas(W0_H2.n_rows);
     if (any_gammas) {
       WH_gammas = W_H * gammas_it;
     }
@@ -1222,27 +1252,23 @@ List simulate_REs (List Data, List MCMC, List control) {
     if (any_gammas && any_interval) {
       WH2_gammas = W_H2 * gammas_it;
     }
-    mat Wlong_H =
-      calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas_it, b,
-                      id_H_, FunForms, Funs_FunForms);
-    vec WlongH_alphas = Wlong_H * alphas_it;
-    mat Wlong_h(W0_h.n_rows, Wlong_H.n_cols, fill::zeros);
-    vec Wlongh_alphas(W0_h.n_rows, fill::zeros);
+    calculate_Wlong_inplace(Wlong_H, eta_H, X_H, Z_H, U_H, Wlong_bar,
+                            Wlong_sds, betas_it, b, id_H_, FunForms,
+                            Funs_FunForms);
+    WlongH_alphas = Wlong_H * alphas_it;
     if (any_event) {
-      Wlong_h =
-        calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds, betas_it, b,
-                        id_h, FunForms, Funs_FunForms);
-      Wlongh_alphas = Wlong_h * alphas_it;
+        calculate_Wlong_inplace(Wlong_h, eta_h, X_h, Z_h, U_h, Wlong_bar,
+                                Wlong_sds, betas_it, b, id_h, FunForms,
+                                Funs_FunForms);
+        Wlongh_alphas = Wlong_h * alphas_it;
     }
-    mat Wlong_H2(W0_H2.n_rows, Wlong_H.n_cols, fill::zeros);
-    vec WlongH2_alphas(W0_H2.n_rows, fill::zeros);
     if (any_interval) {
-      Wlong_H2 =
-        calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas_it,
-                        b, id_H_, FunForms, Funs_FunForms);
-      WlongH2_alphas = Wlong_H2 * alphas_it;
+        calculate_Wlong_inplace(Wlong_H2, eta_H2, X_H2, Z_H2, U_H2, Wlong_bar,
+                                Wlong_sds, betas_it, b, id_H_, FunForms,
+                                Funs_FunForms);
+        WlongH2_alphas = Wlong_H2 * alphas_it;
     }
-    vec logLik_surv =
+    logLik_surv =
       log_surv_old(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                    WH_gammas, Wh_gammas, WH2_gammas,
                    WlongH_alphas, Wlongh_alphas, WlongH2_alphas,
@@ -1256,16 +1282,14 @@ List simulate_REs (List Data, List MCMC, List control) {
              ids, unq_idL, logLik_long, log_contr_obs_workspace,
              log_contr_subj_workspace);
     ///
-    vec logLik_re = log_re(b_mat, L_it, sds_it);
+    log_re_inplace(b_mat, L_it, sds_it, logLik_re);
     // calculate the denominator
     if (!use_Y) {
-        logLik_long = 0.0 * logLik_long;
+        logLik_long.zeros();
     }
-    vec denominator_b =
-      logLik_long + logLik_surv + logLik_re;
+    denominator_b = logLik_long + logLik_surv + logLik_re;
     for (uword i = 0; i < n_iter; ++i) {
       for (uword j = 0; j < nRE; ++j) {
-        //mat proposed_b_mat = propose_rnorm_mat(b_mat, scale_b, j);
         mat proposed_b_mat = b_mat;
         proposed_b_mat.col(j) = scale_b.col(j) % randn(b_mat.n_rows, 1) + b_mat.col(j);
         field<mat> proposed_b = mat2field(proposed_b_mat, ind_RE);
@@ -1276,30 +1300,24 @@ List simulate_REs (List Data, List MCMC, List control) {
                  families, links, ids, unq_idL, logLik_long_proposed,
                  log_contr_obs_workspace, log_contr_subj_workspace);
         //
-        mat Wlong_H_proposed =
-          calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds,
-                          betas_it, proposed_b, id_H_, FunForms, Funs_FunForms);
-        vec WlongH_alphas_proposed = Wlong_H_proposed * alphas_it;
-
-        mat Wlong_h_proposed(Wlong_h.n_rows, Wlong_h.n_cols);
-        vec Wlongh_alphas_proposed(Wlongh_alphas.n_rows);
+        calculate_Wlong_inplace(Wlong_H_proposed, eta_H, X_H, Z_H, U_H,
+                                Wlong_bar, Wlong_sds, betas_it, proposed_b,
+                                id_H_, FunForms, Funs_FunForms);
+        WlongH_alphas_proposed = Wlong_H_proposed * alphas_it;
         if (any_event) {
-          Wlong_h_proposed =
-            calculate_Wlong(X_h, Z_h, U_h, Wlong_bar, Wlong_sds,
-                            betas_it, proposed_b, id_h, FunForms,
-                            Funs_FunForms);
-          Wlongh_alphas_proposed = Wlong_h_proposed * alphas_it;
+            calculate_Wlong_inplace(Wlong_h_proposed, eta_h, X_h, Z_h, U_h,
+                                    Wlong_bar, Wlong_sds, betas_it, proposed_b,
+                                    id_h, FunForms, Funs_FunForms);
+            Wlongh_alphas_proposed = Wlong_h_proposed * alphas_it;
         }
-        mat Wlong_H2_proposed(Wlong_H2.n_rows, Wlong_H2.n_cols);
-        vec WlongH2_alphas_proposed(WlongH2_alphas.n_rows);
         if (any_interval) {
-          Wlong_H2_proposed =
-            calculate_Wlong(X_H2, Z_H2, U_H2, Wlong_bar, Wlong_sds, betas_it,
-                            proposed_b, id_H_, FunForms, Funs_FunForms);
-          WlongH2_alphas_proposed = Wlong_H2_proposed * alphas_it;
+            calculate_Wlong_inplace(Wlong_H2_proposed, eta_H2, X_H2, Z_H2, U_H2,
+                                    Wlong_bar, Wlong_sds, betas_it,
+                                    proposed_b, id_H_, FunForms, Funs_FunForms);
+            WlongH2_alphas_proposed = Wlong_H2_proposed * alphas_it;
         }
         //
-        vec logLik_surv_proposed =
+        logLik_surv_proposed =
           log_surv_old(W0H_bs_gammas, W0h_bs_gammas, W0H2_bs_gammas,
                        WH_gammas, Wh_gammas, WH2_gammas,
                        WlongH_alphas_proposed, Wlongh_alphas_proposed,
@@ -1309,14 +1327,14 @@ List simulate_REs (List Data, List MCMC, List control) {
                        which_event, which_right_event, which_left,
                        any_interval, which_interval);
         //
-        vec logLik_re_proposed = log_re(proposed_b_mat, L_it, sds_it);
+        log_re_inplace(proposed_b_mat, L_it, sds_it, logLik_re_proposed);
         //
         if (!use_Y) {
-            logLik_long_proposed = 0.0 * logLik_long_proposed;
+            logLik_long_proposed.zeros();
         }
-        vec numerator_b =
-          logLik_long_proposed + logLik_surv_proposed + logLik_re_proposed;
-        vec log_ratio = numerator_b - denominator_b;
+        numerator_b = logLik_long_proposed + logLik_surv_proposed +
+            logLik_re_proposed;
+        log_ratio = numerator_b - denominator_b;
         for (uword k = 0; k < n_b; ++k) {
           double acc_k(0.0);
           if (std::isfinite(log_ratio.at(k)) &&

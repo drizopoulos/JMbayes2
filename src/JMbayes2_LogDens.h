@@ -293,6 +293,18 @@ inline vec log_re (const mat &b, const mat &L, const vec &sds) {
     return other_terms - 0.5 * sq_dist;
 }
 
+inline void log_re_inplace (const mat &b, const mat &L, const vec &sds,
+                            vec &log_re) {
+    uword k = b.n_cols;
+    double log_det = -arma::sum(arma::log(L.diag())) - arma::sum(arma::log(sds));
+    double constants = -(double)k / 2.0 * log2pi;
+    double other_terms = constants + log_det;
+    mat B_scaled = b.each_row() / sds.t();
+    mat Z_transposed = arma::solve(arma::trimatl(L.t()), B_scaled.t());
+    vec sq_dist = arma::sum(arma::square(Z_transposed), 0).t();
+    log_re = other_terms - 0.5 * sq_dist;
+}
+
 inline void log_re_onlyRE (const mat &b_prop, const mat &V_Sigma,
                            double other_terms, mat &Z_workspace, vec &log_re) {
     // Fast Triangular Multiplication (TRMM)
