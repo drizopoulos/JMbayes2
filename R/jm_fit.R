@@ -305,7 +305,7 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     # Fit statistics
     thetas <- statistics$Mean
     thetas[["betas"]] <- thetas[grep("^betas", names(thetas))]
-    thetas[["D"]] <- nearPD(lowertri2mat(thetas[["D"]]))
+    thetas[["D"]] <- lowertri2mat(thetas[["D"]])#nearPD(lowertri2mat(thetas[["D"]]))
     if (is.null(thetas[["gammas"]])) thetas[["gammas"]] <- 0.0
     if (is.null(thetas[["sigmas"]])) thetas[["sigmas"]] <- 0.0
     clogLik_mean_parms <- logLik_jm(thetas, model_data, model_info, control)
@@ -346,7 +346,9 @@ jm_fit <- function (model_data, model_info, initial_values, priors, control) {
     if (!control$save_logLik_contributions) mcmc_out$logLik <- mcmc_out$mlogLik <- NULL
     c(mcmc_out, list(statistics = statistics,
                      fit_stats = list(conditional = conditional_fit_stats,
-                                      marginal = marginal_fit_stats)),
+                                      marginal = marginal_fit_stats,
+                                      clogLik_mean_parms = clogLik_mean_parms,
+                                      mlogLik_mean_parms = mlogLik_mean_parms)),
       list(Wlong_bar = model_data$Wlong_bar,
            Wlong_sds = model_data$Wlong_sds, Wlong_std = model_data$Wlong_std,
            W_bar = model_data$W_bar, W_sds = model_data$W_sds,

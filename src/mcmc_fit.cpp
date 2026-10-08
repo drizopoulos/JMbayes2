@@ -1081,8 +1081,15 @@ List simulate_REs (List Data, List MCMC, List control) {
   uvec which_right_event = join_cols(which_event, which_right);
   uvec which_left = as<uvec>(Data["which_left"]) - 1;
   uvec which_interval = as<uvec>(Data["which_interval"]) - 1;
+  field<uvec> which_term_h = List2Field_uvec(as<List>(Data["which_term_h"]), true);
+  field<uvec> which_term_H = List2Field_uvec(as<List>(Data["which_term_H"]), true);
+
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
+  bool any_terminal = !which_term_h.is_empty();
+  bool recurrent = as<bool>(Data["recurrent"]);
+  uword n_strata = as<uword>(Data["n_strata"]);
+
   umat ni_event = as<umat>(Data["ni_event"]);
   uvec idT = as<uvec>(Data["idT"]) - 1;
   vec log_Pwk = as<vec>(Data["log_Pwk"]);
@@ -1175,13 +1182,11 @@ List simulate_REs (List Data, List MCMC, List control) {
   uword n_iter = as<uword>(control["n_iter"]);
   uword n_b = b_mat.n_rows;
   uword nRE = b_mat.n_cols;
-  mat scale_b = mat(n_b,  b_mat.n_cols, fill::ones) * 0.2;
+  mat scale_b = mat(n_b, b_mat.n_cols, fill::ones) * 0.2;
   //
   // pre-allocate workspaces for log_long()
   vec numerator_b(n_b, arma::fill::none);
   vec denominator_b(n_b, arma::fill::none);
-  vec logLik_surv(n_b, arma::fill::none);
-  vec logLik_surv_proposed(n_b, arma::fill::none);
   vec logLik_long(n_b, arma::fill::none);
   vec logLik_long_proposed(n_b, arma::fill::none);
   vec logLik_re(n_b, arma::fill::none);
@@ -1224,6 +1229,34 @@ List simulate_REs (List Data, List MCMC, List control) {
       if (any_event) eta_h.at(i).set_size(X_h.at(i).n_rows, n_forms);
       if (any_interval) eta_H2.at(i).set_size(X_H2.at(i).n_rows, n_forms);
   }
+
+  vec lambda_H_workspace(W0_H.n_rows, arma::fill::none);
+  vec lambda_H2_workspace(W0_H2.n_rows, arma::fill::none);
+  vec tmp_H = group_sum(log_Pwk, indFast_H);
+  vec H_workspace(tmp_H.n_rows, arma::fill::none);
+  vec H2_workspace(tmp_H.n_rows, arma::fill::none);
+  vec surv_out_workspace(tmp_H.n_rows, arma::fill::none);
+  vec logLik_surv(n_b, arma::fill::none);
+  vec logLik_surv_proposed(n_b, arma::fill::none);
+
+  vec frailty_H(WH_gammas.n_rows, fill::zeros);
+  vec frailty_h(Wh_gammas.n_rows, fill::zeros);
+  vec frailty(n_b, fill::zeros); //<------ change recurrent
+  vec alphaF(1, fill::zeros); //<------ change recurrent
+  vec sigmaF(1, fill::ones); //<------ change recurrent
+  frailty_h = frailty.rows(id_h);
+  frailty_H = frailty.rows(id_H_);
+  vec frailtyH_sigmaF_alphaF(WH_gammas.n_rows, fill::zeros);
+  vec frailtyh_sigmaF_alphaF(which_event.n_rows, fill::zeros);
+  vec alphaF_H(WH_gammas.n_rows, fill::ones);
+  vec alphaF_h(Wh_gammas.n_rows, fill::ones);
+  if (any_terminal) {
+      for (uword j = 0; j < n_strata - 1; ++j) {
+          alphaF_H.rows(which_term_H.at(j)).fill(alphaF.at(j));
+          alphaF_h.rows(which_term_h.at(j)).fill(alphaF.at(j));
+      }
+  }
+
   field<vec> betas_it(betas.n_elem);
   cube out(n_b, nRE, n_samples, fill::zeros);
   mat outS(n_b, n_samples, fill::zeros);

@@ -480,7 +480,7 @@ vec logLik_jm_stripped (
   field<vec> betas_ = betas;
   // set intercept to centered covariates
   for (uword j = 0; j < Xbar.n_elem; ++j) {
-    betas_.at(j).at(0) += as_scalar(Xbar.at(j) * betas.at(j));
+   betas_.at(j).at(0) += as_scalar(Xbar.at(j) * betas.at(j));
   }
   field<vec> eta = linpred_mixed(X, betas_, Z, b, idL);
   log_long(y, eta, mu_obs_workspace, sigmas, extra_parms, families, links,
@@ -512,7 +512,7 @@ vec logLik_jm_stripped (
   mat Wlong_H =
     calculate_Wlong(X_H, Z_H, U_H, Wlong_bar, Wlong_sds, betas_, b, id_H_,
                     FunForms, Funs_FunForms);
-  vec alphas_ = alphas % Wlong_sds.t();
+  vec alphas_ = alphas / Wlong_sds.t();
   vec WlongH_alphas = Wlong_H * alphas_;
   mat Wlong_h(W0_h.n_rows, alphas.n_rows);
   vec Wlongh_alphas(W0_h.n_rows);
