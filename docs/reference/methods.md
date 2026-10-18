@@ -309,8 +309,8 @@ fit_jm2 <- jm(fit_cox, list(fit_lme1b, fit_lme2), time_var = "year",
 compare_jm(fit_jm, fit_jm2)
 #> 
 #>               DIC     WAIC      LPML
-#>  fit_jm2 10549.46 10576.17 -5295.704
-#>   fit_jm 10692.72 11192.76 -6117.450
+#>  fit_jm2 10510.75 10541.53 -5277.992
+#>   fit_jm 10667.81 11178.94 -6152.203
 #> 
 #> The criteria are calculated on the basis of the marginal log-likelihood.
 # }

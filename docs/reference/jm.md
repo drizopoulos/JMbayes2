@@ -629,8 +629,8 @@ summary(joint_model_fit_1)
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    4237.524 5004.651 -3052.932
-#> conditional 3287.283 3172.861 -1812.772
+#> marginal    4199.714 4985.926 -3083.326
+#> conditional 3339.719 3172.861 -1812.772
 #> 
 #> Random-effects covariance matrix:
 #>                     
@@ -730,9 +730,9 @@ summary(joint_model_fit_2)
 #>   hepatomegaly: 1884
 #>   ascites: 1885
 #> 
-#>                  DIC     WAIC      LPML
-#> marginal    6824.450 7049.583 -3824.694
-#> conditional 8866.056 8809.280 -4865.980
+#>                  DIC    WAIC      LPML
+#> marginal    6635.479 6872.14 -3785.564
+#> conditional 9087.043 8809.28 -4865.980
 #> 
 #> Random-effects covariance matrix:
 #>                                                   
@@ -778,7 +778,7 @@ summary(joint_model_fit_2)
 #> iterations per chain: 11000 
 #> burn-in per chain: 1000 
 #> thinning: 1 
-#> time: 56 sec
+#> time: 59 sec
 traceplot(joint_model_fit_2)
 
 
@@ -890,9 +890,9 @@ summary(joint_model_fit_2)
 #>   hepatomegaly: 1884
 #>   ascites: 1885
 #> 
-#>                       DIC          WAIC          LPML
-#> marginal     1.196293e+82 8.787595e+166 -1.499269e+85
-#> conditional -2.608670e+33  8.798276e+03 -4.844879e+03
+#>                  DIC     WAIC      LPML
+#> marginal    6637.878 7007.934 -3866.512
+#> conditional 9035.769 8798.276 -4844.879
 #> 
 #> Random-effects covariance matrix:
 #>                                                   
@@ -940,7 +940,7 @@ summary(joint_model_fit_2)
 #> iterations per chain: 11000 
 #> burn-in per chain: 1000 
 #> thinning: 1 
-#> time: 1.1 min
+#> time: 1 min
 
 # }
 ```

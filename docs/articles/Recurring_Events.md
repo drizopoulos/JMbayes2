@@ -356,8 +356,8 @@ summary(jm_fit)
 #>   y: 3075
 #> 
 #>                  DIC     WAIC       LPML
-#> marginal    13964.45 13961.02  -7349.692
-#> conditional 19094.06 19095.66 -10201.566
+#> marginal    13149.97 12983.05  -6736.434
+#> conditional 19832.17 19095.66 -10201.566
 #> 
 #> Random-effects covariance matrix:
 #>                                                            
@@ -400,7 +400,7 @@ summary(jm_fit)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 55 sec
+#> time: 54 sec
 ```
 
 One can find the association parameters between the underlying value of

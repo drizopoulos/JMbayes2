@@ -59,8 +59,8 @@ summary(jointFit1)
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    4387.949 5338.546 -3078.696
-#> conditional 3499.381 3356.698 -1914.927
+#> marginal    4360.329 5330.306 -3120.145
+#> conditional 3536.960 3356.698 -1914.927
 #> 
 #> Random-effects covariance matrix:
 #>                     
@@ -187,8 +187,8 @@ summary(jointFit2)
 #>   ascites: 1885
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    11908.04 12902.65 -6785.932
-#> conditional 12594.61 12618.74 -6829.707
+#> marginal    11670.79 13918.64 -7850.173
+#> conditional 12890.30 12618.74 -6829.707
 #> 
 #> Random-effects covariance matrix:
 #>                                                   
@@ -234,7 +234,7 @@ summary(jointFit2)
 #> iterations per chain: 12000 
 #> burn-in per chain: 2000 
 #> thinning: 5 
-#> time: 1.2 min
+#> time: 1.3 min
 ```
 
 The survival submodel output now contains the estimated coefficients for
@@ -292,9 +292,9 @@ summary(jointFit3)
 #>   prothrombin: 1945
 #>   ascites: 1885
 #> 
-#>                        DIC          WAIC           LPML
-#> marginal     1.310983e+144 1.288936e+291 -1.966420e+147
-#> conditional  -1.944983e+51  1.243387e+04  -6.714379e+03
+#>                  DIC     WAIC      LPML
+#> marginal    11677.49 12664.98 -7145.285
+#> conditional 12732.64 12433.87 -6714.379
 #> 
 #> Random-effects covariance matrix:
 #>                                                   

@@ -539,6 +539,20 @@ ggdensityplot.jm <- function(object,
     }
 }
 
+effectPlotData.lme <- function (object, newdata, level = 0.95, ...) {
+    termsX <- delete.response(object$terms)
+    xlevels <- mapply2(.getXlevels, termsX, object$model_info$frames$mf_FE)
+    mfX <- model.frame.default(formula = termsX, xlev = xlevels, data = newdata)
+    X <- model.matrix.default(object = termsX, data = mfX)
+    betas <- fixef(object)
+    V <- vcov(object)
+    pred <- c(X %*% betas)
+    ses <- sqrt(diag(X %*% V %*% t(X)))
+    low <- pred + qnorm((1 - level) / 2) * ses
+    upp <- pred + qnorm((1 + level) / 2) * ses
+    cbind(newdata, pred = pred, low = low, upp = upp)
+}
+
 effectPlotData.jm <- function (object, newdata, level = 0.95, ...) {
     termsX <- object$model_info$terms$terms_FE_noResp
     xlevels <- mapply2(.getXlevels, termsX, object$model_info$frames$mf_FE)
@@ -1571,6 +1585,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
             stop("'simulate.jm()' does not currently support stratified joint models.\n")
         }
         log_hazard <- function (time, subj) {
+            time[time < 1e-06] <- 1e-06
             subjj <- if (length(time) != length(subj)) rep(subj, length(time)) else subj
             tt <- if (timescale_base_hazard == "identity") time else log(time)
             W0 <- create_W0(tt, knots, Bspline_dgr, strt[subj], basis,
@@ -1591,7 +1606,8 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
             id_GQ <- rep(subj, each = K)
             log_Pwk <- rep(log(wk), length(P)) + rep(log(P), each = K)
             log_integrand <- log_Pwk + log_hazard(c(t(st)), id_GQ)
-            c(rowsum(exp(log_integrand), id_GQ, reorder = FALSE)) + log_u[subj]
+            c(rowsum(exp(log_integrand), id_GQ, reorder = FALSE, na.rm = TRUE)) +
+                log_u[subj]
         }
         nr_root <- function (interval, fn, gr, n, tol = 0.001, iter = 100L) {
             subjs <- seq_len(n)

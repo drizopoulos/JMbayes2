@@ -1087,7 +1087,7 @@ List simulate_REs (List Data, List MCMC, List control) {
   bool any_event = which_event.n_rows > 0;
   bool any_interval = which_interval.n_rows > 0;
   bool any_terminal = !which_term_h.is_empty();
-  bool recurrent = as<bool>(Data["recurrent"]);
+  //bool recurrent = as<bool>(Data["recurrent"]);
   uword n_strata = as<uword>(Data["n_strata"]);
 
   umat ni_event = as<umat>(Data["ni_event"]);
