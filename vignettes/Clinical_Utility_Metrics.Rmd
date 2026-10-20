@@ -23,9 +23,9 @@ library("JMbayes2")
 
 Dynamic risk prediction models, such as joint models, are increasingly used to estimate patient-specific risks and support clinical decision-making. Assessing the quality of these predictions is therefore essential. Common performance measures, including the Brier score, logarithmic score, and AUC, evaluate predictive accuracy but do not directly reflect the clinical consequences of decisions based on those predictions.
 
-This vignette focuses on measures of clinical utility, including the net benefit (NB) and expected cost (EC), which have been adapted for the dynamic prediction setting. These measures account for the consequences of false positive and false negative decisions. We also present the integrated weighted expected cost (IWEC), a metric that considers clinical utility while achieving strict properness. An additional advantage of the IWEC is that it does not depend on a single decision threshold; instead, it utilizes a weight function that incorporates clinical knowledge in a more flexible manner. Additionally, we present a weighted decision curve that offers a graphical assessment of model performance.
+This vignette focuses on measures of clinical utility, including the net benefit (NB) and expected cost (EC), which have been adapted for the dynamic prediction setting. These measures account for the consequences of false positive and false negative decisions. We also present the integrated weighted expected cost (IWEC), a metric that considers clinical utility while achieving strict properness. An additional advantage of the IWEC is that it does not depend on a single decision threshold; instead, it utilizes a weight function that incorporates clinical knowledge in a more flexible manner. Another interesting feature of the IWEC is that it characterizes the class of strictly proper rules. The Brier score and the logarithmic score can be obtained as particular cases, as will be shown below with numerical examples. Additionally, we present a weighted decision curve that offers a graphical assessment of model performance.
 
-The package implements both inverse probability weighting (IPW) and model-based estimation approaches for left-truncated and right-censored data (LTRC). The aim of this vignette is to introduce the available methods and demonstrate their use through practical examples with publicly available data. For methodological details, we refer the reader to the accompanying publication.
+The package implements both inverse probability weighting (IPW) and model-based estimation approaches for left-truncated and right-censored data (LTRC). The aim of this vignette is to introduce the available methods and demonstrate their use through practical examples with publicly available data. 
 
 ## Methods
 
@@ -35,10 +35,10 @@ For a given decision threshold $c\in(0,1)$, we define the dynamic net benefit as
 
 $$ \begin{split}
         \text{NB}_c\big(\pi_i(s\mid t),D_i(t,s)\big)  = & \mathbf{1}\{\pi_i(s\mid t)\geq c\} D_i(t,s)\\
-        &-\mathbf{1}\{\pi_i(s\mid t)\geq c\}\{1- D_i(t,s)\}\frac{c}{1-c}.
+        &-\mathbf{1}\{\pi_i(s\mid t)\geq c\}\{1- D_i(t,s)\}\frac{c}{1-c},
     \end{split} $$
 
-For a given decision threshold $c\in(0,1)$, we define the dynamic expected cost as
+where $D_i(t,s)=\mathbf{1}\{t<T_i^*\leq t+s\}$ is a binary indicator that is $1$ if the event is observed within $(t,t+s]$, and $0$ otherwise. For a given decision threshold $c\in(0,1)$, we define the dynamic expected cost as
 
 $$ \begin{split}
         \text{EC}_c\big(\pi_i(s\mid t),D_i(t,s)\big) = & c\mathbf{1}\{\pi_i(s\mid t)\geq c\} \{1-D_i(t,s)\}\\
@@ -61,7 +61,7 @@ For illustration, we use the `pbc2` dataset available in **JMbayes2**. The `pbc2
 set.seed(1234)
 pbc2$lt <- unlist(by(pbc2, pbc2$id, function(x) rep(runif(1, 0, x$years), nrow(x))))
 pbc2$event <- as.numeric(pbc2$status != "alive")
-pbc2.id <- pbc2[!duplicated(pbc2$id), ]
+pbc2.id$lt <- pbc2$lt[match(pbc2.id$id, pbc2$id)]
 ```
 
 Then, we fit the Cox model for the time to either transplantation or death, using then left-truncated and right-censored data. We included the baseline covariates `age` and `drug`:
@@ -187,20 +187,6 @@ plot(wdc1, wdc2)
 
 In this plot, we see that both joint models overcome the default strategies when incorporating the relative relevance of the decision thresholds via the weight function $w(c;23.11, 89.45)$. However, the joint model using the serum bilirubin yields better estimates per each relevant decision threshold as well as with respect the IWEC.
 
-The IWEC reduces to the $1/2$ times the Brier score when `shape1=1` and `shape2=1`:
-
-```{r}
-iwec1_1 <- tvIWEC(jm1, newdata = pbc2, Tstart = 2, Dt = 5, shape1 = 1, shape2 = 1,
-                  type_weights = "IPCW")
-bs_expl <- tvBrier(jm1, newdata = pbc2, Tstart = 2, Dt = 5,
-                   type_weights = "IPCW")
-cat("IWEC when shape1 = shape2 = 1:", 2 * iwec1_1$IWEC, "\n")
-cat("Brier score:", bs_expl$Brier)
-```
-
-
-In addition, the logarithmic score is also a particular case of the IWEC that is obtained when `shape1=0` and `shape2=0`.
-
 ### Cox proportional hazards models evaluation 
 
 Notably, the implementation supports both joint models (`jm` class objects) and Cox proportional hazards models (`coxph` class objects). This is, all the functions above can also be used with Cox models. Let us consider the Cox model used in the survival process of the joint models fitted above. We can assess predictive performance via the net benefit:
@@ -214,7 +200,7 @@ Similarly, we can use the expected cost:
 
 ```{r}
 tvEC(CoxFit, newdata = pbc2.id, Tstart = 6, Dt = 3,
-     decision_threshold = 0.45, model_name = "Proportional Hazards Model")
+     decision_threshold = 0.45, name_model = "Proportional Hazards Model")
 ```
 
 The IWEC also supports Cox models:
@@ -236,6 +222,20 @@ plot(cox_wdg,
      xlim = c(0, 0.65))
 ```
 
+The IWEC reduces to the $1/2$ times the Brier score when `shape1=1` and `shape2=1`:
+
+```{r}
+iwec1_1 <- tvIWEC(CoxFit, newdata = pbc2.id, Tstart = 2, Dt = 5, shape1 = 1, shape2 = 1,
+                  type_weights = "IPCW")
+bs_expl <- tvBrier(CoxFit, newdata = pbc2.id, Tstart = 2, Dt = 5,
+                   type_weights = "IPCW")
+cat("IWEC when shape1 = shape2 = 1:", 2 * iwec1_1$metric, "\n")
+cat("Brier score:", bs_expl$Brier)
+```
+
+
+In addition, the logarithmic score is also a particular case of the IWEC that is obtained when `shape1=0` and `shape2=0`.
+
 ### General dynamic predictions evaluation 
 
 In addition, because these metrics can be applied to dynamic predictions obtained from any kind of model, we implemented a general 'default' method that works by using the vector of dynamic predictions, the observed times, the event indicator and the left-truncated times. Let's see some examples of this.
@@ -251,7 +251,7 @@ predictions <- 1.0 - (as.matrix(sfit_8$surv)[1L, ] / as.matrix(sfit_5$surv)[1L, 
 Now, we compute the net benefit with decision threshold $0.375$, we use the IPW estimator:
 
 ```{r}
-tvEC(predictions, Time = pbc2.id$years, LT_Time = pbc2.id$lt, event = pbc2.id$event,
+tvNB(predictions, Time = pbc2.id$years, LT_Time = pbc2.id$lt, event = pbc2.id$event,
      decision_threshold = 0.375, Tstart = 5, Thoriz = 8, type_weights = "IPCW")
 ```
 
