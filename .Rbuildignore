@@ -35,6 +35,7 @@
 ^vignettes/Baseline_Hazard.Rmd$
 ^vignettes/Consensus.Rmd$
 ^vignettes/Posterior_Predictive_Checks.Rmd$
+^vignettes/Clinical_Utility_Metrics.Rmd$
 
 
 
