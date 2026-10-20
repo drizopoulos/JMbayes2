@@ -165,6 +165,7 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
     } else {
         unclass(mf_surv_dataS[[ind_strata]])
     }
+    n_strata <- length(unique(strata))
     # extract weights if present otherwise all subjects in one stratum
     indx <- match("weights", names(callS), nomatch = 0)
     weights <- if (indx) {
@@ -232,7 +233,6 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
         id_h <- match(id_h, unique(id_h))
     }
 
-
     # Functional forms
     functional_forms <- object$model_info$functional_forms
     FunForms_per_outcome <- object$model_info$FunForms_per_outcome
@@ -253,6 +253,8 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
 
     # Design matrices
     strata_H <- rep(strata, each = control$GK_k)
+    which_term_h = lapply(seq_len(n_strata)[-1], function(x) which(x == strata))
+    which_term_H = lapply(seq_len(n_strata)[-1], function(x) which(x == strata_H))
     W0_H <- create_W0(c(t(st)), knots, control$Bsplines_degree, strata_H,
                       control$basis, control$timescale_base_hazard)
     idT_str <- paste0(idT, "_", strata)
@@ -365,7 +367,9 @@ prepare_Data_preds <- function (object, newdataL, newdataE) {
         unq_idL = unq_idL, idL_lp = idL_lp, idL = idL, last_times = last_times,
         Time_start = Time_start, weights = weights, intgr = intgr,
         intgr_ind = as.numeric(intgr_ind), id_h2 = id_h2, id_h_ = id_h_,
-        id_h_Wlong = id_h_Wlong
+        id_h_Wlong = id_h_Wlong, which_term_h = which_term_h,
+        which_term_H = which_term_H, recurrent = object$model_info$recurrent,
+        n_strata = n_strata
     )
 }
 
@@ -647,9 +651,11 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
         mcmc$bs_gammas <- mcmc$bs_gammas[id_samples, , drop = FALSE]
         mcmc$gammas <- mcmc$gammas[id_samples, , drop = FALSE]
         mcmc$alphas <- mcmc$alphas[id_samples, , drop = FALSE]
+        mcmc$alphaF <- mcmc$alphaF[id_samples, , drop = FALSE]
         mcmc$betas[] <- lapply(mcmc$betas, function (m, ind) m[ind, , drop = FALSE],
                                "ind" = id_samples)
         mcmc$sigmas <- mcmc$sigmas[id_samples, , drop = FALSE]
+        mcmc$sigmaF <- mcmc$sigmaF[id_samples, , drop = FALSE]
         mcmc$D <- mcmc$D[, , id_samples, drop = FALSE]
         # update control n_samples
         control$n_samples <- length(id_samples)
@@ -704,7 +710,9 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
                 res$bs_gammas <- rbind(res$bs_gammas, x[[i]][["bs_gammas"]])
                 res$gammas <- rbind(res$gammas, x[[i]][["gammas"]])
                 res$alphas <- rbind(res$alphas, x[[i]][["alphas"]])
+                res$alphaF <- rbind(res$alphaF, x[[i]][["alphaF"]])
                 res$sigmas <- rbind(res$sigmas, x[[i]][["sigmas"]])
+                res$sigmaF <- rbind(res$sigmaF, x[[i]][["sigmaF"]])
                 res$Wlong_std_alphas <-
                     rbind(res$Wlong_std_alphas, x[[i]][["Wlong_std_alphas"]])
                 res$W_std_gammas <-

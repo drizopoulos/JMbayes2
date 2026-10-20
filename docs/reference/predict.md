@@ -78,61 +78,60 @@ predict(object,
 
   all_times
 
-  :   logical; if `TRUE` predictions for the longitudinal outcomes are
-      calculated for all the times given in the `times` argumet, not
-      only the ones after the last longitudinal measurement.
+  : logical; if `TRUE` predictions for the longitudinal outcomes are
+    calculated for all the times given in the `times` argumet, not only
+    the ones after the last longitudinal measurement.
 
   times_per_id
 
-  :   logical; if `TRUE` the `times` argument is a vector of times equal
-      to the number of subjects in `newdata`.
+  : logical; if `TRUE` the `times` argument is a vector of times equal
+    to the number of subjects in `newdata`.
 
   level
 
-  :   the level of the credible interval.
+  : the level of the credible interval.
 
   return_newdata
 
-  :   logical; should
-      [`predict()`](https://rdrr.io/r/stats/predict.html) return the
-      predictions as extra columns in `newdata` and `newdata2`.
+  : logical; should [`predict()`](https://rdrr.io/r/stats/predict.html)
+    return the predictions as extra columns in `newdata` and `newdata2`.
 
   use_Y
 
-  :   logical; should the longitudinal measurements be used in the
-      posterior of the random effects.
+  : logical; should the longitudinal measurements be used in the
+    posterior of the random effects.
 
   return_mcmc
 
-  :   logical; if `TRUE` the mcmc sample for the predictions is
-      returned. It can be `TRUE` only in conjuction with
-      `return_newdata` being `FALSE`.
+  : logical; if `TRUE` the mcmc sample for the predictions is returned.
+    It can be `TRUE` only in conjuction with `return_newdata` being
+    `FALSE`.
 
   n_samples
 
-  :   the number of samples to use from the original MCMC sample of
-      `object`.
+  : the number of samples to use from the original MCMC sample of
+    `object`.
 
   n_mcmc
 
-  :   the number of Metropolis-Hastings iterations for sampling the
-      random effects per iteration of `n_samples`; only the last
-      iteration is retained.
+  : the number of Metropolis-Hastings iterations for sampling the random
+    effects per iteration of `n_samples`; only the last iteration is
+    retained.
 
   parallel
 
-  :   character string; what type of parallel computing to use. Options
-      are `"snow"` (default) and `"multicore"`.
+  : character string; what type of parallel computing to use. Options
+    are `"snow"` (default) and `"multicore"`.
 
   cores
 
-  :   how many number of cores to use. If there more than 20 subjects in
-      `newdata`, parallel computing is invoked with four cores by
-      default. If `cores = 1`, no parallel computing is used.
+  : how many number of cores to use. If there more than 20 subjects in
+    `newdata`, parallel computing is invoked with four cores by default.
+    If `cores = 1`, no parallel computing is used.
 
   seed
 
-  :   an integer denoting the seed.
+  : an integer denoting the seed.
 
 - x, x2:
 

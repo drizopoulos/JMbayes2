@@ -3,18 +3,22 @@ xx <- matrix(rnorm(n * k), n, k)
 VV <- var(xx)
 LL <- chol(VV)
 
+n <- 1200
+k <- 15
+bb <- matrix(rnorm(n * k), n, k)
+sds <- abs(rnorm(k))
 
-tt1 <- log_dmvnrm_chol(xx, LL)
-tt2 <- log_dmvnrm_chol_optimal(xx, LL)
+tt1 <- scaled_Armadillo(bb, sds)
+tt2 <- scaled_pointers(bb, sds)
 
 all.equal(tt1, tt2)
 
 library("rbenchmark")
 
 benchmark(
-    Cpp1 = log_dmvnrm_chol(xx, LL),
-    Cpp2 = log_dmvnrm_chol_optimal(xx, LL),
-    replications = 20000
+    Armadillo = scaled_Armadillo(bb, sds),
+    Pointers = scaled_pointers(bb, sds),
+    replications = 50000
 )
 
 

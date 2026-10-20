@@ -28,16 +28,16 @@ consensus(object, parm, method = c("union", "equal_weight", "var_weight"),
 
   `"union"`
 
-  :   concatenate draws across slices (no averaging).
+  : concatenate draws across slices (no averaging).
 
   `"equal_weight"`
 
-  :   compute an iteration-wise simple average across slices.
+  : compute an iteration-wise simple average across slices.
 
   `"var_weight"`
 
-  :   compute an iteration-wise weighted average across slices using
-      inverse-variance weights.
+  : compute an iteration-wise weighted average across slices using
+    inverse-variance weights.
 
 - seed:
 

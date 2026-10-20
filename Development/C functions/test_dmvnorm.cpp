@@ -40,7 +40,7 @@ vec log_dmvnrm_chol (const mat &x, const mat &L) {
 }
 
 // [[Rcpp::export]]
-vec log_dmvnrm_chol (const mat &x, const mat &L) {
+vec log_dmvnrm_chol2 (const mat &x, const mat &L) {
     uword const n = x.n_rows, k = x.n_cols;
     vec out(n, arma::fill::none);
     mat V = inv(trimatu(L));
@@ -68,4 +68,28 @@ vec log_dmvnrm_chol (const mat &x, const mat &L) {
     }
     return out;
 }
+
+// [[Rcpp::export]]
+arma::mat scaled_Armadillo (const mat &b, const vec &sds) {
+    return b.each_row() / sds.t();
+}
+
+// [[Rcpp::export]]
+arma::mat scaled_pointers (const mat &b, const vec &sds) {
+    mat B_scaled_workspace(size(b), arma::fill::none);
+    uword n_sds = sds.n_rows;
+    uword n_rows_b = b.n_rows;
+    const double* sds_ptr = sds.memptr();
+    for (uword c = 0; c < n_sds; ++c) {
+        double inv_sd = 1.0 / sds_ptr[c];
+        const double* b_col = b.colptr(c);
+        double* B_ws_col = B_scaled_workspace.colptr(c);
+        for (uword r = 0; r < n_rows_b; ++r) {
+            B_ws_col[r] = b_col[r] * inv_sd;
+        }
+    }
+    return B_scaled_workspace;
+}
+
+
 

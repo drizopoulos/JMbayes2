@@ -64,19 +64,27 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                    vec &lambda_H2_workspace, vec &H2_workspace,
                    vec &surv_out_workspace, vec &logLik_surv_proposed,
                    const field<mat> &X_dots, mat &sum_JXDXJ, vec &sum_JXDu,
-                   mat &u_mat, mat &mean_u_mat, mat &mean_u_mat2,
+                   mat &u_mat, vec &mean_u, mat &mean_u_mat, mat &mean_u_mat2,
+                   field<vec> &mu_obs_workspace,
                    field<vec> &log_contr_obs_workspace,
-                   field<vec> &log_contr_subj_workspace) {
+                   field<vec> &log_contr_subj_workspace, mat &U, mat &Q,
+                   mat &L_prec, vec &b_vec, vec &yy, vec &betasHC_workspace,
+                   vec &z_rand_betaHC, mat &outprod_workspace, vec &u_workspace,
+                   vec &u_tilde_workspace, mat &X_tilde_workspace,
+                   vec &JXDu_workspace, mat &JXDXJ_workspace,
+                   field<mat> &U_patt_field, field<uvec> &rem_patt_field,
+                   mat &Res_workspace) {
 
     uword n_b = b_mat.n_rows;
     uword q = b_mat.n_cols;
 
     // FE in HC - Gibbs sampling
     vec betas_vec = docall_rbindF(betas);
-    vec mean_u = X_dot * betas_vec.rows(ind_FE_HC);
+    mean_u = X_dot * betas_vec.rows(ind_FE_HC);
 
-    // 1. VECTORIZED RESHAPING: Replaces the manual u_mat loop
-    mean_u_mat = arma::reshape(mean_u, q, n_b).t();
+    // VECTORIZED RESHAPING: Replaces the manual u_mat loop
+    arma::mat alias_mat(mean_u.memptr(), q, n_b, false, true);
+    mean_u_mat = alias_mat.t();
     u_mat = b_mat + mean_u_mat;
 
     uword patt_count = ind_RE_patt.n_elem;
@@ -84,23 +92,18 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
 
     sum_JXDXJ.zeros();
     sum_JXDu.zeros();
-    mat U = L.each_row() % sds.t();
+    U = L.each_row() % sds.t();
 
-    // 2. ISOLATED D_INV PRE-CALCULATION
+    // ISOLATED D_INV PRE-CALCULATION
     // Store just the upper-triangular Cholesky factor, not the inverse
-    field<mat> U_patt_field(patt_count);
     for (uword p = 0; p < patt_count; ++p) {
         if (!ind_RE_patt.at(p).is_empty()) {
-            // No inv(), no matrix multiplication!
-            U_patt_field.at(p) = trimatu(chol_update(U, ind_RE_patt.at(p)));
+            chol_update_inplace(U, ind_RE_patt.at(p), rem_patt_field.at(p),
+                                Res_workspace, U_patt_field.at(p));
         }
     }
 
-    mat X_tilde;
-    vec u_tilde;
     uvec absolute_rows;
-    vec u_i;
-
     for (uword i = 0; i < n_b; ++i) {
         uword patt_i = id_patt.at(i);
         if (ind_FE_patt.at(patt_i).is_empty()) continue;
@@ -109,40 +112,53 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
         const uvec& ind_RE_i = ind_RE_patt.at(patt_i);
         absolute_rows = i * q + ind_RE_i;
 
-        u_i = u_mat.row(i).t();
-        u_i = u_i.rows(ind_RE_i);
+        uword k = ind_RE_i.n_elem;
+        uword p_i = ind_FE_i.n_elem;
+
+        vec u_i(u_workspace.memptr(), k, false, true);
+        vec u_tilde(u_tilde_workspace.memptr(), k, false, true);
+        mat X_tilde(X_tilde_workspace.memptr(), k, p_i, false, true);
+        vec JXDu(JXDu_workspace.memptr(), p_i, false, true);
+        mat JXDXJ(JXDXJ_workspace.memptr(), p_i, p_i, false, true);
+        for (uword j = 0; j < k; ++j) {
+            u_i[j] = u_mat.at(i, ind_RE_i[j]);
+        }
 
         // Fetch the upper-triangular Cholesky factor
         const mat& R = U_patt_field.at(patt_i);
-
         // Fast Triangular Solves (Calculates R^-T * X  and  R^-T * u)
         arma::solve(X_tilde, arma::trimatl(R.t()), X_dots.at(i));
         arma::solve(u_tilde, arma::trimatl(R.t()), u_i);
 
         // Simple Cross-products
-        sum_JXDu.rows(ind_FE_i) += X_tilde.t() * u_tilde;
-        sum_JXDXJ.submat(ind_FE_i, ind_FE_i) += X_tilde.t() * X_tilde;
+        JXDu = X_tilde.t() * u_tilde;
+        sum_JXDu.rows(ind_FE_i) += JXDu;
+        JXDXJ = X_tilde.t() * X_tilde;
+        sum_JXDXJ.submat(ind_FE_i, ind_FE_i) += JXDXJ;
     }
 
     //mat Sigma_1 = inv_sympd(prior_Tau_betas_HC + sum_JXDXJ);
     //vec mean_1 = Sigma_1 * (Tau_mean_betas_HC + sum_JXDu);
     //betas_vec.rows(ind_FE_HC) = mean_1 + chol(Sigma_1, "lower") * randn<vec>(p_HC);
     // 1. Define the Precision Matrix (Q) and Canonical Mean (b)
-    mat Q = prior_Tau_betas_HC + sum_JXDXJ;
-    vec b_vec = Tau_mean_betas_HC + sum_JXDu;
+    Q = prior_Tau_betas_HC + sum_JXDXJ;
+    b_vec = Tau_mean_betas_HC + sum_JXDu;
     // 2. Calculate the Cholesky factor of the PRECISION matrix EXACTLY ONCE
-    mat L_prec = chol(Q, "lower");
+    arma::chol(L_prec, Q, "lower");
     // 3. Forward substitution: Solve L_prec * yy = b_vec  (This is yy = L^-1 * b)
-    vec yy = arma::solve(arma::trimatl(L_prec), b_vec);
+    arma::solve(yy, arma::trimatl(L_prec), b_vec);
     // 4. Add the standard normal noise
-    vec ww = yy + arma::randn<vec>(p_HC);
-    // 5. Back substitution: Solve L_prec^T * x = ww (This is x = L^-T * ww)
-    betas_vec.rows(ind_FE_HC) = arma::solve(arma::trimatu(L_prec.t()), ww);
+    z_rand_betaHC.randn(p_HC);
+    yy += z_rand_betaHC;
+    // 5. Back substitution: Solve L_prec^T * x = ww (This is x = L^-T * yy)
+    arma::solve(betasHC_workspace, arma::trimatu(L_prec.t()), yy);
+    betas_vec.rows(ind_FE_HC) = betasHC_workspace;
     vec2field_inplace(betas, betas_vec, ind_FE);
 
     // 3. VECTORIZED b_mat RECALCULATION (Deletes an entire n_b loop)
     mean_u = X_dot * betas_vec.rows(ind_FE_HC);
-    mean_u_mat2 = arma::reshape(mean_u, q, n_b).t();
+    arma::mat alias_mat2(mean_u.memptr(), q, n_b, false, true);
+    mean_u_mat2 = alias_mat2.t();
     b_mat = u_mat - mean_u_mat2;
 
     if (save_random_effects) {
@@ -150,7 +166,8 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
     } else if (it > n_burnin - 1) {
         cumsum_b += b_mat;
         for (uword j = 0; j < n_b; j++) {
-            outprod_b.slice(j) += b_mat.row(j).t() * b_mat.row(j);
+            outprod_workspace = b_mat.row(j).t() * b_mat.row(j);
+            outprod_b.slice(j) += outprod_workspace;
         }
     }
 
@@ -195,19 +212,18 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
             uvec ind_j = x_notin_z.at(j);
             uword n_betas = ind_j.n_rows;
 
-            log_long_i(y.at(j), eta.at(j), sigmas.at(j),
-                       extra_parms.at(j), std::string(families[j]),
-                       std::string(links[j]), idL_lp_fast.at(j),
-                       log_contr_obs_workspace.at(j),
-                       log_contr_subj_workspace.at(j));
+            log_long_i(y.at(j), eta.at(j), mu_obs_workspace.at(j), sigmas.at(j),
+                       extra_parms.at(j), families[j], links[j], idL_lp_fast.at(j),
+                       log_contr_obs_workspace.at(j), log_contr_subj_workspace.at(j));
 
-            double sum_logLik_long_j = sum(log_contr_subj_workspace.at(j));
+            double sum_logLik_long_j = arma::accu(log_contr_subj_workspace.at(j));
             vec ll(n_betas);
             double logPrior_j =
                 logPrior(betas.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
                          prior_Tau_betas_nHC.at(j), ll, 1.0, false);
 
-            double denominator_j = sum_logLik_long_j + sum(logLik_surv) + logPrior_j;
+            double denominator_j = sum_logLik_long_j + arma::accu(logLik_surv) +
+                logPrior_j;
 
             for (uword i = 0; i < n_betas; ++i) {
                 // 4. IN-PLACE SCALAR MUTATION (Destroys field<vec> deep copy bottleneck)
@@ -216,19 +232,20 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                 double diff = scale_betas.at(j).at(i) * R::norm_rand();
                 betas.at(j).at(idx) += diff;
 
-                double logPrior_j_prop = logPrior(betas.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
-                                                  prior_Tau_betas_nHC.at(j), ll, 1.0, false);
+                double logPrior_j_prop =
+                    logPrior(betas.at(j).rows(ind_j), prior_mean_betas_nHC.at(j),
+                             prior_Tau_betas_nHC.at(j), ll, 1.0, false);
 
                 // 5. RANK-1 ETA UPDATE (Deletes the massive linpred_mixed_i matrix multiplication)
                 vec eta_j_prop = eta.at(j) + X.at(j).col(idx) * diff;
 
-                log_long_i(y.at(j), eta_j_prop, sigmas.at(j),
-                           extra_parms.at(j), families[j], links[j],
+                log_long_i(y.at(j), eta_j_prop, mu_obs_workspace.at(j),
+                           sigmas.at(j), extra_parms.at(j), families[j], links[j],
                            idL_lp_fast.at(j), log_contr_obs_workspace.at(j),
                            log_contr_subj_workspace.at(j));
 
                 double sum_logLik_long_j_prop =
-                    sum(log_contr_subj_workspace.at(j));
+                    arma::accu(log_contr_subj_workspace.at(j));
 
                 // 6. DEFERRED MATRIX ALLOCATIONS
                 mat Wlong_H_prop =
@@ -262,18 +279,18 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                          logLik_surv_proposed);
 
                 double numerator_j =
-                    sum_logLik_long_j_prop + sum(logLik_surv_proposed) + logPrior_j_prop;
+                    sum_logLik_long_j_prop + arma::accu(logLik_surv_proposed) +
+                    logPrior_j_prop;
                 double log_ratio_j = numerator_j - denominator_j;
                 double acc_i = 0.0;
 
                 // 7. FAST LOG-SPACE ACCEPTANCE
-                if (std::isfinite(log_ratio_j) && std::log(R::unif_rand()) < log_ratio_j) {
+                if (std::isfinite(log_ratio_j) &&
+                    std::log(R::unif_rand()) < log_ratio_j) {
                     acc_i = 1.0;
                     if (it > n_burnin - 1) acceptance_betas.at(j).at(i) += 1.0;
-
                     // betas is already mutated
                     eta.at(j) = eta_j_prop;
-
                     Wlong_H = Wlong_H_prop;
                     WlongH_alphas = WlongH_alphas_prop;
                     if (any_event) {
@@ -290,7 +307,6 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
                     // Reject: Simply revert the scalar change in the field
                     betas.at(j).at(idx) = old_beta;
                 }
-
                 if (it > 119) {
                     scale_betas.at(j).at(i) =
                         robbins_monro(scale_betas.at(j).at(i), acc_i, it - 100);
@@ -298,8 +314,8 @@ void update_betas (field<vec> &betas, mat &res_betas, field<vec> &acceptance_bet
             }
         }
     }
-    log_long(y, eta, sigmas, extra_parms, families, links, idL_lp_fast,
-             unq_idL, logLik_long, log_contr_obs_workspace,
+    log_long(y, eta, mu_obs_workspace, sigmas, extra_parms, families, links,
+             idL_lp_fast, unq_idL, logLik_long, log_contr_obs_workspace,
              log_contr_subj_workspace);
     res_betas.row(it) = docall_rbindF(betas).t();
 }

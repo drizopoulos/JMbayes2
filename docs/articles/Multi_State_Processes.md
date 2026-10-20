@@ -196,36 +196,36 @@ summary(jm_ms_model)
 #>   y: 11573
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    46923.40 46863.84 -23431.94
-#> conditional 49796.78 48874.86 -25615.56
+#> marginal    46920.62 46860.97 -23430.50
+#> conditional 49793.41 48869.63 -25595.21
 #> 
 #> Random-effects covariance matrix:
 #>                     
 #>        StdDev   Corr
-#> (Intr) 1.0580 (Intr)
-#> time   0.5609 0.2082
+#> (Intr) 1.0575 (Intr)
+#> time   0.5614 0.2096
 #> 
 #> Survival outcome:
-#>                          Mean  StDev    2.5%  97.5%      P   Rhat
-#> X:strata(transition)1  0.4382 0.0691  0.2965 0.5745 0.0000 1.0105
-#> X:strata(transition)2 -0.2359 0.1421 -0.5167 0.0366 0.0942 1.0045
-#> X:strata(transition)3  0.5681 0.0811  0.4101 0.7304 0.0000 1.0174
-#> value(y):transition1   0.5280 0.0201  0.4906 0.5677 0.0000 1.1397
-#> value(y):transition2   0.3110 0.0387  0.2314 0.3839 0.0000 1.0474
-#> value(y):transition3   0.2667 0.0187  0.2312 0.3045 0.0000 1.0351
+#>                          Mean  StDev    2.5%  97.5%     P   Rhat
+#> X:strata(transition)1  0.4382 0.0694  0.3013 0.5761 0.000 1.0078
+#> X:strata(transition)2 -0.2403 0.1368 -0.5042 0.0201 0.076 1.0059
+#> X:strata(transition)3  0.5708 0.0832  0.4064 0.7359 0.000 1.0189
+#> value(y):transition1   0.5286 0.0196  0.4915 0.5682 0.000 1.0947
+#> value(y):transition2   0.3117 0.0385  0.2392 0.3878 0.000 1.0168
+#> value(y):transition3   0.2678 0.0196  0.2300 0.3059 0.000 1.0634
 #> 
 #> Longitudinal outcome: y (family = gaussian, link = identity)
 #>                Mean  StDev    2.5%   97.5% P   Rhat
-#> (Intercept)  5.0051 0.0311  4.9444  5.0664 0 1.0005
-#> time        -0.1068 0.0165 -0.1390 -0.0734 0 1.0031
-#> sigma        0.9304 0.0070  0.9171  0.9443 0 1.0005
+#> (Intercept)  5.0059 0.0312  4.9447  5.0667 0 1.0005
+#> time        -0.1070 0.0165 -0.1391 -0.0741 0 1.0021
+#> sigma        0.9304 0.0071  0.9171  0.9447 0 1.0015
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 6000 
 #> burn-in per chain: 1500 
 #> thinning: 1 
-#> time: 59 sec
+#> time: 1.1 min
 ```
 
 which differs from a default call to

@@ -72,8 +72,6 @@ inline void group_sum (const arma::vec& x, const arma::uvec& ind,
     arma::uword start = 0;
     for (arma::uword i = 0; i < m; ++i) {
         arma::uword end = p_ind[i];
-        // Safety bound check to prevent crashing R if an index is too large
-        if (end >= x.n_elem) end = x.n_elem - 1;
         double current_sum = 0.0;
         // Sum the elements for the current segment
         for (arma::uword j = start; j <= end; ++j) {
@@ -506,7 +504,8 @@ inline void log_dnbinom_void (const vec &x, const vec &mu, const double &size,
     }
 }
 
-inline void log_dnorm_void (const vec &x, const vec &mu, const double sigma, vec &out) {
+inline void log_dnorm_void (const vec &x, const vec &mu, const double sigma,
+                            vec &out) {
     double constant = -std::log(sigma) - half_log2pi;
     double var2 = 2.0 * sigma * sigma;
     out = constant - arma::square(x - mu) / var2;
@@ -555,15 +554,25 @@ inline void log_dt_void (const vec &x, const vec &mu, const double sigma,
 }
 
 vec log_dht (const vec &x, const vec &sigma, const double &df = 3.0) {
-  // log density of half Student's t with scale sigma and df degrees of freedom
-  // https://en.m.wikipedia.org/wiki/Folded-t_and_half-t_distributions
-  uword n = x.n_rows;
-  vec out(n);
-  vec log_const = std::log(2.0) + lgamma(0.5 * (df + 1.0)) - lgamma(0.5 * df) -
-    0.5 * (std::log(df) + std::log(M_PI)) - log(sigma);
-  vec log_kernel = - 0.5 * (df + 1.0) * log(1.0 + square(x) / (df * square(sigma)));
-  out = log_const + log_kernel;
-  return out;
+    // log density of half Student's t with scale sigma and df degrees of freedom
+    // https://en.m.wikipedia.org/wiki/Folded-t_and_half-t_distributions
+    uword n = x.n_rows;
+    vec out(n);
+    vec log_const = std::log(2.0) + lgamma(0.5 * (df + 1.0)) - lgamma(0.5 * df) -
+        0.5 * (std::log(df) + std::log(M_PI)) - log(sigma);
+    vec log_kernel = - 0.5 * (df + 1.0) * log(1.0 + square(x) / (df * square(sigma)));
+    out = log_const + log_kernel;
+    return out;
+}
+
+inline void log_dht_void (const vec &x, const vec &sigma,
+                          const double df, vec &out) {
+    // log density of half Student's t with scale sigma and df degrees of freedom
+    // https://en.m.wikipedia.org/wiki/Folded-t_and_half-t_distributions
+    vec log_const = std::log(2.0) + lgamma(0.5 * (df + 1.0)) -
+        lgamma(0.5 * df) - 0.5 * (std::log(df) + std::log(M_PI)) - log(sigma);
+    vec log_kernel = - 0.5 * (df + 1.0) * log(1.0 + square(x) / (df * square(sigma)));
+    out = log_const + log_kernel;
 }
 
 inline void log_dgamma_void (const vec &x, const double &shape, const vec &scale,
@@ -663,7 +672,7 @@ vec log_dmvnrm (const mat &x, const mat &D) {
   return out;
 }
 
-inline void linpred_surv_inplace(field<mat> &eta,
+inline void linpred_surv_inplace2(field<mat> &eta,
                                  const field<mat> &X, const field<vec> &betas,
                                  const field<mat> &Z, const field<mat> &b,
                                  const uvec &id) {
@@ -684,6 +693,44 @@ inline void linpred_surv_inplace(field<mat> &eta,
             uword j_RE_start = j * n_REs;
             double* eta_col_ptr = eta.at(i).colptr(j);
             const uword* id_ptr = id.memptr();
+            for (uword k = 0; k < n_REs; ++k) {
+                const double* Z_col_ptr = Z_i.colptr(j_RE_start + k);
+                const double* b_col_ptr = b_i.colptr(k);
+                for (uword obs = 0; obs < N; ++obs) {
+                    eta_col_ptr[obs] += Z_col_ptr[obs] * b_col_ptr[id_ptr[obs]];
+                }
+            }
+        }
+    }
+}
+
+inline void linpred_surv_inplace(field<mat> &eta,
+                                 const field<mat> &X, const field<vec> &betas,
+                                 const field<mat> &Z, const field<mat> &b,
+                                 const uvec &id) {
+    uword n_outcomes = X.n_elem;
+    for (uword i = 0; i < n_outcomes; ++i) {
+        const mat& X_i = X.at(i);
+        const vec& betas_i = betas.at(i);
+        const mat& Z_i = Z.at(i);
+        const mat& b_i = b.at(i);
+        uword n_betas = betas_i.n_rows;
+        uword n_REs = b_i.n_cols;
+        uword n_forms = X_i.n_cols / n_betas;
+        uword N = X_i.n_rows;
+        const uword* id_ptr = id.memptr();
+        for (uword j = 0; j < n_forms; ++j) {
+            double* eta_col_ptr = eta.at(i).colptr(j);
+            std::memset(eta_col_ptr, 0, N * sizeof(double));
+            uword j_beta_start = j * n_betas;
+            for (uword k = 0; k < n_betas; ++k) {
+                const double* X_col_ptr = X_i.colptr(j_beta_start + k);
+                double beta_val = betas_i[k];
+                for (uword obs = 0; obs < N; ++obs) {
+                    eta_col_ptr[obs] += X_col_ptr[obs] * beta_val;
+                }
+            }
+            uword j_RE_start = j * n_REs;
             for (uword k = 0; k < n_REs; ++k) {
                 const double* Z_col_ptr = Z_i.colptr(j_RE_start + k);
                 const double* b_col_ptr = b_i.colptr(k);
@@ -738,7 +785,7 @@ field<vec> linpred_mixed (const field<mat> &X, const field<vec> &betas,
   return out;
 }
 
-inline void linpred_mixed_inplace (field<vec> &eta,
+inline void linpred_mixed_inplace2 (field<vec> &eta,
                                    const field<mat> &X,
                                    const field<vec> &betas,
                                    const field<mat> &Z,
@@ -759,6 +806,45 @@ inline void linpred_mixed_inplace (field<vec> &eta,
         for (uword k = 0; k < q; ++k) {
             const double* Z_col = Z_i.colptr(k);
             const double* b_col = b_i.colptr(k);
+            for (uword obs = 0; obs < N; ++obs) {
+                eta_ptr[obs] += Z_col[obs] * b_col[id_ptr[obs]];
+            }
+        }
+    }
+}
+
+inline void linpred_mixed_inplace (field<vec> &eta,
+                                   const field<mat> &X,
+                                   const field<vec> &betas,
+                                   const field<mat> &Z,
+                                   const field<mat> &b,
+                                   const field<uvec> &id) {
+    uword n_outcomes = X.n_elem;
+    for (uword i = 0; i < n_outcomes; ++i) {
+        const mat& X_i = X.at(i);
+        const vec& betas_i = betas.at(i);
+        const mat& Z_i = Z.at(i);
+        const mat& b_i = b.at(i);
+        const uvec& id_i = id.at(i);
+
+        uword N = X_i.n_rows;
+        uword n_betas = betas_i.n_rows;
+        uword q = Z_i.n_cols;
+        double* eta_ptr = eta.at(i).memptr();
+        const uword* id_ptr = id_i.memptr();
+        std::memset(eta_ptr, 0, N * sizeof(double));
+        for (uword k = 0; k < n_betas; ++k) {
+            const double* X_col = X_i.colptr(k);
+            double beta_val = betas_i[k];
+
+            for (uword obs = 0; obs < N; ++obs) {
+                eta_ptr[obs] += X_col[obs] * beta_val;
+            }
+        }
+        for (uword k = 0; k < q; ++k) {
+            const double* Z_col = Z_i.colptr(k);
+            const double* b_col = b_i.colptr(k);
+
             for (uword obs = 0; obs < N; ++obs) {
                 eta_ptr[obs] += Z_col[obs] * b_col[id_ptr[obs]];
             }
@@ -874,12 +960,20 @@ mat calculate_Wlong (const field<mat> &X, const field<mat> &Z,
             }
         }
     }
-    Wlong.each_row() -= Wlong_bar;
-    Wlong.each_row() /= Wlong_sds;
+    const double* bar_ptr = Wlong_bar.memptr();
+    const double* inv_sds_ptr = Wlong_sds.memptr();
+    for (uword c = 0; c < total_cols; ++c) {
+        double bar = bar_ptr[c];
+        double inv_sd = inv_sds_ptr[c];
+        double* col_ptr = Wlong.colptr(c);
+        for (uword r = 0; r < N; ++r) {
+            col_ptr[r] = (col_ptr[r] - bar) * inv_sd;
+        }
+    }
     return Wlong;
 }
 
-inline void calculate_Wlong_inplace (mat &Wlong, field<mat> &eta,
+inline void calculate_Wlong_inplace2 (mat &Wlong, field<mat> &eta,
                                      const field<mat> &X, const field<mat> &Z,
                                      const field<mat> &U, const mat &Wlong_bar,
                                      const mat &Wlong_sds,
@@ -941,8 +1035,105 @@ inline void calculate_Wlong_inplace (mat &Wlong, field<mat> &eta,
             }
         }
     }
-    Wlong.each_row() -= Wlong_bar;
-    Wlong.each_row() /= Wlong_sds;
+    //Wlong.each_row() -= Wlong_bar;
+    //Wlong.each_row() /= Wlong_sds;
+    uword n_rows = Wlong.n_rows;
+    uword n_cols = Wlong.n_cols;
+    const double* bar_ptr = Wlong_bar.memptr();
+    const double* inv_sds_ptr = Wlong_sds.memptr();
+    for (uword c = 0; c < n_cols; ++c) {
+        double bar = bar_ptr[c];
+        double inv_sd = inv_sds_ptr[c];
+        double* col_ptr = Wlong.colptr(c);
+        for (uword r = 0; r < n_rows; ++r) {
+            col_ptr[r] = (col_ptr[r] - bar) * inv_sd;
+        }
+    }
+}
+
+inline void calculate_Wlong_inplace (mat &Wlong, field<mat> &eta,
+                                     const field<mat> &X, const field<mat> &Z,
+                                     const field<mat> &U, const mat &Wlong_bar,
+                                     const mat &Wlong_sds,
+                                     const field<vec> &betas, const field<mat> &b,
+                                     const uvec &id, const field<uvec> &FunForms,
+                                     const List &Funs_FunForms) {
+    linpred_surv_inplace(eta, X, betas, Z, b, id);
+    uword n_outcomes = U.n_elem;
+    uword total_cols = 0;
+    uvec col_starts(n_outcomes);
+    for (uword i = 0; i < n_outcomes; ++i) {
+        col_starts.at(i) = total_cols;
+        total_cols += U.at(i).n_cols;
+    }
+    uword N = Wlong.n_rows;
+    for (uword i = 0; i < n_outcomes; ++i) {
+        uword start_col = col_starts.at(i);
+        uword end_col = start_col + U.at(i).n_cols - 1;
+        Wlong.cols(start_col, end_col) = U.at(i);
+        const mat& eta_i = eta.at(i);
+        const uvec& FF_i = FunForms.at(i);
+        List Funs_i = Funs_FunForms[i];
+        uword current_col = 0;
+        uword n_funs = Funs_i.length();
+        for (uword j = 0; j < n_funs; ++j) {
+            // 1. Extract raw pointer, bypassing subview instantiation overhead
+            const double* eta_ptr = eta_i.colptr(j);
+            // 2. Wrap in Armadillo vector (Zero allocation, Strict size)
+            arma::vec eta_vec(const_cast<double*>(eta_ptr), N, false, true);
+            IntegerVector fun_ints = Funs_i[j];
+            uword k = fun_ints.length();
+            for (uword f = 0; f < k; ++f) {
+                uword target_col = start_col + FF_i.at(current_col);
+                // 3. Extract raw target pointer and wrap it
+                double* out_ptr = Wlong.colptr(target_col);
+                arma::vec out_vec(out_ptr, N, false, true);
+                int fun = fun_ints[f];
+                switch (fun) {
+                case 1: out_vec %= eta_vec; break;
+                case 2: out_vec %= arma::abs(eta_vec); break;
+                case 3: out_vec %= 1.0 / (1.0 + arma::trunc_exp(-eta_vec)); break;
+                case 4: out_vec %= arma::trunc_exp(eta_vec); break;
+                case 5: {
+                    auto pp = 1.0 / (1.0 + arma::trunc_exp(-eta_vec));
+                    out_vec %= pp % (1.0 - pp);
+                    break;
+                }
+                case 6: out_vec %= arma::trunc_log(eta_vec); break;
+                case 7: out_vec %= arma::log2(eta_vec); break;
+                case 8: out_vec %= arma::log10(eta_vec); break;
+                case 9: out_vec %= arma::sqrt(eta_vec); break;
+                case 10: out_vec %= arma::square(eta_vec); break;
+                case 11: out_vec %= eta_vec % arma::square(eta_vec); break;
+                case 12: out_vec %= arma::square(arma::square(eta_vec)); break;
+                case 13: out_vec %=
+                    arma::square(1.0 / (1.0 + arma::trunc_exp(-eta_vec))); break;
+                case 14: {
+                    auto pp = 1.0 / (1.0 + arma::trunc_exp(-eta_vec));
+                    out_vec %= pp % arma::square(pp);
+                    break;
+                }
+                case 15: out_vec %=
+                    arma::square(arma::square(1.0 /
+                    (1.0 + arma::trunc_exp(-eta_vec)))); break;
+                default: Rcpp::stop("Unknown transformation function integer code.");
+                }
+                current_col++;
+            }
+        }
+    }
+    uword n_rows = Wlong.n_rows;
+    uword n_cols = Wlong.n_cols;
+    const double* bar_ptr = Wlong_bar.memptr();
+    const double* inv_sds_ptr = Wlong_sds.memptr();
+    for (uword c = 0; c < n_cols; ++c) {
+        double bar = bar_ptr[c];
+        double inv_sd = inv_sds_ptr[c];
+        double* col_ptr = Wlong.colptr(c);
+        for (uword r = 0; r < n_rows; ++r) {
+            col_ptr[r] = (col_ptr[r] - bar) * inv_sd;
+        }
+    }
 }
 
 mat bdiagF (const field<mat> &F) { // builds a block diagonal matrix given a field of matrices
@@ -1131,6 +1322,49 @@ mat chol_update (const mat &U, const uvec &keep) {
     return Res.submat(keep, keep);
 }
 
+inline void chol_update_inplace (const mat &U, const uvec &keep, const uvec &rem,
+                                 mat &Res_workspace, mat &out_mat) {
+    uword N = U.n_cols;
+    // Zero-Allocation Deep Copy
+    // std::memcpy is the absolute fastest way to copy matrix data in C++
+    std::memcpy(Res_workspace.memptr(), U.memptr(), U.n_elem * sizeof(double));
+    // Process each removal index (Givens Rotations)
+    const uword* rem_ptr = rem.memptr();
+    for (uword i = 0; i < rem.n_elem; ++i) {
+        uword k = rem_ptr[i];
+        for (uword row_idx = k + 1; row_idx < N; ++row_idx) {
+            double res_ii = Res_workspace.at(row_idx, row_idx);
+            double v_i    = Res_workspace.at(k, row_idx);
+            double r = std::sqrt(res_ii * res_ii + v_i * v_i);
+            double c = r / res_ii;
+            double s = v_i / res_ii;
+            Res_workspace.at(row_idx, row_idx) = r;
+            for (uword col_idx = row_idx + 1; col_idx < N; ++col_idx) {
+                double res_ij = Res_workspace.at(row_idx, col_idx);
+                double v_j    = Res_workspace.at(k, col_idx);
+                double new_res_ij = (res_ij + s * v_j) / c;
+                Res_workspace.at(row_idx, col_idx) = new_res_ij;
+                Res_workspace.at(k, col_idx) = c * v_j - s * new_res_ij;
+            }
+        }
+    }
+    // Fused Submatrix Extraction & trimatu (Zero Allocations)
+    uword keep_N = keep.n_elem;
+    const uword* keep_ptr = keep.memptr();
+    for (uword col = 0; col < keep_N; ++col) {
+        uword global_col = keep_ptr[col];
+        for (uword row = 0; row < keep_N; ++row) {
+            if (row > col) {
+                // Equivalent to trimatu: explicitly zero the lower triangle
+                out_mat.at(row, col) = 0.0;
+            } else {
+                // Extract from the updated Res_workspace
+                uword global_row = keep_ptr[row];
+                out_mat.at(row, col) = Res_workspace.at(global_row, global_col);
+            }
+        }
+    }
+}
 
 uword n_field (const field<vec> &x) {
   uword n = x.n_rows;

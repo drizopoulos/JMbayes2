@@ -28,10 +28,6 @@ Two data frames with the following variables.
 
   randomized treatment; a factor with levels "placebo" and "prednisone".
 
-## Source
-
-<http://www.gllamm.org/books/readme.html#14.6>.
-
 ## References
 
 Andersen, P. K., Borgan, O., Gill, R. D. and Keiding, N. (1993).
