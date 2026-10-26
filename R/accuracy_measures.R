@@ -2045,8 +2045,6 @@ decision_curves.default <-
     out
   }
 
-
-
 decision_curves.jm <-
   function (object, newdata, Tstart,
             decision_threshold_range = seq(0 + 1e-06, 1 - 1e-06, length.out = 51),
