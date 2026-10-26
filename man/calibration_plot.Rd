@@ -20,7 +20,7 @@ calibration_plot(object, newdata, Tstart, \dots)
     add_density = TRUE, col_dens = "grey",
     xlab = "Predicted Probabilities",
     ylab = "Observed Probabilities", main = "", \dots)
-      
+
 \method{calibration_plot}{coxph}(object, newdata, Tstart, Thoriz = NULL,
     Dt = NULL, df_ns = NULL, plot = TRUE,
     col = "red", lty = 1, lwd = 1,
@@ -28,7 +28,7 @@ calibration_plot(object, newdata, Tstart, \dots)
     add_density = TRUE, col_dens = "grey",
     xlab = "Predicted Probabilities",
     ylab = "Observed Probabilities", main = "", \dots)
-          
+
 calibration_metrics(object, newdata, Tstart, Thoriz = NULL,
     Dt = NULL, df_ns = NULL, \dots)
 }
@@ -37,27 +37,27 @@ calibration_metrics(object, newdata, Tstart, Thoriz = NULL,
   \item{object}{an object inheriting from class \code{jm} or \code{coxph}.}
 
   \item{newdata}{a data.frame that contains the longitudinal and covariate information for the subjects for which prediction of survival probabilities is required. If a \code{jm} object is used, the names of the variables in this data.frame must be the same as in the data.frames that were used to fit the linear mixed effects and the event process model that were supplied as the two first argument of \code{\link{jm}}. If a \code{coxph} is used it only applies to the event process.}
-  
+
   \item{Tstart}{numeric scalar denoting the time point up to which longitudinal information is to be used to derive predictions.}
-  
+
   \item{Thoriz}{numeric scalar denoting the time point for which a prediction of the survival status is of interest; \code{Thoriz} must be later than \code{Tstart} and either \code{Dt} or \code{Thoriz} must be specified. If \code{Thoriz} is \code{NULL} is set equal to \code{Tstart + Dt}.}
-  
+
   \item{Dt}{numeric scalar denoting the length of the time interval of prediction; either \code{Dt} or \code{Thoriz} must be specified.}
-  
+
   \item{df_ns}{the degrees of freedom for the natural cubic spline of the cloglog transformation of the predicted
     probabilities used in the Cox model that assesses calibration. The default is 3 unless there are less than 25 events
     in the interval (\code{Tstart}, \code{Thoriz}] in which case it is 2.}
-    
+
   \item{plot}{logical; should a plot be produced. If \code{FALSE}, a list is returned with the observed and predicted probabilities in the calibration plot.}
 
   \item{add_CI}{logical; should 0.95 pointwise confidence intervals be added around the calibration line.}
-  
+
   \item{col_CI}{character; the color of the shaded area representing the 0.95 pointwise confidence intervals around the calibration line.}
-  
+
   \item{add_density}{logical; should the kernal density estimation of the predicted probabilities be superimposed in the calibration plot.}
-  
+
   \item{col, lwd, lty, col_dens, xlab, ylab, main}{graphical parameters.}
-    
+
   \item{\dots}{additional arguments passed to \code{predict.jm()}.}
 }
 \value{
@@ -84,8 +84,8 @@ Applications in R}. Boca Raton: Chapman and Hall/CRC.
 Rizopoulos, D. (2011). Dynamic predictions and prospective accuracy in joint models for
 longitudinal and time-to-event data. \emph{Biometrics} \bold{67}, 819--829.
 
-Rizopoulos, D., Molenberghs, G. and Lesaffre, E.M.E.H. (2017). Dynamic predictions with 
-time-dependent covariates in survival analysis using joint modeling and landmarking. 
+Rizopoulos, D., Molenberghs, G. and Lesaffre, E.M.E.H. (2017). Dynamic predictions with
+time-dependent covariates in survival analysis using joint modeling and landmarking.
 \emph{Biometrical Journal} \bold{59}, 1261--1276.
 }
 \author{
@@ -107,9 +107,9 @@ fm1 <- lme(log(serBilir) ~ ns(year, 3) * sex, data = pbc2,
 jointFit <- jm(CoxFit, fm1, time_var = "year", n_chains = 1L)
 
 # We use landmark time 4 and prediction horizon 3:
-calibration_plot(jointFit, newdata = pbc2, Tstart = 4, Dt = 3)
+calibration_plot(jointFit, newdata = pbc2, Tstart = 4, Dt = 3, cores = 1L)
 
 # Now the calibration metrics:
-calibration_metrics(jointFit, pbc2, Tstart = 4, Thoriz = 7)
+calibration_metrics(jointFit, pbc2, Tstart = 4, Thoriz = 7, cores = 1L)
 }
 }
