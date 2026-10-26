@@ -16,19 +16,19 @@ tvIWEC(object, \dots)
 \method{tvIWEC}{default}(object, Time, event, LT_Time = NULL, Tstart,
        shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL,
        mass = 0.95, Thoriz = NULL, Dt = NULL,
-       type_weights = c("model-based", "IPCW"), preds_MB = NULL, 
+       type_weights = c("model-based", "IPCW"), preds_MB = NULL,
        opt_interv = c(1, 500), name_model = NULL, \dots)
 
-\method{tvIWEC}{jm}(object, newdata, Tstart, 
+\method{tvIWEC}{jm}(object, newdata, Tstart,
        shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95,
        Thoriz = NULL, Dt = NULL,
-       type_weights = c("model-based", "IPCW"), 
+       type_weights = c("model-based", "IPCW"),
        opt_interv = c(1, 500), name_model = NULL, \dots)
-      
-\method{tvIWEC}{coxph}(object, newdata, Tstart, 
+
+\method{tvIWEC}{coxph}(object, newdata, Tstart,
        shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95,
        Thoriz = NULL, Dt = NULL,
-       type_weights = c("model-based", "IPCW"), 
+       type_weights = c("model-based", "IPCW"),
        opt_interv = c(1, 500), name_model = NULL, \dots)
 }
 
@@ -36,27 +36,27 @@ tvIWEC(object, \dots)
   \item{object}{an object inheriting from class \code{jm} or \code{coxph}, or a numeric vector containing the dynamic predictions to be evaluated.}
 
   \item{newdata}{a data.frame that contains the longitudinal and covariate information for the subjects for which prediction of survival probabilities is required. If a \code{jm} object is used, the names of the variables in this data.frame must be the same as in the data.frames that were used to fit the linear mixed effects and the event process model that were supplied as the two first argument of \code{\link{jm}}. If a \code{coxph} is used it only applies to the event process. If the default method is used, the argument is not needed.}
-  
+
   \item{Tstart}{numeric scalar denoting the time point up to which longitudinal information is to be used to derive predictions.}
-  
+
   \item{Time, event, LT_Time}{numeric vectors that must be specified when using the default method to compute the metric by directly using a vector of predictions, observed times (\code{Time}), the event indicator (\code{event}) and (possibly) left-truncated times (\code{LT_Time}).}
-  
+
   \item{shape1, shape2}{numeric scalars greater or equal to 0 denoting the shape parameteres for the beta family of weight functions (see below for details).}
-  
+
   \item{mod, mass, interv}{two numeric scalars between 0 and 1 and a numeric vector with two scalars between 0 and 1, denoting the mode of the weight function and the mass (default is 95\%) to be allocated within the interval defined by the two values in the numeric vector. These arguments can be used to compute the shape parameters. See below for details.}
 
   \item{Thoriz}{numeric scalar denoting the time point for which a prediction of the survival status is of interest; \code{Thoriz} must be later than \code{Tstart} and either \code{Dt} or \code{Thoriz} must be specified. If \code{Thoriz} is \code{NULL} is set equal to \code{Tstart + Dt}.}
-  
+
   \item{Dt}{numeric scalar denoting the length of the time interval of prediction; either \code{Dt} or \code{Thoriz} must be specified.}
-  
+
   \item{type_weights}{character string denoting the type of weights to use to account for censorting. Options are model-based (default) and inverse probability weighting (using the Kaplan-Meier estimate of the censoring distribution, and adjusting for left truncation if necessary).}
-  
+
   \item{preds_MB}{a numeric vector containing the model-based weights to be used for the individuals censored within (\code{Tstart}, \code{Thoriz}]. It must be specified when using the default method and the \code{model-based} estimator.}
-      
+
   \item{opt_interv}{a numeric vector containing the end-points of the interval to be searched for the root. This argumentis used when \code{mod}, \code{mass} and \code{interv} are provided, and shape parameters are computed (see details below).}
-  
+
   \item{name_model}{character string denoting the name of the model or object used for prediction evaluation; default is \code{NULL}, meaning that the name of the object in the environment will be used.}
-  
+
   \item{\dots}{additional arguments passed to \code{predict.jm()}.}
 }
 \details{
@@ -102,15 +102,15 @@ jointFit <- jm(CoxFit, list(fm1, fm2), time_var = "year", n_chains = 1L)
 # IWEC with a weight function in which relevant decision thresholds are (0.1, 0.3),
 # the mode is 0.2 and the mass within the interval is 80 percent.
 # We use landmark time 6 and prediction horizon 4.
-tvIWEC(jointFit, newdata = pbc2, Tstart = 6, Dt = 4, mod = 0.2, interv = c(0.1, 0.3),
-       mass = 0.8)
+tvIWEC(jointFit, newdata = pbc2, Tstart = 6, Dt = 4, mod = 0.2,
+       interv = c(0.1, 0.3), mass = 0.8, cores = 1L)
 
-# Considering the Cox model, the IPW approach for estimation and 
+# Considering the Cox model, the IPW approach for estimation and
 # shape parameters 12 and 38
 tvIWEC(CoxFit, newdata = pbc2.id, Tstart = 6, Dt = 4, shape1 = 12, shape2 = 38,
        type_weights = "IPCW")
-     
-# Considering the vectors with predictions, observed times, event indicator and 
+
+# Considering the vectors with predictions, observed times, event indicator and
 # left-truncated times. We use the default method:
 pbc2$lt <- unlist(by(pbc2, pbc2$id, function(x) rep(runif(1, 0, x$years), nrow(x))))
 pbc2.id$lt <- runif(nrow(pbc2.id), 0, pbc2.id$years)
@@ -119,7 +119,7 @@ sfit <- summary(survfit(CoxFit, newdata = pbc2.id), times = 5 + 3)
 predictions <- 1.0 - (as.matrix(sfit$surv)[1L, ] / as.matrix(sfit0$surv)[1L, ])
 tvIWEC(predictions, pbc2.id$years, pbc2.id$event, pbc2.id$lt, Tstart = 5, Dt = 3,
        type_weights = "IPCW", shape1 = 12, shape2 = 35)
-       
+
 # Now, we consider the default method, but using the model-based estimator:
 ind_censoring <- pbc2.id$years > 5 & pbc2.id$lt < 5 & pbc2.id$years < 8 & pbc2.id$event == 0
 sfit2_8 <- summary(survfit(CoxFit, newdata = pbc2.id[ind_censoring, ]),
@@ -128,8 +128,8 @@ sfit_cens <- summary(survfit(CoxFit, newdata = pbc2.id[ind_censoring, ]),
                      times = pbc2.id$years[ind_censoring])
 preds_MB <- rep(NA, length(pbc2.id$years))
 preds_MB[ind_censoring] <- 1.0 - (as.matrix(sfit2_8$surv)[1L, ] / as.matrix(sfit_cens$surv)[1L, ])
-tvIWEC(predictions, Time = pbc2.id$years, event = pbc2.id$event, LT_Time = pbc2.id$lt, 
-       Tstart = 5, Dt = 3, type_weights = "model-based", preds_MB = preds_MB, 
+tvIWEC(predictions, Time = pbc2.id$years, event = pbc2.id$event, LT_Time = pbc2.id$lt,
+       Tstart = 5, Dt = 3, type_weights = "model-based", preds_MB = preds_MB,
        mod = 0.33, interv = c(0.125, 0.46), mass = 0.7)
 }
 }

@@ -1404,7 +1404,7 @@ tvMetric.default <- function(object, Time, event, LT_Time = NULL, Tstart,
       }
     }
   } else {
-    if(is.null(decision_threshold))
+    if (is.null(decision_threshold))
       stop("When 'NB' or 'EC' are used, 'decision_threshold' must non-null.")
     if (decision_threshold <= 0 || decision_threshold >= 1 )
       stop("decision_threshold must be between 0 and 1.")
@@ -1419,7 +1419,7 @@ tvMetric.default <- function(object, Time, event, LT_Time = NULL, Tstart,
   if (is.null(Thoriz)) {
     Thoriz <- Tstart + Dt
   }
-  if(!is.null(LT_Time)) {
+  if (!is.null(LT_Time)) {
     LT_MS <- if(any(LT_Time > 0)) TRUE else FALSE
   } else {
     LT_MS = FALSE
@@ -1567,7 +1567,7 @@ tvMetric.jm <-
         shape2 <- shapes[2]
       }
     } else {
-      if(is.null(decision_threshold))
+      if (is.null(decision_threshold))
         stop("When 'NB' or 'EC' are used, 'decision_threshold' must non-null.")
       if (decision_threshold <= 0 || decision_threshold >= 1 )
         stop("decision_threshold must be between 0 and 1.")
@@ -1701,6 +1701,7 @@ tvIWEC.default <- function(object, Time, event, LT_Time = NULL, Tstart,
                    Thoriz = Thoriz, Dt = Dt, type_weights = type_weights, preds_MB = preds_MB,
                    opt_interv = opt_interv, name_model = name_model, ...)
 }
+
 tvIWEC.jm <- function(object, newdata, Tstart,
                       shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95,
                       Thoriz = NULL, Dt = NULL,
@@ -1715,13 +1716,15 @@ tvIWEC.jm <- function(object, newdata, Tstart,
               metric = "IWEC", shape1 = shape1, shape2 = shape2,
               mod = mod, interv = interv, mass = mass,
               decision_threshold = NULL, Thoriz = Thoriz, Dt = Dt,
-              type_weights = type_weights, opt_interv = opt_interv, name_model = name_model, ...)
+              type_weights = type_weights, opt_interv = opt_interv,
+              name_model = name_model, ...)
 }
 
 
 tvNB <- function (object, ...) {
   UseMethod("tvNB")
 }
+
 tvNB.default <- function(object, Time, event, LT_Time = NULL, Tstart,
                          decision_threshold = NULL, Thoriz = NULL, Dt = NULL,
                          type_weights = c("model-based", "IPCW"),
@@ -1740,9 +1743,11 @@ tvNB.default <- function(object, Time, event, LT_Time = NULL, Tstart,
                    Thoriz = Thoriz, Dt = Dt, type_weights = type_weights, preds_MB = preds_MB,
                    opt_interv = NULL, name_model = name_model, ...)
 }
+
 tvNB.jm <- function(object, newdata, Tstart,
                     decision_threshold = NULL, Thoriz = NULL, Dt = NULL,
-                    type_weights = c("model-based", "IPCW"), name_model = NULL, ...) {
+                    type_weights = c("model-based", "IPCW"), name_model = NULL,
+                    ...) {
   name_model <- if(is.null(name_model)) {
     deparse(substitute(object))
   } else {
@@ -1752,7 +1757,8 @@ tvNB.jm <- function(object, newdata, Tstart,
               metric = "NB", shape1 = NULL, shape2 = NULL,
               mod = NULL, interv = NULL, mass = NULL,
               decision_threshold = decision_threshold, Thoriz = Thoriz, Dt = Dt,
-              type_weights = type_weights, opt_interv = NULL, name_model = name_model, ...)
+              type_weights = type_weights, opt_interv = NULL,
+              name_model = name_model, ...)
 }
 
 tvEC <- function (object, ...) {
@@ -1788,7 +1794,8 @@ tvEC.jm <- function(object, newdata, Tstart,
               metric = "EC", shape1 = NULL, shape2 = NULL,
               mod = NULL, interv = NULL, mass = NULL,
               decision_threshold = decision_threshold, Thoriz = Thoriz, Dt = Dt,
-              type_weights = type_weights, opt_interv = NULL, name_model = name_model, ...)
+              type_weights = type_weights, opt_interv = NULL,
+              name_model = name_model, ...)
 }
 
 
