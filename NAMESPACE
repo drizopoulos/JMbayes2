@@ -4,7 +4,8 @@ export(area, calibration_metrics, calibration_plot, cumuplot, coef, compare_jm,
        terms, traceplot, tv, tvAUC, tvBrier, tvEPCE, tvROC, value, vexpit,
        Dexpit, vexp, vabs, Dexp, vlog, vlog2, vlog10, vsqrt, poly2, poly3, poly4,
        velocity, acceleration, coefs, Delta, create_folds, variogram, ppcheck,
-       slicer, consensus, lme, coxph, mixed_model)
+       slicer, consensus, lme, coxph, mixed_model,
+       tvIWEC, tvNB, tvEC, decision_curves)
 
 import(Rcpp)
 importFrom("utils", "glob2rx", "tail", "head", "combn")
@@ -16,7 +17,7 @@ importFrom("stats", "coef", "fitted", "terms", "model.frame", "model.frame.defau
            "reformulate", "predict", "pnorm", "ave", "median", "density",
            "simulate", "rbinom", "rpois", "rt", "rbeta", "ecdf", "rnbinom",
            "loess.smooth", "smooth.spline", "loess", "qt", "rgamma", "approx",
-           "spline", "complete.cases", "formula", "pbeta", "qnorm")
+           "spline", "complete.cases", "formula", "pbeta", "qnorm", "dbeta", "uniroot")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
            "clusterSetRNGStream", "makePSOCKcluster", "mclapply")
 importFrom("parallelly", "availableCores")
@@ -32,6 +33,7 @@ importFrom("ggplot2", "ggplot", "geom_density", "aes", "ggtitle", "theme_bw",
            "theme", "element_text", "scale_color_manual", "scale_fill_manual",
            "guide_legend", "geom_line", "guides")
 importFrom("gridExtra", "marrangeGrob")
+importFrom("grDevices", "adjustcolor")
 importFrom("matrixStats", "rowQuantiles", "colVars", "colLogSumExps",
            "colCumsums")
 importFrom("abind", "abind")
@@ -62,7 +64,6 @@ S3method(model.frame, jm)
 S3method(model.matrix, jm)
 S3method(family, jm)
 S3method(effectPlotData, jm)
-S3method(effectPlotData, lme)
 S3method(print, compare_jm)
 S3method(plot, predict_jm)
 S3method(tvAUC, jm)
@@ -76,6 +77,22 @@ S3method(calibration_plot, coxph)
 S3method(calibration_plot, jm)
 S3method(tvROC, jm)
 S3method(tvROC, coxph)
+S3method(tvMetric, default)
+S3method(tvMetric, jm)
+S3method(tvMetric, coxph)
+S3method(tvIWEC, default)
+S3method(tvIWEC, jm)
+S3method(tvIWEC, coxph)
+S3method(tvNB, default)
+S3method(tvNB, jm)
+S3method(tvNB, coxph)
+S3method(tvEC, default)
+S3method(tvEC, jm)
+S3method(tvEC, coxph)
+S3method(decision_curves, default)
+S3method(decision_curves, jm)
+S3method(decision_curves, coxph)
+S3method(plot, decision_curves)
 S3method(simulate, jm)
 S3method(print, tvROC)
 S3method(plot, tvROC)
@@ -83,6 +100,7 @@ S3method(plot, vrgm)
 S3method(print, tvAUC)
 S3method(print, tvBrier)
 S3method(print, tvEPCE)
+S3method(print, tvMetric)
 S3method(predict, jm)
 S3method(predict, jmList)
 S3method(print, consensus_jm)
