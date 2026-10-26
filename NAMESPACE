@@ -17,7 +17,8 @@ importFrom("stats", "coef", "fitted", "terms", "model.frame", "model.frame.defau
            "reformulate", "predict", "pnorm", "ave", "median", "density",
            "simulate", "rbinom", "rpois", "rt", "rbeta", "ecdf", "rnbinom",
            "loess.smooth", "smooth.spline", "loess", "qt", "rgamma", "approx",
-           "spline", "complete.cases", "formula", "pbeta", "qnorm", "dbeta", "uniroot")
+           "spline", "complete.cases", "formula", "pbeta", "qnorm", "dbeta",
+           "uniroot")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "parLapply",
            "clusterSetRNGStream", "makePSOCKcluster", "mclapply")
 importFrom("parallelly", "availableCores")
@@ -64,6 +65,7 @@ S3method(model.frame, jm)
 S3method(model.matrix, jm)
 S3method(family, jm)
 S3method(effectPlotData, jm)
+S3method(effectPlotData, lme)
 S3method(print, compare_jm)
 S3method(plot, predict_jm)
 S3method(tvAUC, jm)
