@@ -100,23 +100,22 @@ tvNB(CoxFit, newdata = pbc2.id, Tstart = 4, Dt = 3, decision_threshold = 0.3,
      
 # Considering the vectors with predictions, observed times, event indicator and 
 # left-truncated times. We use the default method:
-pbc2$lt <- unlist(by(pbc2, pbc2$id, function(x) rep(runif(1, 0, x$years), nrow(x))))
 pbc2.id$lt <- runif(nrow(pbc2.id), 0, pbc2.id$years)
 sfit0 <- summary(survfit(CoxFit, newdata = pbc2.id), times = 5)
 sfit <- summary(survfit(CoxFit, newdata = pbc2.id), times = 5 + 3)
 predictions <- 1.0 - (as.matrix(sfit$surv)[1L, ] / as.matrix(sfit0$surv)[1L, ])
-tvNB(predictions, pbc2.id$years, pbc2.id$event, pbc2.id$lt, Tstart = 5, Thoriz = 8,
+tvNB(predictions, pbc2.id$years, pbc2.id$status2, pbc2.id$lt, Tstart = 5, Thoriz = 8,
      type_weights = "IPCW", decision_threshold = 0.25)
      
 # Now, we consider the default method, but using the model-based estimator:
-ind_censoring <- pbc2.id$years > 5 & pbc2.id$lt < 5 & pbc2.id$years < 8 & pbc2.id$event == 0
+ind_censoring <- pbc2.id$years > 5 & pbc2.id$lt < 5 & pbc2.id$years < 8 & pbc2.id$status2 == 0
 sfit2_8 <- summary(survfit(CoxFit, newdata = pbc2.id[ind_censoring, ]),
                  times = 8)
 sfit_cens <- summary(survfit(CoxFit, newdata = pbc2.id[ind_censoring, ]),
                      times = pbc2.id$years[ind_censoring])
 preds_MB <- rep(NA, length(pbc2.id$years))
 preds_MB[ind_censoring] <- 1.0 - (as.matrix(sfit2_8$surv)[1L, ] / as.matrix(sfit_cens$surv)[1L, ])
-tvNB(predictions, Time = pbc2.id$years, event = pbc2.id$event, LT_Time = pbc2.id$lt, 
+tvNB(predictions, Time = pbc2.id$years, event = pbc2.id$status2, LT_Time = pbc2.id$lt, 
      Tstart = 5, Dt = 3, type_weights = "model-based", preds_MB = preds_MB, 
      decision_threshold = 0.3)
 }

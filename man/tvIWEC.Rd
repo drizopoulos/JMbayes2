@@ -117,18 +117,18 @@ pbc2.id$lt <- runif(nrow(pbc2.id), 0, pbc2.id$years)
 sfit0 <- summary(survfit(CoxFit, newdata = pbc2.id), times = 5)
 sfit <- summary(survfit(CoxFit, newdata = pbc2.id), times = 5 + 3)
 predictions <- 1.0 - (as.matrix(sfit$surv)[1L, ] / as.matrix(sfit0$surv)[1L, ])
-tvIWEC(predictions, pbc2.id$years, pbc2.id$event, pbc2.id$lt, Tstart = 5, Dt = 3,
+tvIWEC(predictions, pbc2.id$years, pbc2.id$status2, pbc2.id$lt, Tstart = 5, Dt = 3,
        type_weights = "IPCW", shape1 = 12, shape2 = 35)
        
 # Now, we consider the default method, but using the model-based estimator:
-ind_censoring <- pbc2.id$years > 5 & pbc2.id$lt < 5 & pbc2.id$years < 8 & pbc2.id$event == 0
+ind_censoring <- pbc2.id$years > 5 & pbc2.id$lt < 5 & pbc2.id$years < 8 & pbc2.id$status2 == 0
 sfit2_8 <- summary(survfit(CoxFit, newdata = pbc2.id[ind_censoring, ]),
                  times = 8)
 sfit_cens <- summary(survfit(CoxFit, newdata = pbc2.id[ind_censoring, ]),
                      times = pbc2.id$years[ind_censoring])
 preds_MB <- rep(NA, length(pbc2.id$years))
 preds_MB[ind_censoring] <- 1.0 - (as.matrix(sfit2_8$surv)[1L, ] / as.matrix(sfit_cens$surv)[1L, ])
-tvIWEC(predictions, Time = pbc2.id$years, event = pbc2.id$event, LT_Time = pbc2.id$lt, 
+tvIWEC(predictions, Time = pbc2.id$years, event = pbc2.id$status2, LT_Time = pbc2.id$lt, 
        Tstart = 5, Dt = 3, type_weights = "model-based", preds_MB = preds_MB, 
        mod = 0.33, interv = c(0.125, 0.46), mass = 0.7)
 }

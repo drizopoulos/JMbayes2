@@ -95,26 +95,25 @@ tvEC(jointFit, newdata = pbc2, Tstart = 5, Dt = 3, decision_threshold = 0.2)
 # Considering the Cox model and IPW approach for estimation:
 tvEC(CoxFit, newdata = pbc2.id, Tstart = 5, Dt = 3, decision_threshold = 0.2,
      type_weights = "IPCW")
-     
+
 # Considering the vectors with predictions, observed times, event indicator and 
 # left-truncated times. We consider the time window (5,8]. We use the default method:
-pbc2$lt <- unlist(by(pbc2, pbc2$id, function(x) rep(runif(1, 0, x$years), nrow(x))))
 pbc2.id$lt <- runif(nrow(pbc2.id), 0, pbc2.id$years)
 sfit0 <- summary(survfit(CoxFit, newdata = pbc2.id), times = 5)
 sfit <- summary(survfit(CoxFit, newdata = pbc2.id), times = 8)
 predictions <- 1.0 - (as.matrix(sfit$surv)[1L, ] / as.matrix(sfit0$surv)[1L, ])
-tvEC(predictions, pbc2.id$years, pbc2.id$event, pbc2.id$lt, Tstart = 5, Thoriz = 8,
+tvEC(predictions, pbc2.id$years, pbc2.id$status2, pbc2.id$lt, Tstart = 5, Thoriz = 8,
      type_weights = "IPCW", decision_threshold = 0.25)
-     
+
 # Now, we consider the default method, but using the model-based estimator:
-ind_censoring <- pbc2.id$years > 5 & pbc2.id$lt < 5 & pbc2.id$years < 8 & pbc2.id$event == 0
+ind_censoring <- pbc2.id$years > 5 & pbc2.id$lt < 5 & pbc2.id$years < 8 & pbc2.id$status2 == 0
 sfit2_8 <- summary(survfit(CoxFit, newdata = pbc2.id[ind_censoring, ]),
-                 times = 8)
+                   times = 8)
 sfit_cens <- summary(survfit(CoxFit, newdata = pbc2.id[ind_censoring, ]),
                      times = pbc2.id$years[ind_censoring])
 preds_MB <- rep(NA, length(pbc2.id$years))
 preds_MB[ind_censoring] <- 1.0 - (as.matrix(sfit2_8$surv)[1L, ] / as.matrix(sfit_cens$surv)[1L, ])
-tvEC(predictions, Time = pbc2.id$years, event = pbc2.id$event, LT_Time = pbc2.id$lt, 
+tvEC(predictions, Time = pbc2.id$years, event = pbc2.id$status2, LT_Time = pbc2.id$lt, 
      Tstart = 5, Dt = 3, type_weights = "model-based", preds_MB = preds_MB, 
      decision_threshold = 0.3)
 }
