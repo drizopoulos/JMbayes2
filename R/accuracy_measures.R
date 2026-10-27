@@ -1041,11 +1041,11 @@ tvBrier.jm <-
           list(newdataL = newdata2, newdataE = newdataE2)
         } else newdata2
         preds <- if (is_jm(object)) {
-          predict(object, newdata = ND2, process = "event",
+          predict(object, newdata = ND2, process = "event", cores = cores,
                   times = Thoriz, parallel = parallel, n_samples = 400L)
         } else if (is_jmList(object)) {
           predict(object, newdata = ND2, process = "event",
-                  times = Thoriz, parallel = parallel,
+                  times = Thoriz, parallel = parallel, cores = cores,
                   weights = model_weights, n_samples = 400L)
         }
         pi_u_t <- preds$pred
@@ -1062,11 +1062,11 @@ tvBrier.jm <-
           }
           preds2 <- if (is_jm(object)) {
             predict(object, newdata = ND3,
-                    process = "event", times = Thoriz,
+                    process = "event", times = Thoriz, cores = cores,
                     parallel = parallel, n_samples = 400L)
           } else if (is_jmList(object)) {
             predict(object, newdata = ND3,
-                    process = "event", times = Thoriz,
+                    process = "event", times = Thoriz, cores = cores,
                     parallel = parallel, weights = model_weights,
                     n_samples = 400L)
           }
