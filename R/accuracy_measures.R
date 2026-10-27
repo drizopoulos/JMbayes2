@@ -21,19 +21,19 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
   time_var <- object$model_info$var_names$time_var
   Time_var <- object$model_info$var_names$Time_var
   TTime_var <- if (length(Time_var) > 1) Time_var[2L] else Time_var
-  TTime0_var <- if (length(Time_var) > 1) Time_var[1L] else NULL 
+  TTime0_var <- if (length(Time_var) > 1) Time_var[1L] else NULL
   event_var <- object$model_info$var_names$event_var
   type_censoring <- object$model_info$type_censoring
-  if(!is.null(TTime0_var)) { 
+  if(!is.null(TTime0_var)) {
     LT_bool <- any(tapply(object$model_data$dataS[[TTime0_var]],
                           object$model_data$dataS[[id_var]], min, na.rm = TRUE) > 0,
                    na.rm = TRUE)
   } else {
     LT_bool <- FALSE
   }
-  LT_MS <- (object$model_info$type_censoring == "counting") & !(object$model_info$CR_MS) & LT_bool 
+  LT_MS <- (object$model_info$type_censoring == "counting") & !(object$model_info$CR_MS) & LT_bool
   if (object$model_info$CR_MS) {
-    stop("'tvROC()' currently only works for (possibly left truncated) right censored data.") 
+    stop("'tvROC()' currently only works for (possibly left truncated) right censored data.")
   }
   if (is.null(newdata[[id_var]]))
     stop("cannot find the '", id_var, "' variable in newdata.", sep = "")
@@ -44,14 +44,14 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
          "' variable(s) in newdata.", sep = "")
   if (is.null(newdata[[event_var]]))
     stop("cannot find the '", event_var, "' variable in newdata.", sep = "")
-  tt <- if (type_censoring == "right") newdata[[Time_var]] else newdata[[Time_var[2L]]]  
+  tt <- if (type_censoring == "right") newdata[[Time_var]] else newdata[[Time_var[2L]]]
   newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
   id <- newdata[[id_var]]
   id <- match(id, unique(id))
   tt <- ave(tt, id, FUN = function (t) rep(tail(t, 1L) > Tstart, length(t)))
   newdata <- newdata[as.logical(tt), ]
   newdata <- newdata[newdata[[time_var]] <= Tstart, ]
-  if(LT_MS) newdata <- newdata[newdata[[TTime0_var]] <= Tstart, ] 
+  if(LT_MS) newdata <- newdata[newdata[[TTime0_var]] <= Tstart, ]
   if (!nrow(newdata))
     stop("there are no data on subjects who had an observed event time after Tstart ",
          "and longitudinal measurements before Tstart.")
@@ -68,11 +68,11 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
   qi_u_t <- qi_u_t[preds$times > Tstart, , drop = FALSE]
   id <- newdata[[id_var]]
   Time <- newdata[[TTime_var]]
-  Time0 <- if(LT_MS) newdata[[TTime0_var]] else rep(0, length(Time)) 
+  Time0 <- if(LT_MS) newdata[[TTime0_var]] else rep(0, length(Time))
   event <- newdata[[event_var]]
   f <- factor(id, levels = unique(id))
   Time <- tapply(Time, f, tail, 1L)
-  Time0 <- tapply(Time0, f, tail, 1L) 
+  Time0 <- tapply(Time0, f, tail, 1L)
   event <- tapply(event, f, tail, 1L)
   names(Time) <- names(event) <- as.character(unique(id))
   thrs <- seq(0, 1, length = 101)
@@ -118,8 +118,8 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
     nFP <- colSums(Check_mean * c(ind2))
     nTN <- sum(ind2) - nFP
     FP <- nFP / sum(ind2)
-    cens_data <- data.frame(Time0 = Time0, Time = Time, cens_ind = 1 - event) 
-    censoring_dist <- survfit(Surv(Time0, Time, cens_ind) ~ 1, data = cens_data) 
+    cens_data <- data.frame(Time0 = Time0, Time = Time, cens_ind = 1 - event)
+    censoring_dist <- survfit(Surv(Time0, Time, cens_ind) ~ 1, data = cens_data)
     weights <- numeric(length(Time))
     ss <- summary(censoring_dist, times = Time[ind1])
     weights[ind1] <- 1 / ss$surv[match(ss$time, Time[ind1])]
@@ -139,7 +139,7 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
               thrs = thrs, F1score = F1score, Youden = Youden,
               Tstart = Tstart, Thoriz = Thoriz, nr = length(unique(id)),
               classObject = class(object), type_weights = type_weights,
-              LT_MS = LT_MS, 
+              LT_MS = LT_MS,
               nameObject = deparse(substitute(object)))
   class(out) <- "tvROC"
   out
@@ -157,7 +157,7 @@ print.tvROC <- function (x, digits = 4, ...) {
   cat("\n\nAt time:", round(x$Thoriz, digits))
   cat("\nUsing information up to time: ", round(x$Tstart, digits),
       " (", x$nr, " subjects still at risk)", sep = "")
-  if (x$LT_MS) { 
+  if (x$LT_MS) {
     cat("\nAccounting for left truncation and right censoring using ",
         if (x$type_weights == "IPCW") "nonparametric inverse probability weights\n\n"
         else "model-based weights\n\n", sep = "")
@@ -204,7 +204,7 @@ tvAUC <- function (object, newdata, Tstart, ...) {
 
 tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                       type_weights = c("model-based", "IPCW"), ...) {
-  roc <- tvROC.jm(object, newdata, Tstart, Thoriz, Dt, type_weights, ...) 
+  roc <- tvROC.jm(object, newdata, Tstart, Thoriz, Dt, type_weights, ...)
   TP <- roc$TP
   FP <- roc$FP
   auc <- sum(0.5 * diff(FP) * (TP[-1L] + TP[-length(TP)]), na.rm = TRUE)
@@ -222,7 +222,7 @@ tvAUC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
               #upp_auc = quantile(aucs, 0.975),
               Tstart = Tstart, Thoriz = roc$Thoriz, nr = roc$nr,
               type_weights = roc$type_weights,
-              LT_MS = roc$LT_MS, 
+              LT_MS = roc$LT_MS,
               classObject = class(object),
               nameObject = deparse(substitute(object)))
   class(out) <- "tvAUC"
@@ -238,7 +238,7 @@ tvAUC.tvROC <- function (object, ...) {
               nr = object$nr, classObject = object$classObject,
               nameObject = object$nameObject,
               type_weights = object$type_weights,
-              LT_MS = object$LT_MS) 
+              LT_MS = object$LT_MS)
   class(out) <- "tvAUC"
   out
 }
@@ -257,7 +257,7 @@ print.tvAUC <- function (x, digits = 4, ...) {
   cat("\nAt time:", round(x$Thoriz, digits))
   cat("\nUsing information up to time: ", round(x$Tstart, digits),
       " (", x$nr, " subjects still at risk)", sep = "")
-  if (x$LT_MS) { 
+  if (x$LT_MS) {
     cat("\nAccounting for left truncation and right censoring using ",
         if (x$type_weights == "IPCW") "nonparametric inverse probability weights"
         else "model-based weights", sep = "")
@@ -380,7 +380,7 @@ calibration_metrics <- function (object, newdata, Tstart, Thoriz = NULL,
                                  Dt = NULL, df_ns = NULL, ...) {
     comps <-
         calibration_plot(object, newdata, Tstart, Thoriz = Thoriz, Dt = Dt,
-                         df_ns = df_ns, plot = FALSE)
+                         df_ns = df_ns, plot = FALSE, ...)
     diff <- abs(as.vector(comps$pi_u_t) - comps$obs_pi_u_t)
     ICI <- mean(diff)
     E50 <- median(diff)
@@ -833,14 +833,14 @@ tvBrier.jm <-
     TTime0_var <- if (length(Time_var) > 1) Time_var[1L] else NULL
     event_var <- obj$model_info$var_names$event_var
     tvars <- c(Time_var, event_var)
-    if(!is.null(TTime0_var)) { 
+    if(!is.null(TTime0_var)) {
       LT_bool <- any(tapply(obj$model_data$dataS[[TTime0_var]],
                             obj$model_data$dataS[[id_var]], min, na.rm = TRUE) > 0,
                      na.rm = TRUE)
     } else {
       LT_bool <- FALSE
     }
-    LT_MS <- (obj$model_info$type_censoring == "counting") & !(obj$model_info$CR_MS) & LT_bool 
+    LT_MS <- (obj$model_info$type_censoring == "counting") & !(obj$model_info$CR_MS) & LT_bool
     if (obj$model_info$CR_MS) {
       stop("'tvBrier()' currently only works for (possibly left-truncated) right-censored data.")
     }
@@ -881,7 +881,7 @@ tvBrier.jm <-
            "and longitudinal measurements before Tstart.")
     }
     newdata[[id_var]] <- newdata[[id_var]][, drop = TRUE]
-    
+
     br <- function (Thoriz) {
       test <- newdata[[TTime_var]] < Thoriz & newdata[[event_var]] == 1
       if (!any(test)) {
@@ -890,18 +890,18 @@ tvBrier.jm <-
       }
       id <- newdata[[id_var]]
       Time <- newdata[[TTime_var]]
-      Time0 <- if(LT_MS) newdata[[TTime0_var]] else rep(0, length(Time)) 
+      Time0 <- if(LT_MS) newdata[[TTime0_var]] else rep(0, length(Time))
       event <- newdata[[event_var]]
       f <- factor(id, levels = unique(id))
       Time <- tapply(Time, f, tail, 1L)
-      Time0 <- tapply(Time0, f, tail, 1L) 
+      Time0 <- tapply(Time0, f, tail, 1L)
       event <- tapply(event, f, tail, 1L)
       names(Time) <- names(Time0) <- names(event) <- as.character(unique(id))
       if (!is.null(eventData_fun)) {
         newdataE <- newdataE[newdataE[[id_var]] %in% id, ]
         newdataE[[id_var]] <- newdataE[[id_var]][, drop = TRUE]
       } else newdataE <- NULL
-      
+
       newdata2 <- newdata
       newdata2[[TTime_var]] <- Tstart
       newdata2[[event_var]] <- 0
@@ -918,7 +918,7 @@ tvBrier.jm <-
           ave(newdataE2[[TTime_var]], newdataE2[[id_var]], FUN = g)
         newdataE2 <- newdataE2[!is.na(newdataE2[[TTime_var]]), ]
       } else newdataE2 <- NULL
-      
+
       # subjects who had the event before Thoriz
       ind1 <- Time < Thoriz & event == 1
       # subjects who had the event after Thoriz
@@ -930,8 +930,8 @@ tvBrier.jm <-
                 Tstart, ", ", Thoriz, ").\n")
       }
       if (type_weights == "IPCW") {
-        cens_data <- data.frame(Time0 = Time0, Time = Time, cens_ind = 1 - event) 
-        censoring_dist <- survfit(Surv(Time0, Time, cens_ind) ~ 1, data = cens_data) 
+        cens_data <- data.frame(Time0 = Time0, Time = Time, cens_ind = 1 - event)
+        censoring_dist <- survfit(Surv(Time0, Time, cens_ind) ~ 1, data = cens_data)
         weights <- numeric(length(Time))
         ss <- summary(censoring_dist, times = Time[ind1])
         weights[ind1] <- 1 / ss$surv[match(ss$time, Time[ind1])]
@@ -1041,11 +1041,11 @@ tvBrier.jm <-
           list(newdataL = newdata2, newdataE = newdataE2)
         } else newdata2
         preds <- if (is_jm(object)) {
-          predict(object, newdata = ND2, process = "event",
+          predict(object, newdata = ND2, process = "event", cores = cores,
                   times = Thoriz, parallel = parallel, n_samples = 400L)
         } else if (is_jmList(object)) {
           predict(object, newdata = ND2, process = "event",
-                  times = Thoriz, parallel = parallel,
+                  times = Thoriz, parallel = parallel, cores = cores,
                   weights = model_weights, n_samples = 400L)
         }
         pi_u_t <- preds$pred
@@ -1062,11 +1062,11 @@ tvBrier.jm <-
           }
           preds2 <- if (is_jm(object)) {
             predict(object, newdata = ND3,
-                    process = "event", times = Thoriz,
+                    process = "event", times = Thoriz, cores = cores,
                     parallel = parallel, n_samples = 400L)
           } else if (is_jmList(object)) {
             predict(object, newdata = ND3,
-                    process = "event", times = Thoriz,
+                    process = "event", times = Thoriz, cores = cores,
                     parallel = parallel, weights = model_weights,
                     n_samples = 400L)
           }
@@ -1149,7 +1149,7 @@ tvBrier.jm <-
            ind1 = if (integrated) temp[[2]]$ind1 else temp$ind1,
            ind2 = if (integrated) temp[[2]]$ind2 else temp$ind2,
            ind3 = if (integrated) temp[[2]]$ind3 else temp$ind3)
-      
+
     }
     out <- list(Brier = if (is_jm(object) || is_jmList(object)) out$Brier else out$opt_Brier,
                 Brier_per_model = if (!is_jm(object) && SL) out$Brier,
@@ -1158,7 +1158,7 @@ tvBrier.jm <-
                 ncens = sum(out$ind3), Tstart = Tstart, Thoriz = Thoriz,
                 nfolds = if (!is_jm(object) && !is_jmList(object)) length(object),
                 integrated = integrated, type_weights = type_weights,
-                LT_MS = LT_MS, 
+                LT_MS = LT_MS,
                 classObject = class(object),
                 nameObject = deparse(substitute(object)))
     class(out) <- "tvBrier"
@@ -1209,7 +1209,7 @@ print.tvBrier <- function (x, digits = 4, ...) {
       ", ", round(x$Thoriz, digits), "): ", x$nint, sep = "")
   cat("\nNumber of subjects with a censored time in [", round(x$Tstart, digits),
       ", ", round(x$Thoriz, digits), "): ", x$ncens, sep = "")
-  if (x$LT_MS) { 
+  if (x$LT_MS) {
     cat("\nAccounting for left truncation and right censoring using ",
         if (x$type_weights == "IPCW") "nonparametric inverse probability weights"
         else "model-based weights", sep = "")
@@ -1346,11 +1346,11 @@ tvMetric <- function (object, ...) {
 
 # Default class: it works for any kind of model, only the predictions, observed
 #                times, event indicator and (possibly) left-truncated times are required
-tvMetric.default <- function(object, Time, event, LT_Time = NULL, Tstart, 
+tvMetric.default <- function(object, Time, event, LT_Time = NULL, Tstart,
                              metric = c("IWEC", "NB", "EC"),
                              shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95,
                              decision_threshold = NULL, Thoriz = NULL, Dt = NULL,
-                             type_weights = c("model-based", "IPCW"), 
+                             type_weights = c("model-based", "IPCW"),
                              preds_MB = NULL, opt_interv = c(1, 500), name_model = NULL, ...) {
   if (is.null(Thoriz) && is.null(Dt)) {
     stop("either 'Thoriz' or 'Dt' must be non null.\n")
@@ -1361,7 +1361,7 @@ tvMetric.default <- function(object, Time, event, LT_Time = NULL, Tstart,
   if(metric == "IWEC") {
     if ( (is.null(shape1) | is.null(shape2)) & (is.null(mod) | is.null(interv) | is.null(mass) ) ) {
       stop("either 'shape1' and 'shape2', or 'mod', 'interv' and 'mass' must be non null.\n")
-    } 
+    }
     if ( !is.null(shape1) & !is.null(shape2) ) {
       if ( shape1 < 0 || shape2 < 0 )
         stop("shape1 and shape2 must be greater or equal to 0.\n")
@@ -1378,7 +1378,7 @@ tvMetric.default <- function(object, Time, event, LT_Time = NULL, Tstart,
       }
       if ( mass < 0 | mass > 1 )
         stop("'mass' must be between 0 and 1.")
-    } 
+    }
     w_function_builder <- function(mod, ext1, ext2, p, interval = opt_interv) {
       f <- function(x) {
         y <- (x - 1) / mod - x + 2
@@ -1404,7 +1404,7 @@ tvMetric.default <- function(object, Time, event, LT_Time = NULL, Tstart,
       }
     }
   } else {
-    if(is.null(decision_threshold))
+    if (is.null(decision_threshold))
       stop("When 'NB' or 'EC' are used, 'decision_threshold' must non-null.")
     if (decision_threshold <= 0 || decision_threshold >= 1 )
       stop("decision_threshold must be between 0 and 1.")
@@ -1415,18 +1415,18 @@ tvMetric.default <- function(object, Time, event, LT_Time = NULL, Tstart,
       loss <- function(pi, di, params) as.numeric(pi > params) * params * (1 - di) + (1 - as.numeric(pi > params)) * (1 - params) * di
     }
   }
-  
+
   if (is.null(Thoriz)) {
     Thoriz <- Tstart + Dt
   }
-  if(!is.null(LT_Time)) {
+  if (!is.null(LT_Time)) {
     LT_MS <- if(any(LT_Time > 0)) TRUE else FALSE
   } else {
     LT_MS = FALSE
     LT_Time <- rep(0, length(Time))
   }
   preds <- object
-  if (length(unique(lengths(list(preds, Time, event, LT_Time)))) != 1) 
+  if (length(unique(lengths(list(preds, Time, event, LT_Time)))) != 1)
     stop("'preds', 'Time', 'event' and 'LT_Time' must have the same length")
   Tstart <- Tstart + 1e-06
   Thoriz <- Thoriz + 1e-06
@@ -1478,10 +1478,10 @@ tvMetric.default <- function(object, Time, event, LT_Time = NULL, Tstart,
         weights <- preds_MB
         psi[ind3] <- weights[ind3_all] * loss(preds[ind3], 1, params = params) + (1 - weights[ind3_all]) * loss(preds[ind3], 0, params = params)
       }
-      met <- mean(psi) 
+      met <- mean(psi)
     }
     list(metric = met, nr = nr, ind1 = ind1, ind2 = ind2, ind3 = ind3, Time = Time)
-    
+
   }
   out <- mtrc(Thoriz)
   metric_info <- if(metric == "IWEC") {
@@ -1505,19 +1505,19 @@ tvMetric.default <- function(object, Time, event, LT_Time = NULL, Tstart,
               ncens = sum(out$ind3), Tstart = Tstart, Thoriz = Thoriz,
               type_weights = type_weights,
               metric_info = metric_info,
-              LT_MS = LT_MS, 
+              LT_MS = LT_MS,
               classObject = "default",
               nameObject = nameObject)
-  class(out) <- "tvMetric" 
+  class(out) <- "tvMetric"
   out
 }
 
 tvMetric.jm <-
-  function (object, newdata, Tstart, 
+  function (object, newdata, Tstart,
             metric = c("IWEC", "NB", "EC"),
             shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95,
             decision_threshold = NULL, Thoriz = NULL, Dt = NULL,
-            type_weights = c("model-based", "IPCW"), 
+            type_weights = c("model-based", "IPCW"),
             opt_interv = c(1, 500), name_model = NULL, ...) {
     if (!inherits(object, "jm"))
       stop("Use only with 'jm' objects.\n")
@@ -1532,7 +1532,7 @@ tvMetric.jm <-
     if(metric == "IWEC") {
       if ( (is.null(shape1) | is.null(shape2)) & (is.null(mod) | is.null(interv) | is.null(mass) ) ) {
         stop("either 'shape1' and 'shape2', or 'mod', 'interv' and 'mass' must be non null.\n")
-      } 
+      }
       if ( !is.null(shape1) & !is.null(shape2) ) {
         if ( shape1 < 0 || shape2 < 0 )
           stop("shape1 and shape2 must be greater or equal to 0.\n")
@@ -1549,7 +1549,7 @@ tvMetric.jm <-
         }
         if ( mass < 0 | mass > 1 )
           stop("'mass' must be between 0 and 1.")
-      } 
+      }
       w_function_builder <- function(mod, ext1, ext2, p, interval = opt_interv) {
         f <- function(x) {
           y <- (x - 1) / mod - x + 2
@@ -1567,7 +1567,7 @@ tvMetric.jm <-
         shape2 <- shapes[2]
       }
     } else {
-      if(is.null(decision_threshold))
+      if (is.null(decision_threshold))
         stop("When 'NB' or 'EC' are used, 'decision_threshold' must non-null.")
       if (decision_threshold <= 0 || decision_threshold >= 1 )
         stop("decision_threshold must be between 0 and 1.")
@@ -1591,7 +1591,7 @@ tvMetric.jm <-
       LT_bool <- FALSE
     }
     LT_MS <- (object$model_info$type_censoring == "counting") & !(object$model_info$CR_MS) & LT_bool #!
-    if (object$model_info$CR_MS) 
+    if (object$model_info$CR_MS)
       stop("Predictive performance metrics currently only work for (possibly left truncated) right censored data.") #!
     if (is.null(newdata[[id_var]]))
       stop("cannot find the '", id_var, "' variable in newdata.", sep = "")
@@ -1646,10 +1646,10 @@ tvMetric.jm <-
       w_MB[ind3] <- tapply(wghts, f, tail, 1)
     }
     out <- tvMetric.default(pi_u_t, Time, event, LT_Time = Time0, Tstart = Tstart,
-                            metric = metric, shape1 = shape1, shape2 = shape2, 
+                            metric = metric, shape1 = shape1, shape2 = shape2,
                             mod = mod, interv = interv, mass = mass,
-                            decision_threshold = decision_threshold, Thoriz = Thoriz, 
-                            type_weights = type_weights, preds_MB = w_MB, 
+                            decision_threshold = decision_threshold, Thoriz = Thoriz,
+                            type_weights = type_weights, preds_MB = w_MB,
                             opt_interv = opt_interv)
     metric_info <- if(metric == "IWEC") {
       c(shape1, shape2)
@@ -1664,16 +1664,16 @@ tvMetric.jm <-
       nameObject <- name_model
     }
     out <- list(metric = out$metric,
-                metric_type = metric, 
+                metric_type = metric,
                 nr = out$nr, nint = out$nint,
                 ncens = out$ncens,
                 Tstart = Tstart, Thoriz = Thoriz,
                 type_weights = type_weights,
                 metric_info = metric_info,
-                LT_MS = LT_MS, 
+                LT_MS = LT_MS,
                 classObject = class(object),
                 nameObject = nameObject)
-    class(out) <- "tvMetric" 
+    class(out) <- "tvMetric"
     out
   }
 
@@ -1685,7 +1685,7 @@ tvIWEC <- function (object, ...) {
 tvIWEC.default <- function(object, Time, event, LT_Time = NULL, Tstart,
                            shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL,
                            mass = 0.95, Thoriz = NULL, Dt = NULL,
-                           type_weights = c("model-based", "IPCW"), preds_MB = NULL, 
+                           type_weights = c("model-based", "IPCW"), preds_MB = NULL,
                            opt_interv = c(1, 500), name_model = NULL, ...) {
   name_model <- if(is.null(name_model)){
     c(deparse(substitute(object)),
@@ -1698,30 +1698,33 @@ tvIWEC.default <- function(object, Time, event, LT_Time = NULL, Tstart,
   tvMetric.default(object = object, Time = Time, event = event, LT_Time = LT_Time,
                    Tstart = Tstart, metric = "IWEC", shape1 = shape1, shape2 = shape2,
                    mod = mod, interv = interv, mass = mass, decision_threshold = NULL,
-                   Thoriz = Thoriz, Dt = Dt, type_weights = type_weights, preds_MB = preds_MB, 
+                   Thoriz = Thoriz, Dt = Dt, type_weights = type_weights, preds_MB = preds_MB,
                    opt_interv = opt_interv, name_model = name_model, ...)
 }
-tvIWEC.jm <- function(object, newdata, Tstart, 
+
+tvIWEC.jm <- function(object, newdata, Tstart,
                       shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95,
                       Thoriz = NULL, Dt = NULL,
-                      type_weights = c("model-based", "IPCW"), 
+                      type_weights = c("model-based", "IPCW"),
                       opt_interv = c(1, 500), name_model = NULL, ...) {
   name_model <- if(is.null(name_model)) {
     deparse(substitute(object))
   } else {
     name_model
-  } 
-  tvMetric.jm(object = object, newdata = newdata, Tstart = Tstart, 
-              metric = "IWEC", shape1 = shape1, shape2 = shape2, 
+  }
+  tvMetric.jm(object = object, newdata = newdata, Tstart = Tstart,
+              metric = "IWEC", shape1 = shape1, shape2 = shape2,
               mod = mod, interv = interv, mass = mass,
               decision_threshold = NULL, Thoriz = Thoriz, Dt = Dt,
-              type_weights = type_weights, opt_interv = opt_interv, name_model = name_model, ...)
+              type_weights = type_weights, opt_interv = opt_interv,
+              name_model = name_model, ...)
 }
 
 
 tvNB <- function (object, ...) {
   UseMethod("tvNB")
 }
+
 tvNB.default <- function(object, Time, event, LT_Time = NULL, Tstart,
                          decision_threshold = NULL, Thoriz = NULL, Dt = NULL,
                          type_weights = c("model-based", "IPCW"),
@@ -1737,22 +1740,25 @@ tvNB.default <- function(object, Time, event, LT_Time = NULL, Tstart,
   tvMetric.default(object = object, Time = Time, event = event, LT_Time = LT_Time,
                    Tstart = Tstart, metric = "NB", shape1 = NULL, shape2 = NULL,
                    mod = NULL, interv = NULL, mass = NULL, decision_threshold = decision_threshold,
-                   Thoriz = Thoriz, Dt = Dt, type_weights = type_weights, preds_MB = preds_MB, 
+                   Thoriz = Thoriz, Dt = Dt, type_weights = type_weights, preds_MB = preds_MB,
                    opt_interv = NULL, name_model = name_model, ...)
 }
-tvNB.jm <- function(object, newdata, Tstart, 
+
+tvNB.jm <- function(object, newdata, Tstart,
                     decision_threshold = NULL, Thoriz = NULL, Dt = NULL,
-                    type_weights = c("model-based", "IPCW"), name_model = NULL, ...) {
+                    type_weights = c("model-based", "IPCW"), name_model = NULL,
+                    ...) {
   name_model <- if(is.null(name_model)) {
     deparse(substitute(object))
   } else {
     name_model
-  } 
-  tvMetric.jm(object = object, newdata = newdata, Tstart = Tstart, 
-              metric = "NB", shape1 = NULL, shape2 = NULL, 
+  }
+  tvMetric.jm(object = object, newdata = newdata, Tstart = Tstart,
+              metric = "NB", shape1 = NULL, shape2 = NULL,
               mod = NULL, interv = NULL, mass = NULL,
               decision_threshold = decision_threshold, Thoriz = Thoriz, Dt = Dt,
-              type_weights = type_weights, opt_interv = NULL, name_model = name_model, ...)
+              type_weights = type_weights, opt_interv = NULL,
+              name_model = name_model, ...)
 }
 
 tvEC <- function (object, ...) {
@@ -1773,33 +1779,34 @@ tvEC.default <- function(object, Time, event, LT_Time = NULL, Tstart,
   tvMetric.default(object = object, Time = Time, event = event, LT_Time = LT_Time,
                    Tstart = Tstart, metric = "EC", shape1 = NULL, shape2 = NULL,
                    mod = NULL, interv = NULL, mass = NULL, decision_threshold = decision_threshold,
-                   Thoriz = Thoriz, Dt = Dt, type_weights = type_weights, preds_MB = preds_MB, 
+                   Thoriz = Thoriz, Dt = Dt, type_weights = type_weights, preds_MB = preds_MB,
                    opt_interv = NULL, name_model = name_model, ...)
 }
-tvEC.jm <- function(object, newdata, Tstart, 
+tvEC.jm <- function(object, newdata, Tstart,
                     decision_threshold = NULL, Thoriz = NULL, Dt = NULL,
                     type_weights = c("model-based", "IPCW"), name_model = NULL, ...) {
   name_model <- if(is.null(name_model)) {
     deparse(substitute(object))
   } else {
     name_model
-  } 
-  tvMetric.jm(object = object, newdata = newdata, Tstart = Tstart, 
-              metric = "EC", shape1 = NULL, shape2 = NULL, 
+  }
+  tvMetric.jm(object = object, newdata = newdata, Tstart = Tstart,
+              metric = "EC", shape1 = NULL, shape2 = NULL,
               mod = NULL, interv = NULL, mass = NULL,
               decision_threshold = decision_threshold, Thoriz = Thoriz, Dt = Dt,
-              type_weights = type_weights, opt_interv = NULL, name_model = name_model, ...)
+              type_weights = type_weights, opt_interv = NULL,
+              name_model = name_model, ...)
 }
 
 
 print.tvMetric <- function (x, digits = 4, ...) {
   if (!inherits(x, "tvMetric"))
     stop("Use only with 'tvMetric' objects.\n")
-  str <- switch(x$metric_type, 
+  str <- switch(x$metric_type,
                 IWEC = paste0("IWEC with shape parameters ", round(x$metric_info[1], digits),
                               " and ", round(x$metric_info[2], digits), ":"),
                 NB = paste0("NB with decision threshold ", round(x$metric_info, digits), ":"),
-                EC = paste0("EC with decision threshold ", round(x$metric_info, digits), ":")) 
+                EC = paste0("EC with decision threshold ", round(x$metric_info, digits), ":"))
   if (x$classObject == "coxph") {
     cat("\nPrediction Error for the Cox Model '", x$nameObject, "'",
         sep = "")
@@ -1811,12 +1818,12 @@ print.tvMetric <- function (x, digits = 4, ...) {
   } else {
     if (x$LT_MS) {
       cat("\nPrediction Error for the predictions '", x$nameObject[1], "'",
-          ", observed times '", x$nameObject[2], "'", ", event indicator '", x$nameObject[3], "'", 
-          " and left-truncated times '", x$nameObject[4], "'", 
+          ", observed times '", x$nameObject[2], "'", ", event indicator '", x$nameObject[3], "'",
+          " and left-truncated times '", x$nameObject[4], "'",
           sep = "")
     } else {
       cat("\nPrediction Error for the predictions '", x$nameObject[1], "'",
-          ", observed times '", x$nameObject[2], "'", " and event indicator '", x$nameObject[3], "'", 
+          ", observed times '", x$nameObject[2], "'", " and event indicator '", x$nameObject[3], "'",
           sep = "")
     }
     cat("\n\nEstimated", str, round(x$metric, digits))
@@ -1828,7 +1835,7 @@ print.tvMetric <- function (x, digits = 4, ...) {
       ", ", round(x$Thoriz, digits), "): ", x$nint, sep = "")
   cat("\nNumber of subjects with a censored time in [", round(x$Tstart, digits),
       ", ", round(x$Thoriz, digits), "): ", x$ncens, sep = "")
-  if (x$LT_MS) { 
+  if (x$LT_MS) {
     cat("\nAccounting for left truncation and right censoring using ",
         if (x$type_weights == "IPCW") "nonparametric inverse probability weights"
         else "model-based weights", sep = "")
@@ -1847,10 +1854,10 @@ decision_curves <- function (object, ...) {
 }
 
 decision_curves.default <-
-  function (object, Time, event, LT_Time = NULL, Tstart, 
+  function (object, Time, event, LT_Time = NULL, Tstart,
             decision_threshold_range = seq(0 + 1e-06, 1 - 1e-06, length.out = 51),
             type = c("EC", "weightedEC", "NB"),
-            shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95, 
+            shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95,
             Thoriz = NULL, Dt = NULL, type_weights = c("model-based", "IPCW"),
             preds_MB = NULL, opt_interv = c(1, 500), ...) {
     if (is.null(Thoriz) && is.null(Dt)) {
@@ -1867,7 +1874,7 @@ decision_curves.default <-
     type <- match.arg(type)
     if ((type == "weightedEC") && ((is.null(shape1) || is.null(shape2)) && (is.null(mod) || is.null(interv) || is.null(mass) )) ) {
       stop("If type is 'weightedEC', either 'shape1' and 'shape2', or 'mod', 'interv' and 'mass' must be non null.\n")
-    } 
+    }
     if ( (type == "weightedEC") && (!is.null(shape1) && !is.null(shape2)) ) {
       if ( shape1 < 0 || shape2 < 0 )
         stop("shape1 and shape2 must be greater or equal to 0.\n")
@@ -1884,7 +1891,7 @@ decision_curves.default <-
       }
       if ( mass < 0 | mass > 1 )
         stop("'mass' must be between 0 and 1.")
-    } 
+    }
     w_function_builder <- function(mod, ext1, ext2, p, interval = opt_interv) {
       f <- function(x) {
         y <- (x - 1)/mod - x + 2
@@ -1913,7 +1920,7 @@ decision_curves.default <-
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
     preds <- object
-    if (length(unique(lengths(list(preds, Time, event, LT_Time)))) != 1) 
+    if (length(unique(lengths(list(preds, Time, event, LT_Time)))) != 1)
       stop("'preds', 'Time', 'event' and 'LT_Time' must have the same length")
     if(type_weights == "model-based" && is.null(preds_MB))
       stop("'preds_MB' must be non-null when the 'model-based' estimator is used")
@@ -1967,22 +1974,22 @@ decision_curves.default <-
           stop("The number of non-missing predictions in 'preds_MB' must match the number of individuals censored within the time window.")
         weights <- preds_MB
         res <- list(3)
-        events_model <- vapply(decision_threshold_range, function(cc) sum(loss(preds[ind1], di = as.numeric(ind1)[ind1], 
+        events_model <- vapply(decision_threshold_range, function(cc) sum(loss(preds[ind1], di = as.numeric(ind1)[ind1],
                                                                                c = cc), na.rm = TRUE),
                                numeric(1))
-        events_all <- vapply(decision_threshold_range, function(cc) sum(loss_all(di = as.numeric(ind1)[ind1], 
+        events_all <- vapply(decision_threshold_range, function(cc) sum(loss_all(di = as.numeric(ind1)[ind1],
                                                                                  c = cc), na.rm = TRUE),
                              numeric(1))
-        events_none <- vapply(decision_threshold_range, function(cc) sum(loss_none(di = as.numeric(ind1)[ind1], 
+        events_none <- vapply(decision_threshold_range, function(cc) sum(loss_none(di = as.numeric(ind1)[ind1],
                                                                                    c = cc), na.rm = TRUE),
                               numeric(1))
-        no_events_model <- vapply(decision_threshold_range, function(cc) sum(loss(preds[ind2], di = as.numeric(ind1)[ind2], 
+        no_events_model <- vapply(decision_threshold_range, function(cc) sum(loss(preds[ind2], di = as.numeric(ind1)[ind2],
                                                                                   c = cc), na.rm = TRUE),
                                   numeric(1))
-        no_events_all <- vapply(decision_threshold_range, function(cc) sum(loss_all(di = as.numeric(ind1)[ind2], 
+        no_events_all <- vapply(decision_threshold_range, function(cc) sum(loss_all(di = as.numeric(ind1)[ind2],
                                                                                     c = cc), na.rm = TRUE),
                                 numeric(1))
-        no_events_none <- vapply(decision_threshold_range, function(cc) sum(loss_none(di = as.numeric(ind1)[ind2], 
+        no_events_none <- vapply(decision_threshold_range, function(cc) sum(loss_none(di = as.numeric(ind1)[ind2],
                                                                                       c = cc), na.rm = TRUE),
                                  numeric(1))
         censored_model <- if (any(ind3)) {
@@ -2038,14 +2045,12 @@ decision_curves.default <-
     out
   }
 
-
-
 decision_curves.jm <-
-  function (object, newdata, Tstart, 
+  function (object, newdata, Tstart,
             decision_threshold_range = seq(0 + 1e-06, 1 - 1e-06, length.out = 51),
             type = c("EC", "weightedEC", "NB"),
-            shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95, 
-            Thoriz = NULL, Dt = NULL, 
+            shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95,
+            Thoriz = NULL, Dt = NULL,
             type_weights = c("model-based", "IPCW"), opt_interv = c(1, 500), ...) {
     if (!inherits(object, "jm"))
       stop("Use only with 'jm' objects.\n")
@@ -2066,7 +2071,7 @@ decision_curves.jm <-
     type <- match.arg(type)
     if ((type == "weightedEC") && ((is.null(shape1) || is.null(shape2)) && (is.null(mod) || is.null(interv) || is.null(mass) )) ) {
       stop("If type is 'weightedEC', either 'shape1' and 'shape2', or 'mod', 'interv' and 'mass' must be non null.\n")
-    } 
+    }
     if ( (type == "weightedEC") && (!is.null(shape1) && !is.null(shape2)) ) {
       if ( shape1 < 0 || shape2 < 0 )
         stop("shape1 and shape2 must be greater or equal to 0.\n")
@@ -2083,7 +2088,7 @@ decision_curves.jm <-
       }
       if ( mass < 0 | mass > 1 )
         stop("'mass' must be between 0 and 1.")
-    } 
+    }
     w_function_builder <- function(mod, ext1, ext2, p, interval = opt_interv) {
       f <- function(x) {
         y <- (x - 1)/mod - x + 2
@@ -2148,11 +2153,11 @@ decision_curves.jm <-
       }
       id <- newdata[[id_var]]
       Time <- newdata[[TTime_var]]
-      Time0 <- if(type_censoring == "counting") newdata[[TTime0_var]] else rep(0, length(Time)) 
+      Time0 <- if(type_censoring == "counting") newdata[[TTime0_var]] else rep(0, length(Time))
       event <- newdata[[event_var]]
       f <- factor(id, levels = unique(id))
       Time <- tapply(Time, f, tail, 1L)
-      Time0 <- tapply(Time0, f, tail, 1L) 
+      Time0 <- tapply(Time0, f, tail, 1L)
       event <- tapply(event, f, tail, 1L)
       names(Time) <- names(Time0) <- names(event) <- as.character(unique(id))
       newdata2 <- newdata
@@ -2188,7 +2193,7 @@ decision_curves.jm <-
                            numeric(1))
         res[[3]] <- vapply(decision_threshold_range, function(cc) mean(loss_none(di = as.numeric(ind1), c = cc) * weights),
                            numeric(1))
-      } 
+      }
       if (type_weights == "model-based") {
         preds_MB <- rep(NA, length(Time))
         if(any(ind3)) {
@@ -2203,22 +2208,22 @@ decision_curves.jm <-
           preds_MB[ind3] <- weights
         }
         res <- list(3)
-        events_model <- vapply(decision_threshold_range, function(cc) sum(loss(pi_u_t[ind1], di = as.numeric(ind1)[ind1], 
+        events_model <- vapply(decision_threshold_range, function(cc) sum(loss(pi_u_t[ind1], di = as.numeric(ind1)[ind1],
                                                                                c = cc), na.rm = TRUE),
                                numeric(1))
-        events_all <- vapply(decision_threshold_range, function(cc) sum(loss_all(di = as.numeric(ind1)[ind1], 
+        events_all <- vapply(decision_threshold_range, function(cc) sum(loss_all(di = as.numeric(ind1)[ind1],
                                                                                  c = cc), na.rm = TRUE),
                              numeric(1))
-        events_none <- vapply(decision_threshold_range, function(cc) sum(loss_none(di = as.numeric(ind1)[ind1], 
+        events_none <- vapply(decision_threshold_range, function(cc) sum(loss_none(di = as.numeric(ind1)[ind1],
                                                                                    c = cc), na.rm = TRUE),
                               numeric(1))
-        no_events_model <- vapply(decision_threshold_range, function(cc) sum(loss(pi_u_t[ind2], di = as.numeric(ind1)[ind2], 
+        no_events_model <- vapply(decision_threshold_range, function(cc) sum(loss(pi_u_t[ind2], di = as.numeric(ind1)[ind2],
                                                                                   c = cc), na.rm = TRUE),
                                   numeric(1))
-        no_events_all <- vapply(decision_threshold_range, function(cc) sum(loss_all(di = as.numeric(ind1)[ind2], 
+        no_events_all <- vapply(decision_threshold_range, function(cc) sum(loss_all(di = as.numeric(ind1)[ind2],
                                                                                     c = cc), na.rm = TRUE),
                                 numeric(1))
-        no_events_none <- vapply(decision_threshold_range, function(cc) sum(loss_none(di = as.numeric(ind1)[ind2], 
+        no_events_none <- vapply(decision_threshold_range, function(cc) sum(loss_none(di = as.numeric(ind1)[ind2],
                                                                                       c = cc), na.rm = TRUE),
                                  numeric(1))
         censored_model <- if (any(ind3)) {
@@ -2276,8 +2281,8 @@ decision_curves.jm <-
 
 
 plot.decision_curves <- function(x, ...,
-                                 col = c(rep(1, length(objects)), "yellow3", "red"),  
-                                 lty = c(seq_along(objects), 1, 1), 
+                                 col = c(rep(1, length(objects)), "yellow3", "red"),
+                                 lty = c(seq_along(objects), 1, 1),
                                  lwd = rep(1, length(objects) + 2),
                                  xlab = "Decision threshold",
                                  ylab = "Expected cost",
@@ -2302,7 +2307,7 @@ plot.decision_curves <- function(x, ...,
     stop("All 'decision_curves' objects must have the same 'Tstart'.\n")
   if (length(unique(sapply(objects, "[[", "Thoriz"))) > 1)
     stop("All 'decision_curves' objects must have the same 'Thoriz'.\n")
-  if (length(unique(sapply(objects, "[[", "nr"))) > 1 || 
+  if (length(unique(sapply(objects, "[[", "nr"))) > 1 ||
       length(unique(sapply(objects, "[[", "nint"))) > 1 ||
       length(unique(sapply(objects, "[[", "ncens"))) > 1)
     stop("'nr', 'nint' and 'ncens' must be the same")
@@ -2313,18 +2318,18 @@ plot.decision_curves <- function(x, ...,
   if ((sapply(objects, "[[", "type")[1] != "NB") && (length(unique(sapply(objects, "[[", "shape2"))) > 1))
     stop("All 'decision_curves' objects must have the same weight function.\n")
   all_vals <- rapply(lapply(objects, "[[", "metric_c"), function(v) v)
-  if(length(legend_names) != num_models + 2) 
+  if(length(legend_names) != num_models + 2)
     stop("The length of 'legend_names' must be ", num_models + 2, ".\n")
-  if(length(lty) != num_models + 2) 
+  if(length(lty) != num_models + 2)
     stop("The length of 'lty' must be ", num_models + 2, ".\n")
-  if(length(col) != num_models + 2) 
+  if(length(col) != num_models + 2)
     stop("The length of 'col' must be ", num_models + 2, ".\n")
-  if(length(lwd) != num_models + 2) 
+  if(length(lwd) != num_models + 2)
     stop("The length of 'lwd' must be ", num_models + 2, ".\n")
   if(is.null(xlim)) {
-    xlim <- range(x$decision_threshold_range) 
-  } 
-  
+    xlim <- range(x$decision_threshold_range)
+  }
+
   label_line <- function(c_w, w, label, offset_y = 2, offset_x = 0.25, cex = 0.625,
                          color = col_wf) {
     x1 <- c_w[which.max(w)]
@@ -2343,24 +2348,24 @@ plot.decision_curves <- function(x, ...,
       return(text((usr[1] + usr[2]) / 2, (usr[3] + usr[4]) / 2, labels = label, cex = cex, col = col_wf))
     }
   }
-  
+
   if (weight_function_txt) {
     col_wf <- weight_function_col
   } else {
     col_wf <- "transparent"
-  } 
-  
-  
+  }
+
+
   if(x$type == "EC") {
     if(is.null(ylim)) {
       ch_sign <- which(diff(sign(x$metric_c[[2]] - x$metric_c[[3]])) != 0)[1]
       ylim <- c(0, x$metric_c[[2]][ch_sign] * 1.1)
     }
     plot(NA, type = "n", xlab = xlab, ylab = ylab, main = main,
-         xlim = xlim, ylim = ylim) 
-    lines(x$decision_threshold_range, x$metric_c[[2]], lty = lty[num_models + 1], 
+         xlim = xlim, ylim = ylim)
+    lines(x$decision_threshold_range, x$metric_c[[2]], lty = lty[num_models + 1],
           col = col[num_models + 1], lwd = lwd[num_models + 1])
-    lines(x$decision_threshold_range, x$metric_c[[3]], lty = lty[num_models + 2], 
+    lines(x$decision_threshold_range, x$metric_c[[3]], lty = lty[num_models + 2],
           col = col[num_models + 2], lwd = lwd[num_models + 2])
     lines(x$decision_threshold_range, x$metric_c[[1]], lty = lty[1], col = col[1], lwd = lwd[1])
     if (num_models > 1) {
@@ -2379,11 +2384,11 @@ plot.decision_curves <- function(x, ...,
       cex = legend_cex
     )
     invisible()
-    
+
   } else if(x$type == "weightedEC") {
-    
+
     if(x$shape1 == 0 && x$shape2 == 0) {
-      logS_w <- function(x) (1 / x) * (1 / (1 - x)) 
+      logS_w <- function(x) (1 / x) * (1 / (1 - x))
       w <- logS_w(x$decision_threshold_range)
       w_line <- logS_w(seq(0 + 1e-3, 1 - 1e-3, length.out = 1000))
     } else {
@@ -2402,28 +2407,28 @@ plot.decision_curves <- function(x, ...,
     }
     # integ_comp <- function(x, v) sum(diff(x) * (head(v, -1) + tail(v, -1)) / 2)
     if(num_models == 1) {
-      legend_iwec <- c(paste0(legend_names[1], " (IWEC = ", round(x$iwecs[1], 3), ")"), 
-                       paste0(legend_names[2], " (IWEC = ", round(x$iwecs[2], 3), ")"), 
+      legend_iwec <- c(paste0(legend_names[1], " (IWEC = ", round(x$iwecs[1], 3), ")"),
+                       paste0(legend_names[2], " (IWEC = ", round(x$iwecs[2], 3), ")"),
                        paste0(legend_names[3], " (IWEC = ", round(x$iwecs[3], 3), ")"))
     } else {
-      legend_models <- sapply(seq_len(num_models), 
-                              function(i) paste0(legend_names[i], " (IWEC = ", 
+      legend_models <- sapply(seq_len(num_models),
+                              function(i) paste0(legend_names[i], " (IWEC = ",
                                                  round(objects[[i]]$iwecs[1], 3), ")"))
       legend_iwec <- c(legend_models,
                        paste0(legend_names[num_models + 1], " (IWEC = ", round(x$iwecs[2], 3), ")"),
                        paste0(legend_names[num_models + 2], " (IWEC = ", round(x$iwecs[3], 3), ")")
       )
     }
-    
+
     if(weight_function) {
       org_par <- par(no.readonly = TRUE)
       par(fig = c(0, 1, 0, 0.835), mar = c(5.1, 4.1, 4.1 - 4.1, 2.1))
-      plot(NA, type = "n", xlab = xlab, ylab = "Weighted expected cost", 
-           main = main, xlim = xlim, 
-           ylim = ylim) 
-      lines(x$decision_threshold_range, w * x$metric_c[[2]], lty = lty[num_models + 1], 
+      plot(NA, type = "n", xlab = xlab, ylab = "Weighted expected cost",
+           main = main, xlim = xlim,
+           ylim = ylim)
+      lines(x$decision_threshold_range, w * x$metric_c[[2]], lty = lty[num_models + 1],
             col = col[num_models + 1], lwd = lwd[num_models + 1])
-      lines(x$decision_threshold_range, w * x$metric_c[[3]], lty = lty[num_models + 2], 
+      lines(x$decision_threshold_range, w * x$metric_c[[3]], lty = lty[num_models + 2],
             col = col[num_models + 2], lwd = lwd[num_models + 2])
       lines(x$decision_threshold_range, w * x$metric_c[[1]], lty = lty[1], col = col[1], lwd = lwd[1])
       if (num_models > 1) {
@@ -2446,18 +2451,18 @@ plot.decision_curves <- function(x, ...,
       lines(seq(0, 1, length.out = 1000), w_line, col = weight_function_col)
       label_line(
         c_w = seq(0, 1, length.out = 1000),
-        w = w_line, 
+        w = w_line,
         label   = paste0("w(", round(x$shape1, 2), ", ", round(x$shape2, 2), ")"),
       )
       par(org_par)
       invisible()
     } else {
-      plot(NA, type = "n", xlab = xlab, ylab = "Weighted expected cost", 
-           main = main, xlim = xlim, 
-           ylim = ylim) 
-      lines(x$decision_threshold_range, w * x$metric_c[[2]], lty = lty[num_models + 1], 
+      plot(NA, type = "n", xlab = xlab, ylab = "Weighted expected cost",
+           main = main, xlim = xlim,
+           ylim = ylim)
+      lines(x$decision_threshold_range, w * x$metric_c[[2]], lty = lty[num_models + 1],
             col = col[num_models + 1], lwd = lwd[num_models + 1])
-      lines(x$decision_threshold_range, w * x$metric_c[[3]], lty = lty[num_models + 2], 
+      lines(x$decision_threshold_range, w * x$metric_c[[3]], lty = lty[num_models + 2],
             col = col[num_models + 2], lwd = lwd[num_models + 2])
       lines(x$decision_threshold_range, w * x$metric_c[[1]], lty = lty[1], col = col[1], lwd = lwd[1])
       if (num_models > 1) {
@@ -2477,9 +2482,9 @@ plot.decision_curves <- function(x, ...,
       )
       invisible()
     }
-    
+
   } else if(x$type == "NB") {
-    
+
     if(is.null(ylim)) {
       if(num_models > 1) {
         ylim <- c(min(x$metric_c[[1]]), max(x$metric_c[[1]], x$metric_c[[2]], x$metric_c[[3]]))
@@ -2489,11 +2494,11 @@ plot.decision_curves <- function(x, ...,
       }
     }
     plot(NA, type = "n", xlab = xlab, ylab = "Net benefit", main = main,
-         xlim = xlim, 
-         ylim = ylim) 
-    lines(x$decision_threshold_range, x$metric_c[[2]], lty = lty[num_models + 1], 
+         xlim = xlim,
+         ylim = ylim)
+    lines(x$decision_threshold_range, x$metric_c[[2]], lty = lty[num_models + 1],
           col = col[num_models + 1], lwd = lwd[num_models + 1])
-    lines(x$decision_threshold_range, x$metric_c[[3]], lty = lty[num_models + 2], 
+    lines(x$decision_threshold_range, x$metric_c[[3]], lty = lty[num_models + 2],
           col = col[num_models + 2], lwd = lwd[num_models + 2])
     lines(x$decision_threshold_range, x$metric_c[[1]], lty = lty[1], col = col[1], lwd = lwd[1])
     if (num_models > 1) {
@@ -2513,7 +2518,7 @@ plot.decision_curves <- function(x, ...,
     )
     invisible()
   }
-  
+
 }
 
 

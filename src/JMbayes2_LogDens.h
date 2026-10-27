@@ -78,7 +78,8 @@ inline void log_long (const field<mat> &y, const field<vec> &eta, field<vec> &mu
                       vec &out, field<vec> &log_contr_obs_workspace,
                       field<vec> &log_contr_subj_workspace) {
     uword n_outcomes = y.size();
-    out.zeros();
+    double* out_ptr = out.memptr();
+    std::memset(out_ptr, 0, out.n_elem * sizeof(double));
     for (uword i = 0; i < n_outcomes; ++i) {
         const mat& y_i = y.at(i);
         const vec& eta_i = eta.at(i);
@@ -91,7 +92,12 @@ inline void log_long (const field<mat> &y, const field<vec> &eta, field<vec> &mu
         log_long_i(y_i, eta_i, mu.at(i), sigma_i, extr_prm_i, fam_i, link_i,
                    idFast_i, log_contr_obs_workspace.at(i),
                    log_contr_subj_workspace.at(i));
-        out.rows(unq_id_i) += log_contr_subj_workspace.at(i);
+        const double* log_contr_ptr = log_contr_subj_workspace.at(i).memptr();
+        const uword* unq_id_ptr = unq_id_i.memptr();
+        uword n_unq = unq_id_i.n_elem;
+        for (uword j = 0; j < n_unq; ++j) {
+            out_ptr[unq_id_ptr[j]] += log_contr_ptr[j];
+        }
     }
 }
 

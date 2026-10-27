@@ -18,11 +18,11 @@ tvEC(object, \dots)
      type_weights = c("model-based", "IPCW"),
      preds_MB = NULL, name_model = NULL, \dots)
 
-\method{tvEC}{jm}(object, newdata, Tstart, 
+\method{tvEC}{jm}(object, newdata, Tstart,
      decision_threshold = NULL, Thoriz = NULL, Dt = NULL,
      type_weights = c("model-based", "IPCW"), name_model = NULL, \dots)
-      
-\method{tvEC}{coxph}(object, newdata, Tstart, 
+
+\method{tvEC}{coxph}(object, newdata, Tstart,
      decision_threshold = NULL, Thoriz = NULL, Dt = NULL,
      type_weights = c("model-based", "IPCW"), name_model = NULL, \dots)
 }
@@ -31,23 +31,23 @@ tvEC(object, \dots)
   \item{object}{an object inheriting from class \code{jm} or \code{coxph}, or a numeric vector containing the dynamic predictions to be evaluated.}
 
   \item{newdata}{a data.frame that contains the longitudinal and covariate information for the subjects for which prediction of survival probabilities is required. If a \code{jm} object is used, the names of the variables in this data.frame must be the same as in the data.frames that were used to fit the linear mixed effects and the event process model that were supplied as the two first argument of \code{\link{jm}}. If a \code{coxph} is used it only applies to the event process. If the default method is used, the argument is not needed.}
-  
+
   \item{Tstart}{numeric scalar denoting the time point up to which longitudinal information is to be used to derive predictions.}
-  
+
   \item{decision_threshold}{numeric scalar between 0 and 1 denoting the decision threshold used in the expected cost.}
-  
+
   \item{Time, event, LT_Time}{numeric vectors that must be specified when using the default method to compute the metric by directly using a vector of predictions, observed times (\code{Time}), the event indicator (\code{event}) and (possibly) left-truncated times (\code{LT_Time}).}
-  
+
   \item{Thoriz}{numeric scalar denoting the time point for which a prediction of the survival status is of interest; \code{Thoriz} must be later than \code{Tstart} and either \code{Dt} or \code{Thoriz} must be specified. If \code{Thoriz} is \code{NULL} is set equal to \code{Tstart + Dt}.}
-  
+
   \item{Dt}{numeric scalar denoting the length of the time interval of prediction; either \code{Dt} or \code{Thoriz} must be specified.}
-  
+
   \item{type_weights}{character string denoting the type of weights to use to account for censorting. Options are model-based (default) and inverse probability weighting (using the Kaplan-Meier estimate of the censoring distribution, and adjusting for left truncation if necessary).}
-  
+
   \item{preds_MB}{a numeric vector containing the model-based weights to be used for the individuals censored within (\code{Tstart}, \code{Thoriz}]. It must be specified when using the default method and the \code{model-based} estimator. The vector must have length equal to the number of individuals considered and must include non-missing elements only for the censored individuals.}
-  
+
   \item{name_model}{character string denoting the name of the model or object used for prediction evaluation; default is \code{NULL}, meaning that the name of the object in the environment will be used.}
-  
+
   \item{\dots}{additional arguments passed to \code{predict.jm()}.}
 }
 \value{
@@ -66,7 +66,7 @@ A list of class \code{tvMetric} with components:
   \item{nameObject}{the name of the model; either a copy of the \code{name_model} argument, or the name of \code{object}.}
 }
 \references{
-Van Claster, B., et al. (2025). Evaluation of performance measures in predictive artificial 
+Van Claster, B., et al. (2025). Evaluation of performance measures in predictive artificial
 intelligence models to support medical decisions: overview and guidance. \emph{The Lancet Digital Health}.
 }
 \author{
@@ -88,13 +88,15 @@ fm2 <- lme(prothrombin ~ ns(year, 2) * sex, data = pbc2,
 
 jointFit <- jm(CoxFit, list(fm1, fm2), time_var = "year", n_chains = 1L)
 
-# Expected cost with decision threshold 0.2, prediction horizon 8 
+# Expected cost with decision threshold 0.2, prediction horizon 8
 # and landmark time 5
-tvEC(jointFit, newdata = pbc2, Tstart = 5, Dt = 3, decision_threshold = 0.2)
+tvEC(jointFit, newdata = pbc2, Tstart = 5, Dt = 3, decision_threshold = 0.2,
+     cores = 1L)
 
 # Considering the Cox model and IPW approach for estimation:
 tvEC(CoxFit, newdata = pbc2.id, Tstart = 5, Dt = 3, decision_threshold = 0.2,
      type_weights = "IPCW")
+
 
 # Considering the vectors with predictions, observed times, event indicator and 
 # left-truncated times. We consider the time window (5,8]. We use the default method:
@@ -113,6 +115,7 @@ sfit_cens <- summary(survfit(CoxFit, newdata = pbc2.id[ind_censoring, ]),
                      times = pbc2.id$years[ind_censoring])
 preds_MB <- rep(NA, length(pbc2.id$years))
 preds_MB[ind_censoring] <- 1.0 - (as.matrix(sfit2_8$surv)[1L, ] / as.matrix(sfit_cens$surv)[1L, ])
+
 tvEC(predictions, Time = pbc2.id$years, event = pbc2.id$status2, LT_Time = pbc2.id$lt, 
      Tstart = 5, Dt = 3, type_weights = "model-based", preds_MB = preds_MB, 
      decision_threshold = 0.3)

@@ -383,97 +383,79 @@ void mu_fun (arma::vec &eta, const std::string &link) {
     }
 }
 
-inline void log_dbinom_void (const arma::vec &x, const arma::vec &size,
-                      const arma::vec &prob, arma::vec &out) {
+template <typename T1, typename T2, typename T3>
+inline void log_dbinom_void (const T1 &x, const T2 &size,
+                             const T3 &prob, arma::vec &out) {
     arma::uword n = x.n_elem;
-    const double* px = x.memptr();
-    const double* ps = size.memptr();
-    const double* pp = prob.memptr();
-    double* pout = out.memptr();
     for (arma::uword i = 0; i < n; ++i) {
-        double xi = px[i];
-        double ni = ps[i];
-        double pi = pp[i];
+        double xi = x[i];
+        double ni = size[i];
+        double pi = prob[i];
         if (xi == 0.0) {
-            pout[i] = ni * std::log(1.0 - pi);
+            out.at(i) = ni * std::log(1.0 - pi);
         } else if (xi == ni) {
-            pout[i] = ni * std::log(pi);
+            out.at(i) = ni * std::log(pi);
         } else {
-            pout[i] = std::lgamma(ni + 1.0) - std::lgamma(xi + 1.0) -
+            out.at(i) = std::lgamma(ni + 1.0) - std::lgamma(xi + 1.0) -
                 std::lgamma(ni - xi + 1.0) + xi * std::log(pi) +
                 (ni - xi) * std::log(1.0 - pi);
         }
     }
 }
 
-inline void log_dpois_void (const arma::vec &x, const arma::vec &lambda,
-                       arma::vec &out) {
+template <typename T1, typename T2>
+inline void log_dpois_void (const T1 &x, const T2 &lambda, arma::vec &out) {
     arma::uword n = x.n_elem;
-    const double* px = x.memptr();
-    const double* pl = lambda.memptr();
-    double* pout = out.memptr();
     for (arma::uword i = 0; i < n; ++i) {
-        double xi = px[i];
-        double lambda_i = pl[i];
+        double xi = x.at(i);
+        double lambda_i = lambda.at(i);
         // Boundary short-circuit: log(Poisson(0; lambda)) = -lambda
-        // Completely skips std::log() and std::lgamma() for zero counts!
         if (xi == 0.0) {
-            pout[i] = -lambda_i;
+            out.at(i) = -lambda_i;
         } else {
             // General case: x * log(lambda) - lambda - log(x!)
-            pout[i] = xi * std::log(lambda_i) - lambda_i - std::lgamma(xi + 1.0);
+            out.at(i) = xi * std::log(lambda_i) - lambda_i -
+                std::lgamma(xi + 1.0);
         }
     }
 }
 
-inline void log_dbbinom_void (const arma::vec &x, const arma::vec &size,
-                       const arma::vec &prob, const double phi,
-                       arma::vec &out) {
+template <typename T1, typename T2, typename T3>
+inline void log_dbbinom_void (const T1 &x, const T2 &size,
+                              const T3 &prob, const double phi,
+                              arma::vec &out) {
     arma::uword n = x.n_elem;
-    const double* px = x.memptr();
-    const double* ps = size.memptr();
-    const double* pp = prob.memptr();
-    double* pout = out.memptr();
     double lgamma_phi = std::lgamma(phi);
     for (arma::uword i = 0; i < n; ++i) {
-        double xi = px[i];
-        double ni = ps[i];
-        double pi = pp[i];
+        double xi = x[i];
+        double ni = size[i];
+        double pi = prob[i];
         double A = phi * pi;
         double B = phi * (1.0 - pi);
-        // Pre-compute the denominator for the beta function's numerator.
-        // It only depends on 'ni' and 'phi', and is used in every branch.
         double lgamma_n_phi = std::lgamma(ni + phi);
         if (xi == 0.0) {
-            // Short-circuit for x = 0
-            // log_binom is 0. log(Gamma(A)) completely cancels out.
-            pout[i] = std::lgamma(ni + B) - lgamma_n_phi + lgamma_phi - std::lgamma(B);
+            out[i] = std::lgamma(ni + B) - lgamma_n_phi + lgamma_phi -
+                std::lgamma(B);
         } else if (xi == ni) {
-            // Short-circuit for x = n
-            // log_binom is 0. log(Gamma(B)) completely cancels out.
-            pout[i] = std::lgamma(ni + A) - lgamma_n_phi + lgamma_phi - std::lgamma(A);
+            out[i] = std::lgamma(ni + A) - lgamma_n_phi + lgamma_phi -
+                std::lgamma(A);
         } else {
-            // General case for 0 < x < size
-            // 1. Log Binomial Coefficient: log( n! / (x! * (n-x)!) )
-            double log_binom = std::lgamma(ni + 1.0) - std::lgamma(xi + 1.0) - std::lgamma(ni - xi + 1.0);
-            // 2. Log Beta Numerator: log( B(x+A, n-x+B) )
-            double log_beta_num = std::lgamma(xi + A) + std::lgamma(ni - xi + B) - lgamma_n_phi;
-            // 3. Log Beta Denominator: log( B(A, B) )
+            double log_binom = std::lgamma(ni + 1.0) - std::lgamma(xi + 1.0) -
+                std::lgamma(ni - xi + 1.0);
+            double log_beta_num = std::lgamma(xi + A) +
+                std::lgamma(ni - xi + B) - lgamma_n_phi;
             double log_beta_den = std::lgamma(A) + std::lgamma(B) - lgamma_phi;
-            pout[i] = log_binom + log_beta_num - log_beta_den;
+            out[i] = log_binom + log_beta_num - log_beta_den;
         }
     }
 }
 
-inline void log_dbernoulli_void (const arma::vec &x, const arma::vec &prob,
-                            arma::vec &out) {
+template <typename T1, typename T2>
+inline void log_dbernoulli_void (const T1 &x, const T2 &prob, arma::vec &out) {
     arma::uword n = x.n_elem;
-    const double* px = x.memptr();
-    const double* pp = prob.memptr();
-    double* pout = out.memptr();
     for (arma::uword i = 0; i < n; ++i) {
-        double p_val = (px[i] > 0.0) ? pp[i] : (1.0 - pp[i]);
-        pout[i] = std::log(p_val);
+        double p_val = (x.at(i) > 0.0) ? prob.at(i) : (1.0 - prob.at(i));
+        out.at(i) = std::log(p_val);
     }
 }
 
@@ -486,29 +468,29 @@ vec log_dnbinom2 (const vec &x, const vec &mu, const double &size) {
   return out;
 }
 
-inline void log_dnbinom_void (const vec &x, const vec &mu, const double &size,
-                         vec &out) {
+template <typename T1, typename T2>
+inline void log_dnbinom_void (const T1 &x, const T2 &mu, const double size,
+                              arma::vec &out) {
     arma::uword n = x.n_elem;
-    const double* px = x.memptr();
-    const double* pmu = mu.memptr();
-    double* pout = out.memptr();
     double lgamma_size = std::lgamma(size);
     double size_log_size = size * std::log(size);
     for (arma::uword i = 0; i < n; ++i) {
-        double xi = px[i];
-        double mui = pmu[i];
+        double xi = x.at(i);
+        double mui = mu.at(i);
+        // Compute subject-specific terms
         double log_mu_size = std::log(mui + size);
-        pout[i] = std::lgamma(xi + size) - lgamma_size - std::lgamma(xi + 1.0) +
+        out.at(i) = std::lgamma(xi + size) - lgamma_size - std::lgamma(xi + 1.0) +
             size_log_size - size * log_mu_size +
             xi * (std::log(mui) - log_mu_size);
     }
 }
 
-inline void log_dnorm_void (const vec &x, const vec &mu, const double sigma,
-                            vec &out) {
+template <typename T1, typename T2>
+inline void log_dnorm_void(const T1 &x, const T2 &mu, const double sigma,
+                           vec &out) {
     double constant = -std::log(sigma) - half_log2pi;
-    double var2 = 2.0 * sigma * sigma;
-    out = constant - arma::square(x - mu) / var2;
+    double inv_var2 = 1.0 / (2.0 * sigma * sigma);
+    out = constant - arma::square(x - mu) * inv_var2;
 }
 
 vec log_dnorm (const vec &x, const vec &mu, const double &sigma) {
@@ -535,21 +517,21 @@ vec log_pnorm (const vec &x, const vec &mu, const double &sigma,
   return out;
 }
 
-inline void log_dt_void (const vec &x, const vec &mu, const double sigma,
-                         const double df, vec &out) {
+template <typename T1, typename T2>
+inline void log_dt_void (const T1 &x, const T2 &mu, const double sigma,
+                         const double df, arma::vec &out) {
     arma::uword n = x.n_elem;
-    const double* px = x.memptr();
-    const double* pmu = mu.memptr();
-    double* pout = out.memptr();
     double log_sigma = std::log(sigma);
     double half_df = 0.5 * df;
     double half_df_plus_1 = 0.5 * (df + 1.0);
     double const_term = std::lgamma(half_df_plus_1) - std::lgamma(half_df) -
         0.5 * std::log(df * arma::datum::pi);
+    double inv_var_df = 1.0 / (sigma * sigma * df);
     for (arma::uword i = 0; i < n; ++i) {
-        double xx = (px[i] - pmu[i]) / sigma;
-        pout[i] = const_term - half_df_plus_1 *
-            std::log(1.0 + (xx * xx) / df) - log_sigma;
+        double diff = x.at(i) - mu.at(i);
+        double xx_sq_over_df = (diff * diff) * inv_var_df;
+        out.at(i) = const_term - half_df_plus_1 *
+            std::log(1.0 + xx_sq_over_df) - log_sigma;
     }
 }
 
@@ -608,18 +590,15 @@ vec log_dgamma (const vec &x, const double &shape, const vec &scale) {
     return out;
 }
 
-inline void log_dbeta_void (const arma::vec &x, const arma::vec &shape1,
-                     const arma::vec &shape2, arma::vec &out) {
+template <typename T1, typename T2, typename T3>
+inline void log_dbeta_void (const T1 &x, const T2 &shape1,
+                            const T3 &shape2, arma::vec &out) {
     arma::uword n = x.n_elem;
-    const double* px = x.memptr();
-    const double* psh1 = shape1.memptr();
-    const double* psh2 = shape2.memptr();
-    double* pout = out.memptr();
     for (arma::uword i = 0; i < n; ++i) {
-        double xi = px[i];
-        double a = psh1[i];
-        double b = psh2[i];
-        pout[i] = (a - 1.0) * std::log(xi) + (b - 1.0) * std::log(1.0 - xi) -
+        double xi = x[i];
+        double a = shape1[i];
+        double b = shape2[i];
+        out.at(i) = (a - 1.0) * std::log(xi) + (b - 1.0) * std::log(1.0 - xi) -
             std::lgamma(a) - std::lgamma(b) + std::lgamma(a + b);
     }
 }
