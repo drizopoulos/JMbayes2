@@ -1506,6 +1506,9 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
                    "binomial" = rbinom(n, .N, mu),
                    "poisson" = rpois(n, mu),
                    "negative binomial" = rnbinom(n, size = phi, mu = mu),
+                   "beta binomial" =
+                       rbinom(n, .N, rbeta(n, shape1 = mu * phi,
+                                           shape2 = phi * (1 - mu))),
                    "beta" = rbeta(n, shape1 = mu * phi, shape2 = phi * (1 - mu)),
                    "Gamma" = rgamma(n, shape = phi, scale = mu / phi))
         }
