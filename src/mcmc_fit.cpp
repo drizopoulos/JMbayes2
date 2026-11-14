@@ -650,6 +650,10 @@ List mcmc_cpp (List model_data, List model_info, List initial_values,
     }
 
     if (it > 99) {
+        // update_betas() recentres b_mat under hierarchical centering without
+        // updating logLik_re; refresh it so that the Metropolis-Hastings ratios
+        // in update_D() and update_b() compare like with like (issue #155)
+        logLik_re = log_re(b_mat, L, sds);
         update_D(L, sds, b_mat, upper_part,
              D_sds_df, D_sds_sigma, D_sds_shape, D_sds_mean, gamma_prior_D_sds,
              D_L_etaLKJ, it, MALA, ind_zero_D, V_R, Z_workspace, Z_transposed,
