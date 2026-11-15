@@ -159,6 +159,8 @@ void update_D (mat &L, vec &sds, const mat &b,
   uword n_L = upper_part.n_rows;
   inv(V_R, trimatu(L));
   double log_det_V_R = -arma::sum(arma::log(L.diag()));
+  log_re_onlySDS(b, V_R, log_det_V_R, sds, B_scaled_workspace,
+                 Z_workspace, logLik_re);
   logPrior_D_sds(sds, D_sds_sigma, D_sds_df, D_sds_mean, D_sds_shape,
                  gamma_prior, log_prior_sds);
   double denominator_sds = arma::accu(logLik_re) + arma::accu(log_prior_sds);
