@@ -242,14 +242,18 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
              "needs to be the same in all of the datasets.")
     }
     # we need to check that the ordering of the subjects in the same in dataL and dataS.
-    # If not, then a warning and do it internally
-    if (!all(order(unique(idT)) == order(factor(unq_id, levels = unq_id)))) {
+    # If not, then a warning and do it internally. The subjects of dataS are put in
+    # the order of unq_id (the longitudinal data); order() is stable, so subjects
+    # with several rows in dataS keep their rows in the original order (issue #156)
+    pos_idT <- match(as.character(idT), as.character(unq_id))
+    if (is.unsorted(pos_idT)) {
         warning("It seems that the ordering of the subjects in the dataset used to fit the ",
                 "mixed models and the dataset used for the survival model is not the same. ",
                 "We set internally the datasets in the same order, but it would be best ",
                 "that you do it beforehand on your own.")
-        dataS <- dataS[order(idT), ]
-        idT <- dataS[[id_var]]
+        ord_S <- order(pos_idT)
+        dataS <- dataS[ord_S, ]
+        idT <- as.character(idT)[ord_S]
         idT <- factor(idT, levels = unique(idT))
         mf_surv_dataS <- model.frame.default(terms_Surv, data = dataS)
         Surv_Response <- model.response(mf_surv_dataS)
