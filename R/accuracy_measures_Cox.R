@@ -12,28 +12,28 @@ tvROC.coxph <-
     if (is.null(Thoriz))
         Thoriz <- Tstart + Dt
     type_censoring <- attr(object$y, "type")
-    ind_strata <- attr(object$terms, "specials")$strata 
-    LT_MS <- (type_censoring == "counting") & is.null(ind_strata)  
-    if (!(type_censoring %in% c("right", "counting")) | !is.null(ind_strata)) 
-      stop("'tvROC()' currently only works for (possibly left truncated) right censored data. They are not currently compatible with stratified Cox models.") 
+    ind_strata <- attr(object$terms, "specials")$strata
+    LT_MS <- (type_censoring == "counting") & is.null(ind_strata)
+    if (!(type_censoring %in% c("right", "counting")) | !is.null(ind_strata))
+      stop("'tvROC()' currently only works for (possibly left truncated) right censored data. They are not currently compatible with stratified Cox models.")
     newdata <- as.data.frame(newdata)
     type_weights <- match.arg(type_weights)
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
     mframe <- model.frame(object$terms, data = newdata)
     Y <- model.response(mframe)
-    Time <- if(type_censoring == "right") Y[, 'time'] else Y[, 'stop'] 
-    Time0 <- if(type_censoring == "right") rep(0, length(Time)) else Y[, 'start'] 
+    Time <- if(type_censoring == "right") Y[, 'time'] else Y[, 'stop']
+    Time0 <- if(type_censoring == "right") rep(0, length(Time)) else Y[, 'start']
     newdata <- newdata[Time >= Tstart & Time0 <= Tstart, ]
     mframe <- model.frame(object$terms, data = newdata)
     Y <- model.response(mframe)
-    Time <- if(type_censoring == "right") Y[, 'time'] else Y[, 'stop'] 
-    Time0 <- if(type_censoring == "right") rep(0, length(Time)) else Y[, 'start'] 
+    Time <- if(type_censoring == "right") Y[, 'time'] else Y[, 'stop']
+    Time0 <- if(type_censoring == "right") rep(0, length(Time)) else Y[, 'start']
     event <- Y[, 'status']
     sfit0 <- summary(survfit(object, newdata = newdata), times = Tstart)
     sfit <- summary(survfit(object, newdata = newdata), times = Thoriz)
     qi_u_t <- as.matrix(sfit$surv)[1L, ] / as.matrix(sfit0$surv)[1L, ]
-    thrs <- seq(0, 1, length = 101)
+    thrs <- seq(0, 1, length = 1001)
     Check <- outer(qi_u_t, thrs, "<")
     if (type_weights == "model-based") {
         # subjects who died before Thoriz
@@ -117,22 +117,22 @@ tvBrier.coxph <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
         Thoriz <- Tstart + Dt
     newdata <- as.data.frame(newdata)
     type_censoring <- attr(object$y, "type")
-    ind_strata <- attr(object$terms, "specials")$strata 
-    LT_MS <- (type_censoring == "counting") & is.null(ind_strata)  
-    if (!(type_censoring %in% c("right", "counting")) | !is.null(ind_strata)) 
+    ind_strata <- attr(object$terms, "specials")$strata
+    LT_MS <- (type_censoring == "counting") & is.null(ind_strata)
+    if (!(type_censoring %in% c("right", "counting")) | !is.null(ind_strata))
       stop("'tvBrier()' currently only works for (possibly left truncated) right censored data. They are not currently compatible with stratified Cox models.")
     type_weights <- match.arg(type_weights)
     Tstart <- Tstart + 1e-06
     Thoriz <- Thoriz + 1e-06
     mframe <- model.frame(object$terms, data = newdata)
     Y <- model.response(mframe)
-    Time <- if(type_censoring == "right") Y[, 'time'] else Y[, 'stop'] 
-    Time0 <- if(type_censoring == "right") rep(0, length(Time)) else Y[, 'start'] 
+    Time <- if(type_censoring == "right") Y[, 'time'] else Y[, 'stop']
+    Time0 <- if(type_censoring == "right") rep(0, length(Time)) else Y[, 'start']
     newdata <- newdata[Time >= Tstart & Time0 <= Tstart, ]
     mframe <- model.frame(object$terms, data = newdata)
     Y <- model.response(mframe)
-    Time <- if(type_censoring == "right") Y[, 'time'] else Y[, 'stop'] 
-    Time0 <- if(type_censoring == "right") rep(0, length(Time)) else Y[, 'start'] 
+    Time <- if(type_censoring == "right") Y[, 'time'] else Y[, 'stop']
+    Time0 <- if(type_censoring == "right") rep(0, length(Time)) else Y[, 'start']
     event <- Y[, 'status']
     brier_fun <- function (pi_u_t, type_weights, weights, ind1, ind2, ind3) {
         loss <- function (x) x * x
@@ -276,11 +276,11 @@ calibration_plot.coxph <-
 
 #############################################################################
 # Clinical utility metrics and decision curves
-tvMetric.coxph <- function (object, newdata, Tstart, 
+tvMetric.coxph <- function (object, newdata, Tstart,
                             metric = c("IWEC", "NB", "EC"),
                             shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95,
                             decision_threshold = NULL, Thoriz = NULL, Dt = NULL,
-                            type_weights = c("model-based", "IPCW"), 
+                            type_weights = c("model-based", "IPCW"),
                             opt_interv = c(1, 500), name_model = NULL, ...) {
   if (!inherits(object, "coxph"))
     stop("Use only with 'coxph' objects.\n")
@@ -293,7 +293,7 @@ tvMetric.coxph <- function (object, newdata, Tstart,
   if(metric == "IWEC") {
     if ( (is.null(shape1) | is.null(shape2)) & (is.null(mod) | is.null(interv) | is.null(mass) ) ) {
       stop("either 'shape1' and 'shape2', or 'mod', 'interv' and 'mass' must be non null.\n")
-    } 
+    }
     if ( !is.null(shape1) & !is.null(shape2) ) {
       if ( shape1 < 0 || shape2 < 0 )
         stop("shape1 and shape2 must be greater or equal to 0.\n")
@@ -310,7 +310,7 @@ tvMetric.coxph <- function (object, newdata, Tstart,
       }
       if ( mass < 0 | mass > 1 )
         stop("'mass' must be between 0 and 1.")
-    } 
+    }
     w_function_builder <- function(mod, ext1, ext2, p, interval = opt_interv) {
       f <- function(x) {
         y <- (x - 1) / mod - x + 2
@@ -337,22 +337,22 @@ tvMetric.coxph <- function (object, newdata, Tstart,
     Thoriz <- Tstart + Dt
   newdata <- as.data.frame(newdata)
   type_censoring <- attr(object$y, "type")
-  ind_strata <- attr(object$terms, "specials")$strata 
-  LT_MS <- (type_censoring == "counting") & is.null(ind_strata)  
-  if (!(type_censoring %in% c("right", "counting")) | !is.null(ind_strata)) 
-    stop("Predictive performance metrics currently only work for (possibly left truncated) right censored data. They are not currently compatible with stratified Cox models.") 
+  ind_strata <- attr(object$terms, "specials")$strata
+  LT_MS <- (type_censoring == "counting") & is.null(ind_strata)
+  if (!(type_censoring %in% c("right", "counting")) | !is.null(ind_strata))
+    stop("Predictive performance metrics currently only work for (possibly left truncated) right censored data. They are not currently compatible with stratified Cox models.")
   type_weights <- match.arg(type_weights)
   Tstart <- Tstart + 1e-06
   Thoriz <- Thoriz + 1e-06
   mframe <- model.frame(object$terms, data = newdata)
   Y <- model.response(mframe)
-  Time <- if(type_censoring == "right") Y[, 'time'] else Y[, 'stop'] 
-  Time0 <- if(type_censoring == "right") rep(0, length(Time)) else Y[, 'start'] 
+  Time <- if(type_censoring == "right") Y[, 'time'] else Y[, 'stop']
+  Time0 <- if(type_censoring == "right") rep(0, length(Time)) else Y[, 'start']
   newdata <- newdata[Time >= Tstart & Time0 <= Tstart, ]
   mframe <- model.frame(object$terms, data = newdata)
   Y <- model.response(mframe)
-  Time <- if(type_censoring == "right") Y[, 'time'] else Y[, 'stop'] 
-  Time0 <- if(type_censoring == "right") rep(0, length(Time)) else Y[, 'start'] 
+  Time <- if(type_censoring == "right") Y[, 'time'] else Y[, 'stop']
+  Time0 <- if(type_censoring == "right") rep(0, length(Time)) else Y[, 'start']
   event <- Y[, 'status']
   sfit0 <- summary(survfit(object, newdata = newdata), times = Tstart)
   sfit <- summary(survfit(object, newdata = newdata), times = Thoriz)
@@ -368,12 +368,12 @@ tvMetric.coxph <- function (object, newdata, Tstart,
                            times = Time[ind3])
       w_MB[ind3] <- 1.0 - (as.matrix(sfit2$surv)[1L, ] / as.matrix(sfit_cens$surv)[1L, ])
     }
-  } 
-  out <- tvMetric.default(pi_u_t, Time, event, LT_Time = Time0, Tstart = Tstart, 
-                          metric = metric, shape1 = shape1, shape2 = shape2, 
+  }
+  out <- tvMetric.default(pi_u_t, Time, event, LT_Time = Time0, Tstart = Tstart,
+                          metric = metric, shape1 = shape1, shape2 = shape2,
                           mod = mod, interv = interv, mass = mass,
-                          decision_threshold = decision_threshold, Thoriz = Thoriz, 
-                          type_weights = type_weights, preds_MB = w_MB, 
+                          decision_threshold = decision_threshold, Thoriz = Thoriz,
+                          type_weights = type_weights, preds_MB = w_MB,
                           opt_interv = opt_interv)
   metric_info <- if(metric == "IWEC") {
     c(shape1, shape2)
@@ -388,13 +388,13 @@ tvMetric.coxph <- function (object, newdata, Tstart,
     nameObject <- name_model
   }
   out <- list(metric = out$metric,
-              metric_type = metric, 
+              metric_type = metric,
               nr = out$nr, nint = out$nint,
               ncens = out$ncens,
               Tstart = Tstart, Thoriz = Thoriz,
               type_weights = type_weights,
               metric_info = metric_info,
-              LT_MS = LT_MS, 
+              LT_MS = LT_MS,
               classObject = class(object),
               nameObject = nameObject)
   class(out) <- "tvMetric"
@@ -402,48 +402,48 @@ tvMetric.coxph <- function (object, newdata, Tstart,
 }
 
 ## Metric wrappers:
-tvIWEC.coxph <- function(object, newdata, Tstart, 
+tvIWEC.coxph <- function(object, newdata, Tstart,
                          shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95,
                          Thoriz = NULL, Dt = NULL,
-                         type_weights = c("model-based", "IPCW"), 
+                         type_weights = c("model-based", "IPCW"),
                          opt_interv = c(1, 500), name_model = NULL, ...) {
   name_model <- if(is.null(name_model)) {
     deparse(substitute(object))
   } else {
     name_model
-  } 
-  tvMetric.coxph(object, newdata = newdata, Tstart = Tstart, 
-                 metric = "IWEC", shape1 = shape1, shape2 = shape2, 
+  }
+  tvMetric.coxph(object, newdata = newdata, Tstart = Tstart,
+                 metric = "IWEC", shape1 = shape1, shape2 = shape2,
                  mod = mod, interv = interv, mass = mass,
                  decision_threshold = NULL, Thoriz = Thoriz, Dt = Dt,
                  type_weights = type_weights, opt_interv = opt_interv, name_model = name_model, ...)
 }
 
-tvNB.coxph <- function(object, newdata, Tstart, 
+tvNB.coxph <- function(object, newdata, Tstart,
                        decision_threshold = NULL, Thoriz = NULL, Dt = NULL,
                        type_weights = c("model-based", "IPCW"), name_model = NULL, ...) {
   name_model <- if(is.null(name_model)) {
     deparse(substitute(object))
   } else {
     name_model
-  } 
-  tvMetric.coxph(object = object, newdata = newdata, Tstart = Tstart, 
-                 metric = "NB", shape1 = NULL, shape2 = NULL, 
+  }
+  tvMetric.coxph(object = object, newdata = newdata, Tstart = Tstart,
+                 metric = "NB", shape1 = NULL, shape2 = NULL,
                  mod = NULL, interv = NULL, mass = NULL,
                  decision_threshold = decision_threshold, Thoriz = Thoriz, Dt = Dt,
                  type_weights = type_weights, opt_interv = NULL, name_model = name_model, ...)
 }
 
-tvEC.coxph <- function(object, newdata, Tstart, 
+tvEC.coxph <- function(object, newdata, Tstart,
                        decision_threshold = NULL, Thoriz = NULL, Dt = NULL,
                        type_weights = c("model-based", "IPCW"), name_model = NULL, ...) {
   name_model <- if(is.null(name_model)) {
     deparse(substitute(object))
   } else {
     name_model
-  } 
-  tvMetric.coxph(object = object, newdata = newdata, Tstart = Tstart, 
-                 metric = "EC", shape1 = NULL, shape2 = NULL, 
+  }
+  tvMetric.coxph(object = object, newdata = newdata, Tstart = Tstart,
+                 metric = "EC", shape1 = NULL, shape2 = NULL,
                  mod = NULL, interv = NULL, mass = NULL,
                  decision_threshold = decision_threshold, Thoriz = Thoriz, Dt = Dt,
                  type_weights = type_weights, opt_interv = NULL, name_model = name_model, ...)
@@ -451,10 +451,10 @@ tvEC.coxph <- function(object, newdata, Tstart,
 
 
 decision_curves.coxph <-
-  function (object, newdata, Tstart, 
+  function (object, newdata, Tstart,
             decision_threshold_range = seq(0 + 1e-06, 1 - 1e-06, length.out = 51),
             type = c("EC", "weightedEC", "NB"),
-            shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95, 
+            shape1 = NULL, shape2 = NULL, mod = NULL, interv = NULL, mass = 0.95,
             Thoriz = NULL, Dt = NULL, type_weights = c("model-based", "IPCW"),
             opt_interv = c(1, 500), ...) {
     if (!inherits(object, "coxph"))
@@ -476,7 +476,7 @@ decision_curves.coxph <-
     type <- match.arg(type)
     if ((type == "weightedEC") && ((is.null(shape1) || is.null(shape2)) && (is.null(mod) || is.null(interv) || is.null(mass) )) ) {
       stop("If type is 'weightedEC', either 'shape1' and 'shape2', or 'mod', 'interv' and 'mass' must be non null.\n")
-    } 
+    }
     if ( (type == "weightedEC") && (!is.null(shape1) && !is.null(shape2)) ) {
       if ( shape1 < 0 || shape2 < 0 )
         stop("shape1 and shape2 must be greater or equal to 0.\n")
@@ -493,7 +493,7 @@ decision_curves.coxph <-
       }
       if ( mass < 0 | mass > 1 )
         stop("'mass' must be between 0 and 1.")
-    } 
+    }
     w_function_builder <- function(mod, ext1, ext2, p, interval = opt_interv) {
       f <- function(x) {
         y <- (x - 1)/mod - x + 2
@@ -515,7 +515,7 @@ decision_curves.coxph <-
     ind_strata <- attr(object$terms, "specials")$strata #!
     ## with the current implementation left-truncated and right-censored data cannot
     ## be used with stratified Cox model
-    LT_MS <- (type_censoring == "counting") & is.null(ind_strata) #! 
+    LT_MS <- (type_censoring == "counting") & is.null(ind_strata) #!
     if (!(type_censoring %in% c("right", "counting")) | !is.null(ind_strata)) #!
       stop("'decision_curves()' currently only works for (possibly left truncated) right censored data. It is not currently compatible with stratified Cox models.") #!
     type_weights <- match.arg(type_weights)
@@ -581,22 +581,22 @@ decision_curves.coxph <-
           preds_MB[ind3] <- weights
         }
         res <- list(3)
-        events_model <- vapply(decision_threshold_range, function(cc) sum(loss(pi_u_t[ind1], di = as.numeric(ind1)[ind1], 
+        events_model <- vapply(decision_threshold_range, function(cc) sum(loss(pi_u_t[ind1], di = as.numeric(ind1)[ind1],
                                                                                c = cc), na.rm = TRUE),
                                numeric(1))
-        events_all <- vapply(decision_threshold_range, function(cc) sum(loss_all(di = as.numeric(ind1)[ind1], 
+        events_all <- vapply(decision_threshold_range, function(cc) sum(loss_all(di = as.numeric(ind1)[ind1],
                                                                                  c = cc), na.rm = TRUE),
                              numeric(1))
-        events_none <- vapply(decision_threshold_range, function(cc) sum(loss_none(di = as.numeric(ind1)[ind1], 
+        events_none <- vapply(decision_threshold_range, function(cc) sum(loss_none(di = as.numeric(ind1)[ind1],
                                                                                    c = cc), na.rm = TRUE),
                               numeric(1))
-        no_events_model <- vapply(decision_threshold_range, function(cc) sum(loss(pi_u_t[ind2], di = as.numeric(ind1)[ind2], 
+        no_events_model <- vapply(decision_threshold_range, function(cc) sum(loss(pi_u_t[ind2], di = as.numeric(ind1)[ind2],
                                                                                   c = cc), na.rm = TRUE),
                                   numeric(1))
-        no_events_all <- vapply(decision_threshold_range, function(cc) sum(loss_all(di = as.numeric(ind1)[ind2], 
+        no_events_all <- vapply(decision_threshold_range, function(cc) sum(loss_all(di = as.numeric(ind1)[ind2],
                                                                                     c = cc), na.rm = TRUE),
                                 numeric(1))
-        no_events_none <- vapply(decision_threshold_range, function(cc) sum(loss_none(di = as.numeric(ind1)[ind2], 
+        no_events_none <- vapply(decision_threshold_range, function(cc) sum(loss_none(di = as.numeric(ind1)[ind2],
                                                                                       c = cc), na.rm = TRUE),
                                  numeric(1))
         censored_model <- if (any(ind3)) {

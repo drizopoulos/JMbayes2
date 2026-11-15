@@ -75,7 +75,7 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
   Time0 <- tapply(Time0, f, tail, 1L)
   event <- tapply(event, f, tail, 1L)
   names(Time) <- names(event) <- as.character(unique(id))
-  thrs <- seq(0, 1, length = 101)
+  thrs <- seq(0, 1, length = 1001)
   Check <- lapply(seq_len(ncol(qi_u_t)), function (i) outer(qi_u_t[, i], thrs, "<"))
   Check_mean <- outer(1 - preds$pred[preds$times > Tstart], thrs, "<")
   # outer(qi_u_t, thrs, "<")
