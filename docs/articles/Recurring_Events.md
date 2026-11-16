@@ -356,16 +356,16 @@ summary(jm_fit)
 #>   y: 3075
 #> 
 #>                  DIC     WAIC       LPML
-#> marginal    13149.97 12983.05  -6736.434
-#> conditional 19832.17 19095.66 -10201.566
+#> marginal    13148.20 12980.83  -6742.978
+#> conditional 19844.45 19107.98 -10191.231
 #> 
 #> Random-effects covariance matrix:
 #>                                                            
 #>                        StdDev   Corr                       
-#> (Intr)                 0.7423 (Intr) n(,k=c(1,3),B=c(0,7))1
-#> n(,k=c(1,3),B=c(0,7))1 2.0832                              
-#> n(,k=c(1,3),B=c(0,7))2 1.4450                              
-#> n(,k=c(1,3),B=c(0,7))3 1.7567                              
+#> (Intr)                 0.7398 (Intr) n(,k=c(1,3),B=c(0,7))1
+#> n(,k=c(1,3),B=c(0,7))1 2.0815                              
+#> n(,k=c(1,3),B=c(0,7))2 1.4438                              
+#> n(,k=c(1,3),B=c(0,7))3 1.7755                              
 #>                                              
 #>                                              
 #> (Intr)                 n(,k=c(1,3),B=c(0,7))2
@@ -375,32 +375,32 @@ summary(jm_fit)
 #> 
 #> Frailty standard deviation:
 #>                 Mean   2.5%  97.5%
-#> sigma_frailty 0.1928 0.0212 0.3105
+#> sigma_frailty 0.2004 0.0092 0.3162
 #> 
 #> Survival outcome:
 #>                             Mean  StDev    2.5%  97.5%      P   Rhat
-#> group:strata(strata)R     0.4638 0.0826  0.3032 0.6233 0.0000 1.0022
-#> group:strata(strata)T1    0.4348 0.1071  0.2215 0.6346 0.0000 1.0204
-#> age:strata(strata)R       0.0497 0.0029  0.0442 0.0555 0.0000 1.0395
-#> age:strata(strata)T1      0.0475 0.0048  0.0383 0.0570 0.0000 1.2322
-#> value(y):strataR          0.5071 0.0275  0.4563 0.5605 0.0000 1.0678
-#> value(y):strataT1         0.4983 0.0402  0.4222 0.5762 0.0000 1.5801
-#> frailty:strata(strata)T1 -0.6146 1.1373 -3.0913 2.2689 0.3878 1.1494
+#> group:strata(strata)R     0.4605 0.0835  0.2947 0.6195 0.0000 1.0037
+#> group:strata(strata)T1    0.4385 0.1051  0.2323 0.6382 0.0000 1.0011
+#> age:strata(strata)R       0.0497 0.0031  0.0438 0.0563 0.0000 1.1033
+#> age:strata(strata)T1      0.0486 0.0045  0.0387 0.0572 0.0000 1.1449
+#> value(y):strataR          0.5048 0.0294  0.4455 0.5552 0.0000 1.0942
+#> value(y):strataT1         0.5064 0.0459  0.4283 0.6102 0.0000 1.2021
+#> frailty:strata(strata)T1 -0.7007 0.9909 -3.2361 1.1638 0.3776 1.0845
 #> 
 #> Longitudinal outcome: y (family = gaussian, link = identity)
 #>                           Mean  StDev    2.5%  97.5%      P   Rhat
-#> (Intercept)             6.9873 0.0427  6.9034 7.0701 0.0000 1.0228
-#> n(,k=c(1,3),B=c(0,7))1  1.3662 0.1472  1.0788 1.6537 0.0000 1.0120
-#> n(,k=c(1,3),B=c(0,7))2  0.6188 0.1477  0.3321 0.9173 0.0000 1.3360
-#> n(,k=c(1,3),B=c(0,7))3 -0.1523 0.2027 -0.5384 0.2605 0.4333 1.2847
-#> sigma                   0.6159 0.0100  0.5960 0.6356 0.0000 1.0121
+#> (Intercept)             6.9907 0.0427  6.9068 7.0749 0.0000 1.0059
+#> n(,k=c(1,3),B=c(0,7))1  1.3651 0.1462  1.0817 1.6557 0.0000 1.0117
+#> n(,k=c(1,3),B=c(0,7))2  0.6113 0.1370  0.3466 0.8793 0.0000 1.3420
+#> n(,k=c(1,3),B=c(0,7))3 -0.1573 0.1943 -0.5350 0.2252 0.4218 1.3087
+#> sigma                   0.6159 0.0103  0.5962 0.6364 0.0000 1.0044
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 54 sec
+#> time: 53 sec
 ```
 
 One can find the association parameters between the underlying value of

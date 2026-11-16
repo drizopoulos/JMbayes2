@@ -115,7 +115,7 @@ under the constraints \varpi_l(t) \> 0, for l = 1, \ldots, L, and \sum_l
 We will illustrate the application of super learning for combining
 dynamic predictions from joint models using the PBC dataset. We start by
 splitting the `pbc2` database into five folds using function
-[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md):
+[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/create_folds.md):
 
 ``` r
 
@@ -125,7 +125,7 @@ CVdats <- create_folds(pbc2, V = 5, id_var = "id")
 The first argument for this function is the `data.frame` we wish to
 split in `V` folds. The argument `id_var` specifies the name of the
 subject’s id variable in this dataset. The output of
-[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/create_folds.md)
 is a list with two components named `"training"` and `"testing"`. Each
 component is another list with `V` data.frames.
 
@@ -204,7 +204,7 @@ We calculate the weights to combine the predictions from these five
 models to optimize the integrated Brier score and the expected
 predictive cross-entropy at follow-up time t = 6 years and for a
 relevant window of \Delta t = 2 years. The function
-[`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/tvBrier.md)
 automatically performs this task by providing the list of joint models
 fitted in the training datasets as a first argument. The integrated
 Brier score is calculated using the testing datasets that are provided
@@ -221,15 +221,15 @@ Brier_weights
 #> 
 #> Cross-Validated Prediction Error using the Library of Joint Models 'Models_folds'
 #> 
-#> Super Learning Estimated Integrated Brier score: 0.055
+#> Super Learning Estimated Integrated Brier score: 0.052
 #> In the time interval: [6, 8)
 #> For the 166 subjects at risk at time 6
 #> Number of subjects with an event in [6, 8): 18
 #> Number of subjects with a censored time in [6, 8): 44
 #> Accounting for censoring using model-based weights
 #> 
-#> Integrated Brier score per model: 0.0599 0.0614 0.0608 0.052 0.061
-#> Weights per model: 0.1984 0.1867 0.1987 0.2221 0.1941
+#> Integrated Brier score per model: 0.0654 0.0601 0.0723 0.052 0.0607
+#> Weights per model: 4e-04 0.0012 0 0.9973 0.0012
 #> Number of folds: 5
 ```
 
@@ -237,7 +237,7 @@ We observe that the fourth model dominates the weights. Hence, the
 integrated Brier score based on the combined predictions is essentially
 the integrated Brier score of this model. To calculate the model weights
 using the expected predictive cross-entropy, use function
-[`tvEPCE()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`tvEPCE()`](https://drizopoulos.github.io/JMbayes2/reference/tvEPCE.md)
 with an almost identical call as for the Brier score:
 
 ``` r
@@ -248,14 +248,14 @@ EPCE_weights
 #> 
 #> Cross-Validated Expected Predictive Cross-Entropy using the Library of Joint Models 'Models_folds'
 #> 
-#> Super Learning Estimated EPCE: 0.2686
+#> Super Learning Estimated EPCE: 0.3394
 #> In the time interval: [6, 8)
 #> For the 166 subjects at risk at time 6
 #> Number of subjects with an event in [6, 8): 18
 #> Number of subjects with a censored time in [6, 8): 44
 #> 
-#> EPCE per model: 0.2781 0.3503 0.4806 0.358 0.4133
-#> Weights per model: 0.8081 0.1863 0.0013 1e-04 0.0042
+#> EPCE per model: 0.6569 0.6782 0.419 0.3578 0.4143
+#> Weights per model: 0.0031 0.3765 0.2286 0.3874 0.0043
 #> Number of folds: 5
 ```
 

@@ -33,7 +33,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/Baseline_Hazard.html">Baseline Hazard Function</a></li>
     <li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
+    <li><a class="dropdown-item" href="../articles/Clinical_Utility_Metrics.html">Clinical Utility Metrics to Evaluate Dynamic Predictions</a></li>
     <li><a class="dropdown-item" href="../articles/Competing_Risks.html">Competing Risks</a></li>
     <li><a class="dropdown-item" href="../articles/Consensus.html">Handling Large Datasets with Consensus Monte Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a></li>
@@ -84,7 +85,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2026-10-18</h4>
+            <h4 data-toc-skip class="date">2026-11-16</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Super_Learning.Rmd" class="external-link"><code>vignettes/Super_Learning.Rmd</code></a></small>
       <div class="d-none name"><code>Super_Learning.Rmd</code></div>
@@ -205,13 +206,13 @@ cross-validated predictions, <span class="math display">\widehat{\varpi}_l(t) = 
 <p>We will illustrate the application of super learning for combining
 dynamic predictions from joint models using the PBC dataset. We start by
 splitting the <code>pbc2</code> database into five folds using function
-<code><a href="../reference/accuracy.html">create_folds()</a></code>:</p>
+<code><a href="../reference/create_folds.html">create_folds()</a></code>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CVdats</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">create_folds</a></span><span class="op">(</span><span class="va">pbc2</span>, V <span class="op">=</span> <span class="fl">5</span>, id_var <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">CVdats</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_folds.html">create_folds</a></span><span class="op">(</span><span class="va">pbc2</span>, V <span class="op">=</span> <span class="fl">5</span>, id_var <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span></span></code></pre></div>
 <p>The first argument for this function is the <code>data.frame</code>
 we wish to split in <code>V</code> folds. The argument
 <code>id_var</code> specifies the name of the subject’s id variable in
-this dataset. The output of <code><a href="../reference/accuracy.html">create_folds()</a></code> is a list with
+this dataset. The output of <code><a href="../reference/create_folds.html">create_folds()</a></code> is a list with
 two components named <code>"training"</code> and <code>"testing"</code>.
 Each component is another list with <code>V</code> data.frames.</p>
 <p>Next, we define the function that will fit the joint models we wish
@@ -282,7 +283,7 @@ run the whole vignette):</p>
 models to optimize the integrated Brier score and the expected
 predictive cross-entropy at follow-up time <span class="math inline">t =
 6</span> years and for a relevant window of <span class="math inline">\Delta t = 2</span> years. The function
-<code><a href="../reference/accuracy.html">tvBrier()</a></code> automatically performs this task by providing the
+<code><a href="../reference/tvBrier.html">tvBrier()</a></code> automatically performs this task by providing the
 list of joint models fitted in the training datasets as a first
 argument. The integrated Brier score is calculated using the testing
 datasets that are provided in the <code>newdata</code> argument:</p>
@@ -290,43 +291,43 @@ datasets that are provided in the <code>newdata</code> argument:</p>
 <code class="sourceCode R"><span><span class="va">tstr</span> <span class="op">&lt;-</span> <span class="fl">6</span></span>
 <span><span class="va">thor</span> <span class="op">&lt;-</span> <span class="fl">8</span></span>
 <span></span>
-<span><span class="va">Brier_weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">tvBrier</a></span><span class="op">(</span><span class="va">Models_folds</span>, newdata <span class="op">=</span> <span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span>, </span>
+<span><span class="va">Brier_weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tvBrier.html">tvBrier</a></span><span class="op">(</span><span class="va">Models_folds</span>, newdata <span class="op">=</span> <span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span>, </span>
 <span>                         integrated <span class="op">=</span> <span class="cn">TRUE</span>, Tstart <span class="op">=</span> <span class="va">tstr</span>, Thoriz <span class="op">=</span> <span class="va">thor</span><span class="op">)</span></span>
 <span><span class="va">Brier_weights</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Cross-Validated Prediction Error using the Library of Joint Models 'Models_folds'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Super Learning Estimated Integrated Brier score: 0.055</span></span>
+<span><span class="co">#&gt; Super Learning Estimated Integrated Brier score: 0.052</span></span>
 <span><span class="co">#&gt; In the time interval: [6, 8)</span></span>
 <span><span class="co">#&gt; For the 166 subjects at risk at time 6</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 8): 18</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 8): 44</span></span>
 <span><span class="co">#&gt; Accounting for censoring using model-based weights</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Integrated Brier score per model: 0.0599 0.0614 0.0608 0.052 0.061</span></span>
-<span><span class="co">#&gt; Weights per model: 0.1984 0.1867 0.1987 0.2221 0.1941</span></span>
+<span><span class="co">#&gt; Integrated Brier score per model: 0.0654 0.0601 0.0723 0.052 0.0607</span></span>
+<span><span class="co">#&gt; Weights per model: 4e-04 0.0012 0 0.9973 0.0012</span></span>
 <span><span class="co">#&gt; Number of folds: 5</span></span></code></pre></div>
 <p>We observe that the fourth model dominates the weights. Hence, the
 integrated Brier score based on the combined predictions is essentially
 the integrated Brier score of this model. To calculate the model weights
 using the expected predictive cross-entropy, use function
-<code><a href="../reference/accuracy.html">tvEPCE()</a></code> with an almost identical call as for the Brier
+<code><a href="../reference/tvEPCE.html">tvEPCE()</a></code> with an almost identical call as for the Brier
 score:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">EPCE_weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accuracy.html">tvEPCE</a></span><span class="op">(</span><span class="va">Models_folds</span>, newdata <span class="op">=</span> <span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span>, </span>
+<code class="sourceCode R"><span><span class="va">EPCE_weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tvEPCE.html">tvEPCE</a></span><span class="op">(</span><span class="va">Models_folds</span>, newdata <span class="op">=</span> <span class="va">CVdats</span><span class="op">$</span><span class="va">testing</span>, </span>
 <span>                       Tstart <span class="op">=</span> <span class="va">tstr</span>, Thoriz <span class="op">=</span> <span class="va">thor</span><span class="op">)</span></span>
 <span><span class="va">EPCE_weights</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Cross-Validated Expected Predictive Cross-Entropy using the Library of Joint Models 'Models_folds'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Super Learning Estimated EPCE: 0.2686</span></span>
+<span><span class="co">#&gt; Super Learning Estimated EPCE: 0.3394</span></span>
 <span><span class="co">#&gt; In the time interval: [6, 8)</span></span>
 <span><span class="co">#&gt; For the 166 subjects at risk at time 6</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 8): 18</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 8): 44</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; EPCE per model: 0.2781 0.3503 0.4806 0.358 0.4133</span></span>
-<span><span class="co">#&gt; Weights per model: 0.8081 0.1863 0.0013 1e-04 0.0042</span></span>
+<span><span class="co">#&gt; EPCE per model: 0.6569 0.6782 0.419 0.3578 0.4143</span></span>
+<span><span class="co">#&gt; Weights per model: 0.0031 0.3765 0.2286 0.3874 0.0043</span></span>
 <span><span class="co">#&gt; Number of folds: 5</span></span></code></pre></div>
 <p>The EPCE results indicate that models <code>M2</code> and
 <code>M3</code> share the most weight. We observe that the EPCE based on

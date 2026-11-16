@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,6 +27,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/Baseline_Hazard.html">Baseline Hazard Function</a></li>
     <li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
+    <li><a class="dropdown-item" href="../articles/Clinical_Utility_Metrics.html">Clinical Utility Metrics to Evaluate Dynamic Predictions</a></li>
     <li><a class="dropdown-item" href="../articles/Competing_Risks.html">Competing Risks</a></li>
     <li><a class="dropdown-item" href="../articles/Consensus.html">Handling Large Datasets with Consensus Monte Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a></li>
@@ -68,7 +69,7 @@
 <li><p>The new functional form <code>Delta(..., time_window)</code> includes the following quantity in the linear predictor of the survival submodel: {eta_i(t) - eta_i(t - time_window)} / time_window, where eta_i(t) is the linear predictor of the longitudinal submodel calculated at time t. The default is {eta_i(t) - eta_i(0)} / t.</p></li>
 <li><p>The new functions <code><a href="../reference/slicer.html">slicer()</a></code> and <code><a href="../reference/consensus.html">consensus()</a></code> can be used to fit joint models in big datasets using consensus Monte Carlo.</p></li>
 <li><p>The new function <code><a href="../reference/ppcheck.html">ppcheck()</a></code> performs posterior predictive checks.</p></li>
-<li><p>Functions <code><a href="../reference/accuracy.html">tvROC()</a></code>, <code><a href="../reference/accuracy.html">tvAUC()</a></code> and <code><a href="../reference/accuracy.html">tvBrier()</a></code> now also work for Cox regression models.</p></li>
+<li><p>Functions <code><a href="../reference/tvROC.html">tvROC()</a></code>, <code><a href="../reference/tvAUC.html">tvAUC()</a></code> and <code><a href="../reference/tvBrier.html">tvBrier()</a></code> now also work for Cox regression models.</p></li>
 </ul></div>
 </div>
     <div class="section level2">
@@ -93,10 +94,10 @@
 <h2 class="pkg-version" data-toc-text="0.4.0" id="jmbayes2-040">JMbayes2 0.4.0<a class="anchor" aria-label="anchor" href="#jmbayes2-040"></a></h2>
 <div class="section level3">
 <h3 id="major-0-4-0">Major<a class="anchor" aria-label="anchor" href="#major-0-4-0"></a></h3>
-<ul><li><p>Function <code><a href="../reference/accuracy.html">tvBrier()</a></code> has gained the argument <code>integrated</code> for calculating the integrated Brier score.</p></li>
-<li><p>Function <code><a href="../reference/accuracy.html">tvBrier()</a></code> has gained the argument <code>type_weights</code> and now also allows to correct for censoring in the interval <code>Tstart</code> to <code>Thoriz</code> using inverse probability of censoring weighting. The default remains model-based weights.</p></li>
-<li><p>The new function <code><a href="../reference/accuracy.html">tvEPCE()</a></code> calculates the time-varying expected predictive cross-entropy.</p></li>
-<li><p>This version supports Super Learning for optimizing predictions using cross-validation and a library of joint models. In that regard, the new function <code><a href="../reference/accuracy.html">create_folds()</a></code> can be used to split a dataset in V-folds of training and test datasets. More information can be found in the corresponding vignette.</p></li>
+<ul><li><p>Function <code><a href="../reference/tvBrier.html">tvBrier()</a></code> has gained the argument <code>integrated</code> for calculating the integrated Brier score.</p></li>
+<li><p>Function <code><a href="../reference/tvBrier.html">tvBrier()</a></code> has gained the argument <code>type_weights</code> and now also allows to correct for censoring in the interval <code>Tstart</code> to <code>Thoriz</code> using inverse probability of censoring weighting. The default remains model-based weights.</p></li>
+<li><p>The new function <code><a href="../reference/tvEPCE.html">tvEPCE()</a></code> calculates the time-varying expected predictive cross-entropy.</p></li>
+<li><p>This version supports Super Learning for optimizing predictions using cross-validation and a library of joint models. In that regard, the new function <code><a href="../reference/create_folds.html">create_folds()</a></code> can be used to split a dataset in V-folds of training and test datasets. More information can be found in the corresponding vignette.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="minor-0-4-0">Minor<a class="anchor" aria-label="anchor" href="#minor-0-4-0"></a></h3>
@@ -134,8 +135,8 @@
 <h2 class="pkg-version" data-toc-text="0.1.7" id="jmbayes2-017">JMbayes2 0.1.7<a class="anchor" aria-label="anchor" href="#jmbayes2-017"></a></h2>
 <div class="section level3">
 <h3 id="major-0-1-7">Major<a class="anchor" aria-label="anchor" href="#major-0-1-7"></a></h3>
-<ul><li><p>Added the function <code><a href="../reference/accuracy.html">tvBrier()</a></code> for calculating time-varying Brier score for fitted joint models. Currently, only right-censored data are supported.</p></li>
-<li><p>Added the functions <code><a href="../reference/accuracy.html">calibration_plot()</a></code> and <code><a href="../reference/accuracy.html">calibration_metrics()</a></code> for calculating time-varying calibration plot and calibration metrics for fitted joint models. Currently, only right-censored data are supported.</p></li>
+<ul><li><p>Added the function <code><a href="../reference/tvBrier.html">tvBrier()</a></code> for calculating time-varying Brier score for fitted joint models. Currently, only right-censored data are supported.</p></li>
+<li><p>Added the functions <code><a href="../reference/calibration_plot.html">calibration_plot()</a></code> and <code><a href="../reference/calibration_plot.html">calibration_metrics()</a></code> for calculating time-varying calibration plot and calibration metrics for fitted joint models. Currently, only right-censored data are supported.</p></li>
 <li><p>Added new section in the vignette for Dynamic Prediction (available on the <a href="https://drizopoulos.github.io/JMbayes2/">website of the package</a>) to showcase the use of the functions mentioned above.</p></li>
 </ul></div>
 <div class="section level3">
@@ -149,7 +150,7 @@
 <div class="section level3">
 <h3 id="major-0-1-6">Major<a class="anchor" aria-label="anchor" href="#major-0-1-6"></a></h3>
 <ul><li><p>Added a <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> method for <code>jm</code> objects and a corresponding <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> for objects of class <code>predict_jm</code> for calculating and displaying predictions from joint models. Currently, only standard survival models are covered. Future versions will include predictions from competing risks and multi-state models.</p></li>
-<li><p>Added the functions <code><a href="../reference/accuracy.html">tvROC()</a></code> and <code><a href="../reference/accuracy.html">tvAUC()</a></code> for calculating time-varying Receiver Operating Characteristic (ROC) curves and the areas under the ROC curves for fitted joint models. Currently, only right-censored data are supported.</p></li>
+<li><p>Added the functions <code><a href="../reference/tvROC.html">tvROC()</a></code> and <code><a href="../reference/tvAUC.html">tvAUC()</a></code> for calculating time-varying Receiver Operating Characteristic (ROC) curves and the areas under the ROC curves for fitted joint models. Currently, only right-censored data are supported.</p></li>
 <li><p>Added a vignette (available on the <a href="https://drizopoulos.github.io/JMbayes2/">website of the package</a>) to explain how (dynamic) predictions are calculated in the package.</p></li>
 </ul></div>
 </div>

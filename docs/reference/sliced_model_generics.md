@@ -41,7 +41,7 @@ mixed_model(fixed, data, ...)
 When `data` is a regular data frame, the default methods call
 [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html),
 [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html), and
-[`GLMMadaptive::mixed_model()`](https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html),
+[`GLMMadaptive::mixed_model()`](https://rdrr.io/pkg/GLMMadaptive/man/mixed_model.html),
 respectively.
 
 When `data` is a `"sliced_data"` object, the corresponding
@@ -54,7 +54,7 @@ JMbayes2 exports S3 generics `lme()`, `coxph()`, and `mixed_model()` to
 enable dispatch on `"sliced_data"`. When JMbayes2 is attached, these
 names mask [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html),
 [`survival::coxph`](https://rdrr.io/pkg/survival/man/coxph.html), and
-[`GLMMadaptive::mixed_model`](https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html).
+[`GLMMadaptive::mixed_model`](https://rdrr.io/pkg/GLMMadaptive/man/mixed_model.html).
 Use the `pkg::fun` form to call the original functions.
 
 ## See also
@@ -62,7 +62,7 @@ Use the `pkg::fun` form to call the original functions.
 [`slicer`](https://drizopoulos.github.io/JMbayes2/reference/slicer.md),
 [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html),
 [`survival::coxph`](https://rdrr.io/pkg/survival/man/coxph.html),
-[`GLMMadaptive::mixed_model`](https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html).
+[`GLMMadaptive::mixed_model`](https://rdrr.io/pkg/GLMMadaptive/man/mixed_model.html).
 
 ## Examples
 

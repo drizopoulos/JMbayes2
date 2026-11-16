@@ -19,7 +19,7 @@ methods are used.'><meta property="og:image" content="https://drizopoulos.github
 
     <a class="navbar-brand me-2" href="../index.html">JMbayes2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6-6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,7 @@ methods are used.'><meta property="og:image" content="https://drizopoulos.github
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/Baseline_Hazard.html">Baseline Hazard Function</a></li>
     <li><a class="dropdown-item" href="../articles/Causal_Effects.html">Causal Effects</a></li>
+    <li><a class="dropdown-item" href="../articles/Clinical_Utility_Metrics.html">Clinical Utility Metrics to Evaluate Dynamic Predictions</a></li>
     <li><a class="dropdown-item" href="../articles/Competing_Risks.html">Competing Risks</a></li>
     <li><a class="dropdown-item" href="../articles/Consensus.html">Handling Large Datasets with Consensus Monte Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/Dynamic_Predictions.html">Dynamic Predictions</a></li>
@@ -99,7 +100,7 @@ to control parallel execution across slices.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>When <code>data</code> is a regular data frame, the default methods call
-<code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code>, <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code>, and <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">GLMMadaptive::mixed_model()</a></code>,
+<code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme()</a></code>, <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code>, and <code><a href="https://rdrr.io/pkg/GLMMadaptive/man/mixed_model.html" class="external-link">GLMMadaptive::mixed_model()</a></code>,
 respectively.</p>
 <p>When <code>data</code> is a <code>"sliced_data"</code> object, the corresponding <code>*.sliced_data</code>
 methods fit the requested model independently within each slice and return a list of
@@ -109,12 +110,12 @@ fits (one per slice).</p>
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
     <p>JMbayes2 exports S3 generics <code>lme()</code>, <code>coxph()</code>, and <code>mixed_model()</code>
 to enable dispatch on <code>"sliced_data"</code>. When JMbayes2 is attached, these names
-mask <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>, <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code>, and <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">GLMMadaptive::mixed_model</a></code>.
+mask <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>, <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code>, and <code><a href="https://rdrr.io/pkg/GLMMadaptive/man/mixed_model.html" class="external-link">GLMMadaptive::mixed_model</a></code>.
 Use the <code>pkg::fun</code> form to call the original functions.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="slicer.html">slicer</a></code>, <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>, <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code>, <code><a href="https://drizopoulos.github.io/GLMMadaptive/reference/mixed_model.html" class="external-link">GLMMadaptive::mixed_model</a></code>.</p></div>
+    <div class="dont-index"><p><code><a href="slicer.html">slicer</a></code>, <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code>, <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code>, <code><a href="https://rdrr.io/pkg/GLMMadaptive/man/mixed_model.html" class="external-link">GLMMadaptive::mixed_model</a></code>.</p></div>
     </div>
 
     <div class="section level2">

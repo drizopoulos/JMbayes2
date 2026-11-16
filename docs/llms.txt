@@ -78,18 +78,13 @@ summary(jointFit)
 
 ## All functions
 
-- [`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
-  [`tvAUC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
-  [`calibration_plot()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
-  [`calibration_metrics()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
-  [`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
-  [`tvEPCE()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
-  [`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
-  : Time-Dependent Predictive Accuracy Measures for Joint Models
-
 - [`aids`](https://drizopoulos.github.io/JMbayes2/reference/aids.md)
   [`aids.id`](https://drizopoulos.github.io/JMbayes2/reference/aids.md)
   : Didanosine versus Zalcitabine in HIV Patients
+
+- [`calibration_plot()`](https://drizopoulos.github.io/JMbayes2/reference/calibration_plot.md)
+  [`calibration_metrics()`](https://drizopoulos.github.io/JMbayes2/reference/calibration_plot.md)
+  : Calibration Plot for Dynamic Predictions under Right-Censored Data
 
 - [`traceplot()`](https://drizopoulos.github.io/JMbayes2/reference/coda_methods.md)
   [`ggtraceplot()`](https://drizopoulos.github.io/JMbayes2/reference/coda_methods.md)
@@ -104,8 +99,16 @@ summary(jointFit)
 - [`consensus()`](https://drizopoulos.github.io/JMbayes2/reference/consensus.md)
   : Consensus Combination of Posterior Draws from Joint Model Fits
 
+- [`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/create_folds.md)
+  : Creating Training and Testing Datasets
+
 - [`crisk_setup()`](https://drizopoulos.github.io/JMbayes2/reference/cr_setup.md)
   : Transform Competing Risks Data in Long Format
+
+- [`decision_curves()`](https://drizopoulos.github.io/JMbayes2/reference/decision_curves.md)
+  [`plot(`*`<decision_curves>`*`)`](https://drizopoulos.github.io/JMbayes2/reference/decision_curves.md)
+  : (Un)weighted Decision Curves for Dynamic Predictions under
+  Left-Truncated and Right-Censored Data
 
 - [`jm()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
   [`value()`](https://drizopoulos.github.io/JMbayes2/reference/jm.md)
@@ -171,6 +174,34 @@ summary(jointFit)
 - [`slicer()`](https://drizopoulos.github.io/JMbayes2/reference/slicer.md)
   : Split Longitudinal and Survival Data into Subject-level Samples
 
+- [`tvAUC()`](https://drizopoulos.github.io/JMbayes2/reference/tvAUC.md)
+  : Area Under the Receiver Operating Characteristic Curve (AUC) for
+  Dynamic Predictions under Left-Truncated and Right-Censored Data
+
+- [`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/tvBrier.md)
+  : Brier Score for Dynamic Predictions under Left-Truncated and
+  Right-Censored Data
+
+- [`tvEC()`](https://drizopoulos.github.io/JMbayes2/reference/tvEC.md) :
+  Expected Cost for Dynamic Predictions under Left-Truncated and
+  Right-Censored Data
+
+- [`tvEPCE()`](https://drizopoulos.github.io/JMbayes2/reference/tvEPCE.md)
+  : Expected Predictive Cross Entropy for Dynamic Predictions under
+  Right-Censored Data
+
+- [`tvIWEC()`](https://drizopoulos.github.io/JMbayes2/reference/tvIWEC.md)
+  : Integrated Weighted Expected Cost for Dynamic Predictions under
+  Left-Truncated and Right-Censored Data
+
+- [`tvNB()`](https://drizopoulos.github.io/JMbayes2/reference/tvNB.md) :
+  Net Benefit for Dynamic Predictions under Left-Truncated and
+  Right-Censored Data
+
+- [`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/tvROC.md)
+  : Receiver Operating Characteristic Curve (ROC) for Dynamic
+  Predictions under Left-Truncated and Right-Censored Data
+
 - [`variogram()`](https://drizopoulos.github.io/JMbayes2/reference/variogram.md)
   : Variogram for Longitudinal Data
 
@@ -182,6 +213,8 @@ summary(jointFit)
   Function](https://drizopoulos.github.io/JMbayes2/articles/Baseline_Hazard.md):
 - [Causal
   Effects](https://drizopoulos.github.io/JMbayes2/articles/Causal_Effects.md):
+- [Clinical Utility Metrics to Evaluate Dynamic
+  Predictions](https://drizopoulos.github.io/JMbayes2/articles/Clinical_Utility_Metrics.md):
 - [Competing
   Risks](https://drizopoulos.github.io/JMbayes2/articles/Competing_Risks.md):
 - [Handling Large Datasets with Consensus Monte

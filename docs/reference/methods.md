@@ -216,27 +216,27 @@ fit_jm <- jm(fit_cox, list(fit_lme1, fit_lme2), time_var = "year",
 coef(fit_jm)
 #> $gammas
 #>       Mean 
-#> 0.06015635 
+#> 0.06004609 
 #> 
 #> $association
 #> value(log(serBilir))   value(prothrombin) 
-#>            1.3397493            0.1035939 
+#>            1.3484907            0.1055449 
 #> 
 
 # fixef(): fixed effects for the first linear mixed submodel
 fixef(fit_jm, outcome = 1)
 #>    (Intercept)            age   year:sexmale year:sexfemale 
-#>    0.669776347   -0.004536448    0.234799643    0.161635133 
+#>    0.677442322   -0.004623655    0.235246458    0.162372930 
 
 # ranef(): random effects from all linear mixed submodels
 head(ranef(fit_jm))
-#>            [,1]         [,2]         [,3]         [,4]
-#> [1,]  2.2351707  0.208431879  1.064497473  0.127318163
-#> [2,] -0.3618781  0.004369166 -0.014035927  0.085292706
-#> [3,] -0.1935768  0.068259347  0.531963518  0.198230091
-#> [4,]  0.0408405  0.101460737  0.855986565  0.578484983
-#> [5,]  0.3287492  0.226938809  0.006864474  0.422746952
-#> [6,] -0.6270285 -0.160616267 -0.103576212 -0.006573902
+#>             [,1]         [,2]        [,3]         [,4]
+#> [1,]  2.23407659  0.201673569  1.06308022  0.120764369
+#> [2,] -0.36905662  0.004486184 -0.01289891  0.086451294
+#> [3,] -0.19329986  0.067719933  0.51940887  0.214059359
+#> [4,]  0.03811501  0.100718356  0.87269718  0.575711718
+#> [5,]  0.33309994  0.223284172 -0.01309690  0.430250342
+#> [6,] -0.62619308 -0.162055593 -0.10728428 -0.006212681
 
 # terms(): random effects terms for the first linear mixed submodel
 terms(fit_jm, process = "longitudinal", type = "random")[[1]]
@@ -309,8 +309,8 @@ fit_jm2 <- jm(fit_cox, list(fit_lme1b, fit_lme2), time_var = "year",
 compare_jm(fit_jm, fit_jm2)
 #> 
 #>               DIC     WAIC      LPML
-#>  fit_jm2 10510.75 10541.53 -5277.992
-#>   fit_jm 10667.81 11178.94 -6152.203
+#>  fit_jm2 10500.24 10530.15 -5263.297
+#>   fit_jm 10690.79 11254.44 -6229.796
 #> 
 #> The criteria are calculated on the basis of the marginal log-likelihood.
 # }

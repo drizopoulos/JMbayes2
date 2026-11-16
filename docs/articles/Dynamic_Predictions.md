@@ -231,7 +231,7 @@ within a three-year window. That is discriminating between patients who
 will get the event in the interval `(t0, t0 + Dt]`, (i.e., in our case
 T_j \in (5, 8\]) from patients who will survive at least 8 years (i.e.,
 T_j \> 8). The calculations are performed with the following call to
-[`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md):
+[`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/tvROC.md):
 
 ``` r
 
@@ -245,75 +245,162 @@ roc
 #> Using information up to time: 5 (202 subjects still at risk)
 #> Accounting for censoring using model-based weights
 #> 
-#>    cut-off      SN      SP  
-#> 1     0.00 0.00000 1.00000  
-#> 2     0.04 0.01512 0.99822  
-#> 3     0.06 0.03596 0.99822  
-#> 4     0.08 0.03596 0.99172  
-#> 5     0.09 0.05680 0.98523  
-#> 6     0.10 0.07765 0.98523  
-#> 7     0.13 0.09849 0.98523  
-#> 8     0.14 0.13729 0.98434  
-#> 9     0.15 0.15062 0.98200  
-#> 10    0.18 0.15062 0.97550  
-#> 11    0.19 0.17146 0.97550  
-#> 12    0.21 0.19231 0.97550  
-#> 13    0.22 0.23399 0.97550  
-#> 14    0.24 0.27567 0.97550  
-#> 15    0.27 0.29651 0.97550  
-#> 16    0.29 0.31736 0.97550  
-#> 17    0.31 0.36025 0.96290  
-#> 18    0.32 0.38109 0.95640  
-#> 19    0.33 0.39042 0.95282  
-#> 20    0.34 0.41126 0.95282  
-#> 21    0.35 0.42264 0.94987  
-#> 22    0.39 0.44348 0.94987  
-#> 23    0.40 0.46432 0.94987  
-#> 24    0.42 0.48517 0.94987  
-#> 25    0.45 0.50601 0.94987  
-#> 26    0.47 0.52685 0.94987  
-#> 27    0.50 0.52685 0.94337  
-#> 28    0.51 0.54769 0.94337  
-#> 29    0.52 0.56853 0.94337  
-#> 30    0.53 0.56853 0.93688  
-#> 31    0.54 0.58938 0.93039  
-#> 32    0.60 0.58938 0.92390  
-#> 33    0.62 0.59505 0.91917  
-#> 34    0.63 0.59864 0.90731  
-#> 35    0.64 0.61949 0.90081  
-#> 36    0.65 0.64033 0.90081 *
-#> 37    0.66 0.64072 0.88146  
-#> 38    0.68 0.64647 0.87026  
-#> 39    0.69 0.65953 0.84836  
-#> 40    0.70 0.65953 0.84187  
-#> 41    0.71 0.65953 0.82888  
-#> 42    0.73 0.66484 0.81106  
-#> 43    0.74 0.67314 0.79417  
-#> 44    0.75 0.69399 0.78768  
-#> 45    0.76 0.72249 0.76409  
-#> 46    0.77 0.72320 0.75782  
-#> 47    0.78 0.72320 0.75133  
-#> 48    0.79 0.74495 0.73862  
-#> 49    0.80 0.74797 0.73307  
-#> 50    0.81 0.75039 0.70786  
-#> 51    0.82 0.77123 0.70786  
-#> 52    0.83 0.77123 0.70136  
-#> 53    0.84 0.77992 0.67810  
-#> 54    0.85 0.80076 0.67161  
-#> 55    0.86 0.82322 0.65912  
-#> 56    0.87 0.83087 0.60307  
-#> 57    0.88 0.83622 0.57228  
-#> 58    0.89 0.86153 0.54121  
-#> 59    0.90 0.88450 0.51590  
-#> 60    0.91 0.88677 0.45168  
-#> 61    0.92 0.90761 0.40623  
-#> 62    0.93 0.92846 0.36727  
-#> 63    0.94 0.97329 0.29034  
-#> 64    0.95 0.97467 0.25182  
-#> 65    0.96 0.97860 0.12968  
-#> 66    0.97 0.97860 0.09072  
-#> 67    0.98 0.99946 0.05177  
-#> 68    0.99 1.00000 0.00000
+#>     cut-off      SN       SP  
+#> 1     0.000 0.00000 1.000000  
+#> 2     0.044 0.01332 0.997536  
+#> 3     0.088 0.03494 0.997536  
+#> 4     0.099 0.03494 0.991115  
+#> 5     0.103 0.05656 0.991115  
+#> 6     0.131 0.05656 0.984695  
+#> 7     0.132 0.07818 0.984695  
+#> 8     0.144 0.09980 0.984695  
+#> 9     0.155 0.11673 0.983300  
+#> 10    0.160 0.13835 0.983300  
+#> 11    0.165 0.13835 0.976879  
+#> 12    0.203 0.14958 0.973795  
+#> 13    0.215 0.17120 0.973795  
+#> 14    0.223 0.19282 0.973795  
+#> 15    0.258 0.21444 0.973795  
+#> 16    0.285 0.23606 0.973795  
+#> 17    0.296 0.24574 0.970249  
+#> 18    0.301 0.26736 0.970249  
+#> 19    0.325 0.31060 0.970249  
+#> 20    0.333 0.33222 0.970249  
+#> 21    0.334 0.33222 0.963828  
+#> 22    0.350 0.35384 0.963828  
+#> 23    0.354 0.37546 0.963828  
+#> 24    0.357 0.37637 0.957678  
+#> 25    0.389 0.39799 0.957678  
+#> 26    0.400 0.41961 0.957678  
+#> 27    0.412 0.41961 0.951258  
+#> 28    0.439 0.44123 0.951258  
+#> 29    0.475 0.46285 0.951258  
+#> 30    0.477 0.47233 0.947651  
+#> 31    0.503 0.49395 0.947651  
+#> 32    0.522 0.51557 0.947651  
+#> 33    0.529 0.53719 0.947651  
+#> 34    0.538 0.55881 0.947651  
+#> 35    0.539 0.55881 0.941230  
+#> 36    0.556 0.55881 0.934810  
+#> 37    0.577 0.55881 0.928389  
+#> 38    0.629 0.58043 0.928389  
+#> 39    0.633 0.60205 0.928389  
+#> 40    0.672 0.60205 0.921968  
+#> 41    0.674 0.60462 0.916310  
+#> 42    0.676 0.60462 0.909889  
+#> 43    0.696 0.60979 0.898585  
+#> 44    0.698 0.61011 0.892258  
+#> 45    0.699 0.63173 0.892258  
+#> 46    0.705 0.63173 0.885838  
+#> 47    0.718 0.63173 0.879417  
+#> 48    0.722 0.63617 0.874316  
+#> 49    0.734 0.64076 0.869257  
+#> 50    0.737 0.64076 0.862836  
+#> 51    0.738 0.64076 0.856416  
+#> 52    0.740 0.64076 0.849995  
+#> 53    0.747 0.64076 0.843574  
+#> 54    0.751 0.64076 0.837154  
+#> 55    0.752 0.64211 0.831136  
+#> 56    0.755 0.64211 0.824715  
+#> 57    0.758 0.66373 0.824715  
+#> 58    0.766 0.66862 0.819746  
+#> 59    0.772 0.67550 0.808946  
+#> 60    0.781 0.69712 0.796104  
+#> 61    0.783 0.69712 0.789684  
+#> 62    0.788 0.69712 0.783263  
+#> 63    0.789 0.71874 0.783263  
+#> 64    0.796 0.71921 0.770564  
+#> 65    0.798 0.72084 0.764627  
+#> 66    0.810 0.72447 0.759284  
+#> 67    0.814 0.72447 0.752863  
+#> 68    0.825 0.74828 0.747092  
+#> 69    0.830 0.74891 0.740859  
+#> 70    0.835 0.74891 0.734439  
+#> 71    0.839 0.75320 0.722871  
+#> 72    0.842 0.75320 0.710029  
+#> 73    0.845 0.77482 0.710029  
+#> 74    0.851 0.77754 0.704416  
+#> 75    0.855 0.77754 0.697995  
+#> 76    0.856 0.77754 0.691575  
+#> 77    0.860 0.77754 0.685154  
+#> 78    0.866 0.77810 0.678901  
+#> 79    0.867 0.79972 0.678901  
+#> 80    0.876 0.80077 0.672790  
+#> 81    0.877 0.80077 0.666370  
+#> 82    0.880 0.80077 0.659949  
+#> 83    0.886 0.80446 0.648206  
+#> 84    0.890 0.80446 0.641785  
+#> 85    0.891 0.80446 0.635364  
+#> 86    0.893 0.80711 0.610468  
+#> 87    0.895 0.80899 0.604605  
+#> 88    0.896 0.80899 0.598184  
+#> 89    0.898 0.80956 0.591933  
+#> 90    0.902 0.83118 0.591933  
+#> 91    0.903 0.83254 0.585917  
+#> 92    0.904 0.83409 0.579956  
+#> 93    0.905 0.83409 0.573535  
+#> 94    0.909 0.83568 0.567586  
+#> 95    0.910 0.83568 0.548324  
+#> 96    0.911 0.83568 0.535483  
+#> 97    0.912 0.85730 0.535483  
+#> 98    0.913 0.85892 0.529545  
+#> 99    0.916 0.85957 0.523314  
+#> 100   0.919 0.88119 0.523314  
+#> 101   0.920 0.88119 0.516894  
+#> 102   0.921 0.88385 0.504844  
+#> 103   0.924 0.88385 0.498423  
+#> 104   0.925 0.88385 0.485582  
+#> 105   0.926 0.88385 0.479161  
+#> 106   0.927 0.90553 0.466337  
+#> 107   0.929 0.90553 0.447075  
+#> 108   0.930 0.90553 0.440654  
+#> 109   0.931 0.90553 0.427813  
+#> 110   0.932 0.90553 0.421392  
+#> 111   0.933 0.90618 0.402322  
+#> 112   0.937 0.90618 0.395902  
+#> 113   0.938 0.90618 0.389481  
+#> 114   0.939 0.90618 0.383060  
+#> 115   0.941 0.90618 0.376640  
+#> 116   0.942 0.90618 0.370219  
+#> 117   0.945 0.90618 0.363798  
+#> 118   0.946 0.92814 0.357480  
+#> 119   0.947 0.92814 0.351059  
+#> 120   0.948 0.95041 0.331991  
+#> 121   0.949 0.95083 0.319274  
+#> 122   0.951 0.95083 0.312853  
+#> 123   0.952 0.95092 0.300039  
+#> 124   0.953 0.95130 0.293729  
+#> 125   0.954 0.97345 0.287466  
+#> 126   0.956 0.97345 0.281045  
+#> 127   0.957 0.97552 0.262398  
+#> 128   0.958 0.97552 0.249557  
+#> 129   0.960 0.97552 0.243136  
+#> 130   0.961 0.97578 0.223951  
+#> 131   0.962 0.97578 0.211110  
+#> 132   0.963 0.97688 0.198596  
+#> 133   0.964 0.97688 0.192175  
+#> 134   0.965 0.97747 0.185929  
+#> 135   0.966 0.97747 0.173088  
+#> 136   0.967 0.97795 0.160390  
+#> 137   0.968 0.97795 0.147548  
+#> 138   0.971 0.97795 0.141128  
+#> 139   0.972 0.97801 0.121884  
+#> 140   0.975 0.97801 0.115464  
+#> 141   0.976 0.97801 0.109043  
+#> 142   0.977 0.97801 0.102622  
+#> 143   0.978 0.97801 0.096202  
+#> 144   0.979 0.97801 0.089781  
+#> 145   0.980 0.97801 0.083360  
+#> 146   0.981 0.97801 0.076940  
+#> 147   0.982 0.97801 0.070519  
+#> 148   0.984 0.97803 0.057682  
+#> 149   0.985 0.97825 0.051327  
+#> 150   0.986 0.97825 0.044907  
+#> 151   0.987 0.99987 0.032065  
+#> 152   0.988 0.99990 0.019233  
+#> 153   0.990 0.99990 0.012813  
+#> 154   0.992 0.99990 0.006392  
+#> 155   0.994 1.00000 0.000000
 ```
 
 In the first line we define the event indicator as we did in the
@@ -325,7 +412,7 @@ the ROC curve, we use the corresponding
 ![](Dynamic_Predictions_files/figure-html/unnamed-chunk-14-1.png)
 
 The area under the ROC curve is calculated with the
-[`tvAUC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`tvAUC()`](https://drizopoulos.github.io/JMbayes2/reference/tvAUC.md)
 function:
 
 ``` r
@@ -334,7 +421,7 @@ tvAUC(roc)
 #> 
 #>  Time-dependent AUC for the Joint Model jointFit
 #> 
-#> Estimated AUC:  0.823
+#> Estimated AUC:  0.8188
 #> At time: 8
 #> Using information up to time: 5 (202 subjects still at risk)
 #> Accounting for censoring using model-based weights
@@ -347,9 +434,9 @@ dataset as the one to fit the model, but, in principle, discrimination
 could be (better) assessed in another dataset.
 
 The
-[`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/tvROC.md)
 and
-[`tvAUC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`tvAUC()`](https://drizopoulos.github.io/JMbayes2/reference/tvAUC.md)
 functions also work for Cox regression models for right censored data.
 We compare the added value of using the longitudinal data compared to
 only using the baseline value of the markers,
@@ -362,7 +449,7 @@ tvAUC(baseline_Cox, newdata = pbc2.id, Tstart = t0, Dt = 3)
 #> 
 #>  Time-dependent AUC for the Cox Model baseline_Cox
 #> 
-#> Estimated AUC:  0.6736
+#> Estimated AUC:  0.6737
 #> At time: 8
 #> Using information up to time: 5 (202 subjects still at risk)
 #> Accounting for censoring using model-based weights
@@ -379,22 +466,22 @@ calibration_plot(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 ![](Dynamic_Predictions_files/figure-html/unnamed-chunk-17-1.png)
 
 The syntax of the
-[`calibration_plot()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`calibration_plot()`](https://drizopoulos.github.io/JMbayes2/reference/calibration_plot.md)
 function is almost identical to that of
-[`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md).
+[`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/tvROC.md).
 The kernel density estimation is of the estimated probabilities
 \pi_j(t + \Delta t \mid t) = \pi_j(8 \mid 5) for all individuals at risk
 at year `t0` in the data frame provided in the `newdata` argument. The
 grey shaded area represents the 95% pointwise confidence intervals of
 the predicted cumulative risks probabilities. Using the
-[`calibration_metrics()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`calibration_metrics()`](https://drizopoulos.github.io/JMbayes2/reference/calibration_plot.md)
 function we can also calculate metrics for the accuracy of predictions:
 
 ``` r
 
 calibration_metrics(jointFit, pbc2, Tstart = 5, Dt = 3)
-#>         ICI         E50         E90 
-#> 0.020676624 0.008193399 0.078628056
+#>        ICI        E50        E90 
+#> 0.03197869 0.02756373 0.04542953
 ```
 
 The ICI is the mean absolute difference between the observed and
@@ -402,7 +489,7 @@ predicted probabilities, E50 is the median absolute difference, and E90
 is the 90% percentile of the absolute differences. Finally, we calculate
 the Brier score as an overall measure of predictive performance. This is
 computed with the
-[`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/tvBrier.md)
 function:
 
 ``` r
@@ -411,7 +498,7 @@ tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 #> 
 #> Prediction Error for the Joint Model 'jointFit'
 #> 
-#> Estimated Brier score: 0.1267
+#> Estimated Brier score: 0.124
 #> At time: 8
 #> For the 202 subjects at risk at time 5
 #> Number of subjects with an event in [5, 8): 40
@@ -430,7 +517,7 @@ tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE)
 #> 
 #> Prediction Error for the Joint Model 'jointFit'
 #> 
-#> Estimated Integrated Brier score: 0.0839
+#> Estimated Integrated Brier score: 0.0833
 #> In the time interval: [5, 8)
 #> For the 202 subjects at risk at time 5
 #> Number of subjects with an event in [5, 8): 40
@@ -439,7 +526,7 @@ tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE)
 ```
 
 Function
-[`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/tvBrier.md)
 also works for Cox models, e.g.,
 
 ``` r
@@ -448,7 +535,7 @@ tvBrier(baseline_Cox, newdata = pbc2.id, Tstart = t0, Dt = 3, integrated = TRUE)
 #> 
 #> Prediction Error for the Cox Model 'baseline_Cox'
 #> 
-#> Estimated Integrated Brier score: 0.1163
+#> Estimated Integrated Brier score: 0.0983
 #> In the time interval: [5, 8)
 #> For the 202 subjects at risk at time 5
 #> Number of subjects with an event in [5, 8): 40
@@ -457,9 +544,9 @@ tvBrier(baseline_Cox, newdata = pbc2.id, Tstart = t0, Dt = 3, integrated = TRUE)
 ```
 
 The
-[`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/tvBrier.md)
 and
-[`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/tvROC.md)
 also implement inverse probability of censoring weights to account for
 censoring in the interval `(t0, t0 + Dt]` using the Kaplan-Meier
 estimate of the censoring distribution (however, see the note below):
@@ -471,7 +558,7 @@ tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE,
 #> 
 #> Prediction Error for the Joint Model 'jointFit'
 #> 
-#> Estimated Integrated Brier score: 0.0836
+#> Estimated Integrated Brier score: 0.0844
 #> In the time interval: [5, 8)
 #> For the 202 subjects at risk at time 5
 #> Number of subjects with an event in [5, 8): 40
@@ -501,7 +588,7 @@ tvBrier(jointFit, newdata = pbc2, Tstart = t0, Dt = 3, integrated = TRUE,
   manner on the history of the longitudinal outcomes. However, they
   require that the model is appropriately calibrated.
 - The calibration curve, produced by
-  [`calibration_plot()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md),
+  [`calibration_plot()`](https://drizopoulos.github.io/JMbayes2/reference/calibration_plot.md),
   and the calibration metrics, produced by `calibration_metrics())`, are
   calculated using the procedure described in [Austin et al.,
   2020](https://doi.org/10.1002/sim.8570).
@@ -519,7 +606,7 @@ cross-validation and the Bootstrap methods.
 
 Both testing and training datasets for both techniques can be created
 using the
-[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/create_folds.md)
 function. We start with cross-validation and split the `pbc2` database
 into five folds using the syntax:
 
@@ -531,7 +618,7 @@ CVdats <- create_folds(pbc2, V = 5, id_var = "id")
 The first argument for this function is the `data.frame` we wish to
 split into `V` folds. The argument `id_var` specifies the name of the
 subject’s id variable in this dataset. The output of
-[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/create_folds.md)
 is a list with two components named `"training"` and `"testing"`. Each
 component is another list with `V` data.frames.
 
@@ -618,7 +705,7 @@ average of the estimated Brier scores in the testing datasets:
 
 average_Brier <- mean(sapply(Brier_per_fold, "[[", "Brier"))
 average_Brier
-#> [1] 0.08633074
+#> [1] 0.08688216
 ```
 
 The calculation of the cross-validated estimate of the AUC at follow-up
@@ -639,7 +726,7 @@ parallel::stopCluster(cl)
 
 average_AUC <- mean(sapply(AUC_per_fold, "[[", "auc"))
 average_AUC
-#> [1] 0.818448
+#> [1] 0.817337
 ```
 
 #### Bootstrap
@@ -647,7 +734,7 @@ average_AUC
 We continue the illustration of internal validation in **JMbayes2**
 using the Bootstrap method. The training and testing datasets are again
 created with the
-[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/create_folds.md)
 function by specifying `method = "Bootstrap"`:
 
 ``` r
@@ -715,7 +802,7 @@ upward bias:
 ``` r
 
 0.368 * Brier_original$Brier + 0.632 * average_Brier_bootSamples
-#> [1] 0.08190476
+#> [1] 0.08202122
 ```
 
 We perform the same calculations also for the AUC:
@@ -733,7 +820,7 @@ average_AUC_bootSamples <- mean(sapply(AUC_per_bootSample, "[[", "auc"))
 AUC_original <- tvAUC(jointFit, newdata = pbc2, Tstart = t0, Dt = 3)
 
 0.368 * AUC_original$auc + 0.632 * average_AUC_bootSamples
-#> [1] 0.8167267
+#> [1] 0.8144799
 ```
 
 A 95% confidence interval for the AUC in the original sample can be
@@ -757,7 +844,7 @@ AUC_original
 #> 
 #>  Time-dependent AUC for the Joint Model jointFit
 #> 
-#> Estimated AUC:  0.8169
+#> Estimated AUC:  0.8178
 #> At time: 8
 #> Using information up to time: 5 (202 subjects still at risk)
 #> Accounting for censoring using model-based weights
@@ -765,5 +852,5 @@ AUC_original
 # 95% Bootstrap CI
 quantile(AUC_per_bootSample_training, probs = c(0.025, 0.975))
 #>      2.5%     97.5% 
-#> 0.7696276 0.8395893
+#> 0.7714136 0.8373936
 ```

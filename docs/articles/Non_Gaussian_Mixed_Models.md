@@ -121,7 +121,7 @@ DF <- DF[DF$time <= DF$Time, ]
 
 To fit the corresponding joint model, we fit first a Beta mixed model
 using the
-[`beta.fam()`](https://drizopoulos.github.io/GLMMadaptive/reference/extra_fams.html)
+[`beta.fam()`](https://rdrr.io/pkg/GLMMadaptive/man/extra_fams.html)
 family object into the call of
 [`mixed_model()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md):
 
@@ -145,34 +145,34 @@ summary(jointFit)
 #>   y: 1182
 #> 
 #>                   DIC      WAIC     LPML
-#> marginal    -4017.577 -4058.223 1834.994
-#> conditional -3840.343 -3943.855 1819.955
+#> marginal    -4014.132 -4054.537 1871.975
+#> conditional -3827.281 -3930.295 1806.311
 #> 
 #> Random-effects covariance matrix:
 #>                     
 #>        StdDev   Corr
-#> (Intr) 0.8443 (Intr)
-#> time   0.4663 0.0785
+#> (Intr) 0.8555 (Intr)
+#> time   0.4712 0.0696
 #> 
 #> Survival outcome:
 #>             Mean  StDev    2.5%  97.5%      P   Rhat
-#> sexfemale 0.2169 0.2916 -0.3701 0.7895 0.4604 1.0055
-#> value(y)  1.0584 0.0948  0.8890 1.2615 0.0000 1.0643
+#> sexfemale 0.2219 0.3010 -0.3670 0.8190 0.4647 1.0125
+#> value(y)  1.0608 0.1103  0.8665 1.2908 0.0000 1.1197
 #> 
 #> Longitudinal outcome: y (family = beta, link = logit)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)    -2.3446 0.1085 -2.5563 -2.1344 0.0000 1.0111
-#> sexfemale      -0.0625 0.1511 -0.3630  0.2353 0.6787 1.0099
-#> time            0.3272 0.0515  0.2271  0.4287 0.0000 1.0062
-#> sexfemale:time -0.0631 0.0733 -0.2072  0.0804 0.3842 1.0084
-#> sigma           6.2935 0.3824  5.5669  7.0915 0.0000 1.0315
+#> (Intercept)    -2.3458 0.1107 -2.5599 -2.1296 0.0000 1.0026
+#> sexfemale      -0.0676 0.1515 -0.3640  0.2273 0.6604 1.0060
+#> time            0.3275 0.0521  0.2260  0.4297 0.0000 1.0017
+#> sexfemale:time -0.0618 0.0738 -0.2060  0.0825 0.3953 1.0043
+#> sigma           6.3279 0.4085  5.5334  7.1724 0.0000 1.0184
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 18 sec
+#> time: 17 sec
 ```
 
 [Back to top](#top)
@@ -188,7 +188,7 @@ follows a normal distribution the observed censored data cannot be
 analyzed using a standard mixed model. The
 [`mixed_model()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md)
 function can accommodate such outcomes using the
-[`censored.normal()`](https://drizopoulos.github.io/GLMMadaptive/reference/extra_fams.html)
+[`censored.normal()`](https://rdrr.io/pkg/GLMMadaptive/man/extra_fams.html)
 family object.
 
 The following code simulates data from a joint model with a linear mixed
@@ -299,34 +299,34 @@ summary(jointFit)
 #>   cbind(y, ind): 1346
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    3711.934 4595.230 -3394.924
-#> conditional 3331.589 3219.776 -1756.184
+#> marginal    3721.930 4649.925 -3253.137
+#> conditional 3335.145 3221.196 -1750.729
 #> 
 #> Random-effects covariance matrix:
 #>                     
 #>        StdDev   Corr
-#> (Intr) 0.9478 (Intr)
-#> time   0.6600 0.1456
+#> (Intr) 0.9504 (Intr)
+#> time   0.6675 0.1453
 #> 
 #> Survival outcome:
-#>                        Mean  StDev   2.5% 97.5%      P   Rhat
-#> sexfemale            0.5991 0.2473 0.1252 1.073 0.0142 1.0043
-#> value(cbind(y, ind)) 0.8672 0.0657 0.7457 1.007 0.0000 1.0359
+#>                        Mean  StDev   2.5%  97.5%      P   Rhat
+#> sexfemale            0.6167 0.2474 0.1442 1.1087 0.0111 1.0127
+#> value(cbind(y, ind)) 0.8778 0.0659 0.7586 1.0214 0.0000 1.0444
 #> 
 #> Longitudinal outcome: cbind(y, ind) (family = censored normal, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)    -2.2608 0.1012 -2.4567 -2.0624 0.0000 1.0016
-#> sexfemale      -0.0255 0.1438 -0.3087  0.2568 0.8616 1.0020
-#> time            0.3334 0.0690  0.1988  0.4679 0.0000 1.0004
-#> sexfemale:time -0.1179 0.0973 -0.3099  0.0708 0.2307 1.0003
-#> sigma           0.4949 0.0138  0.4692  0.5230 0.0000 1.0003
+#> (Intercept)    -2.2588 0.1015 -2.4564 -2.0582 0.0000 1.0015
+#> sexfemale      -0.0284 0.1440 -0.3145  0.2530 0.8489 1.0029
+#> time            0.3335 0.0698  0.1973  0.4688 0.0000 1.0007
+#> sexfemale:time -0.1174 0.0980 -0.3117  0.0692 0.2253 1.0012
+#> sigma           0.4948 0.0137  0.4687  0.5215 0.0000 1.0020
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 15 sec
+#> time: 13 sec
 ```
 
 ### Students’s-t mixed models
@@ -423,7 +423,7 @@ DF <- DF[DF$time <= DF$Time, ]
 ```
 
 To fit the corresponding joint model we use the
-[`students.t()`](https://drizopoulos.github.io/GLMMadaptive/reference/extra_fams.html)
+[`students.t()`](https://rdrr.io/pkg/GLMMadaptive/man/extra_fams.html)
 family object in the call to
 [`mixed_model()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md):
 
@@ -448,33 +448,33 @@ summary(jointFit)
 #>   y: 1347
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    5192.321 6795.293 -3932.573
-#> conditional 4447.501 4350.715 -2338.512
+#> marginal    5204.080 6855.990 -3958.089
+#> conditional 4452.636 4352.831 -2347.894
 #> 
 #> Random-effects covariance matrix:
 #>                     
 #>        StdDev   Corr
-#> (Intr) 0.9795 (Intr)
-#> time   0.6721 0.1166
+#> (Intr) 0.9786 (Intr)
+#> time   0.6777 0.1152
 #> 
 #> Survival outcome:
-#>            Mean  StDev    2.5%  97.5%      P   Rhat
-#> sexfemale 0.017 0.2466 -0.4614 0.5010 0.9307 1.0058
-#> value(y)  0.823 0.0645  0.7074 0.9625 0.0000 1.0910
+#>             Mean  StDev    2.5%  97.5%      P   Rhat
+#> sexfemale 0.0158 0.2483 -0.4729 0.4872 0.9431 1.0007
+#> value(y)  0.8263 0.0704  0.6987 0.9883 0.0000 1.0382
 #> 
 #> Longitudinal outcome: y (family = Student's-t, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)    -2.2460 0.1074 -2.4519 -2.0340 0.0000 1.0057
-#> sexfemale      -0.1217 0.1511 -0.4158  0.1718 0.4153 1.0029
-#> time            0.2794 0.0705  0.1430  0.4168 0.0002 1.0066
-#> sexfemale:time -0.0312 0.0985 -0.2256  0.1595 0.7489 1.0049
+#> (Intercept)    -2.2450 0.1073 -2.4526 -2.0341 0.0000 1.0117
+#> sexfemale      -0.1222 0.1515 -0.4207  0.1754 0.4220 1.0056
+#> time            0.2803 0.0711  0.1440  0.4204 0.0002 1.0035
+#> sexfemale:time -0.0317 0.0995 -0.2268  0.1582 0.7460 1.0017
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 14 sec
+#> time: 12 sec
 ```
 
 [Back to top](#top)
@@ -592,35 +592,35 @@ summary(jointFit)
 #> Number of observations:
 #>   y: 3842
 #> 
-#>                  DIC    WAIC      LPML
-#> marginal    21348.93 21302.2 -10651.26
-#> conditional 22635.87 22347.6 -11559.46
+#>                  DIC     WAIC      LPML
+#> marginal    21350.36 21302.96 -10651.62
+#> conditional 22646.19 22354.90 -11545.31
 #> 
 #> Random-effects covariance matrix:
 #>                      
 #>        StdDev   Corr 
-#> (Intr) 1.0398 (Intr) 
-#> time   0.5364 -0.0502
+#> (Intr) 1.0498 (Intr) 
+#> time   0.5402 -0.0625
 #> 
 #> Survival outcome:
 #>             Mean  StDev   2.5%  97.5% P   Rhat
-#> sexfemale 0.6168 0.1653 0.3061 0.9410 0 1.0150
-#> value(y)  0.8175 0.0542 0.7129 0.9267 0 1.0214
+#> sexfemale 0.6153 0.1637 0.3055 0.9401 0 1.0198
+#> value(y)  0.8136 0.0536 0.7180 0.9317 0 1.0447
 #> 
 #> Longitudinal outcome: y (family = negative binomial, link = log)
 #>                   Mean  StDev    2.5%   97.5% P   Rhat
-#> (Intercept)     0.8415 0.0785  0.6851  0.9938 0 1.0033
-#> sexfemale      -0.5827 0.1134 -0.8076 -0.3660 0 1.0009
-#> time            0.8620 0.0414  0.7813  0.9428 0 1.0017
-#> sexfemale:time -0.5149 0.0582 -0.6302 -0.4018 0 1.0008
-#> sigma           1.9878 0.0837  1.8274  2.1574 0 1.0021
+#> (Intercept)     0.8409 0.0799  0.6837  0.9953 0 1.0042
+#> sexfemale      -0.5854 0.1144 -0.8088 -0.3657 0 1.0029
+#> time            0.8621 0.0420  0.7812  0.9447 0 1.0057
+#> sexfemale:time -0.5143 0.0584 -0.6286 -0.4016 0 1.0003
+#> sigma           1.9916 0.0830  1.8320  2.1573 0 1.0020
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 31 sec
+#> time: 28 sec
 ```
 
 [Back to top](#top)
@@ -741,32 +741,32 @@ summary(jointFit)
 #>   cbind(y, 20 - y): 2837
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    11924.20 11874.98 -5976.623
-#> conditional 13471.07 13256.09 -7023.212
+#> marginal    11924.23 11874.32 -5961.406
+#> conditional 13497.76 13280.00 -7050.638
 #> 
 #> Random-effects covariance matrix:
-#>                     
-#>        StdDev   Corr
-#> (Intr) 0.9996 (Intr)
-#> time   0.7069 0.0040
+#>                      
+#>        StdDev   Corr 
+#> (Intr) 1.0211 (Intr) 
+#> time   0.7168 -0.0097
 #> 
 #> Survival outcome:
-#>                           Mean  StDev   2.5%  97.5%      P   Rhat
-#> sexfemale               0.5880 0.1985 0.2080 0.9867 0.0053 1.0093
-#> value(cbind(y, 20 - y)) 0.9487 0.0722 0.8227 1.1051 0.0000 1.2894
+#>                           Mean StDev   2.5%  97.5%     P   Rhat
+#> sexfemale               0.5831 0.194 0.2189 0.9635 2e-04 1.0100
+#> value(cbind(y, 20 - y)) 0.9353 0.069 0.8212 1.0879 0e+00 1.1183
 #> 
 #> Longitudinal outcome: cbind(y, 20 - y) (family = beta binomial, link = logit)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)    -2.1503 0.0946 -2.3383 -1.9667 0.0000 1.0373
-#> sexfemale      -0.2702 0.1313 -0.5340 -0.0161 0.0373 1.0035
-#> time            0.3288 0.0524  0.2276  0.4298 0.0000 1.0048
-#> sexfemale:time -0.1778 0.0742 -0.3239 -0.0336 0.0187 1.0009
-#> sigma           4.7852 0.2768  4.2656  5.3463 0.0000 1.0598
+#> (Intercept)    -2.1601 0.0958 -2.3489 -1.9765 0.0000 1.0080
+#> sexfemale      -0.2744 0.1311 -0.5363 -0.0163 0.0378 1.0075
+#> time            0.3313 0.0524  0.2291  0.4335 0.0000 1.0025
+#> sexfemale:time -0.1793 0.0736 -0.3258 -0.0353 0.0140 1.0016
+#> sigma           4.8418 0.2774  4.3026  5.3913 0.0000 1.0440
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 31 sec
+#> time: 30 sec
 ```

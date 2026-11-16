@@ -2,6 +2,7 @@
 <url><loc>https://drizopoulos.github.io/JMbayes2/404.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/articles/Baseline_Hazard.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/articles/Causal_Effects.html</loc></url>
+<url><loc>https://drizopoulos.github.io/JMbayes2/articles/Clinical_Utility_Metrics.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/articles/Competing_Risks.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/articles/Consensus.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/articles/Dynamic_Predictions.html</loc></url>
@@ -19,9 +20,12 @@
 <url><loc>https://drizopoulos.github.io/JMbayes2/news/index.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/reference/accuracy.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/reference/aids.html</loc></url>
+<url><loc>https://drizopoulos.github.io/JMbayes2/reference/calibration_plot.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/reference/coda_methods.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/reference/consensus.html</loc></url>
+<url><loc>https://drizopoulos.github.io/JMbayes2/reference/create_folds.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/reference/cr_setup.html</loc></url>
+<url><loc>https://drizopoulos.github.io/JMbayes2/reference/decision_curves.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/reference/index.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/reference/jm.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/reference/JMbayes2.html</loc></url>
@@ -33,6 +37,14 @@
 <url><loc>https://drizopoulos.github.io/JMbayes2/reference/rc_setup.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/reference/slicer.html</loc></url>
+<url><loc>https://drizopoulos.github.io/JMbayes2/reference/tvAUC.html</loc></url>
+<url><loc>https://drizopoulos.github.io/JMbayes2/reference/tvAUC.tvROC.html</loc></url>
+<url><loc>https://drizopoulos.github.io/JMbayes2/reference/tvBrier.html</loc></url>
+<url><loc>https://drizopoulos.github.io/JMbayes2/reference/tvEC.html</loc></url>
+<url><loc>https://drizopoulos.github.io/JMbayes2/reference/tvEPCE.html</loc></url>
+<url><loc>https://drizopoulos.github.io/JMbayes2/reference/tvIWEC.html</loc></url>
+<url><loc>https://drizopoulos.github.io/JMbayes2/reference/tvNB.html</loc></url>
+<url><loc>https://drizopoulos.github.io/JMbayes2/reference/tvROC.html</loc></url>
 <url><loc>https://drizopoulos.github.io/JMbayes2/reference/variogram.html</loc></url>
 </urlset>
 

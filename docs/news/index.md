@@ -40,10 +40,10 @@
   performs posterior predictive checks.
 
 - Functions
-  [`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md),
-  [`tvAUC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/tvROC.md),
+  [`tvAUC()`](https://drizopoulos.github.io/JMbayes2/reference/tvAUC.md)
   and
-  [`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/tvBrier.md)
   now also work for Cox regression models.
 
 ## JMbayes2 0.5.0
@@ -88,25 +88,25 @@
 ### Major
 
 - Function
-  [`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/tvBrier.md)
   has gained the argument `integrated` for calculating the integrated
   Brier score.
 
 - Function
-  [`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/tvBrier.md)
   has gained the argument `type_weights` and now also allows to correct
   for censoring in the interval `Tstart` to `Thoriz` using inverse
   probability of censoring weighting. The default remains model-based
   weights.
 
 - The new function
-  [`tvEPCE()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`tvEPCE()`](https://drizopoulos.github.io/JMbayes2/reference/tvEPCE.md)
   calculates the time-varying expected predictive cross-entropy.
 
 - This version supports Super Learning for optimizing predictions using
   cross-validation and a library of joint models. In that regard, the
   new function
-  [`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/create_folds.md)
   can be used to split a dataset in V-folds of training and test
   datasets. More information can be found in the corresponding vignette.
 
@@ -156,14 +156,14 @@
 ### Major
 
 - Added the function
-  [`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`tvBrier()`](https://drizopoulos.github.io/JMbayes2/reference/tvBrier.md)
   for calculating time-varying Brier score for fitted joint models.
   Currently, only right-censored data are supported.
 
 - Added the functions
-  [`calibration_plot()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`calibration_plot()`](https://drizopoulos.github.io/JMbayes2/reference/calibration_plot.md)
   and
-  [`calibration_metrics()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`calibration_metrics()`](https://drizopoulos.github.io/JMbayes2/reference/calibration_plot.md)
   for calculating time-varying calibration plot and calibration metrics
   for fitted joint models. Currently, only right-censored data are
   supported.
@@ -191,9 +191,9 @@
   multi-state models.
 
 - Added the functions
-  [`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`tvROC()`](https://drizopoulos.github.io/JMbayes2/reference/tvROC.md)
   and
-  [`tvAUC()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+  [`tvAUC()`](https://drizopoulos.github.io/JMbayes2/reference/tvAUC.md)
   for calculating time-varying Receiver Operating Characteristic (ROC)
   curves and the areas under the ROC curves for fitted joint models.
   Currently, only right-censored data are supported.

@@ -115,63 +115,63 @@ summary(jFit_CR)
 #>   log(serBilir): 1945
 #>   prothrombin: 1945
 #> 
-#>                  DIC     WAIC     LPML
-#> marginal    10824.47 11537.00 -7027.52
-#> conditional 15755.21 15440.83 -8245.93
+#>                  DIC     WAIC      LPML
+#> marginal    10836.48 11593.33 -6844.690
+#> conditional 15758.81 15447.63 -8243.271
 #> 
 #> Random-effects covariance matrix:
 #>                                              
 #>        StdDev    Corr                        
-#> (Intr) 1.3446  (Intr)  p(,2)1  p(,2)2  (Intr)
-#> p(,2)1 23.0941 0.7087                        
-#> p(,2)2 12.3818 -0.2638 -0.1513               
-#> (Intr) 0.7862  0.6319  0.4428  -0.3325       
-#> year   0.3272  0.4357  0.3430  -0.0504 0.0363
+#> (Intr) 1.3494  (Intr)  p(,2)1  p(,2)2  (Intr)
+#> p(,2)1 23.2895 0.7128                        
+#> p(,2)2 12.3887 -0.2599 -0.1483               
+#> (Intr) 0.7892  0.6336  0.4420  -0.3325       
+#> year   0.3275  0.4354  0.3442  -0.0509 0.0395
 #> 
 #> Survival outcome:
 #>                                         Mean  StDev    2.5%   97.5%      P
-#> age:strata(CR)transplanted           -0.0780 0.0258 -0.1301 -0.0301 0.0005
-#> age:strata(CR)dead                    0.0648 0.0097  0.0459  0.0841 0.0000
-#> drugD-penicil:strata(CR)transplanted -0.2673 0.3963 -1.0726  0.4908 0.5032
-#> drugD-penicil:strata(CR)dead          0.0084 0.1857 -0.3527  0.3829 0.9698
-#> value(log(serBilir)):CRtransplanted   1.0458 0.2191  0.6410  1.4968 0.0000
-#> value(log(serBilir)):CRdead           1.4637 0.1171  1.2408  1.6993 0.0000
-#> value(prothrombin):CRtransplanted     0.0001 0.1555 -0.3150  0.2831 0.9667
-#> value(prothrombin):CRdead             0.1499 0.0459  0.0568  0.2354 0.0033
+#> age:strata(CR)transplanted           -0.0789 0.0256 -0.1303 -0.0314 0.0000
+#> age:strata(CR)dead                    0.0649 0.0099  0.0456  0.0844 0.0000
+#> drugD-penicil:strata(CR)transplanted -0.2747 0.3968 -1.0631  0.4999 0.4957
+#> drugD-penicil:strata(CR)dead          0.0043 0.1882 -0.3631  0.3736 0.9913
+#> value(log(serBilir)):CRtransplanted   1.0493 0.2150  0.6449  1.4885 0.0000
+#> value(log(serBilir)):CRdead           1.4625 0.1164  1.2446  1.6966 0.0000
+#> value(prothrombin):CRtransplanted    -0.0093 0.1484 -0.3118  0.2625 0.9657
+#> value(prothrombin):CRdead             0.1520 0.0461  0.0593  0.2381 0.0025
 #>                                        Rhat
-#> age:strata(CR)transplanted           1.0209
-#> age:strata(CR)dead                   1.0079
-#> drugD-penicil:strata(CR)transplanted 1.0120
-#> drugD-penicil:strata(CR)dead         1.0017
-#> value(log(serBilir)):CRtransplanted  1.0145
-#> value(log(serBilir)):CRdead          1.0048
-#> value(prothrombin):CRtransplanted    1.0604
-#> value(prothrombin):CRdead            1.0143
+#> age:strata(CR)transplanted           1.0439
+#> age:strata(CR)dead                   1.0020
+#> drugD-penicil:strata(CR)transplanted 1.0029
+#> drugD-penicil:strata(CR)dead         1.0028
+#> value(log(serBilir)):CRtransplanted  1.0039
+#> value(log(serBilir)):CRdead          1.0033
+#> value(prothrombin):CRtransplanted    1.0387
+#> value(prothrombin):CRdead            1.0189
 #> 
 #> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev     2.5%   97.5%      P   Rhat
-#> (Intercept)     1.2012 0.1142   0.9810  1.4246 0.0000 1.0033
-#> poly(year, 2)1 27.9874 2.9704  22.3932 34.1123 0.0000 1.0141
-#> poly(year, 2)2  1.1724 1.7321  -2.1816  4.6004 0.4952 1.0104
-#> drugD-penicil  -0.1929 0.1573  -0.5034  0.1181 0.2190 1.0008
-#> p(,2)1         -3.3151 3.5856 -10.4187  3.6660 0.3573 1.0026
-#> p(,2)2         -1.0671 2.1682  -5.3675  3.1896 0.6168 1.0010
-#> sigma           0.3024 0.0062   0.2906  0.3148 0.0000 1.0013
+#> (Intercept)     1.2020 0.1154   0.9794  1.4270 0.0000 1.0012
+#> poly(year, 2)1 28.0623 3.0988  22.2541 34.4407 0.0000 1.0047
+#> poly(year, 2)2  1.2198 1.7764  -2.2226  4.6556 0.4922 1.0023
+#> drugD-penicil  -0.1915 0.1583  -0.4986  0.1238 0.2240 1.0011
+#> p(,2)1         -3.2039 3.6115 -10.3220  3.7644 0.3695 1.0096
+#> p(,2)2         -1.0293 2.1549  -5.2776  3.2148 0.6235 1.0047
+#> sigma           0.3024 0.0062   0.2906  0.3150 0.0000 1.0015
 #> 
 #> Longitudinal outcome: prothrombin (family = gaussian, link = identity)
 #>                       Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)        10.6340 0.0831 10.4694 10.7992 0.0000 1.0002
-#> year                0.2942 0.0400  0.2167  0.3739 0.0000 1.0008
-#> drugD-penicil      -0.0940 0.1170 -0.3264  0.1400 0.4138 1.0003
-#> year:drugD-penicil -0.0239 0.0517 -0.1258  0.0760 0.6497 1.0000
-#> sigma               1.0547 0.0204  1.0153  1.0952 0.0000 1.0009
+#> (Intercept)        10.6346 0.0834 10.4711 10.8008 0.0000 1.0013
+#> year                0.2936 0.0395  0.2190  0.3725 0.0000 1.0024
+#> drugD-penicil      -0.0948 0.1173 -0.3279  0.1376 0.4172 1.0002
+#> year:drugD-penicil -0.0231 0.0516 -0.1255  0.0778 0.6558 1.0005
+#> sigma               1.0547 0.0204  1.0153  1.0956 0.0000 1.0001
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 25000 
 #> burn-in per chain: 5000 
 #> thinning: 5 
-#> time: 3.1 min
+#> time: 2.9 min
 ```
 
 ### Dynamic predictions

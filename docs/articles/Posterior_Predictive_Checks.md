@@ -347,7 +347,7 @@ In the absence of an external test dataset, we can utilize a
 cross-validation procedure. We illustrate this approach using the
 `prothro` dataset. We start by splitting the database into five folds
 using the function
-[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md):
+[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/create_folds.md):
 
 ``` r
 
@@ -357,7 +357,7 @@ CVdats <- create_folds(prothro, V = 5, id_var = "id")
 The first argument for this function is the `data.frame` we wish to
 split in `V` folds. The argument `id_var` specifies the name of the
 subject’s id variable in this dataset. The output of
-[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/accuracy.md)
+[`create_folds()`](https://drizopoulos.github.io/JMbayes2/reference/create_folds.md)
 is a list with two components named `"training"` and `"testing"`. Each
 component is another list with `V` data.frames.
 

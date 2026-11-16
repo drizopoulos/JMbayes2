@@ -131,15 +131,15 @@ cons_fit
 #> Method (var_weight): iteration-wise weighted average across splits using inverse-variance weights.
 #> 
 #> Parameter block: alphas (9000 draws)
-#>                        Mean  StDev   2.5%  97.5% P   w_S1   w_S2
-#> value(log(serBilir)) 1.2499 0.0889 1.0805 1.4284 0 0.4198 0.5802
+#>                        Mean StDev   2.5% 97.5% P   w_S1   w_S2
+#> value(log(serBilir)) 1.2514 0.092 1.0754  1.44 0 0.4078 0.5922
 #> 
 #> Parameter block: betas1 (9000 draws)
 #>                   Mean  StDev    2.5%   97.5%      P   w_S1   w_S2
-#> (Intercept)     0.7238 0.1720  0.3834  1.0554 0.0000 0.6856 0.3144
-#> year            0.2664 0.0384  0.1918  0.3425 0.0000 0.5859 0.4141
-#> sexfemale      -0.2429 0.1827 -0.5938  0.1217 0.1820 0.6675 0.3325
-#> year:sexfemale -0.0894 0.0406 -0.1683 -0.0113 0.0238 0.5687 0.4313
+#> (Intercept)     0.7240 0.1724  0.3865  1.0575 0.0000 0.6840 0.3160
+#> year            0.2663 0.0381  0.1925  0.3426 0.0000 0.5923 0.4077
+#> sexfemale      -0.2430 0.1833 -0.5986  0.1207 0.1864 0.6655 0.3345
+#> year:sexfemale -0.0901 0.0402 -0.1711 -0.0126 0.0238 0.5776 0.4224
 ```
 
 ### Example 2: Federated or sequential posterior sampling
@@ -213,13 +213,13 @@ cons_fit2
 #> Method (var_weight): iteration-wise weighted average across splits using inverse-variance weights.
 #> 
 #> Parameter block: alphas (9000 draws)
-#>                        Mean  StDev   2.5%  97.5% P   w_S1   w_S2
-#> value(log(serBilir)) 1.2499 0.0889 1.0805 1.4284 0 0.4198 0.5802
+#>                        Mean StDev   2.5% 97.5% P   w_S1   w_S2
+#> value(log(serBilir)) 1.2514 0.092 1.0754  1.44 0 0.4078 0.5922
 #> 
 #> Parameter block: betas1 (9000 draws)
 #>                   Mean  StDev    2.5%   97.5%      P   w_S1   w_S2
-#> (Intercept)     0.7238 0.1720  0.3834  1.0554 0.0000 0.6856 0.3144
-#> year            0.2664 0.0384  0.1918  0.3425 0.0000 0.5859 0.4141
-#> sexfemale      -0.2429 0.1827 -0.5938  0.1217 0.1820 0.6675 0.3325
-#> year:sexfemale -0.0894 0.0406 -0.1683 -0.0113 0.0238 0.5687 0.4313
+#> (Intercept)     0.7240 0.1724  0.3865  1.0575 0.0000 0.6840 0.3160
+#> year            0.2663 0.0381  0.1925  0.3426 0.0000 0.5923 0.4077
+#> sexfemale      -0.2430 0.1833 -0.5986  0.1207 0.1864 0.6655 0.3345
+#> year:sexfemale -0.0901 0.0402 -0.1711 -0.0126 0.0238 0.5776 0.4224
 ```

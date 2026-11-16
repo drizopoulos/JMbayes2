@@ -58,24 +58,24 @@ summary(jointFit1)
 #>   hepatomegaly: 1884
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    3078.940 3067.799 -1534.727
-#> conditional 4983.835 4846.361 -2664.249
+#> marginal    3078.721 3068.122 -1535.149
+#> conditional 4991.883 4851.605 -2659.798
 #> 
 #> Random-effects covariance matrix:
 #>                      
 #>        StdDev   Corr 
-#> (Intr) 3.3077 (Intr) 
-#> year   0.5354 -0.1638
+#> (Intr) 3.2972 (Intr) 
+#> year   0.5369 -0.1629
 #> 
 #> Survival outcome:
-#>                        Mean  StDev    2.5%  97.5%      P   Rhat
-#> sexfemale           -0.4619 0.3028 -1.0504 0.1607 0.1287 1.0023
-#> value(hepatomegaly)  0.3560 0.0476  0.2625 0.4475 0.0000 1.0394
+#>                        Mean StDev    2.5%  97.5%      P   Rhat
+#> sexfemale           -0.4714 0.299 -1.0511 0.1216 0.1171 1.0012
+#> value(hepatomegaly)  0.3521 0.049  0.2629 0.4554 0.0000 1.0265
 #> 
 #> Longitudinal outcome: hepatomegaly (family = binomial, link = logit)
-#>               Mean  StDev    2.5%  97.5%     P   Rhat
-#> (Intercept) 0.0514 0.2266 -0.3827 0.5064 0.826 1.0017
-#> year        0.2871 0.0652  0.1640 0.4164 0.000 1.0017
+#>               Mean  StDev    2.5%  97.5%      P   Rhat
+#> (Intercept) 0.0527 0.2262 -0.3858 0.5010 0.8253 1.0043
+#> year        0.2853 0.0615  0.1670 0.4072 0.0000 1.0219
 #> 
 #> MCMC summary:
 #> chains: 3 
@@ -122,24 +122,24 @@ summary(jointFit2)
 #>   hepatomegaly: 1884
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    3068.113 3059.759 -1530.319
-#> conditional 5002.669 4898.106 -2681.990
+#> marginal    3065.389 3058.731 -1530.035
+#> conditional 5022.700 4924.262 -2726.802
 #> 
 #> Random-effects covariance matrix:
 #>                      
 #>        StdDev   Corr 
-#> (Intr) 3.3446 (Intr) 
-#> year   0.5290 -0.3215
+#> (Intr) 3.4064 (Intr) 
+#> year   0.5426 -0.3475
 #> 
 #> Survival outcome:
 #>                                Mean  StDev    2.5%  97.5%      P   Rhat
-#> sexfemale                   -0.3525 0.2759 -0.9036 0.1922 0.2056 1.0043
-#> vexpit(value(hepatomegaly))  3.2610 0.4417  2.4286 4.1611 0.0000 1.0220
+#> sexfemale                   -0.3586 0.2816 -0.8643 0.2012 0.2031 1.0005
+#> vexpit(value(hepatomegaly))  3.2322 0.4437  2.4012 4.1573 0.0000 1.0166
 #> 
 #> Longitudinal outcome: hepatomegaly (family = binomial, link = logit)
 #>               Mean  StDev    2.5%  97.5%      P   Rhat
-#> (Intercept) 0.0736 0.2312 -0.3696 0.5419 0.7462 1.0046
-#> year        0.2364 0.0627  0.1159 0.3595 0.0000 1.0059
+#> (Intercept) 0.0698 0.2347 -0.3758 0.5339 0.7647 1.0034
+#> year        0.2359 0.0631  0.1193 0.3644 0.0000 1.0164
 #> 
 #> MCMC summary:
 #> chains: 3 
@@ -181,29 +181,29 @@ summary(jointFit3)
 #>   hepatomegaly: 1884
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    3065.501 3058.802 -1529.794
-#> conditional 4982.721 4879.972 -2707.586
+#> marginal    3066.994 3058.858 -1530.209
+#> conditional 4997.713 4894.311 -2713.970
 #> 
 #> Random-effects covariance matrix:
 #>                      
 #>        StdDev   Corr 
-#> (Intr) 3.4002 (Intr) 
-#> year   0.5488 -0.4588
+#> (Intr) 3.4536 (Intr) 
+#> year   0.5612 -0.4739
 #> 
 #> Survival outcome:
 #>                                                    Mean  StDev    2.5%   97.5%
-#> sexfemale                                       -0.3313 0.2846 -0.8546  0.2500
-#> vexpit(value(hepatomegaly))                      3.4213 0.5315  2.4733  4.5506
-#> Dexpit(value(hepatomegaly)):slope(hepatomegaly) -0.9514 0.4716 -1.9941 -0.1333
+#> sexfemale                                       -0.3289 0.2898 -0.8727  0.2508
+#> vexpit(value(hepatomegaly))                      3.4277 0.5446  2.4731  4.6946
+#> Dexpit(value(hepatomegaly)):slope(hepatomegaly) -0.9622 0.4801 -2.1282 -0.1991
 #>                                                      P   Rhat
-#> sexfemale                                       0.2467 1.0025
-#> vexpit(value(hepatomegaly))                     0.0000 1.0605
-#> Dexpit(value(hepatomegaly)):slope(hepatomegaly) 0.0222 1.0332
+#> sexfemale                                       0.2678 1.0040
+#> vexpit(value(hepatomegaly))                     0.0000 1.2764
+#> Dexpit(value(hepatomegaly)):slope(hepatomegaly) 0.0222 1.0466
 #> 
 #> Longitudinal outcome: hepatomegaly (family = binomial, link = logit)
 #>               Mean  StDev    2.5%  97.5%      P   Rhat
-#> (Intercept) 0.1099 0.2356 -0.3458 0.5814 0.6489 1.0062
-#> year        0.1766 0.0639  0.0541 0.3055 0.0040 1.0278
+#> (Intercept) 0.1206 0.2397 -0.3446 0.6016 0.6164 1.0178
+#> year        0.1725 0.0665  0.0469 0.3056 0.0087 1.0548
 #> 
 #> MCMC summary:
 #> chains: 3 
@@ -274,26 +274,22 @@ We compare the two fits
 ``` r
 
 summary(jFit1)$Survival
-#>                           Mean     StDev       2.5%     97.5%         P
-#> sexfemale            -0.175050 0.2726780 -0.6789224 0.3783756 0.5268889
-#> value(log(serBilir))  1.220027 0.1090261  1.0128844 1.4400938 0.0000000
-#> slope(log(serBilir))  2.944295 0.6587145  1.7427147 4.2971061 0.0000000
-#>                          Rhat
-#> sexfemale            1.001977
-#> value(log(serBilir)) 1.024068
-#> slope(log(serBilir)) 1.027657
+#>                            Mean     StDev      2.5%    97.5%         P     Rhat
+#> sexfemale            -0.1819164 0.2793902 -0.695733 0.395819 0.5155556 1.004030
+#> value(log(serBilir))  1.2282014 0.1088604  1.009231 1.440659 0.0000000 1.092506
+#> slope(log(serBilir))  2.9379169 0.6423208  1.732051 4.214884 0.0000000 1.032774
 
 summary(jFit2)$Survival
-#>                                                         Mean     StDev
-#> sexfemale                                         -0.1774053 0.2716258
-#> value(log(serBilir))                               1.2071915 0.1036586
-#> slope(log(serBilir), eps = 1, direction = "back")  2.8198207 0.6105925
-#>                                                         2.5%     97.5%
-#> sexfemale                                         -0.6966948 0.3748471
-#> value(log(serBilir))                               1.0068875 1.4087023
-#> slope(log(serBilir), eps = 1, direction = "back")  1.6957148 4.1260694
-#>                                                           P     Rhat
-#> sexfemale                                         0.5366667 1.002943
-#> value(log(serBilir))                              0.0000000 1.049348
-#> slope(log(serBilir), eps = 1, direction = "back") 0.0000000 1.010129
+#>                                                         Mean    StDev
+#> sexfemale                                         -0.1738989 0.278299
+#> value(log(serBilir))                               1.2083299 0.107649
+#> slope(log(serBilir), eps = 1, direction = "back")  2.8098669 0.612553
+#>                                                         2.5%    97.5%         P
+#> sexfemale                                         -0.7011899 0.402321 0.5282222
+#> value(log(serBilir))                               0.9996800 1.423360 0.0000000
+#> slope(log(serBilir), eps = 1, direction = "back")  1.6327652 4.072773 0.0000000
+#>                                                       Rhat
+#> sexfemale                                         1.000880
+#> value(log(serBilir))                              1.076197
+#> slope(log(serBilir), eps = 1, direction = "back") 1.032615
 ```

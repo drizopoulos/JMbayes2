@@ -196,36 +196,36 @@ summary(jm_ms_model)
 #>   y: 11573
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    46920.62 46860.97 -23430.50
-#> conditional 49793.41 48869.63 -25595.21
+#> marginal    46922.33 46862.26 -23431.15
+#> conditional 49793.83 48870.35 -25580.10
 #> 
 #> Random-effects covariance matrix:
 #>                     
 #>        StdDev   Corr
-#> (Intr) 1.0575 (Intr)
-#> time   0.5614 0.2096
+#> (Intr) 1.0584 (Intr)
+#> time   0.5611 0.2095
 #> 
 #> Survival outcome:
 #>                          Mean  StDev    2.5%  97.5%     P   Rhat
-#> X:strata(transition)1  0.4382 0.0694  0.3013 0.5761 0.000 1.0078
-#> X:strata(transition)2 -0.2403 0.1368 -0.5042 0.0201 0.076 1.0059
-#> X:strata(transition)3  0.5708 0.0832  0.4064 0.7359 0.000 1.0189
-#> value(y):transition1   0.5286 0.0196  0.4915 0.5682 0.000 1.0947
-#> value(y):transition2   0.3117 0.0385  0.2392 0.3878 0.000 1.0168
-#> value(y):transition3   0.2678 0.0196  0.2300 0.3059 0.000 1.0634
+#> X:strata(transition)1  0.4382 0.0681  0.3042 0.5736 0.000 1.0133
+#> X:strata(transition)2 -0.2361 0.1425 -0.5261 0.0322 0.085 1.0039
+#> X:strata(transition)3  0.5770 0.0826  0.4115 0.7386 0.000 1.0108
+#> value(y):transition1   0.5285 0.0201  0.4919 0.5712 0.000 1.1625
+#> value(y):transition2   0.3113 0.0384  0.2374 0.3891 0.000 1.0541
+#> value(y):transition3   0.2694 0.0200  0.2313 0.3099 0.000 1.0306
 #> 
 #> Longitudinal outcome: y (family = gaussian, link = identity)
 #>                Mean  StDev    2.5%   97.5% P   Rhat
-#> (Intercept)  5.0059 0.0312  4.9447  5.0667 0 1.0005
-#> time        -0.1070 0.0165 -0.1391 -0.0741 0 1.0021
-#> sigma        0.9304 0.0071  0.9171  0.9447 0 1.0015
+#> (Intercept)  5.0059 0.0313  4.9449  5.0668 0 1.0004
+#> time        -0.1070 0.0166 -0.1392 -0.0742 0 1.0020
+#> sigma        0.9304 0.0071  0.9167  0.9442 0 1.0038
 #> 
 #> MCMC summary:
 #> chains: 3 
 #> iterations per chain: 6000 
 #> burn-in per chain: 1500 
 #> thinning: 1 
-#> time: 1.1 min
+#> time: 1 min
 ```
 
 which differs from a default call to

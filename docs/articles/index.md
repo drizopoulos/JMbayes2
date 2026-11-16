@@ -6,6 +6,8 @@
   Function](https://drizopoulos.github.io/JMbayes2/articles/Baseline_Hazard.md):
 - [Causal
   Effects](https://drizopoulos.github.io/JMbayes2/articles/Causal_Effects.md):
+- [Clinical Utility Metrics to Evaluate Dynamic
+  Predictions](https://drizopoulos.github.io/JMbayes2/articles/Clinical_Utility_Metrics.md):
 - [Competing
   Risks](https://drizopoulos.github.io/JMbayes2/articles/Competing_Risks.md):
 - [Handling Large Datasets with Consensus Monte
