@@ -1803,10 +1803,13 @@ print.tvMetric <- function (x, digits = 4, ...) {
   if (!inherits(x, "tvMetric"))
     stop("Use only with 'tvMetric' objects.\n")
   str <- switch(x$metric_type,
-                IWEC = paste0("IWEC with shape parameters ", round(x$metric_info[1], digits),
+                IWEC = paste0("Integrated Weighted Expected Cost with shape parameters ",
+                              round(x$metric_info[1], digits),
                               " and ", round(x$metric_info[2], digits), ":"),
-                NB = paste0("NB with decision threshold ", round(x$metric_info, digits), ":"),
-                EC = paste0("EC with decision threshold ", round(x$metric_info, digits), ":"))
+                NB = paste0("Net Benefit with decision threshold ",
+                            round(x$metric_info, digits), ":"),
+                EC = paste0("Expected Cost with decision threshold ",
+                            round(x$metric_info, digits), ":"))
   if (x$classObject == "coxph") {
     cat("\nPrediction Error for the Cox Model '", x$nameObject, "'",
         sep = "")
@@ -1818,12 +1821,14 @@ print.tvMetric <- function (x, digits = 4, ...) {
   } else {
     if (x$LT_MS) {
       cat("\nPrediction Error for the predictions '", x$nameObject[1], "'",
-          ", observed times '", x$nameObject[2], "'", ", event indicator '", x$nameObject[3], "'",
+          ", observed times '", x$nameObject[2], "'", ", event indicator '",
+          x$nameObject[3], "'",
           " and left-truncated times '", x$nameObject[4], "'",
           sep = "")
     } else {
       cat("\nPrediction Error for the predictions '", x$nameObject[1], "'",
-          ", observed times '", x$nameObject[2], "'", " and event indicator '", x$nameObject[3], "'",
+          ", observed times '", x$nameObject[2], "'", " and event indicator '",
+          x$nameObject[3], "'",
           sep = "")
     }
     cat("\n\nEstimated", str, round(x$metric, digits))
@@ -1837,7 +1842,7 @@ print.tvMetric <- function (x, digits = 4, ...) {
       ", ", round(x$Thoriz, digits), "): ", x$ncens, sep = "")
   if (x$LT_MS) {
     cat("\nAccounting for left truncation and right censoring using ",
-        if (x$type_weights == "IPCW") "nonparametric inverse probability weights"
+        if (x$type_weights == "IPCW") "\nnonparametric inverse probability weights"
         else "model-based weights", sep = "")
   } else {
     cat("\nAccounting for censoring using ",

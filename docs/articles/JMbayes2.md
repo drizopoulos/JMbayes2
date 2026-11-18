@@ -149,25 +149,22 @@ for the composite event. Ascites is a dichotomous outcome, and
 therefore, we fit a mixed-effects logistic regression model for it using
 the
 [`mixed_model()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md)
-function from the **GLMMadaptive** package. The use of `||` in the
-`random` argument of
-[`mixed_model()`](https://drizopoulos.github.io/JMbayes2/reference/sliced_model_generics.md)
-specifies that the random intercepts and random slopes are assumed
-uncorrelated. In addition, the argument `which_independent` can be used
-to determine which longitudinal outcomes are to be assumed independent;
-here, as an illustration, we specify that the first (i.e., serum
-bilirubin) and second (i.e., prothrombin time) longitudinal outcomes are
-independent. To assume that all longitudinal outcomes are independent,
-we can use `jm(..., which_independent = "all")`. Because this joint
-model is more complex, we increase the number of MCMC iterations, the
-number of burn-in iterations, and the thinning per chain using the
-corresponding control arguments:
+function from the **GLMMadaptive** package. In addition, the argument
+`which_independent` can be used to determine which longitudinal outcomes
+are to be assumed independent; here, as an illustration, we specify that
+the first (i.e., serum bilirubin) and second (i.e., prothrombin time)
+longitudinal outcomes are independent. To assume that all longitudinal
+outcomes are independent, we can use
+`jm(..., which_independent = "all")`. Because this joint model is more
+complex, we increase the number of MCMC iterations, the number of
+burn-in iterations, and the thinning per chain using the corresponding
+control arguments:
 
 ``` r
 
 fm2 <- lme(prothrombin ~ year * sex, data = pbc2, random = ~ year | id)
 fm3 <- mixed_model(ascites ~ year + sex, data = pbc2,
-                   random = ~ year || id, family = binomial())
+                   random = ~ 1 | id, family = binomial())
 
 jointFit2 <- jm(CoxFit, list(fm1, fm2, fm3), time_var = "year",
                 which_independent = cbind(1, 2),
@@ -187,47 +184,46 @@ summary(jointFit2)
 #>   ascites: 1885
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    11643.66 13683.69 -7469.797
-#> conditional 12856.57 12597.17 -6801.781
+#> marginal    11742.42 12753.66 -6682.826
+#> conditional 12810.75 12501.97 -6734.081
 #> 
 #> Random-effects covariance matrix:
-#>                                                   
-#>        StdDev   Corr                              
-#> (Intr) 1.0004 (Intr)   year (Intr)    year  (Intr)
-#> year   0.1860 0.4422                              
-#> (Intr) 0.7586                                     
-#> year   0.3244               -0.0073               
-#> (Intr) 2.7106 0.5163 0.4763 0.3309  -0.0260       
-#> year   0.4576 0.3795 0.6547 -0.0553 0.3626        
+#>                                           
+#>        StdDev   Corr                      
+#> (Intr) 0.9983 (Intr)   year (Intr)    year
+#> year   0.1803 0.4389                      
+#> (Intr) 0.7670                             
+#> year   0.3194               -0.0228       
+#> (Intr) 2.6885 0.5421 0.7130 0.2593  0.1190
 #> 
 #> Survival outcome:
 #>                         Mean  StDev    2.5%  97.5%      P   Rhat
-#> sexfemale            -0.6616 0.3728 -1.3902 0.0620 0.0730 1.0243
-#> value(log(serBilir))  0.5221 0.1722  0.1772 0.8526 0.0027 1.1023
-#> value(prothrombin)   -0.0600 0.1265 -0.3298 0.1626 0.6800 1.0403
-#> value(ascites)        0.5971 0.1515  0.3530 0.9412 0.0000 1.2396
+#> sexfemale            -0.3976 0.3138 -0.9951 0.2177 0.2170 1.0031
+#> value(log(serBilir))  0.8589 0.1357  0.5782 1.1216 0.0000 1.0261
+#> value(prothrombin)    0.1240 0.0559  0.0081 0.2261 0.0377 1.0047
+#> value(ascites)        0.3290 0.0949  0.1607 0.5326 0.0000 1.0771
 #> 
 #> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
-#>                   Mean  StDev    2.5%   97.5%     P   Rhat
-#> (Intercept)     0.7014 0.1673  0.3734  1.0318 0.000 1.0050
-#> year            0.2702 0.0358  0.2005  0.3416 0.000 1.0007
-#> sexfemale      -0.2434 0.1777 -0.5995  0.1023 0.175 1.0061
-#> year:sexfemale -0.0811 0.0372 -0.1531 -0.0063 0.032 1.0031
-#> sigma           0.3479 0.0068  0.3348  0.3612 0.000 1.0035
+#>                   Mean  StDev    2.5%   97.5%      P   Rhat
+#> (Intercept)     0.7295 0.1703  0.3903  1.0594 0.0000 0.9997
+#> year            0.2735 0.0368  0.2029  0.3464 0.0000 1.0006
+#> sexfemale      -0.2701 0.1809 -0.6241  0.0899 0.1323 0.9996
+#> year:sexfemale -0.0881 0.0391 -0.1667 -0.0135 0.0193 1.0017
+#> sigma           0.3488 0.0067  0.3356  0.3623 0.0000 1.0026
 #> 
 #> Longitudinal outcome: prothrombin (family = gaussian, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)    10.9817 0.1667 10.6529 11.3003 0.0000 1.0027
-#> year            0.2113 0.0754  0.0663  0.3636 0.0077 1.0057
-#> sexfemale      -0.4395 0.1776 -0.7882 -0.0892 0.0127 1.0036
-#> year:sexfemale  0.0445 0.0786 -0.1110  0.1988 0.5670 1.0066
-#> sigma           1.0581 0.0205  1.0183  1.0987 0.0000 1.0000
+#> (Intercept)    10.9791 0.1713 10.6401 11.3211 0.0000 1.0005
+#> year            0.2234 0.0764  0.0755  0.3766 0.0030 0.9998
+#> sexfemale      -0.4324 0.1824 -0.7938 -0.0720 0.0177 1.0001
+#> year:sexfemale  0.0290 0.0805 -0.1292  0.1859 0.7107 1.0001
+#> sigma           1.0591 0.0205  1.0195  1.1002 0.0000 1.0034
 #> 
 #> Longitudinal outcome: ascites (family = binomial, link = logit)
 #>                Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept) -4.4747 0.6986 -5.9347 -3.1790 0.0000 1.0810
-#> year         0.6297 0.0765  0.4906  0.7902 0.0000 1.2771
-#> sexfemale   -0.5556 0.6575 -1.8060  0.7473 0.3963 1.0086
+#> (Intercept) -4.2309 0.6197 -5.4615 -3.0728 0.0000 1.0065
+#> year         0.4519 0.0530  0.3491  0.5548 0.0000 1.0106
+#> sexfemale   -0.6088 0.6034 -1.8064  0.5323 0.3113 0.9997
 #> 
 #> MCMC summary:
 #> chains: 3 
@@ -273,8 +269,8 @@ this model is:
 ``` r
 
 fForms <- list(
-  "log(serBilir)" = ~ slope(log(serBilir)) + slope(log(serBilir)):sex,
-  "prothrombin"   = ~ JMbayes2::area(prothrombin)
+  "log(serBilir)" = ~ slope(log(serBilir)):sex,
+  "prothrombin" = ~ area(prothrombin)
 )
 
 jointFit3 <- update(jointFit2, functional_forms = fForms)
@@ -293,48 +289,47 @@ summary(jointFit3)
 #>   ascites: 1885
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    11678.65 12627.22 -6967.448
-#> conditional 12746.22 12468.45 -6732.847
+#> marginal    11787.72 12918.39 -6649.515
+#> conditional 12723.89 12419.93 -6662.220
 #> 
 #> Random-effects covariance matrix:
-#>                                                    
-#>        StdDev   Corr                               
-#> (Intr) 0.9957 (Intr)   year (Intr)    year  (Intr) 
-#> year   0.1858 0.4586                               
-#> (Intr) 0.7557                                      
-#> year   0.3239               -0.0096                
-#> (Intr) 2.6274 0.5337 0.4527 0.3538  -0.0693        
-#> year   0.4626 0.4526 0.6744 -0.0688 0.3579  -0.0000
+#>                                           
+#>        StdDev   Corr                      
+#> (Intr) 0.9798 (Intr)   year (Intr)    year
+#> year   0.1877 0.5560                      
+#> (Intr) 0.7679                             
+#> year   0.3203               -0.0308       
+#> (Intr) 2.7220 0.6462 0.7503 0.2068  0.1126
 #> 
 #> Survival outcome:
-#>                                   Mean  StDev    2.5%  97.5%      P   Rhat
-#> sexfemale                       0.2129 0.8797 -1.3963 2.0428 0.8333 1.0258
-#> slope(log(serBilir))            4.3599 2.4154 -0.4874 8.8593 0.0780 1.0467
-#> slope(log(serBilir)):sexfemale -3.8157 2.7106 -9.5174 1.1206 0.1543 1.0729
-#> JMbayes2::area(prothrombin)    -0.3629 0.3291 -1.0444 0.1903 0.2653 1.3639
-#> value(ascites)                  0.9871 0.2506  0.5929 1.5823 0.0000 1.5166
+#>                                   Mean  StDev    2.5%   97.5%      P   Rhat
+#> sexfemale                      -0.0533 0.8458 -1.5114  1.8152 0.8917 1.0094
+#> slope(log(serBilir)):sexmale    7.4865 2.4955  3.1349 13.1678 0.0010 1.0300
+#> slope(log(serBilir)):sexfemale  6.0769 1.8765  2.1844  9.8518 0.0050 1.0204
+#> area(prothrombin)               0.3136 0.1234  0.0652  0.5466 0.0160 1.0022
+#> value(ascites)                  0.4818 0.1411  0.2035  0.7653 0.0003 1.0137
 #> 
 #> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)     0.6594 0.1661  0.3336  0.9778 0.0000 1.0007
-#> year            0.2637 0.0340  0.1988  0.3310 0.0000 1.0068
-#> sexfemale      -0.1971 0.1756 -0.5362  0.1488 0.2623 1.0003
-#> year:sexfemale -0.0718 0.0349 -0.1405 -0.0037 0.0407 1.0038
-#> sigma           0.3481 0.0066  0.3352  0.3613 0.0000 1.0017
+#> (Intercept)     0.7197 0.1677  0.3916  1.0445 0.0000 1.0006
+#> year            0.2804 0.0369  0.2089  0.3542 0.0000 1.0016
+#> sexfemale      -0.2669 0.1775 -0.6153  0.0811 0.1380 1.0006
+#> year:sexfemale -0.0795 0.0388 -0.1564 -0.0030 0.0417 1.0006
+#> sigma           0.3515 0.0069  0.3381  0.3655 0.0000 1.0088
 #> 
 #> Longitudinal outcome: prothrombin (family = gaussian, link = identity)
 #>                   Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept)    10.9939 0.1709 10.6604 11.3302 0.0000 1.0020
-#> year            0.1896 0.0771  0.0383  0.3416 0.0130 1.0108
-#> sexfemale      -0.4512 0.1792 -0.8083 -0.1001 0.0123 1.0012
-#> year:sexfemale  0.0641 0.0802 -0.0965  0.2224 0.4200 1.0127
-#> sigma           1.0586 0.0201  1.0199  1.0991 0.0000 1.0065
+#> (Intercept)    10.9725 0.1707 10.6345 11.3092 0.0000 1.0001
+#> year            0.2263 0.0764  0.0718  0.3759 0.0057 1.0029
+#> sexfemale      -0.4237 0.1801 -0.7804 -0.0683 0.0197 0.9999
+#> year:sexfemale  0.0257 0.0803 -0.1333  0.1891 0.7490 1.0021
+#> sigma           1.0585 0.0206  1.0183  1.0996 0.0000 1.0023
 #> 
 #> Longitudinal outcome: ascites (family = binomial, link = logit)
 #>                Mean  StDev    2.5%   97.5%      P   Rhat
-#> (Intercept) -4.5441 0.6871 -5.9249 -3.2525 0.0000 1.0596
-#> year         0.6486 0.0788  0.4999  0.7970 0.0000 1.2031
-#> sexfemale   -0.3832 0.6311 -1.6099  0.8633 0.5307 1.0011
+#> (Intercept) -4.1845 0.6097 -5.4423 -3.0372 0.0000 1.0034
+#> year         0.4750 0.0522  0.3784  0.5798 0.0000 1.0135
+#> sexfemale   -0.6252 0.6029 -1.8127  0.5634 0.2903 1.0013
 #> 
 #> MCMC summary:
 #> chains: 3 
@@ -375,11 +370,11 @@ jointFit4 <- update(jointFit3, priors = list("penalty_alphas" = "horseshoe"))
 cbind("un-penalized" = unlist(coef(jointFit3)), 
       "penalized" = unlist(coef(jointFit4)))
 #>                                            un-penalized  penalized
-#> gammas.Mean                                   0.2129284 -0.5296200
-#> association.slope(log(serBilir))              4.3599177  1.9665255
-#> association.slope(log(serBilir)):sexfemale   -3.8157407 -0.7993484
-#> association.JMbayes2::area(prothrombin)      -0.3628543 -0.1529725
-#> association.value(ascites)                    0.9870824  0.8417658
+#> gammas.Mean                                 -0.05326779 -0.1707259
+#> association.slope(log(serBilir)):sexmale     7.48652502  6.2842336
+#> association.slope(log(serBilir)):sexfemale   6.07691289  5.2163420
+#> association.area(prothrombin)                0.31359397  0.2350919
+#> association.value(ascites)                   0.48177397  0.5454002
 ```
 
 Apart from the Horseshoe prior, the ridge prior is also provided.
