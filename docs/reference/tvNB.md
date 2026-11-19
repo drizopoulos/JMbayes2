@@ -197,9 +197,9 @@ jointFit <- jm(CoxFit, list(fm1, fm2), time_var = "year", n_chains = 1L)
 tvNB(jointFit, newdata = pbc2, Tstart = 4, Dt = 3, decision_threshold = 0.3,
      cores = 1L)
 #> 
-#> Prediction Error for the Joint Model 'jointFit'
+#> Accuracy Metric for the Joint Model 'jointFit'
 #> 
-#> Estimated NB with decision threshold 0.3: 0.0892
+#> Estimated Net Benefit with decision threshold 0.3: 0.0892
 #> At time: 7
 #> For the 225 subjects at risk at time 4
 #> Number of subjects with an event in [4, 7): 34
@@ -211,14 +211,15 @@ tvNB(jointFit, newdata = pbc2, Tstart = 4, Dt = 3, decision_threshold = 0.3,
 tvNB(CoxFit, newdata = pbc2.id, Tstart = 4, Dt = 3, decision_threshold = 0.3,
      type_weights = "IPCW")
 #> 
-#> Prediction Error for the Cox Model 'CoxFit'
+#> Accuracy Metric for the Cox Model 'CoxFit'
 #> 
-#> Estimated NB with decision threshold 0.3: -0.0016
+#> Estimated Net Benefit with decision threshold 0.3: -0.0016
 #> At time: 7
 #> For the 225 subjects at risk at time 4
 #> Number of subjects with an event in [4, 7): 50
 #> Number of subjects with a censored time in [4, 7): 46
-#> Accounting for censoring using inverse probability of censoring Kaplan-Meier weights
+#> Accounting for censoring using 
+#> inverse probability of censoring Kaplan-Meier weights
 #> 
 
 
@@ -231,14 +232,17 @@ predictions <- 1.0 - (as.matrix(sfit$surv)[1L, ] / as.matrix(sfit0$surv)[1L, ])
 tvNB(predictions, pbc2.id$years, pbc2.id$status2, pbc2.id$lt, Tstart = 5, Thoriz = 8,
      type_weights = "IPCW", decision_threshold = 0.25)
 #> 
-#> Prediction Error for the predictions 'predictions', observed times 'pbc2.id$years', event indicator 'pbc2.id$status2' and left-truncated times 'pbc2.id$lt'
+#> Accuracy Metric for the predictions 'predictions',
+#>  observed times 'pbc2.id$years', event indicator 'pbc2.id$status2'
+#>  and left-truncated times 'pbc2.id$lt'
 #> 
-#> Estimated NB with decision threshold 0.25: 0.0261
+#> Estimated Net Benefit with decision threshold 0.25: 0.0261
 #> At time: 8
 #> For the 125 subjects at risk at time 5
 #> Number of subjects with an event in [5, 8): 33
 #> Number of subjects with a censored time in [5, 8): 44
-#> Accounting for left truncation and right censoring using nonparametric inverse probability weights
+#> Accounting for left truncation and right censoring using 
+#>  nonparametric inverse probability weights
 #> 
 
 # Now, we consider the default method, but using the model-based estimator:
@@ -253,14 +257,17 @@ tvNB(predictions, Time = pbc2.id$years, event = pbc2.id$status2, LT_Time = pbc2.
      Tstart = 5, Dt = 3, type_weights = "model-based", preds_MB = preds_MB, 
      decision_threshold = 0.3)
 #> 
-#> Prediction Error for the predictions 'predictions', observed times 'pbc2.id$years', event indicator 'pbc2.id$status2' and left-truncated times 'pbc2.id$lt'
+#> Accuracy Metric for the predictions 'predictions',
+#>  observed times 'pbc2.id$years', event indicator 'pbc2.id$status2'
+#>  and left-truncated times 'pbc2.id$lt'
 #> 
-#> Estimated NB with decision threshold 0.3: 0.0124
+#> Estimated Net Benefit with decision threshold 0.3: 0.0124
 #> At time: 8
 #> For the 125 subjects at risk at time 5
 #> Number of subjects with an event in [5, 8): 33
 #> Number of subjects with a censored time in [5, 8): 44
-#> Accounting for left truncation and right censoring using model-based weights
+#> Accounting for left truncation and right censoring using 
+#>  model-based weights
 #> 
 # }
 ```

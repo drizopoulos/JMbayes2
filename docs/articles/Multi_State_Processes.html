@@ -85,7 +85,7 @@
                         <h4 data-toc-skip class="author">Grigorios
 Papageorgiou</h4>
             
-            <h4 data-toc-skip class="date">2026-11-18</h4>
+            <h4 data-toc-skip class="date">2026-11-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Multi_State_Processes.Rmd" class="external-link"><code>vignettes/Multi_State_Processes.Rmd</code></a></small>
       <div class="d-none name"><code>Multi_State_Processes.Rmd</code></div>
@@ -252,18 +252,18 @@ transitions.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">msmodel</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sliced_model_generics.html">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">Tstart</span>, <span class="va">Tstop</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata</a></span><span class="op">(</span><span class="va">transition</span><span class="op">)</span>, </span>
 <span>                 data <span class="op">=</span> <span class="va">df_surv</span><span class="op">)</span></span></code></pre></div>
-<p>Finally, to fit the joint model, we simply run:</p>
+<p>Finally, to fit the joint model, we run:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">jm_ms_model</span> <span class="op">&lt;-</span> </span>
 <span>    <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">msmodel</span>, <span class="va">mixedmodel</span>, time_var <span class="op">=</span> <span class="st">"time"</span>, base_hazard <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"weibull"</span>, <span class="fl">3</span><span class="op">)</span>, </span>
-<span>       functional_forms <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">:</span><span class="va">transition</span>, n_iter <span class="op">=</span> <span class="fl">6000L</span>, n_burnin <span class="op">=</span> <span class="fl">1500L</span><span class="op">)</span></span>
+<span>       functional_forms <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">:</span><span class="va">transition</span>, n_iter <span class="op">=</span> <span class="fl">7000L</span>, n_burnin <span class="op">=</span> <span class="fl">1500L</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jm_ms_model</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; JMbayes2::jm(Surv_object = msmodel, Mixed_objects = mixedmodel, </span></span>
 <span><span class="co">#&gt;     time_var = "time", functional_forms = ~value(y):transition, </span></span>
-<span><span class="co">#&gt;     base_hazard = rep("weibull", 3), n_iter = 6000L, n_burnin = 1500L)</span></span>
+<span><span class="co">#&gt;     base_hazard = rep("weibull", 3), n_iter = 7000L, n_burnin = 1500L)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
 <span><span class="co">#&gt; Number of groups: 1500       Number of events: 1784 (45.8%)</span></span>
@@ -271,36 +271,36 @@ transitions.</p>
 <span><span class="co">#&gt;   y: 11573</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    46922.33 46862.26 -23431.15</span></span>
-<span><span class="co">#&gt; conditional 49793.83 48870.35 -25580.10</span></span>
+<span><span class="co">#&gt; marginal    46917.79 46857.75 -23428.89</span></span>
+<span><span class="co">#&gt; conditional 49789.78 48865.49 -25599.92</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                     </span></span>
 <span><span class="co">#&gt;        StdDev   Corr</span></span>
-<span><span class="co">#&gt; (Intr) 1.0584 (Intr)</span></span>
-<span><span class="co">#&gt; time   0.5611 0.2095</span></span>
+<span><span class="co">#&gt; (Intr) 1.0582 (Intr)</span></span>
+<span><span class="co">#&gt; time   0.5612 0.2093</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival outcome:</span></span>
-<span><span class="co">#&gt;                          Mean  StDev    2.5%  97.5%     P   Rhat</span></span>
-<span><span class="co">#&gt; X:strata(transition)1  0.4382 0.0681  0.3042 0.5736 0.000 1.0133</span></span>
-<span><span class="co">#&gt; X:strata(transition)2 -0.2361 0.1425 -0.5261 0.0322 0.085 1.0039</span></span>
-<span><span class="co">#&gt; X:strata(transition)3  0.5770 0.0826  0.4115 0.7386 0.000 1.0108</span></span>
-<span><span class="co">#&gt; value(y):transition1   0.5285 0.0201  0.4919 0.5712 0.000 1.1625</span></span>
-<span><span class="co">#&gt; value(y):transition2   0.3113 0.0384  0.2374 0.3891 0.000 1.0541</span></span>
-<span><span class="co">#&gt; value(y):transition3   0.2694 0.0200  0.2313 0.3099 0.000 1.0306</span></span>
+<span><span class="co">#&gt;                          Mean  StDev    2.5%  97.5%      P   Rhat</span></span>
+<span><span class="co">#&gt; X:strata(transition)1  0.4411 0.0687  0.3079 0.5771 0.0000 1.0027</span></span>
+<span><span class="co">#&gt; X:strata(transition)2 -0.2375 0.1420 -0.5242 0.0336 0.0862 1.0030</span></span>
+<span><span class="co">#&gt; X:strata(transition)3  0.5785 0.0829  0.4111 0.7386 0.0000 1.0045</span></span>
+<span><span class="co">#&gt; value(y):transition1   0.5306 0.0205  0.4923 0.5742 0.0000 1.0833</span></span>
+<span><span class="co">#&gt; value(y):transition2   0.3107 0.0385  0.2357 0.3883 0.0000 1.0050</span></span>
+<span><span class="co">#&gt; value(y):transition3   0.2697 0.0193  0.2330 0.3092 0.0000 1.0079</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal outcome: y (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                Mean  StDev    2.5%   97.5% P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)  5.0059 0.0313  4.9449  5.0668 0 1.0004</span></span>
-<span><span class="co">#&gt; time        -0.1070 0.0166 -0.1392 -0.0742 0 1.0020</span></span>
-<span><span class="co">#&gt; sigma        0.9304 0.0071  0.9167  0.9442 0 1.0038</span></span>
+<span><span class="co">#&gt; (Intercept)  5.0061 0.0313  4.9455  5.0673 0 1.0002</span></span>
+<span><span class="co">#&gt; time        -0.1071 0.0165 -0.1394 -0.0744 0 1.0001</span></span>
+<span><span class="co">#&gt; sigma        0.9303 0.0071  0.9167  0.9443 0 1.0003</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
-<span><span class="co">#&gt; iterations per chain: 6000 </span></span>
+<span><span class="co">#&gt; iterations per chain: 7000 </span></span>
 <span><span class="co">#&gt; burn-in per chain: 1500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 1 min</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 1.2 min</span></span></code></pre></div>
 <p>which differs from a default call to <code><a href="../reference/jm.html">jm()</a></code> by the
 addition of the <code>functional_forms</code> argument specifying that
 we want an “interaction” between the marker’s value and each transition,

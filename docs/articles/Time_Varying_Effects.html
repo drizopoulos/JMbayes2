@@ -85,7 +85,7 @@
                         <h4 data-toc-skip class="author">Dimitris
 Rizopoulos</h4>
             
-            <h4 data-toc-skip class="date">2026-11-18</h4>
+            <h4 data-toc-skip class="date">2026-11-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Time_Varying_Effects.Rmd" class="external-link"><code>vignettes/Time_Varying_Effects.Rmd</code></a></small>
       <div class="d-none name"><code>Time_Varying_Effects.Rmd</code></div>
@@ -177,12 +177,12 @@ at 0 and 14.5 years:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">form_splines</span> <span class="op">&lt;-</span> <span class="op">~</span> <span class="fu"><a href="../reference/jm.html">value</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">serBilir</span><span class="op">)</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/splines/ns.html" class="external-link">ns</a></span><span class="op">(</span><span class="va">year</span>, k <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">6</span>, <span class="fl">9</span><span class="op">)</span>, B <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">14.5</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">jointFit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">jointFit1</span>, functional_forms <span class="op">=</span> <span class="va">form_splines</span>, </span>
-<span>                    n_iter <span class="op">=</span> <span class="fl">6500L</span>, n_burnin <span class="op">=</span> <span class="fl">2500L</span><span class="op">)</span></span>
+<span>                    n_iter <span class="op">=</span> <span class="fl">7000L</span>, n_burnin <span class="op">=</span> <span class="fl">1500L</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">jointFit2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; JMbayes2::jm(Surv_object = CoxFit, Mixed_objects = fm, time_var = "year", </span></span>
-<span><span class="co">#&gt;     functional_forms = form_splines, n_iter = 6500L, n_burnin = 2500L)</span></span>
+<span><span class="co">#&gt;     functional_forms = form_splines, n_iter = 7000L, n_burnin = 1500L)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data Descriptives:</span></span>
 <span><span class="co">#&gt; Number of groups: 312        Number of events: 169 (54.2%)</span></span>
@@ -190,55 +190,55 @@ at 0 and 14.5 years:</p>
 <span><span class="co">#&gt;   log(serBilir): 1945</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                  DIC     WAIC      LPML</span></span>
-<span><span class="co">#&gt; marginal    4349.190 6316.081 -3554.416</span></span>
-<span><span class="co">#&gt; conditional 8718.735 8455.691 -4538.585</span></span>
+<span><span class="co">#&gt; marginal    4365.120 6286.215 -3598.082</span></span>
+<span><span class="co">#&gt; conditional 8718.259 8454.858 -4546.904</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Random-effects covariance matrix:</span></span>
 <span><span class="co">#&gt;                               </span></span>
 <span><span class="co">#&gt;        StdDev    Corr         </span></span>
-<span><span class="co">#&gt; (Intr) 1.3127  (Intr)  p(,2)1 </span></span>
-<span><span class="co">#&gt; p(,2)1 21.9426 0.6899         </span></span>
-<span><span class="co">#&gt; p(,2)2 12.0210 -0.2170 -0.1180</span></span>
+<span><span class="co">#&gt; (Intr) 1.3109  (Intr)  p(,2)1 </span></span>
+<span><span class="co">#&gt; p(,2)1 21.8692 0.6847         </span></span>
+<span><span class="co">#&gt; p(,2)2 12.0973 -0.2244 -0.1201</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Survival outcome:</span></span>
 <span><span class="co">#&gt;                                                                   Mean  StDev</span></span>
-<span><span class="co">#&gt; sexfemale                                                      -0.1739 0.2800</span></span>
-<span><span class="co">#&gt; value(log(serBilir))                                            1.3450 0.2405</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 -0.2358 0.3017</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2  0.0186 0.3492</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 -0.5452 0.7367</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 -1.1845 0.8969</span></span>
+<span><span class="co">#&gt; sexfemale                                                      -0.1753 0.2758</span></span>
+<span><span class="co">#&gt; value(log(serBilir))                                            1.3700 0.2432</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 -0.2646 0.3003</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2  0.0100 0.3451</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 -0.5594 0.7105</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 -1.1220 0.8765</span></span>
 <span><span class="co">#&gt;                                                                   2.5%  97.5%</span></span>
-<span><span class="co">#&gt; sexfemale                                                      -0.7069 0.3861</span></span>
-<span><span class="co">#&gt; value(log(serBilir))                                            0.9306 1.8930</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 -0.8836 0.3060</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2 -0.6905 0.7109</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 -2.0687 0.8195</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 -2.9343 0.5624</span></span>
+<span><span class="co">#&gt; sexfemale                                                      -0.6922 0.3753</span></span>
+<span><span class="co">#&gt; value(log(serBilir))                                            0.9336 1.8889</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 -0.8700 0.2980</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2 -0.6837 0.6898</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 -1.9819 0.7919</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 -2.8159 0.5355</span></span>
 <span><span class="co">#&gt;                                                                     P   Rhat</span></span>
-<span><span class="co">#&gt; sexfemale                                                      0.5232 1.0019</span></span>
-<span><span class="co">#&gt; value(log(serBilir))                                           0.0000 1.0310</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 0.4288 1.0327</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2 0.9655 1.0450</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 0.4890 1.1015</span></span>
-<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 0.1855 1.1272</span></span>
+<span><span class="co">#&gt; sexfemale                                                      0.5179 1.0004</span></span>
+<span><span class="co">#&gt; value(log(serBilir))                                           0.0000 1.0291</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 0.3782 1.0330</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2 0.9822 1.0257</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 0.4570 1.0635</span></span>
+<span><span class="co">#&gt; value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 0.1967 1.0727</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)</span></span>
 <span><span class="co">#&gt;                   Mean  StDev     2.5%   97.5%      P   Rhat</span></span>
-<span><span class="co">#&gt; (Intercept)     1.4956 0.2260   1.0512  1.9428 0.0000 1.0035</span></span>
-<span><span class="co">#&gt; poly(year, 2)1 30.0948 5.2636  20.0708 40.4244 0.0000 1.0519</span></span>
-<span><span class="co">#&gt; poly(year, 2)2 -4.3717 3.1266 -10.4635  1.8326 0.1622 1.0654</span></span>
-<span><span class="co">#&gt; sexfemale      -0.4740 0.2404  -0.9434  0.0046 0.0517 1.0051</span></span>
-<span><span class="co">#&gt; p(,2)1         -5.3647 5.5026 -15.9518  5.3749 0.3303 1.0779</span></span>
-<span><span class="co">#&gt; p(,2)2          5.9560 3.2541  -0.4443 12.3150 0.0660 1.1146</span></span>
-<span><span class="co">#&gt; sigma           0.3033 0.0061   0.2918  0.3157 0.0000 1.0054</span></span>
+<span><span class="co">#&gt; (Intercept)     1.4937 0.2250   1.0545  1.9375 0.0000 1.0000</span></span>
+<span><span class="co">#&gt; poly(year, 2)1 29.7802 5.2619  19.7385 40.1633 0.0000 1.0033</span></span>
+<span><span class="co">#&gt; poly(year, 2)2 -4.5358 3.1729 -10.8049  1.6951 0.1487 1.0059</span></span>
+<span><span class="co">#&gt; sexfemale      -0.4734 0.2397  -0.9417 -0.0001 0.0499 1.0002</span></span>
+<span><span class="co">#&gt; p(,2)1         -5.1671 5.4772 -15.7512  5.5301 0.3468 1.0171</span></span>
+<span><span class="co">#&gt; p(,2)2          6.0727 3.2851  -0.3268 12.5543 0.0606 1.0356</span></span>
+<span><span class="co">#&gt; sigma           0.3031 0.0061   0.2916  0.3155 0.0000 1.0038</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; MCMC summary:</span></span>
 <span><span class="co">#&gt; chains: 3 </span></span>
-<span><span class="co">#&gt; iterations per chain: 6500 </span></span>
-<span><span class="co">#&gt; burn-in per chain: 2500 </span></span>
+<span><span class="co">#&gt; iterations per chain: 7000 </span></span>
+<span><span class="co">#&gt; burn-in per chain: 1500 </span></span>
 <span><span class="co">#&gt; thinning: 1 </span></span>
-<span><span class="co">#&gt; time: 26 sec</span></span></code></pre></div>
+<span><span class="co">#&gt; time: 28 sec</span></span></code></pre></div>
 <p>The spline coefficients do not have a straightforward interpretation.
 We, therefore, visualize the time-varying association of log serum
 bilirubin with the hazard of the composite event using the following
@@ -269,7 +269,7 @@ hazards. This is also confirmed by comparing the two models:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                 DIC     WAIC      LPML</span></span>
 <span><span class="co">#&gt;  jointFit1 4344.764 6074.567 -3295.282</span></span>
-<span><span class="co">#&gt;  jointFit2 4349.190 6316.081 -3554.416</span></span>
+<span><span class="co">#&gt;  jointFit2 4365.120 6286.215 -3598.082</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; The criteria are calculated on the basis of the marginal log-likelihood.</span></span></code></pre></div>
 <p>The WAIC and LPML indicate that <code>jointFit1</code> is a better

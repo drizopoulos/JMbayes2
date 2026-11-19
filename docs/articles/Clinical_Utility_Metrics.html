@@ -85,7 +85,7 @@
                         <h4 data-toc-skip class="author">Arnau
 Garcia-Fernández</h4>
             
-            <h4 data-toc-skip class="date">2026-11-18</h4>
+            <h4 data-toc-skip class="date">2026-11-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/drizopoulos/JMbayes2/blob/HEAD/vignettes/Clinical_Utility_Metrics.Rmd" class="external-link"><code>vignettes/Clinical_Utility_Metrics.Rmd</code></a></small>
       <div class="d-none name"><code>Clinical_Utility_Metrics.Rmd</code></div>
@@ -211,28 +211,31 @@ addition we consider the decision threshold <code>c=0.3</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/tvNB.html">tvNB</a></span><span class="op">(</span><span class="va">jm1</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">4</span>, Dt <span class="op">=</span> <span class="fl">3</span>, decision_threshold <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Prediction Error for the Joint Model 'jm1'</span></span>
+<span><span class="co">#&gt; Accuracy Metric for the Joint Model 'jm1'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated NB with decision threshold 0.3: 0.1751</span></span>
+<span><span class="co">#&gt; Estimated Net Benefit with decision threshold 0.3: 0.1751</span></span>
 <span><span class="co">#&gt; At time: 7</span></span>
 <span><span class="co">#&gt; For the 125 subjects at risk at time 4</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [4, 7): 36</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [4, 7): 29</span></span>
-<span><span class="co">#&gt; Accounting for left truncation and right censoring using model-based weights</span></span></code></pre></div>
+<span><span class="co">#&gt; Accounting for left truncation and right censoring using </span></span>
+<span><span class="co">#&gt;  model-based weights</span></span></code></pre></div>
 <p>A similar clinical utility metric is the expected cost. Using the
 same landmark time, prediction horizon and decision threshold as above,
 now we use the IPW approach for the metric estimation:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/tvEC.html">tvEC</a></span><span class="op">(</span><span class="va">jm1</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">4</span>, Dt <span class="op">=</span> <span class="fl">3</span>, decision_threshold <span class="op">=</span> <span class="fl">0.3</span>, type_weights <span class="op">=</span> <span class="st">"IPCW"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/tvEC.html">tvEC</a></span><span class="op">(</span><span class="va">jm1</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">4</span>, Dt <span class="op">=</span> <span class="fl">3</span>, decision_threshold <span class="op">=</span> <span class="fl">0.3</span>, </span>
+<span>     type_weights <span class="op">=</span> <span class="st">"IPCW"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Prediction Error for the Joint Model 'jm1'</span></span>
+<span><span class="co">#&gt; Accuracy Metric for the Joint Model 'jm1'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated EC with decision threshold 0.3: 0.0944</span></span>
+<span><span class="co">#&gt; Estimated Expected Cost with decision threshold 0.3: 0.0944</span></span>
 <span><span class="co">#&gt; At time: 7</span></span>
 <span><span class="co">#&gt; For the 125 subjects at risk at time 4</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [4, 7): 36</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [4, 7): 29</span></span>
-<span><span class="co">#&gt; Accounting for left truncation and right censoring using nonparametric inverse probability weights</span></span></code></pre></div>
+<span><span class="co">#&gt; Accounting for left truncation and right censoring using </span></span>
+<span><span class="co">#&gt;  nonparametric inverse probability weights</span></span></code></pre></div>
 <p>One might be interested in assessing clinical utility within a span
 of relevant decision thresholds, say <span class="math inline">c\in(0.2,
 0.375)</span>. The standard method to consider net benefit (or expected
@@ -258,29 +261,32 @@ implemented the beta family of weight functions, which is completely
 specified by the shape parameters <code>shape1</code> and
 <code>shape2</code>. Instead of passing directly the shape parameters,
 the user can pass the interval of relevant decision thresholds <span class="math inline">c\in(0.2, 0.375)</span>
-(<code>interv=c(0.2, 0.375)</code>), the mode (we set
-<code>mod=0.3</code>) and the mass of the function to be allocated
-within the interval (we set <code>mass=0.85</code>). By passing these
+(<code>interv = c(0.2, 0.375)</code>), the mode (we set
+<code>mod = 0.3</code>) and the mass of the function to be allocated
+within the interval (we set <code>mass = 0.85</code>). By passing these
 arguments, <code>shape1</code> and <code>shape2</code> are internally
 computed.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/tvIWEC.html">tvIWEC</a></span><span class="op">(</span><span class="va">jm1</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">4</span>, Dt <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>       mod <span class="op">=</span> <span class="fl">0.3</span>, interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.375</span><span class="op">)</span>, mass <span class="op">=</span> <span class="fl">0.85</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Prediction Error for the Joint Model 'jm1'</span></span>
+<span><span class="co">#&gt; Accuracy Metric for the Joint Model 'jm1'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated IWEC with shape parameters 18.8901 and 42.7436: 0.0993</span></span>
+<span><span class="co">#&gt; Estimated Integrated Weighted Expected Cost</span></span>
+<span><span class="co">#&gt;  with shape parameters 18.9 and 42.7: 0.0993</span></span>
 <span><span class="co">#&gt; At time: 7</span></span>
 <span><span class="co">#&gt; For the 125 subjects at risk at time 4</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [4, 7): 36</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [4, 7): 29</span></span>
-<span><span class="co">#&gt; Accounting for left truncation and right censoring using model-based weights</span></span></code></pre></div>
+<span><span class="co">#&gt; Accounting for left truncation and right censoring using </span></span>
+<span><span class="co">#&gt;  model-based weights</span></span></code></pre></div>
 <p>In addition, we can plot a weighted decision curve, which displays
 the weighted expected cost and also the area under the weighted decision
 cuves that corresponds to the IWEC:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">wdc1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/decision_curves.html">decision_curves</a></span><span class="op">(</span><span class="va">jm1</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">4</span>, Dt <span class="op">=</span> <span class="fl">3</span>, type <span class="op">=</span> <span class="st">"weightedEC"</span>,</span>
-<span>                        mod <span class="op">=</span> <span class="fl">0.3</span>, interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.375</span><span class="op">)</span>, mass <span class="op">=</span> <span class="fl">0.85</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">wdc1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/decision_curves.html">decision_curves</a></span><span class="op">(</span><span class="va">jm1</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">4</span>, Dt <span class="op">=</span> <span class="fl">3</span>, </span>
+<span>                        type <span class="op">=</span> <span class="st">"weightedEC"</span>, mod <span class="op">=</span> <span class="fl">0.3</span>, interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.375</span><span class="op">)</span>, </span>
+<span>                        mass <span class="op">=</span> <span class="fl">0.85</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">wdc1</span>, legend_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Joint Model 1"</span>, <span class="st">"All"</span>, <span class="st">"None"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Clinical_Utility_Metrics_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="700"></p>
 <p>At the top part of the plot we can see the shape of the weight
@@ -301,31 +307,35 @@ decision curves. Let us fit a different joint model, we consider the
 <code class="sourceCode R"><span><span class="va">jm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jm.html">jm</a></span><span class="op">(</span><span class="va">CoxFit</span>, <span class="va">fm2</span>, time_var <span class="op">=</span> <span class="st">"year"</span><span class="op">)</span></span></code></pre></div>
 <p>For illustration, we now change the clinical context and we assume
 the interval of interest for decision thresholds is <span class="math inline">c\in(0.125, 0.275)</span>. We now consider as a
-landmark time <code>Tstart=6</code> and prediction horizon
-<code>Dt=2</code>. For the NB and EC we will fix <code>c=0.2</code>:</p>
+landmark time <code>Tstart = 6</code> and prediction horizon
+<code>Dt = 2</code>. For the NB and EC we will fix
+<code>c = 0.2</code>:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/tvNB.html">tvNB</a></span><span class="op">(</span><span class="va">jm2</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">6</span>, Thoriz <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>     decision_threshold <span class="op">=</span> <span class="fl">0.2</span>, type_weights <span class="op">=</span> <span class="st">"IPCW"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Prediction Error for the Joint Model 'jm2'</span></span>
+<span><span class="co">#&gt; Accuracy Metric for the Joint Model 'jm2'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated NB with decision threshold 0.2: 0.054</span></span>
+<span><span class="co">#&gt; Estimated Net Benefit with decision threshold 0.2: 0.054</span></span>
 <span><span class="co">#&gt; At time: 8</span></span>
 <span><span class="co">#&gt; For the 121 subjects at risk at time 6</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 8): 19</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 8): 33</span></span>
-<span><span class="co">#&gt; Accounting for left truncation and right censoring using nonparametric inverse probability weights</span></span>
+<span><span class="co">#&gt; Accounting for left truncation and right censoring using </span></span>
+<span><span class="co">#&gt;  nonparametric inverse probability weights</span></span>
+<span></span>
 <span><span class="fu"><a href="../reference/tvEC.html">tvEC</a></span><span class="op">(</span><span class="va">jm2</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">6</span>, Thoriz <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>     decision_threshold <span class="op">=</span> <span class="fl">0.2</span>, type_weights <span class="op">=</span> <span class="st">"IPCW"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Prediction Error for the Joint Model 'jm2'</span></span>
+<span><span class="co">#&gt; Accuracy Metric for the Joint Model 'jm2'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated EC with decision threshold 0.2: 0.099</span></span>
+<span><span class="co">#&gt; Estimated Expected Cost with decision threshold 0.2: 0.099</span></span>
 <span><span class="co">#&gt; At time: 8</span></span>
 <span><span class="co">#&gt; For the 121 subjects at risk at time 6</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 8): 19</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 8): 33</span></span>
-<span><span class="co">#&gt; Accounting for left truncation and right censoring using nonparametric inverse probability weights</span></span></code></pre></div>
+<span><span class="co">#&gt; Accounting for left truncation and right censoring using </span></span>
+<span><span class="co">#&gt;  nonparametric inverse probability weights</span></span></code></pre></div>
 <p>For the decision curve of the expected cost, by default the weight
 function is displayed to show the relative importance of all decision
 thresholds. So, let’s assume that we want to assign a high relevance to
@@ -335,11 +345,15 @@ expected cost, including both <code>jm1</code> and <code>jm2</code>
 is:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dc_ec1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/decision_curves.html">decision_curves</a></span><span class="op">(</span><span class="va">jm1</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">6</span>, Dt <span class="op">=</span> <span class="fl">2</span>, </span>
-<span>                          type_weights <span class="op">=</span> <span class="st">"IPCW"</span>, mod <span class="op">=</span> <span class="fl">0.2</span>, interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.125</span>, <span class="fl">0.275</span><span class="op">)</span><span class="op">)</span></span>
+<span>                          type_weights <span class="op">=</span> <span class="st">"IPCW"</span>, mod <span class="op">=</span> <span class="fl">0.2</span>, </span>
+<span>                          interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.125</span>, <span class="fl">0.275</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">dc_ec2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/decision_curves.html">decision_curves</a></span><span class="op">(</span><span class="va">jm2</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">6</span>, Dt <span class="op">=</span> <span class="fl">2</span>, </span>
-<span>                          type_weights <span class="op">=</span> <span class="st">"IPCW"</span>, mod <span class="op">=</span> <span class="fl">0.2</span>, interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.125</span>, <span class="fl">0.275</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dc_ec1</span>, <span class="va">dc_ec2</span>, </span>
-<span>     legend_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"JM1 (serBilir)"</span>, <span class="st">"JM2 (prothrombin)"</span>, <span class="st">"Treat all"</span>, <span class="st">"Treat none"</span><span class="op">)</span>,</span>
+<span>                          type_weights <span class="op">=</span> <span class="st">"IPCW"</span>, mod <span class="op">=</span> <span class="fl">0.2</span>, </span>
+<span>                          interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.125</span>, <span class="fl">0.275</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dc_ec1</span>, <span class="va">dc_ec2</span>, legend_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"JM1 (serBilir)"</span>, <span class="st">"JM2 (prothrombin)"</span>, </span>
+<span>                                      <span class="st">"Treat all"</span>, <span class="st">"Treat none"</span><span class="op">)</span>,</span>
 <span>     col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"purple2"</span>, <span class="st">"lightgreen"</span>, <span class="st">"brown2"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Clinical_Utility_Metrics_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="700"></p>
 <p>We observe that the joint model using the serum bilirubin overcomes
@@ -354,44 +368,52 @@ function above. For the first joint model (the one using
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/tvIWEC.html">tvIWEC</a></span><span class="op">(</span><span class="va">jm1</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">6</span>, Thoriz <span class="op">=</span> <span class="fl">8</span>, </span>
 <span>       mod <span class="op">=</span> <span class="fl">0.2</span>, interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.125</span>, <span class="fl">0.275</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Prediction Error for the Joint Model 'jm1'</span></span>
+<span><span class="co">#&gt; Accuracy Metric for the Joint Model 'jm1'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated IWEC with shape parameters 23.1117 and 89.4466: 0.0766</span></span>
+<span><span class="co">#&gt; Estimated Integrated Weighted Expected Cost</span></span>
+<span><span class="co">#&gt;  with shape parameters 23.1 and 89.4: 0.0766</span></span>
 <span><span class="co">#&gt; At time: 8</span></span>
 <span><span class="co">#&gt; For the 121 subjects at risk at time 6</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 8): 19</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 8): 33</span></span>
-<span><span class="co">#&gt; Accounting for left truncation and right censoring using model-based weights</span></span></code></pre></div>
+<span><span class="co">#&gt; Accounting for left truncation and right censoring using </span></span>
+<span><span class="co">#&gt;  model-based weights</span></span></code></pre></div>
 <p>And, for <code>jm2</code> (joint model using
 <code>prothrombin</code>):</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/tvIWEC.html">tvIWEC</a></span><span class="op">(</span><span class="va">jm2</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">6</span>, Thoriz <span class="op">=</span> <span class="fl">8</span>, </span>
 <span>       mod <span class="op">=</span> <span class="fl">0.2</span>, interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.125</span>, <span class="fl">0.275</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Prediction Error for the Joint Model 'jm2'</span></span>
+<span><span class="co">#&gt; Accuracy Metric for the Joint Model 'jm2'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated IWEC with shape parameters 23.1117 and 89.4466: 0.124</span></span>
+<span><span class="co">#&gt; Estimated Integrated Weighted Expected Cost</span></span>
+<span><span class="co">#&gt;  with shape parameters 23.1 and 89.4: 0.124</span></span>
 <span><span class="co">#&gt; At time: 8</span></span>
 <span><span class="co">#&gt; For the 121 subjects at risk at time 6</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 8): 19</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 8): 33</span></span>
-<span><span class="co">#&gt; Accounting for left truncation and right censoring using model-based weights</span></span></code></pre></div>
+<span><span class="co">#&gt; Accounting for left truncation and right censoring using </span></span>
+<span><span class="co">#&gt;  model-based weights</span></span></code></pre></div>
 <p>We can compare <code>jm1</code>, <code>jm2</code> as well as the
 default strategies with the weighted decision curve. In this case we
 consider a finer grid of decision thresholds to plot the decision
 curve.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">wdc1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/decision_curves.html">decision_curves</a></span><span class="op">(</span><span class="va">jm1</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">6</span>, Dt <span class="op">=</span> <span class="fl">2</span>, type <span class="op">=</span> <span class="st">"weightedEC"</span>, </span>
-<span>                        mod <span class="op">=</span> <span class="fl">0.2</span>, interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.125</span>, <span class="fl">0.275</span><span class="op">)</span>, </span>
-<span>                        decision_threshold_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.001</span>, <span class="fl">0.999</span>, length.out <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">wdc2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/decision_curves.html">decision_curves</a></span><span class="op">(</span><span class="va">jm2</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">6</span>, Dt <span class="op">=</span> <span class="fl">2</span>, type <span class="op">=</span> <span class="st">"weightedEC"</span>, </span>
+<code class="sourceCode R"><span><span class="va">thr_rng</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.001</span>, <span class="fl">0.999</span>, length.out <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
+<span><span class="va">wdc1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/decision_curves.html">decision_curves</a></span><span class="op">(</span><span class="va">jm1</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">6</span>, Dt <span class="op">=</span> <span class="fl">2</span>, </span>
+<span>                        type <span class="op">=</span> <span class="st">"weightedEC"</span>, mod <span class="op">=</span> <span class="fl">0.2</span>, </span>
+<span>                        interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.125</span>, <span class="fl">0.275</span><span class="op">)</span>, </span>
+<span>                        decision_threshold_range <span class="op">=</span> <span class="va">thr_rng</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">wdc2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/decision_curves.html">decision_curves</a></span><span class="op">(</span><span class="va">jm2</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">6</span>, Dt <span class="op">=</span> <span class="fl">2</span>, </span>
+<span>                        type <span class="op">=</span> <span class="st">"weightedEC"</span>, </span>
 <span>                        mod <span class="op">=</span> <span class="fl">0.2</span>, interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.125</span>, <span class="fl">0.275</span><span class="op">)</span>,</span>
-<span>                        decision_threshold_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.001</span>, <span class="fl">0.999</span>, length.out <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
+<span>                        decision_threshold_range <span class="op">=</span> <span class="va">thr_rng</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">wdc1</span>, <span class="va">wdc2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Clinical_Utility_Metrics_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="700"></p>
 <p>In this plot, we see that both joint models overcome the default
 strategies when incorporating the relative relevance of the decision
-thresholds via the weight function <span class="math inline">w(c;23.11,
+thresholds via the weight function <span class="math inline">w(c; 23.11,
 89.45)</span>. However, the joint model using the serum bilirubin yields
 better estimates per each relevant decision threshold as well as with
 respect the IWEC.</p>
@@ -409,65 +431,69 @@ predictive performance via the net benefit:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/tvNB.html">tvNB</a></span><span class="op">(</span><span class="va">CoxFit</span>, newdata <span class="op">=</span> <span class="va">pbc2.id</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Thoriz <span class="op">=</span> <span class="fl">7.5</span>, </span>
 <span>     decision_threshold <span class="op">=</span> <span class="fl">0.125</span>, type_weights <span class="op">=</span> <span class="st">"IPCW"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Prediction Error for the Cox Model 'CoxFit'</span></span>
+<span><span class="co">#&gt; Accuracy Metric for the Cox Model 'CoxFit'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated NB with decision threshold 0.125: 0.1328</span></span>
+<span><span class="co">#&gt; Estimated Net Benefit with decision threshold 0.125: 0.1328</span></span>
 <span><span class="co">#&gt; At time: 7.5</span></span>
 <span><span class="co">#&gt; For the 134 subjects at risk at time 5</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [5, 7.5): 28</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [5, 7.5): 41</span></span>
-<span><span class="co">#&gt; Accounting for left truncation and right censoring using nonparametric inverse probability weights</span></span></code></pre></div>
+<span><span class="co">#&gt; Accounting for left truncation and right censoring using </span></span>
+<span><span class="co">#&gt;  nonparametric inverse probability weights</span></span></code></pre></div>
 <p>Similarly, we can use the expected cost:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/tvEC.html">tvEC</a></span><span class="op">(</span><span class="va">CoxFit</span>, newdata <span class="op">=</span> <span class="va">pbc2.id</span>, Tstart <span class="op">=</span> <span class="fl">6</span>, Dt <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>     decision_threshold <span class="op">=</span> <span class="fl">0.45</span>, name_model <span class="op">=</span> <span class="st">"Proportional Hazards Model"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Prediction Error for the Cox Model 'Proportional Hazards Model'</span></span>
+<span><span class="co">#&gt; Accuracy Metric for the Cox Model 'Proportional Hazards Model'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated EC with decision threshold 0.45: 0.1783</span></span>
+<span><span class="co">#&gt; Estimated Expected Cost with decision threshold 0.45: 0.1783</span></span>
 <span><span class="co">#&gt; At time: 9</span></span>
 <span><span class="co">#&gt; For the 121 subjects at risk at time 6</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 9): 29</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 9): 45</span></span>
-<span><span class="co">#&gt; Accounting for left truncation and right censoring using model-based weights</span></span></code></pre></div>
+<span><span class="co">#&gt; Accounting for left truncation and right censoring using </span></span>
+<span><span class="co">#&gt;  model-based weights</span></span></code></pre></div>
 <p>The IWEC also supports Cox models:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/tvIWEC.html">tvIWEC</a></span><span class="op">(</span><span class="va">CoxFit</span>, newdata <span class="op">=</span> <span class="va">pbc2.id</span>, Tstart <span class="op">=</span> <span class="fl">6</span>, Thoriz <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>       shape1 <span class="op">=</span> <span class="fl">2</span>, shape2 <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Prediction Error for the Cox Model 'CoxFit'</span></span>
+<span><span class="co">#&gt; Accuracy Metric for the Cox Model 'CoxFit'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated IWEC with shape parameters 2 and 2: 0.0877</span></span>
+<span><span class="co">#&gt; Estimated Integrated Weighted Expected Cost</span></span>
+<span><span class="co">#&gt;  with shape parameters 2.0 and 2.0: 0.0877</span></span>
 <span><span class="co">#&gt; At time: 8</span></span>
 <span><span class="co">#&gt; For the 121 subjects at risk at time 6</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [6, 8): 19</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [6, 8): 33</span></span>
-<span><span class="co">#&gt; Accounting for left truncation and right censoring using model-based weights</span></span></code></pre></div>
+<span><span class="co">#&gt; Accounting for left truncation and right censoring using </span></span>
+<span><span class="co">#&gt;  model-based weights</span></span></code></pre></div>
 <p>Decision curves can be easily displayed also with Cox models:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cox_wdg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/decision_curves.html">decision_curves</a></span><span class="op">(</span><span class="va">CoxFit</span>, newdata <span class="op">=</span> <span class="va">pbc2.id</span>, Tstart <span class="op">=</span> <span class="fl">6</span>, Thoriz <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>                           type <span class="op">=</span> <span class="st">"weightedEC"</span>, shape1 <span class="op">=</span> <span class="fl">15</span>, shape2 <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cox_wdg</span>,</span>
-<span>     legend_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cox model"</span>, <span class="st">"Treat all"</span>, <span class="st">"Treat none"</span><span class="op">)</span>, </span>
-<span>     legend_loc <span class="op">=</span> <span class="st">"topleft"</span>,</span>
-<span>     lty <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>,</span>
-<span>     xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.65</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">cox_wdg</span>, legend_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cox model"</span>, <span class="st">"Treat all"</span>, <span class="st">"Treat none"</span><span class="op">)</span>, </span>
+<span>     legend_loc <span class="op">=</span> <span class="st">"topleft"</span>, lty <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>, xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.65</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Clinical_Utility_Metrics_files/figure-html/unnamed-chunk-20-1.png" class="r-plt" alt="" width="700"></p>
 <p>The IWEC reduces to the <span class="math inline">1/2</span> times
-the Brier score when <code>shape1=1</code> and
-<code>shape2=1</code>:</p>
+the Brier score when <code>shape1 = 1</code> and
+<code>shape2 = 1</code>:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">iwec1_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tvIWEC.html">tvIWEC</a></span><span class="op">(</span><span class="va">CoxFit</span>, newdata <span class="op">=</span> <span class="va">pbc2.id</span>, Tstart <span class="op">=</span> <span class="fl">2</span>, Dt <span class="op">=</span> <span class="fl">5</span>, shape1 <span class="op">=</span> <span class="fl">1</span>, shape2 <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                  type_weights <span class="op">=</span> <span class="st">"IPCW"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">iwec1_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tvIWEC.html">tvIWEC</a></span><span class="op">(</span><span class="va">CoxFit</span>, newdata <span class="op">=</span> <span class="va">pbc2.id</span>, Tstart <span class="op">=</span> <span class="fl">2</span>, Dt <span class="op">=</span> <span class="fl">5</span>, </span>
+<span>                  shape1 <span class="op">=</span> <span class="fl">1</span>, shape2 <span class="op">=</span> <span class="fl">1</span>, type_weights <span class="op">=</span> <span class="st">"IPCW"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">bs_expl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tvBrier.html">tvBrier</a></span><span class="op">(</span><span class="va">CoxFit</span>, newdata <span class="op">=</span> <span class="va">pbc2.id</span>, Tstart <span class="op">=</span> <span class="fl">2</span>, Dt <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>                   type_weights <span class="op">=</span> <span class="st">"IPCW"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"IWEC when shape1 = shape2 = 1:"</span>, <span class="fl">2</span> <span class="op">*</span> <span class="va">iwec1_1</span><span class="op">$</span><span class="va">metric</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; IWEC when shape1 = shape2 = 1: 0.2364726</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Brier score:"</span>, <span class="va">bs_expl</span><span class="op">$</span><span class="va">Brier</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Brier score: 0.2364726</span></span></code></pre></div>
 <p>In addition, the logarithmic score is also a particular case of the
-IWEC that is obtained when <code>shape1=0</code> and
-<code>shape2=0</code>.</p>
+IWEC that is obtained when <code>shape1 = 0</code> and
+<code>shape2 = 0</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="general-dynamic-predictions-evaluation">General dynamic predictions evaluation<a class="anchor" aria-label="anchor" href="#general-dynamic-predictions-evaluation"></a>
@@ -481,20 +507,25 @@ Let’s see some examples of this.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sfit_5</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu">survfit</span><span class="op">(</span><span class="va">CoxFit</span>, newdata <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span>, times <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="va">sfit_8</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu">survfit</span><span class="op">(</span><span class="va">CoxFit</span>, newdata <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">)</span>, times <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
-<span><span class="va">predictions</span> <span class="op">&lt;-</span> <span class="fl">1.0</span> <span class="op">-</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">sfit_8</span><span class="op">$</span><span class="va">surv</span><span class="op">)</span><span class="op">[</span><span class="fl">1L</span>, <span class="op">]</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">sfit_5</span><span class="op">$</span><span class="va">surv</span><span class="op">)</span><span class="op">[</span><span class="fl">1L</span>, <span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">predictions</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fl">1.0</span> <span class="op">-</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">sfit_8</span><span class="op">$</span><span class="va">surv</span><span class="op">)</span><span class="op">[</span><span class="fl">1L</span>, <span class="op">]</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">sfit_5</span><span class="op">$</span><span class="va">surv</span><span class="op">)</span><span class="op">[</span><span class="fl">1L</span>, <span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <p>Now, we compute the net benefit with decision threshold <span class="math inline">0.375</span>, we use the IPW estimator:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/tvNB.html">tvNB</a></span><span class="op">(</span><span class="va">predictions</span>, Time <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">years</span>, LT_Time <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">lt</span>, event <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">event</span>,</span>
-<span>     decision_threshold <span class="op">=</span> <span class="fl">0.375</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Thoriz <span class="op">=</span> <span class="fl">8</span>, type_weights <span class="op">=</span> <span class="st">"IPCW"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/tvNB.html">tvNB</a></span><span class="op">(</span><span class="va">predictions</span>, Time <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">years</span>, LT_Time <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">lt</span>, </span>
+<span>     event <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">event</span>, decision_threshold <span class="op">=</span> <span class="fl">0.375</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, </span>
+<span>     Thoriz <span class="op">=</span> <span class="fl">8</span>, type_weights <span class="op">=</span> <span class="st">"IPCW"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Prediction Error for the predictions 'predictions', observed times 'pbc2.id$years', event indicator 'pbc2.id$event' and left-truncated times 'pbc2.id$lt'</span></span>
+<span><span class="co">#&gt; Accuracy Metric for the predictions 'predictions',</span></span>
+<span><span class="co">#&gt;  observed times 'pbc2.id$years', event indicator 'pbc2.id$event'</span></span>
+<span><span class="co">#&gt;  and left-truncated times 'pbc2.id$lt'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated NB with decision threshold 0.375: -0.0049</span></span>
+<span><span class="co">#&gt; Estimated Net Benefit with decision threshold 0.375: -0.0049</span></span>
 <span><span class="co">#&gt; At time: 8</span></span>
 <span><span class="co">#&gt; For the 134 subjects at risk at time 5</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [5, 8): 31</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [5, 8): 47</span></span>
-<span><span class="co">#&gt; Accounting for left truncation and right censoring using nonparametric inverse probability weights</span></span></code></pre></div>
+<span><span class="co">#&gt; Accounting for left truncation and right censoring using </span></span>
+<span><span class="co">#&gt;  nonparametric inverse probability weights</span></span></code></pre></div>
 <p>For the default method, if we want to use the model-based estimator,
 we must pass the <code>preds_MB</code> argument, which contains the
 weights corresponding to the censored individuals under the model-based
@@ -502,25 +533,34 @@ approach. See an example using the same Cox model and time window below.
 Now, we compute the IWEC with a weight function that has its mode in
 <span class="math inline">0.33</span>, and allocates <span class="math inline">70\%</span> of its mass within <span class="math inline">(0.125, 0.46)</span>.</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ind_censoring</span> <span class="op">&lt;-</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">years</span> <span class="op">&gt;</span> <span class="fl">5</span> <span class="op">&amp;</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">lt</span> <span class="op">&lt;</span> <span class="fl">5</span> <span class="op">&amp;</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">years</span> <span class="op">&lt;</span> <span class="fl">8</span> <span class="op">&amp;</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">event</span> <span class="op">==</span> <span class="fl">0</span></span>
+<code class="sourceCode R"><span><span class="va">ind_censoring</span> <span class="op">&lt;-</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">years</span> <span class="op">&gt;</span> <span class="fl">5</span> <span class="op">&amp;</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">lt</span> <span class="op">&lt;</span> <span class="fl">5</span> <span class="op">&amp;</span> </span>
+<span>    <span class="va">pbc2.id</span><span class="op">$</span><span class="va">years</span> <span class="op">&lt;</span> <span class="fl">8</span> <span class="op">&amp;</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">event</span> <span class="op">==</span> <span class="fl">0</span></span>
+<span></span>
 <span><span class="va">sfit2_8</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu">survfit</span><span class="op">(</span><span class="va">CoxFit</span>, newdata <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">[</span><span class="va">ind_censoring</span>, <span class="op">]</span><span class="op">)</span>,</span>
 <span>                 times <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
 <span><span class="va">sfit_cens</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu">survfit</span><span class="op">(</span><span class="va">CoxFit</span>, newdata <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">[</span><span class="va">ind_censoring</span>, <span class="op">]</span><span class="op">)</span>,</span>
 <span>                     times <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">years</span><span class="op">[</span><span class="va">ind_censoring</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">preds_MB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">pbc2.id</span><span class="op">$</span><span class="va">years</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">preds_MB</span><span class="op">[</span><span class="va">ind_censoring</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1.0</span> <span class="op">-</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">sfit2_8</span><span class="op">$</span><span class="va">surv</span><span class="op">)</span><span class="op">[</span><span class="fl">1L</span>, <span class="op">]</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">sfit_cens</span><span class="op">$</span><span class="va">surv</span><span class="op">)</span><span class="op">[</span><span class="fl">1L</span>, <span class="op">]</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/tvIWEC.html">tvIWEC</a></span><span class="op">(</span><span class="va">predictions</span>, Time <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">years</span>, event <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">event</span>, LT_Time <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">lt</span>, </span>
-<span>       Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span>, type_weights <span class="op">=</span> <span class="st">"model-based"</span>, preds_MB <span class="op">=</span> <span class="va">preds_MB</span>,</span>
-<span>       mod <span class="op">=</span> <span class="fl">0.33</span>, interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.125</span>, <span class="fl">0.46</span><span class="op">)</span>, mass <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span></span>
+<span><span class="va">preds_MB</span><span class="op">[</span><span class="va">ind_censoring</span><span class="op">]</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fl">1.0</span> <span class="op">-</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">sfit2_8</span><span class="op">$</span><span class="va">surv</span><span class="op">)</span><span class="op">[</span><span class="fl">1L</span>, <span class="op">]</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">sfit_cens</span><span class="op">$</span><span class="va">surv</span><span class="op">)</span><span class="op">[</span><span class="fl">1L</span>, <span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/tvIWEC.html">tvIWEC</a></span><span class="op">(</span><span class="va">predictions</span>, Time <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">years</span>, event <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">event</span>, </span>
+<span>       LT_Time <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">lt</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span>, type_weights <span class="op">=</span> <span class="st">"model-based"</span>, </span>
+<span>       preds_MB <span class="op">=</span> <span class="va">preds_MB</span>, mod <span class="op">=</span> <span class="fl">0.33</span>, interv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.125</span>, <span class="fl">0.46</span><span class="op">)</span>, mass <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Prediction Error for the predictions 'predictions', observed times 'pbc2.id$years', event indicator 'pbc2.id$event' and left-truncated times 'pbc2.id$lt'</span></span>
+<span><span class="co">#&gt; Accuracy Metric for the predictions 'predictions',</span></span>
+<span><span class="co">#&gt;  observed times 'pbc2.id$years', event indicator 'pbc2.id$event'</span></span>
+<span><span class="co">#&gt;  and left-truncated times 'pbc2.id$lt'</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Estimated IWEC with shape parameters 3.4833 and 6.0418: 0.1528</span></span>
+<span><span class="co">#&gt; Estimated Integrated Weighted Expected Cost</span></span>
+<span><span class="co">#&gt;  with shape parameters 3.5 and 6.0: 0.1528</span></span>
 <span><span class="co">#&gt; At time: 8</span></span>
 <span><span class="co">#&gt; For the 134 subjects at risk at time 5</span></span>
 <span><span class="co">#&gt; Number of subjects with an event in [5, 8): 31</span></span>
 <span><span class="co">#&gt; Number of subjects with a censored time in [5, 8): 47</span></span>
-<span><span class="co">#&gt; Accounting for left truncation and right censoring using model-based weights</span></span></code></pre></div>
+<span><span class="co">#&gt; Accounting for left truncation and right censoring using </span></span>
+<span><span class="co">#&gt;  model-based weights</span></span></code></pre></div>
 <p>To clarify the explanation regarding the <code>preds_MB</code>
 argument: we need to provide a vector that matches the length of the
 <code>Time</code>, <code>event</code>, and <code>LT_Time vectors</code>.
@@ -529,9 +569,10 @@ except for those corresponding to censored individuals, which should
 hold the model-based weights.</p>
 <p>For the decision curves the ‘default’ method work the same way:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dc_default</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/decision_curves.html">decision_curves</a></span><span class="op">(</span><span class="va">predictions</span>, Time <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">years</span>, event <span class="op">=</span>  <span class="va">pbc2.id</span><span class="op">$</span><span class="va">event</span>,</span>
-<span>                               LT_Time <span class="op">=</span>  <span class="va">pbc2.id</span><span class="op">$</span><span class="va">lt</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>                               type_weights <span class="op">=</span> <span class="st">"IPCW"</span>, type <span class="op">=</span> <span class="st">"NB"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">dc_default</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu"><a href="../reference/decision_curves.html">decision_curves</a></span><span class="op">(</span><span class="va">predictions</span>, Time <span class="op">=</span> <span class="va">pbc2.id</span><span class="op">$</span><span class="va">years</span>, event <span class="op">=</span>  <span class="va">pbc2.id</span><span class="op">$</span><span class="va">event</span>,</span>
+<span>                    LT_Time <span class="op">=</span>  <span class="va">pbc2.id</span><span class="op">$</span><span class="va">lt</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span>, </span>
+<span>                    type_weights <span class="op">=</span> <span class="st">"IPCW"</span>, type <span class="op">=</span> <span class="st">"NB"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dc_default</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Clinical_Utility_Metrics_files/figure-html/unnamed-chunk-25-1.png" class="r-plt" alt="" width="700"></p>
 </div>

@@ -18,11 +18,13 @@ lmeFit <- lme(log(serBilir) ~ ns(year, 3, B = c(0, 14.4)) * drug,
                    data = pbc2, random = ~ ns(year, 3, B = c(0, 14.4)) | id,
                    control = lmeControl(opt = "optim"))
 CoxFit <- coxph(Surv(years, status2) ~ drug, data = pbc2.id)
-jmFit <- jm(CoxFit, lmeFit, time_var = "year")
+jmFit <- jm(CoxFit, lmeFit, time_var = "year", n_iter = 6500L, 
+            n_burnin = 1500L)
 summary(jmFit)
 #> 
 #> Call:
-#> JMbayes2::jm(Surv_object = CoxFit, Mixed_objects = lmeFit, time_var = "year")
+#> JMbayes2::jm(Surv_object = CoxFit, Mixed_objects = lmeFit, time_var = "year", 
+#>     n_iter = 6500L, n_burnin = 1500L)
 #> 
 #> Data Descriptives:
 #> Number of groups: 312        Number of events: 169 (54.2%)
@@ -30,40 +32,40 @@ summary(jmFit)
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    4227.440 4517.250 -2906.831
-#> conditional 6550.666 6245.367 -3453.906
+#> marginal    4253.424 4591.903 -3178.584
+#> conditional 6596.347 6291.683 -3513.516
 #> 
 #> Random-effects covariance matrix:
 #>                                                                       
 #>                    StdDev   Corr                                      
-#> (Intr)             0.9933 (Intr) n(,3,B=c(0,14.4))1 n(,3,B=c(0,14.4))2
-#> n(,3,B=c(0,14.4))1 1.5480 0.2289                                      
-#> n(,3,B=c(0,14.4))2 1.6884 0.4480 0.7257                               
-#> n(,3,B=c(0,14.4))3 1.8900 0.4437 0.1676             0.6655            
+#> (Intr)             0.9962 (Intr) n(,3,B=c(0,14.4))1 n(,3,B=c(0,14.4))2
+#> n(,3,B=c(0,14.4))1 1.5533 0.2341                                      
+#> n(,3,B=c(0,14.4))2 1.7191 0.4205 0.6965                               
+#> n(,3,B=c(0,14.4))3 1.9544 0.3999 0.1500             0.6838            
 #> 
 #> Survival outcome:
 #>                         Mean  StDev    2.5%  97.5%      P   Rhat
-#> drugD-penicil        -0.0175 0.2040 -0.4034 0.3710 0.9456 1.0133
-#> value(log(serBilir))  1.2912 0.0903  1.1192 1.4693 0.0000 1.0598
+#> drugD-penicil        -0.0145 0.2053 -0.4034 0.3897 0.9424 1.0009
+#> value(log(serBilir))  1.2999 0.0920  1.1233 1.4815 0.0000 1.0184
 #> 
 #> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                        Mean  StDev    2.5%  97.5%      P   Rhat
-#> (Intercept)          0.5877 0.0821  0.4261 0.7491 0.0000 1.0019
-#> ns(,3,B=c(0,14.4))1  1.1569 0.1751  0.8200 1.5037 0.0000 1.0531
-#> ns(,3,B=c(0,14.4))2  2.1556 0.2216  1.7403 2.6023 0.0000 1.2445
-#> ns(,3,B=c(0,14.4))3  2.3385 0.3193  1.7538 2.9917 0.0000 1.3621
-#> drugD-penicil       -0.1078 0.1162 -0.3365 0.1188 0.3502 1.0009
-#> n(,3,B=c(0,14.4))1:  0.1781 0.2388 -0.2942 0.6511 0.4598 1.0039
-#> n(,3,B=c(0,14.4))2: -0.4587 0.2848 -1.0075 0.1117 0.1078 1.0621
-#> n(,3,B=c(0,14.4))3: -0.6746 0.4060 -1.4589 0.1376 0.0978 1.1464
-#> sigma                0.2886 0.0063  0.2770 0.3012 0.0000 1.0063
+#> (Intercept)          0.5877 0.0830  0.4231 0.7480 0.0000 1.0000
+#> ns(,3,B=c(0,14.4))1  1.1514 0.1801  0.8093 1.5178 0.0000 1.0173
+#> ns(,3,B=c(0,14.4))2  2.1667 0.2443  1.7101 2.6433 0.0000 1.0264
+#> ns(,3,B=c(0,14.4))3  2.3553 0.3696  1.6786 3.0532 0.0000 1.0592
+#> drugD-penicil       -0.1076 0.1166 -0.3379 0.1206 0.3525 1.0008
+#> n(,3,B=c(0,14.4))1:  0.1736 0.2401 -0.3053 0.6420 0.4705 1.0029
+#> n(,3,B=c(0,14.4))2: -0.4465 0.2984 -1.0458 0.1277 0.1297 1.0280
+#> n(,3,B=c(0,14.4))3: -0.6392 0.4293 -1.4930 0.2029 0.1323 1.0301
+#> sigma                0.2878 0.0062  0.2760 0.3001 0.0000 1.0038
 #> 
 #> MCMC summary:
 #> chains: 3 
-#> iterations per chain: 3500 
-#> burn-in per chain: 500 
+#> iterations per chain: 6500 
+#> burn-in per chain: 1500 
 #> thinning: 1 
-#> time: 16 sec
+#> time: 26 sec
 ```
 
 The coefficient for `drugD-penicil` for the survival outcome in the
@@ -137,12 +139,12 @@ i.e.,
 
 # estimate 
 Pr1$pred[2L] - Pr0$pred[2L]
-#> [1] 0.0001722797
+#> [1] 0.00482517
 
 # MCMC variability
 quantile(Pr1$mcmc[2L, ] - Pr0$mcmc[2L, ], probs = c(0.025, 0.975))
 #>       2.5%      97.5% 
-#> -0.2249485  0.2152505
+#> -0.1575568  0.1928673
 ```
 
 ### Time-varying treatments

@@ -86,7 +86,7 @@ summary(jointFit1)
 #> iterations per chain: 3500 
 #> burn-in per chain: 500 
 #> thinning: 1 
-#> time: 14 sec
+#> time: 12 sec
 ```
 
 The output of the [`summary()`](https://rdrr.io/r/base/summary.html)
@@ -230,7 +230,7 @@ summary(jointFit2)
 #> iterations per chain: 12000 
 #> burn-in per chain: 2000 
 #> thinning: 5 
-#> time: 1.2 min
+#> time: 1.1 min
 ```
 
 The survival submodel output now contains the estimated coefficients for

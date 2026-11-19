@@ -199,9 +199,9 @@ evaluating prediction models. <em>Medical Decision Making</em> <b>26</b>, 565–
 <span class="r-in"><span><span class="fu">tvNB</span><span class="op">(</span><span class="va">jointFit</span>, newdata <span class="op">=</span> <span class="va">pbc2</span>, Tstart <span class="op">=</span> <span class="fl">4</span>, Dt <span class="op">=</span> <span class="fl">3</span>, decision_threshold <span class="op">=</span> <span class="fl">0.3</span>,</span></span>
 <span class="r-in"><span>     cores <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Prediction Error for the Joint Model 'jointFit'</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Accuracy Metric for the Joint Model 'jointFit'</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Estimated NB with decision threshold 0.3: 0.0892</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Estimated Net Benefit with decision threshold 0.3: 0.0892</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> At time: 7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> For the 225 subjects at risk at time 4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of subjects with an event in [4, 7): 34</span>
@@ -213,14 +213,15 @@ evaluating prediction models. <em>Medical Decision Making</em> <b>26</b>, 565–
 <span class="r-in"><span><span class="fu">tvNB</span><span class="op">(</span><span class="va">CoxFit</span>, newdata <span class="op">=</span> <span class="va">pbc2.id</span>, Tstart <span class="op">=</span> <span class="fl">4</span>, Dt <span class="op">=</span> <span class="fl">3</span>, decision_threshold <span class="op">=</span> <span class="fl">0.3</span>,</span></span>
 <span class="r-in"><span>     type_weights <span class="op">=</span> <span class="st">"IPCW"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Prediction Error for the Cox Model 'CoxFit'</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Accuracy Metric for the Cox Model 'CoxFit'</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Estimated NB with decision threshold 0.3: -0.0016</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Estimated Net Benefit with decision threshold 0.3: -0.0016</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> At time: 7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> For the 225 subjects at risk at time 4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of subjects with an event in [4, 7): 50</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of subjects with a censored time in [4, 7): 46</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Accounting for censoring using inverse probability of censoring Kaplan-Meier weights</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Accounting for censoring using </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> inverse probability of censoring Kaplan-Meier weights</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
@@ -233,14 +234,17 @@ evaluating prediction models. <em>Medical Decision Making</em> <b>26</b>, 565–
 <span class="r-in"><span><span class="fu">tvNB</span><span class="op">(</span><span class="va">predictions</span>, <span class="va">pbc2.id</span><span class="op">$</span><span class="va">years</span>, <span class="va">pbc2.id</span><span class="op">$</span><span class="va">status2</span>, <span class="va">pbc2.id</span><span class="op">$</span><span class="va">lt</span>, Tstart <span class="op">=</span> <span class="fl">5</span>, Thoriz <span class="op">=</span> <span class="fl">8</span>,</span></span>
 <span class="r-in"><span>     type_weights <span class="op">=</span> <span class="st">"IPCW"</span>, decision_threshold <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Prediction Error for the predictions 'predictions', observed times 'pbc2.id$years', event indicator 'pbc2.id$status2' and left-truncated times 'pbc2.id$lt'</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Accuracy Metric for the predictions 'predictions',</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 	observed times 'pbc2.id$years', event indicator 'pbc2.id$status2'</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 	and left-truncated times 'pbc2.id$lt'</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Estimated NB with decision threshold 0.25: 0.0261</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Estimated Net Benefit with decision threshold 0.25: 0.0261</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> At time: 8</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> For the 125 subjects at risk at time 5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of subjects with an event in [5, 8): 33</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of subjects with a censored time in [5, 8): 44</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Accounting for left truncation and right censoring using nonparametric inverse probability weights</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Accounting for left truncation and right censoring using </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 	nonparametric inverse probability weights</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Now, we consider the default method, but using the model-based estimator:</span></span></span>
@@ -255,14 +259,17 @@ evaluating prediction models. <em>Medical Decision Making</em> <b>26</b>, 565–
 <span class="r-in"><span>     Tstart <span class="op">=</span> <span class="fl">5</span>, Dt <span class="op">=</span> <span class="fl">3</span>, type_weights <span class="op">=</span> <span class="st">"model-based"</span>, preds_MB <span class="op">=</span> <span class="va">preds_MB</span>, </span></span>
 <span class="r-in"><span>     decision_threshold <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Prediction Error for the predictions 'predictions', observed times 'pbc2.id$years', event indicator 'pbc2.id$status2' and left-truncated times 'pbc2.id$lt'</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Accuracy Metric for the predictions 'predictions',</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 	observed times 'pbc2.id$years', event indicator 'pbc2.id$status2'</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 	and left-truncated times 'pbc2.id$lt'</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Estimated NB with decision threshold 0.3: 0.0124</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Estimated Net Benefit with decision threshold 0.3: 0.0124</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> At time: 8</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> For the 125 subjects at risk at time 5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of subjects with an event in [5, 8): 33</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of subjects with a censored time in [5, 8): 44</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Accounting for left truncation and right censoring using model-based weights</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Accounting for left truncation and right censoring using </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 	model-based weights</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>

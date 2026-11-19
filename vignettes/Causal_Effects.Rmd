@@ -28,7 +28,8 @@ lmeFit <- lme(log(serBilir) ~ ns(year, 3, B = c(0, 14.4)) * drug,
                    data = pbc2, random = ~ ns(year, 3, B = c(0, 14.4)) | id,
                    control = lmeControl(opt = "optim"))
 CoxFit <- coxph(Surv(years, status2) ~ drug, data = pbc2.id)
-jmFit <- jm(CoxFit, lmeFit, time_var = "year")
+jmFit <- jm(CoxFit, lmeFit, time_var = "year", n_iter = 6500L, 
+            n_burnin = 1500L)
 summary(jmFit)
 ```
 

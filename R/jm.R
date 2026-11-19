@@ -45,7 +45,7 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     }
     # check if only lme and MixMod have been provided
     if (!all(sapply(Mixed_objects, class) %in% c("lme", "MixMod"))) {
-        stop("'Mixed_objects' should be of class 'lme' of 'MixMod'.\n")
+        stop("'Mixed_objects' should be of class 'lme' or 'MixMod'.\n")
     }
     # extract the data from each of the mixed models
     # and check whether the same data have been used;
@@ -56,7 +56,7 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     if (!all(sapply(datas[-1L], function (x) isTRUE(all.equal(x, datas[[1L]]))))) {
         stop("It seems that some of the mixed models have been fitted to different versions ",
              "of the dataset. Use the same exact dataset in the calls to lme() ",
-             " and mixed_model().")
+             "and mixed_model().")
     }
     dataL <- datas[[1L]]
     rm(datas)
@@ -64,7 +64,7 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     id_names <- sapply(Mixed_objects, function (object)
         names(if (inherits(object, "MixMod")) object$id[1L] else object$groups[1L]))
     if (!all(id_names == id_names[1L])) {
-        stop("it seems that different grouping variables have been used in the mixed models.")
+        stop("It seems that different grouping variables have been used in the mixed models.")
     }
     idVar <- id_names[1L]
     idL <- dataL[[idVar]]
@@ -72,7 +72,7 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     nY <- length(unique(idL))
     # order data by idL and time_var
     if (is.null(dataL[[time_var]])) {
-        stop("the variable specified in agument 'time_var' cannot be found ",
+        stop("The variable specified in agument 'time_var' cannot be found ",
              "in the database of the longitudinal models.")
     }
     dataL <- dataL[order(idL, dataL[[time_var]]), ]
@@ -103,7 +103,7 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         if (is.factor(yy)) as.numeric(yy != levels(yy)[1L]) else yy
     })
     if (any(sapply(y, function (x) any(!is.finite(x))))) {
-        stop("infite value detected in some longitudinal outcomes. These are not allowed.\n")
+        stop("Infite values detected in some longitudinal outcomes. These are not allowed.\n")
     }
 
     # extract families
@@ -179,7 +179,7 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         dataS <- try(eval(Surv_object$call$data, envir = parent.frame()),
                      silent = TRUE)
         if (inherits(dataS, "try-error")) {
-            stop("could not recover the dataset used to fit the Cox/AFT model; ",
+            stop("Could not recover the dataset used to fit the Cox/AFT model; ",
                  "please provide this dataset in the 'data_Surv' argument of jm().")
         }
     } else {
@@ -216,7 +216,7 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     type_censoring <- attr(Surv_Response, "type")
     if (is.null(dataS[[idVar]])) {
         if (is.null(id_var)) {
-            stop("cannot extract the subject id variable from the dataset used to fit the ",
+            stop("Cannot extract the subject id variable from the dataset used to fit the ",
                  "survival model. Please include this variable in the dataset ",
                  "and/or specify the 'id_var' argument.\n")
         } else {
@@ -229,12 +229,12 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
 
     nT <- length(unique(idT))
     if (nY != nT) {
-        stop("the number of groups/subjects in the longitudinal and survival datasets ",
+        stop("The number of groups/subjects in the longitudinal and survival datasets ",
              "do not seem to match. A potential reason why this may be happening is ",
              "missing data in some covariates used in the individual models.")
     }
     if (!all(idT %in% dataL[[idVar]])) {
-        stop("it seems that some of the levels of the id variable in the survival dataset",
+        stop("It seems that some of the levels of the id variable in the survival dataset",
              "cannot be found in the dataset of the Mixed_objects. Please check that ",
              "the same subjects/groups are used in the datasets used to fit the mixed ",
              "and survival models. Also, the name of the subjects/groups variable ",
@@ -301,7 +301,7 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     } else {
         strt <- mf_surv_dataS[[ind_strata]]
         if (!is.factor(strt)) {
-            stop("the strata variable in the Cox model is not a factor. ",
+            stop("The strata variable in the Cox model is not a factor. ",
                  "Please set it as a factor in the database,\n\tand ",
                  "refit the stratified Cox model.")
         }
@@ -423,7 +423,7 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
         functional_forms <- functional_forms[!sapply(functional_forms, is.null)]
     }
     if (any(!names(functional_forms) %in% respVars_form)) {
-        stop("unknown names in the list provided in the 'functional_forms' argument; as names ",
+        stop("Unknown names in the list provided in the 'functional_forms' argument; as names ",
              "of the elements of this list you need to use the response variables from ",
              "the multivariate mixed model.\n")
     }
@@ -467,7 +467,6 @@ jm.default <- function (Surv_object, Mixed_objects, time_var, recurrent = FALSE,
     Funs_FunForms_num <-
         mapply2(extractFuns_FunForms_numeric, Form = functional_forms, nam = respVars_form,
                 MoreArgs = list(data = dataS))
-
 
     #####################################################
 

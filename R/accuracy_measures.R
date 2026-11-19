@@ -1803,31 +1803,31 @@ print.tvMetric <- function (x, digits = 4, ...) {
   if (!inherits(x, "tvMetric"))
     stop("Use only with 'tvMetric' objects.\n")
   str <- switch(x$metric_type,
-                IWEC = paste0("Integrated Weighted Expected Cost with shape parameters ",
-                              round(x$metric_info[1], digits),
-                              " and ", round(x$metric_info[2], digits), ":"),
+                IWEC = paste0("Integrated Weighted Expected Cost\n\twith shape parameters ",
+                              sprintf("%.1f", x$metric_info[1]),
+                              " and ", sprintf("%.1f", x$metric_info[2]), ":"),
                 NB = paste0("Net Benefit with decision threshold ",
                             round(x$metric_info, digits), ":"),
                 EC = paste0("Expected Cost with decision threshold ",
                             round(x$metric_info, digits), ":"))
   if (x$classObject == "coxph") {
-    cat("\nPrediction Error for the Cox Model '", x$nameObject, "'",
+    cat("\nAccuracy Metric for the Cox Model '", x$nameObject, "'",
         sep = "")
     cat("\n\nEstimated", str, round(x$metric, digits))
   } else if(x$classObject == "jm") {
-    cat("\nPrediction Error for the Joint Model '", x$nameObject, "'",
+    cat("\nAccuracy Metric for the Joint Model '", x$nameObject, "'",
         sep = "")
     cat("\n\nEstimated", str, round(x$metric, digits))
   } else {
     if (x$LT_MS) {
-      cat("\nPrediction Error for the predictions '", x$nameObject[1], "'",
-          ", observed times '", x$nameObject[2], "'", ", event indicator '",
+      cat("\nAccuracy Metric for the predictions '", x$nameObject[1], "'",
+          ",\n\tobserved times '", x$nameObject[2], "'", ", event indicator '",
           x$nameObject[3], "'",
-          " and left-truncated times '", x$nameObject[4], "'",
+          "\n\tand left-truncated times '", x$nameObject[4], "'",
           sep = "")
     } else {
-      cat("\nPrediction Error for the predictions '", x$nameObject[1], "'",
-          ", observed times '", x$nameObject[2], "'", " and event indicator '",
+      cat("\nAccuracy Metric for the predictions '", x$nameObject[1], "'",
+          ",\n\tobserved times '", x$nameObject[2], "'", " and event indicator '",
           x$nameObject[3], "'",
           sep = "")
     }
@@ -1842,17 +1842,16 @@ print.tvMetric <- function (x, digits = 4, ...) {
       ", ", round(x$Thoriz, digits), "): ", x$ncens, sep = "")
   if (x$LT_MS) {
     cat("\nAccounting for left truncation and right censoring using ",
-        if (x$type_weights == "IPCW") "\nnonparametric inverse probability weights"
-        else "model-based weights", sep = "")
+        if (x$type_weights == "IPCW") "\n\tnonparametric inverse probability weights"
+        else "\n\tmodel-based weights", sep = "")
   } else {
     cat("\nAccounting for censoring using ",
-        if (x$type_weights == "IPCW") "inverse probability of censoring Kaplan-Meier weights"
+        if (x$type_weights == "IPCW") "\ninverse probability of censoring Kaplan-Meier weights"
         else "model-based weights", sep = "")
   }
   cat("\n\n")
   invisible(x)
 }
-
 
 decision_curves <- function (object, ...) {
   UseMethod("decision_curves")
@@ -1871,7 +1870,9 @@ decision_curves.default <-
     if (!is.null(Thoriz) && Thoriz <= Tstart) {
       stop("'Thoriz' must be larger than 'Tstart'.")
     }
-    if (length(decision_threshold_range) < 2 || any(decision_threshold_range <= 0) || any(decision_threshold_range >= 1))
+    if (length(decision_threshold_range) < 2 ||
+        any(decision_threshold_range <= 0) ||
+        any(decision_threshold_range >= 1))
       stop("Multiple thresholds are required and must be between 0 and 1.")
     if (is.null(Thoriz)) {
       Thoriz <- Tstart + Dt

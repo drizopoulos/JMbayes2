@@ -342,13 +342,15 @@ specifying the desired timescale,
 ``` r
 
 jm_fit <- jm(cox_fit, lme_fit, time_var = "time", recurrent = "gap",
-             functional_forms =  ~ value(y):strata)
+             functional_forms =  ~ value(y):strata, n_iter = 12000L,
+             n_burnin = 5000L)
 
 summary(jm_fit)
 #> 
 #> Call:
 #> JMbayes2::jm(Surv_object = cox_fit, Mixed_objects = lme_fit, 
-#>     time_var = "time", recurrent = "gap", functional_forms = ~value(y):strata)
+#>     time_var = "time", recurrent = "gap", functional_forms = ~value(y):strata, 
+#>     n_iter = 12000L, n_burnin = 5000L)
 #> 
 #> Data Descriptives:
 #> Number of groups: 500        Number of events: 2250 (81.6%)
@@ -356,16 +358,16 @@ summary(jm_fit)
 #>   y: 3075
 #> 
 #>                  DIC     WAIC       LPML
-#> marginal    13148.20 12980.83  -6742.978
-#> conditional 19844.45 19107.98 -10191.231
+#> marginal    13138.84 12967.42  -6753.345
+#> conditional 19857.32 19123.56 -10337.873
 #> 
 #> Random-effects covariance matrix:
 #>                                                            
 #>                        StdDev   Corr                       
-#> (Intr)                 0.7398 (Intr) n(,k=c(1,3),B=c(0,7))1
-#> n(,k=c(1,3),B=c(0,7))1 2.0815                              
-#> n(,k=c(1,3),B=c(0,7))2 1.4438                              
-#> n(,k=c(1,3),B=c(0,7))3 1.7755                              
+#> (Intr)                 0.7384 (Intr) n(,k=c(1,3),B=c(0,7))1
+#> n(,k=c(1,3),B=c(0,7))1 2.0739                              
+#> n(,k=c(1,3),B=c(0,7))2 1.4508                              
+#> n(,k=c(1,3),B=c(0,7))3 1.7960                              
 #>                                              
 #>                                              
 #> (Intr)                 n(,k=c(1,3),B=c(0,7))2
@@ -375,32 +377,32 @@ summary(jm_fit)
 #> 
 #> Frailty standard deviation:
 #>                 Mean   2.5%  97.5%
-#> sigma_frailty 0.2004 0.0092 0.3162
+#> sigma_frailty 0.2039 0.0339 0.3233
 #> 
 #> Survival outcome:
 #>                             Mean  StDev    2.5%  97.5%      P   Rhat
-#> group:strata(strata)R     0.4605 0.0835  0.2947 0.6195 0.0000 1.0037
-#> group:strata(strata)T1    0.4385 0.1051  0.2323 0.6382 0.0000 1.0011
-#> age:strata(strata)R       0.0497 0.0031  0.0438 0.0563 0.0000 1.1033
-#> age:strata(strata)T1      0.0486 0.0045  0.0387 0.0572 0.0000 1.1449
-#> value(y):strataR          0.5048 0.0294  0.4455 0.5552 0.0000 1.0942
-#> value(y):strataT1         0.5064 0.0459  0.4283 0.6102 0.0000 1.2021
-#> frailty:strata(strata)T1 -0.7007 0.9909 -3.2361 1.1638 0.3776 1.0845
+#> group:strata(strata)R     0.4649 0.0820  0.3067 0.6212 0.0000 1.0099
+#> group:strata(strata)T1    0.4436 0.1089  0.2356 0.6593 0.0000 1.0152
+#> age:strata(strata)R       0.0496 0.0028  0.0444 0.0554 0.0000 1.0089
+#> age:strata(strata)T1      0.0486 0.0051  0.0387 0.0596 0.0000 1.0681
+#> value(y):strataR          0.5035 0.0276  0.4510 0.5591 0.0000 1.0106
+#> value(y):strataT1         0.5122 0.0519  0.4083 0.6394 0.0000 1.0843
+#> frailty:strata(strata)T1 -0.6578 0.9903 -2.9644 1.1456 0.3386 1.0910
 #> 
 #> Longitudinal outcome: y (family = gaussian, link = identity)
 #>                           Mean  StDev    2.5%  97.5%      P   Rhat
-#> (Intercept)             6.9907 0.0427  6.9068 7.0749 0.0000 1.0059
-#> n(,k=c(1,3),B=c(0,7))1  1.3651 0.1462  1.0817 1.6557 0.0000 1.0117
-#> n(,k=c(1,3),B=c(0,7))2  0.6113 0.1370  0.3466 0.8793 0.0000 1.3420
-#> n(,k=c(1,3),B=c(0,7))3 -0.1573 0.1943 -0.5350 0.2252 0.4218 1.3087
-#> sigma                   0.6159 0.0103  0.5962 0.6364 0.0000 1.0044
+#> (Intercept)             6.9902 0.0430  6.9062 7.0738 0.0000 1.0043
+#> n(,k=c(1,3),B=c(0,7))1  1.3745 0.1439  1.0893 1.6561 0.0000 1.0069
+#> n(,k=c(1,3),B=c(0,7))2  0.5885 0.1545  0.2819 0.8838 0.0000 1.0139
+#> n(,k=c(1,3),B=c(0,7))3 -0.2018 0.2146 -0.6204 0.2059 0.3542 1.0238
+#> sigma                   0.6162 0.0102  0.5965 0.6369 0.0000 1.0033
 #> 
 #> MCMC summary:
 #> chains: 3 
-#> iterations per chain: 3500 
-#> burn-in per chain: 500 
+#> iterations per chain: 12000 
+#> burn-in per chain: 5000 
 #> thinning: 1 
-#> time: 54 sec
+#> time: 3 min
 ```
 
 One can find the association parameters between the underlying value of

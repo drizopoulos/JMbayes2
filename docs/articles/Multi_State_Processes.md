@@ -175,20 +175,20 @@ msmodel <- coxph(Surv(Tstart, Tstop, status) ~ X:strata(transition),
                  data = df_surv)
 ```
 
-Finally, to fit the joint model, we simply run:
+Finally, to fit the joint model, we run:
 
 ``` r
 
 jm_ms_model <- 
     jm(msmodel, mixedmodel, time_var = "time", base_hazard = rep("weibull", 3), 
-       functional_forms = ~ value(y):transition, n_iter = 6000L, n_burnin = 1500L)
+       functional_forms = ~ value(y):transition, n_iter = 7000L, n_burnin = 1500L)
 
 summary(jm_ms_model)
 #> 
 #> Call:
 #> JMbayes2::jm(Surv_object = msmodel, Mixed_objects = mixedmodel, 
 #>     time_var = "time", functional_forms = ~value(y):transition, 
-#>     base_hazard = rep("weibull", 3), n_iter = 6000L, n_burnin = 1500L)
+#>     base_hazard = rep("weibull", 3), n_iter = 7000L, n_burnin = 1500L)
 #> 
 #> Data Descriptives:
 #> Number of groups: 1500       Number of events: 1784 (45.8%)
@@ -196,36 +196,36 @@ summary(jm_ms_model)
 #>   y: 11573
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    46922.33 46862.26 -23431.15
-#> conditional 49793.83 48870.35 -25580.10
+#> marginal    46917.79 46857.75 -23428.89
+#> conditional 49789.78 48865.49 -25599.92
 #> 
 #> Random-effects covariance matrix:
 #>                     
 #>        StdDev   Corr
-#> (Intr) 1.0584 (Intr)
-#> time   0.5611 0.2095
+#> (Intr) 1.0582 (Intr)
+#> time   0.5612 0.2093
 #> 
 #> Survival outcome:
-#>                          Mean  StDev    2.5%  97.5%     P   Rhat
-#> X:strata(transition)1  0.4382 0.0681  0.3042 0.5736 0.000 1.0133
-#> X:strata(transition)2 -0.2361 0.1425 -0.5261 0.0322 0.085 1.0039
-#> X:strata(transition)3  0.5770 0.0826  0.4115 0.7386 0.000 1.0108
-#> value(y):transition1   0.5285 0.0201  0.4919 0.5712 0.000 1.1625
-#> value(y):transition2   0.3113 0.0384  0.2374 0.3891 0.000 1.0541
-#> value(y):transition3   0.2694 0.0200  0.2313 0.3099 0.000 1.0306
+#>                          Mean  StDev    2.5%  97.5%      P   Rhat
+#> X:strata(transition)1  0.4411 0.0687  0.3079 0.5771 0.0000 1.0027
+#> X:strata(transition)2 -0.2375 0.1420 -0.5242 0.0336 0.0862 1.0030
+#> X:strata(transition)3  0.5785 0.0829  0.4111 0.7386 0.0000 1.0045
+#> value(y):transition1   0.5306 0.0205  0.4923 0.5742 0.0000 1.0833
+#> value(y):transition2   0.3107 0.0385  0.2357 0.3883 0.0000 1.0050
+#> value(y):transition3   0.2697 0.0193  0.2330 0.3092 0.0000 1.0079
 #> 
 #> Longitudinal outcome: y (family = gaussian, link = identity)
 #>                Mean  StDev    2.5%   97.5% P   Rhat
-#> (Intercept)  5.0059 0.0313  4.9449  5.0668 0 1.0004
-#> time        -0.1070 0.0166 -0.1392 -0.0742 0 1.0020
-#> sigma        0.9304 0.0071  0.9167  0.9442 0 1.0038
+#> (Intercept)  5.0061 0.0313  4.9455  5.0673 0 1.0002
+#> time        -0.1071 0.0165 -0.1394 -0.0744 0 1.0001
+#> sigma        0.9303 0.0071  0.9167  0.9443 0 1.0003
 #> 
 #> MCMC summary:
 #> chains: 3 
-#> iterations per chain: 6000 
+#> iterations per chain: 7000 
 #> burn-in per chain: 1500 
 #> thinning: 1 
-#> time: 1 min
+#> time: 1.2 min
 ```
 
 which differs from a default call to

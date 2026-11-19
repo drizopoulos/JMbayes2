@@ -101,12 +101,12 @@ basis, i.e., in the following example, we set the internal knots at 3,
 
 form_splines <- ~ value(log(serBilir)) * ns(year, k = c(3, 6, 9), B = c(0, 14.5))
 jointFit2 <- update(jointFit1, functional_forms = form_splines, 
-                    n_iter = 6500L, n_burnin = 2500L)
+                    n_iter = 7000L, n_burnin = 1500L)
 summary(jointFit2)
 #> 
 #> Call:
 #> JMbayes2::jm(Surv_object = CoxFit, Mixed_objects = fm, time_var = "year", 
-#>     functional_forms = form_splines, n_iter = 6500L, n_burnin = 2500L)
+#>     functional_forms = form_splines, n_iter = 7000L, n_burnin = 1500L)
 #> 
 #> Data Descriptives:
 #> Number of groups: 312        Number of events: 169 (54.2%)
@@ -114,55 +114,55 @@ summary(jointFit2)
 #>   log(serBilir): 1945
 #> 
 #>                  DIC     WAIC      LPML
-#> marginal    4349.190 6316.081 -3554.416
-#> conditional 8718.735 8455.691 -4538.585
+#> marginal    4365.120 6286.215 -3598.082
+#> conditional 8718.259 8454.858 -4546.904
 #> 
 #> Random-effects covariance matrix:
 #>                               
 #>        StdDev    Corr         
-#> (Intr) 1.3127  (Intr)  p(,2)1 
-#> p(,2)1 21.9426 0.6899         
-#> p(,2)2 12.0210 -0.2170 -0.1180
+#> (Intr) 1.3109  (Intr)  p(,2)1 
+#> p(,2)1 21.8692 0.6847         
+#> p(,2)2 12.0973 -0.2244 -0.1201
 #> 
 #> Survival outcome:
 #>                                                                   Mean  StDev
-#> sexfemale                                                      -0.1739 0.2800
-#> value(log(serBilir))                                            1.3450 0.2405
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 -0.2358 0.3017
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2  0.0186 0.3492
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 -0.5452 0.7367
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 -1.1845 0.8969
+#> sexfemale                                                      -0.1753 0.2758
+#> value(log(serBilir))                                            1.3700 0.2432
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 -0.2646 0.3003
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2  0.0100 0.3451
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 -0.5594 0.7105
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 -1.1220 0.8765
 #>                                                                   2.5%  97.5%
-#> sexfemale                                                      -0.7069 0.3861
-#> value(log(serBilir))                                            0.9306 1.8930
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 -0.8836 0.3060
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2 -0.6905 0.7109
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 -2.0687 0.8195
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 -2.9343 0.5624
+#> sexfemale                                                      -0.6922 0.3753
+#> value(log(serBilir))                                            0.9336 1.8889
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 -0.8700 0.2980
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2 -0.6837 0.6898
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 -1.9819 0.7919
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 -2.8159 0.5355
 #>                                                                     P   Rhat
-#> sexfemale                                                      0.5232 1.0019
-#> value(log(serBilir))                                           0.0000 1.0310
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 0.4288 1.0327
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2 0.9655 1.0450
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 0.4890 1.1015
-#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 0.1855 1.1272
+#> sexfemale                                                      0.5179 1.0004
+#> value(log(serBilir))                                           0.0000 1.0291
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))1 0.3782 1.0330
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))2 0.9822 1.0257
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))3 0.4570 1.0635
+#> value(log(serBilir)):ns(year, k = c(3, 6, 9), B = c(0, 14.5))4 0.1967 1.0727
 #> 
 #> Longitudinal outcome: log(serBilir) (family = gaussian, link = identity)
 #>                   Mean  StDev     2.5%   97.5%      P   Rhat
-#> (Intercept)     1.4956 0.2260   1.0512  1.9428 0.0000 1.0035
-#> poly(year, 2)1 30.0948 5.2636  20.0708 40.4244 0.0000 1.0519
-#> poly(year, 2)2 -4.3717 3.1266 -10.4635  1.8326 0.1622 1.0654
-#> sexfemale      -0.4740 0.2404  -0.9434  0.0046 0.0517 1.0051
-#> p(,2)1         -5.3647 5.5026 -15.9518  5.3749 0.3303 1.0779
-#> p(,2)2          5.9560 3.2541  -0.4443 12.3150 0.0660 1.1146
-#> sigma           0.3033 0.0061   0.2918  0.3157 0.0000 1.0054
+#> (Intercept)     1.4937 0.2250   1.0545  1.9375 0.0000 1.0000
+#> poly(year, 2)1 29.7802 5.2619  19.7385 40.1633 0.0000 1.0033
+#> poly(year, 2)2 -4.5358 3.1729 -10.8049  1.6951 0.1487 1.0059
+#> sexfemale      -0.4734 0.2397  -0.9417 -0.0001 0.0499 1.0002
+#> p(,2)1         -5.1671 5.4772 -15.7512  5.5301 0.3468 1.0171
+#> p(,2)2          6.0727 3.2851  -0.3268 12.5543 0.0606 1.0356
+#> sigma           0.3031 0.0061   0.2916  0.3155 0.0000 1.0038
 #> 
 #> MCMC summary:
 #> chains: 3 
-#> iterations per chain: 6500 
-#> burn-in per chain: 2500 
+#> iterations per chain: 7000 
+#> burn-in per chain: 1500 
 #> thinning: 1 
-#> time: 26 sec
+#> time: 28 sec
 ```
 
 The spline coefficients do not have a straightforward interpretation.
@@ -202,7 +202,7 @@ compare_jm(jointFit1, jointFit2)
 #> 
 #>                 DIC     WAIC      LPML
 #>  jointFit1 4344.764 6074.567 -3295.282
-#>  jointFit2 4349.190 6316.081 -3554.416
+#>  jointFit2 4365.120 6286.215 -3598.082
 #> 
 #> The criteria are calculated on the basis of the marginal log-likelihood.
 ```

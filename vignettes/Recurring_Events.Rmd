@@ -483,7 +483,8 @@ cox_fit <- coxph(Surv(tstart, tstop, status) ~ (group + age):strata(strata),
 These models are then provided as arguments in the `jm()` function. The user specifies the desired functional forms for the mixed model in each relative-risk model. And with the `recurrent` argument specifying the desired timescale,
 ```{r fit_jm}
 jm_fit <- jm(cox_fit, lme_fit, time_var = "time", recurrent = "gap",
-             functional_forms =  ~ value(y):strata)
+             functional_forms =  ~ value(y):strata, n_iter = 12000L,
+             n_burnin = 5000L)
 
 summary(jm_fit)
 ```

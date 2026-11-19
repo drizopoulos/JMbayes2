@@ -44,7 +44,7 @@ To specify that the association of serum bilirubin may change over time, we incl
 ```{r}
 form_splines <- ~ value(log(serBilir)) * ns(year, k = c(3, 6, 9), B = c(0, 14.5))
 jointFit2 <- update(jointFit1, functional_forms = form_splines, 
-                    n_iter = 6500L, n_burnin = 2500L)
+                    n_iter = 7000L, n_burnin = 1500L)
 summary(jointFit2)
 ```
 

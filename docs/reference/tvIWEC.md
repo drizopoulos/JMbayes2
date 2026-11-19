@@ -233,9 +233,10 @@ jointFit <- jm(CoxFit, list(fm1, fm2), time_var = "year", n_chains = 1L)
 tvIWEC(jointFit, newdata = pbc2, Tstart = 6, Dt = 4, mod = 0.2,
        interv = c(0.1, 0.3), mass = 0.8, cores = 1L)
 #> 
-#> Prediction Error for the Joint Model 'jointFit'
+#> Accuracy Metric for the Joint Model 'jointFit'
 #> 
-#> Estimated IWEC with shape parameters 6.0585 and 21.2341: 0.0884
+#> Estimated Integrated Weighted Expected Cost
+#>  with shape parameters 6.1 and 21.2: 0.0884
 #> At time: 10
 #> For the 166 subjects at risk at time 6
 #> Number of subjects with an event in [6, 10): 33
@@ -248,14 +249,16 @@ tvIWEC(jointFit, newdata = pbc2, Tstart = 6, Dt = 4, mod = 0.2,
 tvIWEC(CoxFit, newdata = pbc2.id, Tstart = 6, Dt = 4, shape1 = 12, shape2 = 38,
        type_weights = "IPCW")
 #> 
-#> Prediction Error for the Cox Model 'CoxFit'
+#> Accuracy Metric for the Cox Model 'CoxFit'
 #> 
-#> Estimated IWEC with shape parameters 12 and 38: 0.1596
+#> Estimated Integrated Weighted Expected Cost
+#>  with shape parameters 12.0 and 38.0: 0.1596
 #> At time: 10
 #> For the 166 subjects at risk at time 6
 #> Number of subjects with an event in [6, 10): 42
 #> Number of subjects with a censored time in [6, 10): 73
-#> Accounting for censoring using inverse probability of censoring Kaplan-Meier weights
+#> Accounting for censoring using 
+#> inverse probability of censoring Kaplan-Meier weights
 #> 
 
 # Considering the vectors with predictions, observed times, event indicator and
@@ -268,14 +271,18 @@ predictions <- 1.0 - (as.matrix(sfit$surv)[1L, ] / as.matrix(sfit0$surv)[1L, ])
 tvIWEC(predictions, pbc2.id$years, pbc2.id$status2, pbc2.id$lt, Tstart = 5, Dt = 3,
        type_weights = "IPCW", shape1 = 12, shape2 = 35)
 #> 
-#> Prediction Error for the predictions 'predictions', observed times 'pbc2.id$years', event indicator 'pbc2.id$status2' and left-truncated times 'pbc2.id$lt'
+#> Accuracy Metric for the predictions 'predictions',
+#>  observed times 'pbc2.id$years', event indicator 'pbc2.id$status2'
+#>  and left-truncated times 'pbc2.id$lt'
 #> 
-#> Estimated IWEC with shape parameters 12 and 35: 0.1748
+#> Estimated Integrated Weighted Expected Cost
+#>  with shape parameters 12.0 and 35.0: 0.1748
 #> At time: 8
 #> For the 131 subjects at risk at time 5
 #> Number of subjects with an event in [5, 8): 31
 #> Number of subjects with a censored time in [5, 8): 45
-#> Accounting for left truncation and right censoring using nonparametric inverse probability weights
+#> Accounting for left truncation and right censoring using 
+#>  nonparametric inverse probability weights
 #> 
 
 # Now, we consider the default method, but using the model-based estimator:
@@ -290,14 +297,18 @@ tvIWEC(predictions, Time = pbc2.id$years, event = pbc2.id$status2, LT_Time = pbc
        Tstart = 5, Dt = 3, type_weights = "model-based", preds_MB = preds_MB, 
        mod = 0.33, interv = c(0.125, 0.46), mass = 0.7)
 #> 
-#> Prediction Error for the predictions 'predictions', observed times 'pbc2.id$years', event indicator 'pbc2.id$status2' and left-truncated times 'pbc2.id$lt'
+#> Accuracy Metric for the predictions 'predictions',
+#>  observed times 'pbc2.id$years', event indicator 'pbc2.id$status2'
+#>  and left-truncated times 'pbc2.id$lt'
 #> 
-#> Estimated IWEC with shape parameters 3.4833 and 6.0418: 0.1368
+#> Estimated Integrated Weighted Expected Cost
+#>  with shape parameters 3.5 and 6.0: 0.1368
 #> At time: 8
 #> For the 131 subjects at risk at time 5
 #> Number of subjects with an event in [5, 8): 31
 #> Number of subjects with a censored time in [5, 8): 45
-#> Accounting for left truncation and right censoring using model-based weights
+#> Accounting for left truncation and right censoring using 
+#>  model-based weights
 #> 
 # }
 ```

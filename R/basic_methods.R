@@ -1460,7 +1460,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
             if (mcmc_RE) {
                 mcmc_b <- abind::abind(object$mcmc[["b"]])
             } else {
-                stop("refit the model using 'jm(..., save_random_effects = TRUE)'.\n")
+                stop("refit the joint model using 'jm(..., save_random_effects = TRUE)'.\n")
             }
         }
         get_D <- function (x, n) {
@@ -1581,7 +1581,7 @@ simulate.jm <- function (object, nsim = 1L, seed = NULL, newdata = NULL,
         if (include_outcome) val <- c(val, list(outcome = y))
     } else {
         if (is.null(Fforms_fun) || !is.function(Fforms_fun)) {
-            stop("you need to provide the 'Fforms_fun' function; ",
+            stop("You need to provide the 'Fforms_fun' function; ",
                  "see the examples in `?simulate.jm` for more information.\n")
         }
         if (length(unique(object$model_data$strata)) > 1L) {

@@ -134,14 +134,15 @@ we consider the decision threshold `c=0.3`.
 
 tvNB(jm1, newdata = pbc2, Tstart = 4, Dt = 3, decision_threshold = 0.3)
 #> 
-#> Prediction Error for the Joint Model 'jm1'
+#> Accuracy Metric for the Joint Model 'jm1'
 #> 
-#> Estimated NB with decision threshold 0.3: 0.1751
+#> Estimated Net Benefit with decision threshold 0.3: 0.1751
 #> At time: 7
 #> For the 125 subjects at risk at time 4
 #> Number of subjects with an event in [4, 7): 36
 #> Number of subjects with a censored time in [4, 7): 29
-#> Accounting for left truncation and right censoring using model-based weights
+#> Accounting for left truncation and right censoring using 
+#>  model-based weights
 ```
 
 A similar clinical utility metric is the expected cost. Using the same
@@ -150,16 +151,18 @@ we use the IPW approach for the metric estimation:
 
 ``` r
 
-tvEC(jm1, newdata = pbc2, Tstart = 4, Dt = 3, decision_threshold = 0.3, type_weights = "IPCW")
+tvEC(jm1, newdata = pbc2, Tstart = 4, Dt = 3, decision_threshold = 0.3, 
+     type_weights = "IPCW")
 #> 
-#> Prediction Error for the Joint Model 'jm1'
+#> Accuracy Metric for the Joint Model 'jm1'
 #> 
-#> Estimated EC with decision threshold 0.3: 0.0944
+#> Estimated Expected Cost with decision threshold 0.3: 0.0944
 #> At time: 7
 #> For the 125 subjects at risk at time 4
 #> Number of subjects with an event in [4, 7): 36
 #> Number of subjects with a censored time in [4, 7): 29
-#> Accounting for left truncation and right censoring using nonparametric inverse probability weights
+#> Accounting for left truncation and right censoring using 
+#>  nonparametric inverse probability weights
 ```
 
 One might be interested in assessing clinical utility within a span of
@@ -191,24 +194,27 @@ accommodate the clinical context through a weight function. We
 implemented the beta family of weight functions, which is completely
 specified by the shape parameters `shape1` and `shape2`. Instead of
 passing directly the shape parameters, the user can pass the interval of
-relevant decision thresholds c\in(0.2, 0.375) (`interv=c(0.2, 0.375)`),
-the mode (we set `mod=0.3`) and the mass of the function to be allocated
-within the interval (we set `mass=0.85`). By passing these arguments,
-`shape1` and `shape2` are internally computed.
+relevant decision thresholds c\in(0.2, 0.375)
+(`interv = c(0.2, 0.375)`), the mode (we set `mod = 0.3`) and the mass
+of the function to be allocated within the interval (we set
+`mass = 0.85`). By passing these arguments, `shape1` and `shape2` are
+internally computed.
 
 ``` r
 
 tvIWEC(jm1, newdata = pbc2, Tstart = 4, Dt = 3,
        mod = 0.3, interv = c(0.2, 0.375), mass = 0.85)
 #> 
-#> Prediction Error for the Joint Model 'jm1'
+#> Accuracy Metric for the Joint Model 'jm1'
 #> 
-#> Estimated IWEC with shape parameters 18.8901 and 42.7436: 0.0993
+#> Estimated Integrated Weighted Expected Cost
+#>  with shape parameters 18.9 and 42.7: 0.0993
 #> At time: 7
 #> For the 125 subjects at risk at time 4
 #> Number of subjects with an event in [4, 7): 36
 #> Number of subjects with a censored time in [4, 7): 29
-#> Accounting for left truncation and right censoring using model-based weights
+#> Accounting for left truncation and right censoring using 
+#>  model-based weights
 ```
 
 In addition, we can plot a weighted decision curve, which displays the
@@ -217,8 +223,9 @@ cuves that corresponds to the IWEC:
 
 ``` r
 
-wdc1 <- decision_curves(jm1, newdata = pbc2, Tstart = 4, Dt = 3, type = "weightedEC",
-                        mod = 0.3, interv = c(0.2, 0.375), mass = 0.85)
+wdc1 <- decision_curves(jm1, newdata = pbc2, Tstart = 4, Dt = 3, 
+                        type = "weightedEC", mod = 0.3, interv = c(0.2, 0.375), 
+                        mass = 0.85)
 plot(wdc1, legend_names = c("Joint Model 1", "All", "None"))
 ```
 
@@ -250,33 +257,36 @@ jm2 <- jm(CoxFit, fm2, time_var = "year")
 
 For illustration, we now change the clinical context and we assume the
 interval of interest for decision thresholds is c\in(0.125, 0.275). We
-now consider as a landmark time `Tstart=6` and prediction horizon
-`Dt=2`. For the NB and EC we will fix `c=0.2`:
+now consider as a landmark time `Tstart = 6` and prediction horizon
+`Dt = 2`. For the NB and EC we will fix `c = 0.2`:
 
 ``` r
 
 tvNB(jm2, newdata = pbc2, Tstart = 6, Thoriz = 8,
      decision_threshold = 0.2, type_weights = "IPCW")
 #> 
-#> Prediction Error for the Joint Model 'jm2'
+#> Accuracy Metric for the Joint Model 'jm2'
 #> 
-#> Estimated NB with decision threshold 0.2: 0.054
+#> Estimated Net Benefit with decision threshold 0.2: 0.054
 #> At time: 8
 #> For the 121 subjects at risk at time 6
 #> Number of subjects with an event in [6, 8): 19
 #> Number of subjects with a censored time in [6, 8): 33
-#> Accounting for left truncation and right censoring using nonparametric inverse probability weights
+#> Accounting for left truncation and right censoring using 
+#>  nonparametric inverse probability weights
+
 tvEC(jm2, newdata = pbc2, Tstart = 6, Thoriz = 8,
      decision_threshold = 0.2, type_weights = "IPCW")
 #> 
-#> Prediction Error for the Joint Model 'jm2'
+#> Accuracy Metric for the Joint Model 'jm2'
 #> 
-#> Estimated EC with decision threshold 0.2: 0.099
+#> Estimated Expected Cost with decision threshold 0.2: 0.099
 #> At time: 8
 #> For the 121 subjects at risk at time 6
 #> Number of subjects with an event in [6, 8): 19
 #> Number of subjects with a censored time in [6, 8): 33
-#> Accounting for left truncation and right censoring using nonparametric inverse probability weights
+#> Accounting for left truncation and right censoring using 
+#>  nonparametric inverse probability weights
 ```
 
 For the decision curve of the expected cost, by default the weight
@@ -288,11 +298,15 @@ decision curve for the expected cost, including both `jm1` and `jm2` is:
 ``` r
 
 dc_ec1 <- decision_curves(jm1, newdata = pbc2, Tstart = 6, Dt = 2, 
-                          type_weights = "IPCW", mod = 0.2, interv = c(0.125, 0.275))
+                          type_weights = "IPCW", mod = 0.2, 
+                          interv = c(0.125, 0.275))
+
 dc_ec2 <- decision_curves(jm2, newdata = pbc2, Tstart = 6, Dt = 2, 
-                          type_weights = "IPCW", mod = 0.2, interv = c(0.125, 0.275))
-plot(dc_ec1, dc_ec2, 
-     legend_names = c("JM1 (serBilir)", "JM2 (prothrombin)", "Treat all", "Treat none"),
+                          type_weights = "IPCW", mod = 0.2, 
+                          interv = c(0.125, 0.275))
+
+plot(dc_ec1, dc_ec2, legend_names = c("JM1 (serBilir)", "JM2 (prothrombin)", 
+                                      "Treat all", "Treat none"),
      col = c("black", "purple2", "lightgreen", "brown2"))
 ```
 
@@ -311,14 +325,16 @@ above. For the first joint model (the one using `serBilir`):
 tvIWEC(jm1, newdata = pbc2, Tstart = 6, Thoriz = 8, 
        mod = 0.2, interv = c(0.125, 0.275))
 #> 
-#> Prediction Error for the Joint Model 'jm1'
+#> Accuracy Metric for the Joint Model 'jm1'
 #> 
-#> Estimated IWEC with shape parameters 23.1117 and 89.4466: 0.0766
+#> Estimated Integrated Weighted Expected Cost
+#>  with shape parameters 23.1 and 89.4: 0.0766
 #> At time: 8
 #> For the 121 subjects at risk at time 6
 #> Number of subjects with an event in [6, 8): 19
 #> Number of subjects with a censored time in [6, 8): 33
-#> Accounting for left truncation and right censoring using model-based weights
+#> Accounting for left truncation and right censoring using 
+#>  model-based weights
 ```
 
 And, for `jm2` (joint model using `prothrombin`):
@@ -328,14 +344,16 @@ And, for `jm2` (joint model using `prothrombin`):
 tvIWEC(jm2, newdata = pbc2, Tstart = 6, Thoriz = 8, 
        mod = 0.2, interv = c(0.125, 0.275))
 #> 
-#> Prediction Error for the Joint Model 'jm2'
+#> Accuracy Metric for the Joint Model 'jm2'
 #> 
-#> Estimated IWEC with shape parameters 23.1117 and 89.4466: 0.124
+#> Estimated Integrated Weighted Expected Cost
+#>  with shape parameters 23.1 and 89.4: 0.124
 #> At time: 8
 #> For the 121 subjects at risk at time 6
 #> Number of subjects with an event in [6, 8): 19
 #> Number of subjects with a censored time in [6, 8): 33
-#> Accounting for left truncation and right censoring using model-based weights
+#> Accounting for left truncation and right censoring using 
+#>  model-based weights
 ```
 
 We can compare `jm1`, `jm2` as well as the default strategies with the
@@ -344,12 +362,16 @@ decision thresholds to plot the decision curve.
 
 ``` r
 
-wdc1 <- decision_curves(jm1, newdata = pbc2, Tstart = 6, Dt = 2, type = "weightedEC", 
-                        mod = 0.2, interv = c(0.125, 0.275), 
-                        decision_threshold_range = seq(0.001, 0.999, length.out = 100))
-wdc2 <- decision_curves(jm2, newdata = pbc2, Tstart = 6, Dt = 2, type = "weightedEC", 
+thr_rng <- seq(0.001, 0.999, length.out = 100)
+wdc1 <- decision_curves(jm1, newdata = pbc2, Tstart = 6, Dt = 2, 
+                        type = "weightedEC", mod = 0.2, 
+                        interv = c(0.125, 0.275), 
+                        decision_threshold_range = thr_rng)
+
+wdc2 <- decision_curves(jm2, newdata = pbc2, Tstart = 6, Dt = 2, 
+                        type = "weightedEC", 
                         mod = 0.2, interv = c(0.125, 0.275),
-                        decision_threshold_range = seq(0.001, 0.999, length.out = 100))
+                        decision_threshold_range = thr_rng)
 plot(wdc1, wdc2)
 ```
 
@@ -357,8 +379,8 @@ plot(wdc1, wdc2)
 
 In this plot, we see that both joint models overcome the default
 strategies when incorporating the relative relevance of the decision
-thresholds via the weight function w(c;23.11, 89.45). However, the joint
-model using the serum bilirubin yields better estimates per each
+thresholds via the weight function w(c; 23.11, 89.45). However, the
+joint model using the serum bilirubin yields better estimates per each
 relevant decision threshold as well as with respect the IWEC.
 
 ### Cox proportional hazards models evaluation
@@ -375,14 +397,15 @@ benefit:
 tvNB(CoxFit, newdata = pbc2.id, Tstart = 5, Thoriz = 7.5, 
      decision_threshold = 0.125, type_weights = "IPCW")
 #> 
-#> Prediction Error for the Cox Model 'CoxFit'
+#> Accuracy Metric for the Cox Model 'CoxFit'
 #> 
-#> Estimated NB with decision threshold 0.125: 0.1328
+#> Estimated Net Benefit with decision threshold 0.125: 0.1328
 #> At time: 7.5
 #> For the 134 subjects at risk at time 5
 #> Number of subjects with an event in [5, 7.5): 28
 #> Number of subjects with a censored time in [5, 7.5): 41
-#> Accounting for left truncation and right censoring using nonparametric inverse probability weights
+#> Accounting for left truncation and right censoring using 
+#>  nonparametric inverse probability weights
 ```
 
 Similarly, we can use the expected cost:
@@ -392,14 +415,15 @@ Similarly, we can use the expected cost:
 tvEC(CoxFit, newdata = pbc2.id, Tstart = 6, Dt = 3,
      decision_threshold = 0.45, name_model = "Proportional Hazards Model")
 #> 
-#> Prediction Error for the Cox Model 'Proportional Hazards Model'
+#> Accuracy Metric for the Cox Model 'Proportional Hazards Model'
 #> 
-#> Estimated EC with decision threshold 0.45: 0.1783
+#> Estimated Expected Cost with decision threshold 0.45: 0.1783
 #> At time: 9
 #> For the 121 subjects at risk at time 6
 #> Number of subjects with an event in [6, 9): 29
 #> Number of subjects with a censored time in [6, 9): 45
-#> Accounting for left truncation and right censoring using model-based weights
+#> Accounting for left truncation and right censoring using 
+#>  model-based weights
 ```
 
 The IWEC also supports Cox models:
@@ -409,14 +433,16 @@ The IWEC also supports Cox models:
 tvIWEC(CoxFit, newdata = pbc2.id, Tstart = 6, Thoriz = 8,
        shape1 = 2, shape2 = 2)
 #> 
-#> Prediction Error for the Cox Model 'CoxFit'
+#> Accuracy Metric for the Cox Model 'CoxFit'
 #> 
-#> Estimated IWEC with shape parameters 2 and 2: 0.0877
+#> Estimated Integrated Weighted Expected Cost
+#>  with shape parameters 2.0 and 2.0: 0.0877
 #> At time: 8
 #> For the 121 subjects at risk at time 6
 #> Number of subjects with an event in [6, 8): 19
 #> Number of subjects with a censored time in [6, 8): 33
-#> Accounting for left truncation and right censoring using model-based weights
+#> Accounting for left truncation and right censoring using 
+#>  model-based weights
 ```
 
 Decision curves can be easily displayed also with Cox models:
@@ -425,24 +451,24 @@ Decision curves can be easily displayed also with Cox models:
 
 cox_wdg <- decision_curves(CoxFit, newdata = pbc2.id, Tstart = 6, Thoriz = 8,
                            type = "weightedEC", shape1 = 15, shape2 = 25)
-plot(cox_wdg,
-     legend_names = c("Cox model", "Treat all", "Treat none"), 
-     legend_loc = "topleft",
-     lty = c(1, 2, 2),
-     xlim = c(0, 0.65))
+
+plot(cox_wdg, legend_names = c("Cox model", "Treat all", "Treat none"), 
+     legend_loc = "topleft", lty = c(1, 2, 2), xlim = c(0, 0.65))
 ```
 
 ![](Clinical_Utility_Metrics_files/figure-html/unnamed-chunk-20-1.png)
 
-The IWEC reduces to the 1/2 times the Brier score when `shape1=1` and
-`shape2=1`:
+The IWEC reduces to the 1/2 times the Brier score when `shape1 = 1` and
+`shape2 = 1`:
 
 ``` r
 
-iwec1_1 <- tvIWEC(CoxFit, newdata = pbc2.id, Tstart = 2, Dt = 5, shape1 = 1, shape2 = 1,
-                  type_weights = "IPCW")
+iwec1_1 <- tvIWEC(CoxFit, newdata = pbc2.id, Tstart = 2, Dt = 5, 
+                  shape1 = 1, shape2 = 1, type_weights = "IPCW")
+
 bs_expl <- tvBrier(CoxFit, newdata = pbc2.id, Tstart = 2, Dt = 5,
                    type_weights = "IPCW")
+
 cat("IWEC when shape1 = shape2 = 1:", 2 * iwec1_1$metric, "\n")
 #> IWEC when shape1 = shape2 = 1: 0.2364726
 cat("Brier score:", bs_expl$Brier)
@@ -450,7 +476,7 @@ cat("Brier score:", bs_expl$Brier)
 ```
 
 In addition, the logarithmic score is also a particular case of the IWEC
-that is obtained when `shape1=0` and `shape2=0`.
+that is obtained when `shape1 = 0` and `shape2 = 0`.
 
 ### General dynamic predictions evaluation
 
@@ -467,7 +493,8 @@ the Cox model above:
 
 sfit_5 <- summary(survfit(CoxFit, newdata = pbc2.id), times = 5)
 sfit_8 <- summary(survfit(CoxFit, newdata = pbc2.id), times = 8)
-predictions <- 1.0 - (as.matrix(sfit_8$surv)[1L, ] / as.matrix(sfit_5$surv)[1L, ])
+predictions <- 
+    1.0 - (as.matrix(sfit_8$surv)[1L, ] / as.matrix(sfit_5$surv)[1L, ])
 ```
 
 Now, we compute the net benefit with decision threshold 0.375, we use
@@ -475,17 +502,21 @@ the IPW estimator:
 
 ``` r
 
-tvNB(predictions, Time = pbc2.id$years, LT_Time = pbc2.id$lt, event = pbc2.id$event,
-     decision_threshold = 0.375, Tstart = 5, Thoriz = 8, type_weights = "IPCW")
+tvNB(predictions, Time = pbc2.id$years, LT_Time = pbc2.id$lt, 
+     event = pbc2.id$event, decision_threshold = 0.375, Tstart = 5, 
+     Thoriz = 8, type_weights = "IPCW")
 #> 
-#> Prediction Error for the predictions 'predictions', observed times 'pbc2.id$years', event indicator 'pbc2.id$event' and left-truncated times 'pbc2.id$lt'
+#> Accuracy Metric for the predictions 'predictions',
+#>  observed times 'pbc2.id$years', event indicator 'pbc2.id$event'
+#>  and left-truncated times 'pbc2.id$lt'
 #> 
-#> Estimated NB with decision threshold 0.375: -0.0049
+#> Estimated Net Benefit with decision threshold 0.375: -0.0049
 #> At time: 8
 #> For the 134 subjects at risk at time 5
 #> Number of subjects with an event in [5, 8): 31
 #> Number of subjects with a censored time in [5, 8): 47
-#> Accounting for left truncation and right censoring using nonparametric inverse probability weights
+#> Accounting for left truncation and right censoring using 
+#>  nonparametric inverse probability weights
 ```
 
 For the default method, if we want to use the model-based estimator, we
@@ -497,25 +528,34 @@ Now, we compute the IWEC with a weight function that has its mode in
 
 ``` r
 
-ind_censoring <- pbc2.id$years > 5 & pbc2.id$lt < 5 & pbc2.id$years < 8 & pbc2.id$event == 0
+ind_censoring <- pbc2.id$years > 5 & pbc2.id$lt < 5 & 
+    pbc2.id$years < 8 & pbc2.id$event == 0
+
 sfit2_8 <- summary(survfit(CoxFit, newdata = pbc2.id[ind_censoring, ]),
                  times = 8)
 sfit_cens <- summary(survfit(CoxFit, newdata = pbc2.id[ind_censoring, ]),
                      times = pbc2.id$years[ind_censoring])
+
 preds_MB <- rep(NA, length(pbc2.id$years))
-preds_MB[ind_censoring] <- 1.0 - (as.matrix(sfit2_8$surv)[1L, ] / as.matrix(sfit_cens$surv)[1L, ])
-tvIWEC(predictions, Time = pbc2.id$years, event = pbc2.id$event, LT_Time = pbc2.id$lt, 
-       Tstart = 5, Dt = 3, type_weights = "model-based", preds_MB = preds_MB,
-       mod = 0.33, interv = c(0.125, 0.46), mass = 0.7)
+preds_MB[ind_censoring] <- 
+    1.0 - (as.matrix(sfit2_8$surv)[1L, ] / as.matrix(sfit_cens$surv)[1L, ])
+
+tvIWEC(predictions, Time = pbc2.id$years, event = pbc2.id$event, 
+       LT_Time = pbc2.id$lt, Tstart = 5, Dt = 3, type_weights = "model-based", 
+       preds_MB = preds_MB, mod = 0.33, interv = c(0.125, 0.46), mass = 0.7)
 #> 
-#> Prediction Error for the predictions 'predictions', observed times 'pbc2.id$years', event indicator 'pbc2.id$event' and left-truncated times 'pbc2.id$lt'
+#> Accuracy Metric for the predictions 'predictions',
+#>  observed times 'pbc2.id$years', event indicator 'pbc2.id$event'
+#>  and left-truncated times 'pbc2.id$lt'
 #> 
-#> Estimated IWEC with shape parameters 3.4833 and 6.0418: 0.1528
+#> Estimated Integrated Weighted Expected Cost
+#>  with shape parameters 3.5 and 6.0: 0.1528
 #> At time: 8
 #> For the 134 subjects at risk at time 5
 #> Number of subjects with an event in [5, 8): 31
 #> Number of subjects with a censored time in [5, 8): 47
-#> Accounting for left truncation and right censoring using model-based weights
+#> Accounting for left truncation and right censoring using 
+#>  model-based weights
 ```
 
 To clarify the explanation regarding the `preds_MB` argument: we need to
@@ -528,9 +568,10 @@ For the decision curves the ‘default’ method work the same way:
 
 ``` r
 
-dc_default <- decision_curves(predictions, Time = pbc2.id$years, event =  pbc2.id$event,
-                               LT_Time =  pbc2.id$lt, Tstart = 5, Dt = 3,
-                               type_weights = "IPCW", type = "NB")
+dc_default <- 
+    decision_curves(predictions, Time = pbc2.id$years, event =  pbc2.id$event,
+                    LT_Time =  pbc2.id$lt, Tstart = 5, Dt = 3, 
+                    type_weights = "IPCW", type = "NB")
 plot(dc_default)
 ```
 

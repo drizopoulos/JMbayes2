@@ -1,5 +1,16 @@
 # Changelog
 
+## JMbayes2 0.6.6
+
+### Major
+
+- The new `tvMetric()` function calculates measures of clinical utility,
+  including the net benefit and expected cost for the dynamic prediction
+  setting. These measures account for the consequences of false positive
+  and false negative decisions. The function also calculates the
+  integrated weighted expected cost, a metric that considers clinical
+  utility while achieving strict properness.
+
 ## JMbayes2 0.6.5
 
 ### Major
