@@ -1132,7 +1132,11 @@ List simulate_REs (List Data, List MCMC, List control) {
   field<mat> U_H2 = List2Field_mat(as<List>(Data["U_H2"]));
   mat Wlong_bar = docall_cbindL(as<List>(Data["Wlong_bar"]));
   mat Wlong_sds = docall_cbindL(as<List>(Data["Wlong_sds"]));
-  Wlong_sds = 1.0 / Wlong_sds;
+  Wlong_bar.zeros();
+  Wlong_sds.ones();
+  vec W_std_gammas = as<vec>(MCMC["W_std_gammas"]);
+  vec Wlong_std_alphas = as<vec>(MCMC["Wlong_std_alphas"]);
+  //Wlong_sds = 1.0 / Wlong_sds;
   /////////////////////////////////////
   // Longitudinal Process Components //
   /////////////////////////////////////
@@ -1269,12 +1273,12 @@ List simulate_REs (List Data, List MCMC, List control) {
     const mat &L_it = L.slice(it);
     const vec &sds_it = sds.col(it);
     ///////////////////////
-    W0H_bs_gammas = W0_H * bs_gammas_it;
+    W0H_bs_gammas = W0_H * bs_gammas_it - W_std_gammas.at(it) - Wlong_std_alphas.at(it);
     if (any_event) {
-      W0h_bs_gammas = W0_h * bs_gammas_it;
+        W0h_bs_gammas = W0_h * bs_gammas_it - W_std_gammas.at(it) - Wlong_std_alphas.at(it);
     }
     if (any_interval) {
-      W0H2_bs_gammas = W0_H2 * bs_gammas_it;
+        W0H2_bs_gammas = W0_H2 * bs_gammas_it - W_std_gammas.at(it) - Wlong_std_alphas.at(it);
     }
     if (any_gammas) {
       WH_gammas = W_H * gammas_it;

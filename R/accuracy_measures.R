@@ -146,7 +146,7 @@ tvROC.jm <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
 }
 
 
-print.tvROC <- function (x, digits = 4, ...) {
+print.tvROC <- function (x, digits = 4, rows = 21, ...) {
   if (x$classObject == "jm") {
     cat("\n\tTime-dependent Sensitivity and Specificity for the Joint Model",
         x$nameObject)
@@ -172,9 +172,11 @@ print.tvROC <- function (x, digits = 4, ...) {
   xx[which.min(abs(x$thr - x$Youden))] <- "*"
   d[[" "]] <- xx
   d <- d[!is.na(d$SN) & !is.na(d$SP), ]
-  d <- d[!duplicated(d[c("SN", "SP")]), ]
+  d <- d[!duplicated(d[c("SN", "SP")]) | xx == "*", ]
   row.names(d) <- 1:nrow(d)
-  print(d, digits = digits)
+  ind <- sort(c(round(seq(1, nrow(d), length.out = rows - 1)),
+                which(d[[" "]] == "*")))
+  print(d[ind, ], digits = digits)
   cat("\n")
   invisible(x)
 }

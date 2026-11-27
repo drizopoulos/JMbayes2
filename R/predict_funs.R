@@ -657,14 +657,14 @@ get_components_newdata <- function (object, newdata, n_samples, n_mcmc,
         mcmc$sigmas <- mcmc$sigmas[id_samples, , drop = FALSE]
         mcmc$sigmaF <- mcmc$sigmaF[id_samples, , drop = FALSE]
         mcmc$D <- mcmc$D[, , id_samples, drop = FALSE]
+        mcmc$Wlong_std_alphas <- mcmc$Wlong_std_alphas[id_samples, , drop = FALSE]
+        mcmc$W_std_gammas <- mcmc$W_std_gammas[id_samples, , drop = FALSE]
         # update control n_samples
         control$n_samples <- length(id_samples)
         # update random effects
         calc <- simulate_REs(Data, mcmc, control)
         mcmc[["b"]] <- calc[["b"]]
         mcmc[["log_S0"]] <- calc[["log_S0"]]
-        mcmc$Wlong_std_alphas <- mcmc$Wlong_std_alphas[id_samples, , drop = FALSE]
-        mcmc$W_std_gammas <- mcmc$W_std_gammas[id_samples, , drop = FALSE]
         mcmc
     }
     if (cores > 1L) {
