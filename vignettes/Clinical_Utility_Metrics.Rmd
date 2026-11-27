@@ -280,7 +280,7 @@ sfit_cens <- summary(survfit(CoxFit, newdata = pbc2.id[ind_censoring, ]),
 
 preds_MB <- rep(NA, length(pbc2.id$years))
 preds_MB[ind_censoring] <- 
-    1.0 - (as.matrix(sfit2_8$surv)[1L, ] / as.matrix(sfit_cens$surv)[1L, ])
+    1.0 - (as.matrix(sfit2_8$surv)[1L, ] / diag(as.matrix(sfit_cens$surv)))
 
 tvIWEC(predictions, Time = pbc2.id$years, event = pbc2.id$event, 
        LT_Time = pbc2.id$lt, Tstart = 5, Dt = 3, type_weights = "model-based", 
