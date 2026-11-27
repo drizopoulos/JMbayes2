@@ -46,7 +46,7 @@ tvROC.coxph <-
                              times = Time[ind2])
             sfit2 <- summary(survfit(object, newdata = newdata[ind2, ]),
                              times = Thoriz)
-            pi_u_t <- 1.0 - (as.matrix(sfit2$surv)[1L, ] / as.matrix(sfit_cens$surv)[1L, ])
+            pi_u_t <- 1.0 - (as.matrix(sfit2$surv)[1L, ] / diag(as.matrix(sfit_cens$surv)))
             nams <- names(ind2[ind2])
             ind[nams] <- ind[nams] * pi_u_t[nams]
         }
@@ -177,7 +177,7 @@ tvBrier.coxph <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NULL,
                                  times = Thoriz)
                 sfit_cens <- summary(survfit(object, newdata = newdata[ind3, ]),
                                  times = Time[ind3])
-                1.0 - (as.matrix(sfit2$surv)[1L, ] / as.matrix(sfit_cens$surv)[1L, ] )
+                1.0 - (as.matrix(sfit2$surv)[1L, ] / diag(as.matrix(sfit_cens$surv)) )
             }
         }
         brier_fun(pi_u_t, type_weights, weights, ind1, ind2, ind3)
@@ -366,7 +366,7 @@ tvMetric.coxph <- function (object, newdata, Tstart,
                        times = Thoriz)
       sfit_cens <- summary(survfit(object, newdata = newdata[ind3, ]),
                            times = Time[ind3])
-      w_MB[ind3] <- 1.0 - (as.matrix(sfit2$surv)[1L, ] / as.matrix(sfit_cens$surv)[1L, ])
+      w_MB[ind3] <- 1.0 - (as.matrix(sfit2$surv)[1L, ] / diag(as.matrix(sfit_cens$surv)))
     }
   }
   out <- tvMetric.default(pi_u_t, Time, event, LT_Time = Time0, Tstart = Tstart,
@@ -577,7 +577,7 @@ decision_curves.coxph <-
                            times = Thoriz)
           sfit_cens <- summary(survfit(object, newdata = newdata[ind3, ]),
                                times = Time[ind3])
-          weights <- 1.0 - (as.matrix(sfit2$surv)[1L, ] / as.matrix(sfit_cens$surv)[1L, ] )
+          weights <- 1.0 - (as.matrix(sfit2$surv)[1L, ] / diag(as.matrix(sfit_cens$surv)) )
           preds_MB[ind3] <- weights
         }
         res <- list(3)
